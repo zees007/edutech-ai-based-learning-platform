@@ -1,0 +1,1 @@
+"""EduTechAI — FastAPI Application Package."""

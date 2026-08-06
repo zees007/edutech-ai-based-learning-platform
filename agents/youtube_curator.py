@@ -1,0 +1,91 @@
+"""
+EduTechAI — YouTube & Media Curator Agent
+
+Finds relevant YouTube video clips with precise timestamps matching
+the current learning step.
+
+Pipeline:
+1. YouTube Data API v3 search → find relevant videos
+2. youtube-transcript-api → fetch transcripts
+3. ChromaDB → embed transcript chunks with timestamp metadata
+4. Semantic search → find the best matching timestamp range
+5. Return structured YouTubeClip objects
+
+Reads: memory.steps[step_index], memory.learning_mode
+Writes: memory.step_results[step_index].youtube_clips[]
+"""
+
+from __future__ import annotations
+
+import logging
+
+from agents.base import BaseAgent
+from models.schemas import YouTubeClip
+from models.shared_memory import SharedMemory
+
+logger = logging.getLogger(__name__)
+
+
+class YouTubeCuratorAgent(BaseAgent):
+    """
+    YouTube & Media Curator agent.
+
+    Searches YouTube for educational videos relevant to the current step,
+    fetches their transcripts, and finds precise timestamp ranges that
+    match the step's content.
+    """
+
+    async def execute(self, memory: SharedMemory, step_index: int | None = None) -> None:
+        """Find relevant YouTube clips for the given step."""
+        if step_index is None:
+            step_index = memory.current_step_index
+
+        step = memory.steps[step_index] if step_index < len(memory.steps) else None
+        if step is None:
+            return
+
+        self.logger.info(f"Searching YouTube for step {step_index}: '{step.title}'")
+
+        step_result = memory.get_step_result(step_index)
+
+        try:
+            # Import the YouTube client service
+            from services.youtube_client import YouTubeClient
+            client = YouTubeClient()
+
+            # Step 1: Search YouTube for relevant videos
+            search_query = f"{memory.topic} {step.title}"
+            videos = await client.search_videos(search_query)
+
+            if not videos:
+                self.logger.info(f"No YouTube videos found for: {search_query}")
+                return
+
+            # Step 2-4: For each video, try to get transcript and find best timestamp
+            clips = []
+            for video in videos[:3]:  # Process top 3 results
+                try:
+                    clip = await client.get_timestamped_clip(
+                        video_id=video["video_id"],
+                        video_title=video["title"],
+                        channel=video["channel"],
+                        thumbnail_url=video.get("thumbnail_url", ""),
+                        query=f"{step.title} {step.description}",
+                    )
+                    if clip:
+                        clips.append(clip)
+                except Exception as e:
+                    self.logger.warning(f"Failed to process video {video['video_id']}: {e}")
+                    continue
+
+            # In Visual mode, prioritize more clips; in Bite-Sized, take only the best one
+            if memory.learning_mode.value == "bite_sized" and clips:
+                clips = [clips[0]]
+
+            step_result.youtube_clips = clips
+            self.logger.info(f"Found {len(clips)} YouTube clips for step {step_index}")
+
+        except ImportError:
+            self.logger.warning("YouTubeClient not available — skipping video search.")
+        except Exception as e:
+            self.logger.error(f"YouTube search failed: {e}")

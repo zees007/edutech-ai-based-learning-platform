@@ -1,0 +1,357 @@
+"""
+EduTechAI — Pydantic Schemas
+
+All request/response models and domain types used across the application.
+These are API-facing models (serialization), distinct from ORM models (persistence).
+"""
+
+from __future__ import annotations
+
+from datetime import datetime
+from enum import Enum
+from typing import Literal
+
+from pydantic import BaseModel, Field
+
+
+# ═══════════════════════════════════════════════════════════════════
+# Enums
+# ═══════════════════════════════════════════════════════════════════
+
+
+class LearningMode(str, Enum):
+    """How the content is adapted for the student."""
+
+    VISUAL = "visual"           # Heavy video & diagrams, shorter text
+    DEEP_DIVE = "deep_dive"     # Research papers & proofs, longer explanations
+    BITE_SIZED = "bite_sized"   # Rapid summaries & short clips
+
+
+class StepStatus(str, Enum):
+    """Status of a milestone step in the learning plan."""
+
+    PENDING = "pending"
+    IN_PROGRESS = "in_progress"
+    COMPLETE = "complete"
+    SKIPPED = "skipped"
+
+
+class QuestionType(str, Enum):
+    """Types of quiz questions."""
+
+    MULTIPLE_CHOICE = "multiple_choice"
+    TRUE_FALSE = "true_false"
+    FILL_IN_BLANK = "fill_in_blank"
+
+
+# ═══════════════════════════════════════════════════════════════════
+# API Request Models
+# ═══════════════════════════════════════════════════════════════════
+
+
+class LearningRequest(BaseModel):
+    """What the student sends to start a learning session."""
+
+    topic: str = Field(
+        ...,
+        min_length=3,
+        max_length=500,
+        description="The topic or question the student wants to learn about.",
+        examples=["How does photosynthesis work?", "Explain quantum entanglement"],
+    )
+    learning_mode: LearningMode = Field(
+        default=LearningMode.VISUAL,
+        description="Preferred content style.",
+    )
+    student_level: str = Field(
+        default="general",
+        description="Education level for language calibration.",
+        examples=["middle_school", "high_school", "undergraduate", "graduate", "general"],
+    )
+
+
+class ModeChangeRequest(BaseModel):
+    """Request to switch learning mode mid-session."""
+
+    learning_mode: LearningMode
+
+
+class QuizSubmission(BaseModel):
+    """Student's answers to a quiz."""
+
+    session_id: str
+    step_index: int
+    answers: dict[int, str] = Field(
+        ...,
+        description="Mapping of question_index -> selected answer.",
+    )
+
+
+# ═══════════════════════════════════════════════════════════════════
+# Domain Models — Milestone Steps
+# ═══════════════════════════════════════════════════════════════════
+
+
+class MilestoneStep(BaseModel):
+    """A single step in the learning plan, created by the Orchestrator."""
+
+    index: int
+    title: str
+    description: str
+    is_prerequisite: bool = Field(
+        default=False,
+        description="True if this is a foundational warmup step.",
+    )
+    status: StepStatus = StepStatus.PENDING
+    estimated_minutes: int = Field(
+        default=5,
+        description="Estimated time to complete this step.",
+    )
+
+
+# ═══════════════════════════════════════════════════════════════════
+# Domain Models — Agent Outputs
+# ═══════════════════════════════════════════════════════════════════
+
+
+class YouTubeClip(BaseModel):
+    """A relevant YouTube video clip with timestamps."""
+
+    video_id: str
+    title: str
+    channel: str
+    thumbnail_url: str = ""
+    start_time: int = Field(description="Start timestamp in seconds.")
+    end_time: int = Field(description="End timestamp in seconds.")
+    relevance_snippet: str = Field(
+        default="",
+        description="The transcript text that matched the search query.",
+    )
+    url: str = ""
+
+    def model_post_init(self, __context) -> None:
+        """Auto-generate the timestamped YouTube URL."""
+        if not self.url:
+            self.url = f"https://www.youtube.com/watch?v={self.video_id}&t={self.start_time}"
+
+
+class AcademicPaper(BaseModel):
+    """An academic paper or article from scholarly sources."""
+
+    title: str
+    authors: list[str] = Field(default_factory=list)
+    year: int | None = None
+    abstract: str = ""
+    tldr: str = Field(default="", description="AI-generated summary (from Semantic Scholar).")
+    pdf_url: str = ""
+    source: str = Field(description="Which API found this paper.", examples=["openalex", "semantic_scholar", "arxiv"])
+    relevance_score: float = Field(default=0.0, ge=0.0, le=1.0)
+    doi: str = ""
+
+
+class WebSearchResult(BaseModel):
+    """A web search result from Tavily or DuckDuckGo grounding search."""
+
+    title: str
+    url: str
+    snippet: str
+    source: str = Field(default="web", description="Source provider, e.g., tavily or duckduckgo")
+
+
+class QuizQuestion(BaseModel):
+    """A single quiz question for comprehension checking."""
+
+    index: int
+    question: str
+    question_type: QuestionType
+    options: list[str] = Field(
+        default_factory=list,
+        description="Answer options (for multiple choice / true-false).",
+    )
+    correct_answer: str
+    explanation: str = Field(
+        default="",
+        description="Why the correct answer is correct.",
+    )
+
+
+class Quiz(BaseModel):
+    """A set of comprehension questions for a milestone step."""
+
+    step_index: int
+    questions: list[QuizQuestion] = Field(default_factory=list)
+
+
+class QuizResult(BaseModel):
+    """Grading result after a student submits quiz answers."""
+
+    step_index: int
+    total_questions: int
+    correct_count: int
+    score: float = Field(description="Score from 0.0 to 1.0.")
+    xp_earned: int
+    feedback: list[QuestionFeedback] = Field(default_factory=list)
+
+
+class QuestionFeedback(BaseModel):
+    """Feedback for a single quiz question."""
+
+    question_index: int
+    is_correct: bool
+    student_answer: str
+    correct_answer: str
+    explanation: str
+
+
+class StepResult(BaseModel):
+    """Combined outputs from all agents for a single milestone step."""
+
+    step_index: int
+    status: StepStatus = StepStatus.PENDING
+    explanation: str = ""
+    socratic_questions: list[str] = Field(default_factory=list)
+    youtube_clips: list[YouTubeClip] = Field(default_factory=list)
+    academic_papers: list[AcademicPaper] = Field(default_factory=list)
+    web_results: list[WebSearchResult] = Field(default_factory=list)
+    quiz: Quiz | None = None
+
+
+# ═══════════════════════════════════════════════════════════════════
+# Domain Models — Conversation
+# ═══════════════════════════════════════════════════════════════════
+
+
+class ConversationTurn(BaseModel):
+    """A single turn in the student-tutor conversation."""
+
+    role: Literal["student", "tutor"]
+    content: str
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
+
+
+# ═══════════════════════════════════════════════════════════════════
+# WebSocket Event Types
+# ═══════════════════════════════════════════════════════════════════
+
+
+class WSEventBase(BaseModel):
+    """Base for all WebSocket events."""
+
+    session_id: str
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
+
+
+class PlanEvent(WSEventBase):
+    """Orchestrator has created the learning plan."""
+
+    event_type: Literal["plan"] = "plan"
+    steps: list[MilestoneStep]
+    has_prerequisite_gap: bool = False
+    prerequisite_summary: str | None = None
+
+
+class ExplanationChunkEvent(WSEventBase):
+    """A streamed token/chunk from the Socratic Tutor."""
+
+    event_type: Literal["explanation_chunk"] = "explanation_chunk"
+    step_index: int
+    content: str  # The text chunk
+    is_final: bool = False
+
+
+class SocraticQuestionsEvent(WSEventBase):
+    """Socratic questions for a step (sent after explanation completes)."""
+
+    event_type: Literal["socratic_questions"] = "socratic_questions"
+    step_index: int
+    questions: list[str]
+
+
+class YouTubeClipEvent(WSEventBase):
+    """A YouTube clip has been found for the current step."""
+
+    event_type: Literal["youtube_clip"] = "youtube_clip"
+    step_index: int
+    clip: YouTubeClip
+
+
+class AcademicPaperEvent(WSEventBase):
+    """An academic paper has been found for the current step."""
+
+    event_type: Literal["academic_paper"] = "academic_paper"
+    step_index: int
+    paper: AcademicPaper
+
+
+class QuizEvent(WSEventBase):
+    """Quiz questions are ready for the current step."""
+
+    event_type: Literal["quiz"] = "quiz"
+    step_index: int
+    quiz: Quiz
+
+
+class StepCompleteEvent(WSEventBase):
+    """A milestone step is fully complete (all agents done)."""
+
+    event_type: Literal["step_complete"] = "step_complete"
+    step_index: int
+
+
+class XPUpdateEvent(WSEventBase):
+    """Student earned XP (after quiz or step completion)."""
+
+    event_type: Literal["xp_update"] = "xp_update"
+    xp_earned: int
+    total_xp: int
+    level: int
+    level_title: str
+
+
+class ErrorEvent(WSEventBase):
+    """An error occurred during processing."""
+
+    event_type: Literal["error"] = "error"
+    message: str
+    agent: str = ""
+    recoverable: bool = True
+
+
+# ─── Union type for all WebSocket events ─────────────────────────
+WSEvent = (
+    PlanEvent
+    | ExplanationChunkEvent
+    | SocraticQuestionsEvent
+    | YouTubeClipEvent
+    | AcademicPaperEvent
+    | QuizEvent
+    | StepCompleteEvent
+    | XPUpdateEvent
+    | ErrorEvent
+)
+
+
+# ═══════════════════════════════════════════════════════════════════
+# API Response Models
+# ═══════════════════════════════════════════════════════════════════
+
+
+class SessionResponse(BaseModel):
+    """Response when a learning session is created or retrieved."""
+
+    session_id: str
+    topic: str
+    learning_mode: LearningMode
+    student_level: str
+    created_at: datetime
+    steps: list[MilestoneStep] = Field(default_factory=list)
+    current_step_index: int = 0
+    xp_earned: int = 0
+    steps_completed: int = 0
+
+
+class HealthResponse(BaseModel):
+    """API health check response."""
+
+    status: str = "healthy"
+    version: str = "0.1.0"
