@@ -149,15 +149,6 @@ class AcademicPaper(BaseModel):
     doi: str = ""
 
 
-class WebSearchResult(BaseModel):
-    """A web search result from Tavily or DuckDuckGo grounding search."""
-
-    title: str
-    url: str
-    snippet: str
-    source: str = Field(default="web", description="Source provider, e.g., tavily or duckduckgo")
-
-
 class QuizQuestion(BaseModel):
     """A single quiz question for comprehension checking."""
 
@@ -212,7 +203,6 @@ class StepResult(BaseModel):
     socratic_questions: list[str] = Field(default_factory=list)
     youtube_clips: list[YouTubeClip] = Field(default_factory=list)
     academic_papers: list[AcademicPaper] = Field(default_factory=list)
-    web_results: list[WebSearchResult] = Field(default_factory=list)
     quiz: Quiz | None = None
 
 

@@ -41,11 +41,10 @@ Respond with a JSON object in this exact structure:
 ```
 
 ## Rules
-- **CRITICAL**: Respond ONLY with the raw JSON object. Your very first output character MUST be `{`.
-- **CRITICAL**: Do NOT output any thinking process, preamble, or self-reflection like "Let's verify the JSON". Your entire response must be valid parseable JSON starting with `{` and ending with `}`.
 - Generate exactly 2-3 questions.
 - Questions must be answerable from the explanation content alone — don't test on external knowledge.
 - For multiple choice, the correct answer must exactly match one of the options.
 - For fill_in_blank, leave the `options` array empty.
 - Explanations should be educational, not just "Because it's correct."
 - Adapt difficulty to the student level.
+- Respond ONLY with the JSON object, no additional text.

@@ -15,7 +15,6 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import textwrap
 import time
 
 import streamlit as st
@@ -45,101 +44,10 @@ from services.gamification import calculate_level, calculate_quiz_xp, calculate_
 # ─── Custom CSS Styling ──────────────────────────────────────────
 CUSTOM_CSS = """
 <style>
-    /* Dark Theme Base */
+    /* Dark Theme Customization */
     .stApp {
         background-color: #0E1117;
         color: #E2E8F0;
-    }
-    
-    /* Input Fields Background & Text Visibility Fix */
-    .stApp input, 
-    .stApp textarea, 
-    .stTextInput input,
-    .stTextArea textarea,
-    div[data-testid="stChatInput"] textarea,
-    div[data-baseweb="input"] input,
-    div[data-baseweb="textarea"] textarea,
-    input[data-testid="stWidgetInput-text"] {
-        color: #F8FAFC !important;
-        background-color: #1E293B !important;
-        -webkit-text-fill-color: #F8FAFC !important;
-        caret-color: #38BDF8 !important;
-    }
-    
-    div[data-testid="stChatInput"],
-    div[data-baseweb="input"], 
-    div[data-baseweb="textarea"],
-    .stTextInput > div > div,
-    .stTextArea > div > div {
-        background-color: #1E293B !important;
-        border: 1px solid #334155 !important;
-        border-radius: 8px !important;
-    }
-
-    div[data-testid="stChatInput"] textarea::placeholder,
-    ::placeholder {
-        color: #94A3B8 !important;
-        -webkit-text-fill-color: #94A3B8 !important;
-        opacity: 1 !important;
-    }
-
-    /* Selectbox & Dropdowns */
-    div[data-baseweb="select"] > div {
-        background-color: #1E293B !important;
-        color: #F8FAFC !important;
-        border-color: #334155 !important;
-    }
-    
-    div[data-baseweb="menu"], 
-    div[data-baseweb="popover"],
-    ul[data-baseweb="menu"] {
-        background-color: #1E293B !important;
-        color: #F8FAFC !important;
-        border: 1px solid #334155 !important;
-    }
-    
-    li[data-baseweb="option"] {
-        background-color: #1E293B !important;
-        color: #F8FAFC !important;
-    }
-    
-    li[data-baseweb="option"]:hover,
-    li[data-baseweb="option"][aria-selected="true"] {
-        background-color: #334155 !important;
-        color: #38BDF8 !important;
-    }
-
-    /* Streamlit Spinner, Status, Alert, & Loader Widgets Fix */
-    div[data-testid="stSpinner"],
-    div[data-testid="stStatusWidget"],
-    div[data-testid="stAlert"],
-    .stSpinner,
-    .stStatusWidget,
-    div[role="status"],
-    div[data-baseweb="toast"],
-    div[data-testid="stExpander"] {
-        background-color: #1E293B !important;
-        color: #F8FAFC !important;
-        border: 1px solid #334155 !important;
-        border-radius: 8px !important;
-    }
-
-    div[data-testid="stSpinner"] *,
-    div[data-testid="stStatusWidget"] *,
-    div[data-testid="stAlert"] *,
-    .stSpinner *,
-    .stStatusWidget *,
-    div[role="status"] *,
-    div[data-testid="stExpander"] * {
-        color: #F8FAFC !important;
-        background-color: transparent !important;
-    }
-    
-    div[data-testid="stSpinner"] p,
-    div[data-testid="stStatusWidget"] p,
-    div[data-testid="stAlert"] p {
-        color: #F8FAFC !important;
-        font-weight: 500 !important;
     }
     
     /* Header styling */
@@ -218,9 +126,9 @@ CUSTOM_CSS = """
     .paper-card {
         border: 1px solid rgba(59, 130, 246, 0.2);
         border-radius: 8px;
-        padding: 12px 16px;
-        margin-bottom: 12px;
-        background: rgba(15, 23, 42, 0.6);
+        padding: 10px 14px;
+        margin-bottom: 8px;
+        background: rgba(15, 23, 42, 0.5);
     }
 
     .paper-card:hover {
@@ -461,11 +369,11 @@ else:
 
         # Socratic Tutor Explanation Card
         st.markdown(
-            textwrap.dedent(f"""
+            f"""
             <div class="glass-card tutor-card">
                 {step_result.explanation}
             </div>
-            """),
+            """,
             unsafe_allow_html=True,
         )
 
@@ -489,20 +397,17 @@ else:
     # ─── RIGHT COLUMN: Video, Papers & Quiz ────────────────────────
     with col_right:
         # 1. YouTube Clip Section
-        st.markdown("### 🎬 **Recommended YouTube Video / Clip**")
+        st.markdown("### 🎬 **Timestamped YouTube Clip**")
         if step_result.youtube_clips:
             clip = step_result.youtube_clips[0]
             st.markdown(f"**{clip.title}** (`{clip.channel}`)")
-            if clip.start_time > 0 or clip.end_time > 0:
-                st.caption(f"⏱️ Auto-jumping to relevant clip moment: **{clip.start_time}s – {clip.end_time}s**")
-            else:
-                st.caption("📺 Full video reference for this topic.")
+            st.caption(f"⏱️ Auto-jumping to relevant clip moment: **{clip.start_time}s – {clip.end_time}s**")
             
             # Embed Video
             st.video(clip.url, start_time=clip.start_time)
-            st.caption(f"📝 *Context / Snippet:* \"{clip.relevance_snippet}\"")
+            st.caption(f"📝 *Transcript Context:* \"{clip.relevance_snippet}\"")
         else:
-            st.info("ℹ️ No video reference found for this step. Enjoy the Socratic explanation!")
+            st.info("ℹ️ No exact video clip matching this specific sub-step. Enjoy the Socratic explanation!")
 
         st.markdown("---")
 
@@ -512,40 +417,26 @@ else:
             for paper in step_result.academic_papers:
                 authors_str = ", ".join(paper.authors[:3]) if paper.authors else "Unknown Authors"
                 year_str = f"({paper.year})" if paper.year else ""
-                tldr_str = f'<p style="margin:6px 0; color:#CBD5E1; font-size:0.88rem;"><b>TLDR:</b> <i>{paper.tldr}</i></p>' if paper.tldr else ""
+                tldr_str = f"<p><b>TLDR:</b> <i>{paper.tldr}</i></p>" if paper.tldr else ""
+                pdf_link = f'<a href="{paper.pdf_url}" target="_blank">📄 Read Open-Access PDF</a>' if paper.pdf_url else ""
                 
-                target_url = paper.pdf_url or paper.url
-                if target_url:
-                    pdf_link = f'<a href="{target_url}" target="_blank" style="display:inline-block; margin-top:8px; color:#38BDF8; font-weight:600; text-decoration:none; background:rgba(56, 189, 248, 0.12); padding:6px 12px; border-radius:6px; border:1px solid rgba(56, 189, 248, 0.3);">📄 Read Open-Access Paper</a>'
-                else:
-                    pdf_link = ""
-                
-                paper_html = textwrap.dedent(f"""
-                <div class="paper-card">
-                    <h4 style="margin:0; font-size:1.0rem; color:#F8FAFC;">{paper.title}</h4>
-                    <p style="margin:4px 0 0 0; color:#94A3B8; font-size:0.85rem;">{authors_str} {year_str} | Source: {paper.source.upper()}</p>
-                    {tldr_str}
-                    {pdf_link}
-                </div>
-                """)
-                st.markdown(paper_html, unsafe_allow_html=True)
+                st.markdown(
+                    f"""
+                    <div class="paper-card">
+                        <h4 style="margin:0; font-size:1.0rem;">{paper.title}</h4>
+                        <p style="margin:0; color:#94A3B8; font-size:0.85rem;">{authors_str} {year_str} | Source: {paper.source.upper()}</p>
+                        {tldr_str}
+                        {pdf_link}
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
         else:
             st.caption("No papers loaded for this step (or Bite-Sized mode active).")
 
         st.markdown("---")
 
-        # 3. Live Web Grounding Sources Section
-        st.markdown("### 🌐 **Live Web Grounding Sources**")
-        if step_result.web_results:
-            for web_res in step_result.web_results:
-                st.markdown(f"**[{web_res.title}]({web_res.url})** (`{web_res.source.upper()}`)")
-                st.caption(f"\"{web_res.snippet}\"")
-        else:
-            st.caption("No web search sources loaded for this step.")
-
-        st.markdown("---")
-
-        # 4. Interactive Quiz Card
+        # 3. Interactive Quiz Card
         st.markdown("### 📝 **Milestone Comprehension Check**")
         if step_result.quiz and step_result.quiz.questions:
             quiz_submitted_key = f"quiz_sub_{active_idx}"

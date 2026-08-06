@@ -49,10 +49,7 @@ class SocraticTutorAgent(BaseAgent):
         step_result = memory.get_step_result(step_index)
         step_result.status = StepStatus.IN_PROGRESS
 
-        # Load and format the prompt with Web Search grounding
-        web_context, web_results = await self._fetch_web_grounding(memory.topic, step.title)
-        step_result.web_results = web_results
-
+        # Load and format the prompt
         template = self._load_prompt_template("socratic_tutor")
         system_prompt = self._format_prompt(
             template,
@@ -62,7 +59,6 @@ class SocraticTutorAgent(BaseAgent):
             student_level=memory.student_level,
             learning_mode=memory.learning_mode.value,
             is_prerequisite=str(step.is_prerequisite),
-            web_grounding_context=web_context,
         )
 
         # Build messages
@@ -118,24 +114,6 @@ class SocraticTutorAgent(BaseAgent):
             f"{len(questions)} Socratic questions)"
         )
 
-    async def _fetch_web_grounding(self, topic: str, step_title: str) -> tuple[str, list]:
-        """Fetch live web search results and format them for the prompt template."""
-        try:
-            from services.web_search import WebSearchClient
-            client = WebSearchClient()
-            query = f"{topic} {step_title}"
-            web_results = await client.search(query)
-            if not web_results:
-                return ("No live web search context available.", [])
-
-            formatted = []
-            for i, r in enumerate(web_results, 1):
-                formatted.append(f"{i}. [{r.title}]({r.url}) - {r.snippet}")
-            return ("\n".join(formatted), web_results)
-        except Exception as e:
-            self.logger.warning(f"Web search grounding failed: {e}")
-            return ("No live web search context available.", [])
-
     async def stream_explanation(
         self,
         memory: SharedMemory,
@@ -158,10 +136,6 @@ class SocraticTutorAgent(BaseAgent):
             yield "Step not found."
             return
 
-        step_result = memory.get_step_result(step_index)
-        web_context, web_results = await self._fetch_web_grounding(memory.topic, step.title)
-        step_result.web_results = web_results
-
         # Build the same prompt as execute()
         template = self._load_prompt_template("socratic_tutor")
         system_prompt = self._format_prompt(
@@ -172,7 +146,6 @@ class SocraticTutorAgent(BaseAgent):
             student_level=memory.student_level,
             learning_mode=memory.learning_mode.value,
             is_prerequisite=str(step.is_prerequisite),
-            web_grounding_context=web_context,
         )
 
         messages = [
@@ -190,14 +163,6 @@ class SocraticTutorAgent(BaseAgent):
 
         model = self.settings.get_model_for_agent("socratic_tutor")
         full_response = ""
-        questions_marker_found = False
-        delimiter_variants = [
-            "**Socratic Questions",
-            "Socratic Questions:",
-            "**Questions:",
-            "**Guiding Questions:",
-            "🤔 Socratic Questions"
-        ]
 
         try:
             async for chunk in self.llm.chat_stream(
@@ -207,15 +172,7 @@ class SocraticTutorAgent(BaseAgent):
                 max_tokens=2048,
             ):
                 full_response += chunk
-                
-                if not questions_marker_found:
-                    for d in delimiter_variants:
-                        if d in full_response:
-                            questions_marker_found = True
-                            break
-                    
-                    if not questions_marker_found:
-                        yield chunk
+                yield chunk
         except Exception as e:
             self.logger.error(f"Streaming failed: {e}")
             yield f"\n\n(Streaming interrupted: {e})"
@@ -240,7 +197,6 @@ class SocraticTutorAgent(BaseAgent):
             "Socratic Questions:",
             "**Questions:**",
             "**Guiding Questions:**",
-            "🤔 Socratic Questions"
         ]
 
         explanation = response

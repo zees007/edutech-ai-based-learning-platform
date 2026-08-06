@@ -73,9 +73,13 @@ class BaseAgent(ABC):
     def _format_prompt(self, template: str, **kwargs) -> str:
         """
         Format a prompt template with the given variables.
-        Replaces {key} placeholders without triggering KeyError on JSON curly braces.
+        Handles missing keys gracefully.
         """
-        result = template
-        for key, value in kwargs.items():
-            result = result.replace(f"{{{key}}}", str(value if value is not None else ""))
-        return result
+        try:
+            return template.format(**kwargs)
+        except KeyError as e:
+            self.logger.warning(f"Missing prompt variable: {e}")
+            # Fill missing keys with placeholder
+            for key in kwargs:
+                template = template.replace(f"{{{key}}}", str(kwargs[key]))
+            return template

@@ -63,7 +63,7 @@ class OrchestratorAgent(BaseAgent):
             result = await self.llm.chat_json(
                 model=model,
                 messages=messages,
-                temperature=0.1,  # Ultra-low temp for strict structured planning
+                temperature=0.3,  # Low temp for structured planning
                 max_tokens=2048,
             )
         except Exception as e:

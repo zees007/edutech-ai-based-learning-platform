@@ -63,7 +63,7 @@ class QuizAgent(BaseAgent):
             result = await self.llm.chat_json(
                 model=model,
                 messages=messages,
-                temperature=0.1,
+                temperature=0.4,
                 max_tokens=1500,
             )
         except Exception as e:
