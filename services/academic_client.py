@@ -71,9 +71,10 @@ class AcademicClient:
 
     async def _search_openalex(self, query: str, max_results: int) -> list[AcademicPaper]:
         """Search OpenAlex API."""
+        clean_query = query.replace("?", "").replace("*", "")
         url = "https://api.openalex.org/works"
         params: dict[str, Any] = {
-            "search": query,
+            "search": clean_query,
             "per_page": max_results,
             "sort": "relevance_score:desc",
             "select": "id,title,authorships,publication_year,cited_by_count,doi,open_access,abstract_inverted_index",
@@ -159,7 +160,7 @@ class AcademicClient:
 
     async def _search_arxiv(self, query: str, max_results: int) -> list[AcademicPaper]:
         """Search arXiv API (Atom XML)."""
-        url = "http://export.arxiv.org/api/query"
+        url = "https://export.arxiv.org/api/query"
         params = {
             "search_query": f"all:{query}",
             "start": 0,
@@ -168,7 +169,7 @@ class AcademicClient:
             "sortOrder": "descending",
         }
 
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(follow_redirects=True) as client:
             response = await client.get(url, params=params, timeout=10.0)
             response.raise_for_status()
 

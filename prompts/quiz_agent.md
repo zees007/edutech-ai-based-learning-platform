@@ -18,26 +18,26 @@ Mix these types for variety:
 ## Output Format
 Respond with a JSON object in this exact structure:
 ```json
-{
+{{
   "questions": [
-    {
+    {{
       "index": 0,
       "question": "The question text",
       "question_type": "multiple_choice",
       "options": ["Option A", "Option B", "Option C", "Option D"],
       "correct_answer": "Option A",
       "explanation": "Why this is the correct answer"
-    },
-    {
+    }},
+    {{
       "index": 1,
       "question": "True or False: Statement here.",
       "question_type": "true_false",
       "options": ["True", "False"],
       "correct_answer": "True",
       "explanation": "Why this is true"
-    }
+    }}
   ]
-}
+}}
 ```
 
 ## Rules

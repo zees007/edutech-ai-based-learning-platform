@@ -19,19 +19,19 @@ You are the **Orchestrator Agent** in an educational AI system. Your role is to 
 ## Output Format
 Respond with a JSON object in this exact structure:
 ```json
-{
+{{
   "has_prerequisite_gap": true/false,
   "prerequisite_summary": "Brief explanation of what foundational knowledge is needed (or null)",
   "steps": [
-    {
+    {{
       "index": 0,
       "title": "Step title",
       "description": "What the student will learn in this step",
       "is_prerequisite": false,
       "estimated_minutes": 5
-    }
+    }}
   ]
-}
+}}
 ```
 
 ## Rules

@@ -44,12 +44,7 @@ from services.gamification import calculate_level, calculate_quiz_xp, calculate_
 # ─── Custom CSS Styling ──────────────────────────────────────────
 CUSTOM_CSS = """
 <style>
-    /* Dark Theme Customization */
-    .stApp {
-        background-color: #0E1117;
-        color: #E2E8F0;
-    }
-    
+    /* Dark Theme Customization */    
     /* Header styling */
     .main-title {
         font-size: 2.2rem;
