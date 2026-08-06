@@ -416,14 +416,12 @@ else:
                 pdf_link = f'<a href="{paper.pdf_url}" target="_blank">📄 Read Open-Access PDF</a>' if paper.pdf_url else ""
                 
                 st.markdown(
-                    f"""
-                    <div class="paper-card">
-                        <h4 style="margin:0; font-size:1.0rem;">{paper.title}</h4>
-                        <p style="margin:0; color:#94A3B8; font-size:0.85rem;">{authors_str} {year_str} | Source: {paper.source.upper()}</p>
-                        {tldr_str}
-                        {pdf_link}
-                    </div>
-                    """,
+                    f"""<div class="paper-card">
+<h4 style="margin:0; font-size:1.0rem;">{paper.title}</h4>
+<p style="margin:0; color:#94A3B8; font-size:0.85rem;">{authors_str} {year_str} | Source: {paper.source.upper()}</p>
+{tldr_str}
+{pdf_link}
+</div>""",
                     unsafe_allow_html=True,
                 )
         else:
