@@ -129,6 +129,34 @@ CUSTOM_CSS = """
     .paper-card:hover {
         border-color: rgba(59, 130, 246, 0.5);
     }
+
+    /* Top Progress Banner */
+    .top-progress-card {
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.95) 100%);
+        border: 1px solid rgba(168, 85, 247, 0.35);
+        border-radius: 12px;
+        padding: 0.9rem 1.2rem;
+        margin-bottom: 1.2rem;
+        box-shadow: 0 4px 16px rgba(124, 58, 237, 0.15);
+    }
+    
+    .top-progress-stat {
+        font-size: 1.4rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #A855F7 0%, #3B82F6 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        line-height: 1.2;
+    }
+    
+    .top-progress-label {
+        color: #94A3B8;
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        font-weight: 700;
+        margin-bottom: 4px;
+    }
 </style>
 """
 st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
@@ -210,28 +238,6 @@ with st.sidebar:
     # Start Learning Journey Button
     start_clicked = st.button("🚀 **Start Learning Journey**", type="primary", use_container_width=True)
 
-    # Gamification Sidebar Card
-    st.markdown("---")
-    st.markdown("### 🏆 **Your Progress**")
-    
-    memory = get_or_create_memory()
-    total_xp = memory.xp_earned if memory else 0
-    level_data = calculate_level(total_xp)
-
-    st.markdown(
-        f"""
-        <div class="level-badge">
-            <div class="level-number">Level {level_data['level']}</div>
-            <div class="level-title">{level_data['title']}</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-    
-    st.metric("Total XP", f"{total_xp} XP", delta=f"+{memory.xp_earned} XP" if memory and memory.xp_earned > 0 else None)
-    if level_data["xp_for_next_level"]:
-        st.progress(level_data["progress_to_next"] / 100.0, text=f"Progress to Level {level_data['level']+1}: {level_data['progress_to_next']}%")
-
 
 # ─── Session Initialization Logic ────────────────────────────────
 if start_clicked and topic_input:
@@ -301,6 +307,60 @@ else:
     # Active Session Workspace
     st.markdown(f'<div class="main-title">📖 Learning: {memory.topic}</div>', unsafe_allow_html=True)
     
+    # ─── Top Progress & Gamification Header Dashboard ──────────────
+    total_xp = memory.xp_earned if memory else 0
+    level_data = calculate_level(total_xp)
+    completed_steps = sum(1 for s in memory.steps if s.status == StepStatus.COMPLETE)
+    total_steps = len(memory.steps)
+
+    st.markdown(
+        f"""
+        <div class="top-progress-card">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-weight: 800; font-size: 1.05rem; color: #F1F5F9;">🏆 <b>Your Progress Header</b></span>
+                <span style="font-size: 0.85rem; color: #94A3B8; font-weight: 600;">Mode: <b style="color:#A855F7;">{memory.learning_mode.value.title()}</b> | Audience: <b style="color:#3B82F6;">{memory.student_level.title()}</b></span>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    prog_col1, prog_col2, prog_col3, prog_col4 = st.columns([1.2, 1.2, 1.8, 1.8])
+    with prog_col1:
+        st.markdown(
+            f"""
+            <div class="glass-card" style="margin-bottom:0; text-align:center; padding: 0.75rem 0.5rem;">
+                <div class="top-progress-label">Current Level</div>
+                <div class="top-progress-stat">Lvl {level_data['level']}</div>
+                <div style="font-size:0.75rem; color:#A855F7; font-weight:700;">{level_data['title']}</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    with prog_col2:
+        st.markdown(
+            f"""
+            <div class="glass-card" style="margin-bottom:0; text-align:center; padding: 0.75rem 0.5rem;">
+                <div class="top-progress-label">Total Earned</div>
+                <div class="top-progress-stat">{total_xp} XP</div>
+                <div style="font-size:0.75rem; color:#3B82F6; font-weight:700;">🔥 Streak: {memory.streak_count}d</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    with prog_col3:
+        next_lvl = level_data['level'] + 1
+        st.markdown(f"<div class='top-progress-label'>Level {next_lvl} Progress ({level_data['progress_to_next']}%)</div>", unsafe_allow_html=True)
+        st.progress(level_data["progress_to_next"] / 100.0)
+
+    with prog_col4:
+        st.markdown(f"<div class='top-progress-label'>Journey ({completed_steps}/{total_steps} Steps Done)</div>", unsafe_allow_html=True)
+        st.progress(memory.progress_percentage / 100.0)
+
+    st.markdown("---")
+
     # Milestone Step Navigation Bar
     st.markdown("##### 📍 **Milestone Steps**")
     step_cols = st.columns(len(memory.steps))
@@ -316,9 +376,6 @@ else:
         if step_cols[i].button(btn_label, key=f"step_btn_{i}", type=btn_type, use_container_width=True):
             st.session_state["active_step_index"] = i
             st.rerun()
-
-    # Progress bar
-    st.progress(memory.progress_percentage / 100.0, text=f"Overall Journey Progress: {memory.progress_percentage:.0f}%")
 
     st.markdown("---")
 
