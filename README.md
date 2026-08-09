@@ -1,4 +1,4 @@
-<![CDATA[# 🎓 EduTechAI — AI-Based Adaptive Learning Platform
+# 🎓 EduTechAI — AI-Based Adaptive Learning Platform
 
 An adaptive, interactive educational workspace powered by **autonomous AI agents** that collaborate in real-time to deliver personalized learning experiences. EduTechAI breaks down any topic into progressive milestone steps and uses Socratic teaching, curated YouTube videos, academic research, and gamified quizzes to guide students from curiosity to comprehension.
 
@@ -721,4 +721,4 @@ The database uses **SQLAlchemy async ORM**, so switching between SQLite and Post
 <p align="center">
   Built with ❤️ by <strong>EduTechAI</strong> — Making learning adaptive, engaging, and fun.
 </p>
-]]>
+
