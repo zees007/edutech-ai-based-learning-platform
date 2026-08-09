@@ -40,24 +40,13 @@ class LLMClient:
 
     def __init__(self, settings: Settings | None = None):
         self.settings = settings or get_settings()
-
-        client_kwargs: dict[str, Any] = {
-            "api_key": self.settings.groq_api_key or "ollama",  # Ollama doesn't need a real key
-        }
-
-        # Groq SDK default base_url is "https://api.groq.com".
-        # Passing "https://api.groq.com/openai/v1" causes duplicated "/openai/v1/openai/v1" paths.
-        base_url = (self.settings.llm_base_url or "").rstrip("/")
-        if self.settings.llm_provider != LLMProvider.GROQ:
-            if base_url:
-                client_kwargs["base_url"] = base_url
-        elif base_url and base_url not in ("https://api.groq.com/openai/v1", "https://api.groq.com"):
-            client_kwargs["base_url"] = base_url
-
-        self._client = AsyncGroq(**client_kwargs)
+        self._client = AsyncGroq(
+            api_key=self.settings.groq_api_key or "ollama",  # Ollama doesn't need a real key
+            base_url=self.settings.llm_base_url,
+        )
         logger.info(
             f"LLM client initialized: provider={self.settings.llm_provider.value}, "
-            f"effective_base_url={self._client.base_url}"
+            f"base_url={self.settings.llm_base_url}"
         )
 
     async def chat(
@@ -98,7 +87,6 @@ class LLMClient:
             **completion_kwargs,
         )
         content = response.choices[0].message.content or ""
-        content = self._clean_thinking(content)
         logger.debug(f"LLM response ({model}): {content[:100]}...")
         return content
 
@@ -112,8 +100,9 @@ class LLMClient:
     ) -> AsyncGenerator[str, None]:
         """
         Stream a chat completion response token-by-token.
-        Filters out internal thinking blocks (<think>...</think> or "Here's a thinking process:")
-        so internal scratchpads are never rendered to the student UI.
+
+        Yields:
+            Individual text chunks as they arrive from the model.
         """
         response = await self._call_with_retry(
             self._client.chat.completions.create,
@@ -125,51 +114,9 @@ class LLMClient:
             **kwargs,
         )
 
-        buffer = ""
-        in_think_block = False
-
         async for chunk in response:
             if chunk.choices and chunk.choices[0].delta.content:
-                text = chunk.choices[0].delta.content
-                buffer += text
-
-                # Check if we are inside a <think> tag
-                if "<think>" in buffer:
-                    in_think_block = True
-                    if "</think>" in buffer:
-                        buffer = buffer.split("</think>", 1)[-1]
-                        in_think_block = False
-                    else:
-                        continue
-
-                # Check if model starts outputting "Here's a thinking process:"
-                if "Here's a thinking process:" in buffer and not in_think_block:
-                    in_think_block = True
-                    continue
-
-                if in_think_block:
-                    # Look for end of thinking section (e.g. double newline before markdown header or answer)
-                    if "</think>" in buffer:
-                        buffer = buffer.split("</think>", 1)[-1]
-                        in_think_block = False
-                    elif "\n\n**" in buffer or "\n\n#" in buffer or "\n\nLet's" in buffer:
-                        # Split at transition to actual answer
-                        marker_idx = min(
-                            [idx for idx in [buffer.find("\n\n**"), buffer.find("\n\n#"), buffer.find("\n\nLet's")] if idx != -1]
-                        )
-                        buffer = buffer[marker_idx + 2 :]
-                        in_think_block = False
-                    else:
-                        continue
-
-                if buffer:
-                    yield buffer
-                    buffer = ""
-
-        if buffer and not in_think_block:
-            cleaned = self._clean_thinking(buffer)
-            if cleaned:
-                yield cleaned
+                yield chunk.choices[0].delta.content
 
     async def chat_json(
         self,
@@ -184,90 +131,21 @@ class LLMClient:
         Parses the response and returns the Python dict/list.
 
         Uses lower temperature by default for more deterministic structured output.
-        Handles models like Qwen that may trigger Groq json_validate_failed errors.
         """
-        try:
-            response_text = await self.chat(
-                model=model,
-                messages=messages,
-                temperature=temperature,
-                max_tokens=max_tokens,
-                response_format={"type": "json_object"},
-                **kwargs,
-            )
-        except Exception as e:
-            if "json_validate_failed" in str(e) or "400" in str(e):
-                logger.warning(
-                    f"Groq json_object enforcement failed on model '{model}', "
-                    "retrying without strict response_format constraint..."
-                )
-                response_text = await self.chat(
-                    model=model,
-                    messages=messages,
-                    temperature=temperature,
-                    max_tokens=max_tokens,
-                    **kwargs,
-                )
-            else:
-                raise
-
-        response_text = self._clean_thinking(response_text)
-
+        response_text = await self.chat(
+            model=model,
+            messages=messages,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            response_format={"type": "json_object"},
+            **kwargs,
+        )
         try:
             return json.loads(response_text)
         except json.JSONDecodeError as e:
             logger.error(f"Failed to parse JSON from LLM response: {e}\nResponse: {response_text[:500]}")
             # Try to extract JSON from the response (common with some models)
             return self._extract_json(response_text)
-
-    @staticmethod
-    def _clean_thinking(text: str) -> str:
-        """
-        Strip internal reasoning/thinking blocks (<think>...</think> or 'Here's a thinking process:')
-        from model output.
-        """
-        if not text:
-            return ""
-
-        import re
-
-        # Remove complete <think>...</think> blocks
-        cleaned = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL)
-
-        # If <think> was unclosed because response reached max_tokens
-        if "<think>" in cleaned and "</think>" not in cleaned:
-            cleaned = cleaned.split("<think>")[-1]
-
-        # Remove "Here's a thinking process:..." or similar scratchpad blocks
-        if "Here's a thinking process:" in cleaned or "**Analyze User Input:**" in cleaned or "Deconstruct Constraints" in cleaned:
-            lines = cleaned.split("\n")
-            non_thinking = []
-            in_thinking = False
-            for line in lines:
-                line_stripped = line.strip()
-                if (
-                    "Here's a thinking process:" in line_stripped
-                    or "**Analyze User Input:**" in line_stripped
-                    or line_stripped.startswith("Constraints:")
-                    or "Deconstruct Constraints" in line_stripped
-                ):
-                    in_thinking = True
-                    continue
-                if in_thinking and (
-                    line_stripped.startswith("Let's")
-                    or line_stripped.startswith("Imagine")
-                    or line_stripped.startswith("Picture")
-                    or line_stripped.startswith("When")
-                    or line_stripped.startswith("The")
-                    or line_stripped.startswith("Think of")
-                ):
-                    in_thinking = False
-                
-                if not in_thinking:
-                    non_thinking.append(line)
-            cleaned = "\n".join(non_thinking)
-
-        return cleaned.strip()
 
     async def _call_with_retry(self, func, **kwargs) -> Any:
         """

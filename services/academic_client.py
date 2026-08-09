@@ -44,17 +44,11 @@ class AcademicClient:
         """
         Search all academic sources in parallel and return ranked, deduplicated results.
         """
-        import re
-
-        # Clean query: remove special chars, keep only alphanumeric and spaces, limit to first 6-8 words
-        clean_query = re.sub(r"[^\w\s]", "", query)
-        clean_query = " ".join(clean_query.split()[:6])
-
         # Run all searches in parallel
         results = await asyncio.gather(
-            self._search_openalex(clean_query, max_results),
-            self._search_semantic_scholar(clean_query, max_results),
-            self._search_arxiv(clean_query, max_results),
+            self._search_openalex(query, max_results),
+            self._search_semantic_scholar(query, max_results),
+            self._search_arxiv(query, max_results),
             return_exceptions=True,
         )
 
@@ -75,13 +69,12 @@ class AcademicClient:
 
         return deduplicated[:max_results]
 
-    async def _search_openalex(
-        self, query: str, max_results: int
-    ) -> list[AcademicPaper]:
+    async def _search_openalex(self, query: str, max_results: int) -> list[AcademicPaper]:
         """Search OpenAlex API."""
+        clean_query = query.replace("?", "").replace("*", "")
         url = "https://api.openalex.org/works"
         params: dict[str, Any] = {
-            "search": query,
+            "search": clean_query,
             "per_page": max_results,
             "sort": "relevance_score:desc",
             "select": "id,title,authorships,publication_year,cited_by_count,doi,open_access,abstract_inverted_index",
@@ -109,24 +102,20 @@ class AcademicClient:
             oa = work.get("open_access", {})
             pdf_url = oa.get("oa_url", "") or ""
 
-            papers.append(
-                AcademicPaper(
-                    title=work.get("title", "Untitled"),
-                    authors=authors,
-                    year=work.get("publication_year"),
-                    abstract=abstract,
-                    pdf_url=pdf_url,
-                    source="openalex",
-                    relevance_score=0.7,
-                    doi=work.get("doi", "") or "",
-                )
-            )
+            papers.append(AcademicPaper(
+                title=work.get("title", "Untitled"),
+                authors=authors,
+                year=work.get("publication_year"),
+                abstract=abstract,
+                pdf_url=pdf_url,
+                source="openalex",
+                relevance_score=0.7,
+                doi=work.get("doi", "") or "",
+            ))
 
         return papers
 
-    async def _search_semantic_scholar(
-        self, query: str, max_results: int
-    ) -> list[AcademicPaper]:
+    async def _search_semantic_scholar(self, query: str, max_results: int) -> list[AcademicPaper]:
         """Search Semantic Scholar API."""
         url = "https://api.semanticscholar.org/graph/v1/paper/search"
         params = {
@@ -140,9 +129,7 @@ class AcademicClient:
             headers["x-api-key"] = self._s2_api_key
 
         async with httpx.AsyncClient() as client:
-            response = await client.get(
-                url, params=params, headers=headers, timeout=10.0
-            )
+            response = await client.get(url, params=params, headers=headers, timeout=10.0)
             response.raise_for_status()
             data = response.json()
 
@@ -157,19 +144,17 @@ class AcademicClient:
             ext_ids = paper.get("externalIds", {}) or {}
             doi = ext_ids.get("DOI", "") or ""
 
-            papers.append(
-                AcademicPaper(
-                    title=paper.get("title", "Untitled"),
-                    authors=authors,
-                    year=paper.get("year"),
-                    abstract=paper.get("abstract", "") or "",
-                    tldr=tldr_text,
-                    pdf_url=pdf_url,
-                    source="semantic_scholar",
-                    relevance_score=0.8,
-                    doi=doi,
-                )
-            )
+            papers.append(AcademicPaper(
+                title=paper.get("title", "Untitled"),
+                authors=authors,
+                year=paper.get("year"),
+                abstract=paper.get("abstract", "") or "",
+                tldr=tldr_text,
+                pdf_url=pdf_url,
+                source="semantic_scholar",
+                relevance_score=0.8,
+                doi=doi,
+            ))
 
         return papers
 
@@ -184,7 +169,7 @@ class AcademicClient:
             "sortOrder": "descending",
         }
 
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(follow_redirects=True) as client:
             response = await client.get(url, params=params, timeout=10.0)
             response.raise_for_status()
 
@@ -213,20 +198,19 @@ class AcademicClient:
                     pdf_url = link.get("href", "")
                     break
 
-            # Get arXiv ID is not currently stored in the AcademicPaper schema
+            # Get arXiv ID
+            arxiv_id = entry.findtext("atom:id", "", ns)
 
-            papers.append(
-                AcademicPaper(
-                    title=title,
-                    authors=authors[:5],
-                    year=year,
-                    abstract=abstract[:500],
-                    pdf_url=pdf_url,
-                    source="arxiv",
-                    relevance_score=0.6,
-                    doi="",
-                )
-            )
+            papers.append(AcademicPaper(
+                title=title,
+                authors=authors[:5],
+                year=year,
+                abstract=abstract[:500],
+                pdf_url=pdf_url,
+                source="arxiv",
+                relevance_score=0.6,
+                doi="",
+            ))
 
         return papers
 

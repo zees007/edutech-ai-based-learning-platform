@@ -39,13 +39,13 @@ class Settings(BaseSettings):
 
     # ─── LLM Provider ───────────────────────────────────────────
     llm_provider: LLMProvider = LLMProvider.GROQ
-    llm_base_url: str = ""  # Empty by default for Groq native SDK endpoint
+    llm_base_url: str | None = None
     groq_api_key: str = ""
 
     # ─── Model Assignments (per agent) ──────────────────────────
-    orchestrator_model: str = "qwen/qwen3.6-27b"
-    socratic_tutor_model: str = "qwen/qwen3.6-27b"
-    quiz_agent_model: str = "qwen/qwen3.6-27b"
+    orchestrator_model: str = "llama-3.1-8b-instant"
+    socratic_tutor_model: str = "llama-3.1-8b-instant"
+    quiz_agent_model: str = "llama-3.1-8b-instant"
 
     # ─── YouTube ─────────────────────────────────────────────────
     youtube_api_key: str = ""
@@ -55,11 +55,6 @@ class Settings(BaseSettings):
     # ─── Academic APIs ───────────────────────────────────────────
     openalex_email: str = ""
     semantic_scholar_api_key: str = ""
-
-    # ─── Web Search ───────────────────────────────────────────────
-    tavily_api_key: str = ""
-    enable_web_search: bool = True
-    web_search_max_results: int = 4
 
     # ─── Database ────────────────────────────────────────────────
     database_url: str = "sqlite+aiosqlite:///./data/edutechai.db"

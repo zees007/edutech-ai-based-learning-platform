@@ -69,6 +69,7 @@ class YouTubeClient:
             "q": query + " educational tutorial explained",
             "type": "video",
             "maxResults": max_results,
+            "videoCaption": "closedCaption",  # Prefer videos with captions
             "relevanceLanguage": "en",
             "safeSearch": "strict",
             "key": self._api_key,
@@ -114,22 +115,12 @@ class YouTubeClient:
             List of transcript segments: [{"text": "...", "start": 12.5, "duration": 5.0}, ...]
         """
         try:
-            ytt_api = YouTubeTranscriptApi()
-            transcript_objs = ytt_api.fetch(video_id, languages=["en", "en-US", "en-GB"])
-            transcript = [{"text": obj.text, "start": float(obj.start), "duration": float(getattr(obj, "duration", 5.0))} for obj in transcript_objs]
+            transcript = YouTubeTranscriptApi.get_transcript(video_id, languages=["en"])
             logger.info(f"Transcript fetched for {video_id}: {len(transcript)} segments")
             return transcript
-        except Exception:
-            try:
-                # Retry without explicit language filter to allow auto-generated transcripts
-                ytt_api = YouTubeTranscriptApi()
-                transcript_objs = ytt_api.list(video_id).find_transcript(["en"]).fetch()
-                transcript = [{"text": obj.text, "start": float(obj.start), "duration": float(getattr(obj, "duration", 5.0))} for obj in transcript_objs]
-                logger.info(f"Fallback transcript fetched for {video_id}: {len(transcript)} segments")
-                return transcript
-            except Exception as e:
-                logger.warning(f"Transcript unavailable for {video_id}: {e}")
-                return []
+        except Exception as e:
+            logger.warning(f"Transcript unavailable for {video_id}: {e}")
+            return []
 
     async def get_timestamped_clip(
         self,
@@ -142,22 +133,13 @@ class YouTubeClient:
         """
         Find the best timestamp range in a video's transcript for a given query.
 
-        Uses ChromaDB for semantic matching if available, falls back to keyword
-        matching, or defaults to whole video reference if transcript is missing.
+        Uses ChromaDB for semantic matching if available, otherwise falls back
+        to simple keyword matching.
         """
         # Get transcript
         transcript = self.get_transcript(video_id)
         if not transcript:
-            logger.info(f"No transcript for {video_id} — defaulting to full video reference.")
-            return YouTubeClip(
-                video_id=video_id,
-                title=video_title,
-                channel=channel,
-                thumbnail_url=thumbnail_url,
-                start_time=0,
-                end_time=0,
-                relevance_snippet="Full video reference for topic (transcript unavailable)",
-            )
+            return None
 
         # Try semantic search with ChromaDB
         try:
@@ -201,7 +183,7 @@ class YouTubeClient:
 
         best_score = 0
         best_start = 0
-        best_end = 0
+        best_end = 60  # Default: first minute
 
         # Score each segment
         for i, segment in enumerate(transcript):
@@ -219,8 +201,6 @@ class YouTubeClient:
                     end_time = int(transcript[j]["start"] + transcript[j].get("duration", 5))
                 best_end = end_time
 
-        snippet = f"Keyword match (score: {best_score})" if best_score > 0 else "Full video reference for topic"
-
         return YouTubeClip(
             video_id=video_id,
             title=video_title,
@@ -228,5 +208,5 @@ class YouTubeClient:
             thumbnail_url=thumbnail_url,
             start_time=best_start,
             end_time=best_end,
-            relevance_snippet=snippet,
+            relevance_snippet=f"Keyword match (score: {best_score})",
         )
