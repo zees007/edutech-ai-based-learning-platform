@@ -66,10 +66,9 @@ class YouTubeClient:
 
         params = {
             "part": "snippet",
-            "q": query + " educational tutorial explained",
+            "q": query.strip(),
             "type": "video",
             "maxResults": max_results,
-            "videoCaption": "closedCaption",  # Prefer videos with captions
             "relevanceLanguage": "en",
             "safeSearch": "strict",
             "key": self._api_key,
@@ -110,16 +109,71 @@ class YouTubeClient:
     def get_transcript(self, video_id: str) -> list[dict]:
         """
         Fetch the transcript for a YouTube video.
+        Supports both manually uploaded and auto-generated transcripts (ASR)
+        across multiple English dialect tags (en, en-US, en-GB, etc.).
 
         Returns:
             List of transcript segments: [{"text": "...", "start": 12.5, "duration": 5.0}, ...]
         """
         try:
-            transcript = YouTubeTranscriptApi.get_transcript(video_id, languages=["en"])
-            logger.info(f"Transcript fetched for {video_id}: {len(transcript)} segments")
+            api = YouTubeTranscriptApi()
+            transcript_list = api.list(video_id)
+            target_langs = ["en", "en-US", "en-GB", "en-CA", "en-AU"]
+
+            transcript_obj = None
+
+            # 1. Try manually created English transcript
+            try:
+                transcript_obj = transcript_list.find_manually_created_transcript(target_langs)
+            except Exception:
+                pass
+
+            # 2. Try auto-generated English transcript
+            if not transcript_obj:
+                try:
+                    transcript_obj = transcript_list.find_generated_transcript(target_langs)
+                except Exception:
+                    pass
+
+            # 3. Fallback to any transcript available (and translate to English if needed)
+            if not transcript_obj:
+                try:
+                    first_transcript = next(iter(transcript_list))
+                    if first_transcript.is_translatable:
+                        transcript_obj = first_transcript.translate("en")
+                    else:
+                        transcript_obj = first_transcript
+                except Exception:
+                    pass
+
+            if not transcript_obj:
+                logger.warning(f"No suitable transcript found for video {video_id}")
+                return []
+
+            fetched = transcript_obj.fetch()
+            transcript = []
+            for item in fetched:
+                if isinstance(item, dict):
+                    text = item.get("text", "")
+                    start = float(item.get("start", 0.0))
+                    duration = float(item.get("duration", 5.0))
+                else:
+                    text = getattr(item, "text", "")
+                    start = float(getattr(item, "start", 0.0))
+                    duration = float(getattr(item, "duration", 5.0))
+
+                transcript.append({
+                    "text": text,
+                    "start": start,
+                    "duration": duration,
+                })
+
+            trans_type = "generated" if getattr(transcript_obj, "is_generated", False) else "manual"
+            logger.info(f"Transcript fetched for {video_id}: {len(transcript)} segments ({trans_type})")
             return transcript
+
         except Exception as e:
-            logger.warning(f"Transcript unavailable for {video_id}: {e}")
+            logger.warning(f"Transcript extraction failed for {video_id}: {e}")
             return []
 
     async def get_timestamped_clip(
@@ -129,19 +183,33 @@ class YouTubeClient:
         channel: str,
         thumbnail_url: str,
         query: str,
+        description: str = "",
     ) -> YouTubeClip | None:
         """
         Find the best timestamp range in a video's transcript for a given query.
 
-        Uses ChromaDB for semantic matching if available, otherwise falls back
-        to simple keyword matching.
+        Pipeline:
+        1. VectorStore (ChromaDB) semantic search (if transcript & vector store available).
+        2. Keyword score matching in transcript.
+        3. Tier 3 Fallback: Returns video starting at 0s with snippet preview if transcript unavailable.
         """
-        # Get transcript
         transcript = self.get_transcript(video_id)
-        if not transcript:
-            return None
 
-        # Try semantic search with ChromaDB
+        # Tier 3 Fallback: If transcript unavailable, still return video clip starting at 0
+        if not transcript:
+            snippet_preview = description[:180] + "..." if description else "Recommended video for this learning step."
+            logger.info(f"Using Tier 3 fallback (no transcript) for video {video_id}")
+            return YouTubeClip(
+                video_id=video_id,
+                title=video_title,
+                channel=channel,
+                thumbnail_url=thumbnail_url,
+                start_time=0,
+                end_time=180,
+                relevance_snippet=f"[Overview] {snippet_preview}",
+            )
+
+        # Tier 1: Try semantic search with ChromaDB
         try:
             from services.vector_store import VectorStore
             vs = VectorStore()
@@ -165,7 +233,7 @@ class YouTubeClient:
         except Exception as e:
             logger.warning(f"ChromaDB search failed, using fallback: {e}")
 
-        # Fallback: keyword matching
+        # Tier 2: Fallback keyword matching
         clip = self._keyword_match(video_id, video_title, channel, thumbnail_url, transcript, query)
         return clip
 
@@ -177,29 +245,30 @@ class YouTubeClient:
         thumbnail_url: str,
         transcript: list[dict],
         query: str,
-    ) -> YouTubeClip | None:
+    ) -> YouTubeClip:
         """Simple keyword matching fallback for timestamp detection."""
-        keywords = query.lower().split()
+        keywords = [kw for kw in query.lower().split() if len(kw) > 3]
 
         best_score = 0
         best_start = 0
-        best_end = 60  # Default: first minute
+        best_end = 120  # Default: 2 mins
 
         # Score each segment
-        for i, segment in enumerate(transcript):
-            text = segment["text"].lower()
-            score = sum(1 for kw in keywords if kw in text)
-            if score > best_score:
-                best_score = score
-                best_start = int(segment["start"])
-                # Clip is ~2 minutes from this point
-                end_time = best_start + 120
-                # Find the nearest segment end
-                for j in range(i, min(i + 20, len(transcript))):
-                    if transcript[j]["start"] >= end_time:
-                        break
-                    end_time = int(transcript[j]["start"] + transcript[j].get("duration", 5))
-                best_end = end_time
+        if keywords:
+            for i, segment in enumerate(transcript):
+                text = segment["text"].lower()
+                score = sum(1 for kw in keywords if kw in text)
+                if score > best_score:
+                    best_score = score
+                    best_start = int(segment["start"])
+                    end_time = best_start + 120
+                    for j in range(i, min(i + 20, len(transcript))):
+                        if transcript[j]["start"] >= end_time:
+                            break
+                        end_time = int(transcript[j]["start"] + transcript[j].get("duration", 5))
+                    best_end = end_time
+
+        snippet = f"Key segment match (score: {best_score})" if best_score > 0 else "Topic overview clip"
 
         return YouTubeClip(
             video_id=video_id,
@@ -208,5 +277,5 @@ class YouTubeClient:
             thumbnail_url=thumbnail_url,
             start_time=best_start,
             end_time=best_end,
-            relevance_snippet=f"Keyword match (score: {best_score})",
+            relevance_snippet=snippet,
         )

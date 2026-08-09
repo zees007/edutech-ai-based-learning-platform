@@ -54,7 +54,9 @@ class YouTubeCuratorAgent(BaseAgent):
             client = YouTubeClient()
 
             # Step 1: Search YouTube for relevant videos
-            search_query = f"{memory.topic} {step.title}"
+            # Build clean search query (Topic + main step keywords)
+            clean_step_title = step.title.split(":")[0].strip() if ":" in step.title else step.title
+            search_query = f"{memory.topic} {clean_step_title}".strip()
             videos = await client.search_videos(search_query)
 
             if not videos:
@@ -71,6 +73,7 @@ class YouTubeCuratorAgent(BaseAgent):
                         channel=video["channel"],
                         thumbnail_url=video.get("thumbnail_url", ""),
                         query=f"{step.title} {step.description}",
+                        description=video.get("description", ""),
                     )
                     if clip:
                         clips.append(clip)
