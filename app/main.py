@@ -126,11 +126,12 @@ def create_app() -> FastAPI:
         )
 
     # ─── Routers ─────────────────────────────────────────────
-    from app.routers import learning, quiz, users, websocket
+    from app.routers import learning, quiz, roles, users, websocket
 
     app.include_router(learning.router, prefix="/api", tags=["Learning"])
     app.include_router(quiz.router, prefix="/api", tags=["Quiz"])
     app.include_router(users.router, prefix="/api/v1", tags=["Users"])
+    app.include_router(roles.router, prefix="/api/v1", tags=["Roles"])
     app.include_router(websocket.router, tags=["WebSocket"])
 
     # ─── Health Check ────────────────────────────────────────
