@@ -8,9 +8,10 @@ from __future__ import annotations
 
 import logging
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 
-from models.schemas import QuizResult, QuizSubmission, QuestionFeedback
+from app.exceptions import BadRequestException, NotFoundException
+from models.schemas import QuestionFeedback, QuizResult, QuizSubmission
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -34,9 +35,9 @@ async def submit_quiz(submission: QuizSubmission):
     # Validate step has a quiz
     step_result = memory.step_results.get(submission.step_index)
     if not step_result or not step_result.quiz:
-        raise HTTPException(
-            status_code=400,
-            detail=f"No quiz found for step {submission.step_index}.",
+        raise BadRequestException(
+            error_code="QUIZ_NOT_FOUND",
+            errors=f"No quiz found for step {submission.step_index}.",
         )
 
     quiz = step_result.quiz
@@ -106,9 +107,9 @@ async def get_quiz(session_id: str, step_index: int):
 
     step_result = memory.step_results.get(step_index)
     if not step_result or not step_result.quiz:
-        raise HTTPException(
-            status_code=404,
-            detail=f"No quiz available for step {step_index}.",
+        raise NotFoundException(
+            error_code="QUIZ_NOT_AVAILABLE",
+            errors=f"No quiz available for step {step_index}.",
         )
 
     return step_result.quiz

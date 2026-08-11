@@ -130,6 +130,16 @@ async def init_db(settings: Settings | None = None) -> None:
             schema = settings.database_schema
             await conn.execute(text(f'CREATE SCHEMA IF NOT EXISTS "{schema}";'))
         await conn.run_sync(Base.metadata.create_all)
+
+        # Ensure new columns on existing tables are added
+        try:
+            if "postgresql" in settings.database_url and settings.database_schema:
+                schema = settings.database_schema
+                await conn.execute(text(f'ALTER TABLE "{schema}".users ADD COLUMN IF NOT EXISTS password_hash VARCHAR(255);'))
+            elif "sqlite" in settings.database_url:
+                await conn.execute(text('ALTER TABLE users ADD COLUMN password_hash VARCHAR(255);'))
+        except Exception:
+            pass  # Column already exists
     logger.info(f"Database tables created/verified in schema '{settings.database_schema}'.")
 
     # Automatically run pending migrations on server restart

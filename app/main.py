@@ -67,11 +67,70 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
+    # ─── Exception Handlers ──────────────────────────────────
+    from datetime import datetime, timezone
+    from fastapi import Request
+    from fastapi.responses import JSONResponse
+    from app.exceptions import APIError, AppException
+
+    @app.exception_handler(AppException)
+    async def app_exception_handler(request: Request, exc: AppException) -> JSONResponse:
+        error_payload = APIError(
+            http_status=exc.status_code,
+            errors=exc.errors,
+            timestamp=datetime.now(timezone.utc),
+            path_uri=str(request.url.path),
+            error_code=exc.error_code,
+        )
+        return JSONResponse(
+            status_code=exc.status_code,
+            content=error_payload.model_dump(mode="json"),
+        )
+
+    from fastapi.exceptions import RequestValidationError
+
+    @app.exception_handler(RequestValidationError)
+    async def validation_exception_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
+        errors = []
+        for err in exc.errors():
+            msg = err.get("msg", "Validation error.")
+            if msg.startswith("Value error, "):
+                msg = msg[len("Value error, "):]
+            errors.append(msg)
+
+        error_payload = APIError(
+            http_status=422,
+            errors=errors,
+            timestamp=datetime.now(timezone.utc),
+            path_uri=str(request.url.path),
+            error_code="VALIDATION_ERROR",
+        )
+        return JSONResponse(
+            status_code=422,
+            content=error_payload.model_dump(mode="json"),
+        )
+
+    @app.exception_handler(Exception)
+    async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+        logger.error(f"Unhandled exception on {request.url.path}: {exc}", exc_info=True)
+        error_payload = APIError(
+            http_status=500,
+            errors=["An unexpected internal server error occurred."],
+            timestamp=datetime.now(timezone.utc),
+            path_uri=str(request.url.path),
+            error_code="INTERNAL_SERVER_ERROR",
+        )
+        return JSONResponse(
+            status_code=500,
+            content=error_payload.model_dump(mode="json"),
+        )
+
     # ─── Routers ─────────────────────────────────────────────
-    from app.routers import learning, quiz, websocket
+    from app.routers import learning, quiz, users, websocket
 
     app.include_router(learning.router, prefix="/api", tags=["Learning"])
     app.include_router(quiz.router, prefix="/api", tags=["Quiz"])
+    app.include_router(users.router, prefix="/api/v1", tags=["Users"])
     app.include_router(websocket.router, tags=["WebSocket"])
 
     # ─── Health Check ────────────────────────────────────────
