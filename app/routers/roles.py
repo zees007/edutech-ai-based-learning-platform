@@ -19,6 +19,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from models.role_schemas import (
     PaginatedRoleResponse,
+    PrivilegeResponse,
+    PrivilegeTreeResponse,
     RoleCreateRequest,
     RoleEditRequest,
     RoleResponse,
@@ -28,6 +30,28 @@ from services.database import get_db
 from services.role_service import RoleService
 
 router = APIRouter()
+
+
+@router.get("/privileges/tree", response_model=list[PrivilegeTreeResponse])
+async def get_privilege_tree(
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Get all privileges as a nested hierarchical tree structure.
+    Top-level privileges (parent_id = null) are returned at root level,
+    with nested children populated recursively for UI tree rendering.
+    """
+    return await RoleService.get_privilege_tree(db)
+
+
+@router.get("/privileges", response_model=list[PrivilegeResponse])
+async def get_all_privileges(
+    db: AsyncSession = Depends(get_db),
+):
+    """Get flat list of all privileges ordered by order_number and ID."""
+    privileges = await RoleService.get_all_privileges(db)
+    return [PrivilegeResponse.model_validate(p) for p in privileges]
+
 
 
 @router.post("/roles/create", response_model=RoleResponse, status_code=201)

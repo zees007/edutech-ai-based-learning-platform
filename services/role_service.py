@@ -14,7 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.exceptions import BadRequestException, ConflictException, NotFoundException
 from models.db_models import Privilege, Role
-from models.role_schemas import RoleCreateRequest, RoleEditRequest
+from models.role_schemas import PrivilegeTreeResponse, RoleCreateRequest, RoleEditRequest
 from models.user_schemas import SearchDTO
 
 logger = logging.getLogger(__name__)
@@ -177,3 +177,49 @@ class RoleService:
         roles = list(res.scalars().all())
 
         return roles, total
+
+    @staticmethod
+    async def get_all_privileges(db: AsyncSession) -> list[Privilege]:
+        """
+        Fetch all privileges sorted by order_number and ID.
+        """
+        stmt = select(Privilege).order_by(
+            Privilege.order_number.asc().nulls_last(),
+            Privilege.id.asc(),
+        )
+        res = await db.execute(stmt)
+        return list(res.scalars().all())
+
+    @staticmethod
+    async def get_privilege_tree(db: AsyncSession) -> list[PrivilegeTreeResponse]:
+        """
+        Build and return a hierarchical tree structure of privileges.
+        Top-level privileges (parent_id is None) appear at the root level,
+        with child privileges recursively nested under their respective parents.
+        """
+        all_privileges = await RoleService.get_all_privileges(db)
+
+        # Map ID -> PrivilegeTreeResponse node
+        nodes: dict[int, PrivilegeTreeResponse] = {}
+        for p in all_privileges:
+            nodes[p.id] = PrivilegeTreeResponse(
+                id=p.id,
+                name=p.name,
+                code=p.code,
+                order_number=p.order_number,
+                parent_id=p.parent_id,
+                children=[],
+            )
+
+        root_nodes: list[PrivilegeTreeResponse] = []
+        for p in all_privileges:
+            node = nodes[p.id]
+            if p.parent_id is None:
+                root_nodes.append(node)
+            elif p.parent_id in nodes:
+                nodes[p.parent_id].children.append(node)
+            else:
+                # Fallback if parent_id is missing/broken
+                root_nodes.append(node)
+
+        return root_nodes

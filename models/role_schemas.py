@@ -23,6 +23,19 @@ class PrivilegeResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class PrivilegeTreeResponse(BaseModel):
+    """Hierarchical tree response model for privileges."""
+
+    id: int
+    name: str
+    code: str
+    order_number: int | None = 0
+    parent_id: int | None = None
+    children: list[PrivilegeTreeResponse] = Field(default_factory=list)
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class RoleCreateRequest(BaseModel):
     """Payload for creating a new role."""
 
