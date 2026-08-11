@@ -11,10 +11,12 @@ And install asyncpg:
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
     AsyncSession,
@@ -29,32 +31,60 @@ logger = logging.getLogger(__name__)
 
 # ─── Module-level singletons ─────────────────────────────────────
 _engine: AsyncEngine | None = None
+_engine_loop: asyncio.AbstractEventLoop | None = None
 _session_factory: async_sessionmaker[AsyncSession] | None = None
 
 
 def _get_engine(settings: Settings | None = None) -> AsyncEngine:
-    """Create or return the singleton async engine."""
-    global _engine
+    """Create or return the singleton async engine, bound to active event loop."""
+    global _engine, _engine_loop, _session_factory
+    try:
+        current_loop = asyncio.get_running_loop()
+    except RuntimeError:
+        current_loop = None
+
+    # Reset engine singleton if active event loop has changed across Streamlit reruns
+    if _engine is not None and current_loop is not None and _engine_loop is not current_loop:
+        _engine = None
+        _session_factory = None
+        _engine_loop = None
+
     if _engine is None:
         settings = settings or get_settings()
         connect_args = {}
         # SQLite needs check_same_thread=False for async
         if "sqlite" in settings.database_url:
             connect_args["check_same_thread"] = False
+        elif "postgresql" in settings.database_url:
+            # Route all queries and table creation exclusively to the target schema
+            # Disable prepared statement caching for compatibility with PgBouncer / Supabase pooler
+            connect_args["statement_cache_size"] = 0
+            connect_args["prepared_statement_cache_size"] = 0
+            schema = settings.database_schema
+            if schema:
+                connect_args["server_settings"] = {
+                    "search_path": f'"{schema}"'
+                }
         _engine = create_async_engine(
             settings.database_url,
             echo=settings.debug,
             connect_args=connect_args,
+            pool_pre_ping=True,
+            pool_recycle=300,
         )
-        logger.info(f"Database engine created: {settings.database_url.split('://')[0]}")
+        _engine_loop = current_loop
+        logger.info(
+            f"Database engine created: {settings.database_url.split('://')[0]}"
+            f" (schema: {settings.database_schema if 'postgresql' in settings.database_url else 'default'})"
+        )
     return _engine
 
 
 def _get_session_factory(settings: Settings | None = None) -> async_sessionmaker[AsyncSession]:
-    """Create or return the singleton session factory."""
+    """Create or return the singleton session factory bound to current loop engine."""
     global _session_factory
-    if _session_factory is None:
-        engine = _get_engine(settings)
+    engine = _get_engine(settings)
+    if _session_factory is None or _session_factory.kw.get("bind") is not engine:
         _session_factory = async_sessionmaker(
             bind=engine,
             class_=AsyncSession,
@@ -63,28 +93,59 @@ def _get_session_factory(settings: Settings | None = None) -> async_sessionmaker
     return _session_factory
 
 
+async def run_auto_migrations() -> None:
+    """
+    Run Alembic database migrations automatically on server startup.
+    This applies any pending schema updates (e.g. new columns, new tables).
+    """
+    try:
+        import asyncio
+        from alembic import command
+        from alembic.config import Config
+
+        alembic_cfg = Config("alembic.ini")
+        await asyncio.to_thread(command.upgrade, alembic_cfg, "head")
+        logger.info("Automatic database migrations (Alembic) executed successfully.")
+    except Exception as e:
+        logger.warning(f"Auto-migration check notice: {e}")
+
+
 async def init_db(settings: Settings | None = None) -> None:
     """
-    Initialize the database — create all tables if they don't exist.
+    Initialize the database — create schema, tables, and run pending migrations.
     Called once during application startup.
     """
     settings = settings or get_settings()
+    if not settings.auto_create_tables:
+        logger.info("Automatic DDL table creation is disabled (AUTO_CREATE_TABLES=false).")
+        return
+
     # Ensure data directory exists for SQLite
     if "sqlite" in settings.database_url:
         settings.data_dir  # This creates the dir via the property
 
     engine = _get_engine(settings)
     async with engine.begin() as conn:
+        if "postgresql" in settings.database_url and settings.database_schema:
+            schema = settings.database_schema
+            await conn.execute(text(f'CREATE SCHEMA IF NOT EXISTS "{schema}";'))
         await conn.run_sync(Base.metadata.create_all)
-    logger.info("Database tables created/verified.")
+    logger.info(f"Database tables created/verified in schema '{settings.database_schema}'.")
+
+    # Automatically run pending migrations on server restart
+    await run_auto_migrations()
 
 
 async def close_db() -> None:
     """Close the database engine. Called during application shutdown."""
-    global _engine, _session_factory
+    global _engine, _engine_loop, _session_factory
     if _engine is not None:
-        await _engine.dispose()
+        try:
+            await _engine.dispose()
+        except Exception:
+            pass
         _engine = None
+        _engine_loop = None
         _session_factory = None
         logger.info("Database engine closed.")
 

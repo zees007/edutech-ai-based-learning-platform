@@ -55,7 +55,18 @@ class SessionManager:
             )
             db.add(gamification)
 
-            logger.info(f"Session {memory.session_id} persisted to database.")
+            # Create initial step_progress records for all steps in the learning plan
+            for i in range(len(memory.steps)):
+                sp = StepProgress(
+                    session_id=memory.session_id,
+                    step_index=i,
+                    status="in_progress" if i == 0 else "pending",
+                    completed_at=None,
+                    quiz_score=None,
+                )
+                db.add(sp)
+
+            logger.info(f"Session {memory.session_id} and {len(memory.steps)} step progress records persisted to database.")
             return record
 
     async def get_session(self, session_id: str) -> SharedMemory | None:
@@ -104,8 +115,40 @@ class SessionManager:
             )
             gam_record = gam_result.scalar_one_or_none()
             if gam_record:
+                from services.gamification import calculate_level
                 gam_record.xp_earned = memory.xp_earned
                 gam_record.streak_count = memory.streak_count
+                level_info = calculate_level(memory.xp_earned)
+                gam_record.level = level_info["level"]
+                gam_record.level_title = level_info["title"]
+
+            # Synchronize step_progress records for all steps in memory
+            for i, step in enumerate(memory.steps):
+                sp_result = await db.execute(
+                    select(StepProgress).where(
+                        StepProgress.session_id == memory.session_id,
+                        StepProgress.step_index == i,
+                    )
+                )
+                sp_record = sp_result.scalar_one_or_none()
+                score = memory.quiz_scores.get(i)
+                status_val = step.status.value if hasattr(step.status, 'value') else str(step.status)
+
+                if sp_record:
+                    sp_record.status = status_val
+                    if score is not None:
+                        sp_record.quiz_score = score
+                    if status_val == "complete" and not sp_record.completed_at:
+                        sp_record.completed_at = datetime.utcnow()
+                else:
+                    sp_record = StepProgress(
+                        session_id=memory.session_id,
+                        step_index=i,
+                        status=status_val,
+                        quiz_score=score,
+                        completed_at=datetime.utcnow() if status_val == "complete" else None,
+                    )
+                    db.add(sp_record)
 
     async def save_step_progress(
         self,
@@ -127,8 +170,9 @@ class SessionManager:
 
             if record:
                 record.status = status
-                record.quiz_score = quiz_score
-                if status == "complete":
+                if quiz_score is not None:
+                    record.quiz_score = quiz_score
+                if status == "complete" and not record.completed_at:
                     record.completed_at = datetime.utcnow()
             else:
                 record = StepProgress(
