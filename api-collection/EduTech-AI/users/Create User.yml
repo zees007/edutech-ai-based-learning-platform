@@ -1,0 +1,26 @@
+info:
+  name: Create User
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/v1/users/create"
+  body:
+    type: json
+    data: |-
+      {
+        "first_name": "Zeeshan",
+        "last_name": "Adil",
+        "email": "abc@gmail.com",
+        "password": "Test2day",
+        "mobile": "",
+        "country":""
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

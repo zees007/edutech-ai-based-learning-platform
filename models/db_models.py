@@ -31,10 +31,34 @@ from sqlalchemy import (
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
+from models.base_entity import LoggedEntity
+
+
 class Base(DeclarativeBase):
     """Base class for all ORM models."""
 
     pass
+
+
+class User(LoggedEntity, Base):
+    """
+    User account record.
+
+    Inherits id (UUID4), created_at, retired, retired_at, retired_by from LoggedEntity.
+    """
+
+    __tablename__ = "users"
+
+    first_name: Mapped[str] = mapped_column(String(100), nullable=False)
+    last_name: Mapped[str] = mapped_column(String(100), nullable=False)
+    email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False, index=True)
+    password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
+    mobile: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    country: Mapped[str | None] = mapped_column(String(100), nullable=True)
+
+    def __repr__(self) -> str:
+        return f"<User {self.id} {self.first_name} {self.last_name} ({self.email})>"
+
 
 
 class SessionRecord(Base):

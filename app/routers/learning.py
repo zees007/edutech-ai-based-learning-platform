@@ -13,8 +13,9 @@ from __future__ import annotations
 import asyncio
 import logging
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 
+from app.exceptions import BadRequestException, NotFoundException
 from agents.orchestrator import OrchestratorAgent
 from models.schemas import (
     LearningMode,
@@ -44,7 +45,10 @@ async def get_session_or_404(session_id: str) -> SharedMemory:
         _sessions[session_id] = memory
         return memory
         
-    raise HTTPException(status_code=404, detail=f"Session '{session_id}' not found.")
+    raise NotFoundException(
+        error_code="SESSION_NOT_FOUND",
+        errors=f"Session '{session_id}' not found.",
+    )
 
 # Backward-compatible alias
 get_session = get_session_or_404
@@ -119,12 +123,15 @@ async def complete_step(session_id: str, step_index: int):
     memory = await get_session_or_404(session_id)
 
     if step_index >= len(memory.steps):
-        raise HTTPException(status_code=400, detail=f"Step {step_index} does not exist.")
+        raise BadRequestException(
+            error_code="INVALID_STEP_INDEX",
+            errors=f"Step {step_index} does not exist.",
+        )
 
     if step_index != memory.current_step_index:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Cannot complete step {step_index}. Current step is {memory.current_step_index}.",
+        raise BadRequestException(
+            error_code="STEP_ORDER_VIOLATION",
+            errors=f"Cannot complete step {step_index}. Current step is {memory.current_step_index}.",
         )
 
     # Mark step complete (this also advances current_step_index)
