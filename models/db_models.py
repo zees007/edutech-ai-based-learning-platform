@@ -21,14 +21,17 @@ from datetime import datetime
 from sqlalchemy import (
     JSON,
     Boolean,
+    Column,
     DateTime,
     Float,
+    ForeignKey,
     Integer,
     String,
+    Table,
     Text,
     func,
 )
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
 from models.base_entity import LoggedEntity
@@ -58,6 +61,66 @@ class User(LoggedEntity, Base):
 
     def __repr__(self) -> str:
         return f"<User {self.id} {self.first_name} {self.last_name} ({self.email})>"
+
+
+role_privileges = Table(
+    "role_privileges",
+    Base.metadata,
+    Column("role_id", String(36), ForeignKey("roles.id", ondelete="CASCADE"), primary_key=True),
+    Column("privilege_id", Integer, ForeignKey("privileges.id", ondelete="CASCADE"), primary_key=True),
+)
+
+
+class Privilege(Base):
+    """
+    Privilege lookup entity.
+
+    Contains system permissions/privileges. Data is manually inserted into this table.
+    Self-referencing relationship allows hierarchy via parent_id.
+    """
+
+    __tablename__ = "privileges"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(String(100), nullable=False)
+    code: Mapped[str] = mapped_column(String(100), unique=True, nullable=False, index=True)
+    order_number: Mapped[int | None] = mapped_column(Integer, nullable=True, default=0)
+    parent_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("privileges.id", ondelete="SET NULL"), nullable=True
+    )
+
+    parent: Mapped[Privilege | None] = relationship(
+        "Privilege", remote_side=[id], back_populates="children"
+    )
+    children: Mapped[list[Privilege]] = relationship(
+        "Privilege", back_populates="parent", cascade="all, delete-orphan"
+    )
+
+    def __repr__(self) -> str:
+        return f"<Privilege {self.id}: {self.code} ('{self.name}')>"
+
+
+class Role(LoggedEntity, Base):
+    """
+    Role account record.
+
+    Inherits id (UUID4), created_at, retired, retired_at, retired_by from LoggedEntity.
+    Holds a set of Privileges via many-to-many relationship (`role_privileges`).
+    """
+
+    __tablename__ = "roles"
+
+    name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False, index=True)
+
+    privileges: Mapped[list[Privilege]] = relationship(
+        "Privilege",
+        secondary=role_privileges,
+        lazy="selectin",
+    )
+
+    def __repr__(self) -> str:
+        return f"<Role {self.id} '{self.name}'>"
+
 
 
 
