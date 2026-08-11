@@ -255,6 +255,13 @@ if start_clicked and topic_input:
         orchestrator = OrchestratorAgent()
         run_async(orchestrator.execute(new_memory))
         
+        # Persist session to PostgreSQL database in Supabase
+        try:
+            from services.session_manager import SessionManager
+            run_async(SessionManager().create_session(new_memory))
+        except Exception as e:
+            logging.warning(f"Could not persist session to database: {e}")
+
         st.session_state["memory"] = new_memory
         st.session_state["active_step_index"] = 0
         st.session_state["submitted_quizzes"] = {}
@@ -375,6 +382,15 @@ else:
         btn_type = "primary" if i == active_idx else "secondary"
         if step_cols[i].button(btn_label, key=f"step_btn_{i}", type=btn_type, use_container_width=True):
             st.session_state["active_step_index"] = i
+            if memory.steps[i].status == StepStatus.PENDING:
+                memory.steps[i].status = StepStatus.IN_PROGRESS
+            try:
+                from services.session_manager import SessionManager
+                sm = SessionManager()
+                run_async(sm.update_session(memory))
+                run_async(sm.save_step_progress(memory.session_id, i, memory.steps[i].status.value))
+            except Exception as e:
+                logging.warning(f"Could not update step progress in DB: {e}")
             st.rerun()
 
     st.markdown("---")
@@ -409,6 +425,14 @@ else:
             run_async(quiz_agent.execute(memory, active_idx))
 
             status.update(label=f"✅ All Agents Completed Step {active_idx+1}!", state="complete", expanded=False)
+
+            # Persist updated memory with agent outputs to DB
+            try:
+                from services.session_manager import SessionManager
+                run_async(SessionManager().update_session(memory))
+            except Exception as e:
+                logging.warning(f"Could not persist step results to DB: {e}")
+
             st.rerun()
 
     # Two Column Main Layout (Left: Tutor & Chat | Right: Video, Papers, Quiz)
@@ -444,6 +468,11 @@ else:
             with st.spinner("🧑‍🏫 Tutor is thinking..."):
                 tutor = SocraticTutorAgent()
                 run_async(tutor.execute(memory, active_idx))
+                try:
+                    from services.session_manager import SessionManager
+                    run_async(SessionManager().update_session(memory))
+                except Exception as e:
+                    logging.warning(f"Could not persist chat update to DB: {e}")
                 st.rerun()
 
     # ─── RIGHT COLUMN: Video, Papers & Quiz ────────────────────────
@@ -499,6 +528,7 @@ else:
                         user_answers[q.index] = st.radio(
                             "Select answer:",
                             options=q.options,
+                            index=None,
                             key=f"q_{active_idx}_{q.index}",
                             label_visibility="collapsed",
                         )
@@ -510,7 +540,15 @@ else:
                 
                 submit_quiz_btn = st.form_submit_button("✅ **Submit Answers & Earn XP**", type="primary", use_container_width=True)
 
-            if submit_quiz_btn or st.session_state.get(quiz_submitted_key):
+            # Validate answers if user clicked submit button
+            if submit_quiz_btn:
+                unanswered = [q.index + 1 for q in step_result.quiz.questions if not user_answers.get(q.index)]
+                if unanswered:
+                    st.warning(f"⚠️ Please select an answer for question(s) {', '.join(map(str, unanswered))} before submitting!")
+                else:
+                    st.session_state[quiz_submitted_key] = True
+
+            if st.session_state.get(quiz_submitted_key):
                 st.session_state[quiz_submitted_key] = True
                 
                 correct_count = 0
@@ -533,6 +571,32 @@ else:
                     st.session_state[f"xp_awarded_{active_idx}"] = True
                     memory.xp_earned += earned_xp + calculate_step_xp(memory.streak_count)
                     memory.mark_step_complete(active_idx)
+
+                    # Update next step to in_progress if exists
+                    if active_idx + 1 < len(memory.steps):
+                        if memory.steps[active_idx + 1].status == StepStatus.PENDING:
+                            memory.steps[active_idx + 1].status = StepStatus.IN_PROGRESS
+
+                    # Persist progress & gamification XP to PostgreSQL database in Supabase
+                    try:
+                        from services.session_manager import SessionManager
+                        sm = SessionManager()
+                        run_async(sm.update_session(memory))
+                        run_async(sm.save_step_progress(
+                            session_id=memory.session_id,
+                            step_index=active_idx,
+                            status="complete",
+                            quiz_score=score,
+                        ))
+                        if active_idx + 1 < len(memory.steps):
+                            run_async(sm.save_step_progress(
+                                session_id=memory.session_id,
+                                step_index=active_idx + 1,
+                                status="in_progress",
+                            ))
+                    except Exception as e:
+                        logging.warning(f"Could not persist step progress to database: {e}")
+
                     st.toast(f"🎉 Quiz Submitted! Earned +{earned_xp} XP!", icon="⭐")
                     time.sleep(1)
                     st.rerun()
@@ -542,9 +606,35 @@ else:
                 # Next Step Button
                 if active_idx + 1 < len(memory.steps):
                     if st.button("➡️ **Advance to Next Step**", type="primary", use_container_width=True):
-                        st.session_state["active_step_index"] = active_idx + 1
+                        # Ensure current step is marked complete
+                        if memory.steps[active_idx].status != StepStatus.COMPLETE:
+                            memory.mark_step_complete(active_idx)
+
+                        next_idx = active_idx + 1
+                        st.session_state["active_step_index"] = next_idx
+                        if memory.steps[next_idx].status == StepStatus.PENDING:
+                            memory.steps[next_idx].status = StepStatus.IN_PROGRESS
+
+                        try:
+                            from services.session_manager import SessionManager
+                            sm = SessionManager()
+                            run_async(sm.update_session(memory))
+                            run_async(sm.save_step_progress(memory.session_id, active_idx, "complete", quiz_score=score))
+                            run_async(sm.save_step_progress(memory.session_id, next_idx, "in_progress"))
+                        except Exception as e:
+                            logging.warning(f"Could not update step progress in DB: {e}")
+
                         st.rerun()
                 else:
+                    # Final step completed! Update session completion state
+                    if not memory.is_complete:
+                        memory.mark_step_complete(active_idx)
+                        try:
+                            from services.session_manager import SessionManager
+                            run_async(SessionManager().update_session(memory))
+                            run_async(SessionManager().save_step_progress(memory.session_id, active_idx, "complete", quiz_score=score))
+                        except Exception as e:
+                            logging.warning(f"Could not save final session state: {e}")
                     st.balloons()
                     st.success("🎉 **Congratulations! You have completed the entire learning journey for this topic!**")
         else:

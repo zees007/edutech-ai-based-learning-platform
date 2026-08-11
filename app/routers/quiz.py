@@ -15,8 +15,11 @@ from models.schemas import QuizResult, QuizSubmission, QuestionFeedback
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-# Import session store
+# Import session store & database manager
 from app.routers.learning import _sessions, get_session
+from services.session_manager import SessionManager
+
+session_manager = SessionManager()
 
 
 @router.post("/quiz/submit", response_model=QuizResult)
@@ -26,7 +29,7 @@ async def submit_quiz(submission: QuizSubmission):
 
     The quiz must have been generated for the specified step.
     """
-    memory = get_session(submission.session_id)
+    memory = await get_session(submission.session_id)
 
     # Validate step has a quiz
     step_result = memory.step_results.get(submission.step_index)
@@ -69,6 +72,18 @@ async def submit_quiz(submission: QuizSubmission):
     memory.quiz_scores[submission.step_index] = score
     memory.xp_earned += xp_earned
 
+    # Persist session & step progress to Supabase DB
+    try:
+        await session_manager.update_session(memory)
+        await session_manager.save_step_progress(
+            session_id=submission.session_id,
+            step_index=submission.step_index,
+            status="complete",
+            quiz_score=score,
+        )
+    except Exception as e:
+        logger.warning(f"Failed to persist quiz result to DB: {e}")
+
     logger.info(
         f"Quiz submitted: session={submission.session_id}, "
         f"step={submission.step_index}, score={score:.0%}, xp={xp_earned}"
@@ -87,7 +102,7 @@ async def submit_quiz(submission: QuizSubmission):
 @router.get("/quiz/{session_id}/{step_index}")
 async def get_quiz(session_id: str, step_index: int):
     """Get the quiz for a specific step (if generated)."""
-    memory = get_session(session_id)
+    memory = await get_session(session_id)
 
     step_result = memory.step_results.get(step_index)
     if not step_result or not step_result.quiz:

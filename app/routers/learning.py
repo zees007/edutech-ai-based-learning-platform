@@ -24,18 +24,30 @@ from models.schemas import (
 )
 from models.shared_memory import SharedMemory
 
+from services.session_manager import SessionManager
+
 logger = logging.getLogger(__name__)
 router = APIRouter()
+session_manager = SessionManager()
 
-# ─── In-memory session store (replaced by DB persistence in Phase 5) ─
+# ─── In-memory session store ─────────────────────────────────────
 _sessions: dict[str, SharedMemory] = {}
 
 
-def get_session(session_id: str) -> SharedMemory:
-    """Retrieve a session or raise 404."""
-    if session_id not in _sessions:
-        raise HTTPException(status_code=404, detail=f"Session '{session_id}' not found.")
-    return _sessions[session_id]
+async def get_session_or_404(session_id: str) -> SharedMemory:
+    """Retrieve a session from memory or DB, or raise 404."""
+    if session_id in _sessions:
+        return _sessions[session_id]
+    
+    memory = await session_manager.get_session(session_id)
+    if memory:
+        _sessions[session_id] = memory
+        return memory
+        
+    raise HTTPException(status_code=404, detail=f"Session '{session_id}' not found.")
+
+# Backward-compatible alias
+get_session = get_session_or_404
 
 
 @router.post("/learn", response_model=SessionResponse)
@@ -59,8 +71,12 @@ async def start_learning_session(request: LearningRequest):
     orchestrator = OrchestratorAgent()
     await orchestrator.execute(memory)
 
-    # Store the session
+    # Store in-memory and persist to Supabase database
     _sessions[memory.session_id] = memory
+    try:
+        await session_manager.create_session(memory)
+    except Exception as e:
+        logger.warning(f"Failed to persist session {memory.session_id} to DB: {e}")
 
     logger.info(f"Session {memory.session_id} created with {len(memory.steps)} steps")
 
@@ -80,7 +96,7 @@ async def start_learning_session(request: LearningRequest):
 @router.get("/sessions/{session_id}", response_model=SessionResponse)
 async def get_session_state(session_id: str):
     """Retrieve the current state of a learning session."""
-    memory = get_session(session_id)
+    memory = await get_session_or_404(session_id)
     return SessionResponse(
         session_id=memory.session_id,
         topic=memory.topic,
@@ -100,7 +116,7 @@ async def complete_step(session_id: str, step_index: int):
     Mark a milestone step as complete and advance to the next step.
     Awards XP for completion.
     """
-    memory = get_session(session_id)
+    memory = await get_session_or_404(session_id)
 
     if step_index >= len(memory.steps):
         raise HTTPException(status_code=400, detail=f"Step {step_index} does not exist.")
@@ -117,6 +133,13 @@ async def complete_step(session_id: str, step_index: int):
     # Award base XP for completing a step
     base_xp = 50
     memory.xp_earned += base_xp
+
+    # Persist updates to DB
+    try:
+        await session_manager.update_session(memory)
+        await session_manager.save_step_progress(session_id, step_index, "complete")
+    except Exception as e:
+        logger.warning(f"Failed to update session progress in DB: {e}")
 
     logger.info(
         f"Session {session_id}: step {step_index} complete. "
@@ -139,9 +162,14 @@ async def change_learning_mode(session_id: str, request: ModeChangeRequest):
     Switch the learning mode for an active session.
     Affects how subsequent steps are generated (content depth, media emphasis).
     """
-    memory = get_session(session_id)
+    memory = await get_session_or_404(session_id)
     old_mode = memory.learning_mode
     memory.learning_mode = request.learning_mode
+
+    try:
+        await session_manager.update_session(memory)
+    except Exception as e:
+        logger.warning(f"Failed to update session mode in DB: {e}")
 
     logger.info(f"Session {session_id}: mode changed {old_mode} → {request.learning_mode}")
 

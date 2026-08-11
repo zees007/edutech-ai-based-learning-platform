@@ -58,6 +58,8 @@ class Settings(BaseSettings):
 
     # ─── Database ────────────────────────────────────────────────
     database_url: str = "sqlite+aiosqlite:///./data/edutechai.db"
+    database_schema: str = "edutechAI"
+    auto_create_tables: bool = True
 
     # ─── Vector Store ────────────────────────────────────────────
     chroma_persist_dir: str = "./data/chroma_db"
