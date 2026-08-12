@@ -120,3 +120,28 @@ async def retire_user(
     """Soft-retire a user account using DELETE method."""
     await UserService.retire_user(db, user_id)
     return {"message": "User retired successfully"}
+
+
+from models.role_schemas import UserPrivilegesResponse
+from models.user_schemas import UserRoleAssignRequest
+
+
+@router.put("/users/{user_id}/roles", response_model=UserResponse)
+async def assign_user_roles(
+    user_id: str,
+    request: UserRoleAssignRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """Assign or update roles for a specific user."""
+    user = await UserService.assign_roles_to_user(db, user_id, request.role_ids)
+    return UserResponse.model_validate(user)
+
+
+@router.get("/users/{user_id}/roles", response_model=UserPrivilegesResponse)
+async def get_user_roles_and_privileges(
+    user_id: str,
+    db: AsyncSession = Depends(get_db),
+):
+    """Get assigned roles and computed fine-grained privileges for a user."""
+    return await UserService.get_user_with_roles_and_privileges(db, user_id)
+

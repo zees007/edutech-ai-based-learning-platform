@@ -43,6 +43,15 @@ class Base(DeclarativeBase):
     pass
 
 
+user_roles = Table(
+    "user_roles",
+    Base.metadata,
+    Column("user_id", String(36), ForeignKey("users.id", ondelete="CASCADE"), primary_key=True),
+    Column("role_id", String(36), ForeignKey("roles.id", ondelete="CASCADE"), primary_key=True),
+    Column("assigned_at", DateTime, nullable=False, server_default=func.now()),
+)
+
+
 class User(LoggedEntity, Base):
     """
     User account record.
@@ -58,6 +67,20 @@ class User(LoggedEntity, Base):
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     mobile: Mapped[str | None] = mapped_column(String(20), nullable=True)
     country: Mapped[str | None] = mapped_column(String(100), nullable=True)
+
+    roles: Mapped[list[Role]] = relationship(
+        "Role",
+        secondary=user_roles,
+        back_populates="users",
+        lazy="selectin",
+    )
+    subscription: Mapped[Subscription | None] = relationship(
+        "Subscription",
+        back_populates="user",
+        uselist=False,
+        cascade="all, delete-orphan",
+        lazy="selectin",
+    )
 
     def __repr__(self) -> str:
         return f"<User {self.id} {self.first_name} {self.last_name} ({self.email})>"
@@ -117,9 +140,39 @@ class Role(LoggedEntity, Base):
         secondary=role_privileges,
         lazy="selectin",
     )
+    users: Mapped[list[User]] = relationship(
+        "User",
+        secondary=user_roles,
+        back_populates="roles",
+    )
 
     def __repr__(self) -> str:
         return f"<Role {self.id} '{self.name}'>"
+
+
+class Subscription(Base):
+    """
+    Tracks user subscription tier (Normal, Pro, Ultra) and billing status.
+    """
+
+    __tablename__ = "subscriptions"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    user_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="CASCADE"), unique=True, nullable=False, index=True
+    )
+    tier: Mapped[str] = mapped_column(String(50), nullable=False, default="normal", index=True)
+    status: Mapped[str] = mapped_column(String(50), nullable=False, default="active")
+    current_period_start: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, server_default=func.now()
+    )
+    current_period_end: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    payment_gateway_ref: Mapped[str | None] = mapped_column(String(255), nullable=True)
+
+    user: Mapped[User] = relationship("User", back_populates="subscription")
+
+    def __repr__(self) -> str:
+        return f"<Subscription user={self.user_id} tier={self.tier} status={self.status}>"
 
 
 

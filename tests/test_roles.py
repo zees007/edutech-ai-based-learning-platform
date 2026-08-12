@@ -101,11 +101,11 @@ async def test_role_lifecycle(app):
         assert not any(item["id"] == role_id for item in search_data_after_retire["items"])
 
         # 7. Verify duplicate name conflict exception
-        # First create a role
-        res1 = await client.post("/api/v1/roles/create", json={"name": "UniqueRoleName", "privilegeIds": []})
+        unique_dup_name = f"UniqueRole_{uuid4().hex[:8]}"
+        res1 = await client.post("/api/v1/roles/create", json={"name": unique_dup_name, "privilegeIds": []})
         assert res1.status_code == 201
         # Now attempt creating with exact same name
-        res2 = await client.post("/api/v1/roles/create", json={"name": "UniqueRoleName", "privilegeIds": []})
+        res2 = await client.post("/api/v1/roles/create", json={"name": unique_dup_name, "privilegeIds": []})
         assert res2.status_code == 409
         err_data = res2.json()
         assert err_data["error_code"] == "ROLE_NAME_ALREADY_EXISTS"

@@ -50,7 +50,7 @@ class SearchDTO(BaseModel):
     """Query parameters for user pagination and search."""
 
     page: int = Field(default=0, ge=0, description="Page number (0-indexed)")
-    size: int = Field(default=10, ge=1, le=100, description="Page size limit")
+    size: int = Field(default=10, ge=1, le=1000, description="Page size limit")
     sortBy: str = Field(default="created_at", alias="sort_by", description="Field name to sort by")
     isDesc: bool = Field(default=True, alias="is_desc", description="Sort direction: True for descending, False for ascending")
     lookupText: str | None = Field(
@@ -58,6 +58,18 @@ class SearchDTO(BaseModel):
         alias="lookup_text",
         description="Search term to filter by first_name, last_name, email, or mobile",
     )
+
+    model_config = ConfigDict(populate_by_name=True)
+
+
+from models.role_schemas import RoleResponse
+from models.subscription_schemas import SubscriptionResponse
+
+
+class UserRoleAssignRequest(BaseModel):
+    """Payload for updating a user's assigned role IDs."""
+
+    role_ids: list[str] = Field(..., alias="roleIds", description="List of Role UUIDs to assign to user")
 
     model_config = ConfigDict(populate_by_name=True)
 
@@ -71,6 +83,8 @@ class UserResponse(BaseModel):
     email: str
     mobile: str | None = None
     country: str | None = None
+    roles: list[RoleResponse] = Field(default_factory=list)
+    subscription: SubscriptionResponse | None = None
     created_at: datetime
     retired: bool = False
     retired_at: datetime | None = None

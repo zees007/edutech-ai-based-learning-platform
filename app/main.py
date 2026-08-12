@@ -32,6 +32,14 @@ async def lifespan(app: FastAPI):
     await init_db(settings)
     logger.info("Database initialized.")
 
+    # Seed default roles and privileges
+    from services.database import async_session_factory
+    from services.role_service import RoleService
+
+    async with async_session_factory() as session:
+        await RoleService.seed_default_subscription_roles_and_privileges(session)
+    logger.info("Default subscription roles & privileges seeded.")
+
     # Ensure data directory exists
     settings.data_dir
     logger.info(f"Server running at http://{settings.host}:{settings.port}")
@@ -126,12 +134,13 @@ def create_app() -> FastAPI:
         )
 
     # ─── Routers ─────────────────────────────────────────────
-    from app.routers import learning, quiz, roles, users, websocket
+    from app.routers import learning, quiz, roles, subscriptions, users, websocket
 
     app.include_router(learning.router, prefix="/api", tags=["Learning"])
     app.include_router(quiz.router, prefix="/api", tags=["Quiz"])
     app.include_router(users.router, prefix="/api/v1", tags=["Users"])
     app.include_router(roles.router, prefix="/api/v1", tags=["Roles"])
+    app.include_router(subscriptions.router, prefix="/api/v1", tags=["Subscriptions"])
     app.include_router(websocket.router, tags=["WebSocket"])
 
     # ─── Health Check ────────────────────────────────────────
