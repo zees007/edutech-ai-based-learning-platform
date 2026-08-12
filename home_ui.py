@@ -1,0 +1,1437 @@
+"""
+EduTechAI — Glassy AI-Driven Landing Page (n8n.io Inspired)
+
+Premium glassmorphism aesthetic with:
+- Deep midnight navy background (#0E0918) with radial gradient glows
+- Frosted glass cards with backdrop-filter blur & luminous borders
+- CSS keyframe animations (pulse glow, floating, gradient rotation)
+- Concise feature cards with glowing icon badges
+- Agent squad showcase with glassmorphic hover effects
+- Dedicated About section with mission, technology highlights & platform metrics
+- Subscription tiers with glowing Pro card
+- Auth view with matching frosted glass theme
+- Strict auth guard for learning workspace
+"""
+
+from __future__ import annotations
+
+import asyncio
+import logging
+import os
+import streamlit as st
+
+logger = logging.getLogger(__name__)
+
+
+# ─── Helper ──────────────────────────────────────────────────────
+def run_async(coro):
+    """Run an async coroutine inside Streamlit's sync execution loop."""
+    try:
+        loop = asyncio.get_event_loop()
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+    return loop.run_until_complete(coro)
+
+
+
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  CSS — Glassy n8n-Inspired Theme
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+HOME_CSS = """
+<style>
+    /* ── Animations ─────────────────────────────────── */
+    @keyframes pulseGlow {
+        0%, 100% { opacity: 0.6; }
+        50% { opacity: 1; }
+    }
+
+    @keyframes floatUp {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-6px); }
+    }
+
+    @keyframes gradientShift {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
+    @keyframes borderGlow {
+        0%, 100% { border-color: rgba(139, 92, 246, 0.3); }
+        50% { border-color: rgba(139, 92, 246, 0.6); }
+    }
+
+    /* ── Global ─────────────────────────────────────── */
+    .stApp {
+        background-color: #0E0918 !important;
+        color: #FAFAFA !important;
+    }
+
+    section[data-testid="stSidebar"] {
+        display: none !important;
+    }
+
+    /* ── Glowing Background Orbs ───────────────────── */
+    .glow-bg {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        pointer-events: none;
+        z-index: 0;
+        background:
+            radial-gradient(ellipse 600px 400px at 20% 10%, rgba(139, 92, 246, 0.12) 0%, transparent 70%),
+            radial-gradient(ellipse 500px 350px at 80% 30%, rgba(236, 72, 153, 0.08) 0%, transparent 70%),
+            radial-gradient(ellipse 400px 300px at 50% 80%, rgba(59, 130, 246, 0.06) 0%, transparent 70%);
+    }
+
+    /* ── Glass Card Base ───────────────────────────── */
+    .glass {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        transition: all 0.3s ease;
+    }
+
+    .glass:hover {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    /* ── Glowing Glass Card ────────────────────────── */
+    .glass-glow {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+        border: 1px solid rgba(139, 92, 246, 0.2);
+        border-radius: 16px;
+        box-shadow: 0 0 30px rgba(139, 92, 246, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        transition: all 0.3s ease;
+    }
+
+    .glass-glow:hover {
+        border-color: rgba(139, 92, 246, 0.4);
+        box-shadow: 0 0 50px rgba(139, 92, 246, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+        transform: translateY(-2px);
+    }
+
+    /* ── Navbar ─────────────────────────────────────── */
+    .et-nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.8rem 0;
+    }
+
+    .et-logo {
+        font-size: 1.3rem;
+        font-weight: 800;
+        color: #FAFAFA;
+        letter-spacing: -0.5px;
+    }
+
+    .et-logo .accent {
+        background: linear-gradient(135deg, #8B5CF6, #EC4899);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .et-nav-links {
+        display: flex;
+        gap: 28px;
+    }
+
+    .et-nav-links a {
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 0.88rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+
+    .et-nav-links a:hover { color: #FAFAFA; }
+
+    /* ── Hero ───────────────────────────────────────── */
+    .et-hero {
+        text-align: center;
+        padding: 4rem 1rem 2rem 1rem;
+        position: relative;
+    }
+
+    .et-hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(139, 92, 246, 0.1);
+        border: 1px solid rgba(139, 92, 246, 0.25);
+        color: #C4B5FD;
+        font-size: 0.82rem;
+        font-weight: 600;
+        padding: 6px 18px;
+        border-radius: 24px;
+        margin-bottom: 2rem;
+        animation: pulseGlow 3s ease-in-out infinite;
+    }
+
+    .et-hero h1 {
+        font-size: 3.4rem;
+        font-weight: 800;
+        color: #FAFAFA;
+        line-height: 1.1;
+        letter-spacing: -2px;
+        margin-bottom: 1.2rem;
+        max-width: 800px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .et-hero .gradient-text {
+        background: linear-gradient(135deg, #C4B5FD 0%, #8B5CF6 40%, #EC4899 70%, #F97316 100%);
+        background-size: 200% 200%;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: gradientShift 5s ease infinite;
+    }
+
+    .et-hero p {
+        font-size: 1.1rem;
+        color: rgba(255, 255, 255, 0.5);
+        max-width: 640px;
+        margin: 0 auto 2.5rem auto;
+        line-height: 1.7;
+    }
+
+    /* ── Pixel-Perfect n8n Workflow Canvas ────────────── */
+    .n8n-canvas {
+        position: relative;
+        width: 100%;
+        padding: 3rem 1.5rem;
+        background: #0B0813;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 20px;
+        overflow-x: auto;
+        box-shadow: 0 20px 60px -15px rgba(139, 92, 246, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    }
+
+    /* Dot grid matrix like n8n editor */
+    .n8n-canvas::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background-image: radial-gradient(circle, rgba(255,255,255,0.06) 1.2px, transparent 1.2px);
+        background-size: 20px 20px;
+        pointer-events: none;
+    }
+
+    .n8n-header {
+        text-align: center;
+        margin-bottom: 2.5rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .n8n-header span {
+        background: rgba(139, 92, 246, 0.12);
+        border: 1px solid rgba(139, 92, 246, 0.25);
+        color: #C4B5FD;
+        font-size: 0.72rem;
+        font-weight: 700;
+        padding: 5px 16px;
+        border-radius: 20px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    /* Main Diagram Container */
+    .n8n-diagram {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        position: relative;
+        z-index: 1;
+        min-width: 900px;
+        padding: 1rem 0 3rem 0;
+    }
+
+    /* 1. Trigger Arch Node */
+    .n8n-trigger-node {
+        position: relative;
+        display: flex;
+        align-items: center;
+        background: #1B1728;
+        border: 1.5px solid rgba(255, 255, 255, 0.12);
+        border-radius: 40px 14px 14px 40px;
+        padding: 0.8rem 1.1rem 0.8rem 0.6rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    }
+
+    .n8n-trigger-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: rgba(6, 182, 212, 0.15);
+        border: 1px solid rgba(6, 182, 212, 0.3);
+        color: #22D3EE;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        margin-right: 10px;
+    }
+
+    .n8n-trigger-label {
+        font-size: 0.76rem;
+        font-weight: 700;
+        color: #FAFAFA;
+        max-width: 130px;
+        line-height: 1.3;
+    }
+
+    .n8n-lightning {
+        position: absolute;
+        left: -8px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #EF4444;
+        font-size: 0.9rem;
+    }
+
+    /* Port Dot */
+    .n8n-port {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #A1A1AA;
+        border: 2px solid #1B1728;
+        position: absolute;
+    }
+
+    .n8n-port-right { right: -6px; top: 50%; transform: translateY(-50%); }
+    .n8n-port-left  { left: -6px; top: 50%; transform: translateY(-50%); }
+    .n8n-port-bottom { bottom: -6px; left: 50%; transform: translateX(-50%); }
+
+    /* Wire Line */
+    .n8n-wire {
+        width: 32px;
+        height: 2px;
+        background: rgba(255, 255, 255, 0.25);
+        flex-shrink: 0;
+        position: relative;
+    }
+
+    .n8n-wire::after {
+        content: '';
+        position: absolute;
+        right: -4px;
+        top: -3px;
+        width: 0; height: 0;
+        border-top: 4px solid transparent;
+        border-bottom: 4px solid transparent;
+        border-left: 6px solid rgba(255, 255, 255, 0.4);
+    }
+
+    /* 2. Main Agent Card Node */
+    .n8n-agent-card {
+        position: relative;
+        background: #1B1728;
+        border: 1.5px solid rgba(139, 92, 246, 0.4);
+        border-radius: 14px;
+        padding: 1.1rem 1.4rem;
+        box-shadow: 0 0 30px rgba(139, 92, 246, 0.15);
+        min-width: 210px;
+    }
+
+    .n8n-agent-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .n8n-agent-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        background: rgba(139, 92, 246, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .n8n-agent-title {
+        font-size: 0.9rem;
+        font-weight: 800;
+        color: #FAFAFA;
+    }
+
+    .n8n-agent-sub {
+        font-size: 0.72rem;
+        color: rgba(255, 255, 255, 0.4);
+    }
+
+    /* Bottom Sub-Ports Labels */
+    .n8n-sub-ports {
+        display: flex;
+        justify-content: space-around;
+        margin-top: 0.9rem;
+        padding-top: 0.5rem;
+        border-top: 1px dashed rgba(255, 255, 255, 0.1);
+    }
+
+    .n8n-sub-port-tag {
+        font-size: 0.58rem;
+        color: rgba(255, 255, 255, 0.4);
+        position: relative;
+    }
+
+    /* Sub-Nodes (Dashed Below) */
+    .n8n-sub-nodes-group {
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 16px;
+        padding-top: 24px;
+    }
+
+    .n8n-sub-node {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: relative;
+    }
+
+    .n8n-sub-wire {
+        position: absolute;
+        top: -24px;
+        width: 2px;
+        height: 24px;
+        border-left: 2px dashed rgba(255, 255, 255, 0.2);
+    }
+
+    .n8n-sub-circle {
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        background: #14101F;
+        border: 1.5px solid rgba(255, 255, 255, 0.12);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    }
+
+    .n8n-sub-title {
+        font-size: 0.65rem;
+        font-weight: 700;
+        color: rgba(255, 255, 255, 0.8);
+        margin-top: 6px;
+        text-align: center;
+        white-space: nowrap;
+    }
+
+    /* 3. Decision Node */
+    .n8n-decision-card {
+        position: relative;
+        background: #1B1728;
+        border: 1.5px solid rgba(16, 185, 129, 0.35);
+        border-radius: 14px;
+        padding: 1.1rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 130px;
+    }
+
+    .n8n-decision-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        background: rgba(16, 185, 129, 0.15);
+        color: #34D399;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .n8n-branch-arms {
+        display: flex;
+        flex-direction: column;
+        gap: 32px;
+        position: relative;
+    }
+
+    .n8n-arm-label {
+        font-size: 0.62rem;
+        font-weight: 700;
+        color: rgba(255, 255, 255, 0.45);
+        background: #0B0813;
+        padding: 1px 6px;
+        border-radius: 4px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        margin-left: -8px;
+    }
+
+    /* ── Section Titles ────────────────────────────── */
+    .section-title {
+        font-size: 2.2rem;
+        font-weight: 800;
+        color: #FAFAFA;
+        text-align: center;
+        margin-bottom: 0.5rem;
+        letter-spacing: -0.5px;
+    }
+
+    .section-sub {
+        font-size: 1rem;
+        color: rgba(255, 255, 255, 0.45);
+        text-align: center;
+        max-width: 580px;
+        margin: 0 auto 2.5rem auto;
+        line-height: 1.6;
+    }
+
+    /* ── Feature Cards ─────────────────────────────── */
+    .feat-card {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 16px;
+        padding: 1.8rem 1.4rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        min-height: 200px;
+    }
+
+    .feat-card:hover {
+        background: rgba(255, 255, 255, 0.06);
+        border-color: rgba(139, 92, 246, 0.3);
+        box-shadow: 0 0 40px rgba(139, 92, 246, 0.1);
+        transform: translateY(-4px);
+    }
+
+    .feat-icon {
+        width: 52px;
+        height: 52px;
+        border-radius: 14px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 0 20px rgba(139, 92, 246, 0.15);
+    }
+
+    .feat-card h4 {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: #FAFAFA;
+        margin-bottom: 0.4rem;
+    }
+
+    .feat-card p {
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.45);
+        line-height: 1.5;
+        margin: 0;
+    }
+
+    /* Icon color variants */
+    .icon-violet  { background: rgba(139, 92, 246, 0.15); color: #A78BFA; }
+    .icon-blue    { background: rgba(59, 130, 246, 0.15); color: #60A5FA; }
+    .icon-cyan    { background: rgba(6, 182, 212, 0.15); color: #22D3EE; }
+    .icon-green   { background: rgba(16, 185, 129, 0.15); color: #34D399; }
+    .icon-amber   { background: rgba(251, 191, 36, 0.15); color: #FBBF24; }
+    .icon-pink    { background: rgba(236, 72, 153, 0.15); color: #F472B6; }
+
+    /* ── Agent Cards ───────────────────────────────── */
+    .agent-glass {
+        background: rgba(255, 255, 255, 0.02);
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 14px;
+        padding: 1.3rem;
+        transition: all 0.3s ease;
+        min-height: 160px;
+    }
+
+    .agent-glass:hover {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(139, 92, 246, 0.25);
+        box-shadow: 0 0 30px rgba(139, 92, 246, 0.08);
+    }
+
+    .agent-glass h4 {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: #FAFAFA;
+        margin-bottom: 0.3rem;
+    }
+
+    .agent-glass p {
+        font-size: 0.82rem;
+        color: rgba(255, 255, 255, 0.4);
+        line-height: 1.5;
+        margin: 0;
+    }
+
+    .agent-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.15rem;
+        margin-bottom: 0.8rem;
+    }
+
+    /* ── About Cards & Metric Pills ─────────────────── */
+    .about-card {
+        background: rgba(255, 255, 255, 0.025);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        border-radius: 18px;
+        padding: 2rem 1.8rem;
+        height: 100%;
+        transition: all 0.3s ease;
+    }
+
+    .about-card:hover {
+        background: rgba(255, 255, 255, 0.045);
+        border-color: rgba(139, 92, 246, 0.25);
+        box-shadow: 0 0 35px rgba(139, 92, 246, 0.08);
+    }
+
+    .about-card h3 {
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: #FAFAFA;
+        margin-bottom: 0.8rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .about-card p {
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.5);
+        line-height: 1.65;
+        margin: 0;
+    }
+
+    .stat-pill {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        padding: 1.5rem 1rem;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+
+    .stat-pill:hover {
+        border-color: rgba(139, 92, 246, 0.3);
+        box-shadow: 0 0 30px rgba(139, 92, 246, 0.1);
+        transform: translateY(-2px);
+    }
+
+    .stat-number {
+        font-size: 2.2rem;
+        font-weight: 900;
+        background: linear-gradient(135deg, #C4B5FD 0%, #8B5CF6 50%, #EC4899 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        line-height: 1;
+        margin-bottom: 0.3rem;
+    }
+
+    .stat-label {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.5);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* ── Pricing Cards ─────────────────────────────── */
+    .price-glass {
+        background: rgba(255, 255, 255, 0.02);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 20px;
+        padding: 2rem 1.5rem;
+        position: relative;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        transition: all 0.3s ease;
+    }
+
+    .price-glass:hover {
+        border-color: rgba(255, 255, 255, 0.12);
+        transform: translateY(-2px);
+    }
+
+    .price-glass-pro {
+        border: 1px solid rgba(139, 92, 246, 0.35);
+        box-shadow:
+            0 0 60px rgba(139, 92, 246, 0.12),
+            0 0 120px rgba(139, 92, 246, 0.05),
+            inset 0 1px 0 rgba(255, 255, 255, 0.06);
+        background: rgba(139, 92, 246, 0.04);
+        animation: borderGlow 4s ease-in-out infinite;
+    }
+
+    .price-glass-pro:hover {
+        border-color: rgba(139, 92, 246, 0.5);
+        box-shadow:
+            0 0 80px rgba(139, 92, 246, 0.2),
+            0 0 160px rgba(139, 92, 246, 0.08),
+            inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+
+    .price-badge {
+        position: absolute;
+        top: -12px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: linear-gradient(135deg, #8B5CF6, #EC4899);
+        color: #FAFAFA;
+        font-size: 0.68rem;
+        font-weight: 700;
+        padding: 4px 14px;
+        border-radius: 10px;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+        box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+    }
+
+    .price-name {
+        font-size: 1.4rem;
+        font-weight: 800;
+        color: #FAFAFA;
+        margin-top: 0.3rem;
+    }
+
+    .price-amount {
+        font-size: 2.8rem;
+        font-weight: 900;
+        color: #FAFAFA;
+        line-height: 1;
+        margin: 0.3rem 0 0.6rem 0;
+    }
+
+    .price-amount sub {
+        font-size: 1rem;
+        font-weight: 400;
+        color: rgba(255, 255, 255, 0.35);
+    }
+
+    .price-desc {
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.4);
+        margin-bottom: 1.5rem;
+        line-height: 1.5;
+        min-height: 42px;
+    }
+
+    .price-feat {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.6);
+        margin-bottom: 0.5rem;
+    }
+
+    .price-feat .chk {
+        color: #10B981;
+        font-weight: 700;
+    }
+
+    /* ── CTA Banner ────────────────────────────────── */
+    .cta-banner {
+        text-align: center;
+        padding: 4rem 1rem;
+        background:
+            radial-gradient(ellipse 600px 300px at 50% 50%, rgba(139, 92, 246, 0.1) 0%, transparent 70%);
+        border-top: 1px solid rgba(255, 255, 255, 0.04);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        margin: 2rem 0;
+    }
+
+    .cta-banner h2 {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #FAFAFA;
+        margin-bottom: 0.6rem;
+    }
+
+    .cta-banner p {
+        font-size: 1rem;
+        color: rgba(255, 255, 255, 0.4);
+        max-width: 520px;
+        margin: 0 auto 2rem auto;
+    }
+
+    /* ── Footer ────────────────────────────────────── */
+    .et-footer {
+        padding: 2rem 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .et-footer-left {
+        color: rgba(255, 255, 255, 0.3);
+        font-size: 0.82rem;
+    }
+
+    .et-footer-left span {
+        font-weight: 700;
+        color: rgba(255, 255, 255, 0.5);
+    }
+
+    .et-footer-links {
+        display: flex;
+        gap: 24px;
+    }
+
+    .et-footer-links a {
+        color: rgba(255, 255, 255, 0.3);
+        font-size: 0.82rem;
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+
+    .et-footer-links a:hover { color: #FAFAFA; }
+
+    /* ── Auth Glass Card ───────────────────────────── */
+    .auth-glass {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(30px);
+        -webkit-backdrop-filter: blur(30px);
+        border: 1px solid rgba(139, 92, 246, 0.15);
+        border-radius: 24px;
+        padding: 2.5rem 2rem;
+        box-shadow:
+            0 0 60px rgba(139, 92, 246, 0.08),
+            inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    }
+
+    /* ── Glowing Input Rings ───────────────────────── */
+    div[data-baseweb="input"] > div {
+        background: rgba(255, 255, 255, 0.03) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 10px !important;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    div[data-baseweb="input"] > div:focus-within {
+        border-color: rgba(139, 92, 246, 0.5) !important;
+        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15), 0 0 20px rgba(139, 92, 246, 0.1) !important;
+    }
+</style>
+"""
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  MAIN RENDER
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+def render_home_page():
+    """Renders the glassy AI-driven landing page."""
+    st.markdown(HOME_CSS, unsafe_allow_html=True)
+
+    # Background glow orbs
+    st.markdown('<div class="glow-bg"></div>', unsafe_allow_html=True)
+
+    # Init state
+    if "view" not in st.session_state:
+        st.session_state["view"] = "home"
+    if "user_profile" not in st.session_state:
+        st.session_state["user_profile"] = None
+
+    user_profile = st.session_state.get("user_profile")
+
+    if st.session_state.get("view") == "auth":
+        _render_auth_view()
+        return
+
+    # ── NAVBAR ────────────────────────────────────────────────────
+    nav1, nav2, nav3, nav4 = st.columns([2, 3, 1.2, 1.8])
+
+    with nav1:
+        st.markdown('<div class="et-logo">⚡ <span class="accent">EduTech</span> AI</div>', unsafe_allow_html=True)
+
+    with nav2:
+        st.markdown(
+            '<div class="et-nav-links" style="padding-top:4px;"><a href="#features">Features</a><a href="#agents">Agents</a><a href="#about">About</a><a href="#pricing">Pricing</a></div>',
+            unsafe_allow_html=True,
+        )
+
+    with nav3:
+        if user_profile:
+            u_tier = (user_profile.subscription.tier if user_profile.subscription else "normal").upper()
+            st.markdown(f'<div style="color:rgba(255,255,255,0.5);font-size:0.85rem;padding-top:4px;">👋 <b style="color:#FAFAFA;">{user_profile.first_name}</b> · <span style="color:#A78BFA;font-weight:700;">{u_tier}</span></div>', unsafe_allow_html=True)
+        else:
+            if st.button("Sign In", key="nav_si", use_container_width=True):
+                st.session_state["auth_tab"] = "login"
+                st.session_state["view"] = "auth"
+                st.rerun()
+
+    with nav4:
+        if user_profile:
+            lc1, lc2 = st.columns(2)
+            with lc1:
+                if st.button("🎓 Learn", key="nav_lr", type="primary", use_container_width=True):
+                    st.session_state["view"] = "learning"
+                    st.rerun()
+            with lc2:
+                if st.button("Logout", key="nav_lo", use_container_width=True):
+                    st.session_state["user_profile"] = None
+                    st.rerun()
+        else:
+            if st.button("Get Started", key="nav_gs", type="primary", use_container_width=True):
+                st.session_state["auth_tab"] = "signup"
+                st.session_state["view"] = "auth"
+                st.rerun()
+
+    st.markdown("<hr style='border:1px solid rgba(255,255,255,0.04);margin:0.5rem 0 0 0;'/>", unsafe_allow_html=True)
+
+    # ── HERO ──────────────────────────────────────────────────────
+    st.markdown(
+        """
+        <div class="et-hero">
+            <div class="et-hero-badge">🤖 &nbsp; Meet Your Multi-Agent AI System</div>
+            <h1>Master Any Subject with a<br/><span class="gradient-text">Team of AI Agents</span></h1>
+            <p>Our orchestrator divides complex topics into milestones, while specialized agents guide you through Socratic dialogue, curated videos, research papers, and interactive assessments.</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    cl, cc, cr = st.columns([2.5, 1.5, 2.5])
+    with cc:
+        if st.button("Start Learning for Free →", key="hero_btn", type="primary", use_container_width=True):
+            if not user_profile:
+                st.session_state["auth_tab"] = "login"
+                st.session_state["view"] = "auth"
+                st.toast("🔒 Sign in or create an account to start.", icon="🔒")
+                st.rerun()
+            else:
+                st.session_state["view"] = "learning"
+                st.rerun()
+
+    # ── Pixel-Perfect n8n-Style Workflow Visualization ──────────────
+    st.markdown(
+"""<div class="n8n-canvas">
+<div class="n8n-header">
+<span>⚡ EduTech AI — Autonomous Multi-Agent Flow</span>
+</div>
+<div class="n8n-diagram">
+<!-- 1. Trigger Node (Left Arch) -->
+<div class="n8n-trigger-node">
+<span class="n8n-lightning">⚡</span>
+<div class="n8n-trigger-icon">📝</div>
+<div class="n8n-trigger-label">On 'Topic Selection' submission</div>
+<div class="n8n-port n8n-port-right"></div>
+</div>
+<div class="n8n-wire"></div>
+<!-- 2. Main Agent Card Node -->
+<div class="n8n-agent-card">
+<div class="n8n-port n8n-port-left"></div>
+<div class="n8n-agent-header">
+<div class="n8n-agent-icon">🤖</div>
+<div>
+<div class="n8n-agent-title">AI Orchestrator</div>
+<div class="n8n-agent-sub">Multi-Agent Supervisor</div>
+</div>
+</div>
+<div class="n8n-sub-ports">
+<span class="n8n-sub-port-tag">Model*</span>
+<span class="n8n-sub-port-tag">Memory</span>
+<span class="n8n-sub-port-tag">Tools</span>
+</div>
+<div class="n8n-port n8n-port-right"></div>
+<!-- Sub-Nodes connected below -->
+<div class="n8n-sub-nodes-group">
+<div class="n8n-sub-node">
+<div class="n8n-sub-wire"></div>
+<div class="n8n-sub-circle">✨</div>
+<div class="n8n-sub-title">Google Gemini</div>
+</div>
+<div class="n8n-sub-node">
+<div class="n8n-sub-wire"></div>
+<div class="n8n-sub-circle">🐘</div>
+<div class="n8n-sub-title">PostgreSQL DB</div>
+</div>
+<div class="n8n-sub-node">
+<div class="n8n-sub-wire"></div>
+<div class="n8n-sub-circle">📚</div>
+<div class="n8n-sub-title">Academic APIs</div>
+</div>
+<div class="n8n-sub-node">
+<div class="n8n-sub-wire"></div>
+<div class="n8n-sub-circle">🎬</div>
+<div class="n8n-sub-title">YouTube API</div>
+</div>
+</div>
+</div>
+<div class="n8n-wire"></div>
+<!-- 3. Decision Node -->
+<div class="n8n-decision-card">
+<div class="n8n-port n8n-port-left"></div>
+<div class="n8n-decision-icon">🔀</div>
+<div>
+<div class="n8n-agent-title">Task Router</div>
+<div class="n8n-agent-sub">Check Step Type</div>
+</div>
+<div class="n8n-port n8n-port-right"></div>
+</div>
+<!-- Branching Arms -->
+<div class="n8n-branch-arms">
+<!-- True Arm (Concept Explanation) -->
+<div style="display:flex; align-items:center; gap:8px;">
+<span class="n8n-arm-label">true</span>
+<div class="n8n-wire"></div>
+<div class="n8n-trigger-node" style="border-radius:14px; border-color:rgba(139,92,246,0.3);">
+<div class="n8n-trigger-icon" style="background:rgba(139,92,246,0.15); color:#C4B5FD; border-color:rgba(139,92,246,0.3);">💬</div>
+<div>
+<div class="n8n-agent-title" style="font-size:0.8rem;">Socratic Tutor</div>
+<div class="n8n-agent-sub">Guided Dialogue &amp; Clips</div>
+</div>
+</div>
+</div>
+<!-- False Arm (Assessment & XP) -->
+<div style="display:flex; align-items:center; gap:8px;">
+<span class="n8n-arm-label">false</span>
+<div class="n8n-wire"></div>
+<div class="n8n-trigger-node" style="border-radius:14px; border-color:rgba(236,72,153,0.3);">
+<div class="n8n-trigger-icon" style="background:rgba(236,72,153,0.15); color:#F9A8D4; border-color:rgba(236,72,153,0.3);">🏆</div>
+<div>
+<div class="n8n-agent-title" style="font-size:0.8rem;">Quiz &amp; XP Engine</div>
+<div class="n8n-agent-sub">Assessment &amp; Rewards</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>""",
+        unsafe_allow_html=True,
+    )
+
+    st.markdown("<br/><br/><br/>", unsafe_allow_html=True)
+
+    # ── FEATURES ──────────────────────────────────────────────────
+    st.markdown('<a name="features"></a>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">Why EduTech AI?</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-sub">Everything you need for an AI-powered learning experience, built from the ground up.</div>', unsafe_allow_html=True)
+
+    f1, f2, f3 = st.columns(3)
+    with f1:
+        st.markdown(
+            '<div class="feat-card"><div class="feat-icon icon-violet">🧩</div><h4>Adaptive Milestones</h4><p>AI decomposes any topic into 4-7 structured steps with automatic prerequisite detection.</p></div>',
+            unsafe_allow_html=True,
+        )
+    with f2:
+        st.markdown(
+            '<div class="feat-card"><div class="feat-icon icon-blue">💬</div><h4>Socratic Dialogue</h4><p>Never dry lectures. Guided questions and everyday analogies adapted to your education level.</p></div>',
+            unsafe_allow_html=True,
+        )
+    with f3:
+        st.markdown(
+            '<div class="feat-card"><div class="feat-icon icon-cyan">🎬</div><h4>Video Deep-Linking</h4><p>Curated YouTube clips that jump to the exact timestamp where your concept is explained.</p></div>',
+            unsafe_allow_html=True,
+        )
+
+    st.markdown("<br/>", unsafe_allow_html=True)
+
+    f4, f5, f6 = st.columns(3)
+    with f4:
+        st.markdown(
+            '<div class="feat-card"><div class="feat-icon icon-green">📚</div><h4>Research Curation</h4><p>Open-access papers from arXiv, Semantic Scholar & OpenAlex with AI-generated takeaways.</p></div>',
+            unsafe_allow_html=True,
+        )
+    with f5:
+        st.markdown(
+            '<div class="feat-card"><div class="feat-icon icon-amber">📝</div><h4>Dynamic Quizzes</h4><p>Contextual MCQs after each milestone with instant grading and detailed explanations.</p></div>',
+            unsafe_allow_html=True,
+        )
+    with f6:
+        st.markdown(
+            '<div class="feat-card"><div class="feat-icon icon-pink">🏆</div><h4>XP & Gamification</h4><p>Streaks, XP rewards, and a 10-level progression system to keep you motivated.</p></div>',
+            unsafe_allow_html=True,
+        )
+
+    st.markdown("<br/><br/>", unsafe_allow_html=True)
+
+    # ── AGENT SQUAD ───────────────────────────────────────────────
+    st.markdown('<a name="agents"></a>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">The Agent Squad</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-sub">Six specialized AI agents working in parallel via shared memory to deliver your personalized curriculum.</div>', unsafe_allow_html=True)
+
+    a1, a2, a3 = st.columns(3)
+    with a1:
+        st.markdown('<div class="agent-glass"><div class="agent-icon icon-violet">🎯</div><h4>Orchestrator</h4><p>Supervisor agent. Decomposes topics into structured milestone steps.</p></div>', unsafe_allow_html=True)
+    with a2:
+        st.markdown('<div class="agent-glass"><div class="agent-icon icon-blue">💬</div><h4>Socratic Tutor</h4><p>Guided questioning, real-world analogies, and conceptual scaffolding.</p></div>', unsafe_allow_html=True)
+    with a3:
+        st.markdown('<div class="agent-glass"><div class="agent-icon icon-cyan">🎬</div><h4>YouTube Curator</h4><p>Finds videos and pinpoints exact timestamp clips for each milestone.</p></div>', unsafe_allow_html=True)
+
+    st.markdown("<br/>", unsafe_allow_html=True)
+
+    a4, a5, a6 = st.columns(3)
+    with a4:
+        st.markdown('<div class="agent-glass"><div class="agent-icon icon-green">📚</div><h4>Academic Researcher</h4><p>Curates open-access papers with AI-generated key takeaways.</p></div>', unsafe_allow_html=True)
+    with a5:
+        st.markdown('<div class="agent-glass"><div class="agent-icon icon-amber">📝</div><h4>Dynamic Quiz</h4><p>Generates contextual MCQs with instant grading and XP rewards.</p></div>', unsafe_allow_html=True)
+    with a6:
+        st.markdown('<div class="agent-glass"><div class="agent-icon icon-pink">📊</div><h4>Gamification Engine</h4><p>Streak tracking, level progression (1-10), and session persistence.</p></div>', unsafe_allow_html=True)
+
+    st.markdown("<br/><br/>", unsafe_allow_html=True)
+
+    # ── ABOUT SECTION ─────────────────────────────────────────────
+    st.markdown('<a name="about"></a>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">About EduTech AI</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-sub">Transforming education through multi-agent intelligence, academic rigor, and gamified cognitive science.</div>', unsafe_allow_html=True)
+
+    # Metric Stats Row
+    s1, s2, s3, s4 = st.columns(4)
+    with s1:
+        st.markdown('<div class="stat-pill"><div class="stat-number">6</div><div class="stat-label">AI Agents</div></div>', unsafe_allow_html=True)
+    with s2:
+        st.markdown('<div class="stat-pill"><div class="stat-number">5</div><div class="stat-label">Education Levels</div></div>', unsafe_allow_html=True)
+    with s3:
+        st.markdown('<div class="stat-pill"><div class="stat-number">100%</div><div class="stat-label">Academic Integration</div></div>', unsafe_allow_html=True)
+    with s4:
+        st.markdown('<div class="stat-pill"><div class="stat-number">10</div><div class="stat-label">Progression Levels</div></div>', unsafe_allow_html=True)
+
+    st.markdown("<br/>", unsafe_allow_html=True)
+
+    # Mission & Technology Cards
+    ab1, ab2 = st.columns(2)
+    with ab1:
+        st.markdown(
+            """
+            <div class="about-card">
+                <h3>🚀 Our Mission</h3>
+                <p>
+                    Traditional online learning often relies on passive video watching and static, one-size-fits-all quizzes.
+                    EduTech AI was built to pioneer a new paradigm: <b>Interactive Multi-Agent Learning</b>.
+                    <br/><br/>
+                    We combine autonomous LLM supervisor orchestrators with specialized worker agents that act as your personal 24/7 tutor—breaking down complex subjects into bite-sized milestones and testing your understanding with Socratic questioning.
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
+
+    with ab2:
+        st.markdown(
+            """
+            <div class="about-card">
+                <h3>🧠 Engineered for Deep Mastery</h3>
+                <p>
+                    Built on top of a state-persisted supervisor-worker architecture, EduTech AI connects directly to leading academic databases (arXiv, OpenAlex, Semantic Scholar) and curated video timestamps.
+                    <br/><br/>
+                    Whether you are a high school student grasping basic physics or a researcher analyzing machine learning papers, our system adapts to your cognitive level in real time.
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
+
+    st.markdown("<br/><br/>", unsafe_allow_html=True)
+
+    # ── PRICING ───────────────────────────────────────────────────
+    st.markdown('<a name="pricing"></a>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">Choose Your Path</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-sub">Flexible plans designed for every type of learner.</div>', unsafe_allow_html=True)
+
+    p1, p2, p3 = st.columns(3)
+
+    with p1:
+        st.markdown(
+            """
+            <div class="price-glass">
+                <div class="price-name">Normal</div>
+                <div class="price-amount">$0<sub>/mo</sub></div>
+                <div class="price-desc">Essential AI tutoring for curious learners starting out.</div>
+                <hr style="border:1px solid rgba(255,255,255,0.05);"/>
+                <div class="price-feat"><span class="chk">✓</span> 5 AI Sessions / mo</div>
+                <div class="price-feat"><span class="chk">✓</span> Standard Socratic Tutor</div>
+                <div class="price-feat"><span class="chk">✓</span> 3 Education Levels</div>
+                <div class="price-feat"><span class="chk">✓</span> Milestone Journeys</div>
+                <div class="price-feat"><span class="chk">✓</span> Basic Quizzes & XP</div>
+            </div>
+            """, unsafe_allow_html=True)
+        st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
+        if st.button("Start Free", key="t_n", use_container_width=True):
+            _handle_tier_select("normal")
+
+    with p2:
+        st.markdown(
+            """
+            <div class="price-glass price-glass-pro">
+                <div class="price-badge">MOST POPULAR ⭐</div>
+                <div class="price-name">Pro</div>
+                <div class="price-amount">$19<sub>/mo</sub></div>
+                <div class="price-desc">Full agent squad, deep research, visual modes & 1.5x XP.</div>
+                <hr style="border:1px solid rgba(139,92,246,0.15);"/>
+                <div class="price-feat"><span class="chk">✓</span> <b>Unlimited</b> AI Sessions</div>
+                <div class="price-feat"><span class="chk">✓</span> All 5 Education Levels</div>
+                <div class="price-feat"><span class="chk">✓</span> Visual & Deep-Dive Modes</div>
+                <div class="price-feat"><span class="chk">✓</span> <b>YouTube Deep-Linking</b></div>
+                <div class="price-feat"><span class="chk">✓</span> Academic Paper Curation</div>
+                <div class="price-feat"><span class="chk">✓</span> <b>1.5x XP Multiplier</b></div>
+            </div>
+            """, unsafe_allow_html=True)
+        st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
+        if st.button("Upgrade to Pro", key="t_p", type="primary", use_container_width=True):
+            _handle_tier_select("pro")
+
+    with p3:
+        st.markdown(
+            """
+            <div class="price-glass">
+                <div class="price-name">Ultra</div>
+                <div class="price-amount">$49<sub>/mo</sub></div>
+                <div class="price-desc">Priority execution, custom personas, 2x XP & 24/7 support.</div>
+                <hr style="border:1px solid rgba(255,255,255,0.05);"/>
+                <div class="price-feat"><span class="chk">✓</span> Everything in Pro +</div>
+                <div class="price-feat"><span class="chk">✓</span> Priority Multi-Agent Exec</div>
+                <div class="price-feat"><span class="chk">✓</span> Unlimited Paper Downloads</div>
+                <div class="price-feat"><span class="chk">✓</span> Custom Socratic Persona</div>
+                <div class="price-feat"><span class="chk">✓</span> <b>2x XP Boost</b></div>
+                <div class="price-feat"><span class="chk">✓</span> 24/7 AI Support</div>
+            </div>
+            """, unsafe_allow_html=True)
+        st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
+        if st.button("Select Ultra", key="t_u", use_container_width=True):
+            _handle_tier_select("ultra")
+
+    st.markdown("<br/>", unsafe_allow_html=True)
+
+    # ── CTA BANNER ────────────────────────────────────────────────
+    st.markdown(
+        """
+        <div class="cta-banner">
+            <h2>Ready to Accelerate Your Learning?</h2>
+            <p>Join thousands of students and professionals mastering complex topics faster with EduTech AI.</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    bl, bc, br = st.columns([2.5, 1.5, 2.5])
+    with bc:
+        if st.button("Get Started Free →", key="cta_btn", use_container_width=True):
+            if not user_profile:
+                st.session_state["auth_tab"] = "signup"
+                st.session_state["view"] = "auth"
+                st.rerun()
+            else:
+                st.session_state["view"] = "learning"
+                st.rerun()
+
+    st.markdown("<br/>", unsafe_allow_html=True)
+
+    # ── FOOTER ────────────────────────────────────────────────────
+    st.markdown(
+        """
+        <div class="et-footer">
+            <div class="et-footer-left"><span>EduTech AI</span><br/>© 2024 EduTech AI. Empowering cognitive research through education.</div>
+            <div class="et-footer-links">
+                <a href="#">Terms of Service</a>
+                <a href="#">Privacy Policy</a>
+                <a href="#">Contact Support</a>
+                <a href="#">Documentation</a>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  AUTH VIEW — Glassy Sign In / Sign Up
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+def _render_auth_view():
+    """Renders glassy auth view matching the n8n theme."""
+    # Background glow
+    st.markdown('<div class="glow-bg"></div>', unsafe_allow_html=True)
+
+    # Mini navbar
+    b1, _, b3 = st.columns([1, 4, 1])
+    with b1:
+        if st.button("← Back to Home", key="auth_back"):
+            st.session_state["view"] = "home"
+            st.rerun()
+    with b3:
+        st.markdown('<div class="et-logo" style="text-align:right;">⚡ <span class="accent">EduTech</span> AI</div>', unsafe_allow_html=True)
+
+    st.markdown("<hr style='border:1px solid rgba(255,255,255,0.04);margin:0.5rem 0 2.5rem 0;'/>", unsafe_allow_html=True)
+
+    st.markdown(
+        """
+        <div style="text-align:center;margin-bottom:2rem;">
+            <div class="et-hero-badge" style="margin-bottom:1rem;">🔐 &nbsp; Secure Authentication</div>
+            <h2 style="font-weight:800;color:#FAFAFA;margin-bottom:0.4rem;font-size:2rem;">Welcome to EduTech AI</h2>
+            <p style="color:rgba(255,255,255,0.4);">Sign in or create an account to begin your AI learning journey.</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    al, ac, ar = st.columns([1.2, 2, 1.2])
+
+    with ac:
+        st.markdown('<div class="auth-glass">', unsafe_allow_html=True)
+        tab_login, tab_signup = st.tabs(["🔐 Sign In", "✨ Create Account"])
+
+        with tab_login:
+            with st.form("signin_form"):
+                email_in = st.text_input("Email Address", placeholder="student@example.com")
+                pass_in = st.text_input("Password", type="password")
+                sub = st.form_submit_button("Sign In", type="primary", use_container_width=True)
+
+            if sub:
+                if not email_in or not pass_in:
+                    st.error("Please provide both email and password.")
+                else:
+                    with st.spinner("Authenticating..."):
+                        try:
+                            from services.auth_service import AuthService
+                            from services.database import get_db_session
+
+                            async def _login():
+                                async with get_db_session() as db:
+                                    u = await AuthService.authenticate_user(db, email_in.strip(), pass_in)
+                                    return AuthService.get_user_current_profile(u)
+
+                            p = run_async(_login())
+                            st.session_state["user_profile"] = p
+                            st.session_state["view"] = "learning"
+                            st.toast(f"Welcome back, {p.first_name}!", icon="✅")
+                            st.rerun()
+                        except Exception as e:
+                            st.error(f"Sign in failed: {e}")
+
+            st.markdown("---")
+            st.caption("⚡ Quick Demo:")
+            d1, d2 = st.columns(2)
+            with d1:
+                if st.button("🔑 Demo Student", key="d_s", use_container_width=True):
+                    _quick_demo_login("student@edutech.ai", "student123")
+            with d2:
+                if st.button("⚡ Demo Pro", key="d_p", use_container_width=True):
+                    _quick_demo_login("pro@edutech.ai", "pro123")
+
+        with tab_signup:
+            sel_tier = st.session_state.get("selected_tier", "normal")
+            with st.form("signup_form"):
+                fn = st.text_input("First Name", placeholder="Jane")
+                ln = st.text_input("Last Name", placeholder="Doe")
+                se = st.text_input("Email Address", placeholder="jane.doe@example.com")
+                sp = st.text_input("Password", type="password")
+                tc = st.selectbox("Tier", ["normal", "pro", "ultra"],
+                                  index=["normal", "pro", "ultra"].index(sel_tier) if sel_tier in ["normal", "pro", "ultra"] else 0,
+                                  format_func=lambda x: f"{x.upper()} Tier")
+                sub2 = st.form_submit_button("Create Account & Start Learning", type="primary", use_container_width=True)
+
+            if sub2:
+                if not fn or not se or not sp:
+                    st.error("Please fill in all required fields.")
+                else:
+                    with st.spinner("Creating account..."):
+                        try:
+                            from models.user_schemas import UserCreateRequest
+                            from services.auth_service import AuthService
+                            from services.database import get_db_session
+                            from services.user_service import UserService
+
+                            async def _signup():
+                                async with get_db_session() as db:
+                                    req = UserCreateRequest(first_name=fn.strip(), last_name=ln.strip() if ln else "User",
+                                                            email=se.strip(), password=sp, subscription_tier=tc)
+                                    cu = await UserService.create_user(db, req)
+                                    return AuthService.get_user_current_profile(cu)
+
+                            p = run_async(_signup())
+                            st.session_state["user_profile"] = p
+                            st.session_state["view"] = "learning"
+                            st.toast(f"Welcome, {p.first_name}!", icon="🎉")
+                            st.rerun()
+                        except Exception as e:
+                            st.error(f"Registration failed: {e}")
+
+        st.markdown('</div>', unsafe_allow_html=True)
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  HELPERS
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+def _quick_demo_login(email: str, pw: str):
+    try:
+        from services.auth_service import AuthService
+        from services.database import get_db_session
+
+        async def _do():
+            async with get_db_session() as db:
+                u = await AuthService.authenticate_user(db, email, pw)
+                return AuthService.get_user_current_profile(u)
+
+        p = run_async(_do())
+        st.session_state["user_profile"] = p
+        st.session_state["view"] = "learning"
+        st.toast(f"Logged in as {p.first_name}", icon="⚡")
+        st.rerun()
+    except Exception:
+        from models.auth_schemas import UserCurrentProfileResponse
+        from models.subscription_schemas import SubscriptionResponse
+        from datetime import datetime, timezone
+
+        t = "pro" if "pro" in email else "normal"
+        st.session_state["user_profile"] = UserCurrentProfileResponse(
+            id="demo-user-123", first_name="Demo", last_name="Learner", email=email,
+            created_at=datetime.now(timezone.utc), roles=["student"],
+            subscription=SubscriptionResponse(id=1, user_id="demo-user-123", tier=t, status="active",
+                                              current_period_start=datetime.now(timezone.utc)),
+            privilege_codes=["ET_VIEW_LESSON", "ET_TAKE_QUIZ", "ET_VIEW_SUBSCRIPTION"],
+        )
+        st.session_state["view"] = "learning"
+        st.toast(f"Demo ({t.upper()} Tier)", icon="⚡")
+        st.rerun()
+
+
+def _handle_tier_select(tier: str):
+    up = st.session_state.get("user_profile")
+    st.session_state["selected_tier"] = tier
+
+    if not up:
+        st.session_state["auth_tab"] = "signup"
+        st.session_state["view"] = "auth"
+        st.toast(f"🔒 Sign in to select {tier.upper()} Tier.", icon="🔒")
+        st.rerun()
+    else:
+        try:
+            from models.subscription_schemas import SubscriptionUpdateRequest
+            from services.database import get_db_session
+            from services.subscription_service import SubscriptionService
+            from services.auth_service import AuthService
+            from services.user_service import UserService
+
+            async def _up():
+                async with get_db_session() as db:
+                    await SubscriptionService.update_user_subscription_tier(db, user_id=up.id,
+                                                                           request=SubscriptionUpdateRequest(tier=tier))
+                    u = await UserService.get_user_by_id(db, up.id)
+                    return AuthService.get_user_current_profile(u)
+
+            p = run_async(_up())
+            st.session_state["user_profile"] = p
+            st.toast(f"Subscription → {tier.upper()}!", icon="⭐")
+            st.rerun()
+        except Exception:
+            st.toast(f"Tier: {tier.upper()}", icon="⚡")
+            st.session_state["view"] = "learning"
+            st.rerun()

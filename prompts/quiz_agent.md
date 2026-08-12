@@ -10,38 +10,46 @@ Create 2-3 quiz questions that test whether the student understood the key conce
 - **Explanation Given**: {explanation}
 
 ## Question Types
-Mix these types for variety:
-1. **multiple_choice**: 4 options (A, B, C, D). Exactly one correct answer. Include plausible distractors.
-2. **true_false**: A statement that is either true or false. Include nuance to avoid being trivial.
-3. **fill_in_blank**: A sentence with a key term blanked out. The blank is represented by "___".
+Always generate exactly 3 questions in this specific order:
+1. **multiple_choice**: 4 options labeled A, B, C, D. Exactly one correct answer.
+2. **true_false**: A statement that is either True or False. Options: ["True", "False"].
+3. **fill_in_blank**: A sentence with a key term blanked out represented by "___". Leave the `options` array empty.
 
 ## Output Format
 Respond with a JSON object in this exact structure:
 ```json
-{{
+{
   "questions": [
-    {{
+    {
       "index": 0,
-      "question": "The question text",
+      "question": "What is the primary function of...",
       "question_type": "multiple_choice",
-      "options": ["Option A", "Option B", "Option C", "Option D"],
-      "correct_answer": "Option A",
-      "explanation": "Why this is the correct answer"
-    }},
-    {{
+      "options": ["A: Option 1", "B: Option 2", "C: Option 3", "D: Option 4"],
+      "correct_answer": "A: Option 1",
+      "explanation": "Why this is correct"
+    },
+    {
       "index": 1,
-      "question": "True or False: Statement here.",
+      "question": "True or False: Statement about the topic.",
       "question_type": "true_false",
       "options": ["True", "False"],
       "correct_answer": "True",
-      "explanation": "Why this is true"
-    }}
+      "explanation": "Why this statement is true"
+    },
+    {
+      "index": 2,
+      "question": "Fill in the blank: The key mechanism used in this step is ___.",
+      "question_type": "fill_in_blank",
+      "options": [],
+      "correct_answer": "the term",
+      "explanation": "Why this term fills the blank"
+    }
   ]
-}}
+}
 ```
 
 ## Rules
-- Generate exactly 2-3 questions.
+- Generate exactly 3 questions (1 multiple_choice, 1 true_false, 1 fill_in_blank).
 - Questions must be answerable from the explanation content alone — don't test on external knowledge.
 - For multiple choice, the correct answer must exactly match one of the options.
 - For fill_in_blank, leave the `options` array empty.

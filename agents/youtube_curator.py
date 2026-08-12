@@ -18,6 +18,7 @@ Writes: memory.step_results[step_index].youtube_clips[]
 from __future__ import annotations
 
 import logging
+from typing import Any
 
 from agents.base import BaseAgent
 from models.schemas import YouTubeClip
@@ -34,6 +35,20 @@ class YouTubeCuratorAgent(BaseAgent):
     fetches their transcripts, and finds precise timestamp ranges that
     match the step's content.
     """
+
+    async def curate_videos(self, step: Any, topic: str = "", student_level: str = "general") -> list[YouTubeClip]:
+        """Convenience method to curate YouTube videos for a step."""
+        try:
+            from services.youtube_client import YouTubeClient
+            client = YouTubeClient()
+            title = getattr(step, "title", str(step))
+            clean_title = title.split(":")[0].strip() if ":" in title else title
+            query = f"{topic} {clean_title}".strip()
+            videos = await client.search_videos(query)
+            return videos or []
+        except Exception as e:
+            self.logger.error(f"YouTube curation failed: {e}")
+            return []
 
     async def execute(self, memory: SharedMemory, step_index: int | None = None) -> None:
         """Find relevant YouTube clips for the given step."""

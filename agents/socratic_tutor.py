@@ -14,7 +14,7 @@ Supports token-by-token streaming via Groq streaming API for real-time UI render
 
 from __future__ import annotations
 
-from typing import AsyncGenerator
+from typing import Any, AsyncGenerator
 
 from agents.base import BaseAgent
 from models.schemas import StepStatus
@@ -30,6 +30,99 @@ class SocraticTutorAgent(BaseAgent):
     - 1-2 guiding Socratic questions
     - Adapts style based on learning mode and student level
     """
+
+    async def explain_step_with_questions(
+        self,
+        step: Any,
+        topic: str = "",
+        learning_mode: Any = "visual",
+        student_level: str = "general",
+    ) -> tuple[str, list[str]]:
+        """Generate explanation AND 2 suggested Socratic questions."""
+        from models.schemas import LearningMode
+
+        mode_val = learning_mode.value if hasattr(learning_mode, "value") else str(learning_mode)
+        mode_enum = LearningMode(mode_val) if mode_val in [m.value for m in LearningMode] else LearningMode.VISUAL
+
+        title = getattr(step, "title", str(step))
+        desc = getattr(step, "description", "")
+        is_pre = str(getattr(step, "is_prerequisite", False))
+
+        template = self._load_prompt_template("socratic_tutor")
+        system_prompt = self._format_prompt(
+            template,
+            topic=topic,
+            step_title=title,
+            step_description=desc,
+            student_level=student_level,
+            learning_mode=mode_enum.value,
+            is_prerequisite=is_pre,
+        )
+
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": f"Please explain this step: {title} — {desc}"},
+        ]
+
+        model = self.settings.get_model_for_agent("socratic_tutor")
+        try:
+            response = await self.llm.chat(
+                model=model,
+                messages=messages,
+                temperature=0.7,
+                max_tokens=2048,
+            )
+            return self._parse_response(response)
+        except Exception as e:
+            self.logger.error(f"Socratic Tutor LLM call failed: {e}")
+            fallback_exp = f"Let's explore **{title}** together! {desc}"
+            fallback_q = [
+                f"How does {title} apply in real life?",
+                f"Why is {title} essential to understanding {topic}?",
+            ]
+            return fallback_exp, fallback_q
+
+    async def answer_followup(
+        self,
+        question: str,
+        step_title: str,
+        step_description: str,
+        explanation: str,
+        topic: str,
+        student_level: str,
+        chat_history: list[dict[str, str]] | None = None,
+    ) -> str:
+        """Answer a student's follow-up question about the current step."""
+        system_prompt = (
+            f"You are the Socratic Tutor Agent teaching a {student_level} level student about '{topic}'.\n"
+            f"Current Step: '{step_title}' — {step_description}\n"
+            f"Previous Explanation given: {explanation[:1500]}\n\n"
+            f"Rule: Answer the student's question clearly with a supportive, Socratic tone using analogies. "
+            f"End with a short guiding question to check their understanding."
+        )
+
+        messages = [{"role": "system", "content": system_prompt}]
+
+        if chat_history:
+            for turn in chat_history[-6:]:
+                messages.append({
+                    "role": "user" if turn.get("role") == "user" else "assistant",
+                    "content": turn.get("text", ""),
+                })
+
+        messages.append({"role": "user", "content": question})
+
+        model = self.settings.get_model_for_agent("socratic_tutor")
+        try:
+            return await self.llm.chat(
+                model=model,
+                messages=messages,
+                temperature=0.7,
+                max_tokens=1024,
+            )
+        except Exception as e:
+            self.logger.error(f"Failed to answer follow-up question: {e}")
+            return f"That's a great question about {step_title}! How do you think it connects to {topic}?"
 
     async def execute(self, memory: SharedMemory, step_index: int | None = None) -> None:
         """

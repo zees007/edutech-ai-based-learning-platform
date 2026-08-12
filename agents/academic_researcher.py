@@ -16,9 +16,10 @@ Writes: memory.step_results[step_index].academic_papers[]
 from __future__ import annotations
 
 import logging
+from typing import Any
 
 from agents.base import BaseAgent
-from models.schemas import LearningMode
+from models.schemas import AcademicPaper, LearningMode
 from models.shared_memory import SharedMemory
 
 logger = logging.getLogger(__name__)
@@ -31,6 +32,19 @@ class AcademicResearcherAgent(BaseAgent):
     Searches multiple scholarly sources in parallel and returns
     ranked, deduplicated papers for the current step.
     """
+
+    async def curate_papers(self, step: Any, topic: str = "") -> list[AcademicPaper]:
+        """Convenience method to search academic papers for a step."""
+        try:
+            from services.academic_client import AcademicClient
+            client = AcademicClient()
+            title = getattr(step, "title", str(step))
+            query = f"{topic} {title}".strip()
+            papers = await client.search_all(query, max_results=3)
+            return papers or []
+        except Exception as e:
+            self.logger.error(f"Academic paper search failed: {e}")
+            return []
 
     async def execute(self, memory: SharedMemory, step_index: int | None = None) -> None:
         """Find relevant academic papers for the given step."""
