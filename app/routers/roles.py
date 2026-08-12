@@ -17,6 +17,15 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.dependencies import require_privilege
+from app.privileges_config import (
+    ET_CREATE_ROLE,
+    ET_EDIT_ROLE,
+    ET_RETIRE_ROLE,
+    ET_SEARCH_ROLE,
+    ET_VIEW_PRIVILEGE,
+    ET_VIEW_ROLE,
+)
 from models.role_schemas import (
     PaginatedRoleResponse,
     PrivilegeResponse,
@@ -32,7 +41,11 @@ from services.role_service import RoleService
 router = APIRouter()
 
 
-@router.get("/privileges/tree", response_model=list[PrivilegeTreeResponse])
+@router.get(
+    "/privileges/tree",
+    response_model=list[PrivilegeTreeResponse],
+    dependencies=[Depends(require_privilege(ET_VIEW_PRIVILEGE))],
+)
 async def get_privilege_tree(
     db: AsyncSession = Depends(get_db),
 ):
@@ -44,7 +57,11 @@ async def get_privilege_tree(
     return await RoleService.get_privilege_tree(db)
 
 
-@router.get("/privileges", response_model=list[PrivilegeResponse])
+@router.get(
+    "/privileges",
+    response_model=list[PrivilegeResponse],
+    dependencies=[Depends(require_privilege(ET_VIEW_PRIVILEGE))],
+)
 async def get_all_privileges(
     db: AsyncSession = Depends(get_db),
 ):
@@ -53,8 +70,12 @@ async def get_all_privileges(
     return [PrivilegeResponse.model_validate(p) for p in privileges]
 
 
-
-@router.post("/roles/create", response_model=RoleResponse, status_code=201)
+@router.post(
+    "/roles/create",
+    response_model=RoleResponse,
+    status_code=201,
+    dependencies=[Depends(require_privilege(ET_CREATE_ROLE))],
+)
 async def create_role(
     request: RoleCreateRequest,
     db: AsyncSession = Depends(get_db),
@@ -64,7 +85,11 @@ async def create_role(
     return RoleResponse.model_validate(role)
 
 
-@router.get("/roles/search", response_model=PaginatedRoleResponse)
+@router.get(
+    "/roles/search",
+    response_model=PaginatedRoleResponse,
+    dependencies=[Depends(require_privilege(ET_SEARCH_ROLE))],
+)
 async def search_roles(
     page: Annotated[int, Query(ge=0, description="Page number (0-indexed)")] = 0,
     size: Annotated[int, Query(ge=1, le=100, description="Page size")] = 10,
@@ -102,7 +127,11 @@ async def search_roles(
     )
 
 
-@router.get("/roles/{role_id}", response_model=RoleResponse)
+@router.get(
+    "/roles/{role_id}",
+    response_model=RoleResponse,
+    dependencies=[Depends(require_privilege(ET_VIEW_ROLE))],
+)
 async def get_role_by_id(
     role_id: str,
     db: AsyncSession = Depends(get_db),
@@ -112,7 +141,11 @@ async def get_role_by_id(
     return RoleResponse.model_validate(role)
 
 
-@router.put("/roles/{role_id}/edit", response_model=RoleResponse)
+@router.put(
+    "/roles/{role_id}/edit",
+    response_model=RoleResponse,
+    dependencies=[Depends(require_privilege(ET_EDIT_ROLE))],
+)
 async def edit_role(
     role_id: str,
     request: RoleEditRequest,
@@ -123,7 +156,10 @@ async def edit_role(
     return RoleResponse.model_validate(role)
 
 
-@router.delete("/roles/{role_id}/retire")
+@router.delete(
+    "/roles/{role_id}/retire",
+    dependencies=[Depends(require_privilege(ET_RETIRE_ROLE))],
+)
 async def retire_role(
     role_id: str,
     db: AsyncSession = Depends(get_db),

@@ -70,6 +70,11 @@ class Settings(BaseSettings):
     port: int = 8000
     debug: bool = True
 
+    # ─── JWT Security & Auth ─────────────────────────────────────
+    jwt_secret_key: str = "D5rTsC2QeoxN3LRGPcFR6KJX5Z/SXw/J8JINJ2Kh35c="
+    jwt_algorithm: str = "HS256"
+    jwt_expire_minutes: int = 60
+
     # ─── Rate Limiting ───────────────────────────────────────────
     groq_max_retries: int = Field(default=3, description="Max retries on Groq rate limit")
     groq_retry_delay: float = Field(default=1.0, description="Base delay between retries (seconds)")

@@ -9,8 +9,34 @@ from httpx import ASGITransport, AsyncClient
 from sqlalchemy import select
 
 from app.main import create_app
-from models.db_models import Privilege
+from models.db_models import Privilege, Role
+from models.user_schemas import UserCreateRequest
 from services.database import get_db_session, init_db
+from services.user_service import UserService
+
+
+async def authenticate_superadmin(client, app):
+    email = f"admin_{uuid4().hex[:8]}@example.com"
+    pwd = "SuperPassword123!"
+    async with get_db_session() as db:
+        user = await UserService.create_user(
+            db,
+            UserCreateRequest(
+                first_name="Admin",
+                last_name="User",
+                email=email,
+                password=pwd,
+            ),
+        )
+        r_stmt = select(Role).where(Role.name == "SuperAdmin")
+        r_res = await db.execute(r_stmt)
+        super_role = r_res.scalar_one_or_none()
+        if super_role:
+            user.roles = [super_role]
+            await db.commit()
+
+    login_res = await client.post("/api/v1/auth/login", json={"email": email, "password": pwd})
+    assert login_res.status_code == 200
 
 
 @pytest.fixture
@@ -37,6 +63,8 @@ async def test_role_lifecycle(app):
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://testserver"
     ) as client:
+        await authenticate_superadmin(client, app)
+
         # 1. Create Role with privilegeIds
         create_payload = {
             "name": role_name,
@@ -146,6 +174,8 @@ async def test_privilege_hierarchy_tree(app):
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://testserver"
     ) as client:
+        await authenticate_superadmin(client, app)
+
         # GET /api/v1/privileges/tree
         res = await client.get("/api/v1/privileges/tree")
         assert res.status_code == 200

@@ -13,10 +13,16 @@ from __future__ import annotations
 import asyncio
 import logging
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
-from app.exceptions import BadRequestException, NotFoundException
 from agents.orchestrator import OrchestratorAgent
+from app.dependencies import require_privilege
+from app.exceptions import BadRequestException, NotFoundException
+from app.privileges_config import (
+    ET_INTERACT_LEARNING_SESSION,
+    ET_START_LEARNING_SESSION,
+    ET_VIEW_LEARNING_HISTORY,
+)
 from models.schemas import (
     LearningMode,
     LearningRequest,
@@ -24,7 +30,6 @@ from models.schemas import (
     SessionResponse,
 )
 from models.shared_memory import SharedMemory
-
 from services.session_manager import SessionManager
 
 logger = logging.getLogger(__name__)
@@ -54,7 +59,11 @@ async def get_session_or_404(session_id: str) -> SharedMemory:
 get_session = get_session_or_404
 
 
-@router.post("/learn", response_model=SessionResponse)
+@router.post(
+    "/learn",
+    response_model=SessionResponse,
+    dependencies=[Depends(require_privilege(ET_START_LEARNING_SESSION))],
+)
 async def start_learning_session(request: LearningRequest):
     """
     Start a new learning session for a topic.
@@ -97,7 +106,11 @@ async def start_learning_session(request: LearningRequest):
     )
 
 
-@router.get("/sessions/{session_id}", response_model=SessionResponse)
+@router.get(
+    "/sessions/{session_id}",
+    response_model=SessionResponse,
+    dependencies=[Depends(require_privilege(ET_INTERACT_LEARNING_SESSION))],
+)
 async def get_session_state(session_id: str):
     """Retrieve the current state of a learning session."""
     memory = await get_session_or_404(session_id)
@@ -114,7 +127,10 @@ async def get_session_state(session_id: str):
     )
 
 
-@router.post("/sessions/{session_id}/step/{step_index}/complete")
+@router.post(
+    "/sessions/{session_id}/step/{step_index}/complete",
+    dependencies=[Depends(require_privilege(ET_INTERACT_LEARNING_SESSION))],
+)
 async def complete_step(session_id: str, step_index: int):
     """
     Mark a milestone step as complete and advance to the next step.
@@ -163,7 +179,10 @@ async def complete_step(session_id: str, step_index: int):
     }
 
 
-@router.post("/sessions/{session_id}/mode")
+@router.post(
+    "/sessions/{session_id}/mode",
+    dependencies=[Depends(require_privilege(ET_INTERACT_LEARNING_SESSION))],
+)
 async def change_learning_mode(session_id: str, request: ModeChangeRequest):
     """
     Switch the learning mode for an active session.
@@ -187,7 +206,10 @@ async def change_learning_mode(session_id: str, request: ModeChangeRequest):
     }
 
 
-@router.get("/sessions")
+@router.get(
+    "/sessions",
+    dependencies=[Depends(require_privilege(ET_VIEW_LEARNING_HISTORY))],
+)
 async def list_sessions():
     """List all active learning sessions (for debugging)."""
     return {

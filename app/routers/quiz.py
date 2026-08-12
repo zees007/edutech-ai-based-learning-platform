@@ -8,9 +8,11 @@ from __future__ import annotations
 
 import logging
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
+from app.dependencies import require_privilege
 from app.exceptions import BadRequestException, NotFoundException
+from app.privileges_config import ET_GENERATE_QUIZ, ET_SUBMIT_QUIZ
 from models.schemas import QuestionFeedback, QuizResult, QuizSubmission
 
 logger = logging.getLogger(__name__)
@@ -23,7 +25,11 @@ from services.session_manager import SessionManager
 session_manager = SessionManager()
 
 
-@router.post("/quiz/submit", response_model=QuizResult)
+@router.post(
+    "/quiz/submit",
+    response_model=QuizResult,
+    dependencies=[Depends(require_privilege(ET_SUBMIT_QUIZ))],
+)
 async def submit_quiz(submission: QuizSubmission):
     """
     Submit quiz answers and get grading results with XP.
@@ -100,7 +106,10 @@ async def submit_quiz(submission: QuizSubmission):
     )
 
 
-@router.get("/quiz/{session_id}/{step_index}")
+@router.get(
+    "/quiz/{session_id}/{step_index}",
+    dependencies=[Depends(require_privilege(ET_GENERATE_QUIZ))],
+)
 async def get_quiz(session_id: str, step_index: int):
     """Get the quiz for a specific step (if generated)."""
     memory = await get_session(session_id)

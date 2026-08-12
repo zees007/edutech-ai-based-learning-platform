@@ -44,6 +44,21 @@ async def test_user_lifecycle(app):
         assert data["retired"] is False
         user_id = data["id"]
 
+        # Assign SuperAdmin role to test user so client has all privileges
+        from models.db_models import Role, User
+        from services.database import get_db_session
+        from sqlalchemy import select
+        async with get_db_session() as db:
+            user_obj = (await db.execute(select(User).where(User.id == user_id))).scalar_one()
+            admin_role = (await db.execute(select(Role).where(Role.name == "SuperAdmin"))).scalar_one_or_none()
+            if admin_role:
+                user_obj.roles.append(admin_role)
+                await db.commit()
+
+        # Login to receive access_token cookie
+        login_res = await client.post("/api/v1/auth/login", json={"email": test_email, "password": "SecurePassword123!"})
+        assert login_res.status_code == 200
+
         # 2. Get User By ID
         res = await client.get(f"/api/v1/users/{user_id}")
         assert res.status_code == 200
@@ -113,6 +128,28 @@ async def test_user_lifecycle(app):
         res = await client.delete(f"/api/v1/users/{user_id}/retire")
         assert res.status_code == 200
         assert res.json()["message"] == "User retired successfully"
+
+        # Create active admin user & login to run search as active user after test user retirement
+        admin_email = f"active_admin_{uuid4().hex[:8]}@example.com"
+        admin_payload = {
+            "first_name": "Active",
+            "last_name": "Admin",
+            "email": admin_email,
+            "password": "SecurePassword123!",
+        }
+        create_adm_res = await client.post("/api/v1/users/create", json=admin_payload)
+        assert create_adm_res.status_code == 201
+        adm_id = create_adm_res.json()["id"]
+
+        async with get_db_session() as db:
+            adm_obj = (await db.execute(select(User).where(User.id == adm_id))).scalar_one()
+            admin_role = (await db.execute(select(Role).where(Role.name == "SuperAdmin"))).scalar_one_or_none()
+            if admin_role:
+                adm_obj.roles.append(admin_role)
+                await db.commit()
+
+        login_adm_res = await client.post("/api/v1/auth/login", json={"email": admin_email, "password": "SecurePassword123!"})
+        assert login_adm_res.status_code == 200
 
         # 9. Verify retired user is EXCLUDED from active user search results
         res = await client.get("/api/v1/users/search", params={"lookupText": "UpdatedName"})

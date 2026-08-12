@@ -35,6 +35,21 @@ async def test_user_subscription_and_role_lifecycle(app):
         user_data = res.json()
         user_id = user_data["id"]
 
+        # Assign SuperAdmin role to test user so client has all privileges for test steps
+        from models.db_models import Role, User
+        from services.database import get_db_session
+        from sqlalchemy import select
+        async with get_db_session() as db:
+            user_obj = (await db.execute(select(User).where(User.id == user_id))).scalar_one()
+            admin_role = (await db.execute(select(Role).where(Role.name == "SuperAdmin"))).scalar_one_or_none()
+            if admin_role:
+                user_obj.roles.append(admin_role)
+                await db.commit()
+
+        # Login to receive access_token cookie
+        login_res = await client.post("/api/v1/auth/login", json={"email": test_email, "password": "Password123!"})
+        assert login_res.status_code == 200
+
         # Verify initial roles and subscription in user creation response
         assert len(user_data["roles"]) >= 1
         assert any(r["name"] == "Normal" for r in user_data["roles"])
@@ -48,7 +63,7 @@ async def test_user_subscription_and_role_lifecycle(app):
         priv_data = res.json()
         assert priv_data["user_id"] == user_id
         assert any(r["name"] == "Normal" for r in priv_data["roles"])
-        assert "feature:standard_chat" in priv_data["privilege_codes"]
+        assert "ET_START_LEARNING_SESSION" in priv_data["privilege_codes"]
 
         # 3. Upgrade Subscription Tier to 'Pro'
         upgrade_payload = {
@@ -70,11 +85,11 @@ async def test_user_subscription_and_role_lifecycle(app):
         assert "Pro" in role_names
         assert "Normal" not in role_names
 
-        # Verify new privileges (e.g. feature:visual_mode)
+        # Verify new privileges (e.g. ET_UPGRADE_SUBSCRIPTION)
         res = await client.get(f"/api/v1/users/{user_id}/roles")
         assert res.status_code == 200
         priv_data = res.json()
-        assert "feature:visual_mode" in priv_data["privilege_codes"]
+        assert "ET_UPGRADE_SUBSCRIPTION" in priv_data["privilege_codes"]
 
         # 5. Upgrade Subscription Tier to 'Ultra'
         ultra_payload = {
@@ -86,12 +101,12 @@ async def test_user_subscription_and_role_lifecycle(app):
         sub_res = res.json()
         assert sub_res["tier"] == "ultra"
 
-        # Verify role updated to 'Ultra' and privileges updated (feature:multi_agent_tutor)
+        # Verify role updated to 'Ultra' and privileges updated (ET_DOWNGRADE_SUBSCRIPTION)
         res = await client.get(f"/api/v1/users/{user_id}/roles")
         assert res.status_code == 200
         priv_data = res.json()
         assert any(r["name"] == "Ultra" for r in priv_data["roles"])
-        assert "feature:multi_agent_tutor" in priv_data["privilege_codes"]
+        assert "ET_DOWNGRADE_SUBSCRIPTION" in priv_data["privilege_codes"]
 
         # 6. Downgrade Subscription Tier back to 'Normal'
         downgrade_payload = {

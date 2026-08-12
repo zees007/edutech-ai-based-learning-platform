@@ -11,6 +11,12 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.dependencies import require_privilege
+from app.privileges_config import (
+    ET_DOWNGRADE_SUBSCRIPTION,
+    ET_UPGRADE_SUBSCRIPTION,
+    ET_VIEW_SUBSCRIPTION,
+)
 from models.subscription_schemas import SubscriptionResponse, SubscriptionUpdateRequest
 from services.database import get_db
 from services.subscription_service import SubscriptionService
@@ -18,7 +24,11 @@ from services.subscription_service import SubscriptionService
 router = APIRouter()
 
 
-@router.get("/subscriptions/users/{user_id}", response_model=SubscriptionResponse)
+@router.get(
+    "/subscriptions/users/{user_id}",
+    response_model=SubscriptionResponse,
+    dependencies=[Depends(require_privilege(ET_VIEW_SUBSCRIPTION))],
+)
 async def get_user_subscription(
     user_id: str,
     db: AsyncSession = Depends(get_db),
@@ -28,7 +38,11 @@ async def get_user_subscription(
     return SubscriptionResponse.model_validate(sub)
 
 
-@router.put("/subscriptions/users/{user_id}/tier", response_model=SubscriptionResponse)
+@router.put(
+    "/subscriptions/users/{user_id}/tier",
+    response_model=SubscriptionResponse,
+    dependencies=[Depends(require_privilege(ET_UPGRADE_SUBSCRIPTION, ET_DOWNGRADE_SUBSCRIPTION))],
+)
 async def update_user_subscription_tier(
     user_id: str,
     request: SubscriptionUpdateRequest,
