@@ -157,6 +157,18 @@ CUSTOM_CSS = """
         font-weight: 700;
         margin-bottom: 4px;
     }
+
+    /* Tier Badge in Sidebar */
+    .tier-pill {
+        background: rgba(99, 102, 241, 0.15);
+        color: #818CF8;
+        border: 1px solid rgba(99, 102, 241, 0.35);
+        font-size: 0.75rem;
+        font-weight: 700;
+        padding: 2px 10px;
+        border-radius: 6px;
+        text-transform: uppercase;
+    }
 </style>
 """
 st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
@@ -194,23 +206,52 @@ def get_or_create_memory() -> SharedMemory | None:
 
 def render_learning_workspace():
     """Renders the student learning workspace."""
+    user_profile = st.session_state.get("user_profile")
+    if not user_profile:
+        st.session_state["auth_tab"] = "login"
+        st.session_state["view"] = "auth"
+        st.toast("🔒 Authentication Required: Please sign in or create an account to access the AI learning workspace.", icon="🔒")
+        st.rerun()
+
     # ─── Sidebar Controls & Gamification ─────────────────────────────
     with st.sidebar:
-        st.image("https://img.icons8.com/isometric/96/graduation-cap.png", width=64)
+        st.image("https://img.icons8.com/isometric/96/graduation-cap.png", width=56)
         
-        # Navigation Switcher
-        st.markdown("### **Portal Navigation**")
-        if st.button("🛡️ **Open Admin Console**", use_container_width=True, help="Manage users, roles & subscriptions"):
-            st.session_state["view"] = "admin"
-            st.rerun()
+        # User Session Badge
+        u_tier = (user_profile.subscription.tier if user_profile.subscription else "normal").upper()
+        st.markdown(
+            f"""
+            <div style="background: #18181B; border: 1px solid #27272A; border-radius: 8px; padding: 10px; margin-bottom: 12px;">
+                <div style="color: #FAFAFA; font-weight: 700; font-size: 0.9rem;">👋 {user_profile.first_name} {user_profile.last_name}</div>
+                <div style="color: #A1A1AA; font-size: 0.78rem; margin-bottom: 6px;">{user_profile.email}</div>
+                <span class="tier-pill">{u_tier} TIER</span>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        nav_c1, nav_c2 = st.columns(2)
+        with nav_c1:
+            if st.button("🏠 Home", key="sidebar_nav_home", use_container_width=True):
+                st.session_state["view"] = "home"
+                st.rerun()
+        with nav_c2:
+            if st.button("🚪 Logout", key="sidebar_nav_logout", use_container_width=True):
+                st.session_state["user_profile"] = None
+                st.session_state["view"] = "home"
+                st.toast("Logged out successfully.", icon="ℹ️")
+                st.rerun()
 
         st.markdown("---")
         st.markdown("### **EduTechAI Settings**")
         
+        # Check if quick-launched from home page
+        default_topic = st.session_state.pop("quick_launch_topic", None) or st.session_state.get("last_topic", "How does photosynthesis work?")
+
         # Topic Input
         topic_input = st.text_input(
             "🎯 **What do you want to learn?**",
-            value=st.session_state.get("last_topic", "How does photosynthesis work?"),
+            value=default_topic,
             placeholder="e.g. Quantum Computing, Photosynthesis...",
         )
         
@@ -676,10 +717,15 @@ def render_learning_workspace():
 
 # ─── Main View Switcher Execution ─────────────────────────────────
 if "view" not in st.session_state:
-    st.session_state["view"] = "learning"
+    st.session_state["view"] = "home"
 
-if st.session_state.get("view") == "admin":
+current_view = st.session_state.get("view", "home")
+
+if current_view == "admin":
     from admin_ui import render_admin_panel
     render_admin_panel()
+elif current_view in ["home", "auth", "pricing"]:
+    from home_ui import render_home_page
+    render_home_page()
 else:
     render_learning_workspace()
