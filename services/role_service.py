@@ -223,3 +223,4 @@ class RoleService:
                 root_nodes.append(node)
 
         return root_nodes
+

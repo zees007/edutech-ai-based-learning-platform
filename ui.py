@@ -173,469 +173,513 @@ def run_async(coro):
     return loop.run_until_complete(coro)
 
 
+# ─── One-Time DB Initialization (at Streamlit app startup) ───────
+# @st.cache_resource ensures this runs only once per server lifecycle,
+# so switching to the Admin Console later is instant (DB already warmed up).
+@st.cache_resource
+def _init_db_once():
+    """Warm up DB schema, migrations, and seeds at app start — not on first admin switch."""
+    from services.database import init_db
+    from config import get_settings
+    run_async(init_db(get_settings()))
+
+
+_init_db_once()  # Triggered once on first Streamlit page load
+
+
 def get_or_create_memory() -> SharedMemory | None:
     """Retrieve active session from session state."""
     return st.session_state.get("memory")
 
 
-# ─── Sidebar Controls & Gamification ─────────────────────────────
-with st.sidebar:
-    st.image("https://img.icons8.com/isometric/96/graduation-cap.png", width=64)
-    st.markdown("### **EduTechAI Settings**")
-    
-    # Topic Input
-    topic_input = st.text_input(
-        "🎯 **What do you want to learn?**",
-        value=st.session_state.get("last_topic", "How does photosynthesis work?"),
-        placeholder="e.g. Quantum Computing, Photosynthesis...",
-    )
-    
-    # Topic Suggestions
-    st.markdown("<small>💡 **Try asking:**</small>", unsafe_allow_html=True)
-    cols = st.columns(2)
-    if cols[0].button("🌱 Photosynthesis", key="sug1"):
-        topic_input = "How does photosynthesis work?"
-    if cols[1].button("⚛️ Quantum Physics", key="sug2"):
-        topic_input = "Explain quantum entanglement"
-    if cols[0].button("🧠 Neural Networks", key="sug3"):
-        topic_input = "How do neural networks learn?"
-    if cols[1].button("🌊 Ocean Tides", key="sug4"):
-        topic_input = "What causes ocean tides?"
-
-    st.markdown("---")
-
-    # Learning Mode Selection
-    mode_option = st.selectbox(
-        "🎨 **Learning Mode**",
-        options=["Visual 🎬", "Deep Dive 🔬", "Bite-Sized ⚡"],
-        index=0,
-        help="Visual: video & diagrams | Deep Dive: papers & proofs | Bite-Sized: quick summaries",
-    )
-    mode_map = {
-        "Visual 🎬": LearningMode.VISUAL,
-        "Deep Dive 🔬": LearningMode.DEEP_DIVE,
-        "Bite-Sized ⚡": LearningMode.BITE_SIZED,
-    }
-    selected_mode = mode_map[mode_option]
-
-    # Student Level Selection
-    level_option = st.selectbox(
-        "🎓 **Education Level**",
-        options=["Middle School 🏫", "High School 🎒", "Undergraduate 🏛️", "Graduate 🎓", "General Curious 💡"],
-        index=0,
-    )
-    level_map = {
-        "Middle School 🏫": "middle_school",
-        "High School 🎒": "high_school",
-        "Undergraduate 🏛️": "undergraduate",
-        "Graduate 🎓": "graduate",
-        "General Curious 💡": "general",
-    }
-    selected_level = level_map[level_option]
-
-    st.markdown("---")
-
-    # Start Learning Journey Button
-    start_clicked = st.button("🚀 **Start Learning Journey**", type="primary", use_container_width=True)
-
-
-# ─── Session Initialization Logic ────────────────────────────────
-if start_clicked and topic_input:
-    st.session_state["last_topic"] = topic_input
-    
-    with st.spinner("🧠 Orchestrator Agent is decomposing topic into milestone steps..."):
-        # Initialize SharedMemory
-        new_memory = SharedMemory(
-            topic=topic_input,
-            learning_mode=selected_mode,
-            student_level=selected_level,
-        )
+def render_learning_workspace():
+    """Renders the student learning workspace."""
+    # ─── Sidebar Controls & Gamification ─────────────────────────────
+    with st.sidebar:
+        st.image("https://img.icons8.com/isometric/96/graduation-cap.png", width=64)
         
-        # Run Orchestrator Agent
-        orchestrator = OrchestratorAgent()
-        run_async(orchestrator.execute(new_memory))
-        
-        # Persist session to PostgreSQL database in Supabase
-        try:
-            from services.session_manager import SessionManager
-            run_async(SessionManager().create_session(new_memory))
-        except Exception as e:
-            logging.warning(f"Could not persist session to database: {e}")
-
-        st.session_state["memory"] = new_memory
-        st.session_state["active_step_index"] = 0
-        st.session_state["submitted_quizzes"] = {}
-        st.rerun()
-
-memory = get_or_create_memory()
-
-# ─── Main Content Workspace ──────────────────────────────────────
-if not memory or not memory.steps:
-    # Landing Page State
-    st.markdown('<div class="main-title">EduTechAI Learning Workspace</div>', unsafe_allow_html=True)
-    st.markdown('<div class="sub-title">An adaptive educational workspace where autonomous AI agents collaborate in real-time.</div>', unsafe_allow_html=True)
-    
-    st.info("👈 Enter a topic in the sidebar and click **Start Learning Journey** to begin!")
-    
-    # Feature Grid
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.markdown(
-            """
-            <div class="glass-card">
-                <h3>🧩 Socratic Tutor Agent</h3>
-                <p>Explains complex concepts using simple everyday analogies and guiding questions — no raw text dumps!</p>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-    with col2:
-        st.markdown(
-            """
-            <div class="glass-card">
-                <h3>🎬 YouTube Curator</h3>
-                <p>Extracts transcripts and pinpoints exact timestamp clips to jump straight to the explanation moment.</p>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-    with col3:
-        st.markdown(
-            """
-            <div class="glass-card">
-                <h3>📚 Academic Researcher</h3>
-                <p>Searches OpenAlex, Semantic Scholar, and arXiv for open-access papers and AI-generated summaries.</p>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-else:
-    # Active Session Workspace
-    st.markdown(f'<div class="main-title">📖 Learning: {memory.topic}</div>', unsafe_allow_html=True)
-    
-    # ─── Top Progress & Gamification Header Dashboard ──────────────
-    total_xp = memory.xp_earned if memory else 0
-    level_data = calculate_level(total_xp)
-    completed_steps = sum(1 for s in memory.steps if s.status == StepStatus.COMPLETE)
-    total_steps = len(memory.steps)
-
-    st.markdown(
-        f"""
-        <div class="top-progress-card">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span style="font-weight: 800; font-size: 1.05rem; color: #F1F5F9;">🏆 <b>Your Progress Header</b></span>
-                <span style="font-size: 0.85rem; color: #94A3B8; font-weight: 600;">Mode: <b style="color:#A855F7;">{memory.learning_mode.value.title()}</b> | Audience: <b style="color:#3B82F6;">{memory.student_level.title()}</b></span>
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    prog_col1, prog_col2, prog_col3, prog_col4 = st.columns([1.2, 1.2, 1.8, 1.8])
-    with prog_col1:
-        st.markdown(
-            f"""
-            <div class="glass-card" style="margin-bottom:0; text-align:center; padding: 0.75rem 0.5rem;">
-                <div class="top-progress-label">Current Level</div>
-                <div class="top-progress-stat">Lvl {level_data['level']}</div>
-                <div style="font-size:0.75rem; color:#A855F7; font-weight:700;">{level_data['title']}</div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-    with prog_col2:
-        st.markdown(
-            f"""
-            <div class="glass-card" style="margin-bottom:0; text-align:center; padding: 0.75rem 0.5rem;">
-                <div class="top-progress-label">Total Earned</div>
-                <div class="top-progress-stat">{total_xp} XP</div>
-                <div style="font-size:0.75rem; color:#3B82F6; font-weight:700;">🔥 Streak: {memory.streak_count}d</div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-    with prog_col3:
-        next_lvl = level_data['level'] + 1
-        st.markdown(f"<div class='top-progress-label'>Level {next_lvl} Progress ({level_data['progress_to_next']}%)</div>", unsafe_allow_html=True)
-        st.progress(level_data["progress_to_next"] / 100.0)
-
-    with prog_col4:
-        st.markdown(f"<div class='top-progress-label'>Journey ({completed_steps}/{total_steps} Steps Done)</div>", unsafe_allow_html=True)
-        st.progress(memory.progress_percentage / 100.0)
-
-    st.markdown("---")
-
-    # Milestone Step Navigation Bar
-    st.markdown("##### 📍 **Milestone Steps**")
-    step_cols = st.columns(len(memory.steps))
-    
-    active_idx = st.session_state.get("active_step_index", 0)
-
-    for i, step in enumerate(memory.steps):
-        status_icon = "✅" if step.status == StepStatus.COMPLETE else ("🟡" if i == active_idx else "⚪")
-        prereq_label = " (Warmup)" if step.is_prerequisite else ""
-        btn_label = f"{status_icon} Step {i+1}: {step.title[:18]}...{prereq_label}"
-        
-        btn_type = "primary" if i == active_idx else "secondary"
-        if step_cols[i].button(btn_label, key=f"step_btn_{i}", type=btn_type, use_container_width=True):
-            st.session_state["active_step_index"] = i
-            if memory.steps[i].status == StepStatus.PENDING:
-                memory.steps[i].status = StepStatus.IN_PROGRESS
-            try:
-                from services.session_manager import SessionManager
-                sm = SessionManager()
-                run_async(sm.update_session(memory))
-                run_async(sm.save_step_progress(memory.session_id, i, memory.steps[i].status.value))
-            except Exception as e:
-                logging.warning(f"Could not update step progress in DB: {e}")
+        # Navigation Switcher
+        st.markdown("### **Portal Navigation**")
+        if st.button("🛡️ **Open Admin Console**", use_container_width=True, help="Manage users, roles & subscriptions"):
+            st.session_state["view"] = "admin"
             st.rerun()
 
-    st.markdown("---")
+        st.markdown("---")
+        st.markdown("### **EduTechAI Settings**")
+        
+        # Topic Input
+        topic_input = st.text_input(
+            "🎯 **What do you want to learn?**",
+            value=st.session_state.get("last_topic", "How does photosynthesis work?"),
+            placeholder="e.g. Quantum Computing, Photosynthesis...",
+        )
+        
+        # Topic Suggestions
+        st.markdown("<small>💡 **Try asking:**</small>", unsafe_allow_html=True)
+        cols = st.columns(2)
+        if cols[0].button("🌱 Photosynthesis", key="sug1"):
+            topic_input = "How does photosynthesis work?"
+        if cols[1].button("⚛️ Quantum Physics", key="sug2"):
+            topic_input = "Explain quantum entanglement"
+        if cols[0].button("🧠 Neural Networks", key="sug3"):
+            topic_input = "How do neural networks learn?"
+        if cols[1].button("🌊 Ocean Tides", key="sug4"):
+            topic_input = "What causes ocean tides?"
 
-    # Current Step Execution
-    current_step = memory.steps[active_idx]
-    
-    # Prerequisite Warmup Alert
-    if current_step.is_prerequisite:
-        st.warning("⚠️ **Foundational Warmup:** The Orchestrator detected a prerequisite concept needed before tackling advanced details.")
+        st.markdown("---")
 
-    # Execute Workers for Current Step if not already executed
-    step_result = memory.get_step_result(active_idx)
-    
-    if not step_result.explanation:
-        with st.status(f"🤖 Autonomous AI Agents Collaborating on Step {active_idx+1}: {current_step.title}...", expanded=True) as status:
-            st.write("🧑‍🏫 **Socratic Tutor Agent** is writing personalized explanation...")
-            tutor = SocraticTutorAgent()
-            run_async(tutor.execute(memory, active_idx))
+        # Learning Mode Selection
+        mode_option = st.selectbox(
+            "🎨 **Learning Mode**",
+            options=["Visual 🎬", "Deep Dive 🔬", "Bite-Sized ⚡"],
+            index=0,
+            help="Visual: video & diagrams | Deep Dive: papers & proofs | Bite-Sized: quick summaries",
+        )
+        mode_map = {
+            "Visual 🎬": LearningMode.VISUAL,
+            "Deep Dive 🔬": LearningMode.DEEP_DIVE,
+            "Bite-Sized ⚡": LearningMode.BITE_SIZED,
+        }
+        selected_mode = mode_map[mode_option]
+
+        # Student Level Selection
+        level_option = st.selectbox(
+            "🎓 **Education Level**",
+            options=["Middle School 🏫", "High School 🎒", "Undergraduate 🏛️", "Graduate 🎓", "General Curious 💡"],
+            index=0,
+        )
+        level_map = {
+            "Middle School 🏫": "middle_school",
+            "High School 🎒": "high_school",
+            "Undergraduate 🏛️": "undergraduate",
+            "Graduate 🎓": "graduate",
+            "General Curious 💡": "general",
+        }
+        selected_level = level_map[level_option]
+
+        st.markdown("---")
+
+        # Start Learning Journey Button
+        start_clicked = st.button("🚀 **Start Learning Journey**", type="primary", use_container_width=True)
+
+
+    # ─── Session Initialization Logic ────────────────────────────────
+    if start_clicked and topic_input:
+        st.session_state["last_topic"] = topic_input
+        
+        with st.spinner("🧠 Orchestrator Agent is decomposing topic into milestone steps..."):
+            # Initialize SharedMemory
+            new_memory = SharedMemory(
+                topic=topic_input,
+                learning_mode=selected_mode,
+                student_level=selected_level,
+            )
             
-            st.write("🎬 **YouTube Curator Agent** is searching videos and extracting timestamp clips...")
-            youtube_agent = YouTubeCuratorAgent()
-            run_async(youtube_agent.execute(memory, active_idx))
+            # Run Orchestrator Agent
+            orchestrator = OrchestratorAgent()
+            run_async(orchestrator.execute(new_memory))
             
-            if memory.learning_mode != LearningMode.BITE_SIZED:
-                st.write("📚 **Academic Researcher Agent** is querying OpenAlex, Semantic Scholar & arXiv...")
-                academic_agent = AcademicResearcherAgent()
-                run_async(academic_agent.execute(memory, active_idx))
-                
-            st.write("📝 **Quiz Agent** is generating contextual comprehension check...")
-            quiz_agent = QuizAgent()
-            run_async(quiz_agent.execute(memory, active_idx))
-
-            status.update(label=f"✅ All Agents Completed Step {active_idx+1}!", state="complete", expanded=False)
-
-            # Persist updated memory with agent outputs to DB
+            # Persist session to PostgreSQL database in Supabase
             try:
                 from services.session_manager import SessionManager
-                run_async(SessionManager().update_session(memory))
+                run_async(SessionManager().create_session(new_memory))
             except Exception as e:
-                logging.warning(f"Could not persist step results to DB: {e}")
+                logging.warning(f"Could not persist session to database: {e}")
 
+            st.session_state["memory"] = new_memory
+            st.session_state["active_step_index"] = 0
+            st.session_state["submitted_quizzes"] = {}
             st.rerun()
 
-    # Two Column Main Layout (Left: Tutor & Chat | Right: Video, Papers, Quiz)
-    col_left, col_right = st.columns([1.1, 0.9])
+    memory = get_or_create_memory()
 
-    # ─── LEFT COLUMN: Socratic Tutor & Chat Drawer ────────────────
-    with col_left:
-        st.markdown(f"### 🧑‍🏫 **Step {active_idx+1}: {current_step.title}**")
-        st.caption(f"🎯 Objective: {current_step.description}")
-
-        # Socratic Tutor Explanation Card
-        st.markdown(
-            f"""
-            <div class="glass-card tutor-card">
-                {step_result.explanation}
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-        # Socratic Questions
-        if step_result.socratic_questions:
-            st.markdown("#### 🤔 **Socratic Questions to Consider:**")
-            for q in step_result.socratic_questions:
-                st.info(f"👉 **{q}**")
-
-        # Chat / Follow-up Input
-        st.markdown("#### 💬 **Ask the Socratic Tutor a Follow-up Question:**")
-        user_chat = st.chat_input("Ask for clarification, another analogy, or deeper detail...")
-        
-        if user_chat:
-            memory.add_conversation_turn("student", user_chat)
-            with st.spinner("🧑‍🏫 Tutor is thinking..."):
-                tutor = SocraticTutorAgent()
-                run_async(tutor.execute(memory, active_idx))
-                try:
-                    from services.session_manager import SessionManager
-                    run_async(SessionManager().update_session(memory))
-                except Exception as e:
-                    logging.warning(f"Could not persist chat update to DB: {e}")
+    # ─── Main Content Workspace ──────────────────────────────────────
+    if not memory or not memory.steps:
+        # Landing Page State with Header & Admin Button
+        header_col1, header_col2 = st.columns([4, 1])
+        with header_col1:
+            st.markdown('<div class="main-title">EduTechAI Learning Workspace</div>', unsafe_allow_html=True)
+            st.markdown('<div class="sub-title">An adaptive educational workspace where autonomous AI agents collaborate in real-time.</div>', unsafe_allow_html=True)
+        with header_col2:
+            st.write("")
+            if st.button("🛡️ Admin Portal", key="top_admin_btn", help="Switch to Admin Console"):
+                st.session_state["view"] = "admin"
                 st.rerun()
 
-    # ─── RIGHT COLUMN: Video, Papers & Quiz ────────────────────────
-    with col_right:
-        # 1. YouTube Clip Section
-        st.markdown("### 🎬 **Timestamped YouTube Clip**")
-        if step_result.youtube_clips:
-            clip = step_result.youtube_clips[0]
-            st.markdown(f"**{clip.title}** (`{clip.channel}`)")
-            st.caption(f"⏱️ Auto-jumping to relevant clip moment: **{clip.start_time}s – {clip.end_time}s**")
+        st.info("👈 Enter a topic in the sidebar and click **Start Learning Journey** to begin!")
+        
+        # Feature Grid
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.markdown(
+                """
+                <div class="glass-card">
+                    <h3>🧩 Socratic Tutor Agent</h3>
+                    <p>Explains complex concepts using simple everyday analogies and guiding questions — no raw text dumps!</p>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+        with col2:
+            st.markdown(
+                """
+                <div class="glass-card">
+                    <h3>🎬 YouTube Curator</h3>
+                    <p>Extracts transcripts and pinpoints exact timestamp clips to jump straight to the explanation moment.</p>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+        with col3:
+            st.markdown(
+                """
+                <div class="glass-card">
+                    <h3>📚 Academic Researcher</h3>
+                    <p>Searches OpenAlex, Semantic Scholar, and arXiv for open-access papers and AI-generated summaries.</p>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+    else:
+        # Active Session Workspace
+        act_col1, act_col2 = st.columns([4, 1])
+        with act_col1:
+            st.markdown(f'<div class="main-title">📖 Learning: {memory.topic}</div>', unsafe_allow_html=True)
+        with act_col2:
+            st.write("")
+            if st.button("🛡️ Admin Portal", key="act_admin_btn", help="Switch to Admin Console"):
+                st.session_state["view"] = "admin"
+                st.rerun()
+        
+        # ─── Top Progress & Gamification Header Dashboard ──────────────
+        total_xp = memory.xp_earned if memory else 0
+        level_data = calculate_level(total_xp)
+        completed_steps = sum(1 for s in memory.steps if s.status == StepStatus.COMPLETE)
+        total_steps = len(memory.steps)
+
+        st.markdown(
+            f"""
+            <div class="top-progress-card">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-weight: 800; font-size: 1.05rem; color: #F1F5F9;">🏆 <b>Your Progress Header</b></span>
+                    <span style="font-size: 0.85rem; color: #94A3B8; font-weight: 600;">Mode: <b style="color:#A855F7;">{memory.learning_mode.value.title()}</b> | Audience: <b style="color:#3B82F6;">{memory.student_level.title()}</b></span>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        prog_col1, prog_col2, prog_col3, prog_col4 = st.columns([1.2, 1.2, 1.8, 1.8])
+        with prog_col1:
+            st.markdown(
+                f"""
+                <div class="glass-card" style="margin-bottom:0; text-align:center; padding: 0.75rem 0.5rem;">
+                    <div class="top-progress-label">Current Level</div>
+                    <div class="top-progress-stat">Lvl {level_data['level']}</div>
+                    <div style="font-size:0.75rem; color:#A855F7; font-weight:700;">{level_data['title']}</div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+        with prog_col2:
+            st.markdown(
+                f"""
+                <div class="glass-card" style="margin-bottom:0; text-align:center; padding: 0.75rem 0.5rem;">
+                    <div class="top-progress-label">Total XP Earned</div>
+                    <div class="top-progress-stat">⭐ {total_xp}</div>
+                    <div style="font-size:0.75rem; color:#38BDF8; font-weight:700;">Streak: {memory.streak_count} 🔥</div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+        with prog_col3:
+            st.markdown(
+                f"""
+                <div class="glass-card" style="margin-bottom:0; padding: 0.75rem 0.8rem;">
+                    <div class="top-progress-label">Level Progress</div>
+                    <div style="font-size:0.85rem; color:#F1F5F9; font-weight:700; margin-bottom:4px;">{level_data['xp_in_level']} / {level_data['xp_needed_for_next']} XP</div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+            st.progress(level_data["progress"])
+
+        with prog_col4:
+            st.markdown(
+                f"""
+                <div class="glass-card" style="margin-bottom:0; padding: 0.75rem 0.8rem;">
+                    <div class="top-progress-label">Topic Completion</div>
+                    <div style="font-size:0.85rem; color:#F1F5F9; font-weight:700; margin-bottom:4px;">{completed_steps} of {total_steps} Steps ({completed_steps/total_steps if total_steps else 0:.0%})</div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+            st.progress(completed_steps / total_steps if total_steps else 0.0)
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        # ─── Milestone Navigation Tabs ─────────────────────────────
+        step_titles = [f"Step {i+1}: {step.title}" for i, step in enumerate(memory.steps)]
+        
+        # Check active index
+        active_idx = st.session_state.get("active_step_index", 0)
+        if active_idx >= len(memory.steps):
+            active_idx = 0
             
-            # Embed Video
-            st.video(clip.url, start_time=clip.start_time)
-            st.caption(f"📝 *Transcript Context:* \"{clip.relevance_snippet}\"")
-        else:
-            st.info("ℹ️ No exact video clip matching this specific sub-step. Enjoy the Socratic explanation!")
+        selected_step_title = st.selectbox(
+            "📌 **Milestone Learning Roadmap:**",
+            options=step_titles,
+            index=active_idx,
+            key="step_selector",
+        )
+        active_idx = step_titles.index(selected_step_title)
+        st.session_state["active_step_index"] = active_idx
+
+        current_step = memory.steps[active_idx]
+
+        # Display Step Details Header
+        col_s1, col_s2 = st.columns([3, 1])
+        with col_s1:
+            st.markdown(f"### Milestone {active_idx+1}: {current_step.title}")
+            st.markdown(f"*{current_step.description}*")
+            if current_step.prerequisite:
+                st.markdown(f'<span class="prereq-badge">Prereq: {current_step.prerequisite}</span>', unsafe_allow_html=True)
+        with col_s2:
+            status_color = "#10B981" if current_step.status == StepStatus.COMPLETE else ("#3B82F6" if current_step.status == StepStatus.IN_PROGRESS else "#6B7280")
+            st.markdown(f'<div style="text-align:right; font-weight:700; color:{status_color}; font-size:1.1rem;">Status: {current_step.status.value.upper()}</div>', unsafe_allow_html=True)
 
         st.markdown("---")
 
-        # 2. Academic Papers Section
-        st.markdown("### 📚 **Academic Papers & Resources**")
-        if step_result.academic_papers:
-            for paper in step_result.academic_papers:
-                authors_str = ", ".join(paper.authors[:3]) if paper.authors else "Unknown Authors"
-                year_str = f"({paper.year})" if paper.year else ""
-                tldr_str = f"<p><b>TLDR:</b> <i>{paper.tldr}</i></p>" if paper.tldr else ""
-                pdf_link = f'<a href="{paper.pdf_url}" target="_blank">📄 Read Open-Access PDF</a>' if paper.pdf_url else ""
-                
-                st.markdown(
-                    f"""<div class="paper-card">
-<h4 style="margin:0; font-size:1.0rem;">{paper.title}</h4>
-<p style="margin:0; color:#94A3B8; font-size:0.85rem;">{authors_str} {year_str} | Source: {paper.source.upper()}</p>
-{tldr_str}
-{pdf_link}
-</div>""",
-                    unsafe_allow_html=True,
-                )
-        else:
-            st.caption("No papers loaded for this step (or Bite-Sized mode active).")
+        # Tabbed Output Interface for Active Step
+        tab_tutor, tab_video, tab_papers, tab_quiz = st.tabs([
+            "🧩 Socratic Explanation",
+            "🎬 Video Clip & Transcript",
+            "📚 Academic Papers",
+            "📝 Quiz & Knowledge Check",
+        ])
 
-        st.markdown("---")
+        # TAB 1: Socratic Explanation
+        with tab_tutor:
+            if current_step.tutor_explanation:
+                st.markdown(f'<div class="glass-card tutor-card">{current_step.tutor_explanation}</div>', unsafe_allow_html=True)
+            else:
+                if st.button("🤖 **Generate Socratic Explanation**", type="primary", key=f"tutor_btn_{active_idx}"):
+                    with st.spinner("Socratic Tutor Agent is crafting explanation..."):
+                        tutor = SocraticTutorAgent()
+                        explanation = run_async(tutor.explain_step(current_step, memory.topic, memory.learning_mode, memory.student_level))
+                        current_step.tutor_explanation = explanation
+                        
+                        # Persist to database
+                        try:
+                            from services.session_manager import SessionManager
+                            run_async(SessionManager().update_session(memory))
+                        except Exception as e:
+                            logging.warning(f"Could not persist session update to database: {e}")
 
-        # 3. Interactive Quiz Card
-        st.markdown("### 📝 **Milestone Comprehension Check**")
-        if step_result.quiz and step_result.quiz.questions:
-            quiz_submitted_key = f"quiz_sub_{active_idx}"
-            
-            with st.form(key=f"quiz_form_{active_idx}"):
-                user_answers = {}
-                for q in step_result.quiz.questions:
-                    st.markdown(f"**Q{q.index+1}: {q.question}**")
-                    if q.options:
-                        user_answers[q.index] = st.radio(
-                            "Select answer:",
-                            options=q.options,
-                            index=None,
-                            key=f"q_{active_idx}_{q.index}",
-                            label_visibility="collapsed",
+                        st.rerun()
+
+        # TAB 2: YouTube Videos
+        with tab_video:
+            if current_step.videos:
+                for idx, vid in enumerate(current_step.videos):
+                    st.subheader(f"🎬 Video: {vid.title}")
+                    st.write(f"**Channel:** {vid.channel} | **Relevance:** {vid.relevance_score:.0%}")
+                    
+                    # Video Embed
+                    if vid.embed_url:
+                        st.components.v1.iframe(vid.embed_url, height=400)
+                    
+                    # Timestamp Deep Link
+                    if vid.timestamp_seconds:
+                        timestamp_mins = vid.timestamp_seconds // 60
+                        timestamp_secs = vid.timestamp_seconds % 60
+                        st.markdown(
+                            f"📌 **Key Explanation Segment:** [{timestamp_mins:02d}:{timestamp_secs:02d}]({vid.timestamp_url}) "
+                            f"— *\"{vid.timestamp_explanation}\"*"
                         )
-                    else:
-                        user_answers[q.index] = st.text_input(
-                            "Fill in blank:",
-                            key=f"q_{active_idx}_{q.index}",
-                        )
-                
-                submit_quiz_btn = st.form_submit_button("✅ **Submit Answers & Earn XP**", type="primary", use_container_width=True)
+                    
+                    # Relevant Snippet
+                    if vid.relevant_snippet:
+                        st.caption(f"**Transcript Snippet:** {vid.relevant_snippet}")
+                    
+                    if idx < len(current_step.videos) - 1:
+                        st.markdown("---")
+            else:
+                if st.button("🎬 **Curate Relevant YouTube Clips**", key=f"yt_btn_{active_idx}"):
+                    with st.spinner("YouTube Curator Agent searching transcripts..."):
+                        curator = YouTubeCuratorAgent()
+                        videos = run_async(curator.curate_videos(current_step, memory.topic, memory.student_level))
+                        current_step.videos = videos
+                        
+                        try:
+                            from services.session_manager import SessionManager
+                            run_async(SessionManager().update_session(memory))
+                        except Exception as e:
+                            logging.warning(f"Could not persist session update to database: {e}")
 
-            # Validate answers if user clicked submit button
-            if submit_quiz_btn:
-                unanswered = [q.index + 1 for q in step_result.quiz.questions if not user_answers.get(q.index)]
-                if unanswered:
-                    st.warning(f"⚠️ Please select an answer for question(s) {', '.join(map(str, unanswered))} before submitting!")
-                else:
-                    st.session_state[quiz_submitted_key] = True
+                        st.rerun()
 
-            if st.session_state.get(quiz_submitted_key):
-                st.session_state[quiz_submitted_key] = True
-                
-                correct_count = 0
-                total_q = len(step_result.quiz.questions)
-                
-                for q in step_result.quiz.questions:
-                    ans = user_answers.get(q.index, "")
-                    is_correct = ans.strip().lower() == q.correct_answer.strip().lower()
-                    if is_correct:
-                        correct_count += 1
-                        st.success(f"✅ **Q{q.index+1}: Correct!** {q.explanation}")
-                    else:
-                        st.error(f"❌ **Q{q.index+1}: Incorrect.** Correct answer: **{q.correct_answer}**. {q.explanation}")
-                
-                score = correct_count / total_q if total_q > 0 else 0
-                earned_xp = calculate_quiz_xp(correct_count, total_q)
-                
-                # Award XP if first time submitting
-                if f"xp_awarded_{active_idx}" not in st.session_state:
-                    st.session_state[f"xp_awarded_{active_idx}"] = True
-                    memory.xp_earned += earned_xp + calculate_step_xp(memory.streak_count)
-                    memory.mark_step_complete(active_idx)
+        # TAB 3: Academic Papers
+        with tab_papers:
+            if current_step.papers:
+                st.markdown("### 📚 Curated Academic Papers & Preprints")
+                for paper in current_step.papers:
+                    st.markdown(
+                        f"""
+                        <div class="paper-card">
+                            <h4 style="margin-bottom:4px; color:#60A5FA;"><a href="{paper.url}" target="_blank" style="color:#60A5FA; text-decoration:none;">📄 {paper.title}</a></h4>
+                            <p style="font-size:0.85rem; color:#94A3B8; margin-bottom:6px;"><b>Authors:</b> {', '.join(paper.authors[:3])} | <b>Year:</b> {paper.year or 'N/A'} | <b>Source:</b> {paper.source.title()}</p>
+                            <p style="font-size:0.9rem; color:#E2E8F0;"><b>AI Key Insight:</b> {paper.ai_summary or paper.abstract[:250] + '...'}</p>
+                        </div>
+                        """,
+                        unsafe_allow_html=True,
+                    )
+            else:
+                if st.button("📚 **Curate Academic Papers**", key=f"paper_btn_{active_idx}"):
+                    with st.spinner("Academic Researcher Agent querying OpenAlex & arXiv..."):
+                        researcher = AcademicResearcherAgent()
+                        papers = run_async(researcher.curate_papers(current_step, memory.topic))
+                        current_step.papers = papers
+                        
+                        try:
+                            from services.session_manager import SessionManager
+                            run_async(SessionManager().update_session(memory))
+                        except Exception as e:
+                            logging.warning(f"Could not persist session update to database: {e}")
 
-                    # Update next step to in_progress if exists
-                    if active_idx + 1 < len(memory.steps):
-                        if memory.steps[active_idx + 1].status == StepStatus.PENDING:
-                            memory.steps[active_idx + 1].status = StepStatus.IN_PROGRESS
+                        st.rerun()
 
-                    # Persist progress & gamification XP to PostgreSQL database in Supabase
-                    try:
-                        from services.session_manager import SessionManager
-                        sm = SessionManager()
-                        run_async(sm.update_session(memory))
-                        run_async(sm.save_step_progress(
-                            session_id=memory.session_id,
-                            step_index=active_idx,
-                            status="complete",
-                            quiz_score=score,
-                        ))
+        # TAB 4: Comprehension Quiz
+        with tab_quiz:
+            if not current_step.quiz:
+                if st.button("📝 **Generate Step Quiz**", type="primary", key=f"quiz_gen_{active_idx}"):
+                    with st.spinner("Quiz Agent generating interactive questions..."):
+                        quiz_agent = QuizAgent()
+                        quiz_questions = run_async(quiz_agent.generate_quiz(current_step, memory.topic, memory.student_level))
+                        current_step.quiz = quiz_questions
+                        
+                        try:
+                            from services.session_manager import SessionManager
+                            run_async(SessionManager().update_session(memory))
+                        except Exception as e:
+                            logging.warning(f"Could not persist session update to database: {e}")
+
+                        st.rerun()
+            else:
+                st.markdown("### 📝 Milestone Knowledge Check")
+                quiz_key = f"quiz_form_{active_idx}"
+                
+                with st.form(quiz_key):
+                    user_answers = {}
+                    for q_idx, q in enumerate(current_step.quiz):
+                        st.markdown(f"**Q{q_idx+1}: {q.question}**")
+                        opts = [f"{k}: {v}" for k, v in q.options.items()]
+                        user_ans = st.radio(f"Select answer for Q{q_idx+1}:", opts, key=f"q_{active_idx}_{q_idx}", index=0)
+                        user_answers[q_idx] = user_ans.split(":")[0].strip()
+                        st.markdown("---")
+                    
+                    submit_quiz = st.form_submit_button("Submit Quiz Answers")
+
+                if submit_quiz or f"quiz_submitted_{active_idx}" in st.session_state:
+                    st.session_state[f"quiz_submitted_{active_idx}"] = True
+                    correct_count = 0
+                    total_q = len(current_step.quiz)
+
+                    st.markdown("### 📊 Quiz Results & Grading")
+                    for q_idx, q in enumerate(current_step.quiz):
+                        selected = user_answers.get(q_idx, "A")
+                        is_correct = selected == q.correct_option
+                        if is_correct:
+                            correct_count += 1
+                            st.success(f"**Q{q_idx+1}: Correct!** ✅ — {q.explanation}")
+                        else:
+                            st.error(f"**Q{q_idx+1}: Incorrect** ❌ — You selected ({selected}). Correct: ({q.correct_option}). {q.explanation}")
+
+                    score = correct_count / total_q if total_q > 0 else 0
+                    current_step.quiz_score = score
+                    earned_xp = calculate_quiz_xp(score)
+
+                    if f"xp_awarded_{active_idx}" not in st.session_state:
+                        st.session_state[f"xp_awarded_{active_idx}"] = True
+                        memory.xp_earned += earned_xp + calculate_step_xp(memory.streak_count)
+                        memory.mark_step_complete(active_idx)
+
+                        # Update next step to in_progress if exists
                         if active_idx + 1 < len(memory.steps):
-                            run_async(sm.save_step_progress(
-                                session_id=memory.session_id,
-                                step_index=active_idx + 1,
-                                status="in_progress",
-                            ))
-                    except Exception as e:
-                        logging.warning(f"Could not persist step progress to database: {e}")
+                            if memory.steps[active_idx + 1].status == StepStatus.PENDING:
+                                memory.steps[active_idx + 1].status = StepStatus.IN_PROGRESS
 
-                    st.toast(f"🎉 Quiz Submitted! Earned +{earned_xp} XP!", icon="⭐")
-                    time.sleep(1)
-                    st.rerun()
-
-                st.info(f"📊 **Score: {score:.0%}** ({correct_count}/{total_q} correct) | Earned +{earned_xp} XP")
-
-                # Next Step Button
-                if active_idx + 1 < len(memory.steps):
-                    if st.button("➡️ **Advance to Next Step**", type="primary", use_container_width=True):
-                        # Ensure current step is marked complete
-                        if memory.steps[active_idx].status != StepStatus.COMPLETE:
-                            memory.mark_step_complete(active_idx)
-
-                        next_idx = active_idx + 1
-                        st.session_state["active_step_index"] = next_idx
-                        if memory.steps[next_idx].status == StepStatus.PENDING:
-                            memory.steps[next_idx].status = StepStatus.IN_PROGRESS
-
+                        # Persist progress & gamification XP to PostgreSQL database in Supabase
                         try:
                             from services.session_manager import SessionManager
                             sm = SessionManager()
                             run_async(sm.update_session(memory))
-                            run_async(sm.save_step_progress(memory.session_id, active_idx, "complete", quiz_score=score))
-                            run_async(sm.save_step_progress(memory.session_id, next_idx, "in_progress"))
+                            run_async(sm.save_step_progress(
+                                session_id=memory.session_id,
+                                step_index=active_idx,
+                                status="complete",
+                                quiz_score=score,
+                            ))
+                            if active_idx + 1 < len(memory.steps):
+                                run_async(sm.save_step_progress(
+                                    session_id=memory.session_id,
+                                    step_index=active_idx + 1,
+                                    status="in_progress",
+                                ))
                         except Exception as e:
-                            logging.warning(f"Could not update step progress in DB: {e}")
+                            logging.warning(f"Could not persist step progress to database: {e}")
 
+                        st.toast(f"🎉 Quiz Submitted! Earned +{earned_xp} XP!", icon="⭐")
+                        time.sleep(1)
                         st.rerun()
-                else:
-                    # Final step completed! Update session completion state
-                    if not memory.is_complete:
-                        memory.mark_step_complete(active_idx)
-                        try:
-                            from services.session_manager import SessionManager
-                            run_async(SessionManager().update_session(memory))
-                            run_async(SessionManager().save_step_progress(memory.session_id, active_idx, "complete", quiz_score=score))
-                        except Exception as e:
-                            logging.warning(f"Could not save final session state: {e}")
-                    st.balloons()
-                    st.success("🎉 **Congratulations! You have completed the entire learning journey for this topic!**")
-        else:
-            st.info("No quiz available for this step.")
+
+                    st.info(f"📊 **Score: {score:.0%}** ({correct_count}/{total_q} correct) | Earned +{earned_xp} XP")
+
+                    # Next Step Button
+                    if active_idx + 1 < len(memory.steps):
+                        if st.button("➡️ **Advance to Next Step**", type="primary", use_container_width=True):
+                            # Ensure current step is marked complete
+                            if memory.steps[active_idx].status != StepStatus.COMPLETE:
+                                memory.mark_step_complete(active_idx)
+
+                            next_idx = active_idx + 1
+                            st.session_state["active_step_index"] = next_idx
+                            if memory.steps[next_idx].status == StepStatus.PENDING:
+                                memory.steps[next_idx].status = StepStatus.IN_PROGRESS
+
+                            try:
+                                from services.session_manager import SessionManager
+                                sm = SessionManager()
+                                run_async(sm.update_session(memory))
+                                run_async(sm.save_step_progress(memory.session_id, active_idx, "complete", quiz_score=score))
+                                run_async(sm.save_step_progress(memory.session_id, next_idx, "in_progress"))
+                            except Exception as e:
+                                logging.warning(f"Could not update step progress in DB: {e}")
+
+                            st.rerun()
+                    else:
+                        # Final step completed! Update session completion state
+                        if not memory.is_complete:
+                            memory.mark_step_complete(active_idx)
+                            try:
+                                from services.session_manager import SessionManager
+                                run_async(SessionManager().update_session(memory))
+                                run_async(SessionManager().save_step_progress(memory.session_id, active_idx, "complete", quiz_score=score))
+                            except Exception as e:
+                                logging.warning(f"Could not save final session state: {e}")
+                        st.balloons()
+                        st.success("🎉 **Congratulations! You have completed the entire learning journey for this topic!**")
+
+
+# ─── Main View Switcher Execution ─────────────────────────────────
+if "view" not in st.session_state:
+    st.session_state["view"] = "learning"
+
+if st.session_state.get("view") == "admin":
+    from admin_ui import render_admin_panel
+    render_admin_panel()
+else:
+    render_learning_workspace()

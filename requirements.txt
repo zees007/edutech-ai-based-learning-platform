@@ -32,6 +32,9 @@ email-validator>=2.0.0
 bcrypt>=4.0.0
 python-dotenv>=1.0.0
 
+# ─── Security & JWT Authentication ──────────────────────────────
+pyjwt>=2.8.0
+
 # ─── Streamlit Frontend UI ───────────────────────────────────────
 streamlit>=1.38.0
 

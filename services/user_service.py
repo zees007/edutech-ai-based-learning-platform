@@ -15,7 +15,8 @@ from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.exceptions import BadRequestException, ConflictException, NotFoundException
-from models.db_models import User
+from models.db_models import Privilege, Role, Subscription, User
+from models.role_schemas import PrivilegeResponse, RoleResponse, UserPrivilegesResponse
 from models.user_schemas import ChangePasswordRequest, SearchDTO, UserCreateRequest, UserEditRequest
 
 logger = logging.getLogger(__name__)
@@ -42,6 +43,7 @@ class UserService:
     async def create_user(db: AsyncSession, dto: UserCreateRequest) -> User:
         """
         Create a new user. Raises ConflictException if email already exists.
+        Dynamically fetches and assigns the active 'Normal' tier role and initializes a 'normal' subscription.
         """
         # Check duplicate email
         stmt = select(User).where(User.email == dto.email)
@@ -54,6 +56,13 @@ class UserService:
 
         hashed_password = UserService.hash_password(dto.password)
 
+        # Query default 'Normal' subscription tier role dynamically from DB
+        role_stmt = select(Role).where(Role.name == "Normal", Role.retired == False)
+        role_res = await db.execute(role_stmt)
+        normal_role = role_res.scalar_one_or_none()
+
+        roles_to_assign = [normal_role] if normal_role else []
+
         user = User(
             first_name=dto.first_name,
             last_name=dto.last_name,
@@ -61,11 +70,22 @@ class UserService:
             password_hash=hashed_password,
             mobile=dto.mobile,
             country=dto.country,
+            roles=roles_to_assign,
         )
         db.add(user)
+        await db.flush()
+
+        # Create active default subscription
+        subscription = Subscription(
+            user_id=user.id,
+            tier="normal",
+            status="active",
+        )
+        db.add(subscription)
+
         await db.commit()
         await db.refresh(user)
-        logger.info(f"User created: {user.id} ({user.email})")
+        logger.info(f"User created with default 'Normal' role & subscription: {user.id} ({user.email})")
         return user
 
     @staticmethod
@@ -210,3 +230,59 @@ class UserService:
         users = list(res.scalars().all())
 
         return users, total
+
+    @staticmethod
+    async def assign_roles_to_user(db: AsyncSession, user_id: str, role_ids: list[str]) -> User:
+        """
+        Assign a set of roles to a user. Validates role IDs exist and are not retired.
+        Raises NotFoundException if user not found, or BadRequestException if invalid role ID.
+        """
+        user = await UserService.get_user_by_id(db, user_id)
+
+        roles: list[Role] = []
+        if role_ids:
+            r_stmt = select(Role).where(Role.id.in_(role_ids), Role.retired == False)
+            r_res = await db.execute(r_stmt)
+            roles = list(r_res.scalars().all())
+
+            found_ids = {r.id for r in roles}
+            missing_ids = [rid for rid in set(role_ids) if rid not in found_ids]
+            if missing_ids:
+                raise BadRequestException(
+                    error_code="INVALID_ROLE_ID",
+                    errors=f"Role ID(s) {missing_ids} do not exist or are retired.",
+                )
+
+        user.roles = roles
+        await db.commit()
+        await db.refresh(user)
+        logger.info(f"Updated roles for user {user.id}: {[r.name for r in roles]}")
+        return user
+
+    @staticmethod
+    async def get_user_with_roles_and_privileges(db: AsyncSession, user_id: str) -> UserPrivilegesResponse:
+        """
+        Fetch a user's assigned roles and calculate all unique privileges granted.
+        """
+        user = await UserService.get_user_by_id(db, user_id)
+
+        unique_privileges: dict[int, Privilege] = {}
+        for role in user.roles:
+            if not role.retired:
+                for priv in role.privileges:
+                    unique_privileges[priv.id] = priv
+
+        privilege_list = [
+            PrivilegeResponse.model_validate(p)
+            for p in sorted(unique_privileges.values(), key=lambda p: (p.order_number or 0, p.id))
+        ]
+        privilege_codes = [p.code for p in privilege_list]
+        role_responses = [RoleResponse.model_validate(r) for r in user.roles if not r.retired]
+
+        return UserPrivilegesResponse(
+            user_id=user.id,
+            roles=role_responses,
+            privileges=privilege_list,
+            privilege_codes=privilege_codes,
+        )
+

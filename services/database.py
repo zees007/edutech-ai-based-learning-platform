@@ -33,6 +33,7 @@ logger = logging.getLogger(__name__)
 _engine: AsyncEngine | None = None
 _engine_loop: asyncio.AbstractEventLoop | None = None
 _session_factory: async_sessionmaker[AsyncSession] | None = None
+_db_initialized: bool = False  # Guard: ensures init_db() is a no-op after first run
 
 
 def _get_engine(settings: Settings | None = None) -> AsyncEngine:
@@ -93,6 +94,11 @@ def _get_session_factory(settings: Settings | None = None) -> async_sessionmaker
     return _session_factory
 
 
+def async_session_factory(settings: Settings | None = None) -> AsyncSession:
+    """Return a new AsyncSession instance bound to the active event loop engine."""
+    return _get_session_factory(settings)()
+
+
 async def run_auto_migrations() -> None:
     """
     Run Alembic database migrations automatically on server startup.
@@ -114,10 +120,19 @@ async def init_db(settings: Settings | None = None) -> None:
     """
     Initialize the database — create schema, tables, and run pending migrations.
     Called once during application startup.
+
+    A module-level flag (_db_initialized) ensures this is a true no-op on any
+    subsequent call within the same process lifetime, making screen switches fast.
     """
+    global _db_initialized
+    if _db_initialized:
+        logger.debug("Database already initialized — skipping redundant init_db() call.")
+        return
+
     settings = settings or get_settings()
     if not settings.auto_create_tables:
         logger.info("Automatic DDL table creation is disabled (AUTO_CREATE_TABLES=false).")
+        _db_initialized = True
         return
 
     # Ensure data directory exists for SQLite
@@ -145,10 +160,23 @@ async def init_db(settings: Settings | None = None) -> None:
     # Automatically run pending migrations on server restart
     await run_auto_migrations()
 
+    # Seed default roles and privileges
+    try:
+        from services.role_service import RoleService
+        factory = _get_session_factory(settings)
+        async with factory() as session:
+            await RoleService.seed_default_subscription_roles_and_privileges(session)
+    except Exception as e:
+        logger.warning(f"Role seeding notice: {e}")
+
+    _db_initialized = True
+    logger.info("Database initialization complete — future calls will be skipped.")
+
+
 
 async def close_db() -> None:
     """Close the database engine. Called during application shutdown."""
-    global _engine, _engine_loop, _session_factory
+    global _engine, _engine_loop, _session_factory, _db_initialized
     if _engine is not None:
         try:
             await _engine.dispose()
@@ -157,6 +185,7 @@ async def close_db() -> None:
         _engine = None
         _engine_loop = None
         _session_factory = None
+        _db_initialized = False  # Allow re-initialization on next startup
         logger.info("Database engine closed.")
 
 

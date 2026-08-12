@@ -84,3 +84,13 @@ class PaginatedRoleResponse(BaseModel):
     page: int = Field(..., description="Current page number")
     size: int = Field(..., description="Page size limit")
     total_pages: int = Field(..., description="Total number of pages available")
+
+
+class UserPrivilegesResponse(BaseModel):
+    """Response model for a user's assigned roles and overall deduplicated privileges."""
+
+    user_id: str
+    roles: list[RoleResponse] = Field(default_factory=list)
+    privileges: list[PrivilegeResponse] = Field(default_factory=list)
+    privilege_codes: list[str] = Field(default_factory=list)
+

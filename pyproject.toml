@@ -30,6 +30,9 @@ dependencies = [
     "pydantic>=2.9.0",
     "pydantic-settings>=2.5.0",
     "python-dotenv>=1.0.0",
+
+    # ─── Security & Auth ───
+    "pyjwt>=2.8.0",
 ]
 
 [project.optional-dependencies]

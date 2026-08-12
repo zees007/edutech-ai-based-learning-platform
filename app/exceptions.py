@@ -62,3 +62,17 @@ class BadRequestException(AppException):
 
     def __init__(self, error_code: str = "BAD_REQUEST", errors: list[str] | str = "Bad request.") -> None:
         super().__init__(status_code=400, error_code=error_code, errors=errors)
+
+
+class UnauthorizedException(AppException):
+    """HTTP 401 Unauthorized / Authentication Failure."""
+
+    def __init__(self, error_code: str = "UNAUTHORIZED", errors: list[str] | str = "Authentication failed or token missing/invalid.") -> None:
+        super().__init__(status_code=401, error_code=error_code, errors=errors)
+
+
+class ForbiddenException(AppException):
+    """HTTP 403 Forbidden / Insufficient Privileges."""
+
+    def __init__(self, error_code: str = "FORBIDDEN", errors: list[str] | str = "Access forbidden. Insufficient permissions.") -> None:
+        super().__init__(status_code=403, error_code=error_code, errors=errors)
