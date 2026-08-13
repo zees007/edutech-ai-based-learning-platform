@@ -70,8 +70,28 @@ HOME_CSS = """
         color: #FAFAFA !important;
     }
 
+    .block-container {
+        padding-top: 1.5rem !important;
+    }
+
     section[data-testid="stSidebar"] {
         display: none !important;
+    }
+
+    /* ── Global Primary Button — Gradient Style ──── */
+    .stApp button[kind="primary"] {
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%) !important;
+        border: none !important;
+        border-radius: 24px !important;
+        color: #FFFFFF !important;
+        font-weight: 800 !important;
+        box-shadow: 0 0 20px rgba(236, 72, 153, 0.35) !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+
+    .stApp button[kind="primary"]:hover {
+        box-shadow: 0 0 30px rgba(236, 72, 153, 0.6), 0 0 15px rgba(6, 182, 212, 0.4) !important;
+        transform: translateY(-2px) !important;
     }
 
     /* ── Glowing Background Orbs ───────────────────── */
@@ -118,46 +138,271 @@ HOME_CSS = """
         transform: translateY(-2px);
     }
 
-    /* ── Navbar ─────────────────────────────────────── */
-    .et-nav {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 0.8rem 0;
+    /* ── Navbar — Floating Glassmorphism Theme ───────── */
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) {
+        background: rgba(15, 23, 42, 0.85) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        border: 1px solid rgba(168, 85, 247, 0.35) !important;
+        border-radius: 50px !important;
+        padding: 8px 24px !important;
+        margin: 0rem 0 1.5rem 0 !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(168, 85, 247, 0.1) !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        min-height: 52px !important;
     }
 
-    .et-logo {
-        font-size: 1.3rem;
-        font-weight: 800;
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) * {
+        align-self: center !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) div[data-testid="column"],
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) div[data-testid="stColumn"] {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        height: auto !important;
+        min-height: 0 !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) div[data-testid="column"]:first-child,
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) div[data-testid="stColumn"]:first-child {
+        justify-content: flex-start !important;
+        padding-left: 0 !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) div[data-testid="column"]:first-child *,
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) div[data-testid="stColumn"]:first-child * {
+        justify-content: flex-start !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) div[data-testid="column"]:last-child,
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) div[data-testid="stColumn"]:last-child {
+        justify-content: flex-end !important;
+        padding-right: 0 !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) div[data-testid="stVerticalBlock"],
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) div[data-testid="stVerticalBlockBorderWrapper"] {
+        gap: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        justify-content: center !important;
+        align-items: center !important;
+        align-self: center !important;
+        display: flex !important;
+        flex-direction: row !important;
+        min-height: 0 !important;
+        height: auto !important;
+    }
+
+    /* Nested horizontal blocks inside the last column (button row) */
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) div[data-testid="column"]:last-child div[data-testid="stHorizontalBlock"],
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) div[data-testid="stColumn"]:last-child div[data-testid="stHorizontalBlock"] {
+        align-items: center !important;
+        justify-content: flex-end !important;
+        gap: 3px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        border-radius: 0 !important;
+        min-height: 0 !important;
+        flex-wrap: nowrap !important;
+    }
+
+    /* Force nested sub-columns (button wrappers) to shrink to content */
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) div[data-testid="column"]:last-child div[data-testid="stHorizontalBlock"] > div[data-testid="column"],
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) div[data-testid="column"]:last-child div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"],
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) div[data-testid="stColumn"]:last-child div[data-testid="stHorizontalBlock"] > div[data-testid="column"],
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) div[data-testid="stColumn"]:last-child div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"] {
+        flex: 0 0 auto !important;
+        width: auto !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) div.element-container,
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) div[data-testid="stElementContainer"] {
+        margin: 0 !important;
+        padding: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        align-self: center !important;
+        justify-content: center !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) div.stMarkdown,
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) div[data-testid="stMarkdownContainer"] {
+        display: flex !important;
+        align-items: center !important;
+        align-self: center !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) div.stMarkdown p,
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) div[data-testid="stMarkdownContainer"] p {
+        margin: 0 !important;
+        padding: 0 !important;
+        line-height: 1 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+    }
+
+    .et-logo, .et-logo-simple {
+        font-size: 1.38rem;
+        font-weight: 900;
         color: #FAFAFA;
         letter-spacing: -0.5px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin: 0;
+        line-height: 1;
+        align-self: center;
     }
 
-    .et-logo .accent {
-        background: linear-gradient(135deg, #8B5CF6, #EC4899);
+    .et-logo .accent, .et-logo-simple .accent {
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
     }
 
+    .et-logo .badge-ai, .et-logo-simple .badge-ai {
+        font-size: 0.65rem;
+        font-weight: 800;
+        background: rgba(168, 85, 247, 0.2);
+        color: #C084FC;
+        border: 1px solid rgba(168, 85, 247, 0.4);
+        border-radius: 8px;
+        padding: 2px 6px;
+        margin-left: 2px;
+        line-height: 1;
+    }
+
     .et-nav-links {
         display: flex;
-        gap: 28px;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        margin: 0;
+        align-self: center;
     }
 
-    .et-nav-links a {
-        color: rgba(255, 255, 255, 0.5);
-        font-size: 0.88rem;
-        font-weight: 500;
+    .et-nav-links a.nav-pill {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.95rem;
+        font-weight: 600;
         text-decoration: none;
-        transition: color 0.2s;
+        padding: 6px 16px;
+        border-radius: 20px;
+        border: 1px solid transparent;
+        transition: all 0.25s ease;
+        white-space: nowrap;
+        line-height: 1;
+        display: inline-flex;
+        align-items: center;
     }
 
-    .et-nav-links a:hover { color: #FAFAFA; }
+    .et-nav-links a.nav-pill:hover {
+        color: #FFFFFF;
+        background: rgba(168, 85, 247, 0.18);
+        border-color: rgba(168, 85, 247, 0.4);
+        box-shadow: 0 0 15px rgba(168, 85, 247, 0.25);
+    }
+
+    /* Modern Compact UI/UX Navbar Buttons Override */
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) div[data-testid="stButton"] {
+        margin: 0 !important;
+        padding: 0 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        align-self: center !important;
+        width: auto !important;
+        min-width: 0 !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) button {
+        height: 36px !important;
+        min-height: 36px !important;
+        max-height: 36px !important;
+        line-height: 1 !important;
+        margin: 0 !important;
+        border-radius: 18px !important;
+        font-weight: 700 !important;
+        font-size: 0.85rem !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 0 1.2rem !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        white-space: nowrap !important;
+        width: auto !important;
+        min-width: 0 !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) button div[data-testid="stMarkdownContainer"],
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) button div[data-testid="stMarkdownContainer"] p,
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) button p,
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) button span {
+        padding: 0 !important;
+        margin: 0 !important;
+        font-size: 0.85rem !important;
+        font-weight: 700 !important;
+        line-height: 1 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) button[kind="secondary"] {
+        background: transparent !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+        color: rgba(255, 255, 255, 0.85) !important;
+        padding: 0 0.8rem !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) button[kind="secondary"]:hover {
+        background: rgba(255, 255, 255, 0.08) !important;
+        color: #FFFFFF !important;
+        transform: translateY(-1px) !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) button[kind="primary"] {
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%) !important;
+        border: none !important;
+        border-radius: 18px !important;
+        color: #FFFFFF !important;
+        font-weight: 800 !important;
+        padding: 0 1.2rem !important;
+        box-shadow: 0 0 14px rgba(236, 72, 153, 0.35) !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) button[kind="primary"]:hover {
+        box-shadow: 0 0 22px rgba(236, 72, 153, 0.65), 0 0 12px rgba(6, 182, 212, 0.4) !important;
+        transform: translateY(-1px) !important;
+    }
 
     /* ── Hero ───────────────────────────────────────── */
     .et-hero {
         text-align: center;
-        padding: 4rem 1rem 2rem 1rem;
+        padding: 3.5rem 1rem 2rem 1rem;
         position: relative;
     }
 
@@ -165,63 +410,88 @@ HOME_CSS = """
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        background: rgba(139, 92, 246, 0.1);
-        border: 1px solid rgba(139, 92, 246, 0.25);
-        color: #C4B5FD;
+        background: rgba(168, 85, 247, 0.12);
+        border: 1px solid rgba(168, 85, 247, 0.35);
+        color: #E9D5FF;
         font-size: 0.82rem;
-        font-weight: 600;
-        padding: 6px 18px;
+        font-weight: 700;
+        padding: 6px 20px;
         border-radius: 24px;
         margin-bottom: 2rem;
+        box-shadow: 0 0 20px rgba(168, 85, 247, 0.2);
         animation: pulseGlow 3s ease-in-out infinite;
     }
 
     .et-hero h1 {
-        font-size: 3.4rem;
-        font-weight: 800;
+        font-size: 3.6rem;
+        font-weight: 900;
         color: #FAFAFA;
-        line-height: 1.1;
+        line-height: 1.15;
         letter-spacing: -2px;
         margin-bottom: 1.2rem;
-        max-width: 800px;
+        max-width: 840px;
         margin-left: auto;
         margin-right: auto;
     }
 
     .et-hero .gradient-text {
-        background: linear-gradient(135deg, #C4B5FD 0%, #8B5CF6 40%, #EC4899 70%, #F97316 100%);
-        background-size: 200% 200%;
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        animation: gradientShift 5s ease infinite;
     }
 
     .et-hero p {
-        font-size: 1.1rem;
+        font-size: 1.15rem;
+        color: rgba(233, 213, 255, 0.75);
+        max-width: 660px;
+        margin: 0 auto 2.5rem auto;
+        line-height: 1.7;
+    }
         color: rgba(255, 255, 255, 0.5);
         max-width: 640px;
         margin: 0 auto 2.5rem auto;
         line-height: 1.7;
     }
 
-    /* ── Pixel-Perfect n8n Workflow Canvas ────────────── */
+    /* ── Pixel-Perfect n8n Workflow Canvas — Glassmorphism Theme ────── */
+    @keyframes n8nMeshGlow {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
+    @keyframes n8nPulseGlow {
+        0%, 100% { transform: scale(1); opacity: 0.85; box-shadow: 0 0 15px rgba(168, 85, 247, 0.35); }
+        50% { transform: scale(1.005); opacity: 1; box-shadow: 0 0 30px rgba(6, 182, 212, 0.6); }
+    }
+
+    @keyframes wireShimmer {
+        0% { background-position: 0% 50%; }
+        100% { background-position: 200% 50%; }
+    }
+
     .n8n-canvas {
         position: relative;
         width: 100%;
         padding: 3rem 1.5rem;
-        background: #0B0813;
-        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: radial-gradient(circle at 20% 30%, rgba(168, 85, 247, 0.18) 0%, transparent 40%),
+                    radial-gradient(circle at 80% 70%, rgba(59, 130, 246, 0.18) 0%, transparent 40%),
+                    #0B0813;
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(168, 85, 247, 0.35);
         border-radius: 20px;
-        overflow-x: auto;
-        box-shadow: 0 20px 60px -15px rgba(139, 92, 246, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+        overflow: hidden;
+        box-shadow: 0 20px 60px -15px rgba(124, 58, 237, 0.3), inset 0 0 30px rgba(168, 85, 247, 0.15);
+        animation: n8nPulseGlow 4s infinite ease-in-out;
     }
 
-    /* Dot grid matrix like n8n editor */
+    /* Restored Dot grid matrix background */
     .n8n-canvas::before {
         content: '';
         position: absolute;
         top: 0; left: 0; right: 0; bottom: 0;
-        background-image: radial-gradient(circle, rgba(255,255,255,0.06) 1.2px, transparent 1.2px);
+        background-image: radial-gradient(circle, rgba(255,255,255,0.08) 1.2px, transparent 1.2px);
         background-size: 20px 20px;
         pointer-events: none;
     }
@@ -234,15 +504,16 @@ HOME_CSS = """
     }
 
     .n8n-header span {
-        background: rgba(139, 92, 246, 0.12);
-        border: 1px solid rgba(139, 92, 246, 0.25);
-        color: #C4B5FD;
-        font-size: 0.72rem;
-        font-weight: 700;
-        padding: 5px 16px;
+        background: rgba(168, 85, 247, 0.15);
+        border: 1px solid rgba(168, 85, 247, 0.4);
+        color: #E9D5FF;
+        font-size: 0.75rem;
+        font-weight: 800;
+        padding: 6px 18px;
         border-radius: 20px;
         text-transform: uppercase;
-        letter-spacing: 1px;
+        letter-spacing: 1.5px;
+        box-shadow: 0 0 16px rgba(168, 85, 247, 0.3);
     }
 
     /* Main Diagram Container */
@@ -250,10 +521,13 @@ HOME_CSS = """
         display: flex;
         align-items: center;
         justify-content: center;
+        flex-wrap: wrap;
         gap: 12px;
         position: relative;
         z-index: 1;
-        min-width: 900px;
+        width: 100%;
+        max-width: 100%;
+        overflow: hidden;
         padding: 1rem 0 3rem 0;
     }
 
@@ -262,25 +536,27 @@ HOME_CSS = """
         position: relative;
         display: flex;
         align-items: center;
-        background: #1B1728;
-        border: 1.5px solid rgba(255, 255, 255, 0.12);
+        background: rgba(30, 41, 59, 0.7);
+        backdrop-filter: blur(12px);
+        border: 1.5px solid rgba(6, 182, 212, 0.5);
         border-radius: 40px 14px 14px 40px;
         padding: 0.8rem 1.1rem 0.8rem 0.6rem;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 15px rgba(6, 182, 212, 0.25);
     }
 
     .n8n-trigger-icon {
         width: 44px;
         height: 44px;
         border-radius: 50%;
-        background: rgba(6, 182, 212, 0.15);
-        border: 1px solid rgba(6, 182, 212, 0.3);
+        background: rgba(6, 182, 212, 0.2);
+        border: 1px solid rgba(6, 182, 212, 0.5);
         color: #22D3EE;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 1.2rem;
         margin-right: 10px;
+        box-shadow: 0 0 12px rgba(6, 182, 212, 0.3);
     }
 
     .n8n-trigger-label {
@@ -305,9 +581,10 @@ HOME_CSS = """
         width: 10px;
         height: 10px;
         border-radius: 50%;
-        background: #A1A1AA;
-        border: 2px solid #1B1728;
+        background: #A78BFA;
+        border: 2px solid #0F172A;
         position: absolute;
+        box-shadow: 0 0 8px #A78BFA;
     }
 
     .n8n-port-right { right: -6px; top: 50%; transform: translateY(-50%); }
@@ -317,10 +594,13 @@ HOME_CSS = """
     /* Wire Line */
     .n8n-wire {
         width: 32px;
-        height: 2px;
-        background: rgba(255, 255, 255, 0.25);
+        height: 3px;
+        background: linear-gradient(90deg, #EC4899, #A855F7, #3B82F6, #06B6D4);
+        background-size: 200% 200%;
+        animation: wireShimmer 2s infinite linear;
         flex-shrink: 0;
         position: relative;
+        box-shadow: 0 0 8px rgba(168, 85, 247, 0.5);
     }
 
     .n8n-wire::after {
@@ -331,17 +611,18 @@ HOME_CSS = """
         width: 0; height: 0;
         border-top: 4px solid transparent;
         border-bottom: 4px solid transparent;
-        border-left: 6px solid rgba(255, 255, 255, 0.4);
+        border-left: 6px solid #A855F7;
     }
 
     /* 2. Main Agent Card Node */
     .n8n-agent-card {
         position: relative;
-        background: #1B1728;
-        border: 1.5px solid rgba(139, 92, 246, 0.4);
+        background: rgba(30, 41, 59, 0.75);
+        backdrop-filter: blur(12px);
+        border: 1.5px solid rgba(168, 85, 247, 0.5);
         border-radius: 14px;
         padding: 1.1rem 1.4rem;
-        box-shadow: 0 0 30px rgba(139, 92, 246, 0.15);
+        box-shadow: 0 0 30px rgba(168, 85, 247, 0.25);
         min-width: 210px;
     }
 
@@ -355,11 +636,13 @@ HOME_CSS = """
         width: 36px;
         height: 36px;
         border-radius: 10px;
-        background: rgba(139, 92, 246, 0.2);
+        background: rgba(168, 85, 247, 0.25);
+        border: 1px solid rgba(168, 85, 247, 0.4);
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 1.2rem;
+        box-shadow: 0 0 12px rgba(168, 85, 247, 0.3);
     }
 
     .n8n-agent-title {
@@ -370,7 +653,7 @@ HOME_CSS = """
 
     .n8n-agent-sub {
         font-size: 0.72rem;
-        color: rgba(255, 255, 255, 0.4);
+        color: rgba(255, 255, 255, 0.5);
     }
 
     /* Bottom Sub-Ports Labels */
@@ -379,12 +662,12 @@ HOME_CSS = """
         justify-content: space-around;
         margin-top: 0.9rem;
         padding-top: 0.5rem;
-        border-top: 1px dashed rgba(255, 255, 255, 0.1);
+        border-top: 1px dashed rgba(255, 255, 255, 0.15);
     }
 
     .n8n-sub-port-tag {
         font-size: 0.58rem;
-        color: rgba(255, 255, 255, 0.4);
+        color: rgba(255, 255, 255, 0.5);
         position: relative;
     }
 
@@ -411,26 +694,27 @@ HOME_CSS = """
         top: -24px;
         width: 2px;
         height: 24px;
-        border-left: 2px dashed rgba(255, 255, 255, 0.2);
+        border-left: 2px dashed rgba(168, 85, 247, 0.4);
     }
 
     .n8n-sub-circle {
         width: 52px;
         height: 52px;
         border-radius: 50%;
-        background: #14101F;
-        border: 1.5px solid rgba(255, 255, 255, 0.12);
+        background: rgba(30, 41, 59, 0.85);
+        backdrop-filter: blur(10px);
+        border: 1.5px solid rgba(168, 85, 247, 0.4);
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 1.25rem;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), 0 0 12px rgba(168, 85, 247, 0.25);
     }
 
     .n8n-sub-title {
         font-size: 0.65rem;
         font-weight: 700;
-        color: rgba(255, 255, 255, 0.8);
+        color: rgba(255, 255, 255, 0.85);
         margin-top: 6px;
         text-align: center;
         white-space: nowrap;
@@ -439,26 +723,30 @@ HOME_CSS = """
     /* 3. Decision Node */
     .n8n-decision-card {
         position: relative;
-        background: #1B1728;
-        border: 1.5px solid rgba(16, 185, 129, 0.35);
+        background: rgba(30, 41, 59, 0.75);
+        backdrop-filter: blur(12px);
+        border: 1.5px solid rgba(16, 185, 129, 0.5);
         border-radius: 14px;
         padding: 1.1rem;
         display: flex;
         align-items: center;
         gap: 10px;
         min-width: 130px;
+        box-shadow: 0 0 25px rgba(16, 185, 129, 0.2);
     }
 
     .n8n-decision-icon {
         width: 36px;
         height: 36px;
         border-radius: 10px;
-        background: rgba(16, 185, 129, 0.15);
+        background: rgba(16, 185, 129, 0.2);
+        border: 1px solid rgba(16, 185, 129, 0.4);
         color: #34D399;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 1.2rem;
+        box-shadow: 0 0 12px rgba(16, 185, 129, 0.3);
     }
 
     .n8n-branch-arms {
@@ -479,42 +767,175 @@ HOME_CSS = """
         margin-left: -8px;
     }
 
-    /* ── Section Titles ────────────────────────────── */
+    /* ── Mobile Responsive Adaptations for Workflow Canvas ────── */
+    @media (max-width: 768px) {
+        .n8n-canvas {
+            padding: 1.8rem 0.8rem;
+            border-radius: 16px;
+        }
+
+        .n8n-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .n8n-header span {
+            font-size: 0.68rem;
+            padding: 5px 12px;
+            letter-spacing: 0.8px;
+        }
+
+        .n8n-diagram {
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            padding: 0.5rem 0 2rem 0;
+            width: 100%;
+        }
+
+        .n8n-wire {
+            width: 3px;
+            height: 24px;
+            margin: 4px auto;
+        }
+
+        .n8n-wire::after {
+            right: -2px;
+            top: auto;
+            bottom: -4px;
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-top: 6px solid #A855F7;
+        }
+
+        .n8n-agent-card {
+            width: 100%;
+            max-width: 280px;
+            min-width: unset;
+            margin-bottom: 75px;
+        }
+
+        .n8n-trigger-node {
+            width: 100%;
+            max-width: 280px;
+        }
+
+        .n8n-decision-card {
+            width: 100%;
+            max-width: 280px;
+        }
+
+        .n8n-branch-arms {
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            gap: 20px;
+        }
+
+        .n8n-sub-nodes-group {
+            gap: 8px;
+        }
+
+        .n8n-sub-circle {
+            width: 44px;
+            height: 44px;
+            font-size: 1.05rem;
+        }
+
+        .n8n-sub-title {
+            font-size: 0.6rem;
+        }
+    }
+
+    /* ── Section Titles — Team of AI Agents Persona ──── */
+    .section-badge {
+        display: table;
+        margin: 0 auto 0.8rem auto;
+        background: rgba(168, 85, 247, 0.12);
+        border: 1px solid rgba(168, 85, 247, 0.35);
+        color: #E9D5FF;
+        font-size: 0.78rem;
+        font-weight: 700;
+        padding: 5px 18px;
+        border-radius: 24px;
+        box-shadow: 0 0 20px rgba(168, 85, 247, 0.2);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
     .section-title {
-        font-size: 2.2rem;
-        font-weight: 800;
+        font-size: 2.8rem;
+        font-weight: 900;
         color: #FAFAFA;
         text-align: center;
-        margin-bottom: 0.5rem;
-        letter-spacing: -0.5px;
+        margin-bottom: 0.6rem;
+        letter-spacing: -1.5px;
+        line-height: 1.2;
+    }
+
+    .gradient-text {
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        display: inline;
     }
 
     .section-sub {
-        font-size: 1rem;
-        color: rgba(255, 255, 255, 0.45);
+        font-size: 1.05rem;
+        color: rgba(233, 213, 255, 0.75);
         text-align: center;
-        max-width: 580px;
-        margin: 0 auto 2.5rem auto;
+        max-width: 620px;
+        margin: 0 auto 2.8rem auto;
         line-height: 1.6;
     }
 
-    /* ── Feature Cards ─────────────────────────────── */
+    /* Top Accent Neon Glow Strip for All Cards */
+    .feat-card, .agent-glass, .about-card, .price-glass {
+        position: relative;
+        overflow: hidden;
+        border-radius: 20px !important;
+    }
+
+    .feat-card::before, .agent-glass::before, .about-card::before, .price-glass::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 15%; right: 15%; height: 2px;
+        background: linear-gradient(90deg, transparent 0%, #EC4899 30%, #A855F7 50%, #06B6D4 70%, transparent 100%);
+        border-radius: 2px;
+        opacity: 0.7;
+        transition: opacity 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .feat-card:hover::before, .agent-glass:hover::before, .about-card:hover::before, .price-glass:hover::before {
+        opacity: 1;
+        box-shadow: 0 0 14px #EC4899, 0 0 20px #A855F7;
+    }
+
+    /* Card Headings — Exact Logo Gradient Touch */
+    .feat-card h4, .agent-glass h4, .about-card h3, .price-name {
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 800;
+    }
+
+    /* ── Feature Cards — Glassmorphism Gradient Theme ───────── */
     .feat-card {
-        background: rgba(255, 255, 255, 0.03);
-        backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        border-radius: 16px;
-        padding: 1.8rem 1.4rem;
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(124, 58, 237, 0.16) 50%, rgba(15, 23, 42, 0.9) 100%);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(168, 85, 247, 0.4);
+        padding: 2rem 1.6rem;
         text-align: center;
-        transition: all 0.3s ease;
-        min-height: 200px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        min-height: 210px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(168, 85, 247, 0.1);
     }
 
     .feat-card:hover {
-        background: rgba(255, 255, 255, 0.06);
-        border-color: rgba(139, 92, 246, 0.3);
-        box-shadow: 0 0 40px rgba(139, 92, 246, 0.1);
-        transform: translateY(-4px);
+        background: linear-gradient(135deg, rgba(124, 58, 237, 0.28) 0%, rgba(59, 130, 246, 0.2) 50%, rgba(15, 23, 42, 0.95) 100%);
+        border-color: rgba(168, 85, 247, 0.75);
+        box-shadow: 0 0 40px rgba(168, 85, 247, 0.35), 0 12px 35px rgba(0, 0, 0, 0.5);
+        transform: translateY(-5px);
     }
 
     .feat-icon {
@@ -526,7 +947,7 @@ HOME_CSS = """
         justify-content: center;
         font-size: 1.4rem;
         margin-bottom: 1rem;
-        box-shadow: 0 0 20px rgba(139, 92, 246, 0.15);
+        box-shadow: 0 0 20px rgba(168, 85, 247, 0.25);
     }
 
     .feat-card h4 {
@@ -538,76 +959,84 @@ HOME_CSS = """
 
     .feat-card p {
         font-size: 0.85rem;
-        color: rgba(255, 255, 255, 0.45);
+        color: rgba(255, 255, 255, 0.55);
         line-height: 1.5;
         margin: 0;
     }
 
     /* Icon color variants */
-    .icon-violet  { background: rgba(139, 92, 246, 0.15); color: #A78BFA; }
-    .icon-blue    { background: rgba(59, 130, 246, 0.15); color: #60A5FA; }
-    .icon-cyan    { background: rgba(6, 182, 212, 0.15); color: #22D3EE; }
-    .icon-green   { background: rgba(16, 185, 129, 0.15); color: #34D399; }
-    .icon-amber   { background: rgba(251, 191, 36, 0.15); color: #FBBF24; }
-    .icon-pink    { background: rgba(236, 72, 153, 0.15); color: #F472B6; }
+    .icon-violet  { background: rgba(168, 85, 247, 0.2); color: #C084FC; border: 1px solid rgba(168, 85, 247, 0.4); }
+    .icon-blue    { background: rgba(59, 130, 246, 0.2); color: #60A5FA; border: 1px solid rgba(59, 130, 246, 0.4); }
+    .icon-cyan    { background: rgba(6, 182, 212, 0.2); color: #22D3EE; border: 1px solid rgba(6, 182, 212, 0.4); }
+    .icon-green   { background: rgba(16, 185, 129, 0.2); color: #34D399; border: 1px solid rgba(16, 185, 129, 0.4); }
+    .icon-amber   { background: rgba(251, 191, 36, 0.2); color: #FBBF24; border: 1px solid rgba(251, 191, 36, 0.4); }
+    .icon-pink    { background: rgba(236, 72, 153, 0.2); color: #F472B6; border: 1px solid rgba(236, 72, 153, 0.4); }
 
-    /* ── Agent Cards ───────────────────────────────── */
+    /* ── Agent Cards — Glassmorphism Gradient Theme (Matching Why EduTech AI?) ─── */
     .agent-glass {
-        background: rgba(255, 255, 255, 0.02);
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(124, 58, 237, 0.16) 50%, rgba(15, 23, 42, 0.9) 100%);
         backdrop-filter: blur(16px);
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        border-radius: 14px;
-        padding: 1.3rem;
-        transition: all 0.3s ease;
-        min-height: 160px;
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(168, 85, 247, 0.4);
+        border-radius: 16px;
+        padding: 1.8rem 1.4rem;
+        text-align: center;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        min-height: 200px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(168, 85, 247, 0.1);
     }
 
     .agent-glass:hover {
-        background: rgba(255, 255, 255, 0.05);
-        border-color: rgba(139, 92, 246, 0.25);
-        box-shadow: 0 0 30px rgba(139, 92, 246, 0.08);
+        background: linear-gradient(135deg, rgba(124, 58, 237, 0.28) 0%, rgba(59, 130, 246, 0.2) 50%, rgba(15, 23, 42, 0.95) 100%);
+        border-color: rgba(168, 85, 247, 0.75);
+        box-shadow: 0 0 40px rgba(168, 85, 247, 0.35), 0 12px 35px rgba(0, 0, 0, 0.5);
+        transform: translateY(-5px);
     }
 
     .agent-glass h4 {
-        font-size: 0.95rem;
+        font-size: 1.05rem;
         font-weight: 700;
         color: #FAFAFA;
-        margin-bottom: 0.3rem;
+        margin-bottom: 0.4rem;
     }
 
     .agent-glass p {
-        font-size: 0.82rem;
-        color: rgba(255, 255, 255, 0.4);
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.55);
         line-height: 1.5;
         margin: 0;
     }
 
     .agent-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: 10px;
-        display: flex;
+        width: 52px;
+        height: 52px;
+        border-radius: 14px;
+        display: inline-flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.15rem;
-        margin-bottom: 0.8rem;
+        font-size: 1.4rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 0 20px rgba(168, 85, 247, 0.25);
     }
 
-    /* ── About Cards & Metric Pills ─────────────────── */
+    /* ── About Cards & Metric Pills — Glassmorphism Gradient Theme ─── */
     .about-card {
-        background: rgba(255, 255, 255, 0.025);
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(168, 85, 247, 0.18) 50%, rgba(15, 23, 42, 0.9) 100%);
         backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.07);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(168, 85, 247, 0.4);
         border-radius: 18px;
         padding: 2rem 1.8rem;
         height: 100%;
         transition: all 0.3s ease;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), inset 0 0 25px rgba(124, 58, 237, 0.12);
     }
 
     .about-card:hover {
-        background: rgba(255, 255, 255, 0.045);
-        border-color: rgba(139, 92, 246, 0.25);
-        box-shadow: 0 0 35px rgba(139, 92, 246, 0.08);
+        background: linear-gradient(135deg, rgba(124, 58, 237, 0.25) 0%, rgba(236, 72, 153, 0.18) 50%, rgba(15, 23, 42, 0.95) 100%);
+        border-color: rgba(168, 85, 247, 0.75);
+        box-shadow: 0 0 40px rgba(124, 58, 237, 0.35);
+        transform: translateY(-4px);
     }
 
     .about-card h3 {
@@ -622,31 +1051,34 @@ HOME_CSS = """
 
     .about-card p {
         font-size: 0.9rem;
-        color: rgba(255, 255, 255, 0.5);
+        color: rgba(255, 255, 255, 0.55);
         line-height: 1.65;
         margin: 0;
     }
 
     .stat-pill {
-        background: rgba(255, 255, 255, 0.03);
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(124, 58, 237, 0.15) 50%, rgba(15, 23, 42, 0.9) 100%);
         backdrop-filter: blur(16px);
-        border: 1px solid rgba(255, 255, 255, 0.08);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(168, 85, 247, 0.4);
         border-radius: 16px;
         padding: 1.5rem 1rem;
         text-align: center;
         transition: all 0.3s ease;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
     }
 
     .stat-pill:hover {
-        border-color: rgba(139, 92, 246, 0.3);
-        box-shadow: 0 0 30px rgba(139, 92, 246, 0.1);
-        transform: translateY(-2px);
+        background: linear-gradient(135deg, rgba(124, 58, 237, 0.25) 0%, rgba(6, 182, 212, 0.2) 100%);
+        border-color: rgba(168, 85, 247, 0.75);
+        box-shadow: 0 0 35px rgba(168, 85, 247, 0.35);
+        transform: translateY(-3px);
     }
 
     .stat-number {
         font-size: 2.2rem;
         font-weight: 900;
-        background: linear-gradient(135deg, #C4B5FD 0%, #8B5CF6 50%, #EC4899 100%);
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #06B6D4 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         line-height: 1;
@@ -656,62 +1088,65 @@ HOME_CSS = """
     .stat-label {
         font-size: 0.8rem;
         font-weight: 600;
-        color: rgba(255, 255, 255, 0.5);
+        color: rgba(255, 255, 255, 0.55);
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
 
-    /* ── Pricing Cards ─────────────────────────────── */
+    /* ── Pricing Cards — Glassmorphism Gradient Theme ───────── */
     .price-glass {
-        background: rgba(255, 255, 255, 0.02);
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(124, 58, 237, 0.12) 50%, rgba(15, 23, 42, 0.9) 100%);
         backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        border-radius: 20px;
-        padding: 2rem 1.5rem;
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(168, 85, 247, 0.35);
+        border-radius: 20px !important;
+        padding: 2.4rem 1.5rem 2rem 1.5rem;
         position: relative;
+        overflow: visible !important;
         height: 100%;
         display: flex;
         flex-direction: column;
         transition: all 0.3s ease;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
     }
 
     .price-glass:hover {
-        border-color: rgba(255, 255, 255, 0.12);
-        transform: translateY(-2px);
+        background: linear-gradient(135deg, rgba(124, 58, 237, 0.2) 0%, rgba(59, 130, 246, 0.15) 50%, rgba(15, 23, 42, 0.95) 100%);
+        border-color: rgba(168, 85, 247, 0.65);
+        box-shadow: 0 0 35px rgba(168, 85, 247, 0.25);
+        transform: translateY(-4px);
     }
 
     .price-glass-pro {
-        border: 1px solid rgba(139, 92, 246, 0.35);
-        box-shadow:
-            0 0 60px rgba(139, 92, 246, 0.12),
-            0 0 120px rgba(139, 92, 246, 0.05),
-            inset 0 1px 0 rgba(255, 255, 255, 0.06);
-        background: rgba(139, 92, 246, 0.04);
-        animation: borderGlow 4s ease-in-out infinite;
+        background: linear-gradient(135deg, rgba(124, 58, 237, 0.25) 0%, rgba(236, 72, 153, 0.18) 50%, rgba(15, 23, 42, 0.92) 100%);
+        border: 1.5px solid rgba(168, 85, 247, 0.75);
+        box-shadow: 0 0 45px rgba(168, 85, 247, 0.35);
+        animation: n8nPulseGlow 4s ease-in-out infinite;
     }
 
     .price-glass-pro:hover {
-        border-color: rgba(139, 92, 246, 0.5);
-        box-shadow:
-            0 0 80px rgba(139, 92, 246, 0.2),
-            0 0 160px rgba(139, 92, 246, 0.08),
-            inset 0 1px 0 rgba(255, 255, 255, 0.08);
+        background: linear-gradient(135deg, rgba(124, 58, 237, 0.35) 0%, rgba(236, 72, 153, 0.28) 50%, rgba(15, 23, 42, 0.95) 100%);
+        border-color: rgba(168, 85, 247, 0.95);
+        box-shadow: 0 0 55px rgba(168, 85, 247, 0.45);
+        transform: translateY(-4px);
     }
 
     .price-badge {
         position: absolute;
-        top: -12px;
+        top: -14px;
         left: 50%;
         transform: translateX(-50%);
-        background: linear-gradient(135deg, #8B5CF6, #EC4899);
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%);
         color: #FAFAFA;
-        font-size: 0.68rem;
-        font-weight: 700;
-        padding: 4px 14px;
-        border-radius: 10px;
-        letter-spacing: 0.8px;
+        font-size: 0.7rem;
+        font-weight: 800;
+        padding: 5px 16px;
+        border-radius: 20px;
+        letter-spacing: 1px;
         text-transform: uppercase;
-        box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+        box-shadow: 0 0 20px rgba(236, 72, 153, 0.5);
+        white-space: nowrap;
+        z-index: 10;
     }
 
     .price-name {
@@ -769,9 +1204,11 @@ HOME_CSS = """
     }
 
     .cta-banner h2 {
-        font-size: 2rem;
-        font-weight: 800;
-        color: #FAFAFA;
+        font-size: 2.2rem;
+        font-weight: 900;
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
         margin-bottom: 0.6rem;
     }
 
@@ -815,20 +1252,701 @@ HOME_CSS = """
 
     .et-footer-links a:hover { color: #FAFAFA; }
 
-    /* ── Auth Glass Card ───────────────────────────── */
-    .auth-glass {
-        background: rgba(255, 255, 255, 0.03);
-        backdrop-filter: blur(30px);
-        -webkit-backdrop-filter: blur(30px);
-        border: 1px solid rgba(139, 92, 246, 0.15);
-        border-radius: 24px;
-        padding: 2.5rem 2rem;
-        box-shadow:
-            0 0 60px rgba(139, 92, 246, 0.08),
-            inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    /* ── Auth Page Intro Header & Instructions ── */
+    .auth-header-container {
+        text-align: center !important;
+        margin: 1.5rem auto 2rem auto !important;
+        max-width: 800px !important;
     }
 
-    /* ── Glowing Input Rings ───────────────────────── */
+    .auth-badge {
+        display: inline-flex !important;
+        background: rgba(168, 85, 247, 0.1) !important;
+        border: 1px solid rgba(168, 85, 247, 0.3) !important;
+        color: #C084FC !important;
+        font-size: 0.68rem !important;
+        font-weight: 800 !important;
+        letter-spacing: 1.5px !important;
+        padding: 5px 12px !important;
+        border-radius: 20px !important;
+        margin-bottom: 0.8rem !important;
+    }
+
+    .auth-title {
+        font-size: 2.1rem !important;
+        font-weight: 900 !important;
+        color: #FAFAFA !important;
+        margin-bottom: 0.6rem !important;
+        line-height: 1.25 !important;
+    }
+
+    .auth-subtitle {
+        font-size: 0.98rem !important;
+        color: rgba(233, 213, 255, 0.75) !important;
+        margin-bottom: 1.2rem !important;
+        line-height: 1.5 !important;
+    }
+
+    .auth-instructions-pill {
+        background: rgba(255, 255, 255, 0.03) !important;
+        backdrop-filter: blur(10px) !important;
+        -webkit-backdrop-filter: blur(10px) !important;
+        border: 1px solid rgba(168, 85, 247, 0.2) !important;
+        border-radius: 14px !important;
+        padding: 10px 18px !important;
+        display: inline-flex !important;
+        text-align: left !important;
+        max-width: 720px !important;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
+    }
+
+    .auth-instructions-pill span {
+        font-size: 0.84rem !important;
+        color: rgba(255, 255, 255, 0.8) !important;
+        line-height: 1.4 !important;
+    }
+
+    .auth-hidden-triggers {
+        display: none !important;
+    }
+
+    /* Clickable flowchart cards */
+    .auth-flow-node.branch-node.clickable-card {
+        cursor: pointer !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+
+    .auth-flow-node.branch-node.clickable-card:hover {
+        transform: translateY(-3px) scale(1.02) !important;
+        box-shadow: 0 0 25px rgba(168, 85, 247, 0.35), 0 8px 25px rgba(0, 0, 0, 0.4) !important;
+    }
+
+    /* Active Highlight States */
+    .auth-flow-node.branch-node.clickable-card.active-signin {
+        border-color: rgba(34, 197, 94, 0.8) !important;
+        box-shadow: 0 0 25px rgba(34, 197, 94, 0.45) !important;
+        background: rgba(34, 197, 94, 0.25) !important;
+    }
+
+    .auth-flow-node.branch-node.clickable-card.active-signup {
+        border-color: rgba(168, 85, 247, 0.8) !important;
+        box-shadow: 0 0 25px rgba(168, 85, 247, 0.45) !important;
+        background: rgba(168, 85, 247, 0.25) !important;
+    }
+
+    /* ── Auth Page — Glowing Split-Screen Layout ──────── */
+
+    /* Floating Navbar Pill on Auth View — Luminous Glow */
+    div[data-testid="stHorizontalBlock"]:has(.et-logo-simple) {
+        background: rgba(15, 23, 42, 0.85) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        border: 1px solid rgba(168, 85, 247, 0.45) !important;
+        border-radius: 50px !important;
+        padding: 8px 24px !important;
+        margin: 0rem 0 1rem 0 !important;
+        box-shadow: 0 0 30px rgba(168, 85, 247, 0.25), 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(168, 85, 247, 0.15) !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        min-height: 52px !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-logo-simple) * {
+        align-self: center !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-logo-simple) div[data-testid="column"],
+    div[data-testid="stHorizontalBlock"]:has(.et-logo-simple) div[data-testid="stColumn"] {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        height: auto !important;
+        min-height: 0 !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-logo-simple) div[data-testid="column"]:first-child,
+    div[data-testid="stHorizontalBlock"]:has(.et-logo-simple) div[data-testid="stColumn"]:first-child {
+        justify-content: flex-start !important;
+        padding-left: 0 !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-logo-simple) div[data-testid="column"]:first-child *,
+    div[data-testid="stHorizontalBlock"]:has(.et-logo-simple) div[data-testid="stColumn"]:first-child * {
+        justify-content: flex-start !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-logo-simple) div[data-testid="column"]:last-child,
+    div[data-testid="stHorizontalBlock"]:has(.et-logo-simple) div[data-testid="stColumn"]:last-child {
+        justify-content: flex-end !important;
+        padding-right: 0 !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-logo-simple) div[data-testid="stVerticalBlock"],
+    div[data-testid="stHorizontalBlock"]:has(.et-logo-simple) div[data-testid="stVerticalBlockBorderWrapper"] {
+        gap: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        justify-content: center !important;
+        align-items: center !important;
+        align-self: center !important;
+        display: flex !important;
+        flex-direction: row !important;
+        min-height: 0 !important;
+        height: auto !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-logo-simple) div.element-container,
+    div[data-testid="stHorizontalBlock"]:has(.et-logo-simple) div[data-testid="stElementContainer"] {
+        margin: 0 !important;
+        padding: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        align-self: center !important;
+        justify-content: center !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-logo-simple) div[data-testid="column"]:last-child div.element-container,
+    div[data-testid="stHorizontalBlock"]:has(.et-logo-simple) div[data-testid="column"]:last-child div[data-testid="stElementContainer"],
+    div[data-testid="stHorizontalBlock"]:has(.et-logo-simple) div[data-testid="stColumn"]:last-child div.element-container,
+    div[data-testid="stHorizontalBlock"]:has(.et-logo-simple) div[data-testid="stColumn"]:last-child div[data-testid="stElementContainer"] {
+        justify-content: flex-end !important;
+        width: 100% !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-logo-simple) div.stMarkdown,
+    div[data-testid="stHorizontalBlock"]:has(.et-logo-simple) div[data-testid="stMarkdownContainer"] {
+        display: flex !important;
+        align-items: center !important;
+        align-self: center !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-logo-simple) div.stMarkdown p,
+    div[data-testid="stHorizontalBlock"]:has(.et-logo-simple) div[data-testid="stMarkdownContainer"] p {
+        margin: 0 !important;
+        padding: 0 !important;
+        line-height: 1 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-logo-simple) div[data-testid="stButton"] {
+        margin: 0 !important;
+        padding: 0 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: flex-end !important;
+        align-self: center !important;
+        width: auto !important;
+        min-width: 0 !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-logo-simple) div[data-testid="column"]:last-child div[data-testid="stButton"],
+    div[data-testid="stHorizontalBlock"]:has(.et-logo-simple) div[data-testid="stColumn"]:last-child div[data-testid="stButton"] {
+        width: 100% !important;
+        justify-content: flex-end !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-logo-simple) button {
+        height: 36px !important;
+        min-height: 36px !important;
+        max-height: 36px !important;
+        line-height: 1 !important;
+        margin: 0 !important;
+        border-radius: 18px !important;
+        font-weight: 700 !important;
+        font-size: 0.85rem !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 0 1.2rem !important;
+        background: rgba(255, 255, 255, 0.06) !important;
+        color: #FAFAFA !important;
+        border: 1px solid rgba(168, 85, 247, 0.45) !important;
+        box-shadow: 0 0 15px rgba(168, 85, 247, 0.2) !important;
+        transition: all 0.25s ease !important;
+        white-space: nowrap !important;
+        width: auto !important;
+        min-width: 0 !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-logo-simple) button:hover {
+        background: rgba(168, 85, 247, 0.25) !important;
+        border-color: rgba(168, 85, 247, 0.85) !important;
+        color: #FFFFFF !important;
+        box-shadow: 0 0 25px rgba(168, 85, 247, 0.4) !important;
+        transform: translateY(-1px) !important;
+    }
+
+    /* ── Constellation / Network Node Overlay Background ── */
+    .glow-bg-constellation {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        pointer-events: none;
+        z-index: 0;
+        background:
+            radial-gradient(ellipse 650px 450px at 15% 20%, rgba(168, 85, 247, 0.16) 0%, transparent 70%),
+            radial-gradient(ellipse 550px 380px at 85% 30%, rgba(236, 72, 153, 0.12) 0%, transparent 70%),
+            radial-gradient(ellipse 450px 320px at 50% 85%, rgba(59, 130, 246, 0.1) 0%, transparent 70%);
+        background-image:
+            radial-gradient(circle at 12% 28%, rgba(168, 85, 247, 0.25) 0px, rgba(168, 85, 247, 0.25) 2px, transparent 3px),
+            radial-gradient(circle at 28% 68%, rgba(59, 130, 246, 0.25) 0px, rgba(59, 130, 246, 0.25) 2px, transparent 3px),
+            radial-gradient(circle at 68% 18%, rgba(236, 72, 153, 0.25) 0px, rgba(236, 72, 153, 0.25) 2px, transparent 3px),
+            radial-gradient(circle at 88% 78%, rgba(168, 85, 247, 0.25) 0px, rgba(168, 85, 247, 0.25) 2px, transparent 3px),
+            radial-gradient(circle at 48% 12%, rgba(6, 182, 212, 0.25) 0px, rgba(6, 182, 212, 0.25) 2px, transparent 3px);
+    }
+
+    /* Auth Left Column — AI Workflow Flow Canvas (Luminous Glow) */
+    .auth-flow-canvas {
+        background: radial-gradient(circle at 20% 30%, rgba(168, 85, 247, 0.18) 0%, transparent 40%),
+                    radial-gradient(circle at 80% 70%, rgba(59, 130, 246, 0.18) 0%, transparent 40%),
+                    #0B0813 !important;
+        backdrop-filter: blur(25px) !important;
+        -webkit-backdrop-filter: blur(25px) !important;
+        border: 1px solid rgba(168, 85, 247, 0.35) !important;
+        border-radius: 24px !important;
+        padding: 1.8rem 1.8rem 2rem 1.8rem !important;
+        box-shadow: 0 20px 60px -15px rgba(124, 58, 237, 0.3), inset 0 0 30px rgba(168, 85, 247, 0.15) !important;
+        height: 100% !important;
+        box-sizing: border-box !important;
+        position: relative !important;
+        overflow: hidden !important;
+        animation: n8nPulseGlow 4s infinite ease-in-out !important;
+    }
+
+    .auth-flow-canvas::before {
+        content: '' !important;
+        position: absolute !important;
+        top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
+        background-image: radial-gradient(circle, rgba(255,255,255,0.08) 1.2px, transparent 1.2px) !important;
+        background-size: 20px 20px !important;
+        pointer-events: none !important;
+        width: 100% !important;
+        height: 100% !important;
+        opacity: 1 !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+    }
+
+    .auth-flow-node {
+        background: rgba(30, 41, 59, 0.85) !important;
+        border: 1px solid rgba(168, 85, 247, 0.35) !important;
+        border-radius: 14px !important;
+        padding: 11px 15px !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 12px !important;
+        box-shadow: 0 0 15px rgba(168, 85, 247, 0.15), 0 8px 20px rgba(0, 0, 0, 0.3) !important;
+        position: relative !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+
+    .auth-flow-node:hover {
+        border-color: rgba(168, 85, 247, 0.75) !important;
+        box-shadow: 0 0 25px rgba(168, 85, 247, 0.35) !important;
+        transform: translateY(-2px) !important;
+    }
+
+    .auth-flow-node .node-icon {
+        width: 36px !important;
+        height: 36px !important;
+        border-radius: 10px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 1.05rem !important;
+        background: rgba(168, 85, 247, 0.18) !important;
+        color: #E9D5FF !important;
+        flex-shrink: 0 !important;
+        box-shadow: 0 0 12px rgba(168, 85, 247, 0.25) !important;
+    }
+
+    .auth-flow-node .node-title {
+        color: #FAFAFA !important;
+        font-weight: 800 !important;
+        font-size: 0.9rem !important;
+        margin-bottom: 2px !important;
+    }
+
+    .auth-flow-node .node-sub {
+        color: rgba(255, 255, 255, 0.55) !important;
+        font-size: 0.78rem !important;
+    }
+
+    /* Wire Connectors & Glowing Vector Arrow Pointer System */
+    .flow-connector-wrapper {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        margin: 6px 0 !important;
+        position: relative !important;
+    }
+
+    .flow-connector-line {
+        width: 2px !important;
+        height: 18px !important;
+        background: linear-gradient(180deg, #A855F7 0%, #EC4899 100%) !important;
+        box-shadow: 0 0 10px rgba(168, 85, 247, 0.8) !important;
+    }
+
+    .flow-connector-arrow {
+        font-size: 0.65rem !important;
+        color: #EC4899 !important;
+        line-height: 1 !important;
+        margin-top: -3px !important;
+        text-shadow: 0 0 8px #EC4899 !important;
+    }
+
+    .flow-connector-arrow.color-cyan {
+        color: #38BDF8 !important;
+        text-shadow: 0 0 8px #38BDF8 !important;
+    }
+
+    /* Center Step Wrappers & Compact Nodes */
+    .flow-step-center {
+        display: flex !important;
+        justify-content: center !important;
+        width: 100% !important;
+    }
+
+    .auth-flow-node.compact-node {
+        width: auto !important;
+        max-width: 250px !important;
+        padding: 8px 16px !important;
+        justify-content: center !important;
+    }
+
+    /* Has Account Decision Diamond/Pill */
+    .flow-decision-diamond {
+        background: linear-gradient(135deg, rgba(236, 72, 153, 0.2) 0%, rgba(168, 85, 247, 0.25) 100%) !important;
+        border: 1px solid rgba(236, 72, 153, 0.5) !important;
+        border-radius: 20px !important;
+        padding: 6px 18px !important;
+        color: #FAFAFA !important;
+        font-weight: 800 !important;
+        font-size: 0.82rem !important;
+        box-shadow: 0 0 15px rgba(236, 72, 153, 0.25) !important;
+        text-align: center !important;
+    }
+
+    /* Branch Arrow Rows */
+    .flow-branch-arrows {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 12px !important;
+        width: 100% !important;
+        margin: 4px 0 !important;
+    }
+
+    .branch-arrow-col {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+    }
+
+    .branch-label {
+        font-size: 0.7rem !important;
+        font-weight: 800 !important;
+        padding: 2px 8px !important;
+        border-radius: 10px !important;
+        margin-bottom: 2px !important;
+    }
+
+    .label-yes {
+        background: rgba(34, 197, 94, 0.2) !important;
+        color: #4ADE80 !important;
+        border: 1px solid rgba(34, 197, 94, 0.4) !important;
+    }
+
+    .label-no {
+        background: rgba(236, 72, 153, 0.2) !important;
+        color: #F472B6 !important;
+        border: 1px solid rgba(236, 72, 153, 0.4) !important;
+    }
+
+    .flow-branch-cards {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 12px !important;
+        width: 100% !important;
+    }
+
+    .auth-flow-node.branch-node {
+        padding: 8px 12px !important;
+    }
+
+    /* SVG Vector Merge Connector Container */
+    .flow-merge-svg-container {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        width: 100% !important;
+        margin: 2px 0 !important;
+    }
+
+    .flow-merge-svg-container svg path {
+        filter: drop-shadow(0px 0px 4px rgba(168, 85, 247, 0.8)) !important;
+    }
+
+    /* Animated Neural Network Dots Icon */
+    .neural-anim-container {
+        position: relative !important;
+        width: 22px !important;
+        height: 22px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    .neural-dot {
+        position: absolute !important;
+        width: 6px !important;
+        height: 6px !important;
+        border-radius: 50% !important;
+        animation: neuralPulse 1.6s infinite ease-in-out alternate !important;
+    }
+
+    .neural-dot.n1 { top: 2px; left: 2px; background: #38BDF8; box-shadow: 0 0 8px #38BDF8; animation-delay: 0s !important; }
+    .neural-dot.n2 { top: 2px; right: 2px; background: #C084FC; box-shadow: 0 0 8px #C084FC; animation-delay: 0.4s !important; }
+    .neural-dot.n3 { bottom: 2px; left: 8px; background: #EC4899; box-shadow: 0 0 8px #EC4899; animation-delay: 0.8s !important; }
+
+    @keyframes neuralPulse {
+        0% { transform: scale(0.7); opacity: 0.4; }
+        100% { transform: scale(1.4); opacity: 1; filter: brightness(1.3); }
+    }
+
+    /* Node Port Connector Dots */
+    .node-port {
+        width: 10px !important;
+        height: 10px !important;
+        border-radius: 50% !important;
+        background: #C084FC !important;
+        border: 2px solid #0E0918 !important;
+        position: absolute !important;
+        box-shadow: 0 0 12px #C084FC !important;
+    }
+
+    .node-port-left { left: -5px; top: 50%; transform: translateY(-50%); }
+    .node-port-right { right: -5px; top: 50%; transform: translateY(-50%); }
+
+    /* Wire Connectors with Pulse Glow */
+    .flow-vertical-line {
+        width: 2px !important;
+        height: 22px !important;
+        background: linear-gradient(180deg, #A855F7 0%, #EC4899 100%) !important;
+        margin: 0 auto !important;
+        box-shadow: 0 0 10px rgba(168, 85, 247, 0.8) !important;
+    }
+
+    .flow-branch-badge {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 0.74rem !important;
+        font-weight: 800 !important;
+        padding: 3px 12px !important;
+        border-radius: 14px !important;
+        margin: 6px 0 !important;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.2) !important;
+    }
+
+    .badge-yes {
+        background: rgba(34, 197, 94, 0.2) !important;
+        color: #4ADE80 !important;
+        border: 1px solid rgba(34, 197, 94, 0.45) !important;
+        box-shadow: 0 0 15px rgba(34, 197, 94, 0.25) !important;
+    }
+
+    .badge-no {
+        background: rgba(236, 72, 153, 0.2) !important;
+        color: #F472B6 !important;
+        border: 1px solid rgba(236, 72, 153, 0.45) !important;
+        box-shadow: 0 0 15px rgba(236, 72, 153, 0.25) !important;
+    }
+
+    /* Right Auth Glass Card Container — Luminous Glow */
+    .auth-form-card {
+        background: rgba(15, 23, 42, 0.65) !important;
+        backdrop-filter: blur(30px) !important;
+        -webkit-backdrop-filter: blur(30px) !important;
+        border: 1px solid rgba(168, 85, 247, 0.45) !important;
+        border-radius: 24px !important;
+        padding: 2.2rem 2.2rem 2.2rem 2.2rem !important;
+        box-shadow:
+            0 0 35px rgba(168, 85, 247, 0.2),
+            0 25px 60px rgba(0, 0, 0, 0.5),
+            inset 0 0 20px rgba(168, 85, 247, 0.1) !important;
+        animation: authCardFadeIn 0.5s ease-out !important;
+        height: 100% !important;
+        box-sizing: border-box !important;
+        position: relative !important;
+        overflow: hidden !important;
+        transition: all 0.3s ease !important;
+    }
+
+    .auth-form-card::before {
+        content: '' !important;
+        position: absolute !important;
+        top: 0 !important; left: 15% !important; right: 15% !important; height: 2px !important;
+        background: linear-gradient(90deg, transparent 0%, #EC4899 30%, #A855F7 50%, #06B6D4 70%, transparent 100%) !important;
+        border-radius: 2px !important;
+        opacity: 0.7 !important;
+        transition: opacity 0.3s ease, box-shadow 0.3s ease !important;
+        z-index: 9999 !important;
+    }
+
+    .auth-form-card:hover {
+        border-color: rgba(168, 85, 247, 0.65) !important;
+        box-shadow:
+            0 0 45px rgba(168, 85, 247, 0.35),
+            0 25px 60px rgba(0, 0, 0, 0.5),
+            inset 0 0 20px rgba(168, 85, 247, 0.1) !important;
+        transform: translateY(-2px) !important;
+    }
+
+    .auth-form-card:hover::before {
+        opacity: 1 !important;
+        box-shadow: 0 0 14px #EC4899, 0 0 20px #A855F7 !important;
+    }
+
+    @keyframes authCardFadeIn {
+        from { opacity: 0; transform: translateY(15px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Auth Header Layout inside Card */
+    .auth-card-header {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        margin-bottom: 1.5rem !important;
+        width: 100% !important;
+    }
+
+    .auth-card-header div.element-container,
+    .auth-card-header div[data-testid="stElementContainer"] {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: auto !important;
+    }
+
+    .auth-card-header h3 {
+        margin: 0 !important;
+        color: #FAFAFA !important;
+        font-weight: 800 !important;
+        font-size: 1.35rem !important;
+        line-height: 1.2 !important;
+    }
+
+    /* Close Button Styling */
+    .auth-close-btn-wrapper {
+        display: flex !important;
+        justify-content: flex-end !important;
+        align-items: center !important;
+    }
+
+    .auth-close-btn-wrapper button {
+        background: rgba(239, 68, 68, 0.1) !important;
+        border: 1px solid rgba(239, 68, 68, 0.35) !important;
+        color: #F87171 !important;
+        border-radius: 14px !important;
+        padding: 4px 12px !important;
+        height: 28px !important;
+        min-height: 28px !important;
+        font-size: 0.75rem !important;
+        font-weight: 700 !important;
+        transition: all 0.2s ease !important;
+        width: auto !important;
+        line-height: 1 !important;
+    }
+
+    .auth-close-btn-wrapper button:hover {
+        background: rgba(239, 68, 68, 0.25) !important;
+        border-color: rgba(239, 68, 68, 0.7) !important;
+        color: #FFFFFF !important;
+        box-shadow: 0 0 15px rgba(239, 68, 68, 0.3) !important;
+        transform: translateY(-1px) !important;
+    }
+
+    /* Auth Form Labels */
+    .auth-form-card label, .auth-form-card .stTextInput label {
+        color: rgba(255, 255, 255, 0.7) !important;
+        font-size: 0.78rem !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.5px !important;
+        text-transform: uppercase !important;
+        margin-bottom: 4px !important;
+    }
+
+    /* Auth Form Inputs — Glowing Rings */
+    .auth-form-card div[data-baseweb="input"] > div,
+    .auth-form-card div[data-baseweb="select"] > div {
+        background: rgba(255, 255, 255, 0.04) !important;
+        border: 1px solid rgba(168, 85, 247, 0.2) !important;
+        border-radius: 12px !important;
+        transition: border-color 0.25s ease, box-shadow 0.25s ease !important;
+        color: #FAFAFA !important;
+    }
+
+    .auth-form-card div[data-baseweb="input"] > div:focus-within,
+    .auth-form-card div[data-baseweb="select"] > div:focus-within {
+        border-color: rgba(168, 85, 247, 0.65) !important;
+        box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.15), 0 0 25px rgba(168, 85, 247, 0.15) !important;
+    }
+
+    .auth-form-card input {
+        color: #FAFAFA !important;
+        font-size: 0.95rem !important;
+    }
+
+    .auth-form-card input::placeholder {
+        color: rgba(255, 255, 255, 0.25) !important;
+    }
+
+    /* Auth Submit Button — Gradient */
+    .auth-form-card button[kind="primary"],
+    .auth-form-card button[type="submit"],
+    .auth-form-card div[data-testid="stFormSubmitButton"] button {
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%) !important;
+        border: none !important;
+        border-radius: 14px !important;
+        color: #FFFFFF !important;
+        font-weight: 800 !important;
+        font-size: 0.95rem !important;
+        padding: 12px 24px !important;
+        box-shadow: 0 0 25px rgba(236, 72, 153, 0.35) !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        height: 48px !important;
+        min-height: 48px !important;
+        width: 100% !important;
+        margin-top: 0.5rem !important;
+    }
+
+    .auth-form-card button[kind="primary"]:hover,
+    .auth-form-card button[type="submit"]:hover,
+    .auth-form-card div[data-testid="stFormSubmitButton"] button:hover {
+        box-shadow: 0 0 35px rgba(236, 72, 153, 0.65), 0 0 20px rgba(6, 182, 212, 0.45) !important;
+        transform: translateY(-2px) !important;
+    }
+
+    /* Auth Selectbox Override */
+    .auth-form-card div[data-baseweb="select"] span {
+        color: #FAFAFA !important;
+    }
+
+    /* Auth dividers */
+    .auth-glass hr {
+        border-color: rgba(139, 92, 246, 0.12) !important;
+        margin: 1.5rem 0 !important;
+    }
+
+    /* ── Glowing Input Rings (global fallback) ──────── */
     div[data-baseweb="input"] > div {
         background: rgba(255, 255, 255, 0.03) !important;
         border: 1px solid rgba(255, 255, 255, 0.1) !important;
@@ -867,51 +1985,38 @@ def render_home_page():
         return
 
     # ── NAVBAR ────────────────────────────────────────────────────
-    nav1, nav2, nav3, nav4 = st.columns([2, 3, 1.2, 1.8])
+    nav_col1, nav_col2, nav_col3 = st.columns([2.5, 4.2, 3.3])
 
-    with nav1:
-        st.markdown('<div class="et-logo">⚡ <span class="accent">EduTech</span> AI</div>', unsafe_allow_html=True)
+    with nav_col1:
+        st.markdown('<div class="et-logo">⚡ <span class="accent">EduTech</span> <span class="badge-ai">AI</span></div>', unsafe_allow_html=True)
 
-    with nav2:
+    with nav_col2:
         st.markdown(
-            '<div class="et-nav-links" style="padding-top:4px;"><a href="#features">Features</a><a href="#agents">Agents</a><a href="#about">About</a><a href="#pricing">Pricing</a></div>',
+            '<div class="et-nav-links"><a href="#about" class="nav-pill">About</a><a href="#features" class="nav-pill">Features</a><a href="#agents" class="nav-pill">Agents</a><a href="#pricing" class="nav-pill">Pricing</a></div>',
             unsafe_allow_html=True,
         )
 
-    with nav3:
+    with nav_col3:
         if user_profile:
             u_tier = (user_profile.subscription.tier if user_profile.subscription else "normal").upper()
-            st.markdown(f'<div style="color:rgba(255,255,255,0.5);font-size:0.85rem;padding-top:4px;">👋 <b style="color:#FAFAFA;">{user_profile.first_name}</b> · <span style="color:#A78BFA;font-weight:700;">{u_tier}</span></div>', unsafe_allow_html=True)
+            st.markdown(f'<div style="color:rgba(255,255,255,0.7);font-size:0.85rem;padding-top:6px;">👋 <b style="color:#FAFAFA;">{user_profile.first_name}</b> · <span style="color:#C084FC;font-weight:800;">{u_tier}</span></div>', unsafe_allow_html=True)
         else:
-            if st.button("Sign In", key="nav_si", use_container_width=True):
-                st.session_state["auth_tab"] = "login"
-                st.session_state["view"] = "auth"
-                st.rerun()
-
-    with nav4:
-        if user_profile:
-            lc1, lc2 = st.columns(2)
-            with lc1:
-                if st.button("🎓 Learn", key="nav_lr", type="primary", use_container_width=True):
-                    st.session_state["view"] = "learning"
+            nb1, nb2 = st.columns(2)
+            with nb1:
+                if st.button("Sign In", key="nav_si"):
+                    st.session_state["auth_tab"] = "login"
+                    st.session_state["view"] = "auth"
                     st.rerun()
-            with lc2:
-                if st.button("Logout", key="nav_lo", use_container_width=True):
-                    st.session_state["user_profile"] = None
+            with nb2:
+                if st.button("Get Started", key="nav_gs", type="primary"):
+                    st.session_state["auth_tab"] = "signup"
+                    st.session_state["view"] = "auth"
                     st.rerun()
-        else:
-            if st.button("Get Started", key="nav_gs", type="primary", use_container_width=True):
-                st.session_state["auth_tab"] = "signup"
-                st.session_state["view"] = "auth"
-                st.rerun()
-
-    st.markdown("<hr style='border:1px solid rgba(255,255,255,0.04);margin:0.5rem 0 0 0;'/>", unsafe_allow_html=True)
 
     # ── HERO ──────────────────────────────────────────────────────
     st.markdown(
         """
         <div class="et-hero">
-            <div class="et-hero-badge">🤖 &nbsp; Meet Your Multi-Agent AI System</div>
             <h1>Master Any Subject with a<br/><span class="gradient-text">Team of AI Agents</span></h1>
             <p>Our orchestrator divides complex topics into milestones, while specialized agents guide you through Socratic dialogue, curated videos, research papers, and interactive assessments.</p>
         </div>
@@ -930,6 +2035,8 @@ def render_home_page():
             else:
                 st.session_state["view"] = "learning"
                 st.rerun()
+
+    st.markdown("<div style='height: 2rem;'></div>", unsafe_allow_html=True)
 
     # ── Pixel-Perfect n8n-Style Workflow Visualization ──────────────
     st.markdown(
@@ -1033,7 +2140,7 @@ def render_home_page():
 
     # ── FEATURES ──────────────────────────────────────────────────
     st.markdown('<a name="features"></a>', unsafe_allow_html=True)
-    st.markdown('<div class="section-title">Why EduTech AI?</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title"><span class="gradient-text">Why EduTech AI?</span></div>', unsafe_allow_html=True)
     st.markdown('<div class="section-sub">Everything you need for an AI-powered learning experience, built from the ground up.</div>', unsafe_allow_html=True)
 
     f1, f2, f3 = st.columns(3)
@@ -1076,7 +2183,7 @@ def render_home_page():
 
     # ── AGENT SQUAD ───────────────────────────────────────────────
     st.markdown('<a name="agents"></a>', unsafe_allow_html=True)
-    st.markdown('<div class="section-title">The Agent Squad</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title"><span class="gradient-text">The Agent Squad</span></div>', unsafe_allow_html=True)
     st.markdown('<div class="section-sub">Six specialized AI agents working in parallel via shared memory to deliver your personalized curriculum.</div>', unsafe_allow_html=True)
 
     a1, a2, a3 = st.columns(3)
@@ -1101,7 +2208,7 @@ def render_home_page():
 
     # ── ABOUT SECTION ─────────────────────────────────────────────
     st.markdown('<a name="about"></a>', unsafe_allow_html=True)
-    st.markdown('<div class="section-title">About EduTech AI</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title"><span class="gradient-text">About EduTech AI</span></div>', unsafe_allow_html=True)
     st.markdown('<div class="section-sub">Transforming education through multi-agent intelligence, academic rigor, and gamified cognitive science.</div>', unsafe_allow_html=True)
 
     # Metric Stats Row
@@ -1150,7 +2257,7 @@ def render_home_page():
 
     # ── PRICING ───────────────────────────────────────────────────
     st.markdown('<a name="pricing"></a>', unsafe_allow_html=True)
-    st.markdown('<div class="section-title">Choose Your Path</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title"><span class="gradient-text">Choose Your Path</span></div>', unsafe_allow_html=True)
     st.markdown('<div class="section-sub">Flexible plans designed for every type of learner.</div>', unsafe_allow_html=True)
 
     p1, p2, p3 = st.columns(3)
@@ -1159,7 +2266,7 @@ def render_home_page():
         st.markdown(
             """
             <div class="price-glass">
-                <div class="price-name">Normal</div>
+                <div class="price-name">Free</div>
                 <div class="price-amount">$0<sub>/mo</sub></div>
                 <div class="price-desc">Essential AI tutoring for curious learners starting out.</div>
                 <hr style="border:1px solid rgba(255,255,255,0.05);"/>
@@ -1171,7 +2278,7 @@ def render_home_page():
             </div>
             """, unsafe_allow_html=True)
         st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
-        if st.button("Start Free", key="t_n", use_container_width=True):
+        if st.button("Start Free", key="t_n", type="primary", use_container_width=True):
             _handle_tier_select("normal")
 
     with p2:
@@ -1212,7 +2319,7 @@ def render_home_page():
             </div>
             """, unsafe_allow_html=True)
         st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
-        if st.button("Select Ultra", key="t_u", use_container_width=True):
+        if st.button("Select Ultra", key="t_u", type="primary", use_container_width=True):
             _handle_tier_select("ultra")
 
     st.markdown("<br/>", unsafe_allow_html=True)
@@ -1221,14 +2328,14 @@ def render_home_page():
     st.markdown(
         """
         <div class="cta-banner">
-            <h2>Ready to Accelerate Your Learning?</h2>
+            <h2 style="font-size:2.4rem; font-weight:900; margin-bottom:0.6rem;"><span class="gradient-text">Ready to Accelerate Your Learning?</span></h2>
             <p>Join thousands of students and professionals mastering complex topics faster with EduTech AI.</p>
         </div>
         """, unsafe_allow_html=True)
 
     bl, bc, br = st.columns([2.5, 1.5, 2.5])
     with bc:
-        if st.button("Get Started Free →", key="cta_btn", use_container_width=True):
+        if st.button("Get Started Free →", key="cta_btn", type="primary", use_container_width=True):
             if not user_profile:
                 st.session_state["auth_tab"] = "signup"
                 st.session_state["view"] = "auth"
@@ -1258,113 +2365,286 @@ def render_home_page():
 #  AUTH VIEW — Glassy Sign In / Sign Up
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 def _render_auth_view():
-    """Renders glassy auth view matching the n8n theme."""
-    # Background glow
-    st.markdown('<div class="glow-bg"></div>', unsafe_allow_html=True)
+    """Renders split-screen AI flow diagram auth view matching the homepage theme."""
+    # Sync view to auth query param for refreshes
+    st.query_params["view"] = "auth"
 
-    # Mini navbar
-    b1, _, b3 = st.columns([1, 4, 1])
-    with b1:
+    # Initialize the auth form mode if not present in session state
+    if "auth_form_mode" not in st.session_state:
+        mode = st.session_state.get("auth_tab")
+        if mode == "login":
+            st.session_state["auth_form_mode"] = "signin"
+        elif mode == "signup":
+            st.session_state["auth_form_mode"] = "signup"
+        else:
+            st.session_state["auth_form_mode"] = None
+
+    # Render hidden Streamlit buttons to receive flowchart clicks (seamless rerun, zero page reload)
+    st.markdown('<div class="auth-hidden-triggers">', unsafe_allow_html=True)
+    if st.button("HIDDEN_TRIGGER_SIGNIN", key="hid_signin"):
+        st.session_state["auth_form_mode"] = "signin"
+        st.rerun()
+    if st.button("HIDDEN_TRIGGER_SIGNUP", key="hid_signup"):
+        st.session_state["auth_form_mode"] = "signup"
+        st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # Background glow with constellation node overlay
+    st.markdown('<div class="glow-bg-constellation"></div>', unsafe_allow_html=True)
+
+    # ── Floating Glassmorphic Navbar Pill ──────────────────────
+    nav_c1, nav_c2 = st.columns([3, 1])
+    with nav_c1:
+        st.markdown('<div class="et-logo-simple">⚡ <span class="accent">EduTech</span> <span class="badge-ai">AI</span></div>', unsafe_allow_html=True)
+    with nav_c2:
         if st.button("← Back to Home", key="auth_back"):
             st.session_state["view"] = "home"
+            # Clear state when leaving
+            st.session_state["auth_form_mode"] = None
+            st.session_state["auth_tab"] = None
+            st.query_params.clear()
             st.rerun()
-    with b3:
-        st.markdown('<div class="et-logo" style="text-align:right;">⚡ <span class="accent">EduTech</span> AI</div>', unsafe_allow_html=True)
-
-    st.markdown("<hr style='border:1px solid rgba(255,255,255,0.04);margin:0.5rem 0 2.5rem 0;'/>", unsafe_allow_html=True)
 
     st.markdown(
         """
-        <div style="text-align:center;margin-bottom:2rem;">
-            <div class="et-hero-badge" style="margin-bottom:1rem;">🔐 &nbsp; Secure Authentication</div>
-            <h2 style="font-weight:800;color:#FAFAFA;margin-bottom:0.4rem;font-size:2rem;">Welcome to EduTech AI</h2>
-            <p style="color:rgba(255,255,255,0.4);">Sign in or create an account to begin your AI learning journey.</p>
+        <div class="auth-header-container">
+            <div class="auth-badge">🔐 SECURE GATEWAY</div>
+            <h1 class="auth-title">Access the <span class="gradient-text">AI Learning Workspace</span></h1>
+            <p class="auth-subtitle">EduTech AI is an autonomous, multi-agent academic ecosystem. Log in or create a new student account to instantiate your personal supervisor-worker agent swarm.</p>
+            <div class="auth-instructions-pill">
+                <span>💡 <b>Access Instructions:</b> Trace the <b>Providing Access Flowchart</b> below. If you already have an account, complete the <b>Sign In</b> form on the right. Otherwise, proceed to the <b>Create Account</b> tab. Upon verification, the system dispatches the AI Agent Squad to instantly grant workspace access.</span>
+            </div>
         </div>
         """, unsafe_allow_html=True)
 
-    al, ac, ar = st.columns([1.2, 2, 1.2])
+    # ── Dynamic Grid Showcase Layout ─────────────────────────────
+    mode = st.session_state.get("auth_form_mode")
 
-    with ac:
-        st.markdown('<div class="auth-glass">', unsafe_allow_html=True)
-        tab_login, tab_signup = st.tabs(["🔐 Sign In", "✨ Create Account"])
+    if mode is None:
+        col_left, col_showcase, col_right = st.columns([0.5, 2.0, 0.5])
+    else:
+        col_showcase, col_auth = st.columns([1.1, 1.0], gap="large")
 
-        with tab_login:
-            with st.form("signin_form"):
-                email_in = st.text_input("Email Address", placeholder="student@example.com")
-                pass_in = st.text_input("Password", type="password")
-                sub = st.form_submit_button("Sign In", type="primary", use_container_width=True)
+    with col_showcase:
+        active_signin_class = " active-signin" if mode == "signin" else ""
+        active_signup_class = " active-signup" if mode == "signup" else ""
+        st.markdown(
+            f"""<div class="auth-flow-canvas">
+<div class="n8n-header" style="margin-bottom:1rem; text-align:center;">
+<span>⚡ EduTech AI — Providing Access Flowchart</span>
+</div>
 
-            if sub:
-                if not email_in or not pass_in:
-                    st.error("Please provide both email and password.")
-                else:
-                    with st.spinner("Authenticating..."):
-                        try:
-                            from services.auth_service import AuthService
-                            from services.database import get_db_session
+<!-- Step 1: User Arrival (Compact & Centered) -->
+<div class="flow-step-center">
+<div class="auth-flow-node compact-node">
+<div class="node-icon" style="background:rgba(59,130,246,0.18);">👤</div>
+<div>
+<div class="node-title">User Arrival</div>
+<div class="node-sub">Access Request</div>
+</div>
+</div>
+</div>
 
-                            async def _login():
-                                async with get_db_session() as db:
-                                    u = await AuthService.authenticate_user(db, email_in.strip(), pass_in)
-                                    return AuthService.get_user_current_profile(u)
+<!-- Arrow 1 (Same size as User Arrival, in center just below it) -->
+<div class="flow-connector-wrapper">
+<div class="flow-connector-line"></div>
+<div class="flow-connector-arrow">▼</div>
+</div>
 
-                            p = run_async(_login())
-                            st.session_state["user_profile"] = p
-                            st.session_state["view"] = "learning"
-                            st.toast(f"Welcome back, {p.first_name}!", icon="✅")
-                            st.rerun()
-                        except Exception as e:
-                            st.error(f"Sign in failed: {e}")
+<!-- Step 2: AI Credential Evaluator (Compact & Centered, same size as User Arrival) -->
+<div class="flow-step-center">
+<div class="auth-flow-node compact-node" style="border-color:rgba(236,72,153,0.45); background:rgba(30,41,59,0.95);">
+<div class="node-icon" style="background:rgba(236,72,153,0.2);">🛡️</div>
+<div>
+<div class="node-title" style="color:#F472B6;">AI Credential Evaluator</div>
+<div class="node-sub">Evaluate Status</div>
+</div>
+</div>
+</div>
 
-            st.markdown("---")
-            st.caption("⚡ Quick Demo:")
-            d1, d2 = st.columns(2)
-            with d1:
-                if st.button("🔑 Demo Student", key="d_s", use_container_width=True):
-                    _quick_demo_login("student@edutech.ai", "student123")
-            with d2:
-                if st.button("⚡ Demo Pro", key="d_p", use_container_width=True):
-                    _quick_demo_login("pro@edutech.ai", "pro123")
+<!-- Arrow 2 (Centered just below AI Credential Evaluator) -->
+<div class="flow-connector-wrapper">
+<div class="flow-connector-line"></div>
+<div class="flow-connector-arrow">▼</div>
+</div>
 
-        with tab_signup:
-            sel_tier = st.session_state.get("selected_tier", "normal")
-            with st.form("signup_form"):
-                fn = st.text_input("First Name", placeholder="Jane")
-                ln = st.text_input("Last Name", placeholder="Doe")
-                se = st.text_input("Email Address", placeholder="jane.doe@example.com")
-                sp = st.text_input("Password", type="password")
-                tc = st.selectbox("Tier", ["normal", "pro", "ultra"],
-                                  index=["normal", "pro", "ultra"].index(sel_tier) if sel_tier in ["normal", "pro", "ultra"] else 0,
-                                  format_func=lambda x: f"{x.upper()} Tier")
-                sub2 = st.form_submit_button("Create Account & Start Learning", type="primary", use_container_width=True)
+<!-- Step 3: Has Account? Decision Node (Centered) -->
+<div class="flow-step-center">
+<div class="flow-decision-diamond">
+<span>❓ Has Account?</span>
+</div>
+</div>
 
-            if sub2:
-                if not fn or not se or not sp:
-                    st.error("Please fill in all required fields.")
-                else:
-                    with st.spinner("Creating account..."):
-                        try:
-                            from models.user_schemas import UserCreateRequest
-                            from services.auth_service import AuthService
-                            from services.database import get_db_session
-                            from services.user_service import UserService
+<!-- 2 Arrows branching to Sign In and Create Account -->
+<div class="flow-branch-arrows">
+<div class="branch-arrow-col">
+<span class="branch-label label-yes">YES (✓)</span>
+<div class="flow-connector-line"></div>
+<div class="flow-connector-arrow color-green">▼</div>
+</div>
+<div class="branch-arrow-col">
+<span class="branch-label label-no">NO (❌)</span>
+<div class="flow-connector-line"></div>
+<div class="flow-connector-arrow color-pink">▼</div>
+</div>
+</div>
 
-                            async def _signup():
-                                async with get_db_session() as db:
-                                    req = UserCreateRequest(first_name=fn.strip(), last_name=ln.strip() if ln else "User",
-                                                            email=se.strip(), password=sp, subscription_tier=tc)
-                                    cu = await UserService.create_user(db, req)
-                                    return AuthService.get_user_current_profile(cu)
+<!-- Step 4: Sign In and Create Account blocks -->
+<div class="flow-branch-cards">
+<div class="auth-flow-node branch-node clickable-card{active_signin_class}" style="border-color:rgba(34,197,94,0.4);" onclick="const doc = window.parent.document || document; const btn = Array.from(doc.querySelectorAll('button')).find(el => el.textContent.includes('HIDDEN_TRIGGER_SIGNIN')); if (btn) btn.click();">
+<div class="node-icon" style="background:rgba(34,197,94,0.18);">🔐</div>
+<div>
+<div class="node-title" style="font-size:0.82rem;">Sign In</div>
+<div class="node-sub" style="font-size:0.72rem;">Email & Password</div>
+</div>
+</div>
+<div class="auth-flow-node branch-node clickable-card{active_signup_class}" style="border-color:rgba(168,85,247,0.4);" onclick="const doc = window.parent.document || document; const btn = Array.from(doc.querySelectorAll('button')).find(el => el.textContent.includes('HIDDEN_TRIGGER_SIGNUP')); if (btn) btn.click();">
+<div class="node-icon" style="background:rgba(168,85,247,0.18);">💎</div>
+<div>
+<div class="node-title" style="font-size:0.82rem;">Create Account</div>
+<div class="node-sub" style="font-size:0.72rem;">Free / Pro / Ultra</div>
+</div>
+</div>
+</div>
 
-                            p = run_async(_signup())
-                            st.session_state["user_profile"] = p
-                            st.session_state["view"] = "learning"
-                            st.toast(f"Welcome, {p.first_name}!", icon="🎉")
-                            st.rerun()
-                        except Exception as e:
-                            st.error(f"Registration failed: {e}")
+<!-- Merge Arrow connecting to Dispatch AI Agent Squad block -->
+<div class="flow-merge-svg-container">
+<svg width="100%" height="20" viewBox="0 0 100 20" preserveAspectRatio="none" style="display:block;">
+  <path d="M 25 0 L 25 10" stroke="#34D399" stroke-width="2" fill="none" vector-effect="non-scaling-stroke" />
+  <path d="M 75 0 L 75 10" stroke="#F472B6" stroke-width="2" fill="none" vector-effect="non-scaling-stroke" />
+  <path d="M 25 10 L 75 10" stroke="#A855F7" stroke-width="2" fill="none" vector-effect="non-scaling-stroke" />
+  <path d="M 50 10 L 50 20" stroke="#38BDF8" stroke-width="2" fill="none" vector-effect="non-scaling-stroke" />
+</svg>
+<div class="flow-connector-wrapper" style="margin-top:-6px;">
+<div class="flow-connector-arrow color-cyan">▼</div>
+</div>
+</div>
 
-        st.markdown('</div>', unsafe_allow_html=True)
+<!-- Step 5: Dispatch AI Agent Squad block -->
+<div class="flow-step-center">
+<div class="auth-flow-node compact-node" style="background:rgba(15,23,42,0.95); border-color:rgba(6,182,212,0.45); max-width:270px;">
+<div class="node-icon" style="background:rgba(6,182,212,0.18);">
+  <div class="neural-anim-container">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" style="opacity:0.6;">
+      <line x1="5" y1="5" x2="19" y2="5" stroke="#38BDF8" stroke-width="1.5"/>
+      <line x1="5" y1="5" x2="12" y2="19" stroke="#38BDF8" stroke-width="1.5"/>
+      <line x1="19" y1="5" x2="12" y2="19" stroke="#38BDF8" stroke-width="1.5"/>
+    </svg>
+    <span class="neural-dot n1"></span>
+    <span class="neural-dot n2"></span>
+    <span class="neural-dot n3"></span>
+  </div>
+</div>
+<div>
+<div class="node-title" style="color:#38BDF8;">Dispatch AI Agent Squad</div>
+<div class="node-sub">Instant Workspace Access</div>
+</div>
+</div>
+</div>
+</div>""",
+            unsafe_allow_html=True,
+        )
+
+    if mode is not None:
+        with col_auth:
+            st.markdown('<div class="auth-form-card">', unsafe_allow_html=True)
+
+            # Form header inside card container
+            st.markdown('<div class="auth-card-header">', unsafe_allow_html=True)
+            if mode == "signin":
+                st.markdown("### 🔐 Sign In")
+            else:
+                st.markdown("### ✨ Create Account")
+
+            st.markdown('<div class="auth-close-btn-wrapper">', unsafe_allow_html=True)
+            if st.button("✕ Close", key="close_auth_form"):
+                st.session_state["auth_form_mode"] = None
+                st.rerun()
+            st.markdown('</div>', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+
+            if mode == "signin":
+                with st.form("signin_form"):
+                    email_in = st.text_input("Email Address", placeholder="student@example.com")
+                    pass_in = st.text_input("Password", type="password")
+                    sub = st.form_submit_button("Sign In", type="primary", use_container_width=True)
+
+                if sub:
+                    if not email_in or not pass_in:
+                        st.error("Please provide both email and password.")
+                    else:
+                        with st.spinner("Authenticating..."):
+                            try:
+                                from services.auth_service import AuthService
+                                from services.database import get_db_session
+
+                                async def _login():
+                                    async with get_db_session() as db:
+                                        u = await AuthService.authenticate_user(db, email_in.strip(), pass_in)
+                                        return AuthService.get_user_current_profile(u)
+
+                                p = run_async(_login())
+                                st.session_state["user_profile"] = p
+                                st.session_state["view"] = "learning"
+                                st.toast(f"Welcome back, {p.first_name}!", icon="✅")
+                                st.rerun()
+                            except Exception as e:
+                                st.error(f"Sign in failed: {e}")
+            else:
+                sel_tier = st.session_state.get("selected_tier", "normal")
+                with st.form("signup_form"):
+                    fn = st.text_input("First Name", placeholder="Jane")
+                    ln = st.text_input("Last Name", placeholder="Doe")
+                    se = st.text_input("Email Address", placeholder="jane.doe@example.com")
+                    sp = st.text_input("Password", type="password")
+                    tc = st.selectbox("Tier", ["normal", "pro", "ultra"],
+                                      index=["normal", "pro", "ultra"].index(sel_tier) if sel_tier in ["normal", "pro", "ultra"] else 0,
+                                      format_func=lambda x: f"{'FREE' if x == 'normal' else x.upper()} Tier")
+                    sub2 = st.form_submit_button("Create Account & Start Learning", type="primary", use_container_width=True)
+
+                if sub2:
+                    if not fn or not se or not sp:
+                        st.error("Please fill in all required fields.")
+                    else:
+                        with st.spinner("Creating account..."):
+                            try:
+                                from models.user_schemas import UserCreateRequest
+                                from services.auth_service import AuthService
+                                from services.database import get_db_session
+                                from services.user_service import UserService
+
+                                async def _signup():
+                                    async with get_db_session() as db:
+                                        req = UserCreateRequest(first_name=fn.strip(), last_name=ln.strip() if ln else "User",
+                                                                email=se.strip(), password=sp, subscription_tier=tc)
+                                        cu = await UserService.create_user(db, req)
+                                        return AuthService.get_user_current_profile(cu)
+
+                                p = run_async(_signup())
+                                st.session_state["user_profile"] = p
+                                st.session_state["view"] = "learning"
+                                st.toast(f"Welcome, {p.first_name}!", icon="🎉")
+                                st.rerun()
+                            except Exception as e:
+                                st.error(f"Registration failed: {e}")
+
+            st.markdown('</div>', unsafe_allow_html=True)
+
+    # ── Trust Badges Footer ───────────────────────────────────
+    st.markdown(
+        """
+        <div style="text-align:center; margin-top:2.5rem; padding-bottom:1rem;">
+            <div style="display:inline-flex; align-items:center; gap:24px; color:rgba(255,255,255,0.3); font-size:0.8rem; font-weight:600;">
+                <span>🔒 256-bit SSL Security</span>
+                <span>·</span>
+                <span>🛡️ SOC 2 Compliant Infrastructure</span>
+                <span>·</span>
+                <span>⚡ Instant Account Activation</span>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
