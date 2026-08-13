@@ -554,6 +554,85 @@ HOME_CSS = """
         margin-left: -8px;
     }
 
+    /* ── Mobile Responsive Adaptations for Workflow Canvas ────── */
+    @media (max-width: 768px) {
+        .n8n-canvas {
+            padding: 1.8rem 0.8rem;
+            border-radius: 16px;
+        }
+
+        .n8n-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .n8n-header span {
+            font-size: 0.68rem;
+            padding: 5px 12px;
+            letter-spacing: 0.8px;
+        }
+
+        .n8n-diagram {
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            padding: 0.5rem 0 2rem 0;
+            width: 100%;
+        }
+
+        .n8n-wire {
+            width: 3px;
+            height: 24px;
+            margin: 4px auto;
+        }
+
+        .n8n-wire::after {
+            right: -2px;
+            top: auto;
+            bottom: -4px;
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-top: 6px solid #A855F7;
+        }
+
+        .n8n-agent-card {
+            width: 100%;
+            max-width: 280px;
+            min-width: unset;
+            margin-bottom: 75px;
+        }
+
+        .n8n-trigger-node {
+            width: 100%;
+            max-width: 280px;
+        }
+
+        .n8n-decision-card {
+            width: 100%;
+            max-width: 280px;
+        }
+
+        .n8n-branch-arms {
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            gap: 20px;
+        }
+
+        .n8n-sub-nodes-group {
+            gap: 8px;
+        }
+
+        .n8n-sub-circle {
+            width: 44px;
+            height: 44px;
+            font-size: 1.05rem;
+        }
+
+        .n8n-sub-title {
+            font-size: 0.6rem;
+        }
+    }
+
     /* ── Section Titles ────────────────────────────── */
     .section-title {
         font-size: 2.2rem;
@@ -573,23 +652,25 @@ HOME_CSS = """
         line-height: 1.6;
     }
 
-    /* ── Feature Cards ─────────────────────────────── */
+    /* ── Feature Cards — Glassmorphism Gradient Theme ───────── */
     .feat-card {
-        background: rgba(255, 255, 255, 0.03);
-        backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.06);
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(124, 58, 237, 0.16) 50%, rgba(15, 23, 42, 0.9) 100%);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(168, 85, 247, 0.4);
         border-radius: 16px;
         padding: 1.8rem 1.4rem;
         text-align: center;
-        transition: all 0.3s ease;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         min-height: 200px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(168, 85, 247, 0.1);
     }
 
     .feat-card:hover {
-        background: rgba(255, 255, 255, 0.06);
-        border-color: rgba(139, 92, 246, 0.3);
-        box-shadow: 0 0 40px rgba(139, 92, 246, 0.1);
-        transform: translateY(-4px);
+        background: linear-gradient(135deg, rgba(124, 58, 237, 0.28) 0%, rgba(59, 130, 246, 0.2) 50%, rgba(15, 23, 42, 0.95) 100%);
+        border-color: rgba(168, 85, 247, 0.75);
+        box-shadow: 0 0 40px rgba(168, 85, 247, 0.35), 0 12px 35px rgba(0, 0, 0, 0.5);
+        transform: translateY(-5px);
     }
 
     .feat-icon {
@@ -601,7 +682,7 @@ HOME_CSS = """
         justify-content: center;
         font-size: 1.4rem;
         margin-bottom: 1rem;
-        box-shadow: 0 0 20px rgba(139, 92, 246, 0.15);
+        box-shadow: 0 0 20px rgba(168, 85, 247, 0.25);
     }
 
     .feat-card h4 {
@@ -613,76 +694,84 @@ HOME_CSS = """
 
     .feat-card p {
         font-size: 0.85rem;
-        color: rgba(255, 255, 255, 0.45);
+        color: rgba(255, 255, 255, 0.55);
         line-height: 1.5;
         margin: 0;
     }
 
     /* Icon color variants */
-    .icon-violet  { background: rgba(139, 92, 246, 0.15); color: #A78BFA; }
-    .icon-blue    { background: rgba(59, 130, 246, 0.15); color: #60A5FA; }
-    .icon-cyan    { background: rgba(6, 182, 212, 0.15); color: #22D3EE; }
-    .icon-green   { background: rgba(16, 185, 129, 0.15); color: #34D399; }
-    .icon-amber   { background: rgba(251, 191, 36, 0.15); color: #FBBF24; }
-    .icon-pink    { background: rgba(236, 72, 153, 0.15); color: #F472B6; }
+    .icon-violet  { background: rgba(168, 85, 247, 0.2); color: #C084FC; border: 1px solid rgba(168, 85, 247, 0.4); }
+    .icon-blue    { background: rgba(59, 130, 246, 0.2); color: #60A5FA; border: 1px solid rgba(59, 130, 246, 0.4); }
+    .icon-cyan    { background: rgba(6, 182, 212, 0.2); color: #22D3EE; border: 1px solid rgba(6, 182, 212, 0.4); }
+    .icon-green   { background: rgba(16, 185, 129, 0.2); color: #34D399; border: 1px solid rgba(16, 185, 129, 0.4); }
+    .icon-amber   { background: rgba(251, 191, 36, 0.2); color: #FBBF24; border: 1px solid rgba(251, 191, 36, 0.4); }
+    .icon-pink    { background: rgba(236, 72, 153, 0.2); color: #F472B6; border: 1px solid rgba(236, 72, 153, 0.4); }
 
-    /* ── Agent Cards ───────────────────────────────── */
+    /* ── Agent Cards — Glassmorphism Gradient Theme (Matching Why EduTech AI?) ─── */
     .agent-glass {
-        background: rgba(255, 255, 255, 0.02);
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(124, 58, 237, 0.16) 50%, rgba(15, 23, 42, 0.9) 100%);
         backdrop-filter: blur(16px);
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        border-radius: 14px;
-        padding: 1.3rem;
-        transition: all 0.3s ease;
-        min-height: 160px;
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(168, 85, 247, 0.4);
+        border-radius: 16px;
+        padding: 1.8rem 1.4rem;
+        text-align: center;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        min-height: 200px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(168, 85, 247, 0.1);
     }
 
     .agent-glass:hover {
-        background: rgba(255, 255, 255, 0.05);
-        border-color: rgba(139, 92, 246, 0.25);
-        box-shadow: 0 0 30px rgba(139, 92, 246, 0.08);
+        background: linear-gradient(135deg, rgba(124, 58, 237, 0.28) 0%, rgba(59, 130, 246, 0.2) 50%, rgba(15, 23, 42, 0.95) 100%);
+        border-color: rgba(168, 85, 247, 0.75);
+        box-shadow: 0 0 40px rgba(168, 85, 247, 0.35), 0 12px 35px rgba(0, 0, 0, 0.5);
+        transform: translateY(-5px);
     }
 
     .agent-glass h4 {
-        font-size: 0.95rem;
+        font-size: 1.05rem;
         font-weight: 700;
         color: #FAFAFA;
-        margin-bottom: 0.3rem;
+        margin-bottom: 0.4rem;
     }
 
     .agent-glass p {
-        font-size: 0.82rem;
-        color: rgba(255, 255, 255, 0.4);
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.55);
         line-height: 1.5;
         margin: 0;
     }
 
     .agent-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: 10px;
-        display: flex;
+        width: 52px;
+        height: 52px;
+        border-radius: 14px;
+        display: inline-flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.15rem;
-        margin-bottom: 0.8rem;
+        font-size: 1.4rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 0 20px rgba(168, 85, 247, 0.25);
     }
 
-    /* ── About Cards & Metric Pills ─────────────────── */
+    /* ── About Cards & Metric Pills — Glassmorphism Gradient Theme ─── */
     .about-card {
-        background: rgba(255, 255, 255, 0.025);
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(168, 85, 247, 0.18) 50%, rgba(15, 23, 42, 0.9) 100%);
         backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.07);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(168, 85, 247, 0.4);
         border-radius: 18px;
         padding: 2rem 1.8rem;
         height: 100%;
         transition: all 0.3s ease;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), inset 0 0 25px rgba(124, 58, 237, 0.12);
     }
 
     .about-card:hover {
-        background: rgba(255, 255, 255, 0.045);
-        border-color: rgba(139, 92, 246, 0.25);
-        box-shadow: 0 0 35px rgba(139, 92, 246, 0.08);
+        background: linear-gradient(135deg, rgba(124, 58, 237, 0.25) 0%, rgba(236, 72, 153, 0.18) 50%, rgba(15, 23, 42, 0.95) 100%);
+        border-color: rgba(168, 85, 247, 0.75);
+        box-shadow: 0 0 40px rgba(124, 58, 237, 0.35);
+        transform: translateY(-4px);
     }
 
     .about-card h3 {
@@ -697,31 +786,34 @@ HOME_CSS = """
 
     .about-card p {
         font-size: 0.9rem;
-        color: rgba(255, 255, 255, 0.5);
+        color: rgba(255, 255, 255, 0.55);
         line-height: 1.65;
         margin: 0;
     }
 
     .stat-pill {
-        background: rgba(255, 255, 255, 0.03);
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(124, 58, 237, 0.15) 50%, rgba(15, 23, 42, 0.9) 100%);
         backdrop-filter: blur(16px);
-        border: 1px solid rgba(255, 255, 255, 0.08);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(168, 85, 247, 0.4);
         border-radius: 16px;
         padding: 1.5rem 1rem;
         text-align: center;
         transition: all 0.3s ease;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
     }
 
     .stat-pill:hover {
-        border-color: rgba(139, 92, 246, 0.3);
-        box-shadow: 0 0 30px rgba(139, 92, 246, 0.1);
-        transform: translateY(-2px);
+        background: linear-gradient(135deg, rgba(124, 58, 237, 0.25) 0%, rgba(6, 182, 212, 0.2) 100%);
+        border-color: rgba(168, 85, 247, 0.75);
+        box-shadow: 0 0 35px rgba(168, 85, 247, 0.35);
+        transform: translateY(-3px);
     }
 
     .stat-number {
         font-size: 2.2rem;
         font-weight: 900;
-        background: linear-gradient(135deg, #C4B5FD 0%, #8B5CF6 50%, #EC4899 100%);
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #06B6D4 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         line-height: 1;
@@ -731,16 +823,17 @@ HOME_CSS = """
     .stat-label {
         font-size: 0.8rem;
         font-weight: 600;
-        color: rgba(255, 255, 255, 0.5);
+        color: rgba(255, 255, 255, 0.55);
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
 
-    /* ── Pricing Cards ─────────────────────────────── */
+    /* ── Pricing Cards — Glassmorphism Gradient Theme ───────── */
     .price-glass {
-        background: rgba(255, 255, 255, 0.02);
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(124, 58, 237, 0.12) 50%, rgba(15, 23, 42, 0.9) 100%);
         backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.06);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(168, 85, 247, 0.35);
         border-radius: 20px;
         padding: 2rem 1.5rem;
         position: relative;
@@ -748,29 +841,29 @@ HOME_CSS = """
         display: flex;
         flex-direction: column;
         transition: all 0.3s ease;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
     }
 
     .price-glass:hover {
-        border-color: rgba(255, 255, 255, 0.12);
-        transform: translateY(-2px);
+        background: linear-gradient(135deg, rgba(124, 58, 237, 0.2) 0%, rgba(59, 130, 246, 0.15) 50%, rgba(15, 23, 42, 0.95) 100%);
+        border-color: rgba(168, 85, 247, 0.65);
+        box-shadow: 0 0 35px rgba(168, 85, 247, 0.25);
+        transform: translateY(-4px);
     }
 
     .price-glass-pro {
-        border: 1px solid rgba(139, 92, 246, 0.35);
-        box-shadow:
-            0 0 60px rgba(139, 92, 246, 0.12),
-            0 0 120px rgba(139, 92, 246, 0.05),
-            inset 0 1px 0 rgba(255, 255, 255, 0.06);
-        background: rgba(139, 92, 246, 0.04);
-        animation: borderGlow 4s ease-in-out infinite;
+        background: linear-gradient(135deg, rgba(124, 58, 237, 0.25) 0%, rgba(236, 72, 153, 0.18) 50%, rgba(15, 23, 42, 0.92) 100%);
+        border: 1.5px solid rgba(168, 85, 247, 0.75);
+        box-shadow: 0 0 45px rgba(168, 85, 247, 0.35);
+        animation: n8nPulseGlow 4s ease-in-out infinite;
     }
 
     .price-glass-pro:hover {
-        border-color: rgba(139, 92, 246, 0.5);
-        box-shadow:
-            0 0 80px rgba(139, 92, 246, 0.2),
-            0 0 160px rgba(139, 92, 246, 0.08),
-            inset 0 1px 0 rgba(255, 255, 255, 0.08);
+        background: linear-gradient(135deg, rgba(124, 58, 237, 0.35) 0%, rgba(236, 72, 153, 0.28) 50%, rgba(15, 23, 42, 0.95) 100%);
+        border-color: rgba(168, 85, 247, 0.95);
+        box-shadow: 0 0 55px rgba(168, 85, 247, 0.45);
+        transform: translateY(-4px);
+    }
     }
 
     .price-badge {
