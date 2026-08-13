@@ -204,24 +204,45 @@ HOME_CSS = """
         line-height: 1.7;
     }
 
-    /* ── Pixel-Perfect n8n Workflow Canvas ────────────── */
+    /* ── Pixel-Perfect n8n Workflow Canvas — Glassmorphism Theme ────── */
+    @keyframes n8nMeshGlow {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
+    @keyframes n8nPulseGlow {
+        0%, 100% { transform: scale(1); opacity: 0.85; box-shadow: 0 0 15px rgba(168, 85, 247, 0.35); }
+        50% { transform: scale(1.005); opacity: 1; box-shadow: 0 0 30px rgba(6, 182, 212, 0.6); }
+    }
+
+    @keyframes wireShimmer {
+        0% { background-position: 0% 50%; }
+        100% { background-position: 200% 50%; }
+    }
+
     .n8n-canvas {
         position: relative;
         width: 100%;
         padding: 3rem 1.5rem;
-        background: #0B0813;
-        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: radial-gradient(circle at 20% 30%, rgba(168, 85, 247, 0.18) 0%, transparent 40%),
+                    radial-gradient(circle at 80% 70%, rgba(59, 130, 246, 0.18) 0%, transparent 40%),
+                    #0B0813;
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(168, 85, 247, 0.35);
         border-radius: 20px;
-        overflow-x: auto;
-        box-shadow: 0 20px 60px -15px rgba(139, 92, 246, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+        overflow: hidden;
+        box-shadow: 0 20px 60px -15px rgba(124, 58, 237, 0.3), inset 0 0 30px rgba(168, 85, 247, 0.15);
+        animation: n8nPulseGlow 4s infinite ease-in-out;
     }
 
-    /* Dot grid matrix like n8n editor */
+    /* Restored Dot grid matrix background */
     .n8n-canvas::before {
         content: '';
         position: absolute;
         top: 0; left: 0; right: 0; bottom: 0;
-        background-image: radial-gradient(circle, rgba(255,255,255,0.06) 1.2px, transparent 1.2px);
+        background-image: radial-gradient(circle, rgba(255,255,255,0.08) 1.2px, transparent 1.2px);
         background-size: 20px 20px;
         pointer-events: none;
     }
@@ -234,15 +255,16 @@ HOME_CSS = """
     }
 
     .n8n-header span {
-        background: rgba(139, 92, 246, 0.12);
-        border: 1px solid rgba(139, 92, 246, 0.25);
-        color: #C4B5FD;
-        font-size: 0.72rem;
-        font-weight: 700;
-        padding: 5px 16px;
+        background: rgba(168, 85, 247, 0.15);
+        border: 1px solid rgba(168, 85, 247, 0.4);
+        color: #E9D5FF;
+        font-size: 0.75rem;
+        font-weight: 800;
+        padding: 6px 18px;
         border-radius: 20px;
         text-transform: uppercase;
-        letter-spacing: 1px;
+        letter-spacing: 1.5px;
+        box-shadow: 0 0 16px rgba(168, 85, 247, 0.3);
     }
 
     /* Main Diagram Container */
@@ -250,10 +272,13 @@ HOME_CSS = """
         display: flex;
         align-items: center;
         justify-content: center;
+        flex-wrap: wrap;
         gap: 12px;
         position: relative;
         z-index: 1;
-        min-width: 900px;
+        width: 100%;
+        max-width: 100%;
+        overflow: hidden;
         padding: 1rem 0 3rem 0;
     }
 
@@ -262,25 +287,27 @@ HOME_CSS = """
         position: relative;
         display: flex;
         align-items: center;
-        background: #1B1728;
-        border: 1.5px solid rgba(255, 255, 255, 0.12);
+        background: rgba(30, 41, 59, 0.7);
+        backdrop-filter: blur(12px);
+        border: 1.5px solid rgba(6, 182, 212, 0.5);
         border-radius: 40px 14px 14px 40px;
         padding: 0.8rem 1.1rem 0.8rem 0.6rem;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 15px rgba(6, 182, 212, 0.25);
     }
 
     .n8n-trigger-icon {
         width: 44px;
         height: 44px;
         border-radius: 50%;
-        background: rgba(6, 182, 212, 0.15);
-        border: 1px solid rgba(6, 182, 212, 0.3);
+        background: rgba(6, 182, 212, 0.2);
+        border: 1px solid rgba(6, 182, 212, 0.5);
         color: #22D3EE;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 1.2rem;
         margin-right: 10px;
+        box-shadow: 0 0 12px rgba(6, 182, 212, 0.3);
     }
 
     .n8n-trigger-label {
@@ -305,9 +332,10 @@ HOME_CSS = """
         width: 10px;
         height: 10px;
         border-radius: 50%;
-        background: #A1A1AA;
-        border: 2px solid #1B1728;
+        background: #A78BFA;
+        border: 2px solid #0F172A;
         position: absolute;
+        box-shadow: 0 0 8px #A78BFA;
     }
 
     .n8n-port-right { right: -6px; top: 50%; transform: translateY(-50%); }
@@ -317,10 +345,13 @@ HOME_CSS = """
     /* Wire Line */
     .n8n-wire {
         width: 32px;
-        height: 2px;
-        background: rgba(255, 255, 255, 0.25);
+        height: 3px;
+        background: linear-gradient(90deg, #EC4899, #A855F7, #3B82F6, #06B6D4);
+        background-size: 200% 200%;
+        animation: wireShimmer 2s infinite linear;
         flex-shrink: 0;
         position: relative;
+        box-shadow: 0 0 8px rgba(168, 85, 247, 0.5);
     }
 
     .n8n-wire::after {
@@ -331,17 +362,18 @@ HOME_CSS = """
         width: 0; height: 0;
         border-top: 4px solid transparent;
         border-bottom: 4px solid transparent;
-        border-left: 6px solid rgba(255, 255, 255, 0.4);
+        border-left: 6px solid #A855F7;
     }
 
     /* 2. Main Agent Card Node */
     .n8n-agent-card {
         position: relative;
-        background: #1B1728;
-        border: 1.5px solid rgba(139, 92, 246, 0.4);
+        background: rgba(30, 41, 59, 0.75);
+        backdrop-filter: blur(12px);
+        border: 1.5px solid rgba(168, 85, 247, 0.5);
         border-radius: 14px;
         padding: 1.1rem 1.4rem;
-        box-shadow: 0 0 30px rgba(139, 92, 246, 0.15);
+        box-shadow: 0 0 30px rgba(168, 85, 247, 0.25);
         min-width: 210px;
     }
 
@@ -355,11 +387,13 @@ HOME_CSS = """
         width: 36px;
         height: 36px;
         border-radius: 10px;
-        background: rgba(139, 92, 246, 0.2);
+        background: rgba(168, 85, 247, 0.25);
+        border: 1px solid rgba(168, 85, 247, 0.4);
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 1.2rem;
+        box-shadow: 0 0 12px rgba(168, 85, 247, 0.3);
     }
 
     .n8n-agent-title {
@@ -370,7 +404,7 @@ HOME_CSS = """
 
     .n8n-agent-sub {
         font-size: 0.72rem;
-        color: rgba(255, 255, 255, 0.4);
+        color: rgba(255, 255, 255, 0.5);
     }
 
     /* Bottom Sub-Ports Labels */
@@ -379,12 +413,12 @@ HOME_CSS = """
         justify-content: space-around;
         margin-top: 0.9rem;
         padding-top: 0.5rem;
-        border-top: 1px dashed rgba(255, 255, 255, 0.1);
+        border-top: 1px dashed rgba(255, 255, 255, 0.15);
     }
 
     .n8n-sub-port-tag {
         font-size: 0.58rem;
-        color: rgba(255, 255, 255, 0.4);
+        color: rgba(255, 255, 255, 0.5);
         position: relative;
     }
 
@@ -411,19 +445,60 @@ HOME_CSS = """
         top: -24px;
         width: 2px;
         height: 24px;
-        border-left: 2px dashed rgba(255, 255, 255, 0.2);
+        border-left: 2px dashed rgba(168, 85, 247, 0.4);
     }
 
     .n8n-sub-circle {
         width: 52px;
         height: 52px;
         border-radius: 50%;
-        background: #14101F;
-        border: 1.5px solid rgba(255, 255, 255, 0.12);
+        background: rgba(30, 41, 59, 0.85);
+        backdrop-filter: blur(10px);
+        border: 1.5px solid rgba(168, 85, 247, 0.4);
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 1.25rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), 0 0 12px rgba(168, 85, 247, 0.25);
+    }
+
+    .n8n-sub-title {
+        font-size: 0.65rem;
+        font-weight: 700;
+        color: rgba(255, 255, 255, 0.85);
+        margin-top: 6px;
+        text-align: center;
+        white-space: nowrap;
+    }
+
+    /* 3. Decision Node */
+    .n8n-decision-card {
+        position: relative;
+        background: rgba(30, 41, 59, 0.75);
+        backdrop-filter: blur(12px);
+        border: 1.5px solid rgba(16, 185, 129, 0.5);
+        border-radius: 14px;
+        padding: 1.1rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 130px;
+        box-shadow: 0 0 25px rgba(16, 185, 129, 0.2);
+    }
+
+    .n8n-decision-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        background: rgba(16, 185, 129, 0.2);
+        border: 1px solid rgba(16, 185, 129, 0.4);
+        color: #34D399;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        box-shadow: 0 0 12px rgba(16, 185, 129, 0.3);
+    }ize: 1.25rem;
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
     }
 
