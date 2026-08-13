@@ -1275,30 +1275,122 @@ HOME_CSS = """
         align-self: center !important;
     }
 
+    div[data-testid="stHorizontalBlock"]:has(.et-logo-simple) div[data-testid="column"],
+    div[data-testid="stHorizontalBlock"]:has(.et-logo-simple) div[data-testid="stColumn"] {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        height: auto !important;
+        min-height: 0 !important;
+    }
+
     div[data-testid="stHorizontalBlock"]:has(.et-logo-simple) div[data-testid="column"]:first-child,
     div[data-testid="stHorizontalBlock"]:has(.et-logo-simple) div[data-testid="stColumn"]:first-child {
+        justify-content: flex-start !important;
+        padding-left: 0 !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-logo-simple) div[data-testid="column"]:first-child *,
+    div[data-testid="stHorizontalBlock"]:has(.et-logo-simple) div[data-testid="stColumn"]:first-child * {
         justify-content: flex-start !important;
     }
 
     div[data-testid="stHorizontalBlock"]:has(.et-logo-simple) div[data-testid="column"]:last-child,
     div[data-testid="stHorizontalBlock"]:has(.et-logo-simple) div[data-testid="stColumn"]:last-child {
         justify-content: flex-end !important;
+        padding-right: 0 !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-logo-simple) div[data-testid="stVerticalBlock"],
+    div[data-testid="stHorizontalBlock"]:has(.et-logo-simple) div[data-testid="stVerticalBlockBorderWrapper"] {
+        gap: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        justify-content: center !important;
+        align-items: center !important;
+        align-self: center !important;
+        display: flex !important;
+        flex-direction: row !important;
+        min-height: 0 !important;
+        height: auto !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-logo-simple) div.element-container,
+    div[data-testid="stHorizontalBlock"]:has(.et-logo-simple) div[data-testid="stElementContainer"] {
+        margin: 0 !important;
+        padding: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        align-self: center !important;
+        justify-content: center !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-logo-simple) div[data-testid="column"]:last-child div.element-container,
+    div[data-testid="stHorizontalBlock"]:has(.et-logo-simple) div[data-testid="column"]:last-child div[data-testid="stElementContainer"],
+    div[data-testid="stHorizontalBlock"]:has(.et-logo-simple) div[data-testid="stColumn"]:last-child div.element-container,
+    div[data-testid="stHorizontalBlock"]:has(.et-logo-simple) div[data-testid="stColumn"]:last-child div[data-testid="stElementContainer"] {
+        justify-content: flex-end !important;
+        width: 100% !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-logo-simple) div.stMarkdown,
+    div[data-testid="stHorizontalBlock"]:has(.et-logo-simple) div[data-testid="stMarkdownContainer"] {
+        display: flex !important;
+        align-items: center !important;
+        align-self: center !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-logo-simple) div.stMarkdown p,
+    div[data-testid="stHorizontalBlock"]:has(.et-logo-simple) div[data-testid="stMarkdownContainer"] p {
+        margin: 0 !important;
+        padding: 0 !important;
+        line-height: 1 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-logo-simple) div[data-testid="stButton"] {
+        margin: 0 !important;
+        padding: 0 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: flex-end !important;
+        align-self: center !important;
+        width: auto !important;
+        min-width: 0 !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-logo-simple) div[data-testid="column"]:last-child div[data-testid="stButton"],
+    div[data-testid="stHorizontalBlock"]:has(.et-logo-simple) div[data-testid="stColumn"]:last-child div[data-testid="stButton"] {
+        width: 100% !important;
+        justify-content: flex-end !important;
     }
 
     div[data-testid="stHorizontalBlock"]:has(.et-logo-simple) button {
-        height: 34px !important;
-        min-height: 34px !important;
+        height: 36px !important;
+        min-height: 36px !important;
+        max-height: 36px !important;
         line-height: 1 !important;
         margin: 0 !important;
         border-radius: 18px !important;
         font-weight: 700 !important;
-        font-size: 0.84rem !important;
+        font-size: 0.85rem !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 0 1.2rem !important;
         background: rgba(255, 255, 255, 0.06) !important;
         color: #FAFAFA !important;
         border: 1px solid rgba(168, 85, 247, 0.45) !important;
-        padding: 0 1rem !important;
         box-shadow: 0 0 15px rgba(168, 85, 247, 0.2) !important;
         transition: all 0.25s ease !important;
+        white-space: nowrap !important;
+        width: auto !important;
+        min-width: 0 !important;
     }
 
     div[data-testid="stHorizontalBlock"]:has(.et-logo-simple) button:hover {
