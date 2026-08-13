@@ -132,12 +132,14 @@ CUSTOM_CSS = """
 
     /* Top Progress Banner */
     .top-progress-card {
-        background: linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.95) 100%);
-        border: 1px solid rgba(168, 85, 247, 0.35);
-        border-radius: 12px;
-        padding: 0.9rem 1.2rem;
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-top: 3px solid #A855F7;
+        border-radius: 16px;
+        padding: 1.1rem 1.5rem;
         margin-bottom: 1.2rem;
-        box-shadow: 0 4px 16px rgba(124, 58, 237, 0.15);
+        box-shadow: 0 10px 30px -10px rgba(124, 58, 237, 0.25), 0 4px 12px rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(16px);
     }
     
     .top-progress-stat {
@@ -169,9 +171,388 @@ CUSTOM_CSS = """
         border-radius: 6px;
         text-transform: uppercase;
     }
+
+    /* Modern UI/UX Glassmorphism & Pill Capsules System */
+    .pill-capsule {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 16px;
+        border-radius: 9999px;
+        font-size: 0.84rem;
+        font-weight: 600;
+        letter-spacing: 0.4px;
+        backdrop-filter: blur(12px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        white-space: nowrap;
+        user-select: none;
+    }
+    
+    .pill-capsule:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+    }
+
+    .pill-icon-box {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        font-size: 0.85rem;
+        background: rgba(255, 255, 255, 0.12);
+    }
+    
+    .pill-mode {
+        background: linear-gradient(135deg, rgba(168, 85, 247, 0.2) 0%, rgba(124, 58, 237, 0.25) 100%);
+        border: 1px solid rgba(192, 132, 252, 0.5);
+        color: #F3E8FF;
+        box-shadow: 0 0 12px rgba(168, 85, 247, 0.2);
+    }
+    .pill-mode .pill-label {
+        color: #D8B4FE;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.72rem;
+        letter-spacing: 0.6px;
+    }
+    .pill-mode .pill-value {
+        color: #FFFFFF;
+        font-weight: 700;
+    }
+    
+    .pill-audience {
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(37, 99, 235, 0.25) 100%);
+        border: 1px solid rgba(96, 165, 250, 0.5);
+        color: #EFF6FF;
+        box-shadow: 0 0 12px rgba(59, 130, 246, 0.2);
+    }
+    .pill-audience .pill-label {
+        color: #93C5FD;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.72rem;
+        letter-spacing: 0.6px;
+    }
+    .pill-audience .pill-value {
+        color: #FFFFFF;
+        font-weight: 700;
+    }
+
+    /* Status Pill Variants */
+    .pill-status-complete {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(5, 150, 105, 0.25) 100%);
+        border: 1px solid rgba(52, 211, 153, 0.5);
+        color: #ECFDF5;
+        box-shadow: 0 0 12px rgba(16, 185, 129, 0.2);
+    }
+    .pill-status-complete .pill-label {
+        color: #6EE7B7;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.72rem;
+        letter-spacing: 0.6px;
+    }
+    .pill-status-complete .pill-value {
+        color: #FFFFFF;
+        font-weight: 700;
+    }
+
+    .pill-status-inprogress {
+        background: linear-gradient(135deg, rgba(14, 165, 233, 0.2) 0%, rgba(2, 132, 199, 0.25) 100%);
+        border: 1px solid rgba(56, 189, 248, 0.5);
+        color: #F0F9FF;
+        box-shadow: 0 0 12px rgba(14, 165, 233, 0.2);
+    }
+    .pill-status-inprogress .pill-label {
+        color: #7DD3FC;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.72rem;
+        letter-spacing: 0.6px;
+    }
+    .pill-status-inprogress .pill-value {
+        color: #FFFFFF;
+        font-weight: 700;
+    }
+
+    .pill-status-pending {
+        background: linear-gradient(135deg, rgba(100, 116, 139, 0.18) 0%, rgba(71, 85, 105, 0.22) 100%);
+        border: 1px solid rgba(148, 163, 184, 0.4);
+        color: #F1F5F9;
+    }
+    .pill-status-pending .pill-label {
+        color: #CBD5E1;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.72rem;
+        letter-spacing: 0.6px;
+    }
+    .pill-status-pending .pill-value {
+        color: #E2E8F0;
+        font-weight: 700;
+    }
+
+    /* Streamlit Button Overrides for Modern Look */
+    div[data-testid="stButton"] button {
+        border-radius: 10px !important;
+        font-weight: 700 !important;
+        transition: all 0.2s ease-in-out !important;
+    }
+    div[data-testid="stButton"] button:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 18px rgba(124, 58, 237, 0.3) !important;
+    }
+
+    /* Redesigned Regenerate Step Button Styling - Stacked Directly Below Status Pill */
+    div[data-testid="stColumn"]:has(div.pill-capsule) {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-end !important;
+        justify-content: center !important;
+    }
+
+    div[data-testid="stColumn"]:has(div.pill-capsule) div[data-testid="stElementContainer"] {
+        display: flex !important;
+        justify-content: flex-end !important;
+        width: 100% !important;
+    }
+
+    div[data-testid="stColumn"]:has(div.pill-capsule) div[data-testid="stButton"] {
+        display: flex !important;
+        justify-content: flex-end !important;
+        width: auto !important;
+        margin-top: 2px !important;
+    }
+
+    div[data-testid="stColumn"]:has(div.pill-capsule) button {
+        background: linear-gradient(135deg, rgba(168, 85, 247, 0.2) 0%, rgba(124, 58, 237, 0.25) 100%) !important;
+        border: 1px solid rgba(192, 132, 252, 0.5) !important;
+        color: #F3E8FF !important;
+        border-radius: 9999px !important;
+        padding: 5px 14px !important;
+        font-size: 0.84rem !important;
+        font-weight: 600 !important;
+        letter-spacing: 0.4px !important;
+        box-shadow: 0 4px 12px rgba(168, 85, 247, 0.2) !important;
+        backdrop-filter: blur(12px) !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        white-space: nowrap !important;
+        height: auto !important;
+        min-height: unset !important;
+        line-height: 1.2 !important;
+        margin-left: auto !important;
+    }
+
+    /* Glassmorphism Dynamic AI Loader */
+    @keyframes meshGlow {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
+    @keyframes pulseGlow {
+        0%, 100% { transform: scale(1); opacity: 0.8; box-shadow: 0 0 15px rgba(168, 85, 247, 0.4); }
+        50% { transform: scale(1.01); opacity: 1; box-shadow: 0 0 30px rgba(6, 182, 212, 0.6); }
+    }
+
+    @keyframes shimmerBar {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+    }
+
+    .glass-loader-box {
+        position: relative;
+        background: rgba(15, 23, 42, 0.85);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(168, 85, 247, 0.35);
+        border-radius: 20px;
+        padding: 1.8rem;
+        margin: 1.5rem 0;
+        overflow: hidden;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 0 30px rgba(124, 58, 237, 0.15);
+        animation: pulseGlow 3s infinite ease-in-out;
+    }
+
+    .glass-loader-mesh {
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle at 20% 30%, rgba(168, 85, 247, 0.18) 0%, transparent 40%),
+                    radial-gradient(circle at 80% 70%, rgba(59, 130, 246, 0.18) 0%, transparent 40%),
+                    radial-gradient(circle at 50% 50%, rgba(6, 182, 212, 0.15) 0%, transparent 50%);
+        background-size: 200% 200%;
+        animation: meshGlow 8s infinite alternate ease-in-out;
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    .glass-loader-content {
+        position: relative;
+        z-index: 1;
+    }
+
+    .loader-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1.2rem;
+        padding-bottom: 0.8rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .loader-title {
+        font-size: 1.25rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #06B6D4 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        letter-spacing: 0.5px;
+    }
+
+    .loader-metrics-badge {
+        background: rgba(30, 41, 59, 0.8);
+        border: 1px solid rgba(168, 85, 247, 0.4);
+        border-radius: 30px;
+        padding: 5px 12px;
+        font-size: 0.76rem;
+        font-weight: 700;
+        color: #A78BFA;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    @keyframes pulseTravel1 {
+        0% { cx: 80px; cy: 35px; opacity: 0; }
+        50% { opacity: 1; }
+        100% { cx: 280px; cy: 25px; opacity: 0; }
+    }
+    @keyframes pulseTravel2 {
+        0% { cx: 280px; cy: 25px; opacity: 0; }
+        50% { opacity: 1; }
+        100% { cx: 520px; cy: 75px; opacity: 0; }
+    }
+    @keyframes pulseTravel3 {
+        0% { cx: 520px; cy: 75px; opacity: 0; }
+        50% { opacity: 1; }
+        100% { cx: 720px; cy: 75px; opacity: 0; }
+    }
+
+    .synapse-pulse { animation: pulseTravel1 1.8s infinite linear; }
+    .synapse-pulse-2 { animation: pulseTravel2 2.2s infinite linear; }
+    .synapse-pulse-3 { animation: pulseTravel3 1.6s infinite linear; }
+
+    .neural-network-canvas {
+        background: rgba(15, 23, 42, 0.6);
+        border: 1px solid rgba(168, 85, 247, 0.25);
+        border-radius: 14px;
+        padding: 12px;
+        margin: 1rem 0;
+        backdrop-filter: blur(12px);
+        overflow: hidden;
+    }
+
+    .agent-workflow-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+        gap: 0.85rem;
+        margin-top: 1rem;
+    }
+
+    .agent-card-item {
+        background: rgba(30, 41, 59, 0.55);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        padding: 0.85rem;
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+    }
+
+    .agent-card-item.active {
+        border-color: rgba(168, 85, 247, 0.7);
+        background: rgba(124, 58, 237, 0.18);
+        box-shadow: 0 0 20px rgba(168, 85, 247, 0.25);
+    }
+
+    .agent-card-item.completed {
+        border-color: rgba(16, 185, 129, 0.6);
+        background: rgba(16, 185, 129, 0.08);
+    }
+
+    .agent-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.3rem;
+    }
+
+    .agent-name {
+        font-weight: 700;
+        font-size: 0.85rem;
+        color: #F4F4F5;
+    }
+
+    .agent-status-tag {
+        font-size: 0.65rem;
+        font-weight: 800;
+        padding: 2px 7px;
+        border-radius: 5px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .tag-completed { background: rgba(16, 185, 129, 0.2); color: #34D399; }
+    .tag-active { background: rgba(168, 85, 247, 0.25); color: #C084FC; }
+    .tag-waiting { background: rgba(255, 255, 255, 0.05); color: #71717A; }
+
+    .agent-desc {
+        font-size: 0.75rem;
+        color: #94A3B8;
+        line-height: 1.3;
+    }
 </style>
 """
 st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
+
+
+def format_display_text(val: Any) -> str:
+    """Format enum or string values by replacing underscores with spaces and applying title case."""
+    if val is None:
+        return ""
+    str_val = val.value if hasattr(val, "value") else str(val)
+    return str_val.replace("_", " ").title()
+
+
+def get_mode_icon(mode_val: Any) -> str:
+    """Return appropriate icon for learning mode."""
+    str_val = (mode_val.value if hasattr(mode_val, "value") else str(mode_val)).lower()
+    if "visual" in str_val:
+        return "🎨"
+    elif "deep" in str_val:
+        return "🔬"
+    elif "bite" in str_val:
+        return "⚡"
+    return "🎯"
+
+
+def get_audience_icon(aud_val: Any) -> str:
+    """Return appropriate icon for student level / audience."""
+    str_val = (aud_val.value if hasattr(aud_val, "value") else str(aud_val)).lower()
+    if "middle" in str_val:
+        return "🏫"
+    elif "high" in str_val:
+        return "🎒"
+    elif "undergrad" in str_val:
+        return "🏛️"
+    elif "grad" in str_val:
+        return "🎓"
+    return "💡"
 
 
 def get_item_attr(item: Any, key: str, default: Any = None) -> Any:
@@ -179,6 +560,17 @@ def get_item_attr(item: Any, key: str, default: Any = None) -> Any:
     if isinstance(item, dict):
         return item.get(key, default)
     return getattr(item, key, default)
+
+
+def safe_set_attr(item: Any, key: str, value: Any) -> None:
+    """Safely set an attribute or dictionary key value on an item."""
+    if isinstance(item, dict):
+        item[key] = value
+    else:
+        try:
+            setattr(item, key, value)
+        except Exception:
+            pass
 
 
 def format_quiz_options(raw_opts: Any) -> list[str]:
@@ -211,6 +603,158 @@ def is_answer_correct(selected_full: str, selected_key: str, correct_raw: str) -
     if len(correct_str) > 2 and correct_str.lower() in selected_full.lower():
         return True
     return False
+
+
+def render_glassy_agent_loader_html(
+    title: str,
+    subtitle: str,
+    orchestrator_status: str = "waiting",
+    socratic_status: str = "waiting",
+    youtube_status: str = "waiting",
+    academic_status: str = "waiting",
+    quiz_status: str = "waiting",
+    progress_percent: int = 30,
+) -> str:
+    """
+    Renders a vivid Glassmorphism AI Compute loader with glowing mesh gradients,
+    neural network node visualizers, and step-by-step agent workflow cards.
+    """
+    def _status_tag(status: str) -> str:
+        if status == "completed":
+            return '<span class="agent-status-tag tag-completed">✓ COMPLETED</span>'
+        elif status == "active":
+            return '<span class="agent-status-tag tag-active">⚡ EXECUTING...</span>'
+        else:
+            return '<span class="agent-status-tag tag-waiting">⌛ QUEUED</span>'
+
+    def _card_class(status: str) -> str:
+        if status == "completed":
+            return "agent-card-item completed"
+        elif status == "active":
+            return "agent-card-item active"
+        else:
+            return "agent-card-item"
+
+    return f"""<div class="glass-loader-box">
+<div class="glass-loader-mesh"></div>
+<div class="glass-loader-content">
+<div class="loader-header">
+<div>
+<div style="font-size: 0.75rem; font-weight: 800; color: #A78BFA; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 4px;">⚡ EDU-TECH AI COMPUTE CLUSTER &nbsp;•&nbsp; NEURAL INFERENCE</div>
+<div class="loader-title">{title}</div>
+<div style="color: #94A3B8; font-size: 0.88rem; margin-top: 2px;">{subtitle}</div>
+</div>
+<div class="loader-metrics-badge">
+<span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#10B981; box-shadow:0 0 8px #10B981;"></span>
+<span>LIVE INFERENCE</span>
+</div>
+</div>
+<div class="neural-network-canvas">
+<svg width="100%" height="150" viewBox="0 0 800 150" fill="none" xmlns="http://www.w3.org/2000/svg">
+<!-- Synapse Connection Lines -->
+<line x1="80" y1="35" x2="280" y2="25" stroke="rgba(236,72,153,0.35)" stroke-width="2" />
+<line x1="80" y1="35" x2="280" y2="75" stroke="rgba(236,72,153,0.35)" stroke-width="2" />
+<line x1="80" y1="35" x2="280" y2="125" stroke="rgba(236,72,153,0.35)" stroke-width="2" />
+<line x1="80" y1="115" x2="280" y2="25" stroke="rgba(236,72,153,0.35)" stroke-width="2" />
+<line x1="80" y1="115" x2="280" y2="75" stroke="rgba(236,72,153,0.35)" stroke-width="2" />
+<line x1="80" y1="115" x2="280" y2="125" stroke="rgba(236,72,153,0.35)" stroke-width="2" />
+
+<line x1="280" y1="25" x2="520" y2="25" stroke="rgba(168,85,247,0.4)" stroke-width="2" />
+<line x1="280" y1="25" x2="520" y2="75" stroke="rgba(168,85,247,0.4)" stroke-width="2" />
+<line x1="280" y1="75" x2="520" y2="75" stroke="rgba(168,85,247,0.4)" stroke-width="2" />
+<line x1="280" y1="75" x2="520" y2="125" stroke="rgba(168,85,247,0.4)" stroke-width="2" />
+<line x1="280" y1="125" x2="520" y2="75" stroke="rgba(168,85,247,0.4)" stroke-width="2" />
+<line x1="280" y1="125" x2="520" y2="125" stroke="rgba(168,85,247,0.4)" stroke-width="2" />
+
+<line x1="520" y1="25" x2="720" y2="75" stroke="rgba(59,130,246,0.4)" stroke-width="2" />
+<line x1="520" y1="75" x2="720" y2="75" stroke="rgba(6,182,212,0.4)" stroke-width="2" />
+<line x1="520" y1="125" x2="720" y2="75" stroke="rgba(16,185,129,0.4)" stroke-width="2" />
+
+<!-- Animated Traveling Synapse Pulse Bullets -->
+<circle cx="180" cy="30" r="4" fill="#EC4899" class="synapse-pulse" />
+<circle cx="400" cy="50" r="4" fill="#A855F7" class="synapse-pulse-2" />
+<circle cx="620" cy="75" r="4" fill="#3B82F6" class="synapse-pulse-3" />
+
+<!-- Solid Neural Node Points -->
+<circle cx="80" cy="35" r="16" fill="#0F172A" stroke="#EC4899" stroke-width="3" />
+<text x="80" y="39" font-size="11" text-anchor="middle" fill="#FAFAFA">🎯</text>
+<text x="80" y="64" font-size="10" font-weight="700" text-anchor="middle" fill="#EC4899">Topic</text>
+
+<circle cx="80" cy="115" r="16" fill="#0F172A" stroke="#F43F5E" stroke-width="3" />
+<text x="80" y="119" font-size="11" text-anchor="middle" fill="#FAFAFA">👤</text>
+<text x="80" y="144" font-size="10" font-weight="700" text-anchor="middle" fill="#F43F5E">Context</text>
+
+<circle cx="280" cy="25" r="17" fill="#0F172A" stroke="#A855F7" stroke-width="3" />
+<text x="280" y="30" font-size="12" text-anchor="middle" fill="#FAFAFA">🧠</text>
+<text x="280" y="54" font-size="10" font-weight="700" text-anchor="middle" fill="#C084FC">Orchestrator</text>
+
+<circle cx="280" cy="75" r="15" fill="#0F172A" stroke="#8B5CF6" stroke-width="3" />
+<text x="280" y="79" font-size="11" text-anchor="middle" fill="#FAFAFA">⚡</text>
+<text x="280" y="101" font-size="10" font-weight="700" text-anchor="middle" fill="#A78BFA">Roadmap</text>
+
+<circle cx="280" cy="125" r="15" fill="#0F172A" stroke="#7C3AED" stroke-width="3" />
+<text x="280" y="129" font-size="11" text-anchor="middle" fill="#FAFAFA">📊</text>
+<text x="280" y="149" font-size="10" font-weight="700" text-anchor="middle" fill="#DDD6FE">Vector RAG</text>
+
+<circle cx="520" cy="25" r="16" fill="#0F172A" stroke="#3B82F6" stroke-width="3" />
+<text x="520" y="29" font-size="11" text-anchor="middle" fill="#FAFAFA">💬</text>
+<text x="520" y="53" font-size="10" font-weight="700" text-anchor="middle" fill="#93C5FD">Socratic</text>
+
+<circle cx="520" cy="75" r="16" fill="#0F172A" stroke="#06B6D4" stroke-width="3" />
+<text x="520" y="79" font-size="11" text-anchor="middle" fill="#FAFAFA">📺</text>
+<text x="520" y="103" font-size="10" font-weight="700" text-anchor="middle" fill="#67E8F9">YouTube</text>
+
+<circle cx="520" cy="125" r="16" fill="#0F172A" stroke="#10B981" stroke-width="3" />
+<text x="520" y="129" font-size="11" text-anchor="middle" fill="#FAFAFA">📚</text>
+<text x="520" y="151" font-size="10" font-weight="700" text-anchor="middle" fill="#6EE7B7">Academic</text>
+
+<circle cx="720" cy="75" r="22" fill="#0F172A" stroke="#EC4899" stroke-width="4" />
+<text x="720" y="80" font-size="15" text-anchor="middle" fill="#FAFAFA">🎓</text>
+<text x="720" y="112" font-size="11" font-weight="800" text-anchor="middle" fill="#F472B6">Workspace</text>
+</svg>
+</div>
+<div style="background: rgba(255, 255, 255, 0.06); border-radius: 10px; height: 8px; overflow: hidden; margin-bottom: 1.2rem; position: relative;">
+<div style="width: {progress_percent}%; height: 100%; background: linear-gradient(90deg, #EC4899 0%, #A855F7 50%, #06B6D4 100%); border-radius: 10px; transition: width 0.5s ease-in-out;"></div>
+</div>
+<div class="agent-workflow-grid">
+<div class="{_card_class(orchestrator_status)}">
+<div class="agent-card-header">
+<span class="agent-name">🧠 Orchestrator Agent</span>
+{_status_tag(orchestrator_status)}
+</div>
+<div class="agent-desc">Decomposing topic into structured, age-appropriate milestone roadmap.</div>
+</div>
+<div class="{_card_class(socratic_status)}">
+<div class="agent-card-header">
+<span class="agent-name">💬 Socratic Tutor</span>
+{_status_tag(socratic_status)}
+</div>
+<div class="agent-desc">Crafting deep intuitive explanations & interactive guiding questions.</div>
+</div>
+<div class="{_card_class(youtube_status)}">
+<div class="agent-card-header">
+<span class="agent-name">📺 YouTube Curator</span>
+{_status_tag(youtube_status)}
+</div>
+<div class="agent-desc">Filtering high-yield educational videos with precise timestamp deep-linking.</div>
+</div>
+<div class="{_card_class(academic_status)}">
+<div class="agent-card-header">
+<span class="agent-name">📚 Academic Researcher</span>
+{_status_tag(academic_status)}
+</div>
+<div class="agent-desc">Indexing peer-reviewed open access papers from OpenAlex & Semantic Scholar.</div>
+</div>
+<div class="{_card_class(quiz_status)}">
+<div class="agent-card-header">
+<span class="agent-name">📝 Quiz Agent</span>
+{_status_tag(quiz_status)}
+</div>
+<div class="agent-desc">Structuring adaptive comprehension questions & XP reward multipliers.</div>
+</div>
+</div>
+</div>
+</div>"""
 
 
 # ─── Helper Functions & Multi-Agent Execution ─────────────────────
@@ -350,6 +894,7 @@ def render_learning_workspace():
             if st.button("🚪 Logout", key="sidebar_nav_logout", use_container_width=True):
                 st.session_state["user_profile"] = None
                 st.session_state["view"] = "home"
+                st.query_params.clear()
                 st.toast("Logged out successfully.", icon="ℹ️")
                 st.rerun()
 
@@ -419,34 +964,79 @@ def render_learning_workspace():
     if start_clicked and topic_input:
         st.session_state["last_topic"] = topic_input
         
-        with st.spinner("🧠 Orchestrator Agent is decomposing topic into milestone steps..."):
-            # Initialize SharedMemory
-            new_memory = SharedMemory(
-                topic=topic_input,
-                learning_mode=selected_mode,
-                student_level=selected_level,
+        loader_placeholder = st.empty()
+
+        # Step 1: Orchestrator Agent decomposing topic into milestone steps
+        loader_placeholder.markdown(
+            render_glassy_agent_loader_html(
+                title=f"Decomposing '{topic_input}'",
+                subtitle="🧠 Orchestrator Agent is analyzing domain knowledge & mapping milestone roadmap...",
+                orchestrator_status="active",
+                socratic_status="waiting",
+                youtube_status="waiting",
+                academic_status="waiting",
+                quiz_status="waiting",
+                progress_percent=25,
+            ),
+            unsafe_allow_html=True,
+        )
+
+        # Initialize SharedMemory
+        new_memory = SharedMemory(
+            topic=topic_input,
+            learning_mode=selected_mode,
+            student_level=selected_level,
+        )
+        
+        # Run Orchestrator Agent
+        orchestrator = OrchestratorAgent()
+        run_async(orchestrator.execute(new_memory))
+        
+        if new_memory.steps:
+            new_memory.steps[0].status = StepStatus.IN_PROGRESS
+            # Step 2: Multi-Agent System collaborating on Step 1 content
+            loader_placeholder.markdown(
+                render_glassy_agent_loader_html(
+                    title=f"Synthesizing Step 1: {new_memory.steps[0].title}",
+                    subtitle="🤖 Multi-Agents (Socratic, YouTube, Academic, Quiz) generating step 1 content concurrently...",
+                    orchestrator_status="completed",
+                    socratic_status="active",
+                    youtube_status="active",
+                    academic_status="active",
+                    quiz_status="active",
+                    progress_percent=70,
+                ),
+                unsafe_allow_html=True,
             )
-            
-            # Run Orchestrator Agent
-            orchestrator = OrchestratorAgent()
-            run_async(orchestrator.execute(new_memory))
-            
-            if new_memory.steps:
-                new_memory.steps[0].status = StepStatus.IN_PROGRESS
-                with st.spinner("🤖 Multi-Agents (Socratic, YouTube, Academic, Quiz) generating step 1 content..."):
-                    run_async(generate_all_agent_content_for_step(new_memory.steps[0], new_memory))
+            run_async(generate_all_agent_content_for_step(new_memory.steps[0], new_memory))
 
-            # Persist session to PostgreSQL database in Supabase
-            try:
-                from services.session_manager import SessionManager
-                run_async(SessionManager().create_session(new_memory))
-            except Exception as e:
-                logging.warning(f"Could not persist session to database: {e}")
+        loader_placeholder.markdown(
+            render_glassy_agent_loader_html(
+                title="Finalizing Learning Workspace",
+                subtitle="✨ Persisting session memory & loading interactive workspace...",
+                orchestrator_status="completed",
+                socratic_status="completed",
+                youtube_status="completed",
+                academic_status="completed",
+                quiz_status="completed",
+                progress_percent=100,
+            ),
+            unsafe_allow_html=True,
+        )
+        time.sleep(0.5)
+        loader_placeholder.empty()
 
-            st.session_state["memory"] = new_memory
-            st.session_state["active_step_index"] = 0
-            st.session_state["submitted_quizzes"] = {}
-            st.rerun()
+        # Persist session to PostgreSQL database in Supabase
+        try:
+            from services.session_manager import SessionManager
+            run_async(SessionManager().create_session(new_memory))
+        except Exception as e:
+            logging.warning(f"Could not persist session to database: {e}")
+
+        st.session_state["memory"] = new_memory
+        st.session_state["active_step_index"] = 0
+        st.session_state["submitted_quizzes"] = {}
+        st.rerun()
 
     memory = get_or_create_memory()
 
@@ -515,12 +1105,34 @@ def render_learning_workspace():
         completed_steps = sum(1 for s in memory.steps if s.status == StepStatus.COMPLETE)
         total_steps = len(memory.steps)
 
+        formatted_mode = format_display_text(memory.learning_mode)
+        formatted_audience = format_display_text(memory.student_level)
+        mode_icon = get_mode_icon(memory.learning_mode)
+        audience_icon = get_audience_icon(memory.student_level)
+
         st.markdown(
             f"""
             <div class="top-progress-card">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span style="font-weight: 800; font-size: 1.05rem; color: #F1F5F9;">🏆 <b>Your Progress Header</b></span>
-                    <span style="font-size: 0.85rem; color: #94A3B8; font-weight: 600;">Mode: <b style="color:#A855F7;">{memory.learning_mode.value.title()}</b> | Audience: <b style="color:#3B82F6;">{memory.student_level.title()}</b></span>
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="background: linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%); padding: 8px 12px; border-radius: 12px; font-size: 1.1rem; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);">🏆</div>
+                        <div>
+                            <div style="font-weight: 800; font-size: 1.15rem; color: #F8FAFC; letter-spacing: 0.3px;">Your Progress Dashboard</div>
+                            <div style="font-size: 0.78rem; color: #94A3B8;">Track your real-time learning milestone achievements</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                        <div class="pill-capsule pill-mode">
+                            <span class="pill-label">Mode</span>
+                            <span class="pill-icon-box">{mode_icon}</span>
+                            <span class="pill-value">{formatted_mode}</span>
+                        </div>
+                        <div class="pill-capsule pill-audience">
+                            <span class="pill-label">Audience</span>
+                            <span class="pill-icon-box">{audience_icon}</span>
+                            <span class="pill-value">{formatted_audience}</span>
+                        </div>
+                    </div>
                 </div>
             </div>
             """,
@@ -635,26 +1247,76 @@ def render_learning_workspace():
         if not is_already_generated:
             st.session_state[agents_ran_key] = True
             setattr(current_step, "_agent_generated", True)
-            with st.spinner(f"🧩 Multi-Agent System (Socratic Tutor, YouTube Curator, Academic Researcher, Quiz Agent) collaborating on Step {active_idx+1}..."):
-                run_async(generate_all_agent_content_for_step(current_step, memory))
-                st.rerun()
+            loader_placeholder = st.empty()
+            loader_placeholder.markdown(
+                render_glassy_agent_loader_html(
+                    title=f"Collaborating on Step {active_idx+1}: {current_step.title}",
+                    subtitle="🧩 Multi-Agent System (Socratic, YouTube, Academic, Quiz) generating step content...",
+                    orchestrator_status="completed",
+                    socratic_status="active",
+                    youtube_status="active",
+                    academic_status="active",
+                    quiz_status="active",
+                    progress_percent=75,
+                ),
+                unsafe_allow_html=True,
+            )
+            run_async(generate_all_agent_content_for_step(current_step, memory))
+            loader_placeholder.empty()
+            st.rerun()
 
         st.markdown("<br>", unsafe_allow_html=True)
 
         # Display Step Details Header
-        col_s1, col_s2 = st.columns([3, 1])
+        formatted_status = format_display_text(current_step.status)
+        if current_step.status == StepStatus.COMPLETE:
+            status_class = "complete"
+            status_icon = "✅"
+        elif current_step.status == StepStatus.IN_PROGRESS:
+            status_class = "inprogress"
+            status_icon = "⚡"
+        else:
+            status_class = "pending"
+            status_icon = "🔒"
+
+        col_s1, col_s2 = st.columns([2.6, 1.4], vertical_alignment="center")
         with col_s1:
-            st.markdown(f"### Milestone {active_idx+1}: {current_step.title}")
-            st.markdown(f"*{current_step.description}*")
+            st.markdown(
+                f"""
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+                    <span style="background: rgba(99, 102, 241, 0.2); color: #818CF8; border: 1px solid rgba(99, 102, 241, 0.4); font-size: 0.72rem; font-weight: 800; padding: 2px 10px; border-radius: 9999px; text-transform: uppercase; letter-spacing: 0.8px;">Milestone {active_idx+1} of {num_steps}</span>
+                </div>
+                <h2 style="font-size: 1.45rem; font-weight: 800; color: #F8FAFC; margin: 0 0 4px 0;">{current_step.title}</h2>
+                <div style="font-size: 0.9rem; color: #94A3B8; font-style: italic;">{current_step.description}</div>
+                """,
+                unsafe_allow_html=True,
+            )
             prereq_val = getattr(current_step, "prerequisite", None)
             if prereq_val:
                 st.markdown(f'<span class="prereq-badge">Prereq: {prereq_val}</span>', unsafe_allow_html=True)
             elif getattr(current_step, "is_prerequisite", False):
                 st.markdown('<span class="prereq-badge">Prerequisite Step</span>', unsafe_allow_html=True)
+
         with col_s2:
-            status_color = "#10B981" if current_step.status == StepStatus.COMPLETE else ("#3B82F6" if current_step.status == StepStatus.IN_PROGRESS else "#6B7280")
-            st.markdown(f'<div style="text-align:right; font-weight:700; color:{status_color}; font-size:1.1rem; margin-bottom:6px;">Status: {current_step.status.value.upper()}</div>', unsafe_allow_html=True)
-            if st.button("🔄 **Regenerate Step**", key=f"regen_btn_{active_idx}", help="Re-run Socratic, YouTube, Academic & Quiz agents for this step"):
+            # UP: Status Pill Capsule (Right-Aligned)
+            st.markdown(
+                f"""
+                <div style="display: flex; justify-content: flex-end; align-items: center; margin-bottom: 6px; width: 100%;">
+                    <div class="pill-capsule pill-status-{status_class}">
+                        <span class="pill-label">Status</span>
+                        <span class="pill-icon-box">{status_icon}</span>
+                        <span class="pill-value">{formatted_status}</span>
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+            # BELOW: Redesigned Regenerate Step Capsule Button (Right-Aligned Directly Below Status)
+            if st.button(
+                f"🔄 Regenerate Step {active_idx + 1}",
+                key=f"regen_btn_{active_idx}",
+                help=f"Re-run Socratic, YouTube, Academic & Quiz agents for Step {active_idx + 1}",
+            ):
                 setattr(current_step, "tutor_explanation", None)
                 setattr(current_step, "videos", [])
                 setattr(current_step, "papers", [])
@@ -762,6 +1424,9 @@ def render_learning_workspace():
                 else:
                     quiz_key = f"quiz_form_{active_idx}"
                     
+                    saved_user_answers = st.session_state.get(f"saved_user_answers_{active_idx}") or getattr(current_step, "user_answers", {})
+                    saved_user_full_answers = st.session_state.get(f"saved_user_full_answers_{active_idx}") or getattr(current_step, "user_full_answers", {})
+
                     with st.form(quiz_key):
                         user_answers = {}
                         user_full_answers = {}
@@ -773,8 +1438,10 @@ def render_learning_workspace():
                             raw_opts = get_item_attr(q, "options", [])
 
                             if "blank" in q_type_str or "fill" in q_type_str or (isinstance(raw_opts, list) and len(raw_opts) == 0):
+                                default_val = saved_user_answers.get(q_idx, "")
                                 user_val = st.text_input(
                                     f"Answer Q{q_idx+1}",
+                                    value=default_val,
                                     key=f"q_{active_idx}_{q_idx}",
                                     placeholder="Type your answer for the blank here...",
                                     label_visibility="collapsed",
@@ -783,26 +1450,56 @@ def render_learning_workspace():
                                 user_full_answers[q_idx] = user_val.strip()
                             else:
                                 opts = format_quiz_options(raw_opts)
+                                saved_ans = saved_user_full_answers.get(q_idx, "")
+                                default_idx = None
+                                if saved_ans and saved_ans in opts:
+                                    default_idx = opts.index(saved_ans)
+                                elif saved_user_answers.get(q_idx):
+                                    saved_k = str(saved_user_answers.get(q_idx)).strip().upper()
+                                    for o_i, o_str in enumerate(opts):
+                                        if o_str.split(":")[0].strip().upper() == saved_k:
+                                            default_idx = o_i
+                                            break
+
                                 user_ans = st.radio(
                                     f"Select answer Q{q_idx+1}",
                                     opts,
                                     key=f"q_{active_idx}_{q_idx}",
-                                    index=None,
+                                    index=default_idx,
                                     label_visibility="collapsed",
                                 )
                                 if user_ans:
                                     user_answers[q_idx] = user_ans.split(":")[0].strip()
                                     user_full_answers[q_idx] = user_ans
                                 else:
-                                    user_answers[q_idx] = ""
-                                    user_full_answers[q_idx] = ""
+                                    user_answers[q_idx] = saved_user_answers.get(q_idx, "")
+                                    user_full_answers[q_idx] = saved_user_full_answers.get(q_idx, "")
 
                             if q_idx < len(step_quiz) - 1:
                                 st.markdown("---")
                         
                         submit_quiz = st.form_submit_button("🚀 Submit Quiz")
 
-                    if submit_quiz or f"quiz_submitted_{active_idx}" in st.session_state:
+                    if submit_quiz:
+                        st.session_state[f"saved_user_answers_{active_idx}"] = user_answers
+                        st.session_state[f"saved_user_full_answers_{active_idx}"] = user_full_answers
+                        safe_set_attr(current_step, "user_answers", user_answers)
+                        safe_set_attr(current_step, "user_full_answers", user_full_answers)
+                    else:
+                        for q_idx in range(len(step_quiz)):
+                            if not user_answers.get(q_idx) and q_idx in saved_user_answers:
+                                user_answers[q_idx] = saved_user_answers[q_idx]
+                            if not user_full_answers.get(q_idx) and q_idx in saved_user_full_answers:
+                                user_full_answers[q_idx] = saved_user_full_answers[q_idx]
+
+                    is_quiz_submitted = (
+                        submit_quiz
+                        or f"quiz_submitted_{active_idx}" in st.session_state
+                        or current_step.status == StepStatus.COMPLETE
+                        or getattr(current_step, "quiz_score", None) is not None
+                    )
+
+                    if is_quiz_submitted:
                         st.session_state[f"quiz_submitted_{active_idx}"] = True
                         correct_count = 0
                         total_q = len(step_quiz)
@@ -1019,9 +1716,97 @@ def render_learning_workspace():
                         st.success("🎉 **Congratulations! You have completed all milestone steps for this topic!**")
 
 
+def sync_session_with_url():
+    """
+    Synchronizes st.session_state with st.query_params to preserve state (current view,
+    user login profile, active learning topic) across browser refreshes.
+    """
+    query_params = st.query_params
+
+    # 1. Restore view from URL query params if missing in session state
+    if "view" not in st.session_state:
+        url_view = query_params.get("view")
+        if url_view in ["home", "auth", "learning", "admin", "pricing"]:
+            st.session_state["view"] = url_view
+        else:
+            st.session_state["view"] = "home"
+
+    # 2. Restore active topic from query params if missing in session state
+    if "last_topic" not in st.session_state and query_params.get("topic"):
+        st.session_state["last_topic"] = query_params.get("topic")
+
+    # 3. Restore user profile from query params if missing in session state
+    if not st.session_state.get("user_profile"):
+        uid = query_params.get("user_id")
+        uemail = query_params.get("user_email")
+        if uid or uemail:
+            try:
+                if uid and uid.startswith("demo-"):
+                    from home_ui import _make_demo_profile
+                    email_val = uemail or "student@edutech.ai"
+                    st.session_state["user_profile"] = _make_demo_profile(email_val)
+                elif uid:
+                    from services.auth_service import AuthService
+                    from services.database import get_db_session
+                    from services.user_service import UserService
+
+                    async def _restore():
+                        async with get_db_session() as db:
+                            u = await UserService.get_user_by_id(db, uid)
+                            return AuthService.get_user_current_profile(u)
+
+                    p = run_async(_restore())
+                    if p:
+                        st.session_state["user_profile"] = p
+                elif uemail:
+                    if uemail in ["student@edutech.ai", "pro@edutech.ai"]:
+                        from home_ui import _make_demo_profile
+                        st.session_state["user_profile"] = _make_demo_profile(uemail)
+                    else:
+                        from services.auth_service import AuthService
+                        from services.database import get_db_session
+                        from models.domain import User
+                        from sqlalchemy import select
+
+                        async def _restore_by_email():
+                            async with get_db_session() as db:
+                                stmt = select(User).where(User.email == uemail)
+                                res = await db.execute(stmt)
+                                u = res.scalar_one_or_none()
+                                if u:
+                                    return AuthService.get_user_current_profile(u)
+                                return None
+
+                        p = run_async(_restore_by_email())
+                        if p:
+                            st.session_state["user_profile"] = p
+            except Exception as e:
+                logging.warning(f"Session restoration from URL parameters failed: {e}")
+
+    # 4. Write back active session state into URL query parameters
+    cur_view = st.session_state.get("view", "home")
+    st.query_params["view"] = cur_view
+
+    user_profile = st.session_state.get("user_profile")
+    if user_profile:
+        st.query_params["user_id"] = user_profile.id
+        if hasattr(user_profile, "email") and user_profile.email:
+            st.query_params["user_email"] = user_profile.email
+    else:
+        if "user_id" in st.query_params:
+            del st.query_params["user_id"]
+        if "user_email" in st.query_params:
+            del st.query_params["user_email"]
+
+    last_topic = st.session_state.get("last_topic")
+    if last_topic:
+        st.query_params["topic"] = last_topic
+    elif "topic" in st.query_params:
+        del st.query_params["topic"]
+
+
 # ─── Main View Switcher Execution ─────────────────────────────────
-if "view" not in st.session_state:
-    st.session_state["view"] = "home"
+sync_session_with_url()
 
 current_view = st.session_state.get("view", "home")
 
