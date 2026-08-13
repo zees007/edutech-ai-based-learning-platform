@@ -1370,6 +1370,21 @@ def _render_auth_view():
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 #  HELPERS
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+def _make_demo_profile(email: str):
+    from models.auth_schemas import UserCurrentProfileResponse
+    from models.subscription_schemas import SubscriptionResponse
+    from datetime import datetime, timezone
+
+    t = "pro" if "pro" in email else "normal"
+    return UserCurrentProfileResponse(
+        id="demo-user-123", first_name="Demo", last_name="Learner", email=email,
+        created_at=datetime.now(timezone.utc), roles=["student"],
+        subscription=SubscriptionResponse(id=1, user_id="demo-user-123", tier=t, status="active",
+                                          current_period_start=datetime.now(timezone.utc)),
+        privilege_codes=["ET_VIEW_LESSON", "ET_TAKE_QUIZ", "ET_VIEW_SUBSCRIPTION"],
+    )
+
+
 def _quick_demo_login(email: str, pw: str):
     try:
         from services.auth_service import AuthService
@@ -1386,20 +1401,9 @@ def _quick_demo_login(email: str, pw: str):
         st.toast(f"Logged in as {p.first_name}", icon="⚡")
         st.rerun()
     except Exception:
-        from models.auth_schemas import UserCurrentProfileResponse
-        from models.subscription_schemas import SubscriptionResponse
-        from datetime import datetime, timezone
-
-        t = "pro" if "pro" in email else "normal"
-        st.session_state["user_profile"] = UserCurrentProfileResponse(
-            id="demo-user-123", first_name="Demo", last_name="Learner", email=email,
-            created_at=datetime.now(timezone.utc), roles=["student"],
-            subscription=SubscriptionResponse(id=1, user_id="demo-user-123", tier=t, status="active",
-                                              current_period_start=datetime.now(timezone.utc)),
-            privilege_codes=["ET_VIEW_LESSON", "ET_TAKE_QUIZ", "ET_VIEW_SUBSCRIPTION"],
-        )
+        st.session_state["user_profile"] = _make_demo_profile(email)
         st.session_state["view"] = "learning"
-        st.toast(f"Demo ({t.upper()} Tier)", icon="⚡")
+        st.toast(f"Demo ({'PRO' if 'pro' in email else 'NORMAL'} Tier)", icon="⚡")
         st.rerun()
 
 

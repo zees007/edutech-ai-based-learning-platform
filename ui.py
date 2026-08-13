@@ -346,12 +346,175 @@ CUSTOM_CSS = """
         margin-left: auto !important;
     }
 
-    div[data-testid="stColumn"]:has(div.pill-capsule) button:hover {
-        background: linear-gradient(135deg, rgba(168, 85, 247, 0.4) 0%, rgba(124, 58, 237, 0.45) 100%) !important;
-        border-color: rgba(192, 132, 252, 0.85) !important;
-        color: #FFFFFF !important;
-        transform: translateY(-2px) !important;
-        box-shadow: 0 6px 18px rgba(168, 85, 247, 0.4) !important;
+    /* Glassmorphism Dynamic AI Loader */
+    @keyframes meshGlow {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
+    @keyframes pulseGlow {
+        0%, 100% { transform: scale(1); opacity: 0.8; box-shadow: 0 0 15px rgba(168, 85, 247, 0.4); }
+        50% { transform: scale(1.01); opacity: 1; box-shadow: 0 0 30px rgba(6, 182, 212, 0.6); }
+    }
+
+    @keyframes shimmerBar {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+    }
+
+    .glass-loader-box {
+        position: relative;
+        background: rgba(15, 23, 42, 0.85);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(168, 85, 247, 0.35);
+        border-radius: 20px;
+        padding: 1.8rem;
+        margin: 1.5rem 0;
+        overflow: hidden;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 0 30px rgba(124, 58, 237, 0.15);
+        animation: pulseGlow 3s infinite ease-in-out;
+    }
+
+    .glass-loader-mesh {
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle at 20% 30%, rgba(168, 85, 247, 0.18) 0%, transparent 40%),
+                    radial-gradient(circle at 80% 70%, rgba(59, 130, 246, 0.18) 0%, transparent 40%),
+                    radial-gradient(circle at 50% 50%, rgba(6, 182, 212, 0.15) 0%, transparent 50%);
+        background-size: 200% 200%;
+        animation: meshGlow 8s infinite alternate ease-in-out;
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    .glass-loader-content {
+        position: relative;
+        z-index: 1;
+    }
+
+    .loader-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1.2rem;
+        padding-bottom: 0.8rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .loader-title {
+        font-size: 1.25rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #06B6D4 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        letter-spacing: 0.5px;
+    }
+
+    .loader-metrics-badge {
+        background: rgba(30, 41, 59, 0.8);
+        border: 1px solid rgba(168, 85, 247, 0.4);
+        border-radius: 30px;
+        padding: 5px 12px;
+        font-size: 0.76rem;
+        font-weight: 700;
+        color: #A78BFA;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    @keyframes pulseTravel1 {
+        0% { cx: 80px; cy: 35px; opacity: 0; }
+        50% { opacity: 1; }
+        100% { cx: 280px; cy: 25px; opacity: 0; }
+    }
+    @keyframes pulseTravel2 {
+        0% { cx: 280px; cy: 25px; opacity: 0; }
+        50% { opacity: 1; }
+        100% { cx: 520px; cy: 75px; opacity: 0; }
+    }
+    @keyframes pulseTravel3 {
+        0% { cx: 520px; cy: 75px; opacity: 0; }
+        50% { opacity: 1; }
+        100% { cx: 720px; cy: 75px; opacity: 0; }
+    }
+
+    .synapse-pulse { animation: pulseTravel1 1.8s infinite linear; }
+    .synapse-pulse-2 { animation: pulseTravel2 2.2s infinite linear; }
+    .synapse-pulse-3 { animation: pulseTravel3 1.6s infinite linear; }
+
+    .neural-network-canvas {
+        background: rgba(15, 23, 42, 0.6);
+        border: 1px solid rgba(168, 85, 247, 0.25);
+        border-radius: 14px;
+        padding: 12px;
+        margin: 1rem 0;
+        backdrop-filter: blur(12px);
+        overflow: hidden;
+    }
+
+    .agent-workflow-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+        gap: 0.85rem;
+        margin-top: 1rem;
+    }
+
+    .agent-card-item {
+        background: rgba(30, 41, 59, 0.55);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        padding: 0.85rem;
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+    }
+
+    .agent-card-item.active {
+        border-color: rgba(168, 85, 247, 0.7);
+        background: rgba(124, 58, 237, 0.18);
+        box-shadow: 0 0 20px rgba(168, 85, 247, 0.25);
+    }
+
+    .agent-card-item.completed {
+        border-color: rgba(16, 185, 129, 0.6);
+        background: rgba(16, 185, 129, 0.08);
+    }
+
+    .agent-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.3rem;
+    }
+
+    .agent-name {
+        font-weight: 700;
+        font-size: 0.85rem;
+        color: #F4F4F5;
+    }
+
+    .agent-status-tag {
+        font-size: 0.65rem;
+        font-weight: 800;
+        padding: 2px 7px;
+        border-radius: 5px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .tag-completed { background: rgba(16, 185, 129, 0.2); color: #34D399; }
+    .tag-active { background: rgba(168, 85, 247, 0.25); color: #C084FC; }
+    .tag-waiting { background: rgba(255, 255, 255, 0.05); color: #71717A; }
+
+    .agent-desc {
+        font-size: 0.75rem;
+        color: #94A3B8;
+        line-height: 1.3;
     }
 </style>
 """
@@ -440,6 +603,158 @@ def is_answer_correct(selected_full: str, selected_key: str, correct_raw: str) -
     if len(correct_str) > 2 and correct_str.lower() in selected_full.lower():
         return True
     return False
+
+
+def render_glassy_agent_loader_html(
+    title: str,
+    subtitle: str,
+    orchestrator_status: str = "waiting",
+    socratic_status: str = "waiting",
+    youtube_status: str = "waiting",
+    academic_status: str = "waiting",
+    quiz_status: str = "waiting",
+    progress_percent: int = 30,
+) -> str:
+    """
+    Renders a vivid Glassmorphism AI Compute loader with glowing mesh gradients,
+    neural network node visualizers, and step-by-step agent workflow cards.
+    """
+    def _status_tag(status: str) -> str:
+        if status == "completed":
+            return '<span class="agent-status-tag tag-completed">✓ COMPLETED</span>'
+        elif status == "active":
+            return '<span class="agent-status-tag tag-active">⚡ EXECUTING...</span>'
+        else:
+            return '<span class="agent-status-tag tag-waiting">⌛ QUEUED</span>'
+
+    def _card_class(status: str) -> str:
+        if status == "completed":
+            return "agent-card-item completed"
+        elif status == "active":
+            return "agent-card-item active"
+        else:
+            return "agent-card-item"
+
+    return f"""<div class="glass-loader-box">
+<div class="glass-loader-mesh"></div>
+<div class="glass-loader-content">
+<div class="loader-header">
+<div>
+<div style="font-size: 0.75rem; font-weight: 800; color: #A78BFA; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 4px;">⚡ EDU-TECH AI COMPUTE CLUSTER &nbsp;•&nbsp; NEURAL INFERENCE</div>
+<div class="loader-title">{title}</div>
+<div style="color: #94A3B8; font-size: 0.88rem; margin-top: 2px;">{subtitle}</div>
+</div>
+<div class="loader-metrics-badge">
+<span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#10B981; box-shadow:0 0 8px #10B981;"></span>
+<span>LIVE INFERENCE</span>
+</div>
+</div>
+<div class="neural-network-canvas">
+<svg width="100%" height="150" viewBox="0 0 800 150" fill="none" xmlns="http://www.w3.org/2000/svg">
+<!-- Synapse Connection Lines -->
+<line x1="80" y1="35" x2="280" y2="25" stroke="rgba(236,72,153,0.35)" stroke-width="2" />
+<line x1="80" y1="35" x2="280" y2="75" stroke="rgba(236,72,153,0.35)" stroke-width="2" />
+<line x1="80" y1="35" x2="280" y2="125" stroke="rgba(236,72,153,0.35)" stroke-width="2" />
+<line x1="80" y1="115" x2="280" y2="25" stroke="rgba(236,72,153,0.35)" stroke-width="2" />
+<line x1="80" y1="115" x2="280" y2="75" stroke="rgba(236,72,153,0.35)" stroke-width="2" />
+<line x1="80" y1="115" x2="280" y2="125" stroke="rgba(236,72,153,0.35)" stroke-width="2" />
+
+<line x1="280" y1="25" x2="520" y2="25" stroke="rgba(168,85,247,0.4)" stroke-width="2" />
+<line x1="280" y1="25" x2="520" y2="75" stroke="rgba(168,85,247,0.4)" stroke-width="2" />
+<line x1="280" y1="75" x2="520" y2="75" stroke="rgba(168,85,247,0.4)" stroke-width="2" />
+<line x1="280" y1="75" x2="520" y2="125" stroke="rgba(168,85,247,0.4)" stroke-width="2" />
+<line x1="280" y1="125" x2="520" y2="75" stroke="rgba(168,85,247,0.4)" stroke-width="2" />
+<line x1="280" y1="125" x2="520" y2="125" stroke="rgba(168,85,247,0.4)" stroke-width="2" />
+
+<line x1="520" y1="25" x2="720" y2="75" stroke="rgba(59,130,246,0.4)" stroke-width="2" />
+<line x1="520" y1="75" x2="720" y2="75" stroke="rgba(6,182,212,0.4)" stroke-width="2" />
+<line x1="520" y1="125" x2="720" y2="75" stroke="rgba(16,185,129,0.4)" stroke-width="2" />
+
+<!-- Animated Traveling Synapse Pulse Bullets -->
+<circle cx="180" cy="30" r="4" fill="#EC4899" class="synapse-pulse" />
+<circle cx="400" cy="50" r="4" fill="#A855F7" class="synapse-pulse-2" />
+<circle cx="620" cy="75" r="4" fill="#3B82F6" class="synapse-pulse-3" />
+
+<!-- Solid Neural Node Points -->
+<circle cx="80" cy="35" r="16" fill="#0F172A" stroke="#EC4899" stroke-width="3" />
+<text x="80" y="39" font-size="11" text-anchor="middle" fill="#FAFAFA">🎯</text>
+<text x="80" y="64" font-size="10" font-weight="700" text-anchor="middle" fill="#EC4899">Topic</text>
+
+<circle cx="80" cy="115" r="16" fill="#0F172A" stroke="#F43F5E" stroke-width="3" />
+<text x="80" y="119" font-size="11" text-anchor="middle" fill="#FAFAFA">👤</text>
+<text x="80" y="144" font-size="10" font-weight="700" text-anchor="middle" fill="#F43F5E">Context</text>
+
+<circle cx="280" cy="25" r="17" fill="#0F172A" stroke="#A855F7" stroke-width="3" />
+<text x="280" y="30" font-size="12" text-anchor="middle" fill="#FAFAFA">🧠</text>
+<text x="280" y="54" font-size="10" font-weight="700" text-anchor="middle" fill="#C084FC">Orchestrator</text>
+
+<circle cx="280" cy="75" r="15" fill="#0F172A" stroke="#8B5CF6" stroke-width="3" />
+<text x="280" y="79" font-size="11" text-anchor="middle" fill="#FAFAFA">⚡</text>
+<text x="280" y="101" font-size="10" font-weight="700" text-anchor="middle" fill="#A78BFA">Roadmap</text>
+
+<circle cx="280" cy="125" r="15" fill="#0F172A" stroke="#7C3AED" stroke-width="3" />
+<text x="280" y="129" font-size="11" text-anchor="middle" fill="#FAFAFA">📊</text>
+<text x="280" y="149" font-size="10" font-weight="700" text-anchor="middle" fill="#DDD6FE">Vector RAG</text>
+
+<circle cx="520" cy="25" r="16" fill="#0F172A" stroke="#3B82F6" stroke-width="3" />
+<text x="520" y="29" font-size="11" text-anchor="middle" fill="#FAFAFA">💬</text>
+<text x="520" y="53" font-size="10" font-weight="700" text-anchor="middle" fill="#93C5FD">Socratic</text>
+
+<circle cx="520" cy="75" r="16" fill="#0F172A" stroke="#06B6D4" stroke-width="3" />
+<text x="520" y="79" font-size="11" text-anchor="middle" fill="#FAFAFA">📺</text>
+<text x="520" y="103" font-size="10" font-weight="700" text-anchor="middle" fill="#67E8F9">YouTube</text>
+
+<circle cx="520" cy="125" r="16" fill="#0F172A" stroke="#10B981" stroke-width="3" />
+<text x="520" y="129" font-size="11" text-anchor="middle" fill="#FAFAFA">📚</text>
+<text x="520" y="151" font-size="10" font-weight="700" text-anchor="middle" fill="#6EE7B7">Academic</text>
+
+<circle cx="720" cy="75" r="22" fill="#0F172A" stroke="#EC4899" stroke-width="4" />
+<text x="720" y="80" font-size="15" text-anchor="middle" fill="#FAFAFA">🎓</text>
+<text x="720" y="112" font-size="11" font-weight="800" text-anchor="middle" fill="#F472B6">Workspace</text>
+</svg>
+</div>
+<div style="background: rgba(255, 255, 255, 0.06); border-radius: 10px; height: 8px; overflow: hidden; margin-bottom: 1.2rem; position: relative;">
+<div style="width: {progress_percent}%; height: 100%; background: linear-gradient(90deg, #EC4899 0%, #A855F7 50%, #06B6D4 100%); border-radius: 10px; transition: width 0.5s ease-in-out;"></div>
+</div>
+<div class="agent-workflow-grid">
+<div class="{_card_class(orchestrator_status)}">
+<div class="agent-card-header">
+<span class="agent-name">🧠 Orchestrator Agent</span>
+{_status_tag(orchestrator_status)}
+</div>
+<div class="agent-desc">Decomposing topic into structured, age-appropriate milestone roadmap.</div>
+</div>
+<div class="{_card_class(socratic_status)}">
+<div class="agent-card-header">
+<span class="agent-name">💬 Socratic Tutor</span>
+{_status_tag(socratic_status)}
+</div>
+<div class="agent-desc">Crafting deep intuitive explanations & interactive guiding questions.</div>
+</div>
+<div class="{_card_class(youtube_status)}">
+<div class="agent-card-header">
+<span class="agent-name">📺 YouTube Curator</span>
+{_status_tag(youtube_status)}
+</div>
+<div class="agent-desc">Filtering high-yield educational videos with precise timestamp deep-linking.</div>
+</div>
+<div class="{_card_class(academic_status)}">
+<div class="agent-card-header">
+<span class="agent-name">📚 Academic Researcher</span>
+{_status_tag(academic_status)}
+</div>
+<div class="agent-desc">Indexing peer-reviewed open access papers from OpenAlex & Semantic Scholar.</div>
+</div>
+<div class="{_card_class(quiz_status)}">
+<div class="agent-card-header">
+<span class="agent-name">📝 Quiz Agent</span>
+{_status_tag(quiz_status)}
+</div>
+<div class="agent-desc">Structuring adaptive comprehension questions & XP reward multipliers.</div>
+</div>
+</div>
+</div>
+</div>"""
 
 
 # ─── Helper Functions & Multi-Agent Execution ─────────────────────
@@ -579,6 +894,7 @@ def render_learning_workspace():
             if st.button("🚪 Logout", key="sidebar_nav_logout", use_container_width=True):
                 st.session_state["user_profile"] = None
                 st.session_state["view"] = "home"
+                st.query_params.clear()
                 st.toast("Logged out successfully.", icon="ℹ️")
                 st.rerun()
 
@@ -648,34 +964,79 @@ def render_learning_workspace():
     if start_clicked and topic_input:
         st.session_state["last_topic"] = topic_input
         
-        with st.spinner("🧠 Orchestrator Agent is decomposing topic into milestone steps..."):
-            # Initialize SharedMemory
-            new_memory = SharedMemory(
-                topic=topic_input,
-                learning_mode=selected_mode,
-                student_level=selected_level,
+        loader_placeholder = st.empty()
+
+        # Step 1: Orchestrator Agent decomposing topic into milestone steps
+        loader_placeholder.markdown(
+            render_glassy_agent_loader_html(
+                title=f"Decomposing '{topic_input}'",
+                subtitle="🧠 Orchestrator Agent is analyzing domain knowledge & mapping milestone roadmap...",
+                orchestrator_status="active",
+                socratic_status="waiting",
+                youtube_status="waiting",
+                academic_status="waiting",
+                quiz_status="waiting",
+                progress_percent=25,
+            ),
+            unsafe_allow_html=True,
+        )
+
+        # Initialize SharedMemory
+        new_memory = SharedMemory(
+            topic=topic_input,
+            learning_mode=selected_mode,
+            student_level=selected_level,
+        )
+        
+        # Run Orchestrator Agent
+        orchestrator = OrchestratorAgent()
+        run_async(orchestrator.execute(new_memory))
+        
+        if new_memory.steps:
+            new_memory.steps[0].status = StepStatus.IN_PROGRESS
+            # Step 2: Multi-Agent System collaborating on Step 1 content
+            loader_placeholder.markdown(
+                render_glassy_agent_loader_html(
+                    title=f"Synthesizing Step 1: {new_memory.steps[0].title}",
+                    subtitle="🤖 Multi-Agents (Socratic, YouTube, Academic, Quiz) generating step 1 content concurrently...",
+                    orchestrator_status="completed",
+                    socratic_status="active",
+                    youtube_status="active",
+                    academic_status="active",
+                    quiz_status="active",
+                    progress_percent=70,
+                ),
+                unsafe_allow_html=True,
             )
-            
-            # Run Orchestrator Agent
-            orchestrator = OrchestratorAgent()
-            run_async(orchestrator.execute(new_memory))
-            
-            if new_memory.steps:
-                new_memory.steps[0].status = StepStatus.IN_PROGRESS
-                with st.spinner("🤖 Multi-Agents (Socratic, YouTube, Academic, Quiz) generating step 1 content..."):
-                    run_async(generate_all_agent_content_for_step(new_memory.steps[0], new_memory))
+            run_async(generate_all_agent_content_for_step(new_memory.steps[0], new_memory))
 
-            # Persist session to PostgreSQL database in Supabase
-            try:
-                from services.session_manager import SessionManager
-                run_async(SessionManager().create_session(new_memory))
-            except Exception as e:
-                logging.warning(f"Could not persist session to database: {e}")
+        loader_placeholder.markdown(
+            render_glassy_agent_loader_html(
+                title="Finalizing Learning Workspace",
+                subtitle="✨ Persisting session memory & loading interactive workspace...",
+                orchestrator_status="completed",
+                socratic_status="completed",
+                youtube_status="completed",
+                academic_status="completed",
+                quiz_status="completed",
+                progress_percent=100,
+            ),
+            unsafe_allow_html=True,
+        )
+        time.sleep(0.5)
+        loader_placeholder.empty()
 
-            st.session_state["memory"] = new_memory
-            st.session_state["active_step_index"] = 0
-            st.session_state["submitted_quizzes"] = {}
-            st.rerun()
+        # Persist session to PostgreSQL database in Supabase
+        try:
+            from services.session_manager import SessionManager
+            run_async(SessionManager().create_session(new_memory))
+        except Exception as e:
+            logging.warning(f"Could not persist session to database: {e}")
+
+        st.session_state["memory"] = new_memory
+        st.session_state["active_step_index"] = 0
+        st.session_state["submitted_quizzes"] = {}
+        st.rerun()
 
     memory = get_or_create_memory()
 
@@ -886,9 +1247,23 @@ def render_learning_workspace():
         if not is_already_generated:
             st.session_state[agents_ran_key] = True
             setattr(current_step, "_agent_generated", True)
-            with st.spinner(f"🧩 Multi-Agent System (Socratic Tutor, YouTube Curator, Academic Researcher, Quiz Agent) collaborating on Step {active_idx+1}..."):
-                run_async(generate_all_agent_content_for_step(current_step, memory))
-                st.rerun()
+            loader_placeholder = st.empty()
+            loader_placeholder.markdown(
+                render_glassy_agent_loader_html(
+                    title=f"Collaborating on Step {active_idx+1}: {current_step.title}",
+                    subtitle="🧩 Multi-Agent System (Socratic, YouTube, Academic, Quiz) generating step content...",
+                    orchestrator_status="completed",
+                    socratic_status="active",
+                    youtube_status="active",
+                    academic_status="active",
+                    quiz_status="active",
+                    progress_percent=75,
+                ),
+                unsafe_allow_html=True,
+            )
+            run_async(generate_all_agent_content_for_step(current_step, memory))
+            loader_placeholder.empty()
+            st.rerun()
 
         st.markdown("<br>", unsafe_allow_html=True)
 
@@ -1341,9 +1716,97 @@ def render_learning_workspace():
                         st.success("🎉 **Congratulations! You have completed all milestone steps for this topic!**")
 
 
+def sync_session_with_url():
+    """
+    Synchronizes st.session_state with st.query_params to preserve state (current view,
+    user login profile, active learning topic) across browser refreshes.
+    """
+    query_params = st.query_params
+
+    # 1. Restore view from URL query params if missing in session state
+    if "view" not in st.session_state:
+        url_view = query_params.get("view")
+        if url_view in ["home", "auth", "learning", "admin", "pricing"]:
+            st.session_state["view"] = url_view
+        else:
+            st.session_state["view"] = "home"
+
+    # 2. Restore active topic from query params if missing in session state
+    if "last_topic" not in st.session_state and query_params.get("topic"):
+        st.session_state["last_topic"] = query_params.get("topic")
+
+    # 3. Restore user profile from query params if missing in session state
+    if not st.session_state.get("user_profile"):
+        uid = query_params.get("user_id")
+        uemail = query_params.get("user_email")
+        if uid or uemail:
+            try:
+                if uid and uid.startswith("demo-"):
+                    from home_ui import _make_demo_profile
+                    email_val = uemail or "student@edutech.ai"
+                    st.session_state["user_profile"] = _make_demo_profile(email_val)
+                elif uid:
+                    from services.auth_service import AuthService
+                    from services.database import get_db_session
+                    from services.user_service import UserService
+
+                    async def _restore():
+                        async with get_db_session() as db:
+                            u = await UserService.get_user_by_id(db, uid)
+                            return AuthService.get_user_current_profile(u)
+
+                    p = run_async(_restore())
+                    if p:
+                        st.session_state["user_profile"] = p
+                elif uemail:
+                    if uemail in ["student@edutech.ai", "pro@edutech.ai"]:
+                        from home_ui import _make_demo_profile
+                        st.session_state["user_profile"] = _make_demo_profile(uemail)
+                    else:
+                        from services.auth_service import AuthService
+                        from services.database import get_db_session
+                        from models.domain import User
+                        from sqlalchemy import select
+
+                        async def _restore_by_email():
+                            async with get_db_session() as db:
+                                stmt = select(User).where(User.email == uemail)
+                                res = await db.execute(stmt)
+                                u = res.scalar_one_or_none()
+                                if u:
+                                    return AuthService.get_user_current_profile(u)
+                                return None
+
+                        p = run_async(_restore_by_email())
+                        if p:
+                            st.session_state["user_profile"] = p
+            except Exception as e:
+                logging.warning(f"Session restoration from URL parameters failed: {e}")
+
+    # 4. Write back active session state into URL query parameters
+    cur_view = st.session_state.get("view", "home")
+    st.query_params["view"] = cur_view
+
+    user_profile = st.session_state.get("user_profile")
+    if user_profile:
+        st.query_params["user_id"] = user_profile.id
+        if hasattr(user_profile, "email") and user_profile.email:
+            st.query_params["user_email"] = user_profile.email
+    else:
+        if "user_id" in st.query_params:
+            del st.query_params["user_id"]
+        if "user_email" in st.query_params:
+            del st.query_params["user_email"]
+
+    last_topic = st.session_state.get("last_topic")
+    if last_topic:
+        st.query_params["topic"] = last_topic
+    elif "topic" in st.query_params:
+        del st.query_params["topic"]
+
+
 # ─── Main View Switcher Execution ─────────────────────────────────
-if "view" not in st.session_state:
-    st.session_state["view"] = "home"
+sync_session_with_url()
 
 current_view = st.session_state.get("view", "home")
 
