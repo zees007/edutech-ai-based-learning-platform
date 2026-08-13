@@ -70,8 +70,28 @@ HOME_CSS = """
         color: #FAFAFA !important;
     }
 
+    .block-container {
+        padding-top: 1.5rem !important;
+    }
+
     section[data-testid="stSidebar"] {
         display: none !important;
+    }
+
+    /* ── Global Primary Button — Gradient Style ──── */
+    .stApp button[kind="primary"] {
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%) !important;
+        border: none !important;
+        border-radius: 24px !important;
+        color: #FFFFFF !important;
+        font-weight: 800 !important;
+        box-shadow: 0 0 20px rgba(236, 72, 153, 0.35) !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+
+    .stApp button[kind="primary"]:hover {
+        box-shadow: 0 0 30px rgba(236, 72, 153, 0.6), 0 0 15px rgba(6, 182, 212, 0.4) !important;
+        transform: translateY(-2px) !important;
     }
 
     /* ── Glowing Background Orbs ───────────────────── */
@@ -119,58 +139,147 @@ HOME_CSS = """
     }
 
     /* ── Navbar — Floating Glassmorphism Theme ───────── */
-    .et-navbar-wrapper {
-        background: rgba(15, 23, 42, 0.85);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border: 1px solid rgba(168, 85, 247, 0.35);
-        border-radius: 50px;
-        padding: 10px 24px;
-        margin: 0.8rem 0 2rem 0;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(168, 85, 247, 0.1);
-        width: 100%;
-        box-sizing: border-box;
-    }
-
-    .et-navbar-wrapper div[data-testid="stHorizontalBlock"] {
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) {
+        background: rgba(15, 23, 42, 0.85) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        border: 1px solid rgba(168, 85, 247, 0.35) !important;
+        border-radius: 50px !important;
+        padding: 8px 24px !important;
+        margin: 0rem 0 1.5rem 0 !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(168, 85, 247, 0.1) !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
         align-items: center !important;
         justify-content: space-between !important;
-        margin: 0 !important;
-        padding: 0 !important;
+        min-height: 52px !important;
     }
 
-    .et-navbar-wrapper div[data-testid="column"] {
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) * {
+        align-self: center !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) div[data-testid="column"],
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) div[data-testid="stColumn"] {
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
         padding: 0 !important;
+        margin: 0 !important;
+        height: auto !important;
+        min-height: 0 !important;
     }
 
-    .et-navbar-wrapper div[data-testid="column"]:first-child {
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) div[data-testid="column"]:first-child,
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) div[data-testid="stColumn"]:first-child {
+        justify-content: flex-start !important;
+        padding-left: 0 !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) div[data-testid="column"]:first-child *,
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) div[data-testid="stColumn"]:first-child * {
         justify-content: flex-start !important;
     }
 
-    .et-navbar-wrapper div[data-testid="column"]:last-child {
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) div[data-testid="column"]:last-child,
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) div[data-testid="stColumn"]:last-child {
         justify-content: flex-end !important;
+        padding-right: 0 !important;
     }
 
-    .et-logo {
-        font-size: 1.35rem;
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) div[data-testid="stVerticalBlock"],
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) div[data-testid="stVerticalBlockBorderWrapper"] {
+        gap: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        justify-content: center !important;
+        align-items: center !important;
+        align-self: center !important;
+        display: flex !important;
+        flex-direction: row !important;
+        min-height: 0 !important;
+        height: auto !important;
+    }
+
+    /* Nested horizontal blocks inside the last column (button row) */
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) div[data-testid="column"]:last-child div[data-testid="stHorizontalBlock"],
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) div[data-testid="stColumn"]:last-child div[data-testid="stHorizontalBlock"] {
+        align-items: center !important;
+        justify-content: flex-end !important;
+        gap: 3px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        border-radius: 0 !important;
+        min-height: 0 !important;
+        flex-wrap: nowrap !important;
+    }
+
+    /* Force nested sub-columns (button wrappers) to shrink to content */
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) div[data-testid="column"]:last-child div[data-testid="stHorizontalBlock"] > div[data-testid="column"],
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) div[data-testid="column"]:last-child div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"],
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) div[data-testid="stColumn"]:last-child div[data-testid="stHorizontalBlock"] > div[data-testid="column"],
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) div[data-testid="stColumn"]:last-child div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"] {
+        flex: 0 0 auto !important;
+        width: auto !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) div.element-container,
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) div[data-testid="stElementContainer"] {
+        margin: 0 !important;
+        padding: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        align-self: center !important;
+        justify-content: center !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) div.stMarkdown,
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) div[data-testid="stMarkdownContainer"] {
+        display: flex !important;
+        align-items: center !important;
+        align-self: center !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) div.stMarkdown p,
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) div[data-testid="stMarkdownContainer"] p {
+        margin: 0 !important;
+        padding: 0 !important;
+        line-height: 1 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+    }
+
+    .et-logo, .et-logo-simple {
+        font-size: 1.38rem;
         font-weight: 900;
         color: #FAFAFA;
         letter-spacing: -0.5px;
         display: inline-flex;
         align-items: center;
         gap: 6px;
+        margin: 0;
+        line-height: 1;
+        align-self: center;
     }
 
-    .et-logo .accent {
+    .et-logo .accent, .et-logo-simple .accent {
         background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
     }
 
-    .et-logo .badge-ai {
+    .et-logo .badge-ai, .et-logo-simple .badge-ai {
         font-size: 0.65rem;
         font-weight: 800;
         background: rgba(168, 85, 247, 0.2);
@@ -179,6 +288,7 @@ HOME_CSS = """
         border-radius: 8px;
         padding: 2px 6px;
         margin-left: 2px;
+        line-height: 1;
     }
 
     .et-nav-links {
@@ -186,17 +296,23 @@ HOME_CSS = """
         align-items: center;
         justify-content: center;
         gap: 12px;
+        margin: 0;
+        align-self: center;
     }
 
     .et-nav-links a.nav-pill {
         color: rgba(255, 255, 255, 0.7);
-        font-size: 0.86rem;
+        font-size: 0.95rem;
         font-weight: 600;
         text-decoration: none;
         padding: 6px 16px;
         border-radius: 20px;
         border: 1px solid transparent;
         transition: all 0.25s ease;
+        white-space: nowrap;
+        line-height: 1;
+        display: inline-flex;
+        align-items: center;
     }
 
     .et-nav-links a.nav-pill:hover {
@@ -206,51 +322,81 @@ HOME_CSS = """
         box-shadow: 0 0 15px rgba(168, 85, 247, 0.25);
     }
 
-    /* Modern UI/UX Navbar Buttons Override */
-    .et-navbar-wrapper div[data-testid="column"] button {
-        height: 40px !important;
-        min-height: 40px !important;
-        line-height: 40px !important;
+    /* Modern Compact UI/UX Navbar Buttons Override */
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) div[data-testid="stButton"] {
         margin: 0 !important;
-        border-radius: 30px !important;
-        font-weight: 700 !important;
-        font-size: 0.86rem !important;
+        padding: 0 !important;
         display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
-        padding: 0 1.4rem !important;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        align-self: center !important;
+        width: auto !important;
+        min-width: 0 !important;
     }
 
-    .et-navbar-wrapper div[data-testid="column"] button[kind="secondary"] {
-        background: rgba(255, 255, 255, 0.05) !important;
-        backdrop-filter: blur(12px) !important;
-        -webkit-backdrop-filter: blur(12px) !important;
-        border: 1px solid rgba(168, 85, 247, 0.4) !important;
-        color: #FAFAFA !important;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) button {
+        height: 36px !important;
+        min-height: 36px !important;
+        max-height: 36px !important;
+        line-height: 1 !important;
+        margin: 0 !important;
+        border-radius: 18px !important;
+        font-weight: 700 !important;
+        font-size: 0.85rem !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 0 1.2rem !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        white-space: nowrap !important;
+        width: auto !important;
+        min-width: 0 !important;
     }
 
-    .et-navbar-wrapper div[data-testid="column"] button[kind="secondary"]:hover {
-        background: rgba(168, 85, 247, 0.22) !important;
-        border-color: rgba(168, 85, 247, 0.8) !important;
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) button div[data-testid="stMarkdownContainer"],
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) button div[data-testid="stMarkdownContainer"] p,
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) button p,
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) button span {
+        padding: 0 !important;
+        margin: 0 !important;
+        font-size: 0.85rem !important;
+        font-weight: 700 !important;
+        line-height: 1 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) button[kind="secondary"] {
+        background: transparent !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+        color: rgba(255, 255, 255, 0.85) !important;
+        padding: 0 0.8rem !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) button[kind="secondary"]:hover {
+        background: rgba(255, 255, 255, 0.08) !important;
         color: #FFFFFF !important;
-        box-shadow: 0 0 25px rgba(168, 85, 247, 0.4) !important;
-        transform: translateY(-2px) !important;
+        transform: translateY(-1px) !important;
     }
 
-    .et-navbar-wrapper div[data-testid="column"] button[kind="primary"] {
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) button[kind="primary"] {
         background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%) !important;
         border: none !important;
+        border-radius: 18px !important;
         color: #FFFFFF !important;
         font-weight: 800 !important;
-        padding: 0 1.6rem !important;
-        box-shadow: 0 0 25px rgba(236, 72, 153, 0.45) !important;
+        padding: 0 1.2rem !important;
+        box-shadow: 0 0 14px rgba(236, 72, 153, 0.35) !important;
     }
 
-    .et-navbar-wrapper div[data-testid="column"] button[kind="primary"]:hover {
-        box-shadow: 0 0 35px rgba(236, 72, 153, 0.75), 0 0 20px rgba(6, 182, 212, 0.5) !important;
-        transform: translateY(-2px) scale(1.03) !important;
+    div[data-testid="stHorizontalBlock"]:has(.et-logo) button[kind="primary"]:hover {
+        box-shadow: 0 0 22px rgba(236, 72, 153, 0.65), 0 0 12px rgba(6, 182, 212, 0.4) !important;
+        transform: translateY(-1px) !important;
     }
 
     /* ── Hero ───────────────────────────────────────── */
@@ -1158,7 +1304,6 @@ def render_home_page():
         return
 
     # ── NAVBAR ────────────────────────────────────────────────────
-    st.markdown('<div class="et-navbar-wrapper">', unsafe_allow_html=True)
     nav_col1, nav_col2, nav_col3 = st.columns([2.5, 4.2, 3.3])
 
     with nav_col1:
@@ -1166,7 +1311,7 @@ def render_home_page():
 
     with nav_col2:
         st.markdown(
-            '<div class="et-nav-links"><a href="#features" class="nav-pill">Features</a><a href="#agents" class="nav-pill">Agents</a><a href="#about" class="nav-pill">About</a><a href="#pricing" class="nav-pill">Pricing</a></div>',
+            '<div class="et-nav-links"><a href="#about" class="nav-pill">About</a><a href="#features" class="nav-pill">Features</a><a href="#agents" class="nav-pill">Agents</a><a href="#pricing" class="nav-pill">Pricing</a></div>',
             unsafe_allow_html=True,
         )
 
@@ -1177,16 +1322,15 @@ def render_home_page():
         else:
             nb1, nb2 = st.columns(2)
             with nb1:
-                if st.button("Sign In", key="nav_si", use_container_width=True):
+                if st.button("Sign In", key="nav_si"):
                     st.session_state["auth_tab"] = "login"
                     st.session_state["view"] = "auth"
                     st.rerun()
             with nb2:
-                if st.button("Get Started", key="nav_gs", type="primary", use_container_width=True):
+                if st.button("Get Started", key="nav_gs", type="primary"):
                     st.session_state["auth_tab"] = "signup"
                     st.session_state["view"] = "auth"
                     st.rerun()
-    st.markdown('</div>', unsafe_allow_html=True)
 
     # ── HERO ──────────────────────────────────────────────────────
     st.markdown(
@@ -1210,6 +1354,8 @@ def render_home_page():
             else:
                 st.session_state["view"] = "learning"
                 st.rerun()
+
+    st.markdown("<div style='height: 2rem;'></div>", unsafe_allow_html=True)
 
     # ── Pixel-Perfect n8n-Style Workflow Visualization ──────────────
     st.markdown(
@@ -1439,7 +1585,7 @@ def render_home_page():
         st.markdown(
             """
             <div class="price-glass">
-                <div class="price-name">Normal</div>
+                <div class="price-name">Free</div>
                 <div class="price-amount">$0<sub>/mo</sub></div>
                 <div class="price-desc">Essential AI tutoring for curious learners starting out.</div>
                 <hr style="border:1px solid rgba(255,255,255,0.05);"/>
@@ -1451,7 +1597,7 @@ def render_home_page():
             </div>
             """, unsafe_allow_html=True)
         st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
-        if st.button("Start Free", key="t_n", use_container_width=True):
+        if st.button("Start Free", key="t_n", type="primary", use_container_width=True):
             _handle_tier_select("normal")
 
     with p2:
@@ -1492,7 +1638,7 @@ def render_home_page():
             </div>
             """, unsafe_allow_html=True)
         st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
-        if st.button("Select Ultra", key="t_u", use_container_width=True):
+        if st.button("Select Ultra", key="t_u", type="primary", use_container_width=True):
             _handle_tier_select("ultra")
 
     st.markdown("<br/>", unsafe_allow_html=True)
@@ -1508,7 +1654,7 @@ def render_home_page():
 
     bl, bc, br = st.columns([2.5, 1.5, 2.5])
     with bc:
-        if st.button("Get Started Free →", key="cta_btn", use_container_width=True):
+        if st.button("Get Started Free →", key="cta_btn", type="primary", use_container_width=True):
             if not user_profile:
                 st.session_state["auth_tab"] = "signup"
                 st.session_state["view"] = "auth"
@@ -1549,7 +1695,7 @@ def _render_auth_view():
             st.session_state["view"] = "home"
             st.rerun()
     with b3:
-        st.markdown('<div class="et-logo" style="text-align:right;">⚡ <span class="accent">EduTech</span> AI</div>', unsafe_allow_html=True)
+        st.markdown('<div class="et-logo-simple" style="text-align:right;">⚡ <span class="accent">EduTech</span> AI</div>', unsafe_allow_html=True)
 
     st.markdown("<hr style='border:1px solid rgba(255,255,255,0.04);margin:0.5rem 0 2.5rem 0;'/>", unsafe_allow_html=True)
 
