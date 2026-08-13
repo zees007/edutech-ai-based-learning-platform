@@ -1252,20 +1252,176 @@ HOME_CSS = """
 
     .et-footer-links a:hover { color: #FAFAFA; }
 
-    /* ── Auth Glass Card ───────────────────────────── */
-    .auth-glass {
-        background: rgba(255, 255, 255, 0.03);
-        backdrop-filter: blur(30px);
-        -webkit-backdrop-filter: blur(30px);
-        border: 1px solid rgba(139, 92, 246, 0.15);
-        border-radius: 24px;
-        padding: 2.5rem 2rem;
-        box-shadow:
-            0 0 60px rgba(139, 92, 246, 0.08),
-            inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    /* ── Auth Page — Premium Redesign ─────────────── */
+
+    /* Auth top navbar pill */
+    .auth-top-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: rgba(15, 23, 42, 0.85);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(168, 85, 247, 0.35);
+        border-radius: 50px;
+        padding: 8px 24px;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(168, 85, 247, 0.1);
+        min-height: 52px;
     }
 
-    /* ── Glowing Input Rings ───────────────────────── */
+    .auth-top-bar .back-link {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-decoration: none;
+        padding: 6px 16px;
+        border-radius: 20px;
+        border: 1px solid transparent;
+        transition: all 0.25s ease;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .auth-top-bar .back-link:hover {
+        color: #FFFFFF;
+        background: rgba(168, 85, 247, 0.18);
+        border-color: rgba(168, 85, 247, 0.4);
+        box-shadow: 0 0 15px rgba(168, 85, 247, 0.25);
+    }
+
+    /* Auth Glass Card */
+    .auth-glass {
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(30px);
+        -webkit-backdrop-filter: blur(30px);
+        border: 1px solid rgba(139, 92, 246, 0.25);
+        border-radius: 24px;
+        padding: 2.5rem 2.5rem;
+        box-shadow:
+            0 0 60px rgba(139, 92, 246, 0.08),
+            0 20px 60px rgba(0, 0, 0, 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.08);
+        animation: authCardFadeIn 0.5s ease-out;
+    }
+
+    @keyframes authCardFadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Auth Tabs Override */
+    .auth-glass div[data-baseweb="tab-list"] {
+        background: rgba(255, 255, 255, 0.03) !important;
+        border-radius: 16px !important;
+        padding: 4px !important;
+        border: 1px solid rgba(139, 92, 246, 0.12) !important;
+        gap: 4px !important;
+        margin-bottom: 1.5rem !important;
+    }
+
+    .auth-glass button[data-baseweb="tab"] {
+        background: transparent !important;
+        color: rgba(255, 255, 255, 0.5) !important;
+        border-radius: 12px !important;
+        font-weight: 700 !important;
+        font-size: 0.9rem !important;
+        padding: 10px 20px !important;
+        border: none !important;
+        transition: all 0.25s ease !important;
+    }
+
+    .auth-glass button[data-baseweb="tab"][aria-selected="true"] {
+        background: linear-gradient(135deg, rgba(236, 72, 153, 0.2) 0%, rgba(168, 85, 247, 0.25) 50%, rgba(59, 130, 246, 0.2) 100%) !important;
+        color: #FFFFFF !important;
+        border: 1px solid rgba(168, 85, 247, 0.4) !important;
+        box-shadow: 0 0 20px rgba(168, 85, 247, 0.15) !important;
+    }
+
+    .auth-glass button[data-baseweb="tab"]:hover:not([aria-selected="true"]) {
+        background: rgba(255, 255, 255, 0.05) !important;
+        color: rgba(255, 255, 255, 0.8) !important;
+    }
+
+    /* Hide default Streamlit tab underline */
+    .auth-glass div[data-baseweb="tab-highlight"],
+    .auth-glass div[data-baseweb="tab-border"] {
+        display: none !important;
+    }
+
+    /* Auth Form Labels */
+    .auth-glass label, .auth-glass .stTextInput label {
+        color: rgba(255, 255, 255, 0.6) !important;
+        font-size: 0.82rem !important;
+        font-weight: 600 !important;
+        letter-spacing: 0.5px !important;
+        text-transform: uppercase !important;
+        margin-bottom: 4px !important;
+    }
+
+    /* Auth Form Inputs — Glowing Rings */
+    .auth-glass div[data-baseweb="input"] > div,
+    .auth-glass div[data-baseweb="select"] > div {
+        background: rgba(255, 255, 255, 0.04) !important;
+        border: 1px solid rgba(139, 92, 246, 0.18) !important;
+        border-radius: 12px !important;
+        transition: border-color 0.25s ease, box-shadow 0.25s ease !important;
+        color: #FAFAFA !important;
+    }
+
+    .auth-glass div[data-baseweb="input"] > div:focus-within,
+    .auth-glass div[data-baseweb="select"] > div:focus-within {
+        border-color: rgba(168, 85, 247, 0.6) !important;
+        box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.12), 0 0 25px rgba(168, 85, 247, 0.1) !important;
+    }
+
+    .auth-glass input {
+        color: #FAFAFA !important;
+        font-size: 0.95rem !important;
+    }
+
+    .auth-glass input::placeholder {
+        color: rgba(255, 255, 255, 0.25) !important;
+    }
+
+    /* Auth Submit Button — Gradient */
+    .auth-glass button[kind="primary"],
+    .auth-glass button[type="submit"],
+    .auth-glass div[data-testid="stFormSubmitButton"] button {
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%) !important;
+        border: none !important;
+        border-radius: 14px !important;
+        color: #FFFFFF !important;
+        font-weight: 800 !important;
+        font-size: 0.95rem !important;
+        padding: 12px 24px !important;
+        box-shadow: 0 0 25px rgba(236, 72, 153, 0.35) !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        height: 48px !important;
+        min-height: 48px !important;
+    }
+
+    .auth-glass button[kind="primary"]:hover,
+    .auth-glass button[type="submit"]:hover,
+    .auth-glass div[data-testid="stFormSubmitButton"] button:hover {
+        box-shadow: 0 0 35px rgba(236, 72, 153, 0.6), 0 0 20px rgba(6, 182, 212, 0.4) !important;
+        transform: translateY(-2px) !important;
+    }
+
+    /* Auth Selectbox Override */
+    .auth-glass div[data-baseweb="select"] span {
+        color: #FAFAFA !important;
+    }
+
+    /* Auth dividers */
+    .auth-glass hr {
+        border-color: rgba(139, 92, 246, 0.12) !important;
+        margin: 1.5rem 0 !important;
+    }
+
+    /* ── Glowing Input Rings (global fallback) ──────── */
     div[data-baseweb="input"] > div {
         background: rgba(255, 255, 255, 0.03) !important;
         border: 1px solid rgba(255, 255, 255, 0.1) !important;
@@ -1684,30 +1840,47 @@ def render_home_page():
 #  AUTH VIEW — Glassy Sign In / Sign Up
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 def _render_auth_view():
-    """Renders glassy auth view matching the n8n theme."""
+    """Renders premium glassmorphic auth view matching the homepage theme."""
     # Background glow
     st.markdown('<div class="glow-bg"></div>', unsafe_allow_html=True)
 
-    # Mini navbar
-    b1, _, b3 = st.columns([1, 4, 1])
-    with b1:
+    # ── Floating Glassmorphic Navbar Pill ──────────────────────
+    st.markdown(
+        """
+        <div class="auth-top-bar">
+            <div class="et-logo-simple">⚡ <span class="accent">EduTech</span> <span class="badge-ai">AI</span></div>
+            <div style="display:flex; align-items:center; gap:12px;">
+                <span style="color:rgba(255,255,255,0.4); font-size:0.85rem;">Already have an account?</span>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    # Back button (Streamlit interactive — outside HTML)
+    bc1, _, _ = st.columns([1, 5, 1])
+    with bc1:
         if st.button("← Back to Home", key="auth_back"):
             st.session_state["view"] = "home"
             st.rerun()
-    with b3:
-        st.markdown('<div class="et-logo-simple" style="text-align:right;">⚡ <span class="accent">EduTech</span> AI</div>', unsafe_allow_html=True)
 
-    st.markdown("<hr style='border:1px solid rgba(255,255,255,0.04);margin:0.5rem 0 2.5rem 0;'/>", unsafe_allow_html=True)
-
+    # ── Hero Header ───────────────────────────────────────────
     st.markdown(
         """
-        <div style="text-align:center;margin-bottom:2rem;">
+        <div style="text-align:center; margin: 1rem 0 2.5rem 0;">
             <div class="et-hero-badge" style="margin-bottom:1rem;">🔐 &nbsp; Secure Authentication</div>
-            <h2 style="font-weight:800;color:#FAFAFA;margin-bottom:0.4rem;font-size:2rem;">Welcome to EduTech AI</h2>
-            <p style="color:rgba(255,255,255,0.4);">Sign in or create an account to begin your AI learning journey.</p>
+            <h1 style="font-weight:900; color:#FAFAFA; margin-bottom:0.5rem; font-size:2.6rem; line-height:1.15; letter-spacing:-1px;">
+                Welcome to <span class="gradient-text">EduTech AI</span>
+            </h1>
+            <p style="color:rgba(255,255,255,0.45); font-size:1.05rem; max-width:480px; margin:0 auto;">
+                Sign in or create an account to begin your personalized AI learning journey.
+            </p>
         </div>
-        """, unsafe_allow_html=True)
+        """,
+        unsafe_allow_html=True,
+    )
 
+    # ── Auth Card ─────────────────────────────────────────────
     al, ac, ar = st.columns([1.2, 2, 1.2])
 
     with ac:
@@ -1741,16 +1914,6 @@ def _render_auth_view():
                             st.rerun()
                         except Exception as e:
                             st.error(f"Sign in failed: {e}")
-
-            st.markdown("---")
-            st.caption("⚡ Quick Demo:")
-            d1, d2 = st.columns(2)
-            with d1:
-                if st.button("🔑 Demo Student", key="d_s", use_container_width=True):
-                    _quick_demo_login("student@edutech.ai", "student123")
-            with d2:
-                if st.button("⚡ Demo Pro", key="d_p", use_container_width=True):
-                    _quick_demo_login("pro@edutech.ai", "pro123")
 
         with tab_signup:
             sel_tier = st.session_state.get("selected_tier", "normal")
@@ -1791,6 +1954,22 @@ def _render_auth_view():
                             st.error(f"Registration failed: {e}")
 
         st.markdown('</div>', unsafe_allow_html=True)
+
+    # ── Trust Badges ──────────────────────────────────────────
+    st.markdown(
+        """
+        <div style="text-align:center; margin-top:2.5rem; padding-bottom:1rem;">
+            <div style="display:inline-flex; align-items:center; gap:24px; color:rgba(255,255,255,0.3); font-size:0.8rem; font-weight:600;">
+                <span>🔒 256-bit Encryption</span>
+                <span>·</span>
+                <span>🛡️ SOC 2 Compliant</span>
+                <span>·</span>
+                <span>⚡ Instant Access</span>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
