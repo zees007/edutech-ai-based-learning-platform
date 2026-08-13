@@ -1252,6 +1252,88 @@ HOME_CSS = """
 
     .et-footer-links a:hover { color: #FAFAFA; }
 
+    /* ── Auth Page Intro Header & Instructions ── */
+    .auth-header-container {
+        text-align: center !important;
+        margin: 1.5rem auto 2rem auto !important;
+        max-width: 800px !important;
+    }
+
+    .auth-badge {
+        display: inline-flex !important;
+        background: rgba(168, 85, 247, 0.1) !important;
+        border: 1px solid rgba(168, 85, 247, 0.3) !important;
+        color: #C084FC !important;
+        font-size: 0.68rem !important;
+        font-weight: 800 !important;
+        letter-spacing: 1.5px !important;
+        padding: 5px 12px !important;
+        border-radius: 20px !important;
+        margin-bottom: 0.8rem !important;
+    }
+
+    .auth-title {
+        font-size: 2.1rem !important;
+        font-weight: 900 !important;
+        color: #FAFAFA !important;
+        margin-bottom: 0.6rem !important;
+        line-height: 1.25 !important;
+    }
+
+    .auth-subtitle {
+        font-size: 0.98rem !important;
+        color: rgba(233, 213, 255, 0.75) !important;
+        margin-bottom: 1.2rem !important;
+        line-height: 1.5 !important;
+    }
+
+    .auth-instructions-pill {
+        background: rgba(255, 255, 255, 0.03) !important;
+        backdrop-filter: blur(10px) !important;
+        -webkit-backdrop-filter: blur(10px) !important;
+        border: 1px solid rgba(168, 85, 247, 0.2) !important;
+        border-radius: 14px !important;
+        padding: 10px 18px !important;
+        display: inline-flex !important;
+        text-align: left !important;
+        max-width: 720px !important;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
+    }
+
+    .auth-instructions-pill span {
+        font-size: 0.84rem !important;
+        color: rgba(255, 255, 255, 0.8) !important;
+        line-height: 1.4 !important;
+    }
+
+    .auth-hidden-triggers {
+        display: none !important;
+    }
+
+    /* Clickable flowchart cards */
+    .auth-flow-node.branch-node.clickable-card {
+        cursor: pointer !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+
+    .auth-flow-node.branch-node.clickable-card:hover {
+        transform: translateY(-3px) scale(1.02) !important;
+        box-shadow: 0 0 25px rgba(168, 85, 247, 0.35), 0 8px 25px rgba(0, 0, 0, 0.4) !important;
+    }
+
+    /* Active Highlight States */
+    .auth-flow-node.branch-node.clickable-card.active-signin {
+        border-color: rgba(34, 197, 94, 0.8) !important;
+        box-shadow: 0 0 25px rgba(34, 197, 94, 0.45) !important;
+        background: rgba(34, 197, 94, 0.25) !important;
+    }
+
+    .auth-flow-node.branch-node.clickable-card.active-signup {
+        border-color: rgba(168, 85, 247, 0.8) !important;
+        box-shadow: 0 0 25px rgba(168, 85, 247, 0.45) !important;
+        background: rgba(168, 85, 247, 0.25) !important;
+    }
+
     /* ── Auth Page — Glowing Split-Screen Layout ──────── */
 
     /* Floating Navbar Pill on Auth View — Luminous Glow */
@@ -1689,7 +1771,7 @@ HOME_CSS = """
     }
 
     /* Right Auth Glass Card Container — Luminous Glow */
-    div[data-testid="stTabs"] {
+    .auth-form-card {
         background: rgba(15, 23, 42, 0.65) !important;
         backdrop-filter: blur(30px) !important;
         -webkit-backdrop-filter: blur(30px) !important;
@@ -1708,7 +1790,7 @@ HOME_CSS = """
         transition: all 0.3s ease !important;
     }
 
-    div[data-testid="stTabs"]::before {
+    .auth-form-card::before {
         content: '' !important;
         position: absolute !important;
         top: 0 !important; left: 15% !important; right: 15% !important; height: 2px !important;
@@ -1719,7 +1801,7 @@ HOME_CSS = """
         z-index: 9999 !important;
     }
 
-    div[data-testid="stTabs"]:hover {
+    .auth-form-card:hover {
         border-color: rgba(168, 85, 247, 0.65) !important;
         box-shadow:
             0 0 45px rgba(168, 85, 247, 0.35),
@@ -1728,7 +1810,7 @@ HOME_CSS = """
         transform: translateY(-2px) !important;
     }
 
-    div[data-testid="stTabs"]:hover::before {
+    .auth-form-card:hover::before {
         opacity: 1 !important;
         box-shadow: 0 0 14px #EC4899, 0 0 20px #A855F7 !important;
     }
@@ -1738,53 +1820,62 @@ HOME_CSS = """
         to { opacity: 1; transform: translateY(0); }
     }
 
-    /* Auth Tab Header Pill Container */
-    div[data-testid="stTabs"] div[data-baseweb="tab-list"] {
-        background: rgba(255, 255, 255, 0.04) !important;
-        border-radius: 16px !important;
-        padding: 5px !important;
-        border: 1px solid rgba(168, 85, 247, 0.25) !important;
-        box-shadow: 0 0 15px rgba(168, 85, 247, 0.15) !important;
-        gap: 6px !important;
-        margin-bottom: 1.8rem !important;
+    /* Auth Header Layout inside Card */
+    .auth-card-header {
         display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        margin-bottom: 1.5rem !important;
         width: 100% !important;
     }
 
-    div[data-testid="stTabs"] button[data-baseweb="tab"] {
-        flex: 1 !important;
-        justify-content: center !important;
-        background: transparent !important;
-        color: rgba(255, 255, 255, 0.55) !important;
-        border-radius: 12px !important;
+    .auth-card-header div.element-container,
+    .auth-card-header div[data-testid="stElementContainer"] {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: auto !important;
+    }
+
+    .auth-card-header h3 {
+        margin: 0 !important;
+        color: #FAFAFA !important;
+        font-weight: 800 !important;
+        font-size: 1.35rem !important;
+        line-height: 1.2 !important;
+    }
+
+    /* Close Button Styling */
+    .auth-close-btn-wrapper {
+        display: flex !important;
+        justify-content: flex-end !important;
+        align-items: center !important;
+    }
+
+    .auth-close-btn-wrapper button {
+        background: rgba(239, 68, 68, 0.1) !important;
+        border: 1px solid rgba(239, 68, 68, 0.35) !important;
+        color: #F87171 !important;
+        border-radius: 14px !important;
+        padding: 4px 12px !important;
+        height: 28px !important;
+        min-height: 28px !important;
+        font-size: 0.75rem !important;
         font-weight: 700 !important;
-        font-size: 0.92rem !important;
-        padding: 10px 16px !important;
-        border: none !important;
-        transition: all 0.25s ease !important;
-        text-align: center !important;
+        transition: all 0.2s ease !important;
+        width: auto !important;
+        line-height: 1 !important;
     }
 
-    div[data-testid="stTabs"] button[data-baseweb="tab"][aria-selected="true"] {
-        background: linear-gradient(135deg, rgba(236, 72, 153, 0.25) 0%, rgba(168, 85, 247, 0.3) 50%, rgba(59, 130, 246, 0.25) 100%) !important;
+    .auth-close-btn-wrapper button:hover {
+        background: rgba(239, 68, 68, 0.25) !important;
+        border-color: rgba(239, 68, 68, 0.7) !important;
         color: #FFFFFF !important;
-        border: 1px solid rgba(168, 85, 247, 0.45) !important;
-        box-shadow: 0 0 20px rgba(168, 85, 247, 0.2) !important;
-    }
-
-    div[data-testid="stTabs"] button[data-baseweb="tab"]:hover:not([aria-selected="true"]) {
-        background: rgba(255, 255, 255, 0.06) !important;
-        color: rgba(255, 255, 255, 0.85) !important;
-    }
-
-    /* Hide default Streamlit tab underline */
-    div[data-testid="stTabs"] div[data-baseweb="tab-highlight"],
-    div[data-testid="stTabs"] div[data-baseweb="tab-border"] {
-        display: none !important;
+        box-shadow: 0 0 15px rgba(239, 68, 68, 0.3) !important;
+        transform: translateY(-1px) !important;
     }
 
     /* Auth Form Labels */
-    div[data-testid="stTabs"] label, div[data-testid="stTabs"] .stTextInput label {
+    .auth-form-card label, .auth-form-card .stTextInput label {
         color: rgba(255, 255, 255, 0.7) !important;
         font-size: 0.78rem !important;
         font-weight: 700 !important;
@@ -1794,8 +1885,8 @@ HOME_CSS = """
     }
 
     /* Auth Form Inputs — Glowing Rings */
-    div[data-testid="stTabs"] div[data-baseweb="input"] > div,
-    div[data-testid="stTabs"] div[data-baseweb="select"] > div {
+    .auth-form-card div[data-baseweb="input"] > div,
+    .auth-form-card div[data-baseweb="select"] > div {
         background: rgba(255, 255, 255, 0.04) !important;
         border: 1px solid rgba(168, 85, 247, 0.2) !important;
         border-radius: 12px !important;
@@ -1803,25 +1894,25 @@ HOME_CSS = """
         color: #FAFAFA !important;
     }
 
-    div[data-testid="stTabs"] div[data-baseweb="input"] > div:focus-within,
-    div[data-testid="stTabs"] div[data-baseweb="select"] > div:focus-within {
+    .auth-form-card div[data-baseweb="input"] > div:focus-within,
+    .auth-form-card div[data-baseweb="select"] > div:focus-within {
         border-color: rgba(168, 85, 247, 0.65) !important;
         box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.15), 0 0 25px rgba(168, 85, 247, 0.15) !important;
     }
 
-    div[data-testid="stTabs"] input {
+    .auth-form-card input {
         color: #FAFAFA !important;
         font-size: 0.95rem !important;
     }
 
-    div[data-testid="stTabs"] input::placeholder {
+    .auth-form-card input::placeholder {
         color: rgba(255, 255, 255, 0.25) !important;
     }
 
     /* Auth Submit Button — Gradient */
-    div[data-testid="stTabs"] button[kind="primary"],
-    div[data-testid="stTabs"] button[type="submit"],
-    div[data-testid="stTabs"] div[data-testid="stFormSubmitButton"] button {
+    .auth-form-card button[kind="primary"],
+    .auth-form-card button[type="submit"],
+    .auth-form-card div[data-testid="stFormSubmitButton"] button {
         background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%) !important;
         border: none !important;
         border-radius: 14px !important;
@@ -1837,15 +1928,15 @@ HOME_CSS = """
         margin-top: 0.5rem !important;
     }
 
-    div[data-testid="stTabs"] button[kind="primary"]:hover,
-    div[data-testid="stTabs"] button[type="submit"]:hover,
-    div[data-testid="stTabs"] div[data-testid="stFormSubmitButton"] button:hover {
+    .auth-form-card button[kind="primary"]:hover,
+    .auth-form-card button[type="submit"]:hover,
+    .auth-form-card div[data-testid="stFormSubmitButton"] button:hover {
         box-shadow: 0 0 35px rgba(236, 72, 153, 0.65), 0 0 20px rgba(6, 182, 212, 0.45) !important;
         transform: translateY(-2px) !important;
     }
 
     /* Auth Selectbox Override */
-    div[data-testid="stTabs"] div[data-baseweb="select"] span {
+    .auth-form-card div[data-baseweb="select"] span {
         color: #FAFAFA !important;
     }
 
@@ -2275,6 +2366,29 @@ def render_home_page():
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 def _render_auth_view():
     """Renders split-screen AI flow diagram auth view matching the homepage theme."""
+    # Sync view to auth query param for refreshes
+    st.query_params["view"] = "auth"
+
+    # Initialize the auth form mode if not present in session state
+    if "auth_form_mode" not in st.session_state:
+        mode = st.session_state.get("auth_tab")
+        if mode == "login":
+            st.session_state["auth_form_mode"] = "signin"
+        elif mode == "signup":
+            st.session_state["auth_form_mode"] = "signup"
+        else:
+            st.session_state["auth_form_mode"] = None
+
+    # Render hidden Streamlit buttons to receive flowchart clicks (seamless rerun, zero page reload)
+    st.markdown('<div class="auth-hidden-triggers">', unsafe_allow_html=True)
+    if st.button("HIDDEN_TRIGGER_SIGNIN", key="hid_signin"):
+        st.session_state["auth_form_mode"] = "signin"
+        st.rerun()
+    if st.button("HIDDEN_TRIGGER_SIGNUP", key="hid_signup"):
+        st.session_state["auth_form_mode"] = "signup"
+        st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
+
     # Background glow with constellation node overlay
     st.markdown('<div class="glow-bg-constellation"></div>', unsafe_allow_html=True)
 
@@ -2285,18 +2399,39 @@ def _render_auth_view():
     with nav_c2:
         if st.button("← Back to Home", key="auth_back"):
             st.session_state["view"] = "home"
+            # Clear state when leaving
+            st.session_state["auth_form_mode"] = None
+            st.session_state["auth_tab"] = None
+            st.query_params.clear()
             st.rerun()
 
-    st.markdown("<div style='height: 0.8rem;'></div>", unsafe_allow_html=True)
+    st.markdown(
+        """
+        <div class="auth-header-container">
+            <div class="auth-badge">🔐 SECURE GATEWAY</div>
+            <h1 class="auth-title">Access the <span class="gradient-text">AI Learning Workspace</span></h1>
+            <p class="auth-subtitle">EduTech AI is an autonomous, multi-agent academic ecosystem. Log in or create a new student account to instantiate your personal supervisor-worker agent swarm.</p>
+            <div class="auth-instructions-pill">
+                <span>💡 <b>Access Instructions:</b> Trace the <b>Providing Access Flowchart</b> below. If you already have an account, complete the <b>Sign In</b> form on the right. Otherwise, proceed to the <b>Create Account</b> tab. Upon verification, the system dispatches the AI Agent Squad to instantly grant workspace access.</span>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
 
-    # ── Split Grid Showcase Layout ─────────────────────────────
-    col_showcase, col_auth = st.columns([1.1, 1.0], gap="large")
+    # ── Dynamic Grid Showcase Layout ─────────────────────────────
+    mode = st.session_state.get("auth_form_mode")
+
+    if mode is None:
+        col_left, col_showcase, col_right = st.columns([0.5, 2.0, 0.5])
+    else:
+        col_showcase, col_auth = st.columns([1.1, 1.0], gap="large")
 
     with col_showcase:
+        active_signin_class = " active-signin" if mode == "signin" else ""
+        active_signup_class = " active-signup" if mode == "signup" else ""
         st.markdown(
-"""<div class="auth-flow-canvas">
+            f"""<div class="auth-flow-canvas">
 <div class="n8n-header" style="margin-bottom:1rem; text-align:center;">
-<span>⚡ EduTech AI — Autonomous Access Flowchart</span>
+<span>⚡ EduTech AI — Providing Access Flowchart</span>
 </div>
 
 <!-- Step 1: User Arrival (Compact & Centered) -->
@@ -2356,14 +2491,14 @@ def _render_auth_view():
 
 <!-- Step 4: Sign In and Create Account blocks -->
 <div class="flow-branch-cards">
-<div class="auth-flow-node branch-node" style="border-color:rgba(34,197,94,0.4);">
+<div class="auth-flow-node branch-node clickable-card{active_signin_class}" style="border-color:rgba(34,197,94,0.4);" onclick="const doc = window.parent.document || document; const btn = Array.from(doc.querySelectorAll('button')).find(el => el.textContent.includes('HIDDEN_TRIGGER_SIGNIN')); if (btn) btn.click();">
 <div class="node-icon" style="background:rgba(34,197,94,0.18);">🔐</div>
 <div>
 <div class="node-title" style="font-size:0.82rem;">Sign In</div>
 <div class="node-sub" style="font-size:0.72rem;">Email & Password</div>
 </div>
 </div>
-<div class="auth-flow-node branch-node" style="border-color:rgba(168,85,247,0.4);">
+<div class="auth-flow-node branch-node clickable-card{active_signup_class}" style="border-color:rgba(168,85,247,0.4);" onclick="const doc = window.parent.document || document; const btn = Array.from(doc.querySelectorAll('button')).find(el => el.textContent.includes('HIDDEN_TRIGGER_SIGNUP')); if (btn) btn.click();">
 <div class="node-icon" style="background:rgba(168,85,247,0.18);">💎</div>
 <div>
 <div class="node-title" style="font-size:0.82rem;">Create Account</div>
@@ -2410,74 +2545,90 @@ def _render_auth_view():
             unsafe_allow_html=True,
         )
 
-    with col_auth:
-        tab_login, tab_signup = st.tabs(["🔐 Sign In", "✨ Create Account"])
+    if mode is not None:
+        with col_auth:
+            st.markdown('<div class="auth-form-card">', unsafe_allow_html=True)
 
-        with tab_login:
-            with st.form("signin_form"):
-                email_in = st.text_input("Email Address", placeholder="student@example.com")
-                pass_in = st.text_input("Password", type="password")
-                sub = st.form_submit_button("Sign In", type="primary", use_container_width=True)
+            # Form header inside card container
+            st.markdown('<div class="auth-card-header">', unsafe_allow_html=True)
+            if mode == "signin":
+                st.markdown("### 🔐 Sign In")
+            else:
+                st.markdown("### ✨ Create Account")
 
-            if sub:
-                if not email_in or not pass_in:
-                    st.error("Please provide both email and password.")
-                else:
-                    with st.spinner("Authenticating..."):
-                        try:
-                            from services.auth_service import AuthService
-                            from services.database import get_db_session
+            st.markdown('<div class="auth-close-btn-wrapper">', unsafe_allow_html=True)
+            if st.button("✕ Close", key="close_auth_form"):
+                st.session_state["auth_form_mode"] = None
+                st.rerun()
+            st.markdown('</div>', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
 
-                            async def _login():
-                                async with get_db_session() as db:
-                                    u = await AuthService.authenticate_user(db, email_in.strip(), pass_in)
-                                    return AuthService.get_user_current_profile(u)
+            if mode == "signin":
+                with st.form("signin_form"):
+                    email_in = st.text_input("Email Address", placeholder="student@example.com")
+                    pass_in = st.text_input("Password", type="password")
+                    sub = st.form_submit_button("Sign In", type="primary", use_container_width=True)
 
-                            p = run_async(_login())
-                            st.session_state["user_profile"] = p
-                            st.session_state["view"] = "learning"
-                            st.toast(f"Welcome back, {p.first_name}!", icon="✅")
-                            st.rerun()
-                        except Exception as e:
-                            st.error(f"Sign in failed: {e}")
+                if sub:
+                    if not email_in or not pass_in:
+                        st.error("Please provide both email and password.")
+                    else:
+                        with st.spinner("Authenticating..."):
+                            try:
+                                from services.auth_service import AuthService
+                                from services.database import get_db_session
 
-        with tab_signup:
-            sel_tier = st.session_state.get("selected_tier", "normal")
-            with st.form("signup_form"):
-                fn = st.text_input("First Name", placeholder="Jane")
-                ln = st.text_input("Last Name", placeholder="Doe")
-                se = st.text_input("Email Address", placeholder="jane.doe@example.com")
-                sp = st.text_input("Password", type="password")
-                tc = st.selectbox("Tier", ["normal", "pro", "ultra"],
-                                  index=["normal", "pro", "ultra"].index(sel_tier) if sel_tier in ["normal", "pro", "ultra"] else 0,
-                                  format_func=lambda x: f"{'FREE' if x == 'normal' else x.upper()} Tier")
-                sub2 = st.form_submit_button("Create Account & Start Learning", type="primary", use_container_width=True)
+                                async def _login():
+                                    async with get_db_session() as db:
+                                        u = await AuthService.authenticate_user(db, email_in.strip(), pass_in)
+                                        return AuthService.get_user_current_profile(u)
 
-            if sub2:
-                if not fn or not se or not sp:
-                    st.error("Please fill in all required fields.")
-                else:
-                    with st.spinner("Creating account..."):
-                        try:
-                            from models.user_schemas import UserCreateRequest
-                            from services.auth_service import AuthService
-                            from services.database import get_db_session
-                            from services.user_service import UserService
+                                p = run_async(_login())
+                                st.session_state["user_profile"] = p
+                                st.session_state["view"] = "learning"
+                                st.toast(f"Welcome back, {p.first_name}!", icon="✅")
+                                st.rerun()
+                            except Exception as e:
+                                st.error(f"Sign in failed: {e}")
+            else:
+                sel_tier = st.session_state.get("selected_tier", "normal")
+                with st.form("signup_form"):
+                    fn = st.text_input("First Name", placeholder="Jane")
+                    ln = st.text_input("Last Name", placeholder="Doe")
+                    se = st.text_input("Email Address", placeholder="jane.doe@example.com")
+                    sp = st.text_input("Password", type="password")
+                    tc = st.selectbox("Tier", ["normal", "pro", "ultra"],
+                                      index=["normal", "pro", "ultra"].index(sel_tier) if sel_tier in ["normal", "pro", "ultra"] else 0,
+                                      format_func=lambda x: f"{'FREE' if x == 'normal' else x.upper()} Tier")
+                    sub2 = st.form_submit_button("Create Account & Start Learning", type="primary", use_container_width=True)
 
-                            async def _signup():
-                                async with get_db_session() as db:
-                                    req = UserCreateRequest(first_name=fn.strip(), last_name=ln.strip() if ln else "User",
-                                                            email=se.strip(), password=sp, subscription_tier=tc)
-                                    cu = await UserService.create_user(db, req)
-                                    return AuthService.get_user_current_profile(cu)
+                if sub2:
+                    if not fn or not se or not sp:
+                        st.error("Please fill in all required fields.")
+                    else:
+                        with st.spinner("Creating account..."):
+                            try:
+                                from models.user_schemas import UserCreateRequest
+                                from services.auth_service import AuthService
+                                from services.database import get_db_session
+                                from services.user_service import UserService
 
-                            p = run_async(_signup())
-                            st.session_state["user_profile"] = p
-                            st.session_state["view"] = "learning"
-                            st.toast(f"Welcome, {p.first_name}!", icon="🎉")
-                            st.rerun()
-                        except Exception as e:
-                            st.error(f"Registration failed: {e}")
+                                async def _signup():
+                                    async with get_db_session() as db:
+                                        req = UserCreateRequest(first_name=fn.strip(), last_name=ln.strip() if ln else "User",
+                                                                email=se.strip(), password=sp, subscription_tier=tc)
+                                        cu = await UserService.create_user(db, req)
+                                        return AuthService.get_user_current_profile(cu)
+
+                                p = run_async(_signup())
+                                st.session_state["user_profile"] = p
+                                st.session_state["view"] = "learning"
+                                st.toast(f"Welcome, {p.first_name}!", icon="🎉")
+                                st.rerun()
+                            except Exception as e:
+                                st.error(f"Registration failed: {e}")
+
+            st.markdown('</div>', unsafe_allow_html=True)
 
     # ── Trust Badges Footer ───────────────────────────────────
     st.markdown(
