@@ -50,31 +50,14 @@ class QuizAgent(BaseAgent):
 
         model = self.settings.get_model_for_agent("quiz_agent")
         try:
-            response = await self.llm.chat(
+            result = await self.llm.chat_json(
                 model=model,
                 messages=messages,
                 temperature=0.3,
-                max_tokens=1024,
+                max_tokens=1500,
             )
-            # Parse JSON questions or fallback to mock
-            from services.json_parser import parse_json_from_llm
-            data = parse_json_from_llm(response)
-            questions_raw = data.get("questions", []) if isinstance(data, dict) else []
-            parsed = []
-            for idx, q_data in enumerate(questions_raw):
-                if isinstance(q_data, dict):
-                    c_opt = q_data.get("correct_answer", "A")
-                    q_obj = QuizQuestion(
-                        index=idx,
-                        question=q_data.get("question", f"Question {idx+1}"),
-                        question_type=QuestionType.MULTIPLE_CHOICE,
-                        options=q_data.get("options", ["A", "B", "C", "D"]),
-                        correct_answer=c_opt,
-                        correct_option=c_opt,
-                        explanation=q_data.get("explanation", ""),
-                    )
-                    parsed.append(q_obj)
-            return parsed or self._generate_fallback_quiz(title)
+            quiz = self._parse_quiz(getattr(step, "index", 0), result)
+            return quiz.questions or self._generate_fallback_quiz(title)
         except Exception as e:
             self.logger.error(f"Quiz generation failed: {e}")
             return self._generate_fallback_quiz(title)
@@ -189,12 +172,16 @@ class QuizAgent(BaseAgent):
                 except ValueError:
                     q_type = QuestionType.MULTIPLE_CHOICE
 
+                c_ans = raw_q.get("correct_answer", "")
+                c_opt = raw_q.get("correct_option", c_ans.split(":")[0].strip() if c_ans else "A")
+
                 question = QuizQuestion(
                     index=i,
                     question=raw_q.get("question", f"Question {i + 1}"),
                     question_type=q_type,
                     options=raw_q.get("options", []),
-                    correct_answer=raw_q.get("correct_answer", ""),
+                    correct_answer=c_ans,
+                    correct_option=c_opt,
                     explanation=raw_q.get("explanation", ""),
                 )
                 questions.append(question)

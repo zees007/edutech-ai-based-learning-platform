@@ -13,9 +13,9 @@ http:
         "first_name": "Zeeshan",
         "last_name": "Adil",
         "email": "abc@gmail.com",
-        "password": "Test2day",
-        "mobile": "",
-        "country":""
+        "password": "Test2day@",
+        "mobile": "7878787",
+        "country":"India"
       }
   auth: inherit
 

@@ -11,7 +11,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -95,6 +95,8 @@ class QuizSubmission(BaseModel):
 class MilestoneStep(BaseModel):
     """A single step in the learning plan, created by the Orchestrator."""
 
+    model_config = ConfigDict(extra="allow")
+
     index: int
     title: str
     description: str
@@ -134,6 +136,14 @@ class MilestoneStep(BaseModel):
     quiz_score: float | None = Field(
         default=None,
         description="Student's quiz score (0.0 to 1.0).",
+    )
+    user_answers: dict[int, str] = Field(
+        default_factory=dict,
+        description="Student's submitted short answers by question index.",
+    )
+    user_full_answers: dict[int, str] = Field(
+        default_factory=dict,
+        description="Student's submitted full option strings by question index.",
     )
 
 

@@ -132,12 +132,14 @@ CUSTOM_CSS = """
 
     /* Top Progress Banner */
     .top-progress-card {
-        background: linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.95) 100%);
-        border: 1px solid rgba(168, 85, 247, 0.35);
-        border-radius: 12px;
-        padding: 0.9rem 1.2rem;
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-top: 3px solid #A855F7;
+        border-radius: 16px;
+        padding: 1.1rem 1.5rem;
         margin-bottom: 1.2rem;
-        box-shadow: 0 4px 16px rgba(124, 58, 237, 0.15);
+        box-shadow: 0 10px 30px -10px rgba(124, 58, 237, 0.25), 0 4px 12px rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(16px);
     }
     
     .top-progress-stat {
@@ -169,9 +171,225 @@ CUSTOM_CSS = """
         border-radius: 6px;
         text-transform: uppercase;
     }
+
+    /* Modern UI/UX Glassmorphism & Pill Capsules System */
+    .pill-capsule {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 16px;
+        border-radius: 9999px;
+        font-size: 0.84rem;
+        font-weight: 600;
+        letter-spacing: 0.4px;
+        backdrop-filter: blur(12px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        white-space: nowrap;
+        user-select: none;
+    }
+    
+    .pill-capsule:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+    }
+
+    .pill-icon-box {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        font-size: 0.85rem;
+        background: rgba(255, 255, 255, 0.12);
+    }
+    
+    .pill-mode {
+        background: linear-gradient(135deg, rgba(168, 85, 247, 0.2) 0%, rgba(124, 58, 237, 0.25) 100%);
+        border: 1px solid rgba(192, 132, 252, 0.5);
+        color: #F3E8FF;
+        box-shadow: 0 0 12px rgba(168, 85, 247, 0.2);
+    }
+    .pill-mode .pill-label {
+        color: #D8B4FE;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.72rem;
+        letter-spacing: 0.6px;
+    }
+    .pill-mode .pill-value {
+        color: #FFFFFF;
+        font-weight: 700;
+    }
+    
+    .pill-audience {
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(37, 99, 235, 0.25) 100%);
+        border: 1px solid rgba(96, 165, 250, 0.5);
+        color: #EFF6FF;
+        box-shadow: 0 0 12px rgba(59, 130, 246, 0.2);
+    }
+    .pill-audience .pill-label {
+        color: #93C5FD;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.72rem;
+        letter-spacing: 0.6px;
+    }
+    .pill-audience .pill-value {
+        color: #FFFFFF;
+        font-weight: 700;
+    }
+
+    /* Status Pill Variants */
+    .pill-status-complete {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(5, 150, 105, 0.25) 100%);
+        border: 1px solid rgba(52, 211, 153, 0.5);
+        color: #ECFDF5;
+        box-shadow: 0 0 12px rgba(16, 185, 129, 0.2);
+    }
+    .pill-status-complete .pill-label {
+        color: #6EE7B7;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.72rem;
+        letter-spacing: 0.6px;
+    }
+    .pill-status-complete .pill-value {
+        color: #FFFFFF;
+        font-weight: 700;
+    }
+
+    .pill-status-inprogress {
+        background: linear-gradient(135deg, rgba(14, 165, 233, 0.2) 0%, rgba(2, 132, 199, 0.25) 100%);
+        border: 1px solid rgba(56, 189, 248, 0.5);
+        color: #F0F9FF;
+        box-shadow: 0 0 12px rgba(14, 165, 233, 0.2);
+    }
+    .pill-status-inprogress .pill-label {
+        color: #7DD3FC;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.72rem;
+        letter-spacing: 0.6px;
+    }
+    .pill-status-inprogress .pill-value {
+        color: #FFFFFF;
+        font-weight: 700;
+    }
+
+    .pill-status-pending {
+        background: linear-gradient(135deg, rgba(100, 116, 139, 0.18) 0%, rgba(71, 85, 105, 0.22) 100%);
+        border: 1px solid rgba(148, 163, 184, 0.4);
+        color: #F1F5F9;
+    }
+    .pill-status-pending .pill-label {
+        color: #CBD5E1;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.72rem;
+        letter-spacing: 0.6px;
+    }
+    .pill-status-pending .pill-value {
+        color: #E2E8F0;
+        font-weight: 700;
+    }
+
+    /* Streamlit Button Overrides for Modern Look */
+    div[data-testid="stButton"] button {
+        border-radius: 10px !important;
+        font-weight: 700 !important;
+        transition: all 0.2s ease-in-out !important;
+    }
+    div[data-testid="stButton"] button:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 18px rgba(124, 58, 237, 0.3) !important;
+    }
+
+    /* Redesigned Regenerate Step Button Styling - Stacked Directly Below Status Pill */
+    div[data-testid="stColumn"]:has(div.pill-capsule) {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-end !important;
+        justify-content: center !important;
+    }
+
+    div[data-testid="stColumn"]:has(div.pill-capsule) div[data-testid="stElementContainer"] {
+        display: flex !important;
+        justify-content: flex-end !important;
+        width: 100% !important;
+    }
+
+    div[data-testid="stColumn"]:has(div.pill-capsule) div[data-testid="stButton"] {
+        display: flex !important;
+        justify-content: flex-end !important;
+        width: auto !important;
+        margin-top: 2px !important;
+    }
+
+    div[data-testid="stColumn"]:has(div.pill-capsule) button {
+        background: linear-gradient(135deg, rgba(168, 85, 247, 0.2) 0%, rgba(124, 58, 237, 0.25) 100%) !important;
+        border: 1px solid rgba(192, 132, 252, 0.5) !important;
+        color: #F3E8FF !important;
+        border-radius: 9999px !important;
+        padding: 5px 14px !important;
+        font-size: 0.84rem !important;
+        font-weight: 600 !important;
+        letter-spacing: 0.4px !important;
+        box-shadow: 0 4px 12px rgba(168, 85, 247, 0.2) !important;
+        backdrop-filter: blur(12px) !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        white-space: nowrap !important;
+        height: auto !important;
+        min-height: unset !important;
+        line-height: 1.2 !important;
+        margin-left: auto !important;
+    }
+
+    div[data-testid="stColumn"]:has(div.pill-capsule) button:hover {
+        background: linear-gradient(135deg, rgba(168, 85, 247, 0.4) 0%, rgba(124, 58, 237, 0.45) 100%) !important;
+        border-color: rgba(192, 132, 252, 0.85) !important;
+        color: #FFFFFF !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 18px rgba(168, 85, 247, 0.4) !important;
+    }
 </style>
 """
 st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
+
+
+def format_display_text(val: Any) -> str:
+    """Format enum or string values by replacing underscores with spaces and applying title case."""
+    if val is None:
+        return ""
+    str_val = val.value if hasattr(val, "value") else str(val)
+    return str_val.replace("_", " ").title()
+
+
+def get_mode_icon(mode_val: Any) -> str:
+    """Return appropriate icon for learning mode."""
+    str_val = (mode_val.value if hasattr(mode_val, "value") else str(mode_val)).lower()
+    if "visual" in str_val:
+        return "🎨"
+    elif "deep" in str_val:
+        return "🔬"
+    elif "bite" in str_val:
+        return "⚡"
+    return "🎯"
+
+
+def get_audience_icon(aud_val: Any) -> str:
+    """Return appropriate icon for student level / audience."""
+    str_val = (aud_val.value if hasattr(aud_val, "value") else str(aud_val)).lower()
+    if "middle" in str_val:
+        return "🏫"
+    elif "high" in str_val:
+        return "🎒"
+    elif "undergrad" in str_val:
+        return "🏛️"
+    elif "grad" in str_val:
+        return "🎓"
+    return "💡"
 
 
 def get_item_attr(item: Any, key: str, default: Any = None) -> Any:
@@ -179,6 +397,17 @@ def get_item_attr(item: Any, key: str, default: Any = None) -> Any:
     if isinstance(item, dict):
         return item.get(key, default)
     return getattr(item, key, default)
+
+
+def safe_set_attr(item: Any, key: str, value: Any) -> None:
+    """Safely set an attribute or dictionary key value on an item."""
+    if isinstance(item, dict):
+        item[key] = value
+    else:
+        try:
+            setattr(item, key, value)
+        except Exception:
+            pass
 
 
 def format_quiz_options(raw_opts: Any) -> list[str]:
@@ -515,12 +744,34 @@ def render_learning_workspace():
         completed_steps = sum(1 for s in memory.steps if s.status == StepStatus.COMPLETE)
         total_steps = len(memory.steps)
 
+        formatted_mode = format_display_text(memory.learning_mode)
+        formatted_audience = format_display_text(memory.student_level)
+        mode_icon = get_mode_icon(memory.learning_mode)
+        audience_icon = get_audience_icon(memory.student_level)
+
         st.markdown(
             f"""
             <div class="top-progress-card">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span style="font-weight: 800; font-size: 1.05rem; color: #F1F5F9;">🏆 <b>Your Progress Header</b></span>
-                    <span style="font-size: 0.85rem; color: #94A3B8; font-weight: 600;">Mode: <b style="color:#A855F7;">{memory.learning_mode.value.title()}</b> | Audience: <b style="color:#3B82F6;">{memory.student_level.title()}</b></span>
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="background: linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%); padding: 8px 12px; border-radius: 12px; font-size: 1.1rem; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);">🏆</div>
+                        <div>
+                            <div style="font-weight: 800; font-size: 1.15rem; color: #F8FAFC; letter-spacing: 0.3px;">Your Progress Dashboard</div>
+                            <div style="font-size: 0.78rem; color: #94A3B8;">Track your real-time learning milestone achievements</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                        <div class="pill-capsule pill-mode">
+                            <span class="pill-label">Mode</span>
+                            <span class="pill-icon-box">{mode_icon}</span>
+                            <span class="pill-value">{formatted_mode}</span>
+                        </div>
+                        <div class="pill-capsule pill-audience">
+                            <span class="pill-label">Audience</span>
+                            <span class="pill-icon-box">{audience_icon}</span>
+                            <span class="pill-value">{formatted_audience}</span>
+                        </div>
+                    </div>
                 </div>
             </div>
             """,
@@ -642,19 +893,55 @@ def render_learning_workspace():
         st.markdown("<br>", unsafe_allow_html=True)
 
         # Display Step Details Header
-        col_s1, col_s2 = st.columns([3, 1])
+        formatted_status = format_display_text(current_step.status)
+        if current_step.status == StepStatus.COMPLETE:
+            status_class = "complete"
+            status_icon = "✅"
+        elif current_step.status == StepStatus.IN_PROGRESS:
+            status_class = "inprogress"
+            status_icon = "⚡"
+        else:
+            status_class = "pending"
+            status_icon = "🔒"
+
+        col_s1, col_s2 = st.columns([2.6, 1.4], vertical_alignment="center")
         with col_s1:
-            st.markdown(f"### Milestone {active_idx+1}: {current_step.title}")
-            st.markdown(f"*{current_step.description}*")
+            st.markdown(
+                f"""
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+                    <span style="background: rgba(99, 102, 241, 0.2); color: #818CF8; border: 1px solid rgba(99, 102, 241, 0.4); font-size: 0.72rem; font-weight: 800; padding: 2px 10px; border-radius: 9999px; text-transform: uppercase; letter-spacing: 0.8px;">Milestone {active_idx+1} of {num_steps}</span>
+                </div>
+                <h2 style="font-size: 1.45rem; font-weight: 800; color: #F8FAFC; margin: 0 0 4px 0;">{current_step.title}</h2>
+                <div style="font-size: 0.9rem; color: #94A3B8; font-style: italic;">{current_step.description}</div>
+                """,
+                unsafe_allow_html=True,
+            )
             prereq_val = getattr(current_step, "prerequisite", None)
             if prereq_val:
                 st.markdown(f'<span class="prereq-badge">Prereq: {prereq_val}</span>', unsafe_allow_html=True)
             elif getattr(current_step, "is_prerequisite", False):
                 st.markdown('<span class="prereq-badge">Prerequisite Step</span>', unsafe_allow_html=True)
+
         with col_s2:
-            status_color = "#10B981" if current_step.status == StepStatus.COMPLETE else ("#3B82F6" if current_step.status == StepStatus.IN_PROGRESS else "#6B7280")
-            st.markdown(f'<div style="text-align:right; font-weight:700; color:{status_color}; font-size:1.1rem; margin-bottom:6px;">Status: {current_step.status.value.upper()}</div>', unsafe_allow_html=True)
-            if st.button("🔄 **Regenerate Step**", key=f"regen_btn_{active_idx}", help="Re-run Socratic, YouTube, Academic & Quiz agents for this step"):
+            # UP: Status Pill Capsule (Right-Aligned)
+            st.markdown(
+                f"""
+                <div style="display: flex; justify-content: flex-end; align-items: center; margin-bottom: 6px; width: 100%;">
+                    <div class="pill-capsule pill-status-{status_class}">
+                        <span class="pill-label">Status</span>
+                        <span class="pill-icon-box">{status_icon}</span>
+                        <span class="pill-value">{formatted_status}</span>
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+            # BELOW: Redesigned Regenerate Step Capsule Button (Right-Aligned Directly Below Status)
+            if st.button(
+                f"🔄 Regenerate Step {active_idx + 1}",
+                key=f"regen_btn_{active_idx}",
+                help=f"Re-run Socratic, YouTube, Academic & Quiz agents for Step {active_idx + 1}",
+            ):
                 setattr(current_step, "tutor_explanation", None)
                 setattr(current_step, "videos", [])
                 setattr(current_step, "papers", [])
@@ -762,6 +1049,9 @@ def render_learning_workspace():
                 else:
                     quiz_key = f"quiz_form_{active_idx}"
                     
+                    saved_user_answers = st.session_state.get(f"saved_user_answers_{active_idx}") or getattr(current_step, "user_answers", {})
+                    saved_user_full_answers = st.session_state.get(f"saved_user_full_answers_{active_idx}") or getattr(current_step, "user_full_answers", {})
+
                     with st.form(quiz_key):
                         user_answers = {}
                         user_full_answers = {}
@@ -773,8 +1063,10 @@ def render_learning_workspace():
                             raw_opts = get_item_attr(q, "options", [])
 
                             if "blank" in q_type_str or "fill" in q_type_str or (isinstance(raw_opts, list) and len(raw_opts) == 0):
+                                default_val = saved_user_answers.get(q_idx, "")
                                 user_val = st.text_input(
                                     f"Answer Q{q_idx+1}",
+                                    value=default_val,
                                     key=f"q_{active_idx}_{q_idx}",
                                     placeholder="Type your answer for the blank here...",
                                     label_visibility="collapsed",
@@ -783,26 +1075,56 @@ def render_learning_workspace():
                                 user_full_answers[q_idx] = user_val.strip()
                             else:
                                 opts = format_quiz_options(raw_opts)
+                                saved_ans = saved_user_full_answers.get(q_idx, "")
+                                default_idx = None
+                                if saved_ans and saved_ans in opts:
+                                    default_idx = opts.index(saved_ans)
+                                elif saved_user_answers.get(q_idx):
+                                    saved_k = str(saved_user_answers.get(q_idx)).strip().upper()
+                                    for o_i, o_str in enumerate(opts):
+                                        if o_str.split(":")[0].strip().upper() == saved_k:
+                                            default_idx = o_i
+                                            break
+
                                 user_ans = st.radio(
                                     f"Select answer Q{q_idx+1}",
                                     opts,
                                     key=f"q_{active_idx}_{q_idx}",
-                                    index=None,
+                                    index=default_idx,
                                     label_visibility="collapsed",
                                 )
                                 if user_ans:
                                     user_answers[q_idx] = user_ans.split(":")[0].strip()
                                     user_full_answers[q_idx] = user_ans
                                 else:
-                                    user_answers[q_idx] = ""
-                                    user_full_answers[q_idx] = ""
+                                    user_answers[q_idx] = saved_user_answers.get(q_idx, "")
+                                    user_full_answers[q_idx] = saved_user_full_answers.get(q_idx, "")
 
                             if q_idx < len(step_quiz) - 1:
                                 st.markdown("---")
                         
                         submit_quiz = st.form_submit_button("🚀 Submit Quiz")
 
-                    if submit_quiz or f"quiz_submitted_{active_idx}" in st.session_state:
+                    if submit_quiz:
+                        st.session_state[f"saved_user_answers_{active_idx}"] = user_answers
+                        st.session_state[f"saved_user_full_answers_{active_idx}"] = user_full_answers
+                        safe_set_attr(current_step, "user_answers", user_answers)
+                        safe_set_attr(current_step, "user_full_answers", user_full_answers)
+                    else:
+                        for q_idx in range(len(step_quiz)):
+                            if not user_answers.get(q_idx) and q_idx in saved_user_answers:
+                                user_answers[q_idx] = saved_user_answers[q_idx]
+                            if not user_full_answers.get(q_idx) and q_idx in saved_user_full_answers:
+                                user_full_answers[q_idx] = saved_user_full_answers[q_idx]
+
+                    is_quiz_submitted = (
+                        submit_quiz
+                        or f"quiz_submitted_{active_idx}" in st.session_state
+                        or current_step.status == StepStatus.COMPLETE
+                        or getattr(current_step, "quiz_score", None) is not None
+                    )
+
+                    if is_quiz_submitted:
                         st.session_state[f"quiz_submitted_{active_idx}"] = True
                         correct_count = 0
                         total_q = len(step_quiz)
