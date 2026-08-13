@@ -118,46 +118,145 @@ HOME_CSS = """
         transform: translateY(-2px);
     }
 
-    /* ── Navbar ─────────────────────────────────────── */
-    .et-nav {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 0.8rem 0;
+    /* ── Navbar — Floating Glassmorphism Theme ───────── */
+    .et-navbar-wrapper {
+        background: rgba(15, 23, 42, 0.85);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(168, 85, 247, 0.35);
+        border-radius: 50px;
+        padding: 10px 24px;
+        margin: 0.8rem 0 2rem 0;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(168, 85, 247, 0.1);
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .et-navbar-wrapper div[data-testid="stHorizontalBlock"] {
+        align-items: center !important;
+        justify-content: space-between !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .et-navbar-wrapper div[data-testid="column"] {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 0 !important;
+    }
+
+    .et-navbar-wrapper div[data-testid="column"]:first-child {
+        justify-content: flex-start !important;
+    }
+
+    .et-navbar-wrapper div[data-testid="column"]:last-child {
+        justify-content: flex-end !important;
     }
 
     .et-logo {
-        font-size: 1.3rem;
-        font-weight: 800;
+        font-size: 1.35rem;
+        font-weight: 900;
         color: #FAFAFA;
         letter-spacing: -0.5px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
     }
 
     .et-logo .accent {
-        background: linear-gradient(135deg, #8B5CF6, #EC4899);
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
     }
 
+    .et-logo .badge-ai {
+        font-size: 0.65rem;
+        font-weight: 800;
+        background: rgba(168, 85, 247, 0.2);
+        color: #C084FC;
+        border: 1px solid rgba(168, 85, 247, 0.4);
+        border-radius: 8px;
+        padding: 2px 6px;
+        margin-left: 2px;
+    }
+
     .et-nav-links {
         display: flex;
-        gap: 28px;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
     }
 
-    .et-nav-links a {
-        color: rgba(255, 255, 255, 0.5);
-        font-size: 0.88rem;
-        font-weight: 500;
+    .et-nav-links a.nav-pill {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.86rem;
+        font-weight: 600;
         text-decoration: none;
-        transition: color 0.2s;
+        padding: 6px 16px;
+        border-radius: 20px;
+        border: 1px solid transparent;
+        transition: all 0.25s ease;
     }
 
-    .et-nav-links a:hover { color: #FAFAFA; }
+    .et-nav-links a.nav-pill:hover {
+        color: #FFFFFF;
+        background: rgba(168, 85, 247, 0.18);
+        border-color: rgba(168, 85, 247, 0.4);
+        box-shadow: 0 0 15px rgba(168, 85, 247, 0.25);
+    }
+
+    /* Modern UI/UX Navbar Buttons Override */
+    .et-navbar-wrapper div[data-testid="column"] button {
+        height: 40px !important;
+        min-height: 40px !important;
+        line-height: 40px !important;
+        margin: 0 !important;
+        border-radius: 30px !important;
+        font-weight: 700 !important;
+        font-size: 0.86rem !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 0 1.4rem !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+
+    .et-navbar-wrapper div[data-testid="column"] button[kind="secondary"] {
+        background: rgba(255, 255, 255, 0.05) !important;
+        backdrop-filter: blur(12px) !important;
+        -webkit-backdrop-filter: blur(12px) !important;
+        border: 1px solid rgba(168, 85, 247, 0.4) !important;
+        color: #FAFAFA !important;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
+    }
+
+    .et-navbar-wrapper div[data-testid="column"] button[kind="secondary"]:hover {
+        background: rgba(168, 85, 247, 0.22) !important;
+        border-color: rgba(168, 85, 247, 0.8) !important;
+        color: #FFFFFF !important;
+        box-shadow: 0 0 25px rgba(168, 85, 247, 0.4) !important;
+        transform: translateY(-2px) !important;
+    }
+
+    .et-navbar-wrapper div[data-testid="column"] button[kind="primary"] {
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%) !important;
+        border: none !important;
+        color: #FFFFFF !important;
+        font-weight: 800 !important;
+        padding: 0 1.6rem !important;
+        box-shadow: 0 0 25px rgba(236, 72, 153, 0.45) !important;
+    }
+
+    .et-navbar-wrapper div[data-testid="column"] button[kind="primary"]:hover {
+        box-shadow: 0 0 35px rgba(236, 72, 153, 0.75), 0 0 20px rgba(6, 182, 212, 0.5) !important;
+        transform: translateY(-2px) scale(1.03) !important;
+    }
 
     /* ── Hero ───────────────────────────────────────── */
     .et-hero {
         text-align: center;
-        padding: 4rem 1rem 2rem 1rem;
+        padding: 3.5rem 1rem 2rem 1rem;
         position: relative;
     }
 
@@ -165,39 +264,43 @@ HOME_CSS = """
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        background: rgba(139, 92, 246, 0.1);
-        border: 1px solid rgba(139, 92, 246, 0.25);
-        color: #C4B5FD;
+        background: rgba(168, 85, 247, 0.12);
+        border: 1px solid rgba(168, 85, 247, 0.35);
+        color: #E9D5FF;
         font-size: 0.82rem;
-        font-weight: 600;
-        padding: 6px 18px;
+        font-weight: 700;
+        padding: 6px 20px;
         border-radius: 24px;
         margin-bottom: 2rem;
+        box-shadow: 0 0 20px rgba(168, 85, 247, 0.2);
         animation: pulseGlow 3s ease-in-out infinite;
     }
 
     .et-hero h1 {
-        font-size: 3.4rem;
-        font-weight: 800;
+        font-size: 3.6rem;
+        font-weight: 900;
         color: #FAFAFA;
-        line-height: 1.1;
+        line-height: 1.15;
         letter-spacing: -2px;
         margin-bottom: 1.2rem;
-        max-width: 800px;
+        max-width: 840px;
         margin-left: auto;
         margin-right: auto;
     }
 
     .et-hero .gradient-text {
-        background: linear-gradient(135deg, #C4B5FD 0%, #8B5CF6 40%, #EC4899 70%, #F97316 100%);
-        background-size: 200% 200%;
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        animation: gradientShift 5s ease infinite;
     }
 
     .et-hero p {
-        font-size: 1.1rem;
+        font-size: 1.15rem;
+        color: rgba(233, 213, 255, 0.75);
+        max-width: 660px;
+        margin: 0 auto 2.5rem auto;
+        line-height: 1.7;
+    }
         color: rgba(255, 255, 255, 0.5);
         max-width: 640px;
         margin: 0 auto 2.5rem auto;
@@ -498,42 +601,6 @@ HOME_CSS = """
         justify-content: center;
         font-size: 1.2rem;
         box-shadow: 0 0 12px rgba(16, 185, 129, 0.3);
-    }ize: 1.25rem;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
-    }
-
-    .n8n-sub-title {
-        font-size: 0.65rem;
-        font-weight: 700;
-        color: rgba(255, 255, 255, 0.8);
-        margin-top: 6px;
-        text-align: center;
-        white-space: nowrap;
-    }
-
-    /* 3. Decision Node */
-    .n8n-decision-card {
-        position: relative;
-        background: #1B1728;
-        border: 1.5px solid rgba(16, 185, 129, 0.35);
-        border-radius: 14px;
-        padding: 1.1rem;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        min-width: 130px;
-    }
-
-    .n8n-decision-icon {
-        width: 36px;
-        height: 36px;
-        border-radius: 10px;
-        background: rgba(16, 185, 129, 0.15);
-        color: #34D399;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.2rem;
     }
 
     .n8n-branch-arms {
@@ -633,23 +700,76 @@ HOME_CSS = """
         }
     }
 
-    /* ── Section Titles ────────────────────────────── */
+    /* ── Section Titles — Team of AI Agents Persona ──── */
+    .section-badge {
+        display: table;
+        margin: 0 auto 0.8rem auto;
+        background: rgba(168, 85, 247, 0.12);
+        border: 1px solid rgba(168, 85, 247, 0.35);
+        color: #E9D5FF;
+        font-size: 0.78rem;
+        font-weight: 700;
+        padding: 5px 18px;
+        border-radius: 24px;
+        box-shadow: 0 0 20px rgba(168, 85, 247, 0.2);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
     .section-title {
-        font-size: 2.2rem;
-        font-weight: 800;
+        font-size: 2.8rem;
+        font-weight: 900;
         color: #FAFAFA;
         text-align: center;
-        margin-bottom: 0.5rem;
-        letter-spacing: -0.5px;
+        margin-bottom: 0.6rem;
+        letter-spacing: -1.5px;
+        line-height: 1.2;
+    }
+
+    .gradient-text {
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        display: inline;
     }
 
     .section-sub {
-        font-size: 1rem;
-        color: rgba(255, 255, 255, 0.45);
+        font-size: 1.05rem;
+        color: rgba(233, 213, 255, 0.75);
         text-align: center;
-        max-width: 580px;
-        margin: 0 auto 2.5rem auto;
+        max-width: 620px;
+        margin: 0 auto 2.8rem auto;
         line-height: 1.6;
+    }
+
+    /* Top Accent Neon Glow Strip for All Cards */
+    .feat-card, .agent-glass, .about-card, .price-glass {
+        position: relative;
+        overflow: hidden;
+        border-radius: 20px !important;
+    }
+
+    .feat-card::before, .agent-glass::before, .about-card::before, .price-glass::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 15%; right: 15%; height: 2px;
+        background: linear-gradient(90deg, transparent 0%, #EC4899 30%, #A855F7 50%, #06B6D4 70%, transparent 100%);
+        border-radius: 2px;
+        opacity: 0.7;
+        transition: opacity 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .feat-card:hover::before, .agent-glass:hover::before, .about-card:hover::before, .price-glass:hover::before {
+        opacity: 1;
+        box-shadow: 0 0 14px #EC4899, 0 0 20px #A855F7;
+    }
+
+    /* Card Headings — Exact Logo Gradient Touch */
+    .feat-card h4, .agent-glass h4, .about-card h3, .price-name {
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 800;
     }
 
     /* ── Feature Cards — Glassmorphism Gradient Theme ───────── */
@@ -658,11 +778,10 @@ HOME_CSS = """
         backdrop-filter: blur(16px);
         -webkit-backdrop-filter: blur(16px);
         border: 1px solid rgba(168, 85, 247, 0.4);
-        border-radius: 16px;
-        padding: 1.8rem 1.4rem;
+        padding: 2rem 1.6rem;
         text-align: center;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        min-height: 200px;
+        min-height: 210px;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(168, 85, 247, 0.1);
     }
 
@@ -834,9 +953,10 @@ HOME_CSS = """
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
         border: 1px solid rgba(168, 85, 247, 0.35);
-        border-radius: 20px;
-        padding: 2rem 1.5rem;
+        border-radius: 20px !important;
+        padding: 2.4rem 1.5rem 2rem 1.5rem;
         position: relative;
+        overflow: visible !important;
         height: 100%;
         display: flex;
         flex-direction: column;
@@ -864,22 +984,23 @@ HOME_CSS = """
         box-shadow: 0 0 55px rgba(168, 85, 247, 0.45);
         transform: translateY(-4px);
     }
-    }
 
     .price-badge {
         position: absolute;
-        top: -12px;
+        top: -14px;
         left: 50%;
         transform: translateX(-50%);
-        background: linear-gradient(135deg, #8B5CF6, #EC4899);
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%);
         color: #FAFAFA;
-        font-size: 0.68rem;
-        font-weight: 700;
-        padding: 4px 14px;
-        border-radius: 10px;
-        letter-spacing: 0.8px;
+        font-size: 0.7rem;
+        font-weight: 800;
+        padding: 5px 16px;
+        border-radius: 20px;
+        letter-spacing: 1px;
         text-transform: uppercase;
-        box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+        box-shadow: 0 0 20px rgba(236, 72, 153, 0.5);
+        white-space: nowrap;
+        z-index: 10;
     }
 
     .price-name {
@@ -937,9 +1058,11 @@ HOME_CSS = """
     }
 
     .cta-banner h2 {
-        font-size: 2rem;
-        font-weight: 800;
-        color: #FAFAFA;
+        font-size: 2.2rem;
+        font-weight: 900;
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
         margin-bottom: 0.6rem;
     }
 
@@ -1035,51 +1158,40 @@ def render_home_page():
         return
 
     # ── NAVBAR ────────────────────────────────────────────────────
-    nav1, nav2, nav3, nav4 = st.columns([2, 3, 1.2, 1.8])
+    st.markdown('<div class="et-navbar-wrapper">', unsafe_allow_html=True)
+    nav_col1, nav_col2, nav_col3 = st.columns([2.5, 4.2, 3.3])
 
-    with nav1:
-        st.markdown('<div class="et-logo">⚡ <span class="accent">EduTech</span> AI</div>', unsafe_allow_html=True)
+    with nav_col1:
+        st.markdown('<div class="et-logo">⚡ <span class="accent">EduTech</span> <span class="badge-ai">AI</span></div>', unsafe_allow_html=True)
 
-    with nav2:
+    with nav_col2:
         st.markdown(
-            '<div class="et-nav-links" style="padding-top:4px;"><a href="#features">Features</a><a href="#agents">Agents</a><a href="#about">About</a><a href="#pricing">Pricing</a></div>',
+            '<div class="et-nav-links"><a href="#features" class="nav-pill">Features</a><a href="#agents" class="nav-pill">Agents</a><a href="#about" class="nav-pill">About</a><a href="#pricing" class="nav-pill">Pricing</a></div>',
             unsafe_allow_html=True,
         )
 
-    with nav3:
+    with nav_col3:
         if user_profile:
             u_tier = (user_profile.subscription.tier if user_profile.subscription else "normal").upper()
-            st.markdown(f'<div style="color:rgba(255,255,255,0.5);font-size:0.85rem;padding-top:4px;">👋 <b style="color:#FAFAFA;">{user_profile.first_name}</b> · <span style="color:#A78BFA;font-weight:700;">{u_tier}</span></div>', unsafe_allow_html=True)
+            st.markdown(f'<div style="color:rgba(255,255,255,0.7);font-size:0.85rem;padding-top:6px;">👋 <b style="color:#FAFAFA;">{user_profile.first_name}</b> · <span style="color:#C084FC;font-weight:800;">{u_tier}</span></div>', unsafe_allow_html=True)
         else:
-            if st.button("Sign In", key="nav_si", use_container_width=True):
-                st.session_state["auth_tab"] = "login"
-                st.session_state["view"] = "auth"
-                st.rerun()
-
-    with nav4:
-        if user_profile:
-            lc1, lc2 = st.columns(2)
-            with lc1:
-                if st.button("🎓 Learn", key="nav_lr", type="primary", use_container_width=True):
-                    st.session_state["view"] = "learning"
+            nb1, nb2 = st.columns(2)
+            with nb1:
+                if st.button("Sign In", key="nav_si", use_container_width=True):
+                    st.session_state["auth_tab"] = "login"
+                    st.session_state["view"] = "auth"
                     st.rerun()
-            with lc2:
-                if st.button("Logout", key="nav_lo", use_container_width=True):
-                    st.session_state["user_profile"] = None
+            with nb2:
+                if st.button("Get Started", key="nav_gs", type="primary", use_container_width=True):
+                    st.session_state["auth_tab"] = "signup"
+                    st.session_state["view"] = "auth"
                     st.rerun()
-        else:
-            if st.button("Get Started", key="nav_gs", type="primary", use_container_width=True):
-                st.session_state["auth_tab"] = "signup"
-                st.session_state["view"] = "auth"
-                st.rerun()
-
-    st.markdown("<hr style='border:1px solid rgba(255,255,255,0.04);margin:0.5rem 0 0 0;'/>", unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
     # ── HERO ──────────────────────────────────────────────────────
     st.markdown(
         """
         <div class="et-hero">
-            <div class="et-hero-badge">🤖 &nbsp; Meet Your Multi-Agent AI System</div>
             <h1>Master Any Subject with a<br/><span class="gradient-text">Team of AI Agents</span></h1>
             <p>Our orchestrator divides complex topics into milestones, while specialized agents guide you through Socratic dialogue, curated videos, research papers, and interactive assessments.</p>
         </div>
@@ -1201,7 +1313,7 @@ def render_home_page():
 
     # ── FEATURES ──────────────────────────────────────────────────
     st.markdown('<a name="features"></a>', unsafe_allow_html=True)
-    st.markdown('<div class="section-title">Why EduTech AI?</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title"><span class="gradient-text">Why EduTech AI?</span></div>', unsafe_allow_html=True)
     st.markdown('<div class="section-sub">Everything you need for an AI-powered learning experience, built from the ground up.</div>', unsafe_allow_html=True)
 
     f1, f2, f3 = st.columns(3)
@@ -1244,7 +1356,7 @@ def render_home_page():
 
     # ── AGENT SQUAD ───────────────────────────────────────────────
     st.markdown('<a name="agents"></a>', unsafe_allow_html=True)
-    st.markdown('<div class="section-title">The Agent Squad</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title"><span class="gradient-text">The Agent Squad</span></div>', unsafe_allow_html=True)
     st.markdown('<div class="section-sub">Six specialized AI agents working in parallel via shared memory to deliver your personalized curriculum.</div>', unsafe_allow_html=True)
 
     a1, a2, a3 = st.columns(3)
@@ -1269,7 +1381,7 @@ def render_home_page():
 
     # ── ABOUT SECTION ─────────────────────────────────────────────
     st.markdown('<a name="about"></a>', unsafe_allow_html=True)
-    st.markdown('<div class="section-title">About EduTech AI</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title"><span class="gradient-text">About EduTech AI</span></div>', unsafe_allow_html=True)
     st.markdown('<div class="section-sub">Transforming education through multi-agent intelligence, academic rigor, and gamified cognitive science.</div>', unsafe_allow_html=True)
 
     # Metric Stats Row
@@ -1318,7 +1430,7 @@ def render_home_page():
 
     # ── PRICING ───────────────────────────────────────────────────
     st.markdown('<a name="pricing"></a>', unsafe_allow_html=True)
-    st.markdown('<div class="section-title">Choose Your Path</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title"><span class="gradient-text">Choose Your Path</span></div>', unsafe_allow_html=True)
     st.markdown('<div class="section-sub">Flexible plans designed for every type of learner.</div>', unsafe_allow_html=True)
 
     p1, p2, p3 = st.columns(3)
@@ -1389,7 +1501,7 @@ def render_home_page():
     st.markdown(
         """
         <div class="cta-banner">
-            <h2>Ready to Accelerate Your Learning?</h2>
+            <h2 style="font-size:2.4rem; font-weight:900; margin-bottom:0.6rem;"><span class="gradient-text">Ready to Accelerate Your Learning?</span></h2>
             <p>Join thousands of students and professionals mastering complex topics faster with EduTech AI.</p>
         </div>
         """, unsafe_allow_html=True)
