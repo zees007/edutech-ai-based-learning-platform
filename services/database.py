@@ -160,15 +160,6 @@ async def init_db(settings: Settings | None = None) -> None:
     # Automatically run pending migrations on server restart
     await run_auto_migrations()
 
-    # Seed default roles and privileges
-    try:
-        from services.role_service import RoleService
-        factory = _get_session_factory(settings)
-        async with factory() as session:
-            await RoleService.seed_default_subscription_roles_and_privileges(session)
-    except Exception as e:
-        logger.warning(f"Role seeding notice: {e}")
-
     _db_initialized = True
     logger.info("Database initialization complete — future calls will be skipped.")
 

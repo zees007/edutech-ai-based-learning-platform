@@ -88,8 +88,6 @@ from models.subscription_schemas import SubscriptionUpdateRequest
 async def _ensure_db():
     settings = get_settings()
     await init_db(settings)
-    async with async_session_factory() as session:
-        await RoleService.seed_default_subscription_roles_and_privileges(session)
 
 
 @st.cache_resource

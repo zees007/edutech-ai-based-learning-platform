@@ -79,6 +79,16 @@ class Settings(BaseSettings):
     groq_max_retries: int = Field(default=3, description="Max retries on Groq rate limit")
     groq_retry_delay: float = Field(default=1.0, description="Base delay between retries (seconds)")
 
+    @field_validator("database_url")
+    @classmethod
+    def normalize_database_url(cls, v: str) -> str:
+        """Ensure async driver (asyncpg) is used for PostgreSQL connections."""
+        if v.startswith("postgres://"):
+            return "postgresql+asyncpg://" + v[len("postgres://"):]
+        if v.startswith("postgresql://"):
+            return "postgresql+asyncpg://" + v[len("postgresql://"):]
+        return v
+
     @field_validator("groq_api_key")
     @classmethod
     def validate_groq_key(cls, v: str, info) -> str:

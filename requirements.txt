@@ -22,8 +22,8 @@ chromadb>=0.5.0
 # ─── Database & Async ORM ────────────────────────────────────────
 sqlalchemy[asyncio]>=2.0.0
 aiosqlite>=0.20.0
-# Optional PostgreSQL driver (uncomment if switching to PostgreSQL):
-# asyncpg>=0.30.0
+asyncpg>=0.30.0
+alembic>=1.13.0
 
 # ─── Configuration & Validation ─────────────────────────────────
 pydantic>=2.9.0

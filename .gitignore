@@ -14,6 +14,9 @@ env/
 
 # ─── Environment Variables ───
 .env
+.env.*
+.evn
+.evn.*
 
 # ─── Data (generated at runtime) ───
 data/
