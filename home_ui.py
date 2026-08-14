@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 EduTechAI — Glassy AI-Driven Landing Page (n8n.io Inspired)
 
@@ -1306,19 +1307,69 @@ HOME_CSS = """
         line-height: 1.4 !important;
     }
 
-    .auth-hidden-triggers {
-        display: none !important;
-    }
-
-    /* Clickable flowchart cards */
-    .auth-flow-node.branch-node.clickable-card {
+    /* Native Interactive Flowchart Branch Buttons (Zero Page Reload) */
+    div[data-testid="stColumn"]:has(#signin-branch-marker):not(:has(#signup-branch-marker)) button {
+        background: rgb(20, 13, 33) !important;
+        background-color: rgb(20, 13, 33) !important;
+        border: 1px solid rgba(168, 85, 247, 0.35) !important;
+        border-radius: 14px !important;
+        color: rgba(255, 255, 255, 0.75) !important;
+        padding: 10px 14px !important;
+        min-height: 64px !important;
+        white-space: pre-line !important;
+        text-align: center !important;
+        font-size: 0.74rem !important;
+        font-weight: 500 !important;
+        line-height: 1.35 !important;
         cursor: pointer !important;
         transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        box-shadow: 0 0 15px rgba(168, 85, 247, 0.15), 0 8px 20px rgba(0, 0, 0, 0.3) !important;
     }
 
-    .auth-flow-node.branch-node.clickable-card:hover {
-        transform: translateY(-3px) scale(1.02) !important;
-        box-shadow: 0 0 25px rgba(168, 85, 247, 0.35), 0 8px 25px rgba(0, 0, 0, 0.4) !important;
+    div[data-testid="stColumn"]:has(#signin-branch-marker):not(:has(#signup-branch-marker)) button::first-line {
+        font-size: 0.88rem !important;
+        font-weight: 800 !important;
+        color: #FFFFFF !important;
+        line-height: 1.5 !important;
+    }
+
+    div[data-testid="stColumn"]:has(#signin-branch-marker):not(:has(#signup-branch-marker)) button:hover {
+        border-color: rgba(34, 197, 94, 0.85) !important;
+        transform: translateY(-2px) scale(1.02) !important;
+        box-shadow: 0 0 25px rgba(34, 197, 94, 0.45), 0 8px 25px rgba(0, 0, 0, 0.4) !important;
+    }
+
+    div[data-testid="stColumn"]:has(#signup-branch-marker):not(:has(#signin-branch-marker)) button {
+        background: rgb(20, 13, 33) !important;
+        background-color: rgb(20, 13, 33) !important;
+        border: 1px solid rgba(168, 85, 247, 0.35) !important;
+        border-radius: 14px !important;
+        color: rgba(233, 213, 255, 0.8) !important;
+        padding: 10px 14px !important;
+        min-height: 64px !important;
+        white-space: pre-line !important;
+        text-align: center !important;
+        font-size: 0.74rem !important;
+        font-weight: 600 !important;
+        letter-spacing: 0.2px !important;
+        line-height: 1.35 !important;
+        cursor: pointer !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        box-shadow: 0 0 15px rgba(168, 85, 247, 0.15), 0 8px 20px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    div[data-testid="stColumn"]:has(#signup-branch-marker):not(:has(#signin-branch-marker)) button::first-line {
+        font-size: 0.88rem !important;
+        font-weight: 800 !important;
+        color: #FFFFFF !important;
+        line-height: 1.5 !important;
+        letter-spacing: 0 !important;
+    }
+
+    div[data-testid="stColumn"]:has(#signup-branch-marker):not(:has(#signin-branch-marker)) button:hover {
+        border-color: rgba(168, 85, 247, 0.85) !important;
+        transform: translateY(-2px) scale(1.02) !important;
+        box-shadow: 0 0 25px rgba(168, 85, 247, 0.45), 0 8px 25px rgba(0, 0, 0, 0.4) !important;
     }
 
     /* Active Highlight States */
@@ -1502,6 +1553,7 @@ HOME_CSS = """
     }
 
     /* Auth Left Column — AI Workflow Flow Canvas (Luminous Glow) */
+    div[data-testid="stColumn"]:has(#auth-canvas-marker),
     .auth-flow-canvas {
         background: radial-gradient(circle at 20% 30%, rgba(168, 85, 247, 0.18) 0%, transparent 40%),
                     radial-gradient(circle at 80% 70%, rgba(59, 130, 246, 0.18) 0%, transparent 40%),
@@ -1519,6 +1571,62 @@ HOME_CSS = """
         animation: n8nPulseGlow 4s infinite ease-in-out !important;
     }
 
+    /* Auth Right Column — Glassmorphic Auth Form Card (Luminous Glow) */
+    div[data-testid="stColumn"]:has(#auth-form-card-marker),
+    .auth-form-card {
+        background: rgba(15, 23, 42, 0.88) !important;
+        backdrop-filter: blur(25px) !important;
+        -webkit-backdrop-filter: blur(25px) !important;
+        border: 1px solid rgba(168, 85, 247, 0.45) !important;
+        border-radius: 24px !important;
+        padding: 1.8rem 2.2rem 2rem 2.2rem !important;
+        box-shadow: 0 20px 60px -15px rgba(168, 85, 247, 0.35), inset 0 0 30px rgba(168, 85, 247, 0.15) !important;
+        position: relative !important;
+        box-sizing: border-box !important;
+        height: 100% !important;
+    }
+
+    /* Top-Left Glassmorphic Circular Back Arrow Button on Form Card */
+    div[data-testid="stColumn"]:has(#auth-form-card-marker) button[key="close_auth_form"],
+    button[key="close_auth_form"],
+    button[key="close_auth_form"].st-emotion-cache-165rbpf {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 34px !important;
+        height: 34px !important;
+        min-width: 34px !important;
+        min-height: 34px !important;
+        max-width: 34px !important;
+        max-height: 34px !important;
+        border-radius: 50% !important;
+        padding: 0 !important;
+        margin: 0 0 0.8rem 0 !important;
+        background: rgba(255, 255, 255, 0.08) !important;
+        background-color: rgba(255, 255, 255, 0.08) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        color: rgba(255, 255, 255, 0.85) !important;
+        font-size: 1.1rem !important;
+        font-weight: 700 !important;
+        line-height: 1 !important;
+        cursor: pointer !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+        outline: none !important;
+    }
+
+    div[data-testid="stColumn"]:has(#auth-form-card-marker) button[key="close_auth_form"]:hover,
+    button[key="close_auth_form"]:hover,
+    button[key="close_auth_form"].st-emotion-cache-165rbpf:hover {
+        color: #FFFFFF !important;
+        background: rgba(168, 85, 247, 0.25) !important;
+        background-color: rgba(168, 85, 247, 0.25) !important;
+        border-color: rgba(168, 85, 247, 0.6) !important;
+        box-shadow: 0 0 15px rgba(168, 85, 247, 0.4) !important;
+        transform: scale(1.1) translateX(-2px) !important;
+    }
+
+    div[data-testid="stColumn"]:has(#auth-canvas-marker)::before,
     .auth-flow-canvas::before {
         content: '' !important;
         position: absolute !important;
@@ -1534,16 +1642,22 @@ HOME_CSS = """
     }
 
     .auth-flow-node {
-        background: rgba(30, 41, 59, 0.85) !important;
+        background: rgb(20, 13, 33) !important;
+        background-color: rgb(20, 13, 33) !important;
         border: 1px solid rgba(168, 85, 247, 0.35) !important;
         border-radius: 14px !important;
-        padding: 11px 15px !important;
+        padding: 10px 14px !important;
+        min-height: 64px !important;
         display: flex !important;
+        flex-direction: column !important;
         align-items: center !important;
-        gap: 12px !important;
+        justify-content: center !important;
+        text-align: center !important;
         box-shadow: 0 0 15px rgba(168, 85, 247, 0.15), 0 8px 20px rgba(0, 0, 0, 0.3) !important;
         position: relative !important;
         transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
     }
 
     .auth-flow-node:hover {
@@ -1552,30 +1666,19 @@ HOME_CSS = """
         transform: translateY(-2px) !important;
     }
 
-    .auth-flow-node .node-icon {
-        width: 36px !important;
-        height: 36px !important;
-        border-radius: 10px !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        font-size: 1.05rem !important;
-        background: rgba(168, 85, 247, 0.18) !important;
-        color: #E9D5FF !important;
-        flex-shrink: 0 !important;
-        box-shadow: 0 0 12px rgba(168, 85, 247, 0.25) !important;
-    }
-
     .auth-flow-node .node-title {
-        color: #FAFAFA !important;
+        color: #FFFFFF !important;
         font-weight: 800 !important;
-        font-size: 0.9rem !important;
+        font-size: 0.88rem !important;
+        line-height: 1.35 !important;
         margin-bottom: 2px !important;
     }
 
     .auth-flow-node .node-sub {
-        color: rgba(255, 255, 255, 0.55) !important;
-        font-size: 0.78rem !important;
+        color: rgba(255, 255, 255, 0.75) !important;
+        font-size: 0.74rem !important;
+        font-weight: 500 !important;
+        line-height: 1.35 !important;
     }
 
     /* Wire Connectors & Glowing Vector Arrow Pointer System */
@@ -1616,9 +1719,9 @@ HOME_CSS = """
     }
 
     .auth-flow-node.compact-node {
-        width: auto !important;
-        max-width: 250px !important;
-        padding: 8px 16px !important;
+        width: 100% !important;
+        max-width: 270px !important;
+        padding: 10px 14px !important;
         justify-content: center !important;
     }
 
@@ -2369,25 +2472,51 @@ def _render_auth_view():
     # Sync view to auth query param for refreshes
     st.query_params["view"] = "auth"
 
-    # Initialize the auth form mode if not present in session state
-    if "auth_form_mode" not in st.session_state:
-        mode = st.session_state.get("auth_tab")
-        if mode == "login":
-            st.session_state["auth_form_mode"] = "signin"
-        elif mode == "signup":
-            st.session_state["auth_form_mode"] = "signup"
-        else:
-            st.session_state["auth_form_mode"] = None
+    # Sync query parameter auth_mode with session state
+    qp_auth_mode = st.query_params.get("auth_mode")
+    if qp_auth_mode in ["signin", "signup"]:
+        st.session_state["auth_form_mode"] = qp_auth_mode
 
-    # Render hidden Streamlit buttons to receive flowchart clicks (seamless rerun, zero page reload)
-    st.markdown('<div class="auth-hidden-triggers">', unsafe_allow_html=True)
-    if st.button("HIDDEN_TRIGGER_SIGNIN", key="hid_signin"):
-        st.session_state["auth_form_mode"] = "signin"
-        st.rerun()
-    if st.button("HIDDEN_TRIGGER_SIGNUP", key="hid_signup"):
-        st.session_state["auth_form_mode"] = "signup"
-        st.rerun()
-    st.markdown('</div>', unsafe_allow_html=True)
+    # Initialize the auth form mode if not present in session state
+    if "auth_form_mode" not in st.session_state or st.session_state.get("auth_form_mode") is None:
+        if qp_auth_mode in ["signin", "signup"]:
+            st.session_state["auth_form_mode"] = qp_auth_mode
+        else:
+            init_tab = st.session_state.pop("auth_tab", None)
+            if init_tab == "login":
+                st.session_state["auth_form_mode"] = "signin"
+            elif init_tab == "signup":
+                st.session_state["auth_form_mode"] = "signup"
+            else:
+                st.session_state["auth_form_mode"] = None
+
+    mode = st.session_state.get("auth_form_mode")
+
+    # Dynamic active state CSS overrides (Glassmorphic background fill for selected state)
+    if mode == "signin":
+        st.markdown("""<style>
+        html body div.stApp div[data-testid="stColumn"]:has(#signin-branch-marker):not(:has(#signup-branch-marker)) button,
+        div[data-testid="stColumn"]:has(#signin-branch-marker):not(:has(#signup-branch-marker)) button {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.38) 0%, rgba(16, 185, 129, 0.25) 100%) !important;
+            background-color: rgba(34, 197, 94, 0.32) !important;
+            border: 2px solid rgba(34, 197, 94, 0.95) !important;
+            box-shadow: 0 0 35px rgba(34, 197, 94, 0.65), 0 8px 25px rgba(0, 0, 0, 0.5) !important;
+            backdrop-filter: blur(16px) !important;
+            -webkit-backdrop-filter: blur(16px) !important;
+        }
+        </style>""", unsafe_allow_html=True)
+    elif mode == "signup":
+        st.markdown("""<style>
+        html body div.stApp div[data-testid="stColumn"]:has(#signup-branch-marker):not(:has(#signin-branch-marker)) button,
+        div[data-testid="stColumn"]:has(#signup-branch-marker):not(:has(#signin-branch-marker)) button {
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.38) 0%, rgba(147, 51, 234, 0.25) 100%) !important;
+            background-color: rgba(168, 85, 247, 0.32) !important;
+            border: 2px solid rgba(168, 85, 247, 0.95) !important;
+            box-shadow: 0 0 35px rgba(168, 85, 247, 0.65), 0 8px 25px rgba(0, 0, 0, 0.5) !important;
+            backdrop-filter: blur(16px) !important;
+            -webkit-backdrop-filter: blur(16px) !important;
+        }
+        </style>""", unsafe_allow_html=True)
 
     # Background glow with constellation node overlay
     st.markdown('<div class="glow-bg-constellation"></div>', unsafe_allow_html=True)
@@ -2418,60 +2547,51 @@ def _render_auth_view():
         """, unsafe_allow_html=True)
 
     # ── Dynamic Grid Showcase Layout ─────────────────────────────
-    mode = st.session_state.get("auth_form_mode")
-
     if mode is None:
         col_left, col_showcase, col_right = st.columns([0.5, 2.0, 0.5])
     else:
         col_showcase, col_auth = st.columns([1.1, 1.0], gap="large")
 
     with col_showcase:
-        active_signin_class = " active-signin" if mode == "signin" else ""
-        active_signup_class = " active-signup" if mode == "signup" else ""
         st.markdown(
-            f"""<div class="auth-flow-canvas">
+            """<div id="auth-canvas-marker"></div>
 <div class="n8n-header" style="margin-bottom:1rem; text-align:center;">
 <span>⚡ EduTech AI — Providing Access Flowchart</span>
 </div>
 
-<!-- Step 1: User Arrival (Compact & Centered) -->
+<!-- Step 1: User Arrival -->
 <div class="flow-step-center">
 <div class="auth-flow-node compact-node">
-<div class="node-icon" style="background:rgba(59,130,246,0.18);">👤</div>
-<div>
-<div class="node-title">User Arrival</div>
+<div class="node-title">👤 User Arrival</div>
 <div class="node-sub">Access Request</div>
 </div>
 </div>
-</div>
 
-<!-- Arrow 1 (Same size as User Arrival, in center just below it) -->
+<!-- Arrow 1 -->
 <div class="flow-connector-wrapper">
 <div class="flow-connector-line"></div>
 <div class="flow-connector-arrow">▼</div>
 </div>
 
-<!-- Step 2: AI Credential Evaluator (Compact & Centered, same size as User Arrival) -->
+<!-- Step 2: AI Credential Evaluator -->
 <div class="flow-step-center">
-<div class="auth-flow-node compact-node" style="border-color:rgba(236,72,153,0.45); background:rgba(30,41,59,0.95);">
-<div class="node-icon" style="background:rgba(236,72,153,0.2);">🛡️</div>
-<div>
-<div class="node-title" style="color:#F472B6;">AI Credential Evaluator</div>
+<div class="auth-flow-node compact-node">
+<div class="node-title">🛡️ AI Credential Evaluator</div>
 <div class="node-sub">Evaluate Status</div>
 </div>
 </div>
-</div>
 
-<!-- Arrow 2 (Centered just below AI Credential Evaluator) -->
+<!-- Arrow 2 -->
 <div class="flow-connector-wrapper">
 <div class="flow-connector-line"></div>
 <div class="flow-connector-arrow">▼</div>
 </div>
 
-<!-- Step 3: Has Account? Decision Node (Centered) -->
+<!-- Step 3: Has Account? Decision Node -->
 <div class="flow-step-center">
-<div class="flow-decision-diamond">
-<span>❓ Has Account?</span>
+<div class="auth-flow-node compact-node">
+<div class="node-title">❓ Has Account?</div>
+<div class="node-sub">Verify Credentials</div>
 </div>
 </div>
 
@@ -2487,27 +2607,23 @@ def _render_auth_view():
 <div class="flow-connector-line"></div>
 <div class="flow-connector-arrow color-pink">▼</div>
 </div>
-</div>
+</div>""", unsafe_allow_html=True)
 
-<!-- Step 4: Sign In and Create Account blocks -->
-<div class="flow-branch-cards">
-<div class="auth-flow-node branch-node clickable-card{active_signin_class}" style="border-color:rgba(34,197,94,0.4);" onclick="const doc = window.parent.document || document; const btn = Array.from(doc.querySelectorAll('button')).find(el => el.textContent.includes('HIDDEN_TRIGGER_SIGNIN')); if (btn) btn.click();">
-<div class="node-icon" style="background:rgba(34,197,94,0.18);">🔐</div>
-<div>
-<div class="node-title" style="font-size:0.82rem;">Sign In</div>
-<div class="node-sub" style="font-size:0.72rem;">Email & Password</div>
-</div>
-</div>
-<div class="auth-flow-node branch-node clickable-card{active_signup_class}" style="border-color:rgba(168,85,247,0.4);" onclick="const doc = window.parent.document || document; const btn = Array.from(doc.querySelectorAll('button')).find(el => el.textContent.includes('HIDDEN_TRIGGER_SIGNUP')); if (btn) btn.click();">
-<div class="node-icon" style="background:rgba(168,85,247,0.18);">💎</div>
-<div>
-<div class="node-title" style="font-size:0.82rem;">Create Account</div>
-<div class="node-sub" style="font-size:0.72rem;">Free / Pro / Ultra</div>
-</div>
-</div>
-</div>
+        # Step 4: Native Streamlit Flowchart Action Buttons (Zero Page Reload)
+        flow_col1, flow_col2 = st.columns(2)
+        with flow_col1:
+            st.markdown('<div id="signin-branch-marker"></div>', unsafe_allow_html=True)
+            if st.button("🔐 Sign In\nEmail & Password", key="flowchart_signin_btn", use_container_width=True):
+                st.session_state["auth_form_mode"] = "signin"
+                st.rerun()
+        with flow_col2:
+            st.markdown('<div id="signup-branch-marker"></div>', unsafe_allow_html=True)
+            if st.button("✨ Create Account\nGet Started Free", key="flowchart_signup_btn", use_container_width=True):
+                st.session_state["auth_form_mode"] = "signup"
+                st.rerun()
 
-<!-- Merge Arrow connecting to Dispatch AI Agent Squad block -->
+        st.markdown(
+            """<!-- Merge Arrow connecting to Dispatch AI Agent Squad block -->
 <div class="flow-merge-svg-container">
 <svg width="100%" height="20" viewBox="0 0 100 20" preserveAspectRatio="none" style="display:block;">
   <path d="M 25 0 L 25 10" stroke="#34D399" stroke-width="2" fill="none" vector-effect="non-scaling-stroke" />
@@ -2522,24 +2638,9 @@ def _render_auth_view():
 
 <!-- Step 5: Dispatch AI Agent Squad block -->
 <div class="flow-step-center">
-<div class="auth-flow-node compact-node" style="background:rgba(15,23,42,0.95); border-color:rgba(6,182,212,0.45); max-width:270px;">
-<div class="node-icon" style="background:rgba(6,182,212,0.18);">
-  <div class="neural-anim-container">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" style="opacity:0.6;">
-      <line x1="5" y1="5" x2="19" y2="5" stroke="#38BDF8" stroke-width="1.5"/>
-      <line x1="5" y1="5" x2="12" y2="19" stroke="#38BDF8" stroke-width="1.5"/>
-      <line x1="19" y1="5" x2="12" y2="19" stroke="#38BDF8" stroke-width="1.5"/>
-    </svg>
-    <span class="neural-dot n1"></span>
-    <span class="neural-dot n2"></span>
-    <span class="neural-dot n3"></span>
-  </div>
-</div>
-<div>
-<div class="node-title" style="color:#38BDF8;">Dispatch AI Agent Squad</div>
+<div class="auth-flow-node compact-node">
+<div class="node-title">⚡ Dispatch AI Agent Squad</div>
 <div class="node-sub">Instant Workspace Access</div>
-</div>
-</div>
 </div>
 </div>""",
             unsafe_allow_html=True,
@@ -2547,21 +2648,19 @@ def _render_auth_view():
 
     if mode is not None:
         with col_auth:
-            st.markdown('<div class="auth-form-card">', unsafe_allow_html=True)
+            st.markdown('<div id="auth-form-card-marker"></div>', unsafe_allow_html=True)
 
-            # Form header inside card container
-            st.markdown('<div class="auth-card-header">', unsafe_allow_html=True)
+            if st.button("←", key="close_auth_form"):
+                st.session_state["auth_form_mode"] = None
+                st.session_state.pop("auth_tab", None)
+                if "auth_mode" in st.query_params:
+                    del st.query_params["auth_mode"]
+                st.rerun()
+
             if mode == "signin":
                 st.markdown("### 🔐 Sign In")
             else:
                 st.markdown("### ✨ Create Account")
-
-            st.markdown('<div class="auth-close-btn-wrapper">', unsafe_allow_html=True)
-            if st.button("✕ Close", key="close_auth_form"):
-                st.session_state["auth_form_mode"] = None
-                st.rerun()
-            st.markdown('</div>', unsafe_allow_html=True)
-            st.markdown('</div>', unsafe_allow_html=True)
 
             if mode == "signin":
                 with st.form("signin_form"):
@@ -2591,20 +2690,29 @@ def _render_auth_view():
                             except Exception as e:
                                 st.error(f"Sign in failed: {e}")
             else:
-                sel_tier = st.session_state.get("selected_tier", "normal")
                 with st.form("signup_form"):
-                    fn = st.text_input("First Name", placeholder="Jane")
-                    ln = st.text_input("Last Name", placeholder="Doe")
-                    se = st.text_input("Email Address", placeholder="jane.doe@example.com")
-                    sp = st.text_input("Password", type="password")
-                    tc = st.selectbox("Tier", ["normal", "pro", "ultra"],
-                                      index=["normal", "pro", "ultra"].index(sel_tier) if sel_tier in ["normal", "pro", "ultra"] else 0,
-                                      format_func=lambda x: f"{'FREE' if x == 'normal' else x.upper()} Tier")
+                    col_fn, col_ln = st.columns(2)
+                    with col_fn:
+                        fn = st.text_input("First Name *", placeholder="Jane")
+                    with col_ln:
+                        ln = st.text_input("Last Name *", placeholder="Doe")
+
+                    se = st.text_input("Email Address *", placeholder="jane.doe@example.com")
+                    sp = st.text_input("Password * (min 6 characters)", type="password")
+
+                    col_mob, col_ctry = st.columns(2)
+                    with col_mob:
+                        mob = st.text_input("Mobile Number", placeholder="+1 555-0199")
+                    with col_ctry:
+                        ctry = st.text_input("Country", placeholder="United States")
+
                     sub2 = st.form_submit_button("Create Account & Start Learning", type="primary", use_container_width=True)
 
                 if sub2:
-                    if not fn or not se or not sp:
-                        st.error("Please fill in all required fields.")
+                    if not fn.strip() or not ln.strip() or not se.strip() or not sp:
+                        st.error("Please fill in all required fields (First Name, Last Name, Email, and Password).")
+                    elif len(sp) < 6:
+                        st.error("Password must be at least 6 characters long.")
                     else:
                         with st.spinner("Creating account..."):
                             try:
@@ -2615,31 +2723,35 @@ def _render_auth_view():
 
                                 async def _signup():
                                     async with get_db_session() as db:
-                                        req = UserCreateRequest(first_name=fn.strip(), last_name=ln.strip() if ln else "User",
-                                                                email=se.strip(), password=sp, subscription_tier=tc)
+                                        req = UserCreateRequest(
+                                            first_name=fn.strip(),
+                                            last_name=ln.strip(),
+                                            email=se.strip(),
+                                            password=sp,
+                                            mobile=mob.strip() if mob and mob.strip() else None,
+                                            country=ctry.strip() if ctry and ctry.strip() else None,
+                                        )
                                         cu = await UserService.create_user(db, req)
                                         return AuthService.get_user_current_profile(cu)
 
                                 p = run_async(_signup())
                                 st.session_state["user_profile"] = p
                                 st.session_state["view"] = "learning"
-                                st.toast(f"Welcome, {p.first_name}!", icon="🎉")
+                                st.toast(f"Welcome, {p.first_name}! Account created successfully.", icon="🎉")
                                 st.rerun()
                             except Exception as e:
                                 st.error(f"Registration failed: {e}")
-
-            st.markdown('</div>', unsafe_allow_html=True)
 
     # ── Trust Badges Footer ───────────────────────────────────
     st.markdown(
         """
         <div style="text-align:center; margin-top:2.5rem; padding-bottom:1rem;">
             <div style="display:inline-flex; align-items:center; gap:24px; color:rgba(255,255,255,0.3); font-size:0.8rem; font-weight:600;">
-                <span>🔒 256-bit SSL Security</span>
-                <span>·</span>
-                <span>🛡️ SOC 2 Compliant Infrastructure</span>
-                <span>·</span>
-                <span>⚡ Instant Account Activation</span>
+                <span>&#x1F512; 256-bit SSL Security</span>
+                <span>&bull;</span>
+                <span>&#x1F6E1; SOC 2 Compliant Infrastructure</span>
+                <span>&bull;</span>
+                <span>&#x26A1; Instant Account Activation</span>
             </div>
         </div>
         """,
