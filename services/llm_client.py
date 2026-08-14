@@ -40,13 +40,20 @@ class LLMClient:
 
     def __init__(self, settings: Settings | None = None):
         self.settings = settings or get_settings()
+
+        # For Groq provider, omit base_url (or ignore https://api.groq.com/...) so the Groq SDK uses its native endpoint
+        base_url = self.settings.llm_base_url
+        if self.settings.llm_provider == LLMProvider.GROQ:
+            if not base_url or "api.groq.com" in base_url:
+                base_url = None
+
         self._client = AsyncGroq(
             api_key=self.settings.groq_api_key or "ollama",  # Ollama doesn't need a real key
-            base_url=self.settings.llm_base_url,
+            base_url=base_url,
         )
         logger.info(
             f"LLM client initialized: provider={self.settings.llm_provider.value}, "
-            f"base_url={self.settings.llm_base_url}"
+            f"base_url={base_url or 'default'}"
         )
 
     async def chat(
