@@ -351,64 +351,290 @@ CUSTOM_CSS = """
         line-height: 1.7;
     }
 
-    /* ── Top-Right Header User Profile & Action Buttons ── */
-    .top-user-pill {
-        display: inline-flex;
-        align-items: center;
-        justify-content: flex-end;
-        gap: 8px;
-        background: linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(124, 58, 237, 0.2) 100%);
-        border: 1px solid rgba(168, 85, 247, 0.4);
-        border-radius: 30px;
-        padding: 6px 14px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        white-space: nowrap;
-        margin-left: auto;
+    /* ── Navbar — Floating Glassmorphism Theme (Learning Workspace) ───────── */
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) {
+        background: rgba(15, 23, 42, 0.85) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        border: 1px solid rgba(168, 85, 247, 0.35) !important;
+        border-radius: 50px !important;
+        padding: 8px 24px !important;
+        margin: 0rem 0 1.5rem 0 !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(168, 85, 247, 0.1) !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        min-height: 52px !important;
     }
 
-    .top-user-pill .user-name {
-        color: #FAFAFA;
-        font-weight: 800;
-        font-size: 0.88rem;
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) * {
+        align-self: center !important;
     }
 
-    div[data-testid="stColumn"]:has(div.top-right-bar) {
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) div[data-testid="column"],
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) div[data-testid="stColumn"] {
         display: flex !important;
         align-items: center !important;
-        justify-content: flex-end !important;
+        justify-content: center !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        height: auto !important;
+        min-height: 0 !important;
     }
 
-    div[data-testid="stColumn"]:has(div.top-right-bar) div[data-testid="stHorizontalBlock"] {
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) div[data-testid="column"]:first-child,
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) div[data-testid="stColumn"]:first-child {
+        justify-content: flex-start !important;
+        padding-left: 0 !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) div[data-testid="column"]:first-child *,
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) div[data-testid="stColumn"]:first-child * {
+        justify-content: flex-start !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) div[data-testid="column"]:last-child,
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) div[data-testid="stColumn"]:last-child {
+        justify-content: flex-end !important;
+        padding-right: 0 !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) div[data-testid="stVerticalBlock"],
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) div[data-testid="stVerticalBlockBorderWrapper"] {
+        gap: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        justify-content: center !important;
+        align-items: center !important;
+        align-self: center !important;
+        display: flex !important;
+        flex-direction: row !important;
+        min-height: 0 !important;
+        height: auto !important;
+    }
+
+    /* Nested horizontal blocks inside the last column (icon button row) */
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) div[data-testid="column"]:last-child div[data-testid="stHorizontalBlock"],
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) div[data-testid="stColumn"]:last-child div[data-testid="stHorizontalBlock"] {
         align-items: center !important;
         justify-content: flex-end !important;
-        gap: 6px !important;
-        width: 100% !important;
+        gap: 10px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        border-radius: 0 !important;
+        min-height: 0 !important;
+        flex-wrap: nowrap !important;
     }
 
-    div[data-testid="stColumn"]:has(div.top-right-bar) button {
+    /* Force nested sub-columns (button wrappers) to shrink to content */
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) div[data-testid="column"]:last-child div[data-testid="stHorizontalBlock"] > div[data-testid="column"],
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) div[data-testid="column"]:last-child div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"],
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) div[data-testid="stColumn"]:last-child div[data-testid="stHorizontalBlock"] > div[data-testid="column"],
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) div[data-testid="stColumn"]:last-child div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"] {
+        flex: 0 0 auto !important;
+        width: auto !important;
+        min-width: 0 !important;
+        max-width: none !important;
         padding: 0 !important;
-        height: 38px !important;
-        width: 38px !important;
-        min-height: 38px !important;
-        border-radius: 12px !important;
+        margin: 0 !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) div.element-container,
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) div[data-testid="stElementContainer"] {
+        margin: 0 !important;
+        padding: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        align-self: center !important;
+        justify-content: center !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) div.stMarkdown,
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) div[data-testid="stMarkdownContainer"] {
+        display: flex !important;
+        align-items: center !important;
+        align-self: center !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) div.stMarkdown p,
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) div[data-testid="stMarkdownContainer"] p {
+        margin: 0 !important;
+        padding: 0 !important;
+        line-height: 1 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+    }
+
+    /* Modern Circular Icon Buttons (Home, Admin) & Popover Button (Profile) */
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) {
+        align-items: center !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) > div[data-testid="column"]:last-child,
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) > div[data-testid="stColumn"]:last-child {
+        display: flex !important;
+        justify-content: flex-end !important;
+        align-items: center !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) div[data-testid="stButton"],
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) div[data-testid="stPopover"] {
+        margin: 0 !important;
+        padding: 0 !important;
         display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
-        font-size: 1.05rem !important;
-        background: rgba(30, 41, 59, 0.8) !important;
+        align-self: center !important;
+        width: 38px !important;
+        min-width: 38px !important;
+        max-width: 38px !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) button {
+        height: 38px !important;
+        width: 38px !important;
+        min-height: 38px !important;
+        max-height: 38px !important;
+        min-width: 38px !important;
+        max-width: 38px !important;
+        padding: 0 !important;
+        border-radius: 50% !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
+        box-sizing: border-box !important;
+        background: rgba(30, 41, 59, 0.75) !important;
         border: 1px solid rgba(168, 85, 247, 0.4) !important;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
         backdrop-filter: blur(12px) !important;
+        -webkit-backdrop-filter: blur(12px) !important;
         transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        margin: 0 !important;
+        cursor: pointer !important;
+        color: #E9D5FF !important;
+        overflow: hidden !important;
+        gap: 0 !important;
     }
 
-    div[data-testid="stColumn"]:has(div.top-right-bar) button:hover {
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) [data-testid="stIconMaterial"],
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) button svg {
+        font-size: 20px !important;
+        width: 20px !important;
+        height: 20px !important;
+        color: #E9D5FF !important;
+        fill: currentColor !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        margin: auto !important;
+        transition: all 0.2s ease !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) button div[data-testid="stMarkdownContainer"],
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) button div[data-testid="stMarkdownContainer"] p,
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) button p,
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) button span {
+        padding: 0 !important;
+        margin: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
+        line-height: 1 !important;
+        width: 100% !important;
+        height: 100% !important;
+        transform: none !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) button:hover {
         background: rgba(168, 85, 247, 0.3) !important;
-        border-color: rgba(168, 85, 247, 0.8) !important;
-        box-shadow: 0 0 18px rgba(168, 85, 247, 0.45) !important;
+        border-color: rgba(168, 85, 247, 0.85) !important;
+        box-shadow: 0 0 16px rgba(168, 85, 247, 0.5) !important;
         transform: translateY(-2px) !important;
+        color: #FFFFFF !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) button:hover [data-testid="stIconMaterial"],
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) button:hover svg {
+        color: #FFFFFF !important;
+        filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.9)) !important;
+    }
+
+    /* Hide Chevron Arrow (2nd icon/SVG) inside stPopover button */
+    div[data-testid="stPopover"] button svg:nth-of-type(2),
+    div[data-testid="stPopover"] button svg:last-of-type,
+    div[data-testid="stPopover"] button span:nth-of-type(2),
+    div[data-testid="stPopover"] button span:last-of-type,
+    div[data-testid="stPopover"] button [data-testid="stIconChevron"],
+    div[data-testid="stPopover"] button svg[data-testid="stIconChevron"],
+    div[data-testid="stPopover"] button span[data-testid="stIconChevron"],
+    div[data-testid="stPopover"] button i {
+        display: none !important;
+        visibility: hidden !important;
+        width: 0 !important;
+        height: 0 !important;
+        max-width: 0 !important;
+        max-height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+        position: absolute !important;
+    }
+
+    /* Popover Content Styling */
+    div[data-testid="stPopoverBody"] {
+        background: rgba(15, 23, 42, 0.95) !important;
+        backdrop-filter: blur(24px) !important;
+        -webkit-backdrop-filter: blur(24px) !important;
+        border: 1px solid rgba(168, 85, 247, 0.5) !important;
+        border-radius: 16px !important;
+        padding: 16px !important;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 25px rgba(168, 85, 247, 0.25) !important;
+        color: #FAFAFA !important;
+        min-width: 260px !important;
+    }
+
+    div[data-testid="stPopoverBody"] hr {
+        border-color: rgba(168, 85, 247, 0.25) !important;
+        margin: 10px 0 !important;
+    }
+
+    div[data-testid="stPopoverBody"] button {
+        width: 100% !important;
+        max-width: none !important;
+        height: auto !important;
+        max-height: none !important;
+        min-height: 38px !important;
+        padding: 8px 16px !important;
+        border-radius: 10px !important;
+        font-size: 0.88rem !important;
+        font-weight: 700 !important;
+        background: rgba(239, 68, 68, 0.15) !important;
+        border: 1px solid rgba(239, 68, 68, 0.4) !important;
+        color: #FCA5A5 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 6px !important;
+        transition: all 0.2s ease !important;
+    }
+
+    div[data-testid="stPopoverBody"] button:hover {
+        background: rgba(239, 68, 68, 0.3) !important;
+        border-color: rgba(239, 68, 68, 0.8) !important;
+        box-shadow: 0 0 16px rgba(239, 68, 68, 0.4) !important;
+        color: #FFFFFF !important;
+        transform: translateY(-1px) !important;
     }
 
     /* ── Glassmorphism Cards & Containers ────────────── */
@@ -946,7 +1172,6 @@ CUSTOM_CSS = """
     }
 </style>
 """
-st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
 
 
 def format_display_text(val: Any) -> str:
@@ -1287,6 +1512,8 @@ def get_or_create_memory() -> SharedMemory | None:
 
 def render_learning_workspace():
     """Renders the student learning workspace with the glassy AI theme."""
+    st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
+
     # Background ambient glow orbs
     st.markdown('<div class="glow-bg"></div>', unsafe_allow_html=True)
 
@@ -1442,59 +1669,48 @@ def render_learning_workspace():
 
     memory = get_or_create_memory()
 
-    # ─── TOP BAR: Logo on Left & User Profile, Home, Admin on Right ───
+    # ─── TOP NAVBAR: Floating Pill Navbar matching Homepage ──────────
     u_tier = (user_profile.subscription.tier if user_profile.subscription else "normal").upper()
-    top_head_l, top_head_r = st.columns([3.4, 2.6], vertical_alignment="center")
+    top_nav_l, top_nav_r = st.columns([8.2, 1.8], vertical_alignment="center")
 
-    with top_head_l:
-        if memory and memory.steps:
-            st.markdown(
-                f"""
-                <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-                    <div class="et-logo">⚡ <span class="accent">EduTech</span> <span class="badge-ai">AI</span></div>
-                    <span style="color: rgba(168, 85, 247, 0.4); font-size: 1.2rem;">|</span>
-                    <span class="et-nav-topic">🎯 <span>{memory.topic}</span></span>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-        else:
-            st.markdown(
-                """
-                <div class="et-logo">⚡ <span class="accent">EduTech</span> <span class="badge-ai">AI</span></div>
-                """,
-                unsafe_allow_html=True,
-            )
+    with top_nav_l:
+        st.markdown(
+            '<div class="et-learning-nav"><div class="et-logo">⚡ <span class="accent">EduTech</span> <span class="badge-ai">AI</span></div></div>',
+            unsafe_allow_html=True,
+        )
 
-    with top_head_r:
-        st.markdown('<div class="top-right-bar">', unsafe_allow_html=True)
-        r_prof, r_h, r_a, r_e = st.columns([2.0, 0.45, 0.45, 0.45], vertical_alignment="center")
-        with r_prof:
-            st.markdown(
-                f"""
-                <div class="top-user-pill">
-                    <span class="user-name">👋 {user_profile.first_name} {user_profile.last_name}</span>
-                    <span class="tier-pill">{u_tier}</span>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
+    with top_nav_r:
+        r_h, r_a, r_p = st.columns(3, gap="small", vertical_alignment="center")
         with r_h:
-            if st.button("🏠", key="tr_home_btn", help="Home Landing Page", use_container_width=True):
+            if st.button("", icon=":material/home:", key="nav_home_btn", help="Home Landing Page", use_container_width=True):
                 st.session_state["view"] = "home"
                 st.rerun()
         with r_a:
-            if st.button("⚙️", key="tr_admin_btn", help="Admin Console & Settings", use_container_width=True):
+            if st.button("", icon=":material/settings:", key="nav_admin_btn", help="Admin Console & Settings", use_container_width=True):
                 st.session_state["view"] = "admin"
                 st.rerun()
-        with r_e:
-            if st.button("🚪", key="tr_logout_btn", help="Sign Out", use_container_width=True):
-                st.session_state["user_profile"] = None
-                st.session_state["view"] = "home"
-                st.query_params.clear()
-                st.toast("Logged out successfully.", icon="ℹ️")
-                st.rerun()
-        st.markdown('</div>', unsafe_allow_html=True)
+        with r_p:
+            with st.popover("", icon=":material/person:", help=f"Profile: {user_profile.first_name} {user_profile.last_name}", use_container_width=True):
+                st.markdown(
+                    f"""
+                    <div style="text-align: center; padding: 4px 0 8px 0;">
+                        <div style="font-size: 2.2rem; margin-bottom: 4px;">👤</div>
+                        <div style="font-weight: 800; font-size: 1.05rem; color: #FAFAFA;">{user_profile.first_name} {user_profile.last_name}</div>
+                        <div style="font-size: 0.8rem; color: rgba(233, 213, 255, 0.7); margin-bottom: 8px;">{user_profile.email if hasattr(user_profile, 'email') and user_profile.email else 'Student'}</div>
+                        <div style="display: inline-block; background: rgba(168, 85, 247, 0.25); border: 1px solid rgba(168, 85, 247, 0.5); border-radius: 20px; padding: 2px 12px; font-size: 0.75rem; font-weight: 800; color: #C084FC; text-transform: uppercase;">
+                            ✨ {u_tier} Tier
+                        </div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+                st.markdown("<hr style='border-color:rgba(168,85,247,0.25); margin:8px 0;'>", unsafe_allow_html=True)
+                if st.button("⏻ Sign Out", key="nav_logout_btn", use_container_width=True):
+                    st.session_state["user_profile"] = None
+                    st.session_state["view"] = "home"
+                    st.query_params.clear()
+                    st.toast("Logged out successfully.", icon="ℹ️")
+                    st.rerun()
 
     st.markdown("<div style='height: 0.8rem;'></div>", unsafe_allow_html=True)
 
