@@ -75,6 +75,27 @@ HOME_CSS = """
         padding-top: 1.5rem !important;
     }
 
+    /* ── Completely Eliminate Default Streamlit Header & Deploy Bar ── */
+    header[data-testid="stHeader"] {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0px !important;
+        min-height: 0px !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }
+
+    #MainMenu, .stDeployButton, [data-testid="stToolbarActions"], [data-testid="stDecoration"], [data-testid="stStatusWidget"], footer {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0px !important;
+        width: 0px !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }
+
     section[data-testid="stSidebar"] {
         display: none !important;
     }

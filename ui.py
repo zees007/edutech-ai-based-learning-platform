@@ -41,138 +41,509 @@ from models.schemas import LearningMode, StepStatus
 from models.shared_memory import SharedMemory
 from services.gamification import calculate_level, calculate_quiz_xp, calculate_step_xp
 
-# ─── Custom CSS Styling ──────────────────────────────────────────
+# ─── Custom CSS Styling — Glassy AI Theme (Matching Landing Page) ──────────
 CUSTOM_CSS = """
 <style>
-    /* Dark Theme Customization */    
-    /* Header styling */
+    /* ── Animations ─────────────────────────────────── */
+    @keyframes pulseGlow {
+        0%, 100% { opacity: 0.6; }
+        50% { opacity: 1; }
+    }
+
+    @keyframes floatUp {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-6px); }
+    }
+
+    @keyframes gradientShift {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
+    @keyframes borderGlow {
+        0%, 100% { border-color: rgba(139, 92, 246, 0.3); }
+        50% { border-color: rgba(139, 92, 246, 0.6); }
+    }
+
+    @keyframes n8nPulseGlow {
+        0%, 100% { transform: scale(1); opacity: 0.85; box-shadow: 0 0 15px rgba(168, 85, 247, 0.35); }
+        50% { transform: scale(1.005); opacity: 1; box-shadow: 0 0 30px rgba(6, 182, 212, 0.6); }
+    }
+
+    @keyframes meshGlow {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
+    /* ── Global Page & Atmosphere ────────────────────── */
+    .stApp {
+        background-color: #0E0918 !important;
+        color: #FAFAFA !important;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+    }
+
+    .block-container {
+        padding-top: 1.2rem !important;
+        padding-bottom: 3rem !important;
+    }
+
+    /* ── Glowing Background Orbs ───────────────────── */
+    .glow-bg {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        pointer-events: none;
+        z-index: 0;
+        background:
+            radial-gradient(ellipse 650px 450px at 15% 10%, rgba(139, 92, 246, 0.14) 0%, transparent 70%),
+            radial-gradient(ellipse 550px 380px at 85% 30%, rgba(236, 72, 153, 0.09) 0%, transparent 70%),
+            radial-gradient(ellipse 450px 320px at 50% 80%, rgba(59, 130, 246, 0.08) 0%, transparent 70%);
+    }
+
+    /* ── Signature Gradient Text & Headings ──────────── */
     .main-title {
         font-size: 2.2rem;
-        font-weight: 800;
-        background: linear-gradient(135deg, #A855F7 0%, #3B82F6 50%, #06B6D4 100%);
+        font-weight: 900;
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        margin-bottom: 0.2rem;
+        letter-spacing: -0.5px;
+        line-height: 1.2;
+        margin-bottom: 0.3rem;
     }
     
     .sub-title {
-        color: #94A3B8;
+        color: rgba(233, 213, 255, 0.75);
         font-size: 1.0rem;
         margin-bottom: 1.5rem;
+        line-height: 1.5;
     }
 
-    /* Glassmorphism Cards */
-    .glass-card {
-        background: rgba(30, 41, 59, 0.7);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 12px;
-        padding: 1.2rem;
-        margin-bottom: 1rem;
-        backdrop-filter: blur(10px);
+    .gradient-text {
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        display: inline;
     }
-    
-    .tutor-card {
-        border-left: 4px solid #A855F7;
-        background: rgba(24, 24, 37, 0.8);
-    }
-    
-    .prereq-badge {
-        background-color: #FEF08A;
-        color: #854D0E;
+
+    .section-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(168, 85, 247, 0.12);
+        border: 1px solid rgba(168, 85, 247, 0.35);
+        color: #E9D5FF;
         font-size: 0.75rem;
-        font-weight: 700;
-        padding: 3px 8px;
-        border-radius: 6px;
+        font-weight: 800;
+        padding: 5px 16px;
+        border-radius: 24px;
+        box-shadow: 0 0 20px rgba(168, 85, 247, 0.2);
         text-transform: uppercase;
-        margin-left: 8px;
-    }
-
-    /* XP Level Badge */
-    .level-badge {
-        background: linear-gradient(135deg, #7C3AED 0%, #C084FC 100%);
-        color: white;
-        border-radius: 10px;
-        padding: 12px 16px;
-        text-align: center;
+        letter-spacing: 1px;
         margin-bottom: 1rem;
-        box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
     }
 
-    .level-number {
-        font-size: 1.8rem;
+    /* ── Completely Eliminate Default Streamlit Header & Deploy Bar ── */
+    header[data-testid="stHeader"] {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0px !important;
+        min-height: 0px !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }
+
+    #MainMenu, .stDeployButton, [data-testid="stToolbarActions"], [data-testid="stDecoration"], [data-testid="stStatusWidget"], footer {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0px !important;
+        width: 0px !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }
+
+    /* ── Vertically Centered Left Navbar Toggle Attached to Separator ── */
+    /* When Sidebar is OPEN: Tab handle stuck directly to the vertical separator border */
+    section[data-testid="stSidebar"] {
+        position: relative !important;
+        overflow: visible !important;
+    }
+
+    [data-testid="stSidebarCollapseButton"] {
+        position: fixed !important;
+        top: 50% !important;
+        left: calc(20rem - 1px) !important; /* Stuck intact directly to sidebar separator */
+        transform: translateY(-50%) !important;
+        z-index: 999999 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+    }
+
+    [data-testid="stSidebarCollapseButton"] button {
+        background: rgba(22, 16, 36, 0.96) !important;
+        border: 1.5px solid rgba(168, 85, 247, 0.65) !important;
+        border-left: none !important;
+        border-radius: 0 14px 14px 0 !important;
+        width: 24px !important;
+        height: 52px !important;
+        min-height: 52px !important;
+        padding: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        box-shadow: 4px 0 16px rgba(0, 0, 0, 0.6), 0 0 14px rgba(168, 85, 247, 0.3) !important;
+        backdrop-filter: blur(16px) !important;
+        -webkit-backdrop-filter: blur(16px) !important;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        color: #C084FC !important;
+        cursor: pointer !important;
+    }
+
+    [data-testid="stSidebarCollapseButton"] button:hover {
+        background: rgba(168, 85, 247, 0.4) !important;
+        border-color: rgba(168, 85, 247, 0.95) !important;
+        box-shadow: 6px 0 22px rgba(168, 85, 247, 0.7) !important;
+        width: 28px !important;
+    }
+
+    /* Open state arrow points LEFT (◀) */
+    [data-testid="stSidebarCollapseButton"] button svg {
+        transform: rotate(0deg) !important;
+        fill: #E9D5FF !important;
+        transition: transform 0.2s ease !important;
+    }
+
+    /* When Sidebar is COLLAPSED (CLOSED): Tab handle stuck to the left window edge */
+    [data-testid="collapsedControl"] {
+        position: fixed !important;
+        top: 50% !important;
+        left: 0px !important;
+        transform: translateY(-50%) !important;
+        z-index: 999999 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+    }
+
+    [data-testid="collapsedControl"] button {
+        background: rgba(22, 16, 36, 0.96) !important;
+        border: 1.5px solid rgba(168, 85, 247, 0.65) !important;
+        border-left: none !important;
+        border-radius: 0 14px 14px 0 !important;
+        width: 24px !important;
+        height: 52px !important;
+        min-height: 52px !important;
+        padding: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        box-shadow: 4px 0 16px rgba(0, 0, 0, 0.6), 0 0 14px rgba(168, 85, 247, 0.3) !important;
+        backdrop-filter: blur(16px) !important;
+        -webkit-backdrop-filter: blur(16px) !important;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        color: #C084FC !important;
+        cursor: pointer !important;
+    }
+
+    [data-testid="collapsedControl"] button:hover {
+        background: rgba(168, 85, 247, 0.4) !important;
+        border-color: rgba(168, 85, 247, 0.95) !important;
+        box-shadow: 6px 0 22px rgba(168, 85, 247, 0.7) !important;
+        width: 28px !important;
+    }
+
+    /* Closed state arrow points RIGHT (▶) */
+    [data-testid="collapsedControl"] button svg {
+        transform: rotate(180deg) !important;
+        fill: #E9D5FF !important;
+        transition: transform 0.2s ease !important;
+    }
+
+    /* ── Logo — Exact Home Page Branding ─────────────── */
+    .et-logo, .et-logo-simple {
+        font-size: 1.38rem;
         font-weight: 900;
+        color: #FAFAFA;
+        letter-spacing: -0.5px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin: 0;
+        line-height: 1;
+        align-self: center;
+    }
+
+    .et-logo .accent, .et-logo-simple .accent {
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .et-logo .badge-ai, .et-logo-simple .badge-ai {
+        font-size: 0.65rem;
+        font-weight: 800;
+        background: rgba(168, 85, 247, 0.2);
+        color: #C084FC;
+        border: 1px solid rgba(168, 85, 247, 0.4);
+        border-radius: 8px;
+        padding: 2px 6px;
+        margin-left: 2px;
         line-height: 1;
     }
 
-    .level-title {
-        font-size: 0.85rem;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        opacity: 0.9;
+    .et-nav-topic {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(168, 85, 247, 0.12);
+        border: 1px solid rgba(168, 85, 247, 0.35);
+        border-radius: 20px;
+        padding: 4px 14px;
+        color: #E9D5FF;
+        font-size: 0.82rem;
+        font-weight: 700;
+        max-width: 380px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
-    /* Quiz Card */
-    .quiz-card {
-        border-left: 4px solid #06B6D4;
-        background: rgba(15, 23, 42, 0.9);
-    }
-    
-    /* Paper Item */
-    .paper-card {
-        border: 1px solid rgba(59, 130, 246, 0.2);
-        border-radius: 8px;
-        padding: 10px 14px;
-        margin-bottom: 8px;
-        background: rgba(15, 23, 42, 0.5);
+    /* ── Hero Center Typography (Home Page Theme) ────── */
+    .et-hero {
+        text-align: center;
+        padding: 1.6rem 1rem 1.4rem 1rem;
+        position: relative;
     }
 
-    .paper-card:hover {
-        border-color: rgba(59, 130, 246, 0.5);
+    .et-hero h1 {
+        font-size: 3.4rem;
+        font-weight: 900;
+        color: #FAFAFA;
+        line-height: 1.15;
+        letter-spacing: -2px;
+        margin-bottom: 1.0rem;
+        max-width: 840px;
+        margin-left: auto;
+        margin-right: auto;
     }
 
-    /* Top Progress Banner */
-    .top-progress-card {
-        background: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-top: 3px solid #A855F7;
-        border-radius: 16px;
-        padding: 1.1rem 1.5rem;
-        margin-bottom: 1.2rem;
-        box-shadow: 0 10px 30px -10px rgba(124, 58, 237, 0.25), 0 4px 12px rgba(0, 0, 0, 0.3);
+    .et-hero .gradient-text {
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .et-hero p {
+        font-size: 1.15rem;
+        color: rgba(233, 213, 255, 0.75);
+        max-width: 680px;
+        margin: 0 auto 2.2rem auto;
+        line-height: 1.7;
+    }
+
+    /* ── Top-Right Header User Profile & Action Buttons ── */
+    .top-user-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 8px;
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(124, 58, 237, 0.2) 100%);
+        border: 1px solid rgba(168, 85, 247, 0.4);
+        border-radius: 30px;
+        padding: 6px 14px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
         backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        white-space: nowrap;
+        margin-left: auto;
+    }
+
+    .top-user-pill .user-name {
+        color: #FAFAFA;
+        font-weight: 800;
+        font-size: 0.88rem;
+    }
+
+    div[data-testid="stColumn"]:has(div.top-right-bar) {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-end !important;
+    }
+
+    div[data-testid="stColumn"]:has(div.top-right-bar) div[data-testid="stHorizontalBlock"] {
+        align-items: center !important;
+        justify-content: flex-end !important;
+        gap: 6px !important;
+        width: 100% !important;
+    }
+
+    div[data-testid="stColumn"]:has(div.top-right-bar) button {
+        padding: 0 !important;
+        height: 38px !important;
+        width: 38px !important;
+        min-height: 38px !important;
+        border-radius: 12px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 1.05rem !important;
+        background: rgba(30, 41, 59, 0.8) !important;
+        border: 1px solid rgba(168, 85, 247, 0.4) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+        backdrop-filter: blur(12px) !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+
+    div[data-testid="stColumn"]:has(div.top-right-bar) button:hover {
+        background: rgba(168, 85, 247, 0.3) !important;
+        border-color: rgba(168, 85, 247, 0.8) !important;
+        box-shadow: 0 0 18px rgba(168, 85, 247, 0.45) !important;
+        transform: translateY(-2px) !important;
+    }
+
+    /* ── Glassmorphism Cards & Containers ────────────── */
+    .glass-card, .feat-card, .agent-glass {
+        position: relative;
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(124, 58, 237, 0.16) 50%, rgba(15, 23, 42, 0.9) 100%);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(168, 85, 247, 0.4);
+        border-radius: 18px;
+        padding: 1.4rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(168, 85, 247, 0.1);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow: hidden;
+    }
+
+    .glass-card::before, .feat-card::before, .agent-glass::before, .top-progress-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 15%; right: 15%; height: 2px;
+        background: linear-gradient(90deg, transparent 0%, #EC4899 30%, #A855F7 50%, #06B6D4 70%, transparent 100%);
+        border-radius: 2px;
+        opacity: 0.75;
+        transition: opacity 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .glass-card:hover, .feat-card:hover, .agent-glass:hover {
+        background: linear-gradient(135deg, rgba(124, 58, 237, 0.28) 0%, rgba(59, 130, 246, 0.2) 50%, rgba(15, 23, 42, 0.95) 100%);
+        border-color: rgba(168, 85, 247, 0.75);
+        box-shadow: 0 0 40px rgba(168, 85, 247, 0.35), 0 12px 35px rgba(0, 0, 0, 0.5);
+        transform: translateY(-3px);
+    }
+
+    .glass-card:hover::before, .feat-card:hover::before, .agent-glass:hover::before {
+        opacity: 1;
+        box-shadow: 0 0 14px #EC4899, 0 0 20px #A855F7;
+    }
+
+    .feat-card h4, .agent-glass h4, .glass-card h3 {
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+    }
+
+    /* ── Icon Boxes ─────────────────────────────────── */
+    .feat-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 14px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        margin-bottom: 0.8rem;
+        box-shadow: 0 0 20px rgba(168, 85, 247, 0.25);
+    }
+
+    .icon-violet { background: rgba(168, 85, 247, 0.2); color: #C084FC; border: 1px solid rgba(168, 85, 247, 0.4); }
+    .icon-blue   { background: rgba(59, 130, 246, 0.2); color: #60A5FA; border: 1px solid rgba(59, 130, 246, 0.4); }
+    .icon-cyan   { background: rgba(6, 182, 212, 0.2); color: #22D3EE; border: 1px solid rgba(6, 182, 212, 0.4); }
+    .icon-green  { background: rgba(16, 185, 129, 0.2); color: #34D399; border: 1px solid rgba(16, 185, 129, 0.4); }
+    .icon-pink   { background: rgba(236, 72, 153, 0.2); color: #F472B6; border: 1px solid rgba(236, 72, 153, 0.4); }
+    .icon-amber  { background: rgba(251, 191, 36, 0.2); color: #FBBF24; border: 1px solid rgba(251, 191, 36, 0.4); }
+
+    /* ── Top Progress Banner ─────────────────────────── */
+    .top-progress-card {
+        position: relative;
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(124, 58, 237, 0.2) 50%, rgba(15, 23, 42, 0.95) 100%);
+        border: 1px solid rgba(168, 85, 247, 0.45);
+        border-radius: 20px;
+        padding: 1.3rem 1.6rem;
+        margin-bottom: 1.3rem;
+        box-shadow: 0 15px 40px -10px rgba(124, 58, 237, 0.3), 0 4px 15px rgba(0, 0, 0, 0.4), inset 0 0 25px rgba(168, 85, 247, 0.12);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        overflow: hidden;
     }
     
     .top-progress-stat {
-        font-size: 1.4rem;
-        font-weight: 800;
-        background: linear-gradient(135deg, #A855F7 0%, #3B82F6 100%);
+        font-size: 1.5rem;
+        font-weight: 900;
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         line-height: 1.2;
     }
     
     .top-progress-label {
-        color: #94A3B8;
-        font-size: 0.78rem;
+        color: rgba(233, 213, 255, 0.7);
+        font-size: 0.76rem;
         text-transform: uppercase;
         letter-spacing: 0.8px;
-        font-weight: 700;
+        font-weight: 800;
         margin-bottom: 4px;
     }
 
-    /* Tier Badge in Sidebar */
-    .tier-pill {
-        background: rgba(99, 102, 241, 0.15);
-        color: #818CF8;
-        border: 1px solid rgba(99, 102, 241, 0.35);
-        font-size: 0.75rem;
-        font-weight: 700;
-        padding: 2px 10px;
-        border-radius: 6px;
-        text-transform: uppercase;
+    /* ── Sidebar Glassmorphic Theme ─────────────────── */
+    section[data-testid="stSidebar"] {
+        background-color: #0B0715 !important;
+        background-image: radial-gradient(ellipse 300px 300px at 50% 10%, rgba(139, 92, 246, 0.15) 0%, transparent 80%) !important;
+        border-right: 1px solid rgba(168, 85, 247, 0.25) !important;
+        box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5) !important;
     }
 
-    /* Modern UI/UX Glassmorphism & Pill Capsules System */
+    section[data-testid="stSidebar"] div.block-container {
+        padding-top: 1.5rem !important;
+    }
+
+    .user-profile-sidebar-card {
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(124, 58, 237, 0.2) 100%);
+        border: 1px solid rgba(168, 85, 247, 0.4);
+        border-radius: 14px;
+        padding: 12px 14px;
+        margin-bottom: 12px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3), inset 0 0 15px rgba(168, 85, 247, 0.1);
+        backdrop-filter: blur(16px);
+    }
+
+    .tier-pill {
+        background: linear-gradient(135deg, rgba(168, 85, 247, 0.25) 0%, rgba(236, 72, 153, 0.25) 100%);
+        color: #F3E8FF;
+        border: 1px solid rgba(168, 85, 247, 0.5);
+        font-size: 0.72rem;
+        font-weight: 800;
+        padding: 3px 10px;
+        border-radius: 20px;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        box-shadow: 0 0 10px rgba(168, 85, 247, 0.25);
+    }
+
+    /* ── Pill Capsules System ────────────────────────── */
     .pill-capsule {
         display: inline-flex;
         align-items: center;
@@ -182,8 +553,8 @@ CUSTOM_CSS = """
         font-size: 0.84rem;
         font-weight: 600;
         letter-spacing: 0.4px;
-        backdrop-filter: blur(12px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        backdrop-filter: blur(16px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
         transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         white-space: nowrap;
         user-select: none;
@@ -191,7 +562,7 @@ CUSTOM_CSS = """
     
     .pill-capsule:hover {
         transform: translateY(-2px);
-        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
     }
 
     .pill-icon-box {
@@ -202,167 +573,224 @@ CUSTOM_CSS = """
         height: 22px;
         border-radius: 50%;
         font-size: 0.85rem;
-        background: rgba(255, 255, 255, 0.12);
+        background: rgba(255, 255, 255, 0.15);
     }
     
     .pill-mode {
-        background: linear-gradient(135deg, rgba(168, 85, 247, 0.2) 0%, rgba(124, 58, 237, 0.25) 100%);
-        border: 1px solid rgba(192, 132, 252, 0.5);
+        background: linear-gradient(135deg, rgba(168, 85, 247, 0.25) 0%, rgba(124, 58, 237, 0.3) 100%);
+        border: 1px solid rgba(192, 132, 252, 0.6);
         color: #F3E8FF;
-        box-shadow: 0 0 12px rgba(168, 85, 247, 0.2);
+        box-shadow: 0 0 15px rgba(168, 85, 247, 0.25);
     }
     .pill-mode .pill-label {
         color: #D8B4FE;
-        font-weight: 600;
+        font-weight: 700;
         text-transform: uppercase;
         font-size: 0.72rem;
         letter-spacing: 0.6px;
     }
     .pill-mode .pill-value {
         color: #FFFFFF;
-        font-weight: 700;
+        font-weight: 800;
     }
     
     .pill-audience {
-        background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(37, 99, 235, 0.25) 100%);
-        border: 1px solid rgba(96, 165, 250, 0.5);
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.25) 0%, rgba(37, 99, 235, 0.3) 100%);
+        border: 1px solid rgba(96, 165, 250, 0.6);
         color: #EFF6FF;
-        box-shadow: 0 0 12px rgba(59, 130, 246, 0.2);
+        box-shadow: 0 0 15px rgba(59, 130, 246, 0.25);
     }
     .pill-audience .pill-label {
         color: #93C5FD;
-        font-weight: 600;
+        font-weight: 700;
         text-transform: uppercase;
         font-size: 0.72rem;
         letter-spacing: 0.6px;
     }
     .pill-audience .pill-value {
         color: #FFFFFF;
-        font-weight: 700;
+        font-weight: 800;
     }
 
-    /* Status Pill Variants */
     .pill-status-complete {
-        background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(5, 150, 105, 0.25) 100%);
-        border: 1px solid rgba(52, 211, 153, 0.5);
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.25) 0%, rgba(5, 150, 105, 0.3) 100%);
+        border: 1px solid rgba(52, 211, 153, 0.6);
         color: #ECFDF5;
-        box-shadow: 0 0 12px rgba(16, 185, 129, 0.2);
+        box-shadow: 0 0 15px rgba(16, 185, 129, 0.25);
     }
     .pill-status-complete .pill-label {
         color: #6EE7B7;
-        font-weight: 600;
+        font-weight: 700;
         text-transform: uppercase;
         font-size: 0.72rem;
         letter-spacing: 0.6px;
     }
-    .pill-status-complete .pill-value {
-        color: #FFFFFF;
-        font-weight: 700;
-    }
+    .pill-status-complete .pill-value { color: #FFFFFF; font-weight: 800; }
 
     .pill-status-inprogress {
-        background: linear-gradient(135deg, rgba(14, 165, 233, 0.2) 0%, rgba(2, 132, 199, 0.25) 100%);
-        border: 1px solid rgba(56, 189, 248, 0.5);
+        background: linear-gradient(135deg, rgba(14, 165, 233, 0.25) 0%, rgba(2, 132, 199, 0.3) 100%);
+        border: 1px solid rgba(56, 189, 248, 0.6);
         color: #F0F9FF;
-        box-shadow: 0 0 12px rgba(14, 165, 233, 0.2);
+        box-shadow: 0 0 15px rgba(14, 165, 233, 0.25);
     }
     .pill-status-inprogress .pill-label {
         color: #7DD3FC;
-        font-weight: 600;
+        font-weight: 700;
         text-transform: uppercase;
         font-size: 0.72rem;
         letter-spacing: 0.6px;
     }
-    .pill-status-inprogress .pill-value {
-        color: #FFFFFF;
-        font-weight: 700;
-    }
+    .pill-status-inprogress .pill-value { color: #FFFFFF; font-weight: 800; }
 
     .pill-status-pending {
-        background: linear-gradient(135deg, rgba(100, 116, 139, 0.18) 0%, rgba(71, 85, 105, 0.22) 100%);
-        border: 1px solid rgba(148, 163, 184, 0.4);
+        background: linear-gradient(135deg, rgba(100, 116, 139, 0.22) 0%, rgba(71, 85, 105, 0.26) 100%);
+        border: 1px solid rgba(148, 163, 184, 0.45);
         color: #F1F5F9;
     }
     .pill-status-pending .pill-label {
         color: #CBD5E1;
-        font-weight: 600;
+        font-weight: 700;
         text-transform: uppercase;
         font-size: 0.72rem;
         letter-spacing: 0.6px;
     }
-    .pill-status-pending .pill-value {
-        color: #E2E8F0;
-        font-weight: 700;
+    .pill-status-pending .pill-value { color: #E2E8F0; font-weight: 800; }
+
+    .prereq-badge {
+        background: rgba(251, 191, 36, 0.15);
+        color: #FBBF24;
+        border: 1px solid rgba(251, 191, 36, 0.4);
+        font-size: 0.72rem;
+        font-weight: 800;
+        padding: 3px 10px;
+        border-radius: 20px;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        margin-left: 8px;
     }
 
-    /* Streamlit Button Overrides for Modern Look */
-    div[data-testid="stButton"] button {
-        border-radius: 10px !important;
-        font-weight: 700 !important;
-        transition: all 0.2s ease-in-out !important;
+    /* ── Streamlit Button Overrides (Theme Matched) ───── */
+    .stApp button[kind="primary"], div[data-testid="stButton"] button[kind="primary"] {
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%) !important;
+        border: none !important;
+        border-radius: 24px !important;
+        color: #FFFFFF !important;
+        font-weight: 800 !important;
+        box-shadow: 0 0 20px rgba(236, 72, 153, 0.35) !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
-    div[data-testid="stButton"] button:hover {
+
+    .stApp button[kind="primary"]:hover, div[data-testid="stButton"] button[kind="primary"]:hover {
+        box-shadow: 0 0 30px rgba(236, 72, 153, 0.6), 0 0 15px rgba(6, 182, 212, 0.4) !important;
         transform: translateY(-2px) !important;
-        box-shadow: 0 6px 18px rgba(124, 58, 237, 0.3) !important;
     }
 
-    /* Redesigned Regenerate Step Button Styling - Stacked Directly Below Status Pill */
-    div[data-testid="stColumn"]:has(div.pill-capsule) {
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: flex-end !important;
-        justify-content: center !important;
-    }
-
-    div[data-testid="stColumn"]:has(div.pill-capsule) div[data-testid="stElementContainer"] {
-        display: flex !important;
-        justify-content: flex-end !important;
-        width: 100% !important;
-    }
-
-    div[data-testid="stColumn"]:has(div.pill-capsule) div[data-testid="stButton"] {
-        display: flex !important;
-        justify-content: flex-end !important;
-        width: auto !important;
-        margin-top: 2px !important;
-    }
-
-    div[data-testid="stColumn"]:has(div.pill-capsule) button {
-        background: linear-gradient(135deg, rgba(168, 85, 247, 0.2) 0%, rgba(124, 58, 237, 0.25) 100%) !important;
-        border: 1px solid rgba(192, 132, 252, 0.5) !important;
-        color: #F3E8FF !important;
-        border-radius: 9999px !important;
-        padding: 5px 14px !important;
-        font-size: 0.84rem !important;
-        font-weight: 600 !important;
-        letter-spacing: 0.4px !important;
-        box-shadow: 0 4px 12px rgba(168, 85, 247, 0.2) !important;
-        backdrop-filter: blur(12px) !important;
+    .stApp button[kind="secondary"], div[data-testid="stButton"] button[kind="secondary"] {
+        background: rgba(30, 41, 59, 0.6) !important;
+        border: 1px solid rgba(168, 85, 247, 0.35) !important;
+        border-radius: 20px !important;
+        color: #FAFAFA !important;
+        font-weight: 700 !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
         transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        white-space: nowrap !important;
-        height: auto !important;
-        min-height: unset !important;
-        line-height: 1.2 !important;
-        margin-left: auto !important;
+    }
+
+    .stApp button[kind="secondary"]:hover, div[data-testid="stButton"] button[kind="secondary"]:hover {
+        background: rgba(168, 85, 247, 0.25) !important;
+        border-color: rgba(168, 85, 247, 0.7) !important;
+        box-shadow: 0 0 20px rgba(168, 85, 247, 0.35) !important;
+        transform: translateY(-2px) !important;
+    }
+
+    /* ── Streamlit Expanders (Frosted Glass Theme) ────── */
+    div[data-testid="stExpander"] {
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.8) 100%) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        border: 1px solid rgba(168, 85, 247, 0.4) !important;
+        border-radius: 18px !important;
+        margin-bottom: 1.2rem !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35), inset 0 0 20px rgba(168, 85, 247, 0.08) !important;
+        overflow: hidden !important;
+    }
+
+    div[data-testid="stExpander"] summary {
+        background: rgba(20, 13, 33, 0.8) !important;
+        border-bottom: 1px solid rgba(168, 85, 247, 0.25) !important;
+        padding: 0.9rem 1.2rem !important;
+        font-weight: 800 !important;
+        color: #FAFAFA !important;
+        transition: background 0.2s ease !important;
+    }
+
+    div[data-testid="stExpander"] summary:hover {
+        background: rgba(168, 85, 247, 0.15) !important;
+    }
+
+    div[data-testid="stExpander"] div[data-testid="stExpanderDetails"] {
+        padding: 1.2rem !important;
+    }
+
+    /* ── Inputs & Selectboxes Theming ────────────────── */
+    div[data-testid="stTextInput"] input,
+    div[data-testid="stSelectbox"] div[data-baseweb="select"] {
+        background: rgba(20, 13, 33, 0.85) !important;
+        border: 1px solid rgba(168, 85, 247, 0.4) !important;
+        border-radius: 12px !important;
+        color: #FAFAFA !important;
+        box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.4) !important;
+        transition: all 0.25s ease !important;
+    }
+
+    div[data-testid="stTextInput"] input:focus,
+    div[data-testid="stSelectbox"] div[data-baseweb="select"]:focus-within {
+        border-color: rgba(168, 85, 247, 0.85) !important;
+        box-shadow: 0 0 20px rgba(168, 85, 247, 0.45) !important;
+    }
+
+    /* ── Chat Messages Theming ───────────────────────── */
+    div[data-testid="stChatMessage"] {
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.75) 0%, rgba(15, 23, 42, 0.85) 100%) !important;
+        border: 1px solid rgba(168, 85, 247, 0.35) !important;
+        border-radius: 16px !important;
+        padding: 1rem 1.2rem !important;
+        margin-bottom: 0.8rem !important;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3) !important;
+        backdrop-filter: blur(16px) !important;
+    }
+
+    /* ── Research Paper Cards ────────────────────────── */
+    .paper-card {
+        border: 1px solid rgba(168, 85, 247, 0.35);
+        border-radius: 14px;
+        padding: 12px 16px;
+        margin-bottom: 10px;
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.75) 100%);
+        backdrop-filter: blur(12px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+        transition: all 0.25s ease;
+    }
+
+    .paper-card:hover {
+        border-color: rgba(168, 85, 247, 0.7);
+        box-shadow: 0 0 25px rgba(168, 85, 247, 0.3);
+        transform: translateY(-2px);
+    }
+
+    /* ── Progress Bar Theming ────────────────────────── */
+    div[data-testid="stProgress"] > div {
+        background: rgba(30, 41, 59, 0.6) !important;
+        border-radius: 10px !important;
+        overflow: hidden !important;
+        border: 1px solid rgba(168, 85, 247, 0.25) !important;
+    }
+
+    div[data-testid="stProgress"] > div > div > div > div {
+        background: linear-gradient(90deg, #EC4899, #A855F7, #3B82F6) !important;
+        box-shadow: 0 0 15px rgba(168, 85, 247, 0.5) !important;
     }
 
     /* Glassmorphism Dynamic AI Loader */
-    @keyframes meshGlow {
-        0% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-        100% { background-position: 0% 50%; }
-    }
-
-    @keyframes pulseGlow {
-        0%, 100% { transform: scale(1); opacity: 0.8; box-shadow: 0 0 15px rgba(168, 85, 247, 0.4); }
-        50% { transform: scale(1.01); opacity: 1; box-shadow: 0 0 30px rgba(6, 182, 212, 0.6); }
-    }
-
-    @keyframes shimmerBar {
-        0% { transform: translateX(-100%); }
-        100% { transform: translateX(100%); }
-    }
-
     .glass-loader-box {
         position: relative;
         background: rgba(15, 23, 42, 0.85);
@@ -374,7 +802,7 @@ CUSTOM_CSS = """
         margin: 1.5rem 0;
         overflow: hidden;
         box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 0 30px rgba(124, 58, 237, 0.15);
-        animation: pulseGlow 3s infinite ease-in-out;
+        animation: n8nPulseGlow 3s infinite ease-in-out;
     }
 
     .glass-loader-mesh {
@@ -841,8 +1269,6 @@ async def generate_all_agent_content_for_step(step, memory: SharedMemory) -> Non
 
 
 # ─── One-Time DB Initialization (at Streamlit app startup) ───────
-# @st.cache_resource ensures this runs only once per server lifecycle,
-# so switching to the Admin Console later is instant (DB already warmed up).
 @st.cache_resource
 def _init_db_once():
     """Warm up DB schema, migrations, and seeds at app start — not on first admin switch."""
@@ -860,7 +1286,10 @@ def get_or_create_memory() -> SharedMemory | None:
 
 
 def render_learning_workspace():
-    """Renders the student learning workspace."""
+    """Renders the student learning workspace with the glassy AI theme."""
+    # Background ambient glow orbs
+    st.markdown('<div class="glow-bg"></div>', unsafe_allow_html=True)
+
     user_profile = st.session_state.get("user_profile")
     if not user_profile:
         st.session_state["auth_tab"] = "login"
@@ -868,66 +1297,40 @@ def render_learning_workspace():
         st.toast("🔒 Authentication Required: Please sign in or create an account to access the AI learning workspace.", icon="🔒")
         st.rerun()
 
-    # ─── Sidebar Controls & Gamification ─────────────────────────────
+    memory = get_or_create_memory()
+
+    # ─── Sidebar Controls & Gamification (Left Panel) ────────────────
     with st.sidebar:
-        st.image("https://img.icons8.com/isometric/96/graduation-cap.png", width=56)
-        
-        # User Session Badge
-        u_tier = (user_profile.subscription.tier if user_profile.subscription else "normal").upper()
-        st.markdown(
-            f"""
-            <div style="background: #18181B; border: 1px solid #27272A; border-radius: 8px; padding: 10px; margin-bottom: 12px;">
-                <div style="color: #FAFAFA; font-weight: 700; font-size: 0.9rem;">👋 {user_profile.first_name} {user_profile.last_name}</div>
-                <div style="color: #A1A1AA; font-size: 0.78rem; margin-bottom: 6px;">{user_profile.email}</div>
-                <span class="tier-pill">{u_tier} TIER</span>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-        nav_c1, nav_c2 = st.columns(2)
-        with nav_c1:
-            if st.button("🏠 Home", key="sidebar_nav_home", use_container_width=True):
-                st.session_state["view"] = "home"
-                st.rerun()
-        with nav_c2:
-            if st.button("🚪 Logout", key="sidebar_nav_logout", use_container_width=True):
-                st.session_state["user_profile"] = None
-                st.session_state["view"] = "home"
-                st.query_params.clear()
-                st.toast("Logged out successfully.", icon="ℹ️")
-                st.rerun()
-
-        st.markdown("---")
-        st.markdown("### **EduTechAI Settings**")
+        st.markdown("<div style='font-size:1.02rem; font-weight:900; color:#FAFAFA; margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid rgba(168,85,247,0.25);'>🎯 Learning Session Setup</div>", unsafe_allow_html=True)
         
         # Check if quick-launched from home page
         default_topic = st.session_state.pop("quick_launch_topic", None) or st.session_state.get("last_topic", "How does photosynthesis work?")
 
         # Topic Input
         topic_input = st.text_input(
-            "🎯 **What do you want to learn?**",
+            "What do you want to master?",
             value=default_topic,
             placeholder="e.g. Quantum Computing, Photosynthesis...",
+            label_visibility="collapsed",
         )
         
         # Topic Suggestions
-        st.markdown("<small>💡 **Try asking:**</small>", unsafe_allow_html=True)
+        st.markdown("<div style='font-size:0.78rem; color:rgba(233,213,255,0.75); font-weight:700; margin: 8px 0 4px 0;'>💡 Instant Topic Prompts:</div>", unsafe_allow_html=True)
         cols = st.columns(2)
-        if cols[0].button("🌱 Photosynthesis", key="sug1"):
+        if cols[0].button("🌱 Photosynthesis", key="sug1", use_container_width=True):
             topic_input = "How does photosynthesis work?"
-        if cols[1].button("⚛️ Quantum Physics", key="sug2"):
+        if cols[1].button("⚛️ Quantum Physics", key="sug2", use_container_width=True):
             topic_input = "Explain quantum entanglement"
-        if cols[0].button("🧠 Neural Networks", key="sug3"):
+        if cols[0].button("🧠 Neural Networks", key="sug3", use_container_width=True):
             topic_input = "How do neural networks learn?"
-        if cols[1].button("🌊 Ocean Tides", key="sug4"):
+        if cols[1].button("🌊 Ocean Tides", key="sug4", use_container_width=True):
             topic_input = "What causes ocean tides?"
 
-        st.markdown("---")
+        st.markdown("<hr style='border-color:rgba(168,85,247,0.25); margin:12px 0;'>", unsafe_allow_html=True)
 
         # Learning Mode Selection
         mode_option = st.selectbox(
-            "🎨 **Learning Mode**",
+            "🎨 Learning Mode",
             options=["Visual 🎬", "Deep Dive 🔬", "Bite-Sized ⚡"],
             index=0,
             help="Visual: video & diagrams | Deep Dive: papers & proofs | Bite-Sized: quick summaries",
@@ -941,7 +1344,7 @@ def render_learning_workspace():
 
         # Student Level Selection
         level_option = st.selectbox(
-            "🎓 **Education Level**",
+            "🎓 Education Level",
             options=["Middle School 🏫", "High School 🎒", "Undergraduate 🏛️", "Graduate 🎓", "General Curious 💡"],
             index=0,
         )
@@ -954,11 +1357,10 @@ def render_learning_workspace():
         }
         selected_level = level_map[level_option]
 
-        st.markdown("---")
+        st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
 
         # Start Learning Journey Button
-        start_clicked = st.button("🚀 **Start Learning Journey**", type="primary", use_container_width=True)
-
+        start_clicked = st.button("🚀 Start Learning Journey", type="primary", use_container_width=True)
 
     # ─── Session Initialization Logic ────────────────────────────────
     if start_clicked and topic_input:
@@ -1040,29 +1442,90 @@ def render_learning_workspace():
 
     memory = get_or_create_memory()
 
-    # ─── Main Content Workspace ──────────────────────────────────────
-    if not memory or not memory.steps:
-        # Landing Page State with Header & Admin Button
-        header_col1, header_col2 = st.columns([4, 1])
-        with header_col1:
-            st.markdown('<div class="main-title">EduTechAI Learning Workspace</div>', unsafe_allow_html=True)
-            st.markdown('<div class="sub-title">An adaptive educational workspace where autonomous AI agents collaborate in real-time.</div>', unsafe_allow_html=True)
-        with header_col2:
-            st.write("")
-            if st.button("🛡️ Admin Portal", key="top_admin_btn", help="Switch to Admin Console"):
+    # ─── TOP BAR: Logo on Left & User Profile, Home, Admin on Right ───
+    u_tier = (user_profile.subscription.tier if user_profile.subscription else "normal").upper()
+    top_head_l, top_head_r = st.columns([3.4, 2.6], vertical_alignment="center")
+
+    with top_head_l:
+        if memory and memory.steps:
+            st.markdown(
+                f"""
+                <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                    <div class="et-logo">⚡ <span class="accent">EduTech</span> <span class="badge-ai">AI</span></div>
+                    <span style="color: rgba(168, 85, 247, 0.4); font-size: 1.2rem;">|</span>
+                    <span class="et-nav-topic">🎯 <span>{memory.topic}</span></span>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+        else:
+            st.markdown(
+                """
+                <div class="et-logo">⚡ <span class="accent">EduTech</span> <span class="badge-ai">AI</span></div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+    with top_head_r:
+        st.markdown('<div class="top-right-bar">', unsafe_allow_html=True)
+        r_prof, r_h, r_a, r_e = st.columns([2.0, 0.45, 0.45, 0.45], vertical_alignment="center")
+        with r_prof:
+            st.markdown(
+                f"""
+                <div class="top-user-pill">
+                    <span class="user-name">👋 {user_profile.first_name} {user_profile.last_name}</span>
+                    <span class="tier-pill">{u_tier}</span>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+        with r_h:
+            if st.button("🏠", key="tr_home_btn", help="Home Landing Page", use_container_width=True):
+                st.session_state["view"] = "home"
+                st.rerun()
+        with r_a:
+            if st.button("⚙️", key="tr_admin_btn", help="Admin Console & Settings", use_container_width=True):
                 st.session_state["view"] = "admin"
                 st.rerun()
+        with r_e:
+            if st.button("🚪", key="tr_logout_btn", help="Sign Out", use_container_width=True):
+                st.session_state["user_profile"] = None
+                st.session_state["view"] = "home"
+                st.query_params.clear()
+                st.toast("Logged out successfully.", icon="ℹ️")
+                st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
 
-        st.info("👈 Enter a topic in the sidebar and click **Start Learning Journey** to begin!")
+    st.markdown("<div style='height: 0.8rem;'></div>", unsafe_allow_html=True)
+
+    # ─── Main Content Workspace ──────────────────────────────────────
+    if not memory or not memory.steps:
+        # Centered Hero Section (Matching Home Page Typography & Gradient Text)
+        st.markdown(
+            """
+            <div class="et-hero" style="padding: 1.0rem 1rem 1.4rem 1rem;">
+                <h1>EduTech<span class="gradient-text">AI</span> Learning Workspace</h1>
+                <p>An adaptive, intelligent learning studio where specialized AI agents orchestrate personalized roadmaps, intuitive analogies, video deep-dives, and instant mastery checks.</p>
+            </div>
+            <div class="glass-card" style="margin-bottom: 2rem; border-color: rgba(168, 85, 247, 0.5); text-align: center; padding: 1.4rem 2rem;">
+                <span style="font-size: 1.2rem;">👈</span>
+                <span style="font-size: 1.02rem; font-weight: 700; color: #FAFAFA; margin-left: 8px;">
+                    Enter any topic in the sidebar and click <span class="gradient-text" style="font-weight: 800;">'Start Learning Journey'</span> to launch your multi-agent studio!
+                </span>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
         
-        # Feature Grid
-        col1, col2, col3 = st.columns(3)
+        # 4 Agent Squad Cards (Matching Landing Page Grid Aesthetic)
+        col1, col2, col3, col4 = st.columns(4)
         with col1:
             st.markdown(
                 """
-                <div class="glass-card">
-                    <h3>🧩 Socratic Tutor Agent</h3>
-                    <p>Explains complex concepts using simple everyday analogies and guiding questions — no raw text dumps!</p>
+                <div class="feat-card">
+                    <div class="feat-icon icon-violet">🧩</div>
+                    <h4>Socratic Tutor</h4>
+                    <p style="font-size: 0.84rem; color: rgba(255, 255, 255, 0.65);">Interactive Socratic dialogue with intuitive analogies tailored to your level.</p>
                 </div>
                 """,
                 unsafe_allow_html=True,
@@ -1070,9 +1533,10 @@ def render_learning_workspace():
         with col2:
             st.markdown(
                 """
-                <div class="glass-card">
-                    <h3>🎬 YouTube Curator</h3>
-                    <p>Extracts transcripts and pinpoints exact timestamp clips to jump straight to the explanation moment.</p>
+                <div class="feat-card">
+                    <div class="feat-icon icon-cyan">🎬</div>
+                    <h4>YouTube Curator</h4>
+                    <p style="font-size: 0.84rem; color: rgba(255, 255, 255, 0.65);">Pinpoints exact timestamp clips and explanations from top educational videos.</p>
                 </div>
                 """,
                 unsafe_allow_html=True,
@@ -1080,24 +1544,28 @@ def render_learning_workspace():
         with col3:
             st.markdown(
                 """
-                <div class="glass-card">
-                    <h3>📚 Academic Researcher</h3>
-                    <p>Searches OpenAlex, Semantic Scholar, and arXiv for open-access papers and AI-generated summaries.</p>
+                <div class="feat-card">
+                    <div class="feat-icon icon-blue">📚</div>
+                    <h4>Academic Researcher</h4>
+                    <p style="font-size: 0.84rem; color: rgba(255, 255, 255, 0.65);">Retrieves open-access papers with AI summaries from arXiv & OpenAlex.</p>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+        with col4:
+            st.markdown(
+                """
+                <div class="feat-card">
+                    <div class="feat-icon icon-pink">📝</div>
+                    <h4>Milestone Quiz</h4>
+                    <p style="font-size: 0.84rem; color: rgba(255, 255, 255, 0.65);">Adaptive knowledge checks with real-time feedback, gamification XP & auto-progression.</p>
                 </div>
                 """,
                 unsafe_allow_html=True,
             )
 
     else:
-        # Active Session Workspace
-        act_col1, act_col2 = st.columns([4, 1])
-        with act_col1:
-            st.markdown(f'<div class="main-title">📖 Learning: {memory.topic}</div>', unsafe_allow_html=True)
-        with act_col2:
-            st.write("")
-            if st.button("🛡️ Admin Portal", key="act_admin_btn", help="Switch to Admin Console"):
-                st.session_state["view"] = "admin"
-                st.rerun()
+        # Active Session Workspace Body (Header already rendered above)
         
         # ─── Top Progress & Gamification Header Dashboard ──────────────
         total_xp = memory.xp_earned if memory else 0
@@ -1114,11 +1582,11 @@ def render_learning_workspace():
             f"""
             <div class="top-progress-card">
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <div style="background: linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%); padding: 8px 12px; border-radius: 12px; font-size: 1.1rem; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);">🏆</div>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="background: linear-gradient(135deg, #EC4899 0%, #A855F7 100%); padding: 9px 13px; border-radius: 14px; font-size: 1.2rem; box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4);">🏆</div>
                         <div>
-                            <div style="font-weight: 800; font-size: 1.15rem; color: #F8FAFC; letter-spacing: 0.3px;">Your Progress Dashboard</div>
-                            <div style="font-size: 0.78rem; color: #94A3B8;">Track your real-time learning milestone achievements</div>
+                            <div style="font-weight: 900; font-size: 1.2rem; color: #FAFAFA; letter-spacing: 0.3px;">Your Mastery Dashboard</div>
+                            <div style="font-size: 0.8rem; color: rgba(233, 213, 255, 0.75);">Real-time learning milestone progress & XP rewards</div>
                         </div>
                     </div>
                     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
@@ -1143,10 +1611,10 @@ def render_learning_workspace():
         with prog_col1:
             st.markdown(
                 f"""
-                <div class="glass-card" style="margin-bottom:0; text-align:center; padding: 0.75rem 0.5rem;">
+                <div class="glass-card" style="margin-bottom:0; text-align:center; padding: 0.85rem 0.6rem;">
                     <div class="top-progress-label">Current Level</div>
                     <div class="top-progress-stat">Lvl {level_data['level']}</div>
-                    <div style="font-size:0.75rem; color:#A855F7; font-weight:700;">{level_data['title']}</div>
+                    <div style="font-size:0.78rem; color:#C084FC; font-weight:800; margin-top:2px;">{level_data['title']}</div>
                 </div>
                 """,
                 unsafe_allow_html=True,
@@ -1155,10 +1623,10 @@ def render_learning_workspace():
         with prog_col2:
             st.markdown(
                 f"""
-                <div class="glass-card" style="margin-bottom:0; text-align:center; padding: 0.75rem 0.5rem;">
+                <div class="glass-card" style="margin-bottom:0; text-align:center; padding: 0.85rem 0.6rem;">
                     <div class="top-progress-label">Total XP Earned</div>
                     <div class="top-progress-stat">⭐ {total_xp}</div>
-                    <div style="font-size:0.75rem; color:#38BDF8; font-weight:700;">Streak: {memory.streak_count} 🔥</div>
+                    <div style="font-size:0.78rem; color:#38BDF8; font-weight:800; margin-top:2px;">Streak: {memory.streak_count} 🔥</div>
                 </div>
                 """,
                 unsafe_allow_html=True,
