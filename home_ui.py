@@ -87,7 +87,7 @@ HOME_CSS = """
         pointer-events: none !important;
     }
 
-    #MainMenu, .stDeployButton, [data-testid="stToolbarActions"], [data-testid="stDecoration"], [data-testid="stStatusWidget"], footer {
+    #MainMenu, .stDeployButton, [data-testid="stToolbarActions"], [data-testid="stDecoration"], [data-testid="stStatusWidget"], footer, #edutech-sidebar-master-toggle {
         display: none !important;
         visibility: hidden !important;
         height: 0px !important;

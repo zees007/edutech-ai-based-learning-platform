@@ -145,8 +145,9 @@ CUSTOM_CSS = """
         margin-bottom: 1rem;
     }
 
-    /* ── Streamlit Header: 0-height Transparent Container for Sidebar Collapsed Control ── */
-    html body div.stApp header[data-testid="stHeader"] {
+    /* ── Streamlit Header: Completely Hidden from View ── */
+    html body div.stApp header[data-testid="stHeader"],
+    html body div.stApp [data-testid="stHeader"] {
         background: transparent !important;
         height: 0px !important;
         min-height: 0px !important;
@@ -156,14 +157,13 @@ CUSTOM_CSS = """
         border: none !important;
         box-shadow: none !important;
         pointer-events: none !important;
-        z-index: 999999 !important;
-        display: block !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-        overflow: visible !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        overflow: hidden !important;
+        display: none !important;
     }
 
-    /* Cleanly target only deploy buttons, decoration line, and main menu without affecting toggle controls */
+    /* Cleanly target deploy buttons, decoration line, and main menu */
     html body div.stApp .stDeployButton,
     html body div.stApp [data-testid="stAppDeployButton"],
     html body div.stApp button[data-testid="stAppDeployButton"],
@@ -178,129 +178,36 @@ CUSTOM_CSS = """
         pointer-events: none !important;
     }
 
-    /* ── Vertically Centered Left Navbar Toggle Attached to Separator ── */
-    /* When Sidebar is OPEN: Tab handle stuck directly to the vertical separator border */
+    /* ── Sidebar Layout & Default Controls Clean Up ── */
     html body div.stApp section[data-testid="stSidebar"] {
         display: flex !important;
         visibility: visible !important;
         opacity: 1 !important;
-        position: relative !important;
-        overflow: visible !important;
     }
 
-    html body div.stApp [data-testid="stSidebarCollapseButton"] {
-        position: absolute !important;
-        top: 50% !important;
-        right: 0 !important;
-        left: auto !important;
-        transform: translate(100%, -50%) !important;
-        z-index: 999999 !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-        pointer-events: auto !important;
-    }
-
-    html body div.stApp [data-testid="stSidebarCollapseButton"] button {
-        background: rgba(22, 16, 36, 0.96) !important;
-        border: 1.5px solid rgba(168, 85, 247, 0.65) !important;
-        border-left: none !important;
-        border-radius: 0 14px 14px 0 !important;
-        width: 24px !important;
-        height: 52px !important;
-        min-height: 52px !important;
-        padding: 0 !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        box-shadow: 4px 0 16px rgba(0, 0, 0, 0.6), 0 0 14px rgba(168, 85, 247, 0.3) !important;
-        backdrop-filter: blur(16px) !important;
-        -webkit-backdrop-filter: blur(16px) !important;
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        color: #C084FC !important;
-        cursor: pointer !important;
-        pointer-events: auto !important;
-    }
-
-    html body div.stApp [data-testid="stSidebarCollapseButton"] button:hover {
-        background: rgba(168, 85, 247, 0.4) !important;
-        border-color: rgba(168, 85, 247, 0.95) !important;
-        box-shadow: 6px 0 22px rgba(168, 85, 247, 0.7) !important;
-        width: 28px !important;
-    }
-
-    /* Open state: Arrow points LEFT (◀) to close the sidebar */
-    html body div.stApp [data-testid="stSidebarCollapseButton"] button svg {
-        transform: rotate(0deg) !important;
-        fill: #E9D5FF !important;
-        transition: transform 0.2s ease !important;
-    }
-
-    /* When Sidebar is COLLAPSED (CLOSED): Tab handle stuck to the left window edge (left: 5px) */
-    html body div.stApp [data-testid="collapsedControl"],
+    /* Hide ALL native default collapse and expand controls visually — Master JS Toggle manages the interaction */
+    html body div.stApp [data-testid="stSidebarCollapseButton"],
     html body div.stApp [data-testid="stSidebarCollapsedControl"],
-    html body div.stApp div[data-testid="stSidebarCollapsedControl"],
-    html body div.stApp div[data-testid="collapsedControl"],
+    html body div.stApp [data-testid="collapsedControl"],
     html body div.stApp header[data-testid="stHeader"] [data-testid="stSidebarCollapsedControl"],
-    html body div.stApp header[data-testid="stHeader"] [data-testid="collapsedControl"] {
+    html body div.stApp header[data-testid="stHeader"] [data-testid="collapsedControl"],
+    html body div.stApp header[data-testid="stHeader"] button,
+    html body div.stApp [data-testid="stHeader"] button,
+    html body div.stApp button[kind="header"] {
+        opacity: 0 !important;
+        visibility: hidden !important;
         position: fixed !important;
-        top: 50% !important;
-        left: 5px !important;
-        transform: translateY(-50%) !important;
-        z-index: 9999999 !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-        pointer-events: auto !important;
-        width: auto !important;
-        height: auto !important;
-    }
-
-    html body div.stApp [data-testid="collapsedControl"] button,
-    html body div.stApp [data-testid="stSidebarCollapsedControl"] button,
-    html body div.stApp div[data-testid="stSidebarCollapsedControl"] button,
-    html body div.stApp header[data-testid="stHeader"] [data-testid="stSidebarCollapsedControl"] button,
-    html body div.stApp header[data-testid="stHeader"] [data-testid="collapsedControl"] button {
-        background: rgba(22, 16, 36, 0.96) !important;
-        border: 1.5px solid rgba(168, 85, 247, 0.65) !important;
-        border-left: none !important;
-        border-radius: 0 14px 14px 0 !important;
-        width: 24px !important;
-        height: 52px !important;
-        min-height: 52px !important;
+        top: -9999px !important;
+        left: -9999px !important;
+        width: 0px !important;
+        height: 0px !important;
+        max-width: 0px !important;
+        max-height: 0px !important;
         padding: 0 !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        box-shadow: 4px 0 16px rgba(0, 0, 0, 0.6), 0 0 14px rgba(168, 85, 247, 0.3) !important;
-        backdrop-filter: blur(16px) !important;
-        -webkit-backdrop-filter: blur(16px) !important;
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        color: #C084FC !important;
-        cursor: pointer !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-        pointer-events: auto !important;
-    }
-
-    html body div.stApp [data-testid="collapsedControl"] button:hover,
-    html body div.stApp [data-testid="stSidebarCollapsedControl"] button:hover {
-        background: rgba(168, 85, 247, 0.4) !important;
-        border-color: rgba(168, 85, 247, 0.95) !important;
-        box-shadow: 6px 0 22px rgba(168, 85, 247, 0.7) !important;
-        width: 28px !important;
-    }
-
-    /* Closed state: Arrow points RIGHT (▶) to open the sidebar */
-    html body div.stApp [data-testid="collapsedControl"] button svg,
-    html body div.stApp [data-testid="stSidebarCollapsedControl"] button svg {
-        transform: rotate(180deg) !important;
-        fill: #E9D5FF !important;
-        transition: transform 0.2s ease !important;
+        margin: 0 !important;
+        border: none !important;
+        overflow: hidden !important;
+        pointer-events: none !important;
     }
 
     /* ── Logo — Exact Home Page Branding ─────────────── */
@@ -832,6 +739,7 @@ CUSTOM_CSS = """
         display: flex !important;
         visibility: visible !important;
         opacity: 1 !important;
+        overflow: visible !important;
         background-color: #0B0715 !important;
         background-image: radial-gradient(ellipse 300px 300px at 50% 10%, rgba(139, 92, 246, 0.15) 0%, transparent 80%) !important;
         border-right: 1px solid rgba(168, 85, 247, 0.25) !important;
@@ -1622,43 +1530,200 @@ def render_learning_workspace():
 
     memory = get_or_create_memory()
 
-    # Automatically ensure sidebar is open when entering the learning workspace
+    # Master Sidebar Toggle & Auto-Expand Controller (Senior Frontend Architecture)
     components.html(
         """
         <script>
-        function ensureSidebarOpen() {
+        (function() {
             try {
                 const doc = window.parent.document;
-                const sidebar = doc.querySelector('section[data-testid="stSidebar"]');
-                
-                // Specifically look for the sidebar collapsed toggle button
-                const candidates = doc.querySelectorAll('[data-testid="stSidebarCollapsedControl"] button, [data-testid="collapsedControl"] button, button[aria-label*="sidebar" i], button[title*="sidebar" i], button[aria-label*="Expand" i]');
-                
-                let targetBtn = null;
-                for (let b of candidates) {
-                    const text = ((b.getAttribute('aria-label') || '') + ' ' + (b.innerText || '') + ' ' + (b.className || '')).toLowerCase();
-                    if (!text.includes('deploy') && !text.includes('menu') && !b.closest('.stDeployButton') && !b.closest('[data-testid="stAppDeployButton"]')) {
-                        targetBtn = b;
-                        break;
+                const win = window.parent;
+
+                function dispatchFullClick(el) {
+                    if (!el) return;
+                    try {
+                        const opts = { bubbles: true, cancelable: true, view: win };
+                        el.dispatchEvent(new MouseEvent('mousedown', opts));
+                        el.dispatchEvent(new MouseEvent('mouseup', opts));
+                        el.dispatchEvent(new MouseEvent('click', opts));
+                        if (typeof el.click === 'function') el.click();
+                    } catch(err) {
+                        if (typeof el.click === 'function') el.click();
                     }
                 }
-                
-                const isCollapsed = !sidebar || 
-                                    sidebar.getAttribute('aria-expanded') === 'false' || 
-                                    sidebar.getBoundingClientRect().width === 0 ||
-                                    window.getComputedStyle(sidebar).display === 'none';
-                
-                if (targetBtn && isCollapsed) {
-                    targetBtn.click();
+
+                function findExpandButton() {
+                    // 1. Direct standard Streamlit testids
+                    let btn = doc.querySelector('[data-testid="stSidebarCollapsedControl"] button, [data-testid="collapsedControl"] button');
+                    if (btn) return btn;
+
+                    // 2. Search all buttons inside header
+                    const headerBtns = doc.querySelectorAll('header[data-testid="stHeader"] button, [data-testid="stHeader"] button, button[kind="header"]');
+                    for (let b of headerBtns) {
+                        const str = ((b.getAttribute('aria-label') || '') + ' ' + (b.getAttribute('title') || '') + ' ' + b.className).toLowerCase();
+                        if (!str.includes('deploy') && !str.includes('menu') && !b.closest('.stDeployButton') && !b.closest('[data-testid="stAppDeployButton"]')) {
+                            return b;
+                        }
+                    }
+
+                    // 3. Search document-wide for expand / sidebar buttons
+                    const allBtns = doc.querySelectorAll('button');
+                    for (let b of allBtns) {
+                        const aria = (b.getAttribute('aria-label') || '').toLowerCase();
+                        const title = (b.getAttribute('title') || '').toLowerCase();
+                        if (aria.includes('expand') || aria.includes('open sidebar') || title.includes('expand') || title.includes('open sidebar')) {
+                            return b;
+                        }
+                    }
+
+                    // 4. Fallback to container itself
+                    const container = doc.querySelector('[data-testid="stSidebarCollapsedControl"], [data-testid="collapsedControl"]');
+                    if (container) return container;
+
+                    return null;
+                }
+
+                function findCollapseButton() {
+                    let btn = doc.querySelector('section[data-testid="stSidebar"] [data-testid="stSidebarCollapseButton"] button, section[data-testid="stSidebar"] button[aria-label*="Close" i], section[data-testid="stSidebar"] button[aria-label*="Collapse" i]');
+                    if (btn) return btn;
+
+                    const allSbBtns = doc.querySelectorAll('section[data-testid="stSidebar"] button');
+                    for (let b of allSbBtns) {
+                        const aria = (b.getAttribute('aria-label') || '').toLowerCase();
+                        const title = (b.getAttribute('title') || '').toLowerCase();
+                        if (aria.includes('close') || aria.includes('collapse') || title.includes('close') || title.includes('collapse')) {
+                            return b;
+                        }
+                    }
+                    return doc.querySelector('[data-testid="stSidebarCollapseButton"] button');
+                }
+
+                // Auto-expand sidebar if collapsed on initial workspace landing
+                function ensureSidebarOpen() {
+                    const sidebar = doc.querySelector('section[data-testid="stSidebar"]');
+                    const isCollapsed = !sidebar || 
+                                        sidebar.getAttribute('aria-expanded') === 'false' || 
+                                        sidebar.getBoundingClientRect().width === 0 ||
+                                        window.getComputedStyle(sidebar).display === 'none';
+                    if (isCollapsed) {
+                        const targetBtn = findExpandButton();
+                        if (targetBtn) {
+                            dispatchFullClick(targetBtn);
+                        }
+                    }
+                }
+                ensureSidebarOpen();
+                setTimeout(ensureSidebarOpen, 150);
+                setTimeout(ensureSidebarOpen, 400);
+
+                // Inject Master Sidebar Toggle Button directly onto parent document body (immune to transforms & clipping)
+                let toggle = doc.getElementById('edutech-sidebar-master-toggle');
+                if (!toggle) {
+                    toggle = doc.createElement('div');
+                    toggle.id = 'edutech-sidebar-master-toggle';
+                    toggle.innerHTML = `
+                        <svg id="edutech-toggle-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E9D5FF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1); pointer-events: none;">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                    `;
+                    doc.body.appendChild(toggle);
+                }
+
+                // Apply high-end modern glassmorphism styling
+                Object.assign(toggle.style, {
+                    position: 'fixed',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    zIndex: '99999999',
+                    width: '28px',
+                    height: '56px',
+                    background: 'rgba(14, 9, 24, 0.95)',
+                    border: '2px solid #A855F7',
+                    borderLeft: 'none',
+                    borderRadius: '0 12px 12px 0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    boxShadow: '0 0 16px rgba(168, 85, 247, 0.45), 0 4px 12px rgba(0, 0, 0, 0.5)',
+                    backdropFilter: 'blur(16px)',
+                    webkitBackdropFilter: 'blur(16px)',
+                    transition: 'left 0.15s cubic-bezier(0.4, 0, 0.2, 1), width 0.15s ease, background 0.15s ease, box-shadow 0.15s ease',
+                    userSelect: 'none',
+                    webkitUserSelect: 'none',
+                    visibility: 'visible',
+                    opacity: '1',
+                    pointerEvents: 'auto',
+                });
+
+                toggle.onmouseenter = () => {
+                    toggle.style.width = '34px';
+                    toggle.style.background = 'rgba(168, 85, 247, 0.4)';
+                    toggle.style.borderColor = '#C084FC';
+                    toggle.style.boxShadow = '0 0 24px rgba(168, 85, 247, 0.8), 0 0 10px rgba(192, 132, 252, 0.5)';
+                };
+                toggle.onmouseleave = () => {
+                    toggle.style.width = '28px';
+                    toggle.style.background = 'rgba(14, 9, 24, 0.95)';
+                    toggle.style.borderColor = '#A855F7';
+                    toggle.style.boxShadow = '0 0 16px rgba(168, 85, 247, 0.45), 0 4px 12px rgba(0, 0, 0, 0.5)';
+                };
+
+                function isSidebarOpen() {
+                    const sb = doc.querySelector('section[data-testid="stSidebar"]');
+                    if (!sb) return false;
+                    const ariaClosed = sb.getAttribute('aria-expanded') === 'false';
+                    const rect = sb.getBoundingClientRect();
+                    const comp = win.getComputedStyle(sb);
+                    return !ariaClosed && rect.width > 50 && rect.right > 50 && comp.display !== 'none';
+                }
+
+                function updateTogglePosition() {
+                    if (!toggle || !toggle.parentNode) return;
+                    const sb = doc.querySelector('section[data-testid="stSidebar"]');
+                    const svg = toggle.querySelector('#edutech-toggle-chevron');
+                    
+                    if (isSidebarOpen() && sb) {
+                        const rect = sb.getBoundingClientRect();
+                        toggle.style.left = `${Math.max(0, rect.right)}px`;
+                        if (svg) svg.style.transform = 'rotate(0deg)';
+                        toggle.setAttribute('title', 'Collapse Sidebar');
+                    } else {
+                        toggle.style.left = '0px';
+                        if (svg) svg.style.transform = 'rotate(180deg)';
+                        toggle.setAttribute('title', 'Open Sidebar');
+                    }
+                }
+
+                toggle.onclick = function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (isSidebarOpen()) {
+                        const closeBtn = findCollapseButton();
+                        if (closeBtn) dispatchFullClick(closeBtn);
+                    } else {
+                        const expandBtn = findExpandButton();
+                        if (expandBtn) dispatchFullClick(expandBtn);
+                    }
+                    setTimeout(updateTogglePosition, 50);
+                    setTimeout(updateTogglePosition, 150);
+                    setTimeout(updateTogglePosition, 300);
+                    setTimeout(updateTogglePosition, 500);
+                };
+
+                // Continually sync button position smoothly
+                if (!win._edutechToggleTracking) {
+                    win._edutechToggleTracking = true;
+                    function track() {
+                        updateTogglePosition();
+                        requestAnimationFrame(track);
+                    }
+                    requestAnimationFrame(track);
                 }
             } catch (err) {
-                console.error("Auto-expand sidebar error:", err);
+                console.error("Master Sidebar Toggle error:", err);
             }
-        }
-        ensureSidebarOpen();
-        setTimeout(ensureSidebarOpen, 100);
-        setTimeout(ensureSidebarOpen, 350);
-        setTimeout(ensureSidebarOpen, 700);
+        })();
         </script>
         """,
         height=0,
