@@ -1277,7 +1277,7 @@ HOME_CSS = """
     /* ── Auth Page Intro Header & Instructions ── */
     .auth-header-container {
         text-align: center !important;
-        margin: 1.5rem auto 2rem auto !important;
+        margin: 0 auto 1rem auto !important;
         max-width: 800px !important;
     }
 
@@ -1298,6 +1298,7 @@ HOME_CSS = """
         font-size: 2.1rem !important;
         font-weight: 900 !important;
         color: #FAFAFA !important;
+        margin-top: 0 !important;
         margin-bottom: 0.6rem !important;
         line-height: 1.25 !important;
     }
@@ -2558,7 +2559,6 @@ def _render_auth_view():
     st.markdown(
         """
         <div class="auth-header-container">
-            <div class="auth-badge">🔐 SECURE GATEWAY</div>
             <h1 class="auth-title">Access the <span class="gradient-text">AI Learning Workspace</span></h1>
             <p class="auth-subtitle">EduTech AI is an autonomous, multi-agent academic ecosystem. Log in or create a new student account to instantiate your personal supervisor-worker agent swarm.</p>
             <div class="auth-instructions-pill">
