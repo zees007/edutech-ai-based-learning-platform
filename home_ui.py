@@ -621,7 +621,7 @@ HOME_CSS = """
     /* ── Hero ───────────────────────────────────────── */
     .et-hero {
         text-align: center;
-        padding: 3.5rem 1rem 2rem 1rem;
+        padding: 1rem 1rem 1rem 1rem;
         position: relative;
     }
 
