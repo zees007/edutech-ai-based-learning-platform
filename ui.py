@@ -18,6 +18,7 @@ import logging
 import time
 
 import streamlit as st
+import streamlit.components.v1 as components
 
 # ─── Page Configuration ──────────────────────────────────────────
 st.set_page_config(
@@ -144,19 +145,31 @@ CUSTOM_CSS = """
         margin-bottom: 1rem;
     }
 
-    /* ── Completely Eliminate Default Streamlit Header & Deploy Bar ── */
-    header[data-testid="stHeader"] {
-        display: none !important;
-        visibility: hidden !important;
+    /* ── Streamlit Header: 0-height Transparent Container for Sidebar Collapsed Control ── */
+    html body div.stApp header[data-testid="stHeader"] {
+        background: transparent !important;
         height: 0px !important;
         min-height: 0px !important;
+        max-height: 0px !important;
         padding: 0 !important;
         margin: 0 !important;
-        opacity: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
         pointer-events: none !important;
+        z-index: 999999 !important;
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        overflow: visible !important;
     }
 
-    #MainMenu, .stDeployButton, [data-testid="stToolbarActions"], [data-testid="stDecoration"], [data-testid="stStatusWidget"], footer {
+    /* Cleanly target only deploy buttons, decoration line, and main menu without affecting toggle controls */
+    html body div.stApp .stDeployButton,
+    html body div.stApp [data-testid="stAppDeployButton"],
+    html body div.stApp button[data-testid="stAppDeployButton"],
+    html body div.stApp #MainMenu, 
+    html body div.stApp [data-testid="stDecoration"], 
+    html body div.stApp footer {
         display: none !important;
         visibility: hidden !important;
         height: 0px !important;
@@ -167,16 +180,20 @@ CUSTOM_CSS = """
 
     /* ── Vertically Centered Left Navbar Toggle Attached to Separator ── */
     /* When Sidebar is OPEN: Tab handle stuck directly to the vertical separator border */
-    section[data-testid="stSidebar"] {
+    html body div.stApp section[data-testid="stSidebar"] {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
         position: relative !important;
         overflow: visible !important;
     }
 
-    [data-testid="stSidebarCollapseButton"] {
-        position: fixed !important;
+    html body div.stApp [data-testid="stSidebarCollapseButton"] {
+        position: absolute !important;
         top: 50% !important;
-        left: calc(20rem - 1px) !important; /* Stuck intact directly to sidebar separator */
-        transform: translateY(-50%) !important;
+        right: 0 !important;
+        left: auto !important;
+        transform: translate(100%, -50%) !important;
         z-index: 999999 !important;
         display: flex !important;
         align-items: center !important;
@@ -186,7 +203,7 @@ CUSTOM_CSS = """
         pointer-events: auto !important;
     }
 
-    [data-testid="stSidebarCollapseButton"] button {
+    html body div.stApp [data-testid="stSidebarCollapseButton"] button {
         background: rgba(22, 16, 36, 0.96) !important;
         border: 1.5px solid rgba(168, 85, 247, 0.65) !important;
         border-left: none !important;
@@ -204,38 +221,50 @@ CUSTOM_CSS = """
         transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
         color: #C084FC !important;
         cursor: pointer !important;
+        pointer-events: auto !important;
     }
 
-    [data-testid="stSidebarCollapseButton"] button:hover {
+    html body div.stApp [data-testid="stSidebarCollapseButton"] button:hover {
         background: rgba(168, 85, 247, 0.4) !important;
         border-color: rgba(168, 85, 247, 0.95) !important;
         box-shadow: 6px 0 22px rgba(168, 85, 247, 0.7) !important;
         width: 28px !important;
     }
 
-    /* Open state arrow points LEFT (◀) */
-    [data-testid="stSidebarCollapseButton"] button svg {
+    /* Open state: Arrow points LEFT (◀) to close the sidebar */
+    html body div.stApp [data-testid="stSidebarCollapseButton"] button svg {
         transform: rotate(0deg) !important;
         fill: #E9D5FF !important;
         transition: transform 0.2s ease !important;
     }
 
-    /* When Sidebar is COLLAPSED (CLOSED): Tab handle stuck to the left window edge */
-    [data-testid="collapsedControl"] {
+    /* When Sidebar is COLLAPSED (CLOSED): Tab handle stuck to the left window edge (left: 5px) */
+    html body div.stApp [data-testid="collapsedControl"],
+    html body div.stApp [data-testid="stSidebarCollapsedControl"],
+    html body div.stApp div[data-testid="stSidebarCollapsedControl"],
+    html body div.stApp div[data-testid="collapsedControl"],
+    html body div.stApp header[data-testid="stHeader"] [data-testid="stSidebarCollapsedControl"],
+    html body div.stApp header[data-testid="stHeader"] [data-testid="collapsedControl"] {
         position: fixed !important;
         top: 50% !important;
-        left: 0px !important;
+        left: 5px !important;
         transform: translateY(-50%) !important;
-        z-index: 999999 !important;
+        z-index: 9999999 !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
         visibility: visible !important;
         opacity: 1 !important;
         pointer-events: auto !important;
+        width: auto !important;
+        height: auto !important;
     }
 
-    [data-testid="collapsedControl"] button {
+    html body div.stApp [data-testid="collapsedControl"] button,
+    html body div.stApp [data-testid="stSidebarCollapsedControl"] button,
+    html body div.stApp div[data-testid="stSidebarCollapsedControl"] button,
+    html body div.stApp header[data-testid="stHeader"] [data-testid="stSidebarCollapsedControl"] button,
+    html body div.stApp header[data-testid="stHeader"] [data-testid="collapsedControl"] button {
         background: rgba(22, 16, 36, 0.96) !important;
         border: 1.5px solid rgba(168, 85, 247, 0.65) !important;
         border-left: none !important;
@@ -253,17 +282,22 @@ CUSTOM_CSS = """
         transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
         color: #C084FC !important;
         cursor: pointer !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
     }
 
-    [data-testid="collapsedControl"] button:hover {
+    html body div.stApp [data-testid="collapsedControl"] button:hover,
+    html body div.stApp [data-testid="stSidebarCollapsedControl"] button:hover {
         background: rgba(168, 85, 247, 0.4) !important;
         border-color: rgba(168, 85, 247, 0.95) !important;
         box-shadow: 6px 0 22px rgba(168, 85, 247, 0.7) !important;
         width: 28px !important;
     }
 
-    /* Closed state arrow points RIGHT (▶) */
-    [data-testid="collapsedControl"] button svg {
+    /* Closed state: Arrow points RIGHT (▶) to open the sidebar */
+    html body div.stApp [data-testid="collapsedControl"] button svg,
+    html body div.stApp [data-testid="stSidebarCollapsedControl"] button svg {
         transform: rotate(180deg) !important;
         fill: #E9D5FF !important;
         transition: transform 0.2s ease !important;
@@ -794,7 +828,10 @@ CUSTOM_CSS = """
     }
 
     /* ── Sidebar Glassmorphic Theme ─────────────────── */
-    section[data-testid="stSidebar"] {
+    html body div.stApp section[data-testid="stSidebar"] {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
         background-color: #0B0715 !important;
         background-image: radial-gradient(ellipse 300px 300px at 50% 10%, rgba(139, 92, 246, 0.15) 0%, transparent 80%) !important;
         border-right: 1px solid rgba(168, 85, 247, 0.25) !important;
@@ -1584,6 +1621,49 @@ def render_learning_workspace():
         st.rerun()
 
     memory = get_or_create_memory()
+
+    # Automatically ensure sidebar is open when entering the learning workspace
+    components.html(
+        """
+        <script>
+        function ensureSidebarOpen() {
+            try {
+                const doc = window.parent.document;
+                const sidebar = doc.querySelector('section[data-testid="stSidebar"]');
+                
+                // Specifically look for the sidebar collapsed toggle button
+                const candidates = doc.querySelectorAll('[data-testid="stSidebarCollapsedControl"] button, [data-testid="collapsedControl"] button, button[aria-label*="sidebar" i], button[title*="sidebar" i], button[aria-label*="Expand" i]');
+                
+                let targetBtn = null;
+                for (let b of candidates) {
+                    const text = ((b.getAttribute('aria-label') || '') + ' ' + (b.innerText || '') + ' ' + (b.className || '')).toLowerCase();
+                    if (!text.includes('deploy') && !text.includes('menu') && !b.closest('.stDeployButton') && !b.closest('[data-testid="stAppDeployButton"]')) {
+                        targetBtn = b;
+                        break;
+                    }
+                }
+                
+                const isCollapsed = !sidebar || 
+                                    sidebar.getAttribute('aria-expanded') === 'false' || 
+                                    sidebar.getBoundingClientRect().width === 0 ||
+                                    window.getComputedStyle(sidebar).display === 'none';
+                
+                if (targetBtn && isCollapsed) {
+                    targetBtn.click();
+                }
+            } catch (err) {
+                console.error("Auto-expand sidebar error:", err);
+            }
+        }
+        ensureSidebarOpen();
+        setTimeout(ensureSidebarOpen, 100);
+        setTimeout(ensureSidebarOpen, 350);
+        setTimeout(ensureSidebarOpen, 700);
+        </script>
+        """,
+        height=0,
+        width=0,
+    )
 
     # ─── Sidebar Controls & Gamification (Left Panel) ────────────────
     with st.sidebar:
