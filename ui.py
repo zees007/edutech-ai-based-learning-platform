@@ -1169,10 +1169,11 @@ CUSTOM_CSS = """
 
 
 
-    /* Style the primary Ask Tutor & Submit Quiz buttons inside forms */
+    /* Style the primary Ask Tutor, Submit Quiz & Sign Out buttons inside forms/popovers */
     div[data-testid="stForm"]:has(div[class*="st-key-chat_in_"]) div[data-testid="stFormSubmitButton"] button,
     div[data-testid="stForm"]:has(div[class*="st-key-q_"]) div[data-testid="stFormSubmitButton"] button,
-    div[data-testid="stForm"] div[data-testid="stFormSubmitButton"] button[kind="primary"] {
+    div[data-testid="stForm"] div[data-testid="stFormSubmitButton"] button[kind="primary"],
+    div[class*="st-key-nav_logout_btn"] button {
         width: 100% !important;
         max-width: 100% !important;
         min-width: 0 !important;
@@ -1200,7 +1201,8 @@ CUSTOM_CSS = """
 
     div[data-testid="stForm"]:has(div[class*="st-key-chat_in_"]) div[data-testid="stFormSubmitButton"] button:hover,
     div[data-testid="stForm"]:has(div[class*="st-key-q_"]) div[data-testid="stFormSubmitButton"] button:hover,
-    div[data-testid="stForm"] div[data-testid="stFormSubmitButton"] button[kind="primary"]:hover {
+    div[data-testid="stForm"] div[data-testid="stFormSubmitButton"] button[kind="primary"]:hover,
+    div[class*="st-key-nav_logout_btn"] button:hover {
         background: linear-gradient(135deg, #F43F5E 0%, #9333EA 50%, #2563EB 100%) !important;
         box-shadow: 0 0 28px rgba(236, 72, 153, 0.65), 0 0 15px rgba(6, 182, 212, 0.4) !important;
         transform: translateY(-2px) !important;
@@ -1350,6 +1352,38 @@ CUSTOM_CSS = """
         font-size: 0.7rem !important;
         color: #94A3B8 !important;
         text-transform: uppercase !important;
+    }
+
+    /* ── Popovers & Profile Dropdown Modern Glass Theme ── */
+    div[data-testid="stPopoverBody"],
+    div[data-baseweb="popover"],
+    div[data-baseweb="popover"] > div {
+        background: linear-gradient(135deg, rgba(20, 13, 33, 0.96) 0%, rgba(30, 20, 50, 0.94) 100%) !important;
+        border: 1.5px solid rgba(168, 85, 247, 0.45) !important;
+        border-radius: 18px !important;
+        box-shadow: 0 12px 35px rgba(0, 0, 0, 0.65), 0 0 25px rgba(168, 85, 247, 0.25) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        padding: 8px 12px !important;
+        color: #FAFAFA !important;
+    }
+
+    div[data-testid="stPopover"] > button,
+    div[class*="st-key-nav_admin_btn"] button {
+        background: rgba(20, 13, 33, 0.85) !important;
+        border: 1px solid rgba(168, 85, 247, 0.4) !important;
+        border-radius: 12px !important;
+        color: #FAFAFA !important;
+        box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.4) !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+
+    div[data-testid="stPopover"] > button:hover,
+    div[class*="st-key-nav_admin_btn"] button:hover {
+        border-color: rgba(192, 132, 252, 0.9) !important;
+        box-shadow: 0 0 18px rgba(168, 85, 247, 0.45) !important;
+        background: rgba(30, 20, 50, 0.9) !important;
+        transform: translateY(-1px) !important;
     }
 
     /* ── Inputs & Selectboxes Theming ────────────────── */
@@ -2080,7 +2114,7 @@ def render_learning_workspace():
                     unsafe_allow_html=True,
                 )
                 st.markdown("<hr style='border-color:rgba(168,85,247,0.25); margin:8px 0;'>", unsafe_allow_html=True)
-                if st.button("⏻ Sign Out", key="nav_logout_btn", use_container_width=True):
+                if st.button("⏻ Sign Out", key="nav_logout_btn", type="primary", use_container_width=True):
                     st.session_state["user_profile"] = None
                     st.session_state["view"] = "home"
                     st.query_params.clear()
