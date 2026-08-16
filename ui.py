@@ -86,8 +86,21 @@ CUSTOM_CSS = """
     }
 
     .block-container {
-        padding-top: 1.2rem !important;
+        padding-top: 1.5rem !important;
         padding-bottom: 3rem !important;
+    }
+
+    /* Eliminate spacing from 0-height custom components, wrappers, and background elements */
+    div[data-testid="stCustomComponentV1"],
+    div.element-container:has(iframe[height="0"]),
+    div.stCustomComponentV1:has(iframe[height="0"]),
+    iframe[height="0"] {
+        display: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        height: 0px !important;
+        min-height: 0px !important;
+        border: none !important;
     }
 
     /* ── Glowing Background Orbs ───────────────────── */
@@ -1528,6 +1541,45 @@ def render_learning_workspace():
         st.toast("🔒 Authentication Required: Please sign in or create an account to access the AI learning workspace.", icon="🔒")
         st.rerun()
 
+    # ─── TOP NAVBAR: Floating Pill Navbar matching Homepage (rendered first) ──────────
+    u_tier = (user_profile.subscription.tier if user_profile.subscription else "normal").upper()
+    top_nav_l, top_nav_r = st.columns([8.8, 1.2], vertical_alignment="center")
+
+    with top_nav_l:
+        st.markdown(
+            '<div class="et-learning-nav"><div class="et-logo">⚡ <span class="accent">EduTech</span> <span class="badge-ai">AI</span></div></div>',
+            unsafe_allow_html=True,
+        )
+
+    with top_nav_r:
+        r_a, r_p = st.columns(2, gap="small", vertical_alignment="center")
+        with r_a:
+            if st.button("", icon=":material/settings:", key="nav_admin_btn", help="Admin Console & Settings", use_container_width=False):
+                st.session_state["view"] = "admin"
+                st.rerun()
+        with r_p:
+            with st.popover("", icon=":material/person:", help=f"Profile: {user_profile.first_name} {user_profile.last_name}", use_container_width=False):
+                st.markdown(
+                    f"""
+                    <div style="text-align: center; padding: 4px 0 8px 0;">
+                        <div style="font-size: 2.2rem; margin-bottom: 4px;">👤</div>
+                        <div style="font-weight: 800; font-size: 1.05rem; color: #FAFAFA;">{user_profile.first_name} {user_profile.last_name}</div>
+                        <div style="font-size: 0.8rem; color: rgba(233, 213, 255, 0.7); margin-bottom: 8px;">{user_profile.email if hasattr(user_profile, 'email') and user_profile.email else 'Student'}</div>
+                        <div style="display: inline-block; background: rgba(168, 85, 247, 0.25); border: 1px solid rgba(168, 85, 247, 0.5); border-radius: 20px; padding: 2px 12px; font-size: 0.75rem; font-weight: 800; color: #C084FC; text-transform: uppercase;">
+                            ✨ {u_tier} Tier
+                        </div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+                st.markdown("<hr style='border-color:rgba(168,85,247,0.25); margin:8px 0;'>", unsafe_allow_html=True)
+                if st.button("⏻ Sign Out", key="nav_logout_btn", use_container_width=True):
+                    st.session_state["user_profile"] = None
+                    st.session_state["view"] = "home"
+                    st.query_params.clear()
+                    st.toast("Logged out successfully.", icon="ℹ️")
+                    st.rerun()
+
     memory = get_or_create_memory()
 
     # Master Sidebar Toggle & Auto-Expand Controller (Senior Frontend Architecture)
@@ -1872,47 +1924,6 @@ def render_learning_workspace():
         st.rerun()
 
     memory = get_or_create_memory()
-
-    # ─── TOP NAVBAR: Floating Pill Navbar matching Homepage ──────────
-    u_tier = (user_profile.subscription.tier if user_profile.subscription else "normal").upper()
-    top_nav_l, top_nav_r = st.columns([8.8, 1.2], vertical_alignment="center")
-
-    with top_nav_l:
-        st.markdown(
-            '<div class="et-learning-nav"><div class="et-logo">⚡ <span class="accent">EduTech</span> <span class="badge-ai">AI</span></div></div>',
-            unsafe_allow_html=True,
-        )
-
-    with top_nav_r:
-        r_a, r_p = st.columns(2, gap="small", vertical_alignment="center")
-        with r_a:
-            if st.button("", icon=":material/settings:", key="nav_admin_btn", help="Admin Console & Settings", use_container_width=False):
-                st.session_state["view"] = "admin"
-                st.rerun()
-        with r_p:
-            with st.popover("", icon=":material/person:", help=f"Profile: {user_profile.first_name} {user_profile.last_name}", use_container_width=False):
-                st.markdown(
-                    f"""
-                    <div style="text-align: center; padding: 4px 0 8px 0;">
-                        <div style="font-size: 2.2rem; margin-bottom: 4px;">👤</div>
-                        <div style="font-weight: 800; font-size: 1.05rem; color: #FAFAFA;">{user_profile.first_name} {user_profile.last_name}</div>
-                        <div style="font-size: 0.8rem; color: rgba(233, 213, 255, 0.7); margin-bottom: 8px;">{user_profile.email if hasattr(user_profile, 'email') and user_profile.email else 'Student'}</div>
-                        <div style="display: inline-block; background: rgba(168, 85, 247, 0.25); border: 1px solid rgba(168, 85, 247, 0.5); border-radius: 20px; padding: 2px 12px; font-size: 0.75rem; font-weight: 800; color: #C084FC; text-transform: uppercase;">
-                            ✨ {u_tier} Tier
-                        </div>
-                    </div>
-                    """,
-                    unsafe_allow_html=True,
-                )
-                st.markdown("<hr style='border-color:rgba(168,85,247,0.25); margin:8px 0;'>", unsafe_allow_html=True)
-                if st.button("⏻ Sign Out", key="nav_logout_btn", use_container_width=True):
-                    st.session_state["user_profile"] = None
-                    st.session_state["view"] = "home"
-                    st.query_params.clear()
-                    st.toast("Logged out successfully.", icon="ℹ️")
-                    st.rerun()
-
-    st.markdown("<div style='height: 0.8rem;'></div>", unsafe_allow_html=True)
 
     # ─── Main Content Workspace ──────────────────────────────────────
     if not memory or not memory.steps:
