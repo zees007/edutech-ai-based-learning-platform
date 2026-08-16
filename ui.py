@@ -176,12 +176,14 @@ CUSTOM_CSS = """
         display: none !important;
     }
 
-    /* Cleanly target deploy buttons, decoration line, and main menu */
+    /* Cleanly target deploy buttons, decoration line, main menu, and header anchor link icons */
     html body div.stApp .stDeployButton,
     html body div.stApp [data-testid="stAppDeployButton"],
     html body div.stApp button[data-testid="stAppDeployButton"],
     html body div.stApp #MainMenu, 
     html body div.stApp [data-testid="stDecoration"], 
+    html body div.stApp [data-testid="stHeaderActionElements"],
+    html body div.stApp a[aria-label="Link to heading"],
     html body div.stApp footer {
         display: none !important;
         visibility: hidden !important;
@@ -275,20 +277,20 @@ CUSTOM_CSS = """
         text-overflow: ellipsis;
     }
 
-    /* ── Hero Center Typography (Home Page Theme) ────── */
+    /* ── Hero Center Typography (Exact Home Page Theme) ────── */
     .et-hero {
         text-align: center;
-        padding: 1.6rem 1rem 1.4rem 1rem;
+        padding: 0.2rem 1rem 0.6rem 1rem;
         position: relative;
     }
 
     .et-hero h1 {
-        font-size: 3.4rem;
+        font-size: 3.6rem;
         font-weight: 900;
         color: #FAFAFA;
         line-height: 1.15;
         letter-spacing: -2px;
-        margin-bottom: 1.0rem;
+        margin-bottom: 0.8rem;
         max-width: 840px;
         margin-left: auto;
         margin-right: auto;
@@ -303,9 +305,66 @@ CUSTOM_CSS = """
     .et-hero p {
         font-size: 1.15rem;
         color: rgba(233, 213, 255, 0.75);
-        max-width: 680px;
-        margin: 0 auto 2.2rem auto;
+        max-width: 660px;
+        margin: 0 auto 1.4rem auto;
         line-height: 1.7;
+    }
+
+    /* ── Sidebar Guide Callout Banner (Matching Sidebar Handle Theme) ── */
+    .sidebar-guide-card {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        background: linear-gradient(135deg, rgba(14, 9, 24, 0.95) 0%, rgba(30, 20, 50, 0.85) 100%);
+        border: 1.5px solid rgba(168, 85, 247, 0.6);
+        border-radius: 50px;
+        padding: 0.8rem 1.8rem;
+        margin: 0 auto 2.2rem auto;
+        max-width: 800px;
+        box-shadow: 0 0 30px rgba(168, 85, 247, 0.25), 0 8px 25px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(168, 85, 247, 0.15);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        transition: all 0.3s ease;
+    }
+
+    .sidebar-guide-card:hover {
+        border-color: #C084FC;
+        box-shadow: 0 0 40px rgba(168, 85, 247, 0.4), 0 10px 30px rgba(0, 0, 0, 0.6);
+        transform: translateY(-2px);
+    }
+
+    .guide-handle-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(168, 85, 247, 0.25);
+        border: 1.5px solid #A855F7;
+        border-radius: 20px;
+        padding: 5px 12px;
+        color: #E9D5FF;
+        font-size: 0.78rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        box-shadow: 0 0 14px rgba(168, 85, 247, 0.4);
+        flex-shrink: 0;
+    }
+
+    .guide-chevron-pulse {
+        animation: chevronSlide 1.5s infinite ease-in-out;
+    }
+
+    @keyframes chevronSlide {
+        0%, 100% { transform: translateX(0); }
+        50% { transform: translateX(-4px); }
+    }
+
+    .guide-text-content {
+        font-size: 0.98rem;
+        font-weight: 600;
+        color: #FAFAFA;
+        line-height: 1.4;
     }
 
     /* ── Navbar — Floating Glassmorphism Theme (Learning Workspace) ───────── */
@@ -2064,15 +2123,20 @@ def render_learning_workspace():
         # Centered Hero Section (Matching Home Page Typography & Gradient Text)
         st.markdown(
             """
-            <div class="et-hero" style="padding: 1.0rem 1rem 1.4rem 1rem;">
-                <h1>EduTech<span class="gradient-text">AI</span> Learning Workspace</h1>
+            <div class="et-hero">
+                <h1>EduTechAI<br/><span class="gradient-text">Learning Workspace</span></h1>
                 <p>An adaptive, intelligent learning studio where specialized AI agents orchestrate personalized roadmaps, intuitive analogies, video deep-dives, and instant mastery checks.</p>
             </div>
-            <div class="glass-card" style="margin-bottom: 2rem; border-color: rgba(168, 85, 247, 0.5); text-align: center; padding: 1.4rem 2rem;">
-                <span style="font-size: 1.2rem;">👈</span>
-                <span style="font-size: 1.02rem; font-weight: 700; color: #FAFAFA; margin-left: 8px;">
-                    Enter any topic in the sidebar and click <span class="gradient-text" style="font-weight: 800;">'Start Learning Journey'</span> to launch your multi-agent studio!
-                </span>
+            <div class="sidebar-guide-card">
+                <div class="guide-handle-badge">
+                    <svg class="guide-chevron-pulse" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#E9D5FF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                    <span>Sidebar</span>
+                </div>
+                <div class="guide-text-content">
+                    Enter any topic in the sidebar & click <span class="gradient-text" style="font-weight: 800;">'Start Learning Journey'</span> to launch your multi-agent studio!
+                </div>
             </div>
             """,
             unsafe_allow_html=True,
