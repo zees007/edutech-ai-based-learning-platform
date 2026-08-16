@@ -2108,7 +2108,7 @@ async def generate_all_agent_content_for_step(step, memory: SharedMemory) -> Non
 
 
 # ─── One-Time DB Initialization (at Streamlit app startup) ───────
-@st.cache_resource
+@st.cache_resource(show_spinner=False)
 def _init_db_once():
     """Warm up DB schema, migrations, and seeds at app start — not on first admin switch."""
     from services.database import init_db
