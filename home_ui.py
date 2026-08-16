@@ -1916,6 +1916,90 @@ HOME_CSS = """
         margin-bottom: 0.5rem !important;
     }
 
+    /* ── Luminous Neon Glassmorphism Spinner / Auth Loader ── */
+    div[data-testid="stSpinner"],
+    .stSpinner {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 14px !important;
+        background: linear-gradient(135deg, rgba(20, 13, 33, 0.96) 0%, rgba(30, 20, 50, 0.92) 100%) !important;
+        backdrop-filter: blur(25px) !important;
+        -webkit-backdrop-filter: blur(25px) !important;
+        border: 1.5px solid rgba(168, 85, 247, 0.55) !important;
+        border-radius: 50px !important;
+        padding: 14px 28px !important;
+        margin: 1.2rem auto !important;
+        box-shadow: 0 0 35px rgba(168, 85, 247, 0.35), 0 10px 30px rgba(0, 0, 0, 0.6), inset 0 0 20px rgba(168, 85, 247, 0.15) !important;
+        width: fit-content !important;
+        max-width: 95% !important;
+        box-sizing: border-box !important;
+        animation: spinnerGlowPulse 2.5s infinite ease-in-out !important;
+        position: relative !important;
+        overflow: hidden !important;
+    }
+
+    /* Top Accent Line for Spinner */
+    div[data-testid="stSpinner"]::before,
+    .stSpinner::before {
+        content: '' !important;
+        position: absolute !important;
+        top: 0 !important; left: 15% !important; right: 15% !important; height: 2px !important;
+        background: linear-gradient(90deg, transparent 0%, #EC4899 30%, #A855F7 50%, #06B6D4 70%, transparent 100%) !important;
+        border-radius: 2px !important;
+        box-shadow: 0 0 10px #EC4899, 0 0 14px #A855F7 !important;
+    }
+
+    /* Pulse Glow Animation for Loader */
+    @keyframes spinnerGlowPulse {
+        0%, 100% {
+            border-color: rgba(168, 85, 247, 0.45);
+            box-shadow: 0 0 30px rgba(168, 85, 247, 0.3), 0 10px 30px rgba(0, 0, 0, 0.6), inset 0 0 15px rgba(168, 85, 247, 0.1);
+        }
+        50% {
+            border-color: rgba(6, 182, 212, 0.8);
+            box-shadow: 0 0 45px rgba(6, 182, 212, 0.45), 0 0 30px rgba(168, 85, 247, 0.35), 0 10px 30px rgba(0, 0, 0, 0.7), inset 0 0 25px rgba(6, 182, 212, 0.2);
+            transform: scale(1.02);
+        }
+    }
+
+    /* Spinner Icon Glow & Colors */
+    div[data-testid="stSpinner"] > i,
+    div[data-testid="stSpinner"] svg,
+    .stSpinner svg {
+        border-top-color: #EC4899 !important;
+        border-right-color: #A855F7 !important;
+        border-bottom-color: #06B6D4 !important;
+        border-left-color: transparent !important;
+        filter: drop-shadow(0 0 10px rgba(168, 85, 247, 0.9)) !important;
+        width: 22px !important;
+        height: 22px !important;
+        flex-shrink: 0 !important;
+    }
+
+    /* Spinner Text */
+    div[data-testid="stSpinner"] div[data-testid="stMarkdownContainer"],
+    .stSpinner div[data-testid="stMarkdownContainer"] {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    div[data-testid="stSpinner"] p,
+    .stSpinner p {
+        font-size: 0.92rem !important;
+        font-weight: 800 !important;
+        letter-spacing: 0.4px !important;
+        background: linear-gradient(135deg, #F472B6 0%, #C084FC 50%, #38BDF8 100%) !important;
+        -webkit-background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        line-height: 1.3 !important;
+        text-shadow: 0 0 15px rgba(168, 85, 247, 0.3) !important;
+        white-space: nowrap !important;
+    }
+
     div[data-testid="stColumn"]:has(#auth-canvas-marker)::before,
     .auth-flow-canvas::before {
         content: '' !important;
@@ -3144,7 +3228,7 @@ def _render_auth_view():
                     if not email_in or not pass_in:
                         st.error("Please provide both email and password.")
                     else:
-                        with st.spinner("Authenticating..."):
+                        with st.spinner("⚡ Authenticating & Initializing AI Agent Squad..."):
                             try:
                                 from services.auth_service import AuthService
                                 from services.database import get_db_session
@@ -3186,7 +3270,7 @@ def _render_auth_view():
                     elif len(sp) < 6:
                         st.error("Password must be at least 6 characters long.")
                     else:
-                        with st.spinner("Creating account..."):
+                        with st.spinner("✨ Provisioning Workspace & Spawning Agents..."):
                             try:
                                 from models.user_schemas import UserCreateRequest
                                 from services.auth_service import AuthService
