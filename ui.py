@@ -18,6 +18,7 @@ import logging
 import time
 
 import streamlit as st
+import streamlit.components.v1 as components
 
 # ─── Page Configuration ──────────────────────────────────────────
 st.set_page_config(
@@ -41,138 +42,897 @@ from models.schemas import LearningMode, StepStatus
 from models.shared_memory import SharedMemory
 from services.gamification import calculate_level, calculate_quiz_xp, calculate_step_xp
 
-# ─── Custom CSS Styling ──────────────────────────────────────────
+# ─── Custom CSS Styling — Glassy AI Theme (Matching Landing Page) ──────────
 CUSTOM_CSS = """
 <style>
-    /* Dark Theme Customization */    
-    /* Header styling */
+    /* ── Animations ─────────────────────────────────── */
+    @keyframes pulseGlow {
+        0%, 100% { opacity: 0.6; }
+        50% { opacity: 1; }
+    }
+
+    @keyframes floatUp {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-6px); }
+    }
+
+    @keyframes gradientShift {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
+    @keyframes borderGlow {
+        0%, 100% { border-color: rgba(139, 92, 246, 0.3); }
+        50% { border-color: rgba(139, 92, 246, 0.6); }
+    }
+
+    @keyframes n8nPulseGlow {
+        0%, 100% { transform: scale(1); opacity: 0.85; box-shadow: 0 0 15px rgba(168, 85, 247, 0.35); }
+        50% { transform: scale(1.005); opacity: 1; box-shadow: 0 0 30px rgba(6, 182, 212, 0.6); }
+    }
+
+    @keyframes meshGlow {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
+    /* ── Global Page & Atmosphere ────────────────────── */
+    .stApp {
+        background-color: #0E0918 !important;
+        color: #FAFAFA !important;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+    }
+
+    .block-container {
+        padding-top: 1.5rem !important;
+        padding-bottom: 3rem !important;
+    }
+
+    /* Eliminate spacing from 0-height custom components, wrappers, and background elements */
+    div[data-testid="stCustomComponentV1"],
+    div.element-container:has(iframe[height="0"]),
+    div.stCustomComponentV1:has(iframe[height="0"]),
+    iframe[height="0"] {
+        display: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        height: 0px !important;
+        min-height: 0px !important;
+        border: none !important;
+    }
+
+    /* ── Glowing Background Orbs ───────────────────── */
+    .glow-bg {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        pointer-events: none;
+        z-index: 0;
+        background:
+            radial-gradient(ellipse 650px 450px at 15% 10%, rgba(139, 92, 246, 0.14) 0%, transparent 70%),
+            radial-gradient(ellipse 550px 380px at 85% 30%, rgba(236, 72, 153, 0.09) 0%, transparent 70%),
+            radial-gradient(ellipse 450px 320px at 50% 80%, rgba(59, 130, 246, 0.08) 0%, transparent 70%);
+    }
+
+    /* ── Signature Gradient Text & Headings ──────────── */
     .main-title {
         font-size: 2.2rem;
-        font-weight: 800;
-        background: linear-gradient(135deg, #A855F7 0%, #3B82F6 50%, #06B6D4 100%);
+        font-weight: 900;
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        margin-bottom: 0.2rem;
+        letter-spacing: -0.5px;
+        line-height: 1.2;
+        margin-bottom: 0.3rem;
     }
     
     .sub-title {
-        color: #94A3B8;
+        color: rgba(233, 213, 255, 0.75);
         font-size: 1.0rem;
         margin-bottom: 1.5rem;
+        line-height: 1.5;
     }
 
-    /* Glassmorphism Cards */
-    .glass-card {
-        background: rgba(30, 41, 59, 0.7);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 12px;
-        padding: 1.2rem;
-        margin-bottom: 1rem;
-        backdrop-filter: blur(10px);
+    .gradient-text {
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        display: inline;
     }
-    
-    .tutor-card {
-        border-left: 4px solid #A855F7;
-        background: rgba(24, 24, 37, 0.8);
-    }
-    
-    .prereq-badge {
-        background-color: #FEF08A;
-        color: #854D0E;
+
+    .section-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(168, 85, 247, 0.12);
+        border: 1px solid rgba(168, 85, 247, 0.35);
+        color: #E9D5FF;
         font-size: 0.75rem;
-        font-weight: 700;
-        padding: 3px 8px;
-        border-radius: 6px;
+        font-weight: 800;
+        padding: 5px 16px;
+        border-radius: 24px;
+        box-shadow: 0 0 20px rgba(168, 85, 247, 0.2);
         text-transform: uppercase;
-        margin-left: 8px;
-    }
-
-    /* XP Level Badge */
-    .level-badge {
-        background: linear-gradient(135deg, #7C3AED 0%, #C084FC 100%);
-        color: white;
-        border-radius: 10px;
-        padding: 12px 16px;
-        text-align: center;
+        letter-spacing: 1px;
         margin-bottom: 1rem;
-        box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
     }
 
-    .level-number {
-        font-size: 1.8rem;
+    /* ── Streamlit Header: Completely Hidden from View ── */
+    html body div.stApp header[data-testid="stHeader"],
+    html body div.stApp [data-testid="stHeader"] {
+        background: transparent !important;
+        height: 0px !important;
+        min-height: 0px !important;
+        max-height: 0px !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+        pointer-events: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        overflow: hidden !important;
+        display: none !important;
+    }
+
+    /* Cleanly target deploy buttons, decoration line, main menu, and header anchor link icons */
+    html body div.stApp .stDeployButton,
+    html body div.stApp [data-testid="stAppDeployButton"],
+    html body div.stApp button[data-testid="stAppDeployButton"],
+    html body div.stApp #MainMenu, 
+    html body div.stApp [data-testid="stDecoration"], 
+    html body div.stApp [data-testid="stHeaderActionElements"],
+    html body div.stApp a[aria-label="Link to heading"],
+    html body div.stApp footer {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0px !important;
+        width: 0px !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }
+
+    /* ── Sidebar Layout & Default Controls Clean Up ── */
+    html body div.stApp section[data-testid="stSidebar"] {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+
+    /* Hide ALL native default collapse and expand controls & sidebar headers visually */
+    html body div.stApp [data-testid="stSidebarHeader"],
+    html body div.stApp [data-testid="stLogoSpacer"],
+    html body div.stApp [data-testid="stSidebarCollapseButton"],
+    html body div.stApp [data-testid="stSidebarCollapsedControl"],
+    html body div.stApp [data-testid="collapsedControl"],
+    html body div.stApp header[data-testid="stHeader"] [data-testid="stSidebarCollapsedControl"],
+    html body div.stApp header[data-testid="stHeader"] [data-testid="collapsedControl"],
+    html body div.stApp header[data-testid="stHeader"] button,
+    html body div.stApp [data-testid="stHeader"] button,
+    html body div.stApp button[kind="header"] {
+        display: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        position: fixed !important;
+        top: -9999px !important;
+        left: -9999px !important;
+        width: 0px !important;
+        height: 0px !important;
+        max-width: 0px !important;
+        max-height: 0px !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border: none !important;
+        overflow: hidden !important;
+        pointer-events: none !important;
+    }
+
+    /* ── Logo — Exact Home Page Branding ─────────────── */
+    .et-logo, .et-logo-simple {
+        font-size: 1.38rem;
         font-weight: 900;
+        color: #FAFAFA;
+        letter-spacing: -0.5px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin: 0;
+        line-height: 1;
+        align-self: center;
+    }
+
+    .et-logo .accent, .et-logo-simple .accent {
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .et-logo .badge-ai, .et-logo-simple .badge-ai {
+        font-size: 0.65rem;
+        font-weight: 800;
+        background: rgba(168, 85, 247, 0.2);
+        color: #C084FC;
+        border: 1px solid rgba(168, 85, 247, 0.4);
+        border-radius: 8px;
+        padding: 2px 6px;
+        margin-left: 2px;
         line-height: 1;
     }
 
-    .level-title {
-        font-size: 0.85rem;
+    .et-nav-topic {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(168, 85, 247, 0.12);
+        border: 1px solid rgba(168, 85, 247, 0.35);
+        border-radius: 20px;
+        padding: 4px 14px;
+        color: #E9D5FF;
+        font-size: 0.82rem;
+        font-weight: 700;
+        max-width: 380px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* ── Hero Center Typography (Exact Home Page Theme) ────── */
+    .et-hero {
+        text-align: center;
+        padding: 0.2rem 1rem 0.6rem 1rem;
+        position: relative;
+    }
+
+    .et-hero h1 {
+        font-size: 3.6rem;
+        font-weight: 900;
+        color: #FAFAFA;
+        line-height: 1.15;
+        letter-spacing: -2px;
+        margin-bottom: 0.8rem;
+        max-width: 840px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .et-hero .gradient-text {
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .et-hero p {
+        font-size: 1.15rem;
+        color: rgba(233, 213, 255, 0.75);
+        max-width: 660px;
+        margin: 0 auto 1.4rem auto;
+        line-height: 1.7;
+    }
+
+    /* ── Sidebar Guide Callout Banner (Matching Sidebar Handle Theme) ── */
+    .sidebar-guide-card {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        background: linear-gradient(135deg, rgba(14, 9, 24, 0.95) 0%, rgba(30, 20, 50, 0.85) 100%);
+        border: 1.5px solid rgba(168, 85, 247, 0.6);
+        border-radius: 50px;
+        padding: 0.8rem 1.8rem;
+        margin: 0 auto 2.2rem auto;
+        max-width: 800px;
+        box-shadow: 0 0 30px rgba(168, 85, 247, 0.25), 0 8px 25px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(168, 85, 247, 0.15);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        transition: all 0.3s ease;
+    }
+
+    .sidebar-guide-card:hover {
+        border-color: #C084FC;
+        box-shadow: 0 0 40px rgba(168, 85, 247, 0.4), 0 10px 30px rgba(0, 0, 0, 0.6);
+        transform: translateY(-2px);
+    }
+
+    .guide-handle-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(168, 85, 247, 0.25);
+        border: 1.5px solid #A855F7;
+        border-radius: 20px;
+        padding: 5px 12px;
+        color: #E9D5FF;
+        font-size: 0.78rem;
+        font-weight: 800;
         text-transform: uppercase;
-        letter-spacing: 1px;
-        opacity: 0.9;
+        letter-spacing: 0.5px;
+        box-shadow: 0 0 14px rgba(168, 85, 247, 0.4);
+        flex-shrink: 0;
     }
 
-    /* Quiz Card */
-    .quiz-card {
-        border-left: 4px solid #06B6D4;
-        background: rgba(15, 23, 42, 0.9);
-    }
-    
-    /* Paper Item */
-    .paper-card {
-        border: 1px solid rgba(59, 130, 246, 0.2);
-        border-radius: 8px;
-        padding: 10px 14px;
-        margin-bottom: 8px;
-        background: rgba(15, 23, 42, 0.5);
+    .guide-chevron-pulse {
+        animation: chevronSlide 1.5s infinite ease-in-out;
     }
 
-    .paper-card:hover {
-        border-color: rgba(59, 130, 246, 0.5);
+    @keyframes chevronSlide {
+        0%, 100% { transform: translateX(0); }
+        50% { transform: translateX(-4px); }
     }
 
-    /* Top Progress Banner */
+    .guide-text-content {
+        font-size: 0.98rem;
+        font-weight: 600;
+        color: #FAFAFA;
+        line-height: 1.4;
+    }
+
+    /* ── Navbar — Floating Glassmorphism Theme (Learning Workspace) ───────── */
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) {
+        background: rgba(15, 23, 42, 0.85) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        border: 1px solid rgba(168, 85, 247, 0.45) !important;
+        border-radius: 50px !important;
+        padding: 8px 24px !important;
+        margin: 0rem 0 1.5rem 0 !important;
+        box-shadow: 0 0 30px rgba(168, 85, 247, 0.25), 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(168, 85, 247, 0.15) !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        min-height: 52px !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) * {
+        align-self: center !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) div[data-testid="column"],
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) div[data-testid="stColumn"] {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        height: auto !important;
+        min-height: 0 !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) div[data-testid="column"]:first-child,
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) div[data-testid="stColumn"]:first-child {
+        justify-content: flex-start !important;
+        padding-left: 0 !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) div[data-testid="column"]:first-child *,
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) div[data-testid="stColumn"]:first-child * {
+        justify-content: flex-start !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) div[data-testid="column"]:last-child,
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) div[data-testid="stColumn"]:last-child {
+        justify-content: flex-end !important;
+        padding-right: 0 !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) div[data-testid="stVerticalBlock"],
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) div[data-testid="stVerticalBlockBorderWrapper"] {
+        gap: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        justify-content: center !important;
+        align-items: center !important;
+        align-self: center !important;
+        display: flex !important;
+        flex-direction: row !important;
+        min-height: 0 !important;
+        height: auto !important;
+    }
+
+    /* Nested horizontal blocks inside the last column (icon button row) */
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) div[data-testid="column"]:last-child div[data-testid="stHorizontalBlock"],
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) div[data-testid="stColumn"]:last-child div[data-testid="stHorizontalBlock"] {
+        align-items: center !important;
+        justify-content: flex-end !important;
+        gap: 10px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        border-radius: 0 !important;
+        min-height: 0 !important;
+        flex-wrap: nowrap !important;
+    }
+
+    /* Force nested sub-columns (button wrappers) to shrink to content */
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) div[data-testid="column"]:last-child div[data-testid="stHorizontalBlock"] > div[data-testid="column"],
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) div[data-testid="column"]:last-child div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"],
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) div[data-testid="stColumn"]:last-child div[data-testid="stHorizontalBlock"] > div[data-testid="column"],
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) div[data-testid="stColumn"]:last-child div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"] {
+        flex: 0 0 auto !important;
+        width: auto !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) div.element-container,
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) div[data-testid="stElementContainer"] {
+        margin: 0 !important;
+        padding: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        align-self: center !important;
+        justify-content: center !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) div.stMarkdown,
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) div[data-testid="stMarkdownContainer"] {
+        display: flex !important;
+        align-items: center !important;
+        align-self: center !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) div.stMarkdown p,
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) div[data-testid="stMarkdownContainer"] p {
+        margin: 0 !important;
+        padding: 0 !important;
+        line-height: 1 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+    }
+
+    /* Modern Circular Icon Buttons (Admin & Profile) & Mobile Responsive Top Navbar */
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        width: 100% !important;
+        gap: 8px !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) > div[data-testid="column"],
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) > div[data-testid="stColumn"] {
+        width: auto !important;
+        min-width: auto !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) > div[data-testid="column"]:first-child,
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) > div[data-testid="stColumn"]:first-child {
+        flex: 1 1 auto !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) > div[data-testid="column"]:last-child,
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) > div[data-testid="stColumn"]:last-child {
+        display: flex !important;
+        justify-content: flex-end !important;
+        align-items: center !important;
+        flex: 0 0 auto !important;
+    }
+
+    /* Nested button columns for Settings & Profile icons */
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) div[data-testid="stColumn"] div[data-testid="stHorizontalBlock"] {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        align-items: center !important;
+        justify-content: flex-end !important;
+        gap: 8px !important;
+        width: auto !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) div[data-testid="stColumn"] div[data-testid="stHorizontalBlock"] > div {
+        width: 38px !important;
+        min-width: 38px !important;
+        max-width: 38px !important;
+        flex: 0 0 38px !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) div[data-testid="stButton"],
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) div[data-testid="stPopover"] {
+        margin: 0 !important;
+        padding: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        align-self: center !important;
+        width: 38px !important;
+        height: 38px !important;
+        min-width: 38px !important;
+        max-width: 38px !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) button {
+        height: 38px !important;
+        width: 38px !important;
+        min-height: 38px !important;
+        max-height: 38px !important;
+        min-width: 38px !important;
+        max-width: 38px !important;
+        padding: 0 !important;
+        border-radius: 50% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
+        box-sizing: border-box !important;
+        background: rgba(30, 41, 59, 0.75) !important;
+        border: 1px solid rgba(168, 85, 247, 0.4) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+        backdrop-filter: blur(12px) !important;
+        -webkit-backdrop-filter: blur(12px) !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        margin: 0 auto !important;
+        cursor: pointer !important;
+        color: #E9D5FF !important;
+        overflow: hidden !important;
+        gap: 0 !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) button > div {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        height: 100% !important;
+        width: 100% !important;
+        margin: 0 auto !important;
+        padding: 0 !important;
+        gap: 0 !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) button [data-testid="stIconMaterial"],
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) button svg {
+        font-size: 20px !important;
+        width: 20px !important;
+        height: 20px !important;
+        color: #E9D5FF !important;
+        fill: currentColor !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        margin: 0 auto !important;
+        transition: all 0.2s ease !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) button div[data-testid="stMarkdownContainer"],
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) button div[data-testid="stMarkdownContainer"] p,
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) button p,
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) button span {
+        padding: 0 !important;
+        margin: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
+        line-height: 1 !important;
+        width: 100% !important;
+        height: 100% !important;
+        transform: none !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) button:hover {
+        background: rgba(168, 85, 247, 0.3) !important;
+        border-color: rgba(168, 85, 247, 0.85) !important;
+        box-shadow: 0 0 16px rgba(168, 85, 247, 0.5) !important;
+        transform: translateY(-2px) !important;
+        color: #FFFFFF !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) button:hover [data-testid="stIconMaterial"],
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) button:hover svg {
+        color: #FFFFFF !important;
+        filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.9)) !important;
+    }
+
+    /* Hide Chevron / Expand Arrow inside stPopover toggle button without hiding profile icon */
+    div[data-testid="stPopover"] button [data-testid="stIconMaterial"]:last-of-type:not(:first-of-type),
+    div[data-testid="stPopover"] button [data-testid="stIconChevron"],
+    div[data-testid="stPopover"] button svg[data-testid="stIconChevron"],
+    div[data-testid="stPopover"] button > div > *:nth-child(n+2),
+    div[data-testid="stPopover"] button span + span {
+        display: none !important;
+        visibility: hidden !important;
+        width: 0 !important;
+        height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+        position: absolute !important;
+    }
+
+    /* Mobile Responsive Optimizations */
+    @media (max-width: 768px) {
+        .et-learning-nav .et-logo {
+            font-size: 1.15rem !important;
+        }
+        .et-learning-nav .badge-ai {
+            font-size: 0.65rem !important;
+            padding: 1px 6px !important;
+        }
+        div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) {
+            gap: 6px !important;
+        }
+    }
+
+    /* Popover Content Styling */
+    div[data-testid="stPopoverBody"] {
+        background: rgba(15, 23, 42, 0.95) !important;
+        backdrop-filter: blur(24px) !important;
+        -webkit-backdrop-filter: blur(24px) !important;
+        border: 1px solid rgba(168, 85, 247, 0.5) !important;
+        border-radius: 16px !important;
+        padding: 16px !important;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 25px rgba(168, 85, 247, 0.25) !important;
+        color: #FAFAFA !important;
+        min-width: 260px !important;
+    }
+
+    div[data-testid="stPopoverBody"] hr {
+        border-color: rgba(168, 85, 247, 0.25) !important;
+        margin: 10px 0 !important;
+    }
+
+    div[data-testid="stPopoverBody"] button {
+        width: 100% !important;
+        max-width: none !important;
+        height: auto !important;
+        max-height: none !important;
+        min-height: 38px !important;
+        padding: 8px 16px !important;
+        border-radius: 10px !important;
+        font-size: 0.88rem !important;
+        font-weight: 700 !important;
+        background: rgba(239, 68, 68, 0.15) !important;
+        border: 1px solid rgba(239, 68, 68, 0.4) !important;
+        color: #FCA5A5 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 6px !important;
+        transition: all 0.2s ease !important;
+    }
+
+    div[data-testid="stPopoverBody"] button:hover {
+        background: rgba(239, 68, 68, 0.3) !important;
+        border-color: rgba(239, 68, 68, 0.8) !important;
+        box-shadow: 0 0 16px rgba(239, 68, 68, 0.4) !important;
+        color: #FFFFFF !important;
+        transform: translateY(-1px) !important;
+    }
+
+    /* ── Glassmorphism Cards & Containers ────────────── */
+    .glass-card, .feat-card, .agent-glass {
+        position: relative;
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(124, 58, 237, 0.16) 50%, rgba(15, 23, 42, 0.9) 100%);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(168, 85, 247, 0.4);
+        border-radius: 18px;
+        padding: 1.4rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(168, 85, 247, 0.1);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow: hidden;
+    }
+
+    .glass-card::before, .feat-card::before, .agent-glass::before, .top-progress-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 15%; right: 15%; height: 2px;
+        background: linear-gradient(90deg, transparent 0%, #EC4899 30%, #A855F7 50%, #06B6D4 70%, transparent 100%);
+        border-radius: 2px;
+        opacity: 0.75;
+        transition: opacity 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .glass-card:hover, .feat-card:hover, .agent-glass:hover {
+        background: linear-gradient(135deg, rgba(124, 58, 237, 0.28) 0%, rgba(59, 130, 246, 0.2) 50%, rgba(15, 23, 42, 0.95) 100%);
+        border-color: rgba(168, 85, 247, 0.75);
+        box-shadow: 0 0 40px rgba(168, 85, 247, 0.35), 0 12px 35px rgba(0, 0, 0, 0.5);
+        transform: translateY(-3px);
+    }
+
+    .glass-card:hover::before, .feat-card:hover::before, .agent-glass:hover::before {
+        opacity: 1;
+        box-shadow: 0 0 14px #EC4899, 0 0 20px #A855F7;
+    }
+
+    .feat-card h4, .agent-glass h4, .glass-card h3 {
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+    }
+
+    /* ── Icon Boxes ─────────────────────────────────── */
+    .feat-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 14px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        margin-bottom: 0.8rem;
+        box-shadow: 0 0 20px rgba(168, 85, 247, 0.25);
+    }
+
+    .icon-violet { background: rgba(168, 85, 247, 0.2); color: #C084FC; border: 1px solid rgba(168, 85, 247, 0.4); }
+    .icon-blue   { background: rgba(59, 130, 246, 0.2); color: #60A5FA; border: 1px solid rgba(59, 130, 246, 0.4); }
+    .icon-cyan   { background: rgba(6, 182, 212, 0.2); color: #22D3EE; border: 1px solid rgba(6, 182, 212, 0.4); }
+    .icon-green  { background: rgba(16, 185, 129, 0.2); color: #34D399; border: 1px solid rgba(16, 185, 129, 0.4); }
+    .icon-pink   { background: rgba(236, 72, 153, 0.2); color: #F472B6; border: 1px solid rgba(236, 72, 153, 0.4); }
+    .icon-amber  { background: rgba(251, 191, 36, 0.2); color: #FBBF24; border: 1px solid rgba(251, 191, 36, 0.4); }
+
+    /* ── Top Progress Banner ─────────────────────────── */
     .top-progress-card {
-        background: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-top: 3px solid #A855F7;
-        border-radius: 16px;
-        padding: 1.1rem 1.5rem;
-        margin-bottom: 1.2rem;
-        box-shadow: 0 10px 30px -10px rgba(124, 58, 237, 0.25), 0 4px 12px rgba(0, 0, 0, 0.3);
-        backdrop-filter: blur(16px);
+        position: relative;
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(124, 58, 237, 0.2) 50%, rgba(15, 23, 42, 0.95) 100%);
+        border: 1px solid rgba(168, 85, 247, 0.45);
+        border-radius: 20px;
+        padding: 1.3rem 1.6rem;
+        margin-bottom: 1.3rem;
+        box-shadow: 0 15px 40px -10px rgba(124, 58, 237, 0.3), 0 4px 15px rgba(0, 0, 0, 0.4), inset 0 0 25px rgba(168, 85, 247, 0.12);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        overflow: hidden;
     }
     
     .top-progress-stat {
-        font-size: 1.4rem;
-        font-weight: 800;
-        background: linear-gradient(135deg, #A855F7 0%, #3B82F6 100%);
+        font-size: 1.5rem;
+        font-weight: 900;
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         line-height: 1.2;
     }
     
     .top-progress-label {
-        color: #94A3B8;
-        font-size: 0.78rem;
+        color: rgba(233, 213, 255, 0.7);
+        font-size: 0.76rem;
         text-transform: uppercase;
         letter-spacing: 0.8px;
-        font-weight: 700;
+        font-weight: 800;
         margin-bottom: 4px;
     }
 
-    /* Tier Badge in Sidebar */
-    .tier-pill {
-        background: rgba(99, 102, 241, 0.15);
-        color: #818CF8;
-        border: 1px solid rgba(99, 102, 241, 0.35);
-        font-size: 0.75rem;
-        font-weight: 700;
-        padding: 2px 10px;
-        border-radius: 6px;
-        text-transform: uppercase;
+    /* ── Sidebar Glassmorphic Theme & Top Padding Adjustment ── */
+    html body div.stApp section[data-testid="stSidebar"] {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        overflow: visible !important;
+        background-color: #0B0715 !important;
+        background-image: radial-gradient(ellipse 300px 300px at 50% 10%, rgba(139, 92, 246, 0.15) 0%, transparent 80%) !important;
+        border-right: 1px solid rgba(168, 85, 247, 0.25) !important;
+        box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5) !important;
     }
 
-    /* Modern UI/UX Glassmorphism & Pill Capsules System */
+    section[data-testid="stSidebar"] div.block-container,
+    section[data-testid="stSidebar"] [data-testid="stSidebarContent"],
+    section[data-testid="stSidebar"] [data-testid="stSidebarUserContent"],
+    section[data-testid="stSidebar"] div[data-testid="stVerticalBlock"] {
+        padding-top: 0.8rem !important;
+        margin-top: 0 !important;
+    }
+
+    section[data-testid="stSidebar"] [data-testid="stSidebarContent"] {
+        padding-top: 0.8rem !important;
+        padding-left: 1.0rem !important;
+        padding-right: 1.0rem !important;
+    }
+
+    /* Bold Sidebar Widget Labels */
+    section[data-testid="stSidebar"] label[data-testid="stWidgetLabel"] p,
+    section[data-testid="stSidebar"] label[data-testid="stWidgetLabel"] div,
+    section[data-testid="stSidebar"] label {
+        font-weight: 800 !important;
+        font-size: 0.95rem !important;
+        color: #F3E8FF !important;
+        letter-spacing: 0.2px !important;
+    }
+
+    /* ── Animated AI Neural Network Icon in Sidebar Header ── */
+    .sidebar-header-container {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 12px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid rgba(168, 85, 247, 0.25);
+    }
+
+    .neural-icon-wrapper {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, rgba(168, 85, 247, 0.2) 0%, rgba(59, 130, 246, 0.2) 100%);
+        border: 1px solid rgba(168, 85, 247, 0.45);
+        box-shadow: 0 0 15px rgba(168, 85, 247, 0.35);
+        flex-shrink: 0;
+    }
+
+    .neural-network-svg {
+        overflow: visible;
+    }
+
+    .neural-node {
+        animation: neuralPulse 2s infinite ease-in-out;
+        transform-origin: center;
+    }
+    .node-1 { animation-delay: 0s; }
+    .node-2 { animation-delay: 0.5s; }
+    .node-3 { animation-delay: 1.0s; }
+    .node-4 { animation-delay: 1.5s; }
+
+    @keyframes neuralPulse {
+        0%, 100% {
+            transform: scale(1);
+            filter: drop-shadow(0 0 2px rgba(168, 85, 247, 0.6));
+        }
+        50% {
+            transform: scale(1.3);
+            filter: drop-shadow(0 0 6px rgba(6, 182, 212, 0.9));
+        }
+    }
+
+    .neural-pulse-line {
+        animation: dashMove 3s linear infinite;
+    }
+
+    @keyframes dashMove {
+        from { stroke-dashoffset: 20; }
+        to { stroke-dashoffset: 0; }
+    }
+
+    .sidebar-header-text {
+        font-size: 1.02rem;
+        font-weight: 900;
+        color: #FAFAFA;
+        line-height: 1.3;
+        letter-spacing: -0.2px;
+    }
+
+    .user-profile-sidebar-card {
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(124, 58, 237, 0.2) 100%);
+        border: 1px solid rgba(168, 85, 247, 0.4);
+        border-radius: 14px;
+        padding: 12px 14px;
+        margin-bottom: 12px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3), inset 0 0 15px rgba(168, 85, 247, 0.1);
+        backdrop-filter: blur(16px);
+    }
+
+    .tier-pill {
+        background: linear-gradient(135deg, rgba(168, 85, 247, 0.25) 0%, rgba(236, 72, 153, 0.25) 100%);
+        color: #F3E8FF;
+        border: 1px solid rgba(168, 85, 247, 0.5);
+        font-size: 0.72rem;
+        font-weight: 800;
+        padding: 3px 10px;
+        border-radius: 20px;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        box-shadow: 0 0 10px rgba(168, 85, 247, 0.25);
+    }
+
+    /* ── Pill Capsules System ────────────────────────── */
     .pill-capsule {
         display: inline-flex;
         align-items: center;
@@ -182,8 +942,8 @@ CUSTOM_CSS = """
         font-size: 0.84rem;
         font-weight: 600;
         letter-spacing: 0.4px;
-        backdrop-filter: blur(12px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        backdrop-filter: blur(16px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
         transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         white-space: nowrap;
         user-select: none;
@@ -191,7 +951,7 @@ CUSTOM_CSS = """
     
     .pill-capsule:hover {
         transform: translateY(-2px);
-        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
     }
 
     .pill-icon-box {
@@ -202,167 +962,524 @@ CUSTOM_CSS = """
         height: 22px;
         border-radius: 50%;
         font-size: 0.85rem;
-        background: rgba(255, 255, 255, 0.12);
+        background: rgba(255, 255, 255, 0.15);
     }
     
     .pill-mode {
-        background: linear-gradient(135deg, rgba(168, 85, 247, 0.2) 0%, rgba(124, 58, 237, 0.25) 100%);
-        border: 1px solid rgba(192, 132, 252, 0.5);
+        background: linear-gradient(135deg, rgba(168, 85, 247, 0.25) 0%, rgba(124, 58, 237, 0.3) 100%);
+        border: 1px solid rgba(192, 132, 252, 0.6);
         color: #F3E8FF;
-        box-shadow: 0 0 12px rgba(168, 85, 247, 0.2);
+        box-shadow: 0 0 15px rgba(168, 85, 247, 0.25);
     }
     .pill-mode .pill-label {
         color: #D8B4FE;
-        font-weight: 600;
+        font-weight: 700;
         text-transform: uppercase;
         font-size: 0.72rem;
         letter-spacing: 0.6px;
     }
     .pill-mode .pill-value {
         color: #FFFFFF;
-        font-weight: 700;
+        font-weight: 800;
     }
     
     .pill-audience {
-        background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(37, 99, 235, 0.25) 100%);
-        border: 1px solid rgba(96, 165, 250, 0.5);
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.25) 0%, rgba(37, 99, 235, 0.3) 100%);
+        border: 1px solid rgba(96, 165, 250, 0.6);
         color: #EFF6FF;
-        box-shadow: 0 0 12px rgba(59, 130, 246, 0.2);
+        box-shadow: 0 0 15px rgba(59, 130, 246, 0.25);
     }
     .pill-audience .pill-label {
         color: #93C5FD;
-        font-weight: 600;
+        font-weight: 700;
         text-transform: uppercase;
         font-size: 0.72rem;
         letter-spacing: 0.6px;
     }
     .pill-audience .pill-value {
         color: #FFFFFF;
-        font-weight: 700;
+        font-weight: 800;
     }
 
-    /* Status Pill Variants */
     .pill-status-complete {
-        background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(5, 150, 105, 0.25) 100%);
-        border: 1px solid rgba(52, 211, 153, 0.5);
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.25) 0%, rgba(5, 150, 105, 0.3) 100%);
+        border: 1px solid rgba(52, 211, 153, 0.6);
         color: #ECFDF5;
-        box-shadow: 0 0 12px rgba(16, 185, 129, 0.2);
+        box-shadow: 0 0 15px rgba(16, 185, 129, 0.25);
     }
     .pill-status-complete .pill-label {
         color: #6EE7B7;
-        font-weight: 600;
+        font-weight: 700;
         text-transform: uppercase;
         font-size: 0.72rem;
         letter-spacing: 0.6px;
     }
-    .pill-status-complete .pill-value {
-        color: #FFFFFF;
-        font-weight: 700;
-    }
+    .pill-status-complete .pill-value { color: #FFFFFF; font-weight: 800; }
 
     .pill-status-inprogress {
-        background: linear-gradient(135deg, rgba(14, 165, 233, 0.2) 0%, rgba(2, 132, 199, 0.25) 100%);
-        border: 1px solid rgba(56, 189, 248, 0.5);
+        background: linear-gradient(135deg, rgba(14, 165, 233, 0.25) 0%, rgba(2, 132, 199, 0.3) 100%);
+        border: 1px solid rgba(56, 189, 248, 0.6);
         color: #F0F9FF;
-        box-shadow: 0 0 12px rgba(14, 165, 233, 0.2);
+        box-shadow: 0 0 15px rgba(14, 165, 233, 0.25);
     }
     .pill-status-inprogress .pill-label {
         color: #7DD3FC;
-        font-weight: 600;
+        font-weight: 700;
         text-transform: uppercase;
         font-size: 0.72rem;
         letter-spacing: 0.6px;
     }
-    .pill-status-inprogress .pill-value {
-        color: #FFFFFF;
-        font-weight: 700;
-    }
+    .pill-status-inprogress .pill-value { color: #FFFFFF; font-weight: 800; }
 
     .pill-status-pending {
-        background: linear-gradient(135deg, rgba(100, 116, 139, 0.18) 0%, rgba(71, 85, 105, 0.22) 100%);
-        border: 1px solid rgba(148, 163, 184, 0.4);
+        background: linear-gradient(135deg, rgba(100, 116, 139, 0.22) 0%, rgba(71, 85, 105, 0.26) 100%);
+        border: 1px solid rgba(148, 163, 184, 0.45);
         color: #F1F5F9;
     }
     .pill-status-pending .pill-label {
         color: #CBD5E1;
-        font-weight: 600;
+        font-weight: 700;
         text-transform: uppercase;
         font-size: 0.72rem;
         letter-spacing: 0.6px;
     }
-    .pill-status-pending .pill-value {
-        color: #E2E8F0;
-        font-weight: 700;
+    .pill-status-pending .pill-value { color: #E2E8F0; font-weight: 800; }
+
+    .prereq-badge {
+        background: rgba(251, 191, 36, 0.15);
+        color: #FBBF24;
+        border: 1px solid rgba(251, 191, 36, 0.4);
+        font-size: 0.72rem;
+        font-weight: 800;
+        padding: 3px 10px;
+        border-radius: 20px;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        margin-left: 8px;
     }
 
-    /* Streamlit Button Overrides for Modern Look */
-    div[data-testid="stButton"] button {
-        border-radius: 10px !important;
-        font-weight: 700 !important;
-        transition: all 0.2s ease-in-out !important;
+    /* ── Streamlit Button Overrides (Theme Matched) ───── */
+    .stApp button[kind="primary"], div[data-testid="stButton"] button[kind="primary"] {
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%) !important;
+        border: none !important;
+        border-radius: 24px !important;
+        color: #FFFFFF !important;
+        font-weight: 800 !important;
+        box-shadow: 0 0 20px rgba(236, 72, 153, 0.35) !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
-    div[data-testid="stButton"] button:hover {
+
+    .stApp button[kind="primary"]:hover, div[data-testid="stButton"] button[kind="primary"]:hover {
+        box-shadow: 0 0 30px rgba(236, 72, 153, 0.6), 0 0 15px rgba(6, 182, 212, 0.4) !important;
         transform: translateY(-2px) !important;
-        box-shadow: 0 6px 18px rgba(124, 58, 237, 0.3) !important;
     }
 
-    /* Redesigned Regenerate Step Button Styling - Stacked Directly Below Status Pill */
-    div[data-testid="stColumn"]:has(div.pill-capsule) {
-        display: flex !important;
-        flex-direction: column !important;
+    .stApp button[kind="secondary"], div[data-testid="stButton"] button[kind="secondary"] {
+        background: rgba(30, 41, 59, 0.6) !important;
+        border: 1px solid rgba(168, 85, 247, 0.35) !important;
+        border-radius: 20px !important;
+        color: #FAFAFA !important;
+        font-weight: 700 !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+
+    .stApp button[kind="secondary"]:hover, div[data-testid="stButton"] button[kind="secondary"]:hover {
+        background: rgba(168, 85, 247, 0.25) !important;
+        border-color: rgba(168, 85, 247, 0.7) !important;
+        box-shadow: 0 0 20px rgba(168, 85, 247, 0.35) !important;
+        transform: translateY(-2px) !important;
+    }
+
+    /* ── Step Action Regenerate Button (Rightmost Alignment & Start Learning Journey Style) ── */
+    div[data-testid="stVerticalBlock"]:has(div[class*="st-key-regen_btn_"]),
+    div[data-testid="stColumn"]:has(div[class*="st-key-regen_btn_"]) div[data-testid="stVerticalBlock"],
+    div[data-testid="column"]:has(div[class*="st-key-regen_btn_"]) div[data-testid="stVerticalBlock"] {
         align-items: flex-end !important;
-        justify-content: center !important;
-    }
-
-    div[data-testid="stColumn"]:has(div.pill-capsule) div[data-testid="stElementContainer"] {
-        display: flex !important;
         justify-content: flex-end !important;
         width: 100% !important;
     }
 
-    div[data-testid="stColumn"]:has(div.pill-capsule) div[data-testid="stButton"] {
+    div[class*="st-key-regen_btn_"],
+    div.stElementContainer:has(div[class*="st-key-regen_btn_"]),
+    div[data-testid="stElementContainer"]:has(div[class*="st-key-regen_btn_"]) {
         display: flex !important;
         justify-content: flex-end !important;
-        width: auto !important;
-        margin-top: 2px !important;
+        align-self: flex-end !important;
+        align-items: center !important;
+        margin-left: auto !important;
+        margin-right: 0 !important;
     }
 
-    div[data-testid="stColumn"]:has(div.pill-capsule) button {
-        background: linear-gradient(135deg, rgba(168, 85, 247, 0.2) 0%, rgba(124, 58, 237, 0.25) 100%) !important;
-        border: 1px solid rgba(192, 132, 252, 0.5) !important;
-        color: #F3E8FF !important;
-        border-radius: 9999px !important;
-        padding: 5px 14px !important;
-        font-size: 0.84rem !important;
-        font-weight: 600 !important;
-        letter-spacing: 0.4px !important;
-        box-shadow: 0 4px 12px rgba(168, 85, 247, 0.2) !important;
-        backdrop-filter: blur(12px) !important;
-        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        white-space: nowrap !important;
-        height: auto !important;
-        min-height: unset !important;
-        line-height: 1.2 !important;
+    div[class*="st-key-regen_btn_"] button {
         margin-left: auto !important;
+        margin-right: 0 !important;
+        align-self: flex-end !important;
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%) !important;
+        border: none !important;
+        border-radius: 9999px !important;
+        color: #FFFFFF !important;
+        font-size: 0.85rem !important;
+        font-weight: 800 !important;
+        letter-spacing: 0.4px !important;
+        padding: 7px 20px !important;
+        height: auto !important;
+        min-height: 38px !important;
+        box-shadow: 0 0 20px rgba(236, 72, 153, 0.4), 0 4px 15px rgba(0, 0, 0, 0.3) !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 8px !important;
+        cursor: pointer !important;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    div[class*="st-key-regen_btn_"] button:hover {
+        background: linear-gradient(135deg, #F43F5E 0%, #9333EA 50%, #2563EB 100%) !important;
+        box-shadow: 0 0 30px rgba(236, 72, 153, 0.7), 0 0 20px rgba(6, 182, 212, 0.5), 0 6px 20px rgba(0, 0, 0, 0.45) !important;
+        color: #FFFFFF !important;
+        transform: translateY(-2px) !important;
+    }
+
+    div[class*="st-key-regen_btn_"] [data-testid="stIconMaterial"] {
+        color: #FFFFFF !important;
+        font-size: 1.15rem !important;
+        filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.9)) !important;
+        transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.3s ease !important;
+    }
+
+    div[class*="st-key-regen_btn_"] button:hover [data-testid="stIconMaterial"] {
+        transform: rotate(180deg) scale(1.2) !important;
+        filter: drop-shadow(0 0 10px rgba(6, 182, 212, 1)) !important;
+    }
+
+    /* ── Socratic Tutor Clean Input Row (No Outer Border) ── */
+    div[data-testid="stForm"]:has(div[class*="st-key-chat_in_"]),
+    form[data-testid="stForm"]:has(div[class*="st-key-chat_in_"]) {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin-top: 10px !important;
+        margin-bottom: 8px !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+    }
+
+
+
+    /* Style the primary Ask Tutor, Submit Quiz & Sign Out buttons inside forms/popovers */
+    div[data-testid="stForm"]:has(div[class*="st-key-chat_in_"]) div[data-testid="stFormSubmitButton"] button,
+    div[data-testid="stForm"]:has(div[class*="st-key-q_"]) div[data-testid="stFormSubmitButton"] button,
+    div[data-testid="stForm"] div[data-testid="stFormSubmitButton"] button[kind="primary"],
+    div[class*="st-key-nav_logout_btn"] button {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        height: 44px !important;
+        min-height: 44px !important;
+        max-height: 44px !important;
+        border-radius: 12px !important;
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%) !important;
+        border: none !important;
+        color: #FFFFFF !important;
+        font-weight: 800 !important;
+        font-size: 0.92rem !important;
+        letter-spacing: 0.4px !important;
+        padding: 0 20px !important;
+        margin: 0 !important;
+        box-shadow: 0 0 18px rgba(236, 72, 153, 0.4) !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 6px !important;
+        cursor: pointer !important;
+        white-space: nowrap !important;
+    }
+
+    div[data-testid="stForm"]:has(div[class*="st-key-chat_in_"]) div[data-testid="stFormSubmitButton"] button:hover,
+    div[data-testid="stForm"]:has(div[class*="st-key-q_"]) div[data-testid="stFormSubmitButton"] button:hover,
+    div[data-testid="stForm"] div[data-testid="stFormSubmitButton"] button[kind="primary"]:hover,
+    div[class*="st-key-nav_logout_btn"] button:hover {
+        background: linear-gradient(135deg, #F43F5E 0%, #9333EA 50%, #2563EB 100%) !important;
+        box-shadow: 0 0 28px rgba(236, 72, 153, 0.65), 0 0 15px rgba(6, 182, 212, 0.4) !important;
+        transform: translateY(-2px) !important;
+    }
+
+    /* ── Streamlit Expanders (Frosted Glass Theme) ────── */
+    div[data-testid="stExpander"] {
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.8) 100%) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        border: 1px solid rgba(168, 85, 247, 0.4) !important;
+        border-radius: 18px !important;
+        margin-bottom: 1.2rem !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35), inset 0 0 20px rgba(168, 85, 247, 0.08) !important;
+        overflow: hidden !important;
+    }
+
+    div[data-testid="stExpander"] summary {
+        background: rgba(20, 13, 33, 0.8) !important;
+        border-bottom: 1px solid rgba(168, 85, 247, 0.25) !important;
+        padding: 0.9rem 1.2rem !important;
+        font-weight: 800 !important;
+        color: #FAFAFA !important;
+        transition: background 0.2s ease !important;
+    }
+
+    div[data-testid="stExpander"] summary:hover {
+        background: rgba(168, 85, 247, 0.15) !important;
+    }
+
+    div[data-testid="stExpander"] div[data-testid="stExpanderDetails"] {
+        padding: 1.2rem !important;
+    }
+
+    /* ── Streamlit Dialog / Modal Glowing Sparkling Theme ── */
+    div[data-testid="stModal"],
+    div[role="dialog"] {
+        background: linear-gradient(135deg, rgba(20, 12, 35, 0.98) 0%, rgba(35, 18, 55, 0.98) 100%) !important;
+        border: 2px solid rgba(245, 158, 11, 0.6) !important;
+        border-radius: 24px !important;
+        box-shadow: 0 0 50px rgba(245, 158, 11, 0.4), 0 0 90px rgba(236, 72, 153, 0.35), 0 20px 60px rgba(0, 0, 0, 0.8) !important;
+        backdrop-filter: blur(25px) !important;
+        -webkit-backdrop-filter: blur(25px) !important;
+    }
+
+    div[role="dialog"] header {
+        background: transparent !important;
+    }
+
+    div.sparkling-modal-card {
+        text-align: center !important;
+        padding: 10px 4px !important;
+    }
+
+    div.glowing-trophy-box {
+        width: 84px !important;
+        height: 84px !important;
+        margin: 0 auto 16px auto !important;
+        background: linear-gradient(135deg, #F59E0B 0%, #EC4899 50%, #A855F7 100%) !important;
+        border-radius: 50% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        box-shadow: 0 0 35px rgba(245, 158, 11, 0.7), 0 0 20px rgba(236, 72, 153, 0.5) !important;
+        animation: trophySparkle 2s infinite ease-in-out !important;
+    }
+
+    @keyframes trophySparkle {
+        0%, 100% { transform: scale(1) rotate(0deg); box-shadow: 0 0 30px rgba(245, 158, 11, 0.7); }
+        50% { transform: scale(1.1) rotate(4deg); box-shadow: 0 0 55px rgba(236, 72, 153, 0.9), 0 0 30px rgba(59, 130, 246, 0.6); }
+    }
+
+    span.trophy-emoji {
+        font-size: 3rem !important;
+        filter: drop-shadow(0 4px 10px rgba(0,0,0,0.5)) !important;
+    }
+
+    h2.sparkle-title {
+        font-size: 2rem !important;
+        font-weight: 900 !important;
+        background: linear-gradient(135deg, #FBBF24 0%, #F43F5E 50%, #C084FC 100%) !important;
+        -webkit-background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+        margin-bottom: 8px !important;
+        letter-spacing: -0.5px !important;
+    }
+
+    p.sparkle-subtitle {
+        color: #E2E8F0 !important;
+        font-size: 1rem !important;
+        margin-bottom: 20px !important;
+    }
+
+    div.score-hero-badge {
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(236, 72, 153, 0.15) 100%) !important;
+        border: 1.5px solid rgba(245, 158, 11, 0.5) !important;
+        border-radius: 18px !important;
+        padding: 14px 20px !important;
+        margin: 16px auto 20px auto !important;
+        display: inline-block !important;
+        box-shadow: inset 0 0 15px rgba(245, 158, 11, 0.15), 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    div.score-number {
+        font-size: 2.2rem !important;
+        font-weight: 900 !important;
+        color: #FBBF24 !important;
+        text-shadow: 0 0 15px rgba(245, 158, 11, 0.6) !important;
+        line-height: 1 !important;
+    }
+
+    div.score-label {
+        font-size: 0.78rem !important;
+        color: #CBD5E1 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.8px !important;
+        margin-top: 4px !important;
+        font-weight: 700 !important;
+    }
+
+    div.modal-stats-grid {
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 10px !important;
+        margin-top: 10px !important;
+    }
+
+    div.modal-stat-card {
+        background: rgba(15, 10, 28, 0.8) !important;
+        border: 1px solid rgba(168, 85, 247, 0.35) !important;
+        border-radius: 14px !important;
+        padding: 10px 8px !important;
+        text-align: center !important;
+    }
+
+    div.modal-stat-card span.m-icon {
+        font-size: 1.3rem !important;
+    }
+
+    div.modal-stat-card div.m-val {
+        font-size: 1rem !important;
+        font-weight: 800 !important;
+        color: #FAFAFA !important;
+    }
+
+    div.modal-stat-card div.m-lbl {
+        font-size: 0.7rem !important;
+        color: #94A3B8 !important;
+        text-transform: uppercase !important;
+    }
+
+    /* ── Popovers & Profile Dropdown Modern Glass Theme ── */
+    div[data-testid="stPopoverBody"],
+    div[data-baseweb="popover"],
+    div[data-baseweb="popover"] > div {
+        background: linear-gradient(135deg, rgba(20, 13, 33, 0.96) 0%, rgba(30, 20, 50, 0.94) 100%) !important;
+        border: 1.5px solid rgba(168, 85, 247, 0.45) !important;
+        border-radius: 18px !important;
+        box-shadow: 0 12px 35px rgba(0, 0, 0, 0.65), 0 0 25px rgba(168, 85, 247, 0.25) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        padding: 8px 12px !important;
+        color: #FAFAFA !important;
+    }
+
+    div[data-testid="stPopover"] > button,
+    div[class*="st-key-nav_admin_btn"] button {
+        background: rgba(20, 13, 33, 0.85) !important;
+        border: 1px solid rgba(168, 85, 247, 0.4) !important;
+        border-radius: 12px !important;
+        color: #FAFAFA !important;
+        box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.4) !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+
+    div[data-testid="stPopover"] > button:hover,
+    div[class*="st-key-nav_admin_btn"] button:hover {
+        border-color: rgba(192, 132, 252, 0.9) !important;
+        box-shadow: 0 0 18px rgba(168, 85, 247, 0.45) !important;
+        background: rgba(30, 20, 50, 0.9) !important;
+        transform: translateY(-1px) !important;
+    }
+
+    /* ── Inputs & Selectboxes Theming ────────────────── */
+    div[data-testid="stTextInput"] input,
+    div[data-testid="stSelectbox"] div[data-baseweb="select"] {
+        background: rgba(20, 13, 33, 0.85) !important;
+        border: 1px solid rgba(168, 85, 247, 0.4) !important;
+        border-radius: 12px !important;
+        color: #FAFAFA !important;
+        box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.4) !important;
+        transition: all 0.25s ease !important;
+    }
+
+    div[data-testid="stTextInput"] input:focus,
+    div[data-testid="stSelectbox"] div[data-baseweb="select"]:focus-within {
+        border-color: rgba(168, 85, 247, 0.85) !important;
+        box-shadow: 0 0 20px rgba(168, 85, 247, 0.45) !important;
+    }
+
+    /* ── Chat Messages Theming ───────────────────────── */
+    div[data-testid="stChatMessage"] {
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.75) 0%, rgba(15, 23, 42, 0.85) 100%) !important;
+        border: 1px solid rgba(168, 85, 247, 0.35) !important;
+        border-radius: 16px !important;
+        padding: 1rem 1.2rem !important;
+        margin-bottom: 0.8rem !important;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3) !important;
+        backdrop-filter: blur(16px) !important;
+    }
+
+    /* ── Research Paper Cards ────────────────────────── */
+    .paper-card {
+        border: 1px solid rgba(168, 85, 247, 0.35);
+        border-radius: 14px;
+        padding: 12px 16px;
+        margin-bottom: 10px;
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.75) 100%);
+        backdrop-filter: blur(12px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+        transition: all 0.25s ease;
+    }
+
+    .paper-card:hover {
+        border-color: rgba(168, 85, 247, 0.7);
+        box-shadow: 0 0 25px rgba(168, 85, 247, 0.3);
+        transform: translateY(-2px);
+    }
+
+    /* ── Progress Bar Theming (Single Sleek Gradient Bar) ────────── */
+    div[data-testid="stProgress"] {
+        height: 8px !important;
+        min-height: 8px !important;
+        margin: 8px 0 0 0 !important;
+        padding: 0 !important;
+    }
+
+    div[data-testid="stProgress"] > div {
+        height: 8px !important;
+        background: rgba(30, 41, 59, 0.7) !important;
+        border-radius: 8px !important;
+        border: 1px solid rgba(168, 85, 247, 0.3) !important;
+        overflow: hidden !important;
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5) !important;
+    }
+
+    div[data-testid="stProgress"] [role="progressbar"],
+    div[data-testid="stProgress"] [role="progressbar"] > div,
+    div[data-testid="stProgress"] > div > div {
+        background: linear-gradient(90deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%) !important;
+        box-shadow: 0 0 12px rgba(168, 85, 247, 0.6) !important;
+        border-radius: 8px !important;
+        height: 100% !important;
+        border: none !important;
+    }
+
+    /* Custom In-Card Glass Progress Bars */
+    .custom-progress-track {
+        width: 100%;
+        height: 7px;
+        background: rgba(30, 41, 59, 0.8);
+        border: 1px solid rgba(168, 85, 247, 0.3);
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.6);
+        margin-top: 4px;
+    }
+
+    .custom-progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%);
+        border-radius: 10px;
+        box-shadow: 0 0 12px rgba(168, 85, 247, 0.7);
+        transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     /* Glassmorphism Dynamic AI Loader */
-    @keyframes meshGlow {
-        0% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-        100% { background-position: 0% 50%; }
-    }
-
-    @keyframes pulseGlow {
-        0%, 100% { transform: scale(1); opacity: 0.8; box-shadow: 0 0 15px rgba(168, 85, 247, 0.4); }
-        50% { transform: scale(1.01); opacity: 1; box-shadow: 0 0 30px rgba(6, 182, 212, 0.6); }
-    }
-
-    @keyframes shimmerBar {
-        0% { transform: translateX(-100%); }
-        100% { transform: translateX(100%); }
-    }
-
     .glass-loader-box {
         position: relative;
         background: rgba(15, 23, 42, 0.85);
@@ -374,7 +1491,7 @@ CUSTOM_CSS = """
         margin: 1.5rem 0;
         overflow: hidden;
         box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 0 30px rgba(124, 58, 237, 0.15);
-        animation: pulseGlow 3s infinite ease-in-out;
+        animation: n8nPulseGlow 3s infinite ease-in-out;
     }
 
     .glass-loader-mesh {
@@ -518,7 +1635,6 @@ CUSTOM_CSS = """
     }
 </style>
 """
-st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
 
 
 def format_display_text(val: Any) -> str:
@@ -841,8 +1957,6 @@ async def generate_all_agent_content_for_step(step, memory: SharedMemory) -> Non
 
 
 # ─── One-Time DB Initialization (at Streamlit app startup) ───────
-# @st.cache_resource ensures this runs only once per server lifecycle,
-# so switching to the Admin Console later is instant (DB already warmed up).
 @st.cache_resource
 def _init_db_once():
     """Warm up DB schema, migrations, and seeds at app start — not on first admin switch."""
@@ -859,8 +1973,108 @@ def get_or_create_memory() -> SharedMemory | None:
     return st.session_state.get("memory")
 
 
+def calculate_overall_topic_score(memory) -> float:
+    """Calculates average quiz accuracy score across all milestones in memory."""
+    if not memory or not memory.steps:
+        return 1.0
+    scores = []
+    for step in memory.steps:
+        s = getattr(step, "quiz_score", None)
+        if s is not None:
+            scores.append(s)
+    if scores:
+        return sum(scores) / len(scores)
+    return 1.0
+
+
+@st.dialog("🎉 Milestone Mastery Accomplished!", width="medium")
+def show_congratulations_dialog(memory):
+    """
+    Renders a sparkling, glowing victory modal dialog with canvas confetti,
+    overall quiz score badge, XP & streak stats, and CTAs.
+    """
+    total_steps = len(memory.steps) if memory and memory.steps else 0
+    xp_val = getattr(memory, "xp_earned", 0)
+    streak_val = getattr(memory, "streak_count", 1)
+    topic_str = getattr(memory, "topic", "this topic")
+    avg_score = calculate_overall_topic_score(memory)
+
+    # Lightweight JS Confetti particle burst inside glowing modal
+    st.components.v1.html(
+        """
+        <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+        <script>
+          setTimeout(() => {
+            confetti({
+              particleCount: 160,
+              spread: 95,
+              origin: { y: 0.4 },
+              colors: ['#EC4899', '#A855F7', '#3B82F6', '#F59E0B', '#10B981']
+            });
+          }, 120);
+        </script>
+        """,
+        height=0,
+    )
+
+    modal_html = f"""<div class="sparkling-modal-card">
+<div class="glowing-trophy-box">
+<span class="trophy-emoji">🏆</span>
+</div>
+<h2 class="sparkle-title">Course Mastery Accomplished!</h2>
+<p class="sparkle-subtitle">Outstanding work! You have completed all <b>{total_steps}</b> milestone steps for <b>{topic_str}</b>.</p>
+<div class="score-hero-badge">
+<div class="score-number">{avg_score:.0%}</div>
+<div class="score-label">Overall Quiz Score</div>
+</div>
+<div class="modal-stats-grid">
+<div class="modal-stat-card">
+<span class="m-icon">⚡</span>
+<div class="m-val">+{xp_val} XP</div>
+<div class="m-lbl">Points Earned</div>
+</div>
+<div class="modal-stat-card">
+<span class="m-icon">🔥</span>
+<div class="m-val">{streak_val} Days</div>
+<div class="m-lbl">Streak Kept</div>
+</div>
+<div class="modal-stat-card">
+<span class="m-icon">🎓</span>
+<div class="m-val">{total_steps}/{total_steps}</div>
+<div class="m-lbl">Milestones</div>
+</div>
+</div>
+</div>"""
+
+    st.markdown(modal_html, unsafe_allow_html=True)
+
+    st.markdown("<br>", unsafe_allow_html=True)
+    c1, c2 = st.columns([1, 1])
+    with c1:
+        if st.button("🚀 Explore New Topic", key="dlg_btn_new_topic", type="primary", use_container_width=True):
+            if memory and getattr(memory, "session_id", None):
+                st.session_state[f"show_victory_modal_{memory.session_id}"] = False
+            st.session_state["memory"] = None
+            st.session_state["view"] = "home"
+            if "last_topic" in st.session_state:
+                del st.session_state["last_topic"]
+            st.query_params.clear()
+            st.rerun()
+    with c2:
+        if st.button("✨ Close & Review Roadmap", key="dlg_btn_close", use_container_width=True):
+            if memory and getattr(memory, "session_id", None):
+                st.session_state[f"show_victory_modal_{memory.session_id}"] = False
+                st.session_state[f"victory_modal_dismissed_{memory.session_id}"] = True
+            st.rerun()
+
+
 def render_learning_workspace():
-    """Renders the student learning workspace."""
+    """Renders the student learning workspace with the glassy AI theme."""
+    st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
+
+    # Background ambient glow orbs
+    st.markdown('<div class="glow-bg"></div>', unsafe_allow_html=True)
+
     user_profile = st.session_state.get("user_profile")
     if not user_profile:
         st.session_state["auth_tab"] = "login"
@@ -868,66 +2082,325 @@ def render_learning_workspace():
         st.toast("🔒 Authentication Required: Please sign in or create an account to access the AI learning workspace.", icon="🔒")
         st.rerun()
 
-    # ─── Sidebar Controls & Gamification ─────────────────────────────
-    with st.sidebar:
-        st.image("https://img.icons8.com/isometric/96/graduation-cap.png", width=56)
-        
-        # User Session Badge
-        u_tier = (user_profile.subscription.tier if user_profile.subscription else "normal").upper()
+    # ─── TOP NAVBAR: Floating Pill Navbar matching Homepage (rendered first) ──────────
+    u_tier = (user_profile.subscription.tier if user_profile.subscription else "normal").upper()
+    top_nav_l, top_nav_r = st.columns([8.8, 1.2], vertical_alignment="center")
+
+    with top_nav_l:
         st.markdown(
-            f"""
-            <div style="background: #18181B; border: 1px solid #27272A; border-radius: 8px; padding: 10px; margin-bottom: 12px;">
-                <div style="color: #FAFAFA; font-weight: 700; font-size: 0.9rem;">👋 {user_profile.first_name} {user_profile.last_name}</div>
-                <div style="color: #A1A1AA; font-size: 0.78rem; margin-bottom: 6px;">{user_profile.email}</div>
-                <span class="tier-pill">{u_tier} TIER</span>
+            '<div class="et-learning-nav"><div class="et-logo">⚡ <span class="accent">EduTech</span> <span class="badge-ai">AI</span></div></div>',
+            unsafe_allow_html=True,
+        )
+
+    with top_nav_r:
+        r_a, r_p = st.columns(2, gap="small", vertical_alignment="center")
+        with r_a:
+            if st.button("", icon=":material/settings:", key="nav_admin_btn", help="Admin Console & Settings", use_container_width=False):
+                st.session_state["view"] = "admin"
+                st.rerun()
+        with r_p:
+            with st.popover("", icon=":material/person:", help=f"Profile: {user_profile.first_name} {user_profile.last_name}", use_container_width=False):
+                st.markdown(
+                    f"""
+                    <div style="text-align: center; padding: 4px 0 8px 0;">
+                        <div style="font-size: 2.2rem; margin-bottom: 4px;">👤</div>
+                        <div style="font-weight: 800; font-size: 1.05rem; color: #FAFAFA;">{user_profile.first_name} {user_profile.last_name}</div>
+                        <div style="font-size: 0.8rem; color: rgba(233, 213, 255, 0.7); margin-bottom: 8px;">{user_profile.email if hasattr(user_profile, 'email') and user_profile.email else 'Student'}</div>
+                        <div style="display: inline-block; background: rgba(168, 85, 247, 0.25); border: 1px solid rgba(168, 85, 247, 0.5); border-radius: 20px; padding: 2px 12px; font-size: 0.75rem; font-weight: 800; color: #C084FC; text-transform: uppercase;">
+                            ✨ {u_tier} Tier
+                        </div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+                st.markdown("<hr style='border-color:rgba(168,85,247,0.25); margin:8px 0;'>", unsafe_allow_html=True)
+                if st.button("⏻ Sign Out", key="nav_logout_btn", type="primary", use_container_width=True):
+                    st.session_state["user_profile"] = None
+                    st.session_state["view"] = "home"
+                    st.query_params.clear()
+                    st.toast("Logged out successfully.", icon="ℹ️")
+                    st.rerun()
+
+    memory = get_or_create_memory()
+
+    # Master Sidebar Toggle & Auto-Expand Controller (Senior Frontend Architecture)
+    components.html(
+        """
+        <script>
+        (function() {
+            try {
+                const doc = window.parent.document;
+                const win = window.parent;
+
+                function dispatchFullClick(el) {
+                    if (!el) return;
+                    try {
+                        const opts = { bubbles: true, cancelable: true, view: win };
+                        el.dispatchEvent(new MouseEvent('mousedown', opts));
+                        el.dispatchEvent(new MouseEvent('mouseup', opts));
+                        el.dispatchEvent(new MouseEvent('click', opts));
+                        if (typeof el.click === 'function') el.click();
+                    } catch(err) {
+                        if (typeof el.click === 'function') el.click();
+                    }
+                }
+
+                function findExpandButton() {
+                    // 1. Direct standard Streamlit testids
+                    let btn = doc.querySelector('[data-testid="stSidebarCollapsedControl"] button, [data-testid="collapsedControl"] button');
+                    if (btn) return btn;
+
+                    // 2. Search all buttons inside header
+                    const headerBtns = doc.querySelectorAll('header[data-testid="stHeader"] button, [data-testid="stHeader"] button, button[kind="header"]');
+                    for (let b of headerBtns) {
+                        const str = ((b.getAttribute('aria-label') || '') + ' ' + (b.getAttribute('title') || '') + ' ' + b.className).toLowerCase();
+                        if (!str.includes('deploy') && !str.includes('menu') && !b.closest('.stDeployButton') && !b.closest('[data-testid="stAppDeployButton"]')) {
+                            return b;
+                        }
+                    }
+
+                    // 3. Search document-wide for expand / sidebar buttons
+                    const allBtns = doc.querySelectorAll('button');
+                    for (let b of allBtns) {
+                        const aria = (b.getAttribute('aria-label') || '').toLowerCase();
+                        const title = (b.getAttribute('title') || '').toLowerCase();
+                        if (aria.includes('expand') || aria.includes('open sidebar') || title.includes('expand') || title.includes('open sidebar')) {
+                            return b;
+                        }
+                    }
+
+                    // 4. Fallback to container itself
+                    const container = doc.querySelector('[data-testid="stSidebarCollapsedControl"], [data-testid="collapsedControl"]');
+                    if (container) return container;
+
+                    return null;
+                }
+
+                function findCollapseButton() {
+                    let btn = doc.querySelector('section[data-testid="stSidebar"] [data-testid="stSidebarCollapseButton"] button, section[data-testid="stSidebar"] button[aria-label*="Close" i], section[data-testid="stSidebar"] button[aria-label*="Collapse" i]');
+                    if (btn) return btn;
+
+                    const allSbBtns = doc.querySelectorAll('section[data-testid="stSidebar"] button');
+                    for (let b of allSbBtns) {
+                        const aria = (b.getAttribute('aria-label') || '').toLowerCase();
+                        const title = (b.getAttribute('title') || '').toLowerCase();
+                        if (aria.includes('close') || aria.includes('collapse') || title.includes('close') || title.includes('collapse')) {
+                            return b;
+                        }
+                    }
+                    return doc.querySelector('[data-testid="stSidebarCollapseButton"] button');
+                }
+
+                // Auto-expand sidebar if collapsed on initial workspace landing
+                function ensureSidebarOpen() {
+                    const sidebar = doc.querySelector('section[data-testid="stSidebar"]');
+                    const isCollapsed = !sidebar || 
+                                        sidebar.getAttribute('aria-expanded') === 'false' || 
+                                        sidebar.getBoundingClientRect().width === 0 ||
+                                        window.getComputedStyle(sidebar).display === 'none';
+                    if (isCollapsed) {
+                        const targetBtn = findExpandButton();
+                        if (targetBtn) {
+                            dispatchFullClick(targetBtn);
+                        }
+                    }
+                }
+                ensureSidebarOpen();
+                setTimeout(ensureSidebarOpen, 150);
+                setTimeout(ensureSidebarOpen, 400);
+
+                // Inject Master Sidebar Toggle Button directly onto parent document body (immune to transforms & clipping)
+                let toggle = doc.getElementById('edutech-sidebar-master-toggle');
+                if (!toggle) {
+                    toggle = doc.createElement('div');
+                    toggle.id = 'edutech-sidebar-master-toggle';
+                    toggle.innerHTML = `
+                        <svg id="edutech-toggle-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E9D5FF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1); pointer-events: none;">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                    `;
+                    doc.body.appendChild(toggle);
+                }
+
+                // Get initial sidebar measurement if present, default to open width ~336px
+                const initSb = doc.querySelector('section[data-testid="stSidebar"]');
+                const initRight = (initSb && initSb.getBoundingClientRect().right > 100) ? initSb.getBoundingClientRect().right : 336;
+
+                // Apply high-end circular glassmorphic styling
+                Object.assign(toggle.style, {
+                    position: 'fixed',
+                    top: '50%',
+                    left: `${Math.max(10, initRight - 19)}px`,
+                    transform: 'translateY(-50%)',
+                    zIndex: '99999999',
+                    width: '38px',
+                    height: '38px',
+                    background: 'rgba(14, 9, 24, 0.95)',
+                    border: '2px solid #A855F7',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    boxShadow: '0 0 18px rgba(168, 85, 247, 0.5), 0 4px 14px rgba(0, 0, 0, 0.55)',
+                    backdropFilter: 'blur(16px)',
+                    webkitBackdropFilter: 'blur(16px)',
+                    transition: 'left 0.15s cubic-bezier(0.4, 0, 0.2, 1), transform 0.18s cubic-bezier(0.4, 0, 0.2, 1), background 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease',
+                    userSelect: 'none',
+                    webkitUserSelect: 'none',
+                    visibility: 'visible',
+                    opacity: '1',
+                    pointerEvents: 'auto',
+                });
+
+                toggle.onmouseenter = () => {
+                    toggle.style.transform = 'translateY(-50%) scale(1.12)';
+                    toggle.style.background = 'rgba(168, 85, 247, 0.35)';
+                    toggle.style.borderColor = '#C084FC';
+                    toggle.style.boxShadow = '0 0 28px rgba(168, 85, 247, 0.85), 0 0 12px rgba(6, 182, 212, 0.5)';
+                };
+                toggle.onmouseleave = () => {
+                    toggle.style.transform = 'translateY(-50%) scale(1)';
+                    toggle.style.background = 'rgba(14, 9, 24, 0.95)';
+                    toggle.style.borderColor = '#A855F7';
+                    toggle.style.boxShadow = '0 0 18px rgba(168, 85, 247, 0.5), 0 4px 14px rgba(0, 0, 0, 0.55)';
+                };
+
+                function isSidebarOpen() {
+                    const sb = doc.querySelector('section[data-testid="stSidebar"]');
+                    if (!sb) return true; // Default to open in learning workspace
+                    const ariaClosed = sb.getAttribute('aria-expanded') === 'false';
+                    if (ariaClosed) return false;
+                    const comp = win.getComputedStyle(sb);
+                    if (comp.display === 'none') return false;
+                    const rect = sb.getBoundingClientRect();
+                    return rect.right > 50 || rect.width > 50;
+                }
+
+                function updateTogglePosition() {
+                    if (!toggle || !toggle.parentNode) return;
+                    const sb = doc.querySelector('section[data-testid="stSidebar"]');
+                    const svg = toggle.querySelector('#edutech-toggle-chevron');
+                    
+                    if (isSidebarOpen() && sb) {
+                        const rect = sb.getBoundingClientRect();
+                        const targetLeft = rect.right > 50 ? rect.right : 336;
+                        toggle.style.left = `${Math.max(10, targetLeft - 19)}px`;
+                        if (svg) svg.style.transform = 'rotate(0deg)';
+                        toggle.setAttribute('title', 'Collapse Sidebar');
+                    } else {
+                        toggle.style.left = '10px';
+                        if (svg) svg.style.transform = 'rotate(180deg)';
+                        toggle.setAttribute('title', 'Open Sidebar');
+                    }
+                }
+
+                // Run immediately on creation
+                updateTogglePosition();
+
+                toggle.onclick = function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (isSidebarOpen()) {
+                        const closeBtn = findCollapseButton();
+                        if (closeBtn) dispatchFullClick(closeBtn);
+                    } else {
+                        const expandBtn = findExpandButton();
+                        if (expandBtn) dispatchFullClick(expandBtn);
+                    }
+                    setTimeout(updateTogglePosition, 50);
+                    setTimeout(updateTogglePosition, 150);
+                    setTimeout(updateTogglePosition, 300);
+                    setTimeout(updateTogglePosition, 500);
+                };
+
+                // Continually sync button position smoothly
+                if (!win._edutechToggleTracking) {
+                    win._edutechToggleTracking = true;
+                    function track() {
+                        updateTogglePosition();
+                        requestAnimationFrame(track);
+                    }
+                    requestAnimationFrame(track);
+                }
+            } catch (err) {
+                console.error("Master Sidebar Toggle error:", err);
+            }
+        })();
+        </script>
+        """,
+        height=0,
+        width=0,
+    )
+
+    # ─── Sidebar Controls & Gamification (Left Panel) ────────────────
+    with st.sidebar:
+        st.markdown(
+            """
+            <div class="sidebar-header-container">
+                <div class="neural-icon-wrapper">
+                    <svg class="neural-network-svg" width="22" height="22" viewBox="0 0 24 24" fill="none">
+                        <line x1="4" y1="12" x2="12" y2="4" stroke="url(#neuralGrad1)" stroke-width="1.8" stroke-dasharray="2 2" class="neural-pulse-line" />
+                        <line x1="4" y1="12" x2="12" y2="20" stroke="url(#neuralGrad1)" stroke-width="1.8" stroke-dasharray="2 2" class="neural-pulse-line" />
+                        <line x1="12" y1="4" x2="20" y2="12" stroke="url(#neuralGrad2)" stroke-width="1.8" stroke-dasharray="2 2" class="neural-pulse-line" />
+                        <line x1="12" y1="20" x2="20" y2="12" stroke="url(#neuralGrad2)" stroke-width="1.8" stroke-dasharray="2 2" class="neural-pulse-line" />
+                        <line x1="12" y1="4" x2="12" y2="20" stroke="url(#neuralGrad3)" stroke-width="1.5" stroke-dasharray="2 2" class="neural-pulse-line" />
+                        <line x1="4" y1="12" x2="20" y2="12" stroke="url(#neuralGrad3)" stroke-width="1.5" class="neural-pulse-line" />
+                        <circle cx="4" cy="12" r="3" fill="#EC4899" class="neural-node node-1" />
+                        <circle cx="12" cy="4" r="3.2" fill="#A855F7" class="neural-node node-2" />
+                        <circle cx="12" cy="20" r="3.2" fill="#3B82F6" class="neural-node node-3" />
+                        <circle cx="20" cy="12" r="3.5" fill="#06B6D4" class="neural-node node-4" />
+                        <defs>
+                            <linearGradient id="neuralGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#EC4899" />
+                                <stop offset="100%" stop-color="#A855F7" />
+                            </linearGradient>
+                            <linearGradient id="neuralGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#A855F7" />
+                                <stop offset="100%" stop-color="#06B6D4" />
+                            </linearGradient>
+                            <linearGradient id="neuralGrad3" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#EC4899" />
+                                <stop offset="50%" stop-color="#A855F7" />
+                                <stop offset="100%" stop-color="#3B82F6" />
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <div class="sidebar-header-text">What do you want to learn today?</div>
             </div>
             """,
             unsafe_allow_html=True,
         )
-
-        nav_c1, nav_c2 = st.columns(2)
-        with nav_c1:
-            if st.button("🏠 Home", key="sidebar_nav_home", use_container_width=True):
-                st.session_state["view"] = "home"
-                st.rerun()
-        with nav_c2:
-            if st.button("🚪 Logout", key="sidebar_nav_logout", use_container_width=True):
-                st.session_state["user_profile"] = None
-                st.session_state["view"] = "home"
-                st.query_params.clear()
-                st.toast("Logged out successfully.", icon="ℹ️")
-                st.rerun()
-
-        st.markdown("---")
-        st.markdown("### **EduTechAI Settings**")
         
         # Check if quick-launched from home page
         default_topic = st.session_state.pop("quick_launch_topic", None) or st.session_state.get("last_topic", "How does photosynthesis work?")
 
         # Topic Input
         topic_input = st.text_input(
-            "🎯 **What do you want to learn?**",
+            "What do you want to master?",
             value=default_topic,
             placeholder="e.g. Quantum Computing, Photosynthesis...",
+            label_visibility="collapsed",
         )
         
         # Topic Suggestions
-        st.markdown("<small>💡 **Try asking:**</small>", unsafe_allow_html=True)
+        st.markdown("<div style='font-size:0.78rem; color:rgba(233,213,255,0.75); font-weight:700; margin: 8px 0 4px 0;'>💡 Instant Topic Prompts:</div>", unsafe_allow_html=True)
         cols = st.columns(2)
-        if cols[0].button("🌱 Photosynthesis", key="sug1"):
+        if cols[0].button("🌱 Photosynthesis", key="sug1", use_container_width=True):
             topic_input = "How does photosynthesis work?"
-        if cols[1].button("⚛️ Quantum Physics", key="sug2"):
+        if cols[1].button("⚛️ Quantum Physics", key="sug2", use_container_width=True):
             topic_input = "Explain quantum entanglement"
-        if cols[0].button("🧠 Neural Networks", key="sug3"):
+        if cols[0].button("🧠 Neural Networks", key="sug3", use_container_width=True):
             topic_input = "How do neural networks learn?"
-        if cols[1].button("🌊 Ocean Tides", key="sug4"):
+        if cols[1].button("🌊 Ocean Tides", key="sug4", use_container_width=True):
             topic_input = "What causes ocean tides?"
 
-        st.markdown("---")
+        st.markdown("<hr style='border-color:rgba(168,85,247,0.25); margin:12px 0;'>", unsafe_allow_html=True)
 
-        # Learning Mode Selection
+        # Learning Mode Selection (Bold Label)
         mode_option = st.selectbox(
-            "🎨 **Learning Mode**",
+            "**🎨 Learning Mode**",
             options=["Visual 🎬", "Deep Dive 🔬", "Bite-Sized ⚡"],
             index=0,
             help="Visual: video & diagrams | Deep Dive: papers & proofs | Bite-Sized: quick summaries",
@@ -939,9 +2412,9 @@ def render_learning_workspace():
         }
         selected_mode = mode_map[mode_option]
 
-        # Student Level Selection
+        # Student Level Selection (Bold Label)
         level_option = st.selectbox(
-            "🎓 **Education Level**",
+            "**🎓 Education Level**",
             options=["Middle School 🏫", "High School 🎒", "Undergraduate 🏛️", "Graduate 🎓", "General Curious 💡"],
             index=0,
         )
@@ -954,11 +2427,10 @@ def render_learning_workspace():
         }
         selected_level = level_map[level_option]
 
-        st.markdown("---")
+        st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
 
         # Start Learning Journey Button
-        start_clicked = st.button("🚀 **Start Learning Journey**", type="primary", use_container_width=True)
-
+        start_clicked = st.button("🚀 Start Learning Journey", type="primary", use_container_width=True)
 
     # ─── Session Initialization Logic ────────────────────────────────
     if start_clicked and topic_input:
@@ -1042,27 +2514,37 @@ def render_learning_workspace():
 
     # ─── Main Content Workspace ──────────────────────────────────────
     if not memory or not memory.steps:
-        # Landing Page State with Header & Admin Button
-        header_col1, header_col2 = st.columns([4, 1])
-        with header_col1:
-            st.markdown('<div class="main-title">EduTechAI Learning Workspace</div>', unsafe_allow_html=True)
-            st.markdown('<div class="sub-title">An adaptive educational workspace where autonomous AI agents collaborate in real-time.</div>', unsafe_allow_html=True)
-        with header_col2:
-            st.write("")
-            if st.button("🛡️ Admin Portal", key="top_admin_btn", help="Switch to Admin Console"):
-                st.session_state["view"] = "admin"
-                st.rerun()
-
-        st.info("👈 Enter a topic in the sidebar and click **Start Learning Journey** to begin!")
+        # Centered Hero Section (Matching Home Page Typography & Gradient Text)
+        st.markdown(
+            """
+            <div class="et-hero">
+                <h1>EduTechAI<br/><span class="gradient-text">Learning Workspace</span></h1>
+                <p>An adaptive, intelligent learning studio where specialized AI agents orchestrate personalized roadmaps, intuitive analogies, video deep-dives, and instant mastery checks.</p>
+            </div>
+            <div class="sidebar-guide-card">
+                <div class="guide-handle-badge">
+                    <svg class="guide-chevron-pulse" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#E9D5FF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                    <span>Sidebar</span>
+                </div>
+                <div class="guide-text-content">
+                    Enter any topic in the sidebar & click <span class="gradient-text" style="font-weight: 800;">'Start Learning Journey'</span> to launch your multi-agent studio!
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
         
-        # Feature Grid
-        col1, col2, col3 = st.columns(3)
+        # 4 Agent Squad Cards (Matching Landing Page Grid Aesthetic)
+        col1, col2, col3, col4 = st.columns(4)
         with col1:
             st.markdown(
                 """
-                <div class="glass-card">
-                    <h3>🧩 Socratic Tutor Agent</h3>
-                    <p>Explains complex concepts using simple everyday analogies and guiding questions — no raw text dumps!</p>
+                <div class="feat-card">
+                    <div class="feat-icon icon-violet">🧩</div>
+                    <h4>Socratic Tutor</h4>
+                    <p style="font-size: 0.84rem; color: rgba(255, 255, 255, 0.65);">Interactive Socratic dialogue with intuitive analogies tailored to your level.</p>
                 </div>
                 """,
                 unsafe_allow_html=True,
@@ -1070,9 +2552,10 @@ def render_learning_workspace():
         with col2:
             st.markdown(
                 """
-                <div class="glass-card">
-                    <h3>🎬 YouTube Curator</h3>
-                    <p>Extracts transcripts and pinpoints exact timestamp clips to jump straight to the explanation moment.</p>
+                <div class="feat-card">
+                    <div class="feat-icon icon-cyan">🎬</div>
+                    <h4>YouTube Curator</h4>
+                    <p style="font-size: 0.84rem; color: rgba(255, 255, 255, 0.65);">Pinpoints exact timestamp clips and explanations from top educational videos.</p>
                 </div>
                 """,
                 unsafe_allow_html=True,
@@ -1080,24 +2563,28 @@ def render_learning_workspace():
         with col3:
             st.markdown(
                 """
-                <div class="glass-card">
-                    <h3>📚 Academic Researcher</h3>
-                    <p>Searches OpenAlex, Semantic Scholar, and arXiv for open-access papers and AI-generated summaries.</p>
+                <div class="feat-card">
+                    <div class="feat-icon icon-blue">📚</div>
+                    <h4>Academic Researcher</h4>
+                    <p style="font-size: 0.84rem; color: rgba(255, 255, 255, 0.65);">Retrieves open-access papers with AI summaries from arXiv & OpenAlex.</p>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+        with col4:
+            st.markdown(
+                """
+                <div class="feat-card">
+                    <div class="feat-icon icon-pink">📝</div>
+                    <h4>Milestone Quiz</h4>
+                    <p style="font-size: 0.84rem; color: rgba(255, 255, 255, 0.65);">Adaptive knowledge checks with real-time feedback, gamification XP & auto-progression.</p>
                 </div>
                 """,
                 unsafe_allow_html=True,
             )
 
     else:
-        # Active Session Workspace
-        act_col1, act_col2 = st.columns([4, 1])
-        with act_col1:
-            st.markdown(f'<div class="main-title">📖 Learning: {memory.topic}</div>', unsafe_allow_html=True)
-        with act_col2:
-            st.write("")
-            if st.button("🛡️ Admin Portal", key="act_admin_btn", help="Switch to Admin Console"):
-                st.session_state["view"] = "admin"
-                st.rerun()
+        # Active Session Workspace Body (Header already rendered above)
         
         # ─── Top Progress & Gamification Header Dashboard ──────────────
         total_xp = memory.xp_earned if memory else 0
@@ -1114,11 +2601,11 @@ def render_learning_workspace():
             f"""
             <div class="top-progress-card">
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <div style="background: linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%); padding: 8px 12px; border-radius: 12px; font-size: 1.1rem; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);">🏆</div>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="background: linear-gradient(135deg, #EC4899 0%, #A855F7 100%); padding: 9px 13px; border-radius: 14px; font-size: 1.2rem; box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4);">🏆</div>
                         <div>
-                            <div style="font-weight: 800; font-size: 1.15rem; color: #F8FAFC; letter-spacing: 0.3px;">Your Progress Dashboard</div>
-                            <div style="font-size: 0.78rem; color: #94A3B8;">Track your real-time learning milestone achievements</div>
+                            <div style="font-weight: 900; font-size: 1.2rem; color: #FAFAFA; letter-spacing: 0.3px;">Your Mastery Dashboard</div>
+                            <div style="font-size: 0.8rem; color: rgba(233, 213, 255, 0.75);">Real-time learning milestone progress & XP rewards</div>
                         </div>
                     </div>
                     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
@@ -1143,10 +2630,10 @@ def render_learning_workspace():
         with prog_col1:
             st.markdown(
                 f"""
-                <div class="glass-card" style="margin-bottom:0; text-align:center; padding: 0.75rem 0.5rem;">
+                <div class="glass-card" style="margin-bottom:0; text-align:center; padding: 0.85rem 0.6rem;">
                     <div class="top-progress-label">Current Level</div>
                     <div class="top-progress-stat">Lvl {level_data['level']}</div>
-                    <div style="font-size:0.75rem; color:#A855F7; font-weight:700;">{level_data['title']}</div>
+                    <div style="font-size:0.78rem; color:#C084FC; font-weight:800; margin-top:2px;">{level_data['title']}</div>
                 </div>
                 """,
                 unsafe_allow_html=True,
@@ -1155,38 +2642,48 @@ def render_learning_workspace():
         with prog_col2:
             st.markdown(
                 f"""
-                <div class="glass-card" style="margin-bottom:0; text-align:center; padding: 0.75rem 0.5rem;">
+                <div class="glass-card" style="margin-bottom:0; text-align:center; padding: 0.85rem 0.6rem;">
                     <div class="top-progress-label">Total XP Earned</div>
                     <div class="top-progress-stat">⭐ {total_xp}</div>
-                    <div style="font-size:0.75rem; color:#38BDF8; font-weight:700;">Streak: {memory.streak_count} 🔥</div>
+                    <div style="font-size:0.78rem; color:#38BDF8; font-weight:800; margin-top:2px;">Streak: {memory.streak_count} 🔥</div>
                 </div>
                 """,
                 unsafe_allow_html=True,
             )
 
         with prog_col3:
+            lvl_pct = min(1.0, max(0.0, float(level_data.get("progress", 0.0))))
             st.markdown(
                 f"""
-                <div class="glass-card" style="margin-bottom:0; padding: 0.75rem 0.8rem;">
-                    <div class="top-progress-label">Level Progress (Lvl {level_data['level']} → {level_data['level']+1})</div>
-                    <div style="font-size:0.85rem; color:#F1F5F9; font-weight:700; margin-bottom:4px;">{total_xp} / {level_data['xp_for_next_level']} XP <span style="font-size:0.75rem; color:#94A3B8;">({level_data['xp_in_level']}/{level_data['xp_needed_for_next']} in Lvl)</span></div>
+                <div class="glass-card" style="margin-bottom:0; padding: 0.85rem 0.9rem; display:flex; flex-direction:column; justify-content:space-between; height:100%;">
+                    <div>
+                        <div class="top-progress-label">Level Progress (Lvl {level_data['level']} → {level_data['level']+1})</div>
+                        <div style="font-size:0.85rem; color:#F1F5F9; font-weight:700; margin-bottom:6px;">{total_xp} / {level_data['xp_for_next_level']} XP <span style="font-size:0.75rem; color:#94A3B8;">({level_data['xp_in_level']}/{level_data['xp_needed_for_next']} in Lvl)</span></div>
+                    </div>
+                    <div class="custom-progress-track">
+                        <div class="custom-progress-fill" style="width: {lvl_pct*100:.1f}%;"></div>
+                    </div>
                 </div>
                 """,
                 unsafe_allow_html=True,
             )
-            st.progress(level_data["progress"])
 
         with prog_col4:
+            topic_pct = (completed_steps / total_steps) if total_steps else 0.0
             st.markdown(
                 f"""
-                <div class="glass-card" style="margin-bottom:0; padding: 0.75rem 0.8rem;">
-                    <div class="top-progress-label">Topic Completion</div>
-                    <div style="font-size:0.85rem; color:#F1F5F9; font-weight:700; margin-bottom:4px;">{completed_steps} of {total_steps} Steps ({completed_steps/total_steps if total_steps else 0:.0%})</div>
+                <div class="glass-card" style="margin-bottom:0; padding: 0.85rem 0.9rem; display:flex; flex-direction:column; justify-content:space-between; height:100%;">
+                    <div>
+                        <div class="top-progress-label">Topic Completion</div>
+                        <div style="font-size:0.85rem; color:#F1F5F9; font-weight:700; margin-bottom:6px;">{completed_steps} of {total_steps} Steps ({topic_pct:.0%})</div>
+                    </div>
+                    <div class="custom-progress-track">
+                        <div class="custom-progress-fill" style="width: {topic_pct*100:.1f}%;"></div>
+                    </div>
                 </div>
                 """,
                 unsafe_allow_html=True,
             )
-            st.progress(completed_steps / total_steps if total_steps else 0.0)
 
         st.markdown("<br>", unsafe_allow_html=True)
 
@@ -1233,8 +2730,18 @@ def render_learning_workspace():
                     st.session_state["active_step_index"] = i
                     st.rerun()
 
-        # Overall Linear Progress Bar
-        st.progress(completed_steps / total_steps if total_steps else 0.0)
+        # Overall Linear Progress Bar (Single Unified Progress Bar)
+        roadmap_pct = (completed_steps / total_steps) if total_steps else 0.0
+        st.markdown(
+            f"""
+            <div style="margin-top: 10px;">
+                <div class="custom-progress-track" style="height: 9px;">
+                    <div class="custom-progress-fill" style="width: {roadmap_pct*100:.1f}%;"></div>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
         current_step = memory.steps[active_idx]
         if current_step.status == StepStatus.PENDING:
@@ -1279,7 +2786,7 @@ def render_learning_workspace():
             status_class = "pending"
             status_icon = "🔒"
 
-        col_s1, col_s2 = st.columns([2.6, 1.4], vertical_alignment="center")
+        col_s1, col_s2 = st.columns([2.1, 1.9], vertical_alignment="center")
         with col_s1:
             st.markdown(
                 f"""
@@ -1301,7 +2808,7 @@ def render_learning_workspace():
             # UP: Status Pill Capsule (Right-Aligned)
             st.markdown(
                 f"""
-                <div style="display: flex; justify-content: flex-end; align-items: center; margin-bottom: 6px; width: 100%;">
+                <div style="display: flex; justify-content: flex-end; align-items: center; margin-bottom: 8px; width: 100%;">
                     <div class="pill-capsule pill-status-{status_class}">
                         <span class="pill-label">Status</span>
                         <span class="pill-icon-box">{status_icon}</span>
@@ -1311,11 +2818,12 @@ def render_learning_workspace():
                 """,
                 unsafe_allow_html=True,
             )
-            # BELOW: Redesigned Regenerate Step Capsule Button (Right-Aligned Directly Below Status)
+            # DOWN: Redesigned Regenerate Step Button (Styled like "Start Learning Journey" Button)
             if st.button(
-                f"🔄 Regenerate Step {active_idx + 1}",
+                f"Regenerate Step {active_idx + 1}",
+                icon=":material/refresh:",
                 key=f"regen_btn_{active_idx}",
-                help=f"Re-run Socratic, YouTube, Academic & Quiz agents for Step {active_idx + 1}",
+                type="primary",
             ):
                 setattr(current_step, "tutor_explanation", None)
                 setattr(current_step, "videos", [])
@@ -1374,18 +2882,18 @@ def render_learning_workspace():
                         if st.button(f"💬 {sug_q}", key=f"sug_q_{active_idx}_{q_i}", use_container_width=True):
                             triggered_q = sug_q
 
-                # Native Chat Input Form
-                with st.form(key=f"tutor_chat_form_{active_idx}", clear_on_submit=True):
-                    c1, c2 = st.columns([4, 1])
-                    with c1:
+                # Socratic Follow-Up Chat Input Row
+                with st.form(key=f"tutor_chat_form_{active_idx}", clear_on_submit=True, border=False):
+                    c_in, c_btn = st.columns([4.2, 1.2], vertical_alignment="center")
+                    with c_in:
                         user_prompt = st.text_input(
                             "Ask Socratic Tutor...",
                             key=f"chat_in_{active_idx}",
-                            placeholder="Type a question or ask for another analogy...",
+                            placeholder="Ask Socratic Tutor a follow-up question or for an analogy...",
                             label_visibility="collapsed",
                         )
-                    with c2:
-                        send_chat = st.form_submit_button("Send 💬", use_container_width=True)
+                    with c_btn:
+                        send_chat = st.form_submit_button("Ask Tutor ✨", type="primary", use_container_width=True)
 
                 question_to_send = triggered_q or (user_prompt.strip() if send_chat and user_prompt.strip() else None)
 
@@ -1478,13 +2986,24 @@ def render_learning_workspace():
                             if q_idx < len(step_quiz) - 1:
                                 st.markdown("---")
                         
-                        submit_quiz = st.form_submit_button("🚀 Submit Quiz")
+                        submit_quiz = st.form_submit_button("🚀 Submit Quiz", type="primary", use_container_width=True)
 
                     if submit_quiz:
-                        st.session_state[f"saved_user_answers_{active_idx}"] = user_answers
-                        st.session_state[f"saved_user_full_answers_{active_idx}"] = user_full_answers
-                        safe_set_attr(current_step, "user_answers", user_answers)
-                        safe_set_attr(current_step, "user_full_answers", user_full_answers)
+                        missing_q_indices = []
+                        for q_idx in range(len(step_quiz)):
+                            ans = user_answers.get(q_idx, "")
+                            if not ans or not str(ans).strip():
+                                missing_q_indices.append(q_idx + 1)
+                        
+                        if missing_q_indices:
+                            missing_str = ", ".join([f"Q{i}" for i in missing_q_indices])
+                            st.warning(f"⚠️ **Please answer all questions before submitting the quiz!** Unanswered: **{missing_str}**")
+                        else:
+                            st.session_state[f"quiz_submitted_{active_idx}"] = True
+                            st.session_state[f"saved_user_answers_{active_idx}"] = user_answers
+                            st.session_state[f"saved_user_full_answers_{active_idx}"] = user_full_answers
+                            safe_set_attr(current_step, "user_answers", user_answers)
+                            safe_set_attr(current_step, "user_full_answers", user_full_answers)
                     else:
                         for q_idx in range(len(step_quiz)):
                             if not user_answers.get(q_idx) and q_idx in saved_user_answers:
@@ -1493,8 +3012,7 @@ def render_learning_workspace():
                                 user_full_answers[q_idx] = saved_user_full_answers[q_idx]
 
                     is_quiz_submitted = (
-                        submit_quiz
-                        or f"quiz_submitted_{active_idx}" in st.session_state
+                        f"quiz_submitted_{active_idx}" in st.session_state
                         or current_step.status == StepStatus.COMPLETE
                         or getattr(current_step, "quiz_score", None) is not None
                     )
@@ -1586,8 +3104,9 @@ def render_learning_workspace():
                                     run_async(SessionManager().update_session(memory))
                                 except Exception as e:
                                     logging.warning(f"Could not save final session state: {e}")
-                            st.balloons()
-                            st.success("🎉 **Congratulations! You have completed all milestone steps for this topic!**")
+                            if not st.session_state.get(f"victory_modal_dismissed_{memory.session_id}", False):
+                                st.session_state[f"show_victory_modal_{memory.session_id}"] = True
+                                show_congratulations_dialog(memory)
 
         # ─── RIGHT COLUMN: YouTube Videos & Academic Research Papers ──────
         with col_right:
@@ -1712,8 +3231,9 @@ def render_learning_workspace():
                                 run_async(SessionManager().update_session(memory))
                             except Exception as e:
                                 logging.warning(f"Could not save final session state: {e}")
-                        st.balloons()
-                        st.success("🎉 **Congratulations! You have completed all milestone steps for this topic!**")
+                        if not st.session_state.get(f"victory_modal_dismissed_{memory.session_id}", False):
+                            st.session_state[f"show_victory_modal_{memory.session_id}"] = True
+                            show_congratulations_dialog(memory)
 
 
 def sync_session_with_url():

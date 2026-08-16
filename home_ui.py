@@ -75,6 +75,27 @@ HOME_CSS = """
         padding-top: 1.5rem !important;
     }
 
+    /* ── Completely Eliminate Default Streamlit Header & Deploy Bar ── */
+    header[data-testid="stHeader"] {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0px !important;
+        min-height: 0px !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }
+
+    #MainMenu, .stDeployButton, [data-testid="stToolbarActions"], [data-testid="stDecoration"], [data-testid="stStatusWidget"], footer, #edutech-sidebar-master-toggle, [data-testid="stHeaderActionElements"], a[aria-label="Link to heading"] {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0px !important;
+        width: 0px !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }
+
     section[data-testid="stSidebar"] {
         display: none !important;
     }
@@ -144,11 +165,11 @@ HOME_CSS = """
         background: rgba(15, 23, 42, 0.85) !important;
         backdrop-filter: blur(20px) !important;
         -webkit-backdrop-filter: blur(20px) !important;
-        border: 1px solid rgba(168, 85, 247, 0.35) !important;
+        border: 1px solid rgba(168, 85, 247, 0.45) !important;
         border-radius: 50px !important;
         padding: 8px 24px !important;
         margin: 0rem 0 1.5rem 0 !important;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(168, 85, 247, 0.1) !important;
+        box-shadow: 0 0 30px rgba(168, 85, 247, 0.25), 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(168, 85, 247, 0.15) !important;
         width: 100% !important;
         box-sizing: border-box !important;
         align-items: center !important;
@@ -1256,7 +1277,7 @@ HOME_CSS = """
     /* ── Auth Page Intro Header & Instructions ── */
     .auth-header-container {
         text-align: center !important;
-        margin: 1.5rem auto 2rem auto !important;
+        margin: 0 auto 1rem auto !important;
         max-width: 800px !important;
     }
 
@@ -1277,6 +1298,7 @@ HOME_CSS = """
         font-size: 2.1rem !important;
         font-weight: 900 !important;
         color: #FAFAFA !important;
+        margin-top: 0 !important;
         margin-bottom: 0.6rem !important;
         line-height: 1.25 !important;
     }
@@ -1395,7 +1417,7 @@ HOME_CSS = """
         border: 1px solid rgba(168, 85, 247, 0.45) !important;
         border-radius: 50px !important;
         padding: 8px 24px !important;
-        margin: 0rem 0 1rem 0 !important;
+        margin: 0rem 0 1.5rem 0 !important;
         box-shadow: 0 0 30px rgba(168, 85, 247, 0.25), 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(168, 85, 247, 0.15) !important;
         width: 100% !important;
         box-sizing: border-box !important;
@@ -2492,6 +2514,19 @@ def _render_auth_view():
 
     mode = st.session_state.get("auth_form_mode")
 
+    # ── Floating Glassmorphic Navbar Pill (rendered first) ──────────────────────
+    nav_c1, nav_c2 = st.columns([3, 1])
+    with nav_c1:
+        st.markdown('<div class="et-logo-simple">⚡ <span class="accent">EduTech</span> <span class="badge-ai">AI</span></div>', unsafe_allow_html=True)
+    with nav_c2:
+        if st.button("← Back to Home", key="auth_back"):
+            st.session_state["view"] = "home"
+            # Clear state when leaving
+            st.session_state["auth_form_mode"] = None
+            st.session_state["auth_tab"] = None
+            st.query_params.clear()
+            st.rerun()
+
     # Dynamic active state CSS overrides (Glassmorphic background fill for selected state)
     if mode == "signin":
         st.markdown("""<style>
@@ -2521,23 +2556,9 @@ def _render_auth_view():
     # Background glow with constellation node overlay
     st.markdown('<div class="glow-bg-constellation"></div>', unsafe_allow_html=True)
 
-    # ── Floating Glassmorphic Navbar Pill ──────────────────────
-    nav_c1, nav_c2 = st.columns([3, 1])
-    with nav_c1:
-        st.markdown('<div class="et-logo-simple">⚡ <span class="accent">EduTech</span> <span class="badge-ai">AI</span></div>', unsafe_allow_html=True)
-    with nav_c2:
-        if st.button("← Back to Home", key="auth_back"):
-            st.session_state["view"] = "home"
-            # Clear state when leaving
-            st.session_state["auth_form_mode"] = None
-            st.session_state["auth_tab"] = None
-            st.query_params.clear()
-            st.rerun()
-
     st.markdown(
         """
         <div class="auth-header-container">
-            <div class="auth-badge">🔐 SECURE GATEWAY</div>
             <h1 class="auth-title">Access the <span class="gradient-text">AI Learning Workspace</span></h1>
             <p class="auth-subtitle">EduTech AI is an autonomous, multi-agent academic ecosystem. Log in or create a new student account to instantiate your personal supervisor-worker agent swarm.</p>
             <div class="auth-instructions-pill">
