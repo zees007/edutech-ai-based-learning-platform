@@ -1239,16 +1239,63 @@ HOME_CSS = """
     }
 
     /* ── About Cards & Metric Pills — Glassmorphism Gradient Theme ─── */
+    div[data-testid="stHorizontalBlock"]:has(#about-card-mission-marker),
+    div[data-testid="stHorizontalBlock"]:has(.about-card) {
+        align-items: stretch !important;
+        gap: 1.5rem !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(#about-card-mission-marker) > div[data-testid="stColumn"],
+    div[data-testid="stHorizontalBlock"]:has(#about-card-mission-marker) > div[data-testid="column"],
+    div[data-testid="stHorizontalBlock"]:has(.about-card) > div[data-testid="stColumn"],
+    div[data-testid="stHorizontalBlock"]:has(.about-card) > div[data-testid="column"] {
+        display: flex !important;
+        flex-direction: column !important;
+        flex: 1 1 0 !important;
+        height: 100% !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(#about-card-mission-marker) div[data-testid="stVerticalBlock"],
+    div[data-testid="stHorizontalBlock"]:has(#about-card-mission-marker) div[data-testid="element-container"],
+    div[data-testid="stHorizontalBlock"]:has(#about-card-mission-marker) div[data-testid="stElementContainer"],
+    div[data-testid="stHorizontalBlock"]:has(#about-card-mission-marker) div[data-testid="stMarkdownContainer"],
+    div[data-testid="stHorizontalBlock"]:has(.about-card) div[data-testid="stVerticalBlock"],
+    div[data-testid="stHorizontalBlock"]:has(.about-card) div[data-testid="element-container"],
+    div[data-testid="stHorizontalBlock"]:has(.about-card) div[data-testid="stElementContainer"],
+    div[data-testid="stHorizontalBlock"]:has(.about-card) div[data-testid="stMarkdownContainer"] {
+        height: 100% !important;
+        display: flex !important;
+        flex-direction: column !important;
+        flex: 1 1 auto !important;
+    }
+
     .about-card {
         background: linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(168, 85, 247, 0.18) 50%, rgba(15, 23, 42, 0.9) 100%);
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
         border: 1px solid rgba(168, 85, 247, 0.4);
         border-radius: 18px;
-        padding: 2rem 1.8rem;
-        height: 100%;
+        padding: 2.2rem 2rem;
+        height: 100% !important;
+        min-height: 280px;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: flex-start !important;
+        box-sizing: border-box !important;
         transition: all 0.3s ease;
         box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), inset 0 0 25px rgba(124, 58, 237, 0.12);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .about-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 10%; right: 10%; height: 2px;
+        background: linear-gradient(90deg, transparent 0%, #EC4899 30%, #A855F7 50%, #06B6D4 70%, transparent 100%);
+        border-radius: 2px;
+        opacity: 0.8;
+        box-shadow: 0 0 10px #A855F7;
     }
 
     .about-card:hover {
@@ -1259,20 +1306,30 @@ HOME_CSS = """
     }
 
     .about-card h3 {
-        font-size: 1.25rem;
+        font-size: 1.35rem;
         font-weight: 800;
         color: #FAFAFA;
-        margin-bottom: 0.8rem;
+        margin-top: 0;
+        margin-bottom: 1rem;
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 10px;
+        line-height: 1.3;
     }
 
     .about-card p {
-        font-size: 0.9rem;
-        color: rgba(255, 255, 255, 0.55);
-        line-height: 1.65;
+        font-size: 0.92rem;
+        color: rgba(255, 255, 255, 0.65);
+        line-height: 1.7;
         margin: 0;
+        flex: 1 1 auto;
+    }
+
+    @media (max-width: 768px) {
+        .about-card {
+            min-height: auto !important;
+            padding: 1.8rem 1.4rem;
+        }
     }
 
     .stat-pill {
@@ -3327,6 +3384,7 @@ def render_home_page():
     with ab1:
         st.markdown(
             """
+            <div id="about-card-mission-marker"></div>
             <div class="about-card">
                 <h3>🚀 Our Mission</h3>
                 <p>
@@ -3341,6 +3399,7 @@ def render_home_page():
     with ab2:
         st.markdown(
             """
+            <div id="about-card-mastery-marker"></div>
             <div class="about-card">
                 <h3>🧠 Engineered for Deep Mastery</h3>
                 <p>
