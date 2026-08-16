@@ -1842,44 +1842,78 @@ HOME_CSS = """
         color: #FFFFFF !important;
     }
 
-    /* Top-Left Glassmorphic Circular Back Arrow Button on Form Card */
-    div[data-testid="stColumn"]:has(#auth-form-card-marker) button[key="close_auth_form"],
-    button[key="close_auth_form"],
-    button[key="close_auth_form"].st-emotion-cache-165rbpf {
-        display: inline-flex !important;
+    /* Sleek Glowing Glass Back Pill Button (Extreme Left Flush) */
+    div[data-testid="stColumn"]:has(#auth-form-card-marker) div[data-testid="stHorizontalBlock"]:first-of-type {
+        margin-left: 0 !important;
+        padding-left: 0 !important;
+        justify-content: space-between !important;
         align-items: center !important;
-        justify-content: center !important;
-        width: 34px !important;
-        height: 34px !important;
-        min-width: 34px !important;
-        min-height: 34px !important;
-        max-width: 34px !important;
-        max-height: 34px !important;
-        border-radius: 50% !important;
-        padding: 0 !important;
-        margin: 0 0 0.8rem 0 !important;
-        background: rgba(255, 255, 255, 0.08) !important;
-        background-color: rgba(255, 255, 255, 0.08) !important;
-        border: 1px solid rgba(255, 255, 255, 0.2) !important;
-        color: rgba(255, 255, 255, 0.85) !important;
-        font-size: 1.1rem !important;
-        font-weight: 700 !important;
-        line-height: 1 !important;
-        cursor: pointer !important;
-        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
-        outline: none !important;
     }
 
-    div[data-testid="stColumn"]:has(#auth-form-card-marker) button[key="close_auth_form"]:hover,
-    button[key="close_auth_form"]:hover,
-    button[key="close_auth_form"].st-emotion-cache-165rbpf:hover {
+    div[data-testid="stColumn"]:has(#auth-form-card-marker) div[data-testid="stHorizontalBlock"]:first-of-type div[data-testid="stColumn"]:first-child,
+    div[data-testid="stColumn"]:has(#auth-form-card-marker) div[data-testid="stHorizontalBlock"]:first-of-type div[data-testid="column"]:first-child {
+        display: flex !important;
+        justify-content: flex-start !important;
+        align-items: center !important;
+        padding-left: 0 !important;
+        margin-left: 0 !important;
+    }
+
+    div.st-key-close_auth_form,
+    div[data-testid="stColumn"]:has(#auth-form-card-marker) div[data-testid="stButton"]:has(button[key="close_auth_form"]) {
+        margin: 0 !important;
+        padding: 0 !important;
+        display: flex !important;
+        justify-content: flex-start !important;
+        align-self: flex-start !important;
+        width: auto !important;
+    }
+
+    div.st-key-close_auth_form button,
+    div[data-testid="stColumn"]:has(#auth-form-card-marker) button[key="close_auth_form"] {
+        display: inline-flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 6px !important;
+        height: 32px !important;
+        min-height: 32px !important;
+        max-height: 32px !important;
+        padding: 0 14px !important;
+        margin: 0 !important;
+        margin-left: 0 !important;
+        align-self: flex-start !important;
+        border-radius: 20px !important;
+        background: rgba(255, 255, 255, 0.06) !important;
+        background-color: rgba(255, 255, 255, 0.06) !important;
+        border: 1px solid rgba(168, 85, 247, 0.35) !important;
+        color: rgba(233, 213, 255, 0.85) !important;
+        font-size: 0.78rem !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.4px !important;
+        cursor: pointer !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3) !important;
+        white-space: nowrap !important;
+        width: auto !important;
+    }
+
+    div.st-key-close_auth_form button:hover,
+    div[data-testid="stColumn"]:has(#auth-form-card-marker) button[key="close_auth_form"]:hover {
         color: #FFFFFF !important;
         background: rgba(168, 85, 247, 0.25) !important;
         background-color: rgba(168, 85, 247, 0.25) !important;
-        border-color: rgba(168, 85, 247, 0.6) !important;
-        box-shadow: 0 0 15px rgba(168, 85, 247, 0.4) !important;
-        transform: scale(1.1) translateX(-2px) !important;
+        border-color: rgba(168, 85, 247, 0.75) !important;
+        box-shadow: 0 0 18px rgba(168, 85, 247, 0.45) !important;
+        transform: translateX(-3px) !important;
+    }
+
+    .auth-top-badge-wrap {
+        display: flex !important;
+        justify-content: flex-end !important;
+        align-items: center !important;
+        height: 32px !important;
+        margin-bottom: 0.5rem !important;
     }
 
     div[data-testid="stColumn"]:has(#auth-canvas-marker)::before,
@@ -3069,19 +3103,23 @@ def _render_auth_view():
         with col_auth:
             st.markdown('<div id="auth-form-card-marker"></div>', unsafe_allow_html=True)
 
-            btn_col, _ = st.columns([1, 6])
-            with btn_col:
-                if st.button("←", key="close_auth_form", help="Back to Flowchart Canvas"):
+            top_bar_col1, top_bar_col2 = st.columns([1, 1])
+            with top_bar_col1:
+                if st.button("← Back to Canvas", key="close_auth_form", help="Return to full flowchart canvas"):
                     st.session_state["auth_form_mode"] = None
                     st.session_state.pop("auth_tab", None)
                     if "auth_mode" in st.query_params:
                         del st.query_params["auth_mode"]
                     st.rerun()
+            with top_bar_col2:
+                if mode == "signin":
+                    st.markdown('<div class="auth-top-badge-wrap"><span class="auth-form-badge auth-badge-signin">🔐 STEP 04A • LOGIN</span></div>', unsafe_allow_html=True)
+                else:
+                    st.markdown('<div class="auth-top-badge-wrap"><span class="auth-form-badge auth-badge-signup">✨ STEP 04B • REGISTER</span></div>', unsafe_allow_html=True)
 
             if mode == "signin":
                 st.markdown(
                     """<div class="auth-form-header">
-  <div class="auth-form-badge auth-badge-signin">🔐 SECURE AUTHENTICATION</div>
   <h2 class="auth-form-title">Sign In to <span class="gradient-text">AI Workspace</span></h2>
   <p class="auth-form-subtitle">Enter your credentials to resume your personalized curriculum session.</p>
 </div>""",
@@ -3090,7 +3128,6 @@ def _render_auth_view():
             else:
                 st.markdown(
                     """<div class="auth-form-header">
-  <div class="auth-form-badge auth-badge-signup">✨ STUDENT REGISTRATION</div>
   <h2 class="auth-form-title">Create Your <span class="gradient-text">Learning Account</span></h2>
   <p class="auth-form-subtitle">Instantiate your personal autonomous AI agent squad in seconds.</p>
 </div>""",
