@@ -1595,14 +1595,13 @@ HOME_CSS = """
     }
 
     /* ── CTA Banner ────────────────────────────────── */
-    /* ── CTA Banner ────────────────────────────────── */
     .cta-banner {
         text-align: center;
-        padding: 2.5rem 1rem 1.2rem 1rem;
+        padding: 3rem 1rem 5.5rem 1rem !important;
         background: radial-gradient(ellipse 600px 300px at 50% 50%, rgba(139, 92, 246, 0.1) 0%, transparent 70%);
         border-top: 1px solid rgba(255, 255, 255, 0.04);
         border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-        margin: 1.2rem 0 0.6rem 0;
+        margin: 1.5rem 0 0 0 !important;
     }
 
     .cta-banner h2 {
@@ -1618,7 +1617,43 @@ HOME_CSS = """
         font-size: 0.95rem;
         color: rgba(255, 255, 255, 0.5);
         max-width: 520px;
-        margin: 0 auto 1.2rem auto;
+        margin: 0 auto !important;
+        line-height: 1.6;
+    }
+
+    /* Seamlessly position Get Started Free button inside CTA Banner */
+    div[data-testid="stHorizontalBlock"]:has(.st-key-cta_btn),
+    div[data-testid="stHorizontalBlock"]:has(div[data-testid="stButton"] button[key="cta_btn"]) {
+        margin-top: -4.2rem !important;
+        margin-bottom: 2rem !important;
+        position: relative !important;
+        z-index: 5 !important;
+    }
+
+    div.st-key-cta_btn button {
+        height: 46px !important;
+        min-height: 46px !important;
+        border-radius: 24px !important;
+        font-weight: 800 !important;
+        font-size: 0.98rem !important;
+        padding: 0 2rem !important;
+    }
+
+    @media (max-width: 768px) {
+        .cta-banner {
+            padding: 2.2rem 1rem 4.8rem 1rem !important;
+        }
+
+        div[data-testid="stHorizontalBlock"]:has(.st-key-cta_btn) {
+            margin-top: -3.8rem !important;
+            margin-bottom: 1.5rem !important;
+        }
+
+        div.st-key-cta_btn button {
+            height: 42px !important;
+            min-height: 42px !important;
+            font-size: 0.9rem !important;
+        }
     }
 
     /* ── Footer ────────────────────────────────────── */
