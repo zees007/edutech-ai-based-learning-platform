@@ -90,7 +90,7 @@ async def _ensure_db():
     await init_db(settings)
 
 
-@st.cache_resource
+@st.cache_resource(show_spinner=False)
 def _init_db_once():
     """Fallback guard — DB is normally initialized at startup by ui.py.
     This only runs if admin_ui.py is launched standalone (e.g. `streamlit run admin_ui.py`).

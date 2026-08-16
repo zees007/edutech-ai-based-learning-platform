@@ -73,6 +73,8 @@ HOME_CSS = """
 
     .block-container {
         padding-top: 1.5rem !important;
+        padding-bottom: 1.5rem !important;
+        max-width: 1200px !important;
     }
 
     /* ── Completely Eliminate Default Streamlit Header & Deploy Bar ── */
@@ -172,6 +174,9 @@ HOME_CSS = """
         box-shadow: 0 0 30px rgba(168, 85, 247, 0.25), 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(168, 85, 247, 0.15) !important;
         width: 100% !important;
         box-sizing: border-box !important;
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
         align-items: center !important;
         justify-content: space-between !important;
         min-height: 52px !important;
@@ -228,7 +233,7 @@ HOME_CSS = """
     div[data-testid="stHorizontalBlock"]:has(.et-logo) div[data-testid="stColumn"]:last-child div[data-testid="stHorizontalBlock"] {
         align-items: center !important;
         justify-content: flex-end !important;
-        gap: 3px !important;
+        gap: 6px !important;
         margin: 0 !important;
         padding: 0 !important;
         background: transparent !important;
@@ -239,6 +244,7 @@ HOME_CSS = """
         border-radius: 0 !important;
         min-height: 0 !important;
         flex-wrap: nowrap !important;
+        flex-direction: row !important;
     }
 
     /* Force nested sub-columns (button wrappers) to shrink to content */
@@ -293,6 +299,8 @@ HOME_CSS = """
         margin: 0;
         line-height: 1;
         align-self: center;
+        white-space: nowrap;
+        flex-shrink: 0;
     }
 
     .et-logo .accent, .et-logo-simple .accent {
@@ -311,6 +319,7 @@ HOME_CSS = """
         padding: 2px 6px;
         margin-left: 2px;
         line-height: 1;
+        white-space: nowrap;
     }
 
     .et-nav-links {
@@ -421,10 +430,198 @@ HOME_CSS = """
         transform: translateY(-1px) !important;
     }
 
+    /* ── Tablet Responsiveness (769px - 992px) ──────── */
+    @media (min-width: 769px) and (max-width: 992px) {
+        div[data-testid="stHorizontalBlock"]:has(.et-logo) {
+            padding: 7px 16px !important;
+            border-radius: 36px !important;
+        }
+
+        .et-logo {
+            font-size: 1.2rem !important;
+            gap: 5px !important;
+        }
+
+        .et-nav-links {
+            gap: 6px !important;
+        }
+
+        .et-nav-links a.nav-pill {
+            font-size: 0.84rem !important;
+            padding: 5px 12px !important;
+        }
+
+        div[data-testid="stHorizontalBlock"]:has(.et-logo) button {
+            height: 33px !important;
+            min-height: 33px !important;
+            max-height: 33px !important;
+            font-size: 0.8rem !important;
+            padding: 0 0.9rem !important;
+        }
+
+        div[data-testid="stHorizontalBlock"]:has(.et-logo) button div[data-testid="stMarkdownContainer"] p,
+        div[data-testid="stHorizontalBlock"]:has(.et-logo) button span {
+            font-size: 0.8rem !important;
+        }
+    }
+
+    /* ── Mobile Responsiveness (<= 768px) ───────────── */
+    @media (max-width: 768px) {
+        div[data-testid="stHorizontalBlock"]:has(.et-logo) {
+            display: flex !important;
+            flex-direction: row !important;
+            flex-wrap: wrap !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            padding: 8px 14px !important;
+            border-radius: 20px !important;
+            gap: 6px 0px !important;
+            min-height: auto !important;
+        }
+
+        /* Top Row: Logo left, Buttons/Profile right */
+        div[data-testid="stHorizontalBlock"]:has(.et-logo) > div[data-testid="column"]:first-child,
+        div[data-testid="stHorizontalBlock"]:has(.et-logo) > div[data-testid="stColumn"]:first-child {
+            order: 1 !important;
+            flex: 1 1 auto !important;
+            width: auto !important;
+            max-width: none !important;
+            min-width: 0 !important;
+            justify-content: flex-start !important;
+        }
+
+        div[data-testid="stHorizontalBlock"]:has(.et-logo) > div[data-testid="column"]:last-child,
+        div[data-testid="stHorizontalBlock"]:has(.et-logo) > div[data-testid="stColumn"]:last-child {
+            order: 2 !important;
+            flex: 0 0 auto !important;
+            width: auto !important;
+            max-width: none !important;
+            min-width: 0 !important;
+            justify-content: flex-end !important;
+        }
+
+        /* Bottom Row: Full-width responsive nav link pills */
+        div[data-testid="stHorizontalBlock"]:has(.et-logo) > div[data-testid="column"]:nth-child(2),
+        div[data-testid="stHorizontalBlock"]:has(.et-logo) > div[data-testid="stColumn"]:nth-child(2) {
+            order: 3 !important;
+            flex: 1 1 100% !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 100% !important;
+            justify-content: center !important;
+            margin-top: 4px !important;
+            padding-top: 6px !important;
+            border-top: 1px solid rgba(168, 85, 247, 0.2) !important;
+        }
+
+        .et-logo {
+            font-size: 1.1rem !important;
+            gap: 4px !important;
+        }
+
+        .et-logo .badge-ai {
+            font-size: 0.58rem !important;
+            padding: 1px 5px !important;
+            border-radius: 6px !important;
+        }
+
+        .et-nav-links {
+            display: flex !important;
+            width: 100% !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            gap: 4px !important;
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+            scrollbar-width: none !important;
+        }
+
+        .et-nav-links::-webkit-scrollbar {
+            display: none !important;
+        }
+
+        .et-nav-links a.nav-pill {
+            font-size: 0.76rem !important;
+            padding: 4px 8px !important;
+            border-radius: 12px !important;
+            text-align: center !important;
+            flex: 1 1 auto !important;
+            justify-content: center !important;
+        }
+
+        div[data-testid="stHorizontalBlock"]:has(.et-logo) button {
+            height: 31px !important;
+            min-height: 31px !important;
+            max-height: 31px !important;
+            font-size: 0.78rem !important;
+            border-radius: 14px !important;
+            padding: 0 0.75rem !important;
+        }
+
+        div[data-testid="stHorizontalBlock"]:has(.et-logo) button[kind="secondary"] {
+            padding: 0 0.55rem !important;
+        }
+
+        div[data-testid="stHorizontalBlock"]:has(.et-logo) button[kind="primary"] {
+            padding: 0 0.85rem !important;
+        }
+
+        div[data-testid="stHorizontalBlock"]:has(.et-logo) button div[data-testid="stMarkdownContainer"] p,
+        div[data-testid="stHorizontalBlock"]:has(.et-logo) button span {
+            font-size: 0.78rem !important;
+        }
+    }
+
+    /* ── Extra Small Mobile (<= 480px) ──────────────── */
+    @media (max-width: 480px) {
+        div[data-testid="stHorizontalBlock"]:has(.et-logo) {
+            padding: 6px 10px !important;
+            border-radius: 16px !important;
+            gap: 4px 0px !important;
+        }
+
+        .et-logo {
+            font-size: 0.98rem !important;
+            gap: 3px !important;
+        }
+
+        .et-logo .badge-ai {
+            font-size: 0.52rem !important;
+            padding: 1px 4px !important;
+        }
+
+        .et-nav-links a.nav-pill {
+            font-size: 0.70rem !important;
+            padding: 3px 6px !important;
+        }
+
+        div[data-testid="stHorizontalBlock"]:has(.et-logo) button {
+            height: 28px !important;
+            min-height: 28px !important;
+            max-height: 28px !important;
+            font-size: 0.72rem !important;
+            border-radius: 12px !important;
+            padding: 0 0.55rem !important;
+        }
+
+        div[data-testid="stHorizontalBlock"]:has(.et-logo) button[kind="secondary"] {
+            padding: 0 0.38rem !important;
+        }
+
+        div[data-testid="stHorizontalBlock"]:has(.et-logo) button[kind="primary"] {
+            padding: 0 0.65rem !important;
+        }
+
+        div[data-testid="stHorizontalBlock"]:has(.et-logo) button div[data-testid="stMarkdownContainer"] p,
+        div[data-testid="stHorizontalBlock"]:has(.et-logo) button span {
+            font-size: 0.72rem !important;
+        }
+    }
+
     /* ── Hero ───────────────────────────────────────── */
     .et-hero {
         text-align: center;
-        padding: 3.5rem 1rem 2rem 1rem;
+        padding: 1rem 1rem 1rem 1rem;
         position: relative;
     }
 
@@ -972,11 +1169,14 @@ HOME_CSS = """
         box-shadow: 0 0 20px rgba(168, 85, 247, 0.25);
     }
 
-    .feat-card h4 {
-        font-size: 1.05rem;
-        font-weight: 700;
-        color: #FAFAFA;
-        margin-bottom: 0.4rem;
+    .feat-card h4,
+    div[data-testid="stMarkdownContainer"] .feat-card h4,
+    .feat-card > h4 {
+        font-size: 1.12rem !important;
+        font-weight: 800 !important;
+        color: #FAFAFA !important;
+        margin-bottom: 0.5rem !important;
+        letter-spacing: -0.2px !important;
     }
 
     .feat-card p {
@@ -1015,11 +1215,14 @@ HOME_CSS = """
         transform: translateY(-5px);
     }
 
-    .agent-glass h4 {
-        font-size: 1.05rem;
-        font-weight: 700;
-        color: #FAFAFA;
-        margin-bottom: 0.4rem;
+    .agent-glass h4,
+    div[data-testid="stMarkdownContainer"] .agent-glass h4,
+    .agent-glass > h4 {
+        font-size: 1.12rem !important;
+        font-weight: 800 !important;
+        color: #FAFAFA !important;
+        margin-bottom: 0.5rem !important;
+        letter-spacing: -0.2px !important;
     }
 
     .agent-glass p {
@@ -1041,41 +1244,84 @@ HOME_CSS = """
         box-shadow: 0 0 20px rgba(168, 85, 247, 0.25);
     }
 
-    /* ── About Cards & Metric Pills — Glassmorphism Gradient Theme ─── */
-    .about-card {
-        background: linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(168, 85, 247, 0.18) 50%, rgba(15, 23, 42, 0.9) 100%);
+    /* ── About Unified Card — Single Master Glass Container ────────── */
+    .about-unified-card {
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(168, 85, 247, 0.16) 50%, rgba(15, 23, 42, 0.95) 100%);
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
         border: 1px solid rgba(168, 85, 247, 0.4);
-        border-radius: 18px;
-        padding: 2rem 1.8rem;
-        height: 100%;
-        transition: all 0.3s ease;
+        border-radius: 20px;
+        padding: 2.5rem 2.2rem;
+        display: flex;
+        align-items: stretch;
+        gap: 2.5rem;
         box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), inset 0 0 25px rgba(124, 58, 237, 0.12);
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        margin-top: 0.5rem;
     }
 
-    .about-card:hover {
-        background: linear-gradient(135deg, rgba(124, 58, 237, 0.25) 0%, rgba(236, 72, 153, 0.18) 50%, rgba(15, 23, 42, 0.95) 100%);
+    .about-unified-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 10%; right: 10%; height: 2px;
+        background: linear-gradient(90deg, transparent 0%, #EC4899 30%, #A855F7 50%, #06B6D4 70%, transparent 100%);
+        border-radius: 2px;
+        opacity: 0.85;
+        box-shadow: 0 0 12px #A855F7;
+    }
+
+    .about-unified-card:hover {
+        background: linear-gradient(135deg, rgba(124, 58, 237, 0.22) 0%, rgba(236, 72, 153, 0.16) 50%, rgba(15, 23, 42, 0.95) 100%);
         border-color: rgba(168, 85, 247, 0.75);
-        box-shadow: 0 0 40px rgba(124, 58, 237, 0.35);
-        transform: translateY(-4px);
+        box-shadow: 0 0 45px rgba(124, 58, 237, 0.3);
+        transform: translateY(-2px);
     }
 
-    .about-card h3 {
-        font-size: 1.25rem;
+    .about-section-col {
+        flex: 1 1 0;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .about-section-col h3 {
+        font-size: 1.3rem;
         font-weight: 800;
         color: #FAFAFA;
-        margin-bottom: 0.8rem;
+        margin-top: 0;
+        margin-bottom: 0.9rem;
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 10px;
+        line-height: 1.3;
     }
 
-    .about-card p {
-        font-size: 0.9rem;
-        color: rgba(255, 255, 255, 0.55);
-        line-height: 1.65;
+    .about-section-col p {
+        font-size: 0.92rem;
+        color: rgba(255, 255, 255, 0.65);
+        line-height: 1.7;
         margin: 0;
+    }
+
+    .about-divider {
+        width: 1px;
+        background: linear-gradient(180deg, transparent 0%, rgba(168, 85, 247, 0.35) 20%, rgba(168, 85, 247, 0.35) 80%, transparent 100%);
+        flex-shrink: 0;
+    }
+
+    @media (max-width: 820px) {
+        .about-unified-card {
+            flex-direction: column;
+            gap: 1.8rem;
+            padding: 2rem 1.4rem;
+        }
+
+        .about-divider {
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent 0%, rgba(168, 85, 247, 0.35) 20%, rgba(168, 85, 247, 0.35) 80%, transparent 100%);
+        }
     }
 
     .stat-pill {
@@ -1115,114 +1361,296 @@ HOME_CSS = """
         letter-spacing: 0.5px;
     }
 
-    /* ── Pricing Cards — Glassmorphism Gradient Theme ───────── */
-    .price-glass {
-        background: linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(124, 58, 237, 0.12) 50%, rgba(15, 23, 42, 0.9) 100%);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border: 1px solid rgba(168, 85, 247, 0.35);
+    /* ── Pricing Cards — Integrated Glassmorphism Cards ───────── */
+    div[data-testid="stHorizontalBlock"]:has(#pricing-card-free-marker) {
+        align-items: stretch !important;
+        gap: 1.5rem !important;
+        margin-bottom: 2rem !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(#pricing-card-free-marker) > div[data-testid="stColumn"],
+    div[data-testid="stHorizontalBlock"]:has(#pricing-card-free-marker) > div[data-testid="column"] {
+        display: flex !important;
+        flex-direction: column !important;
+        flex: 1 1 0 !important;
+        height: 100% !important;
+    }
+
+    /* Column as Card Container */
+    div[data-testid="stColumn"]:has(#pricing-card-free-marker),
+    div[data-testid="stColumn"]:has(#pricing-card-pro-marker),
+    div[data-testid="stColumn"]:has(#pricing-card-ultra-marker) {
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(124, 58, 237, 0.12) 50%, rgba(15, 23, 42, 0.9) 100%) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        border: 1px solid rgba(168, 85, 247, 0.35) !important;
         border-radius: 20px !important;
-        padding: 2.4rem 1.5rem 2rem 1.5rem;
-        position: relative;
+        padding: 2.4rem 1.6rem 1.8rem 1.6rem !important;
+        position: relative !important;
         overflow: visible !important;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        transition: all 0.3s ease;
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+        box-sizing: border-box !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+        height: 100% !important;
+        min-height: 540px !important;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(168, 85, 247, 0.08) !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
 
-    .price-glass:hover {
-        background: linear-gradient(135deg, rgba(124, 58, 237, 0.2) 0%, rgba(59, 130, 246, 0.15) 50%, rgba(15, 23, 42, 0.95) 100%);
-        border-color: rgba(168, 85, 247, 0.65);
-        box-shadow: 0 0 35px rgba(168, 85, 247, 0.25);
-        transform: translateY(-4px);
+    /* Vertical block layout inside column */
+    div[data-testid="stColumn"]:has(#pricing-card-free-marker) > div[data-testid="stVerticalBlock"],
+    div[data-testid="stColumn"]:has(#pricing-card-pro-marker) > div[data-testid="stVerticalBlock"],
+    div[data-testid="stColumn"]:has(#pricing-card-ultra-marker) > div[data-testid="stVerticalBlock"],
+    div[data-testid="stColumn"]:has(#pricing-card-free-marker) > div[data-testid="stVerticalBlockBorderWrapper"],
+    div[data-testid="stColumn"]:has(#pricing-card-pro-marker) > div[data-testid="stVerticalBlockBorderWrapper"],
+    div[data-testid="stColumn"]:has(#pricing-card-ultra-marker) > div[data-testid="stVerticalBlockBorderWrapper"] {
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+        height: 100% !important;
+        flex: 1 1 auto !important;
+        gap: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
     }
 
-    .price-glass-pro {
-        background: linear-gradient(135deg, rgba(124, 58, 237, 0.25) 0%, rgba(236, 72, 153, 0.18) 50%, rgba(15, 23, 42, 0.92) 100%);
-        border: 1.5px solid rgba(168, 85, 247, 0.75);
-        box-shadow: 0 0 45px rgba(168, 85, 247, 0.35);
-        animation: n8nPulseGlow 4s ease-in-out infinite;
+    /* Top Accent Neon Glow Strip */
+    div[data-testid="stColumn"]:has(#pricing-card-free-marker)::before,
+    div[data-testid="stColumn"]:has(#pricing-card-pro-marker)::before,
+    div[data-testid="stColumn"]:has(#pricing-card-ultra-marker)::before {
+        content: '' !important;
+        position: absolute !important;
+        top: 0 !important; left: 15% !important; right: 15% !important; height: 2px !important;
+        background: linear-gradient(90deg, transparent 0%, #EC4899 30%, #A855F7 50%, #06B6D4 70%, transparent 100%) !important;
+        border-radius: 2px !important;
+        opacity: 0.7 !important;
+        transition: opacity 0.3s ease, box-shadow 0.3s ease !important;
+        z-index: 5 !important;
     }
 
-    .price-glass-pro:hover {
-        background: linear-gradient(135deg, rgba(124, 58, 237, 0.35) 0%, rgba(236, 72, 153, 0.28) 50%, rgba(15, 23, 42, 0.95) 100%);
-        border-color: rgba(168, 85, 247, 0.95);
-        box-shadow: 0 0 55px rgba(168, 85, 247, 0.45);
-        transform: translateY(-4px);
+    div[data-testid="stColumn"]:has(#pricing-card-free-marker):hover::before,
+    div[data-testid="stColumn"]:has(#pricing-card-pro-marker):hover::before,
+    div[data-testid="stColumn"]:has(#pricing-card-ultra-marker):hover::before {
+        opacity: 1 !important;
+        box-shadow: 0 0 14px #EC4899, 0 0 20px #A855F7 !important;
     }
 
+    /* Hover States */
+    div[data-testid="stColumn"]:has(#pricing-card-free-marker):hover,
+    div[data-testid="stColumn"]:has(#pricing-card-ultra-marker):hover {
+        background: linear-gradient(135deg, rgba(124, 58, 237, 0.2) 0%, rgba(59, 130, 246, 0.15) 50%, rgba(15, 23, 42, 0.95) 100%) !important;
+        border-color: rgba(168, 85, 247, 0.65) !important;
+        box-shadow: 0 0 35px rgba(168, 85, 247, 0.25), 0 20px 40px rgba(0, 0, 0, 0.5) !important;
+        transform: translateY(-4px) !important;
+    }
+
+    /* Pro Card Special Luminous Glow */
+    div[data-testid="stColumn"]:has(#pricing-card-pro-marker) {
+        background: linear-gradient(135deg, rgba(124, 58, 237, 0.25) 0%, rgba(236, 72, 153, 0.18) 50%, rgba(15, 23, 42, 0.92) 100%) !important;
+        border: 1.5px solid rgba(168, 85, 247, 0.75) !important;
+        box-shadow: 0 0 45px rgba(168, 85, 247, 0.35), 0 20px 45px rgba(0, 0, 0, 0.55) !important;
+    }
+
+    div[data-testid="stColumn"]:has(#pricing-card-pro-marker):hover {
+        background: linear-gradient(135deg, rgba(124, 58, 237, 0.35) 0%, rgba(236, 72, 153, 0.28) 50%, rgba(15, 23, 42, 0.95) 100%) !important;
+        border-color: rgba(168, 85, 247, 0.95) !important;
+        box-shadow: 0 0 55px rgba(168, 85, 247, 0.5), 0 20px 50px rgba(0, 0, 0, 0.6) !important;
+        transform: translateY(-4px) !important;
+    }
+
+    /* Pro Badge */
     .price-badge {
-        position: absolute;
-        top: -14px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%);
-        color: #FAFAFA;
-        font-size: 0.7rem;
-        font-weight: 800;
-        padding: 5px 16px;
-        border-radius: 20px;
-        letter-spacing: 1px;
-        text-transform: uppercase;
-        box-shadow: 0 0 20px rgba(236, 72, 153, 0.5);
-        white-space: nowrap;
-        z-index: 10;
+        position: absolute !important;
+        top: -14px !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%) !important;
+        color: #FAFAFA !important;
+        font-size: 0.7rem !important;
+        font-weight: 800 !important;
+        padding: 5px 16px !important;
+        border-radius: 20px !important;
+        letter-spacing: 1px !important;
+        text-transform: uppercase !important;
+        box-shadow: 0 0 20px rgba(236, 72, 153, 0.5) !important;
+        white-space: nowrap !important;
+        z-index: 10 !important;
+    }
+
+    /* Typography & Structure Inside Pricing Cards */
+    .price-header-wrap {
+        display: flex !important;
+        flex-direction: column !important;
     }
 
     .price-name {
-        font-size: 1.4rem;
-        font-weight: 800;
-        color: #FAFAFA;
-        margin-top: 0.3rem;
+        font-size: 1.4rem !important;
+        font-weight: 800 !important;
+        color: #FAFAFA !important;
+        margin-top: 0.2rem !important;
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%) !important;
+        -webkit-background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
     }
 
     .price-amount {
-        font-size: 2.8rem;
-        font-weight: 900;
-        color: #FAFAFA;
-        line-height: 1;
-        margin: 0.3rem 0 0.6rem 0;
+        font-size: 2.8rem !important;
+        font-weight: 900 !important;
+        color: #FAFAFA !important;
+        line-height: 1 !important;
+        margin: 0.4rem 0 0.6rem 0 !important;
     }
 
     .price-amount sub {
-        font-size: 1rem;
-        font-weight: 400;
-        color: rgba(255, 255, 255, 0.35);
+        font-size: 1rem !important;
+        font-weight: 400 !important;
+        color: rgba(255, 255, 255, 0.4) !important;
     }
 
     .price-desc {
-        font-size: 0.85rem;
-        color: rgba(255, 255, 255, 0.4);
-        margin-bottom: 1.5rem;
-        line-height: 1.5;
-        min-height: 42px;
+        font-size: 0.85rem !important;
+        color: rgba(255, 255, 255, 0.5) !important;
+        margin-bottom: 1.2rem !important;
+        line-height: 1.5 !important;
+        min-height: 42px !important;
+    }
+
+    .price-divider {
+        border: none !important;
+        border-top: 1px solid rgba(168, 85, 247, 0.2) !important;
+        margin: 0 0 1.2rem 0 !important;
+    }
+
+    .price-feat-list {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0.55rem !important;
+        flex: 1 1 auto !important;
+        margin-bottom: 1.5rem !important;
     }
 
     .price-feat {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-size: 0.85rem;
-        color: rgba(255, 255, 255, 0.6);
-        margin-bottom: 0.5rem;
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+        font-size: 0.85rem !important;
+        color: rgba(255, 255, 255, 0.7) !important;
+        margin-bottom: 0 !important;
+        line-height: 1.4 !important;
     }
 
     .price-feat .chk {
-        color: #10B981;
-        font-weight: 700;
+        color: #10B981 !important;
+        font-weight: 700 !important;
+        font-size: 0.95rem !important;
+    }
+
+    .price-feat b {
+        color: #E9D5FF !important;
+    }
+
+    /* Embedded Button Layout Inside Cards */
+    div[data-testid="stColumn"]:has(#pricing-card-free-marker) div[data-testid="stButton"],
+    div[data-testid="stColumn"]:has(#pricing-card-pro-marker) div[data-testid="stButton"],
+    div[data-testid="stColumn"]:has(#pricing-card-ultra-marker) div[data-testid="stButton"],
+    div.st-key-t_n, div.st-key-t_p, div.st-key-t_u {
+        margin-top: auto !important;
+        width: 100% !important;
+        padding: 0 !important;
+    }
+
+    div[data-testid="stColumn"]:has(#pricing-card-free-marker) button,
+    div[data-testid="stColumn"]:has(#pricing-card-pro-marker) button,
+    div[data-testid="stColumn"]:has(#pricing-card-ultra-marker) button,
+    div.st-key-t_n button, div.st-key-t_p button, div.st-key-t_u button {
+        width: 100% !important;
+        height: 46px !important;
+        min-height: 46px !important;
+        border-radius: 14px !important;
+        font-weight: 800 !important;
+        font-size: 0.92rem !important;
+        letter-spacing: 0.3px !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Free Card Button */
+    div[data-testid="stColumn"]:has(#pricing-card-free-marker) button,
+    div.st-key-t_n button {
+        background: rgba(255, 255, 255, 0.06) !important;
+        border: 1.5px solid rgba(168, 85, 247, 0.45) !important;
+        color: #FAFAFA !important;
+        box-shadow: 0 0 15px rgba(168, 85, 247, 0.15) !important;
+    }
+
+    div[data-testid="stColumn"]:has(#pricing-card-free-marker) button:hover,
+    div.st-key-t_n button:hover {
+        background: rgba(168, 85, 247, 0.25) !important;
+        border-color: rgba(168, 85, 247, 0.85) !important;
+        color: #FFFFFF !important;
+        box-shadow: 0 0 25px rgba(168, 85, 247, 0.4) !important;
+        transform: translateY(-2px) !important;
+    }
+
+    /* Pro Card Button */
+    div[data-testid="stColumn"]:has(#pricing-card-pro-marker) button,
+    div.st-key-t_p button {
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%) !important;
+        border: none !important;
+        color: #FFFFFF !important;
+        box-shadow: 0 0 25px rgba(236, 72, 153, 0.45) !important;
+    }
+
+    div[data-testid="stColumn"]:has(#pricing-card-pro-marker) button:hover,
+    div.st-key-t_p button:hover {
+        box-shadow: 0 0 35px rgba(236, 72, 153, 0.75), 0 0 20px rgba(6, 182, 212, 0.5) !important;
+        transform: translateY(-2px) !important;
+    }
+
+    /* Ultra Card Button */
+    div[data-testid="stColumn"]:has(#pricing-card-ultra-marker) button,
+    div.st-key-t_u button {
+        background: linear-gradient(135deg, rgba(6, 182, 212, 0.25) 0%, rgba(168, 85, 247, 0.35) 100%) !important;
+        border: 1.5px solid rgba(6, 182, 212, 0.65) !important;
+        color: #FFFFFF !important;
+        box-shadow: 0 0 20px rgba(6, 182, 212, 0.3) !important;
+    }
+
+    div[data-testid="stColumn"]:has(#pricing-card-ultra-marker) button:hover,
+    div.st-key-t_u button:hover {
+        background: linear-gradient(135deg, rgba(6, 182, 212, 0.38) 0%, rgba(168, 85, 247, 0.5) 100%) !important;
+        border-color: rgba(6, 182, 212, 0.95) !important;
+        box-shadow: 0 0 30px rgba(6, 182, 212, 0.55), 0 0 20px rgba(168, 85, 247, 0.4) !important;
+        transform: translateY(-2px) !important;
+    }
+
+    /* Mobile Responsiveness for Pricing Cards (<= 768px) */
+    @media (max-width: 768px) {
+        div[data-testid="stHorizontalBlock"]:has(#pricing-card-free-marker) {
+            flex-direction: column !important;
+            gap: 1.8rem !important;
+        }
+
+        div[data-testid="stColumn"]:has(#pricing-card-free-marker),
+        div[data-testid="stColumn"]:has(#pricing-card-pro-marker),
+        div[data-testid="stColumn"]:has(#pricing-card-ultra-marker) {
+            min-height: auto !important;
+            padding: 2.2rem 1.4rem 1.6rem 1.4rem !important;
+        }
     }
 
     /* ── CTA Banner ────────────────────────────────── */
     .cta-banner {
         text-align: center;
-        padding: 4rem 1rem;
-        background:
-            radial-gradient(ellipse 600px 300px at 50% 50%, rgba(139, 92, 246, 0.1) 0%, transparent 70%);
+        padding: 3rem 1rem 5.5rem 1rem !important;
+        background: radial-gradient(ellipse 600px 300px at 50% 50%, rgba(139, 92, 246, 0.1) 0%, transparent 70%);
         border-top: 1px solid rgba(255, 255, 255, 0.04);
         border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-        margin: 2rem 0;
+        margin: 1.5rem 0 0 0 !important;
     }
 
     .cta-banner h2 {
@@ -1231,48 +1659,108 @@ HOME_CSS = """
         background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        margin-bottom: 0.6rem;
+        margin-bottom: 0.5rem;
     }
 
     .cta-banner p {
-        font-size: 1rem;
-        color: rgba(255, 255, 255, 0.4);
+        font-size: 0.95rem;
+        color: rgba(255, 255, 255, 0.5);
         max-width: 520px;
-        margin: 0 auto 2rem auto;
+        margin: 0 auto !important;
+        line-height: 1.6;
+    }
+
+    /* Seamlessly position Get Started Free button inside CTA Banner */
+    div[data-testid="stHorizontalBlock"]:has(.st-key-cta_btn),
+    div[data-testid="stHorizontalBlock"]:has(div[data-testid="stButton"] button[key="cta_btn"]) {
+        margin-top: -4.2rem !important;
+        margin-bottom: 2rem !important;
+        position: relative !important;
+        z-index: 5 !important;
+    }
+
+    div.st-key-cta_btn button {
+        height: 46px !important;
+        min-height: 46px !important;
+        border-radius: 24px !important;
+        font-weight: 800 !important;
+        font-size: 0.98rem !important;
+        padding: 0 2rem !important;
+    }
+
+    @media (max-width: 768px) {
+        .cta-banner {
+            padding: 2.2rem 1rem 4.8rem 1rem !important;
+        }
+
+        div[data-testid="stHorizontalBlock"]:has(.st-key-cta_btn) {
+            margin-top: -3.8rem !important;
+            margin-bottom: 1.5rem !important;
+        }
+
+        div.st-key-cta_btn button {
+            height: 42px !important;
+            min-height: 42px !important;
+            font-size: 0.9rem !important;
+        }
     }
 
     /* ── Footer ────────────────────────────────────── */
     .et-footer {
-        padding: 2rem 0;
-        border-top: 1px solid rgba(255, 255, 255, 0.05);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+        padding: 1.2rem 0 0.4rem 0 !important;
+        margin-top: 1.2rem !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        gap: 16px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
     }
 
     .et-footer-left {
-        color: rgba(255, 255, 255, 0.3);
-        font-size: 0.82rem;
+        color: rgba(255, 255, 255, 0.35) !important;
+        font-size: 0.8rem !important;
+        line-height: 1.4 !important;
     }
 
     .et-footer-left span {
-        font-weight: 700;
-        color: rgba(255, 255, 255, 0.5);
+        font-weight: 800 !important;
+        color: #FAFAFA !important;
     }
 
     .et-footer-links {
-        display: flex;
-        gap: 24px;
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 20px !important;
+        align-items: center !important;
     }
 
     .et-footer-links a {
-        color: rgba(255, 255, 255, 0.3);
-        font-size: 0.82rem;
-        text-decoration: none;
-        transition: color 0.2s;
+        color: rgba(255, 255, 255, 0.4) !important;
+        font-size: 0.8rem !important;
+        text-decoration: none !important;
+        transition: color 0.2s ease !important;
+        white-space: nowrap !important;
     }
 
-    .et-footer-links a:hover { color: #FAFAFA; }
+    .et-footer-links a:hover {
+        color: #C084FC !important;
+    }
+
+    @media (max-width: 768px) {
+        .et-footer {
+            flex-direction: column !important;
+            text-align: center !important;
+            gap: 10px !important;
+            padding: 1rem 0 0.4rem 0 !important;
+        }
+
+        .et-footer-links {
+            justify-content: center !important;
+            gap: 12px !important;
+        }
+    }
 
     /* ── Auth Page Intro Header & Instructions ── */
     .auth-header-container {
@@ -1325,6 +1813,7 @@ HOME_CSS = """
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(168, 85, 247, 0.15) !important;
         transition: all 0.3s ease !important;
         margin-top: 0.5rem !important;
+        margin-bottom: 0.5rem !important;
     }
 
     .auth-instructions-pill:hover {
@@ -1655,6 +2144,51 @@ HOME_CSS = """
         color: #FFFFFF !important;
         box-shadow: 0 0 25px rgba(168, 85, 247, 0.4) !important;
         transform: translateY(-1px) !important;
+    }
+
+    /* ── Auth Navbar Responsiveness (<= 768px) ──────── */
+    @media (max-width: 768px) {
+        div[data-testid="stHorizontalBlock"]:has(.et-logo-simple) {
+            padding: 7px 14px !important;
+            border-radius: 20px !important;
+        }
+
+        .et-logo-simple {
+            font-size: 1.05rem !important;
+            gap: 4px !important;
+        }
+
+        .et-logo-simple .badge-ai {
+            font-size: 0.58rem !important;
+            padding: 1px 5px !important;
+        }
+
+        div[data-testid="stHorizontalBlock"]:has(.et-logo-simple) button {
+            height: 31px !important;
+            min-height: 31px !important;
+            max-height: 31px !important;
+            font-size: 0.78rem !important;
+            padding: 0 0.75rem !important;
+            border-radius: 14px !important;
+        }
+    }
+
+    @media (max-width: 480px) {
+        div[data-testid="stHorizontalBlock"]:has(.et-logo-simple) {
+            padding: 6px 10px !important;
+            border-radius: 16px !important;
+        }
+
+        .et-logo-simple {
+            font-size: 0.95rem !important;
+        }
+
+        div[data-testid="stHorizontalBlock"]:has(.et-logo-simple) button {
+            height: 28px !important;
+            min-height: 28px !important;
+            font-size: 0.72rem !important;
+            padding: 0 0.55rem !important;
+        }
     }
 
     /* ── Constellation / Network Node Overlay Background ── */
@@ -2837,12 +3371,11 @@ def render_home_page():
 
     st.markdown("<br/>", unsafe_allow_html=True)
 
-    # Mission & Technology Cards
-    ab1, ab2 = st.columns(2)
-    with ab1:
-        st.markdown(
-            """
-            <div class="about-card">
+    # Unified Mission & Technology Card
+    st.markdown(
+        """
+        <div class="about-unified-card">
+            <div class="about-section-col">
                 <h3>🚀 Our Mission</h3>
                 <p>
                     Traditional online learning often relies on passive video watching and static, one-size-fits-all quizzes.
@@ -2851,12 +3384,8 @@ def render_home_page():
                     We combine autonomous LLM supervisor orchestrators with specialized worker agents that act as your personal 24/7 tutor—breaking down complex subjects into bite-sized milestones and testing your understanding with Socratic questioning.
                 </p>
             </div>
-            """, unsafe_allow_html=True)
-
-    with ab2:
-        st.markdown(
-            """
-            <div class="about-card">
+            <div class="about-divider"></div>
+            <div class="about-section-col">
                 <h3>🧠 Engineered for Deep Mastery</h3>
                 <p>
                     Built on top of a state-persisted supervisor-worker architecture, EduTech AI connects directly to leading academic databases (arXiv, OpenAlex, Semantic Scholar) and curated video timestamps.
@@ -2864,7 +3393,8 @@ def render_home_page():
                     Whether you are a high school student grasping basic physics or a researcher analyzing machine learning papers, our system adapts to your cognitive level in real time.
                 </p>
             </div>
-            """, unsafe_allow_html=True)
+        </div>
+        """, unsafe_allow_html=True)
 
     st.markdown("<br/><br/>", unsafe_allow_html=True)
 
@@ -2878,11 +3408,14 @@ def render_home_page():
     with p1:
         st.markdown(
             """
-            <div class="price-glass">
+            <div id="pricing-card-free-marker"></div>
+            <div class="price-header-wrap">
                 <div class="price-name">Free</div>
                 <div class="price-amount">$0<sub>/mo</sub></div>
                 <div class="price-desc">Essential AI tutoring for curious learners starting out.</div>
-                <hr style="border:1px solid rgba(255,255,255,0.05);"/>
+            </div>
+            <hr class="price-divider"/>
+            <div class="price-feat-list">
                 <div class="price-feat"><span class="chk">✓</span> 5 AI Sessions / mo</div>
                 <div class="price-feat"><span class="chk">✓</span> Standard Socratic Tutor</div>
                 <div class="price-feat"><span class="chk">✓</span> 3 Education Levels</div>
@@ -2890,19 +3423,21 @@ def render_home_page():
                 <div class="price-feat"><span class="chk">✓</span> Basic Quizzes & XP</div>
             </div>
             """, unsafe_allow_html=True)
-        st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
-        if st.button("Start Free", key="t_n", type="primary", use_container_width=True):
+        if st.button("Start Free", key="t_n", use_container_width=True):
             _handle_tier_select("normal")
 
     with p2:
         st.markdown(
             """
-            <div class="price-glass price-glass-pro">
-                <div class="price-badge">MOST POPULAR ⭐</div>
+            <div id="pricing-card-pro-marker"></div>
+            <div class="price-badge">MOST POPULAR ⭐</div>
+            <div class="price-header-wrap">
                 <div class="price-name">Pro</div>
                 <div class="price-amount">$19<sub>/mo</sub></div>
                 <div class="price-desc">Full agent squad, deep research, visual modes & 1.5x XP.</div>
-                <hr style="border:1px solid rgba(139,92,246,0.15);"/>
+            </div>
+            <hr class="price-divider"/>
+            <div class="price-feat-list">
                 <div class="price-feat"><span class="chk">✓</span> <b>Unlimited</b> AI Sessions</div>
                 <div class="price-feat"><span class="chk">✓</span> All 5 Education Levels</div>
                 <div class="price-feat"><span class="chk">✓</span> Visual & Deep-Dive Modes</div>
@@ -2911,18 +3446,20 @@ def render_home_page():
                 <div class="price-feat"><span class="chk">✓</span> <b>1.5x XP Multiplier</b></div>
             </div>
             """, unsafe_allow_html=True)
-        st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
-        if st.button("Upgrade to Pro", key="t_p", type="primary", use_container_width=True):
+        if st.button("Upgrade to Pro ⚡", key="t_p", type="primary", use_container_width=True):
             _handle_tier_select("pro")
 
     with p3:
         st.markdown(
             """
-            <div class="price-glass">
+            <div id="pricing-card-ultra-marker"></div>
+            <div class="price-header-wrap">
                 <div class="price-name">Ultra</div>
                 <div class="price-amount">$49<sub>/mo</sub></div>
                 <div class="price-desc">Priority execution, custom personas, 2x XP & 24/7 support.</div>
-                <hr style="border:1px solid rgba(255,255,255,0.05);"/>
+            </div>
+            <hr class="price-divider"/>
+            <div class="price-feat-list">
                 <div class="price-feat"><span class="chk">✓</span> Everything in Pro +</div>
                 <div class="price-feat"><span class="chk">✓</span> Priority Multi-Agent Exec</div>
                 <div class="price-feat"><span class="chk">✓</span> Unlimited Paper Downloads</div>
@@ -2931,17 +3468,14 @@ def render_home_page():
                 <div class="price-feat"><span class="chk">✓</span> 24/7 AI Support</div>
             </div>
             """, unsafe_allow_html=True)
-        st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
-        if st.button("Select Ultra", key="t_u", type="primary", use_container_width=True):
+        if st.button("Select Ultra ✨", key="t_u", use_container_width=True):
             _handle_tier_select("ultra")
-
-    st.markdown("<br/>", unsafe_allow_html=True)
 
     # ── CTA BANNER ────────────────────────────────────────────────
     st.markdown(
         """
         <div class="cta-banner">
-            <h2 style="font-size:2.4rem; font-weight:900; margin-bottom:0.6rem;"><span class="gradient-text">Ready to Accelerate Your Learning?</span></h2>
+            <h2 style="font-size:2.2rem; font-weight:900; margin-bottom:0.5rem;"><span class="gradient-text">Ready to Accelerate Your Learning?</span></h2>
             <p>Join thousands of students and professionals mastering complex topics faster with EduTech AI.</p>
         </div>
         """, unsafe_allow_html=True)
@@ -2956,8 +3490,6 @@ def render_home_page():
             else:
                 st.session_state["view"] = "learning"
                 st.rerun()
-
-    st.markdown("<br/>", unsafe_allow_html=True)
 
     # ── FOOTER ────────────────────────────────────────────────────
     st.markdown(

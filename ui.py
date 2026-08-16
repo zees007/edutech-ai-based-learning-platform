@@ -277,23 +277,29 @@ CUSTOM_CSS = """
         text-overflow: ellipsis;
     }
 
-    /* ── Hero Center Typography (Exact Home Page Theme) ────── */
+    /* ── Hero Center Typography (Matches Auth Title Size Exactly) ────── */
     .et-hero {
         text-align: center;
-        padding: 0.2rem 1rem 0.6rem 1rem;
+        padding: 0 !important;
+        margin: 0 auto 0.4rem auto !important;
         position: relative;
     }
 
-    .et-hero h1 {
-        font-size: 3.6rem;
-        font-weight: 900;
-        color: #FAFAFA;
-        line-height: 1.15;
-        letter-spacing: -2px;
-        margin-bottom: 0.8rem;
-        max-width: 840px;
-        margin-left: auto;
-        margin-right: auto;
+    .et-hero h1,
+    div[data-testid="stMarkdownContainer"] .et-hero h1,
+    .et-hero > h1 {
+        font-size: 2.1rem !important;
+        font-weight: 900 !important;
+        color: #FAFAFA !important;
+        line-height: 1.25 !important;
+        letter-spacing: -0.5px !important;
+        margin-top: 0 !important;
+        margin-bottom: 0.5rem !important;
+        padding: 0 !important;
+        max-width: 900px !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        white-space: normal !important;
     }
 
     .et-hero .gradient-text {
@@ -303,11 +309,11 @@ CUSTOM_CSS = """
     }
 
     .et-hero p {
-        font-size: 1.15rem;
-        color: rgba(233, 213, 255, 0.75);
+        font-size: 0.98rem !important;
+        color: rgba(233, 213, 255, 0.75) !important;
         max-width: 660px;
-        margin: 0 auto 1.4rem auto;
-        line-height: 1.7;
+        margin: 0 auto 1.2rem auto;
+        line-height: 1.5 !important;
     }
 
     /* ── Sidebar Guide Callout Banner (Matching Sidebar Handle Theme) ── */
@@ -1249,11 +1255,22 @@ CUSTOM_CSS = """
         margin-bottom: 8px !important;
         backdrop-filter: none !important;
         -webkit-backdrop-filter: none !important;
+        width: 100% !important;
     }
 
-
+    div[data-testid="stForm"]:has(div[class*="st-key-chat_in_"]) div[data-testid="stHorizontalBlock"] {
+        align-items: center !important;
+        gap: 10px !important;
+        width: 100% !important;
+    }
 
     /* Style the primary Ask Tutor, Submit Quiz & Sign Out buttons inside forms/popovers */
+    div[data-testid="stForm"]:has(div[class*="st-key-chat_in_"]) div[data-testid="stFormSubmitButton"],
+    div[data-testid="stForm"]:has(div[class*="st-key-chat_in_"]) div[data-testid="stFormSubmitButton"] div,
+    div[data-testid="stForm"]:has(div[class*="st-key-chat_in_"]) div[data-testid="stFormSubmitButton"] button {
+        width: 100% !important;
+    }
+
     div[data-testid="stForm"]:has(div[class*="st-key-chat_in_"]) div[data-testid="stFormSubmitButton"] button,
     div[data-testid="stForm"]:has(div[class*="st-key-q_"]) div[data-testid="stFormSubmitButton"] button,
     div[data-testid="stForm"] div[data-testid="stFormSubmitButton"] button[kind="primary"],
@@ -1261,26 +1278,41 @@ CUSTOM_CSS = """
         width: 100% !important;
         max-width: 100% !important;
         min-width: 0 !important;
-        height: 44px !important;
         min-height: 44px !important;
-        max-height: 44px !important;
+        height: auto !important;
         border-radius: 12px !important;
         background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%) !important;
         border: none !important;
         color: #FFFFFF !important;
         font-weight: 800 !important;
         font-size: 0.92rem !important;
-        letter-spacing: 0.4px !important;
-        padding: 0 20px !important;
+        letter-spacing: 0.2px !important;
+        padding: 8px 12px !important;
         margin: 0 !important;
         box-shadow: 0 0 18px rgba(236, 72, 153, 0.4) !important;
         transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
         display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
+        text-align: center !important;
         gap: 6px !important;
         cursor: pointer !important;
-        white-space: nowrap !important;
+        white-space: normal !important;
+        word-break: normal !important;
+        overflow-wrap: break-word !important;
+        line-height: 1.25 !important;
+    }
+
+    div[data-testid="stForm"]:has(div[class*="st-key-chat_in_"]) div[data-testid="stFormSubmitButton"] button *,
+    div[data-testid="stForm"]:has(div[class*="st-key-chat_in_"]) div[data-testid="stFormSubmitButton"] button p,
+    div[data-testid="stForm"]:has(div[class*="st-key-chat_in_"]) div[data-testid="stFormSubmitButton"] button span,
+    div[data-testid="stForm"]:has(div[class*="st-key-chat_in_"]) div[data-testid="stFormSubmitButton"] button div {
+        white-space: normal !important;
+        word-break: normal !important;
+        overflow-wrap: break-word !important;
+        text-align: center !important;
+        line-height: 1.25 !important;
+        display: inline !important;
     }
 
     div[data-testid="stForm"]:has(div[class*="st-key-chat_in_"]) div[data-testid="stFormSubmitButton"] button:hover,
@@ -1290,6 +1322,41 @@ CUSTOM_CSS = """
         background: linear-gradient(135deg, #F43F5E 0%, #9333EA 50%, #2563EB 100%) !important;
         box-shadow: 0 0 28px rgba(236, 72, 153, 0.65), 0 0 15px rgba(6, 182, 212, 0.4) !important;
         transform: translateY(-2px) !important;
+    }
+
+    /* Mobile & Tablet Responsive Layout for Tutor Chat & Suggested Questions */
+    @media (max-width: 768px) {
+        div[data-testid="stForm"]:has(div[class*="st-key-chat_in_"]) div[data-testid="stHorizontalBlock"] {
+            flex-direction: column !important;
+            align-items: stretch !important;
+            gap: 10px !important;
+        }
+
+        div[data-testid="stForm"]:has(div[class*="st-key-chat_in_"]) div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"],
+        div[data-testid="stForm"]:has(div[class*="st-key-chat_in_"]) div[data-testid="stHorizontalBlock"] > div[data-testid="column"] {
+            width: 100% !important;
+            flex: 1 1 100% !important;
+            min-width: 100% !important;
+        }
+
+        div[data-testid="stForm"]:has(div[class*="st-key-chat_in_"]) div[data-testid="stFormSubmitButton"] button {
+            width: 100% !important;
+            min-height: 44px !important;
+            height: auto !important;
+            font-size: 0.9rem !important;
+            padding: 8px 12px !important;
+        }
+
+        div[data-testid="stHorizontalBlock"]:has(button[key*="sug_q_"]) {
+            flex-direction: column !important;
+            gap: 8px !important;
+        }
+
+        div[data-testid="stHorizontalBlock"]:has(button[key*="sug_q_"]) > div[data-testid="stColumn"],
+        div[data-testid="stHorizontalBlock"]:has(button[key*="sug_q_"]) > div[data-testid="column"] {
+            width: 100% !important;
+            flex: 1 1 100% !important;
+        }
     }
 
     /* ── Streamlit Expanders (Frosted Glass Theme) ────── */
@@ -2041,7 +2108,7 @@ async def generate_all_agent_content_for_step(step, memory: SharedMemory) -> Non
 
 
 # ─── One-Time DB Initialization (at Streamlit app startup) ───────
-@st.cache_resource
+@st.cache_resource(show_spinner=False)
 def _init_db_once():
     """Warm up DB schema, migrations, and seeds at app start — not on first admin switch."""
     from services.database import init_db
@@ -2602,7 +2669,7 @@ def render_learning_workspace():
         st.markdown(
             """
             <div class="et-hero">
-                <h1>EduTechAI<br/><span class="gradient-text">Learning Workspace</span></h1>
+                <h1>EduTechAI <span class="gradient-text">Learning Workspace</span></h1>
                 <p>An adaptive, intelligent learning studio where specialized AI agents orchestrate personalized roadmaps, intuitive analogies, video deep-dives, and instant mastery checks.</p>
             </div>
             <div class="sidebar-guide-card">
