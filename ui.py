@@ -1091,6 +1091,121 @@ CUSTOM_CSS = """
         transform: translateY(-2px) !important;
     }
 
+    /* ── Step Action Regenerate Button (Rightmost Alignment & Start Learning Journey Style) ── */
+    div[data-testid="stVerticalBlock"]:has(div[class*="st-key-regen_btn_"]),
+    div[data-testid="stColumn"]:has(div[class*="st-key-regen_btn_"]) div[data-testid="stVerticalBlock"],
+    div[data-testid="column"]:has(div[class*="st-key-regen_btn_"]) div[data-testid="stVerticalBlock"] {
+        align-items: flex-end !important;
+        justify-content: flex-end !important;
+        width: 100% !important;
+    }
+
+    div[class*="st-key-regen_btn_"],
+    div.stElementContainer:has(div[class*="st-key-regen_btn_"]),
+    div[data-testid="stElementContainer"]:has(div[class*="st-key-regen_btn_"]) {
+        display: flex !important;
+        justify-content: flex-end !important;
+        align-self: flex-end !important;
+        align-items: center !important;
+        margin-left: auto !important;
+        margin-right: 0 !important;
+    }
+
+    div[class*="st-key-regen_btn_"] button {
+        margin-left: auto !important;
+        margin-right: 0 !important;
+        align-self: flex-end !important;
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%) !important;
+        border: none !important;
+        border-radius: 9999px !important;
+        color: #FFFFFF !important;
+        font-size: 0.85rem !important;
+        font-weight: 800 !important;
+        letter-spacing: 0.4px !important;
+        padding: 7px 20px !important;
+        height: auto !important;
+        min-height: 38px !important;
+        box-shadow: 0 0 20px rgba(236, 72, 153, 0.4), 0 4px 15px rgba(0, 0, 0, 0.3) !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 8px !important;
+        cursor: pointer !important;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    div[class*="st-key-regen_btn_"] button:hover {
+        background: linear-gradient(135deg, #F43F5E 0%, #9333EA 50%, #2563EB 100%) !important;
+        box-shadow: 0 0 30px rgba(236, 72, 153, 0.7), 0 0 20px rgba(6, 182, 212, 0.5), 0 6px 20px rgba(0, 0, 0, 0.45) !important;
+        color: #FFFFFF !important;
+        transform: translateY(-2px) !important;
+    }
+
+    div[class*="st-key-regen_btn_"] [data-testid="stIconMaterial"] {
+        color: #FFFFFF !important;
+        font-size: 1.15rem !important;
+        filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.9)) !important;
+        transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.3s ease !important;
+    }
+
+    div[class*="st-key-regen_btn_"] button:hover [data-testid="stIconMaterial"] {
+        transform: rotate(180deg) scale(1.2) !important;
+        filter: drop-shadow(0 0 10px rgba(6, 182, 212, 1)) !important;
+    }
+
+    /* ── Socratic Tutor Clean Input Row (No Outer Border) ── */
+    div[data-testid="stForm"]:has(div[class*="st-key-chat_in_"]),
+    form[data-testid="stForm"]:has(div[class*="st-key-chat_in_"]) {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin-top: 10px !important;
+        margin-bottom: 8px !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+    }
+
+
+
+    /* Style the primary Ask Tutor & Submit Quiz buttons inside forms */
+    div[data-testid="stForm"]:has(div[class*="st-key-chat_in_"]) div[data-testid="stFormSubmitButton"] button,
+    div[data-testid="stForm"]:has(div[class*="st-key-q_"]) div[data-testid="stFormSubmitButton"] button,
+    div[data-testid="stForm"] div[data-testid="stFormSubmitButton"] button[kind="primary"] {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        height: 44px !important;
+        min-height: 44px !important;
+        max-height: 44px !important;
+        border-radius: 12px !important;
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%) !important;
+        border: none !important;
+        color: #FFFFFF !important;
+        font-weight: 800 !important;
+        font-size: 0.92rem !important;
+        letter-spacing: 0.4px !important;
+        padding: 0 20px !important;
+        margin: 0 !important;
+        box-shadow: 0 0 18px rgba(236, 72, 153, 0.4) !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 6px !important;
+        cursor: pointer !important;
+        white-space: nowrap !important;
+    }
+
+    div[data-testid="stForm"]:has(div[class*="st-key-chat_in_"]) div[data-testid="stFormSubmitButton"] button:hover,
+    div[data-testid="stForm"]:has(div[class*="st-key-q_"]) div[data-testid="stFormSubmitButton"] button:hover,
+    div[data-testid="stForm"] div[data-testid="stFormSubmitButton"] button[kind="primary"]:hover {
+        background: linear-gradient(135deg, #F43F5E 0%, #9333EA 50%, #2563EB 100%) !important;
+        box-shadow: 0 0 28px rgba(236, 72, 153, 0.65), 0 0 15px rgba(6, 182, 212, 0.4) !important;
+        transform: translateY(-2px) !important;
+    }
+
     /* ── Streamlit Expanders (Frosted Glass Theme) ────── */
     div[data-testid="stExpander"] {
         background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.8) 100%) !important;
@@ -2425,7 +2540,7 @@ def render_learning_workspace():
             status_class = "pending"
             status_icon = "🔒"
 
-        col_s1, col_s2 = st.columns([2.6, 1.4], vertical_alignment="center")
+        col_s1, col_s2 = st.columns([2.1, 1.9], vertical_alignment="center")
         with col_s1:
             st.markdown(
                 f"""
@@ -2447,7 +2562,7 @@ def render_learning_workspace():
             # UP: Status Pill Capsule (Right-Aligned)
             st.markdown(
                 f"""
-                <div style="display: flex; justify-content: flex-end; align-items: center; margin-bottom: 6px; width: 100%;">
+                <div style="display: flex; justify-content: flex-end; align-items: center; margin-bottom: 8px; width: 100%;">
                     <div class="pill-capsule pill-status-{status_class}">
                         <span class="pill-label">Status</span>
                         <span class="pill-icon-box">{status_icon}</span>
@@ -2457,11 +2572,12 @@ def render_learning_workspace():
                 """,
                 unsafe_allow_html=True,
             )
-            # BELOW: Redesigned Regenerate Step Capsule Button (Right-Aligned Directly Below Status)
+            # DOWN: Redesigned Regenerate Step Button (Styled like "Start Learning Journey" Button)
             if st.button(
-                f"🔄 Regenerate Step {active_idx + 1}",
+                f"Regenerate Step {active_idx + 1}",
+                icon=":material/refresh:",
                 key=f"regen_btn_{active_idx}",
-                help=f"Re-run Socratic, YouTube, Academic & Quiz agents for Step {active_idx + 1}",
+                type="primary",
             ):
                 setattr(current_step, "tutor_explanation", None)
                 setattr(current_step, "videos", [])
@@ -2520,18 +2636,18 @@ def render_learning_workspace():
                         if st.button(f"💬 {sug_q}", key=f"sug_q_{active_idx}_{q_i}", use_container_width=True):
                             triggered_q = sug_q
 
-                # Native Chat Input Form
-                with st.form(key=f"tutor_chat_form_{active_idx}", clear_on_submit=True):
-                    c1, c2 = st.columns([4, 1])
-                    with c1:
+                # Socratic Follow-Up Chat Input Row
+                with st.form(key=f"tutor_chat_form_{active_idx}", clear_on_submit=True, border=False):
+                    c_in, c_btn = st.columns([4.2, 1.2], vertical_alignment="center")
+                    with c_in:
                         user_prompt = st.text_input(
                             "Ask Socratic Tutor...",
                             key=f"chat_in_{active_idx}",
-                            placeholder="Type a question or ask for another analogy...",
+                            placeholder="Ask Socratic Tutor a follow-up question or for an analogy...",
                             label_visibility="collapsed",
                         )
-                    with c2:
-                        send_chat = st.form_submit_button("Send 💬", use_container_width=True)
+                    with c_btn:
+                        send_chat = st.form_submit_button("Ask Tutor ✨", type="primary", use_container_width=True)
 
                 question_to_send = triggered_q or (user_prompt.strip() if send_chat and user_prompt.strip() else None)
 
@@ -2624,13 +2740,24 @@ def render_learning_workspace():
                             if q_idx < len(step_quiz) - 1:
                                 st.markdown("---")
                         
-                        submit_quiz = st.form_submit_button("🚀 Submit Quiz")
+                        submit_quiz = st.form_submit_button("🚀 Submit Quiz", type="primary", use_container_width=True)
 
                     if submit_quiz:
-                        st.session_state[f"saved_user_answers_{active_idx}"] = user_answers
-                        st.session_state[f"saved_user_full_answers_{active_idx}"] = user_full_answers
-                        safe_set_attr(current_step, "user_answers", user_answers)
-                        safe_set_attr(current_step, "user_full_answers", user_full_answers)
+                        missing_q_indices = []
+                        for q_idx in range(len(step_quiz)):
+                            ans = user_answers.get(q_idx, "")
+                            if not ans or not str(ans).strip():
+                                missing_q_indices.append(q_idx + 1)
+                        
+                        if missing_q_indices:
+                            missing_str = ", ".join([f"Q{i}" for i in missing_q_indices])
+                            st.warning(f"⚠️ **Please answer all questions before submitting the quiz!** Unanswered: **{missing_str}**")
+                        else:
+                            st.session_state[f"quiz_submitted_{active_idx}"] = True
+                            st.session_state[f"saved_user_answers_{active_idx}"] = user_answers
+                            st.session_state[f"saved_user_full_answers_{active_idx}"] = user_full_answers
+                            safe_set_attr(current_step, "user_answers", user_answers)
+                            safe_set_attr(current_step, "user_full_answers", user_full_answers)
                     else:
                         for q_idx in range(len(step_quiz)):
                             if not user_answers.get(q_idx) and q_idx in saved_user_answers:
@@ -2639,8 +2766,7 @@ def render_learning_workspace():
                                 user_full_answers[q_idx] = saved_user_full_answers[q_idx]
 
                     is_quiz_submitted = (
-                        submit_quiz
-                        or f"quiz_submitted_{active_idx}" in st.session_state
+                        f"quiz_submitted_{active_idx}" in st.session_state
                         or current_step.status == StepStatus.COMPLETE
                         or getattr(current_step, "quiz_score", None) is not None
                     )
