@@ -1831,27 +1831,26 @@ def render_learning_workspace():
                 const initSb = doc.querySelector('section[data-testid="stSidebar"]');
                 const initRight = (initSb && initSb.getBoundingClientRect().right > 100) ? initSb.getBoundingClientRect().right : 336;
 
-                // Apply high-end modern glassmorphism styling
+                // Apply high-end circular glassmorphic styling
                 Object.assign(toggle.style, {
                     position: 'fixed',
                     top: '50%',
-                    left: `${initRight}px`,
+                    left: `${Math.max(10, initRight - 19)}px`,
                     transform: 'translateY(-50%)',
                     zIndex: '99999999',
-                    width: '28px',
-                    height: '56px',
+                    width: '38px',
+                    height: '38px',
                     background: 'rgba(14, 9, 24, 0.95)',
                     border: '2px solid #A855F7',
-                    borderLeft: 'none',
-                    borderRadius: '0 12px 12px 0',
+                    borderRadius: '50%',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     cursor: 'pointer',
-                    boxShadow: '0 0 16px rgba(168, 85, 247, 0.45), 0 4px 12px rgba(0, 0, 0, 0.5)',
+                    boxShadow: '0 0 18px rgba(168, 85, 247, 0.5), 0 4px 14px rgba(0, 0, 0, 0.55)',
                     backdropFilter: 'blur(16px)',
                     webkitBackdropFilter: 'blur(16px)',
-                    transition: 'left 0.15s cubic-bezier(0.4, 0, 0.2, 1), width 0.15s ease, background 0.15s ease, box-shadow 0.15s ease',
+                    transition: 'left 0.15s cubic-bezier(0.4, 0, 0.2, 1), transform 0.18s cubic-bezier(0.4, 0, 0.2, 1), background 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease',
                     userSelect: 'none',
                     webkitUserSelect: 'none',
                     visibility: 'visible',
@@ -1860,16 +1859,16 @@ def render_learning_workspace():
                 });
 
                 toggle.onmouseenter = () => {
-                    toggle.style.width = '34px';
-                    toggle.style.background = 'rgba(168, 85, 247, 0.4)';
+                    toggle.style.transform = 'translateY(-50%) scale(1.12)';
+                    toggle.style.background = 'rgba(168, 85, 247, 0.35)';
                     toggle.style.borderColor = '#C084FC';
-                    toggle.style.boxShadow = '0 0 24px rgba(168, 85, 247, 0.8), 0 0 10px rgba(192, 132, 252, 0.5)';
+                    toggle.style.boxShadow = '0 0 28px rgba(168, 85, 247, 0.85), 0 0 12px rgba(6, 182, 212, 0.5)';
                 };
                 toggle.onmouseleave = () => {
-                    toggle.style.width = '28px';
+                    toggle.style.transform = 'translateY(-50%) scale(1)';
                     toggle.style.background = 'rgba(14, 9, 24, 0.95)';
                     toggle.style.borderColor = '#A855F7';
-                    toggle.style.boxShadow = '0 0 16px rgba(168, 85, 247, 0.45), 0 4px 12px rgba(0, 0, 0, 0.5)';
+                    toggle.style.boxShadow = '0 0 18px rgba(168, 85, 247, 0.5), 0 4px 14px rgba(0, 0, 0, 0.55)';
                 };
 
                 function isSidebarOpen() {
@@ -1891,11 +1890,11 @@ def render_learning_workspace():
                     if (isSidebarOpen() && sb) {
                         const rect = sb.getBoundingClientRect();
                         const targetLeft = rect.right > 50 ? rect.right : 336;
-                        toggle.style.left = `${Math.max(0, targetLeft)}px`;
+                        toggle.style.left = `${Math.max(10, targetLeft - 19)}px`;
                         if (svg) svg.style.transform = 'rotate(0deg)';
                         toggle.setAttribute('title', 'Collapse Sidebar');
                     } else {
-                        toggle.style.left = '0px';
+                        toggle.style.left = '10px';
                         if (svg) svg.style.transform = 'rotate(180deg)';
                         toggle.setAttribute('title', 'Open Sidebar');
                     }
