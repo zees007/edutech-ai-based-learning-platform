@@ -1697,16 +1697,149 @@ HOME_CSS = """
     /* Auth Right Column — Glassmorphic Auth Form Card (Luminous Glow) */
     div[data-testid="stColumn"]:has(#auth-form-card-marker),
     .auth-form-card {
-        background: rgba(15, 23, 42, 0.88) !important;
-        backdrop-filter: blur(25px) !important;
-        -webkit-backdrop-filter: blur(25px) !important;
-        border: 1px solid rgba(168, 85, 247, 0.45) !important;
+        background: linear-gradient(135deg, rgba(15, 23, 42, 0.94) 0%, rgba(26, 17, 46, 0.9) 100%) !important;
+        backdrop-filter: blur(30px) !important;
+        -webkit-backdrop-filter: blur(30px) !important;
+        border: 1.5px solid rgba(168, 85, 247, 0.45) !important;
         border-radius: 24px !important;
-        padding: 1.8rem 2.2rem 2rem 2.2rem !important;
-        box-shadow: 0 20px 60px -15px rgba(168, 85, 247, 0.35), inset 0 0 30px rgba(168, 85, 247, 0.15) !important;
+        padding: 2rem 2.2rem 2.2rem 2.2rem !important;
+        box-shadow: 0 25px 65px -15px rgba(168, 85, 247, 0.35), inset 0 0 35px rgba(168, 85, 247, 0.12) !important;
         position: relative !important;
         box-sizing: border-box !important;
         height: 100% !important;
+        overflow: hidden !important;
+    }
+
+    /* Top Accent Neon Line for Form Card */
+    div[data-testid="stColumn"]:has(#auth-form-card-marker)::before {
+        content: '' !important;
+        position: absolute !important;
+        top: 0 !important; left: 10% !important; right: 10% !important; height: 3px !important;
+        background: linear-gradient(90deg, transparent 0%, #EC4899 25%, #A855F7 50%, #3B82F6 75%, transparent 100%) !important;
+        border-radius: 3px !important;
+        box-shadow: 0 0 15px #EC4899, 0 0 20px #A855F7 !important;
+    }
+
+    /* Auth Form Header Styling */
+    .auth-form-header {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 6px !important;
+        margin-bottom: 1.2rem !important;
+    }
+
+    .auth-form-badge {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        font-size: 0.7rem !important;
+        font-weight: 900 !important;
+        letter-spacing: 1px !important;
+        text-transform: uppercase !important;
+        padding: 3px 10px !important;
+        border-radius: 12px !important;
+        width: fit-content !important;
+        margin-bottom: 4px !important;
+    }
+
+    .auth-badge-signin {
+        background: rgba(34, 197, 94, 0.18) !important;
+        color: #4ADE80 !important;
+        border: 1px solid rgba(34, 197, 94, 0.45) !important;
+        box-shadow: 0 0 12px rgba(34, 197, 94, 0.25) !important;
+    }
+
+    .auth-badge-signup {
+        background: rgba(168, 85, 247, 0.18) !important;
+        color: #C084FC !important;
+        border: 1px solid rgba(168, 85, 247, 0.45) !important;
+        box-shadow: 0 0 12px rgba(168, 85, 247, 0.25) !important;
+    }
+
+    .auth-form-title {
+        font-size: 1.45rem !important;
+        font-weight: 900 !important;
+        margin: 0 !important;
+        line-height: 1.25 !important;
+        color: #FFFFFF !important;
+    }
+
+    .auth-form-subtitle {
+        font-size: 0.86rem !important;
+        color: rgba(233, 213, 255, 0.72) !important;
+        margin: 0 !important;
+        line-height: 1.45 !important;
+    }
+
+    /* Auth Form Elements Styling */
+    div[data-testid="stColumn"]:has(#auth-form-card-marker) div[data-testid="stForm"] {
+        border: none !important;
+        padding: 0 !important;
+        background: transparent !important;
+    }
+
+    div[data-testid="stColumn"]:has(#auth-form-card-marker) label,
+    div[data-testid="stColumn"]:has(#auth-form-card-marker) label p {
+        color: rgba(233, 213, 255, 0.9) !important;
+        font-size: 0.84rem !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.3px !important;
+        margin-bottom: 4px !important;
+    }
+
+    div[data-testid="stColumn"]:has(#auth-form-card-marker) div[data-baseweb="input"],
+    div[data-testid="stColumn"]:has(#auth-form-card-marker) div[data-baseweb="base-input"] {
+        background: rgba(15, 23, 42, 0.7) !important;
+        border: 1.5px solid rgba(168, 85, 247, 0.3) !important;
+        border-radius: 14px !important;
+        transition: all 0.25s ease !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25), inset 0 0 10px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    div[data-testid="stColumn"]:has(#auth-form-card-marker) div[data-baseweb="input"]:hover {
+        border-color: rgba(168, 85, 247, 0.6) !important;
+        box-shadow: 0 0 15px rgba(168, 85, 247, 0.25) !important;
+    }
+
+    div[data-testid="stColumn"]:has(#auth-form-card-marker) div[data-baseweb="input"]:focus-within {
+        border-color: rgba(168, 85, 247, 0.95) !important;
+        box-shadow: 0 0 25px rgba(168, 85, 247, 0.4), inset 0 0 12px rgba(168, 85, 247, 0.15) !important;
+        background: rgba(15, 23, 42, 0.9) !important;
+    }
+
+    div[data-testid="stColumn"]:has(#auth-form-card-marker) input {
+        color: #FAFAFA !important;
+        font-size: 0.92rem !important;
+        font-weight: 500 !important;
+        padding: 10px 14px !important;
+    }
+
+    div[data-testid="stColumn"]:has(#auth-form-card-marker) input::placeholder {
+        color: rgba(233, 213, 255, 0.35) !important;
+    }
+
+    /* Form Submit Button (Vibrant Glow Gradient) */
+    div[data-testid="stColumn"]:has(#auth-form-card-marker) div[data-testid="stFormSubmitButton"] button {
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%) !important;
+        background-color: transparent !important;
+        border: none !important;
+        border-radius: 14px !important;
+        color: #FFFFFF !important;
+        font-weight: 800 !important;
+        font-size: 0.96rem !important;
+        letter-spacing: 0.3px !important;
+        padding: 12px 20px !important;
+        min-height: 48px !important;
+        box-shadow: 0 8px 25px rgba(168, 85, 247, 0.4), 0 0 20px rgba(236, 72, 153, 0.25) !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        cursor: pointer !important;
+        margin-top: 0.8rem !important;
+    }
+
+    div[data-testid="stColumn"]:has(#auth-form-card-marker) div[data-testid="stFormSubmitButton"] button:hover {
+        transform: translateY(-2px) scale(1.01) !important;
+        box-shadow: 0 12px 35px rgba(168, 85, 247, 0.6), 0 0 30px rgba(59, 130, 246, 0.45) !important;
+        color: #FFFFFF !important;
     }
 
     /* Top-Left Glassmorphic Circular Back Arrow Button on Form Card */
@@ -2936,23 +3069,39 @@ def _render_auth_view():
         with col_auth:
             st.markdown('<div id="auth-form-card-marker"></div>', unsafe_allow_html=True)
 
-            if st.button("←", key="close_auth_form"):
-                st.session_state["auth_form_mode"] = None
-                st.session_state.pop("auth_tab", None)
-                if "auth_mode" in st.query_params:
-                    del st.query_params["auth_mode"]
-                st.rerun()
+            btn_col, _ = st.columns([1, 6])
+            with btn_col:
+                if st.button("←", key="close_auth_form", help="Back to Flowchart Canvas"):
+                    st.session_state["auth_form_mode"] = None
+                    st.session_state.pop("auth_tab", None)
+                    if "auth_mode" in st.query_params:
+                        del st.query_params["auth_mode"]
+                    st.rerun()
 
             if mode == "signin":
-                st.markdown("### 🔐 Sign In")
+                st.markdown(
+                    """<div class="auth-form-header">
+  <div class="auth-form-badge auth-badge-signin">🔐 SECURE AUTHENTICATION</div>
+  <h2 class="auth-form-title">Sign In to <span class="gradient-text">AI Workspace</span></h2>
+  <p class="auth-form-subtitle">Enter your credentials to resume your personalized curriculum session.</p>
+</div>""",
+                    unsafe_allow_html=True,
+                )
             else:
-                st.markdown("### ✨ Create Account")
+                st.markdown(
+                    """<div class="auth-form-header">
+  <div class="auth-form-badge auth-badge-signup">✨ STUDENT REGISTRATION</div>
+  <h2 class="auth-form-title">Create Your <span class="gradient-text">Learning Account</span></h2>
+  <p class="auth-form-subtitle">Instantiate your personal autonomous AI agent squad in seconds.</p>
+</div>""",
+                    unsafe_allow_html=True,
+                )
 
             if mode == "signin":
                 with st.form("signin_form"):
                     email_in = st.text_input("Email Address", placeholder="student@example.com")
-                    pass_in = st.text_input("Password", type="password")
-                    sub = st.form_submit_button("Sign In", type="primary", use_container_width=True)
+                    pass_in = st.text_input("Password", type="password", placeholder="••••••••")
+                    sub = st.form_submit_button("Sign In & Launch Agents ⚡", type="primary", use_container_width=True)
 
                 if sub:
                     if not email_in or not pass_in:
@@ -2984,7 +3133,7 @@ def _render_auth_view():
                         ln = st.text_input("Last Name *", placeholder="Doe")
 
                     se = st.text_input("Email Address *", placeholder="jane.doe@example.com")
-                    sp = st.text_input("Password * (min 6 characters)", type="password")
+                    sp = st.text_input("Password * (min 6 characters)", type="password", placeholder="••••••••")
 
                     col_mob, col_ctry = st.columns(2)
                     with col_mob:
@@ -2992,7 +3141,7 @@ def _render_auth_view():
                     with col_ctry:
                         ctry = st.text_input("Country", placeholder="United States")
 
-                    sub2 = st.form_submit_button("Create Account & Start Learning", type="primary", use_container_width=True)
+                    sub2 = st.form_submit_button("Create Account & Spawn Agent Squad ✨", type="primary", use_container_width=True)
 
                 if sub2:
                     if not fn.strip() or not ln.strip() or not se.strip() or not sp:
