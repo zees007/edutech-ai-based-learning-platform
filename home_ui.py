@@ -1238,97 +1238,83 @@ HOME_CSS = """
         box-shadow: 0 0 20px rgba(168, 85, 247, 0.25);
     }
 
-    /* ── About Cards & Metric Pills — Glassmorphism Gradient Theme ─── */
-    div[data-testid="stHorizontalBlock"]:has(#about-card-mission-marker),
-    div[data-testid="stHorizontalBlock"]:has(.about-card) {
-        align-items: stretch !important;
-        gap: 1.5rem !important;
-    }
-
-    div[data-testid="stHorizontalBlock"]:has(#about-card-mission-marker) > div[data-testid="stColumn"],
-    div[data-testid="stHorizontalBlock"]:has(#about-card-mission-marker) > div[data-testid="column"],
-    div[data-testid="stHorizontalBlock"]:has(.about-card) > div[data-testid="stColumn"],
-    div[data-testid="stHorizontalBlock"]:has(.about-card) > div[data-testid="column"] {
-        display: flex !important;
-        flex-direction: column !important;
-        flex: 1 1 0 !important;
-        height: 100% !important;
-    }
-
-    div[data-testid="stHorizontalBlock"]:has(#about-card-mission-marker) div[data-testid="stVerticalBlock"],
-    div[data-testid="stHorizontalBlock"]:has(#about-card-mission-marker) div[data-testid="element-container"],
-    div[data-testid="stHorizontalBlock"]:has(#about-card-mission-marker) div[data-testid="stElementContainer"],
-    div[data-testid="stHorizontalBlock"]:has(#about-card-mission-marker) div[data-testid="stMarkdownContainer"],
-    div[data-testid="stHorizontalBlock"]:has(.about-card) div[data-testid="stVerticalBlock"],
-    div[data-testid="stHorizontalBlock"]:has(.about-card) div[data-testid="element-container"],
-    div[data-testid="stHorizontalBlock"]:has(.about-card) div[data-testid="stElementContainer"],
-    div[data-testid="stHorizontalBlock"]:has(.about-card) div[data-testid="stMarkdownContainer"] {
-        height: 100% !important;
-        display: flex !important;
-        flex-direction: column !important;
-        flex: 1 1 auto !important;
-    }
-
-    .about-card {
-        background: linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(168, 85, 247, 0.18) 50%, rgba(15, 23, 42, 0.9) 100%);
+    /* ── About Unified Card — Single Master Glass Container ────────── */
+    .about-unified-card {
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(168, 85, 247, 0.16) 50%, rgba(15, 23, 42, 0.95) 100%);
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
         border: 1px solid rgba(168, 85, 247, 0.4);
-        border-radius: 18px;
-        padding: 2.2rem 2rem;
-        height: 100% !important;
-        min-height: 280px;
-        display: flex !important;
-        flex-direction: column !important;
-        justify-content: flex-start !important;
-        box-sizing: border-box !important;
-        transition: all 0.3s ease;
+        border-radius: 20px;
+        padding: 2.5rem 2.2rem;
+        display: flex;
+        align-items: stretch;
+        gap: 2.5rem;
         box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), inset 0 0 25px rgba(124, 58, 237, 0.12);
         position: relative;
         overflow: hidden;
+        transition: all 0.3s ease;
+        margin-top: 0.5rem;
     }
 
-    .about-card::before {
+    .about-unified-card::before {
         content: '';
         position: absolute;
         top: 0; left: 10%; right: 10%; height: 2px;
         background: linear-gradient(90deg, transparent 0%, #EC4899 30%, #A855F7 50%, #06B6D4 70%, transparent 100%);
         border-radius: 2px;
-        opacity: 0.8;
-        box-shadow: 0 0 10px #A855F7;
+        opacity: 0.85;
+        box-shadow: 0 0 12px #A855F7;
     }
 
-    .about-card:hover {
-        background: linear-gradient(135deg, rgba(124, 58, 237, 0.25) 0%, rgba(236, 72, 153, 0.18) 50%, rgba(15, 23, 42, 0.95) 100%);
+    .about-unified-card:hover {
+        background: linear-gradient(135deg, rgba(124, 58, 237, 0.22) 0%, rgba(236, 72, 153, 0.16) 50%, rgba(15, 23, 42, 0.95) 100%);
         border-color: rgba(168, 85, 247, 0.75);
-        box-shadow: 0 0 40px rgba(124, 58, 237, 0.35);
-        transform: translateY(-4px);
+        box-shadow: 0 0 45px rgba(124, 58, 237, 0.3);
+        transform: translateY(-2px);
     }
 
-    .about-card h3 {
-        font-size: 1.35rem;
+    .about-section-col {
+        flex: 1 1 0;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .about-section-col h3 {
+        font-size: 1.3rem;
         font-weight: 800;
         color: #FAFAFA;
         margin-top: 0;
-        margin-bottom: 1rem;
+        margin-bottom: 0.9rem;
         display: flex;
         align-items: center;
         gap: 10px;
         line-height: 1.3;
     }
 
-    .about-card p {
+    .about-section-col p {
         font-size: 0.92rem;
         color: rgba(255, 255, 255, 0.65);
         line-height: 1.7;
         margin: 0;
-        flex: 1 1 auto;
     }
 
-    @media (max-width: 768px) {
-        .about-card {
-            min-height: auto !important;
-            padding: 1.8rem 1.4rem;
+    .about-divider {
+        width: 1px;
+        background: linear-gradient(180deg, transparent 0%, rgba(168, 85, 247, 0.35) 20%, rgba(168, 85, 247, 0.35) 80%, transparent 100%);
+        flex-shrink: 0;
+    }
+
+    @media (max-width: 820px) {
+        .about-unified-card {
+            flex-direction: column;
+            gap: 1.8rem;
+            padding: 2rem 1.4rem;
+        }
+
+        .about-divider {
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent 0%, rgba(168, 85, 247, 0.35) 20%, rgba(168, 85, 247, 0.35) 80%, transparent 100%);
         }
     }
 
@@ -3379,13 +3365,11 @@ def render_home_page():
 
     st.markdown("<br/>", unsafe_allow_html=True)
 
-    # Mission & Technology Cards
-    ab1, ab2 = st.columns(2)
-    with ab1:
-        st.markdown(
-            """
-            <div id="about-card-mission-marker"></div>
-            <div class="about-card">
+    # Unified Mission & Technology Card
+    st.markdown(
+        """
+        <div class="about-unified-card">
+            <div class="about-section-col">
                 <h3>🚀 Our Mission</h3>
                 <p>
                     Traditional online learning often relies on passive video watching and static, one-size-fits-all quizzes.
@@ -3394,13 +3378,8 @@ def render_home_page():
                     We combine autonomous LLM supervisor orchestrators with specialized worker agents that act as your personal 24/7 tutor—breaking down complex subjects into bite-sized milestones and testing your understanding with Socratic questioning.
                 </p>
             </div>
-            """, unsafe_allow_html=True)
-
-    with ab2:
-        st.markdown(
-            """
-            <div id="about-card-mastery-marker"></div>
-            <div class="about-card">
+            <div class="about-divider"></div>
+            <div class="about-section-col">
                 <h3>🧠 Engineered for Deep Mastery</h3>
                 <p>
                     Built on top of a state-persisted supervisor-worker architecture, EduTech AI connects directly to leading academic databases (arXiv, OpenAlex, Semantic Scholar) and curated video timestamps.
@@ -3408,7 +3387,8 @@ def render_home_page():
                     Whether you are a high school student grasping basic physics or a researcher analyzing machine learning papers, our system adapts to your cognitive level in real time.
                 </p>
             </div>
-            """, unsafe_allow_html=True)
+        </div>
+        """, unsafe_allow_html=True)
 
     st.markdown("<br/><br/>", unsafe_allow_html=True)
 
