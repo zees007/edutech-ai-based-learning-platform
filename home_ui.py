@@ -1383,67 +1383,73 @@ HOME_CSS = """
 
     /* Native Interactive Flowchart Branch Buttons (Zero Page Reload) */
     div[data-testid="stColumn"]:has(#signin-branch-marker):not(:has(#signup-branch-marker)) button {
-        background: rgb(20, 13, 33) !important;
+        background: linear-gradient(135deg, rgba(20, 13, 33, 0.95) 0%, rgba(16, 185, 129, 0.12) 100%) !important;
         background-color: rgb(20, 13, 33) !important;
-        border: 1px solid rgba(168, 85, 247, 0.35) !important;
-        border-radius: 14px !important;
-        color: rgba(255, 255, 255, 0.75) !important;
-        padding: 10px 14px !important;
-        min-height: 64px !important;
+        border: 1.5px solid rgba(34, 197, 94, 0.45) !important;
+        border-radius: 16px !important;
+        color: rgba(233, 213, 255, 0.75) !important;
+        padding: 12px 14px !important;
+        min-height: 72px !important;
         white-space: pre-line !important;
         text-align: center !important;
         font-size: 0.74rem !important;
         font-weight: 500 !important;
-        line-height: 1.35 !important;
+        line-height: 1.4 !important;
         cursor: pointer !important;
         transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        box-shadow: 0 0 15px rgba(168, 85, 247, 0.15), 0 8px 20px rgba(0, 0, 0, 0.3) !important;
+        box-shadow: 0 0 20px rgba(34, 197, 94, 0.2), 0 8px 20px rgba(0, 0, 0, 0.4) !important;
+        position: relative !important;
     }
 
     div[data-testid="stColumn"]:has(#signin-branch-marker):not(:has(#signup-branch-marker)) button::first-line {
-        font-size: 0.88rem !important;
+        font-size: 0.92rem !important;
         font-weight: 800 !important;
-        color: #FFFFFF !important;
+        color: #4ADE80 !important;
         line-height: 1.5 !important;
+        text-shadow: 0 0 10px rgba(74, 222, 128, 0.4) !important;
     }
 
     div[data-testid="stColumn"]:has(#signin-branch-marker):not(:has(#signup-branch-marker)) button:hover {
-        border-color: rgba(34, 197, 94, 0.85) !important;
+        border-color: rgba(34, 197, 94, 0.95) !important;
         transform: translateY(-2px) scale(1.02) !important;
-        box-shadow: 0 0 25px rgba(34, 197, 94, 0.45), 0 8px 25px rgba(0, 0, 0, 0.4) !important;
+        box-shadow: 0 0 30px rgba(34, 197, 94, 0.5), 0 8px 25px rgba(0, 0, 0, 0.5) !important;
+        color: #FFFFFF !important;
     }
 
     div[data-testid="stColumn"]:has(#signup-branch-marker):not(:has(#signin-branch-marker)) button {
-        background: rgb(20, 13, 33) !important;
+        background: linear-gradient(135deg, rgba(20, 13, 33, 0.95) 0%, rgba(168, 85, 247, 0.12) 100%) !important;
         background-color: rgb(20, 13, 33) !important;
-        border: 1px solid rgba(168, 85, 247, 0.35) !important;
-        border-radius: 14px !important;
-        color: rgba(233, 213, 255, 0.8) !important;
-        padding: 10px 14px !important;
-        min-height: 64px !important;
+        border: 1.5px solid rgba(168, 85, 247, 0.45) !important;
+        border-radius: 16px !important;
+        color: rgba(233, 213, 255, 0.75) !important;
+        padding: 12px 14px !important;
+        min-height: 72px !important;
         white-space: pre-line !important;
         text-align: center !important;
         font-size: 0.74rem !important;
-        font-weight: 600 !important;
+        font-weight: 500 !important;
         letter-spacing: 0.2px !important;
-        line-height: 1.35 !important;
+        line-height: 1.4 !important;
         cursor: pointer !important;
         transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        box-shadow: 0 0 15px rgba(168, 85, 247, 0.15), 0 8px 20px rgba(0, 0, 0, 0.3) !important;
+        box-shadow: 0 0 20px rgba(168, 85, 247, 0.2), 0 8px 20px rgba(0, 0, 0, 0.4) !important;
+        position: relative !important;
     }
 
     div[data-testid="stColumn"]:has(#signup-branch-marker):not(:has(#signin-branch-marker)) button::first-line {
-        font-size: 0.88rem !important;
+        font-size: 0.92rem !important;
         font-weight: 800 !important;
-        color: #FFFFFF !important;
+        color: #C084FC !important;
         line-height: 1.5 !important;
         letter-spacing: 0 !important;
+        text-shadow: 0 0 10px rgba(192, 132, 252, 0.4) !important;
     }
 
     div[data-testid="stColumn"]:has(#signup-branch-marker):not(:has(#signin-branch-marker)) button:hover {
-        border-color: rgba(168, 85, 247, 0.85) !important;
+        border-color: rgba(168, 85, 247, 0.95) !important;
         transform: translateY(-2px) scale(1.02) !important;
-        box-shadow: 0 0 25px rgba(168, 85, 247, 0.45), 0 8px 25px rgba(0, 0, 0, 0.4) !important;
+        box-shadow: 0 0 30px rgba(168, 85, 247, 0.5), 0 8px 25px rgba(0, 0, 0, 0.5) !important;
+        color: #FFFFFF !important;
     }
 
     /* Active Highlight States */
@@ -1715,44 +1721,162 @@ HOME_CSS = """
         border-radius: 0 !important;
     }
 
-    .auth-flow-node {
-        background: rgb(20, 13, 33) !important;
-        background-color: rgb(20, 13, 33) !important;
-        border: 1px solid rgba(168, 85, 247, 0.35) !important;
-        border-radius: 14px !important;
-        padding: 10px 14px !important;
-        min-height: 64px !important;
+    /* ── Modern Auth Flowchart Cards & Glowing Icons ── */
+    .auth-flow-card {
         display: flex !important;
-        flex-direction: column !important;
         align-items: center !important;
-        justify-content: center !important;
-        text-align: center !important;
-        box-shadow: 0 0 15px rgba(168, 85, 247, 0.15), 0 8px 20px rgba(0, 0, 0, 0.3) !important;
-        position: relative !important;
-        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        gap: 14px !important;
+        background: linear-gradient(135deg, rgba(20, 13, 33, 0.95) 0%, rgba(30, 20, 50, 0.85) 100%) !important;
+        backdrop-filter: blur(16px) !important;
+        -webkit-backdrop-filter: blur(16px) !important;
+        border: 1.5px solid rgba(168, 85, 247, 0.35) !important;
+        border-radius: 16px !important;
+        padding: 10px 16px !important;
         width: 100% !important;
+        max-width: 320px !important;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(168, 85, 247, 0.08) !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        position: relative !important;
+        overflow: hidden !important;
         box-sizing: border-box !important;
     }
 
-    .auth-flow-node:hover {
+    .auth-flow-card::before {
+        content: '' !important;
+        position: absolute !important;
+        top: 0 !important; left: 15% !important; right: 15% !important; height: 2px !important;
+        background: linear-gradient(90deg, transparent 0%, #EC4899 30%, #A855F7 50%, #06B6D4 70%, transparent 100%) !important;
+        border-radius: 2px !important;
+        opacity: 0.65 !important;
+        transition: opacity 0.3s ease, box-shadow 0.3s ease !important;
+    }
+
+    .auth-flow-card:hover {
         border-color: rgba(168, 85, 247, 0.75) !important;
-        box-shadow: 0 0 25px rgba(168, 85, 247, 0.35) !important;
+        box-shadow: 0 0 30px rgba(168, 85, 247, 0.35), 0 10px 30px rgba(0, 0, 0, 0.5) !important;
         transform: translateY(-2px) !important;
     }
 
-    .auth-flow-node .node-title {
-        color: #FFFFFF !important;
+    .auth-flow-card:hover::before {
+        opacity: 1 !important;
+        box-shadow: 0 0 12px #EC4899, 0 0 16px #A855F7 !important;
+    }
+
+    /* Glow Icon Container */
+    .flow-icon-container {
+        width: 44px !important;
+        height: 44px !important;
+        min-width: 44px !important;
+        border-radius: 12px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 1.35rem !important;
+        flex-shrink: 0 !important;
+        transition: all 0.3s ease !important;
+    }
+
+    .auth-flow-card:hover .flow-icon-container {
+        transform: scale(1.08) !important;
+    }
+
+    /* Distinct Icon Glow Themes */
+    .icon-glow-blue {
+        background: rgba(59, 130, 246, 0.18) !important;
+        border: 1.5px solid rgba(59, 130, 246, 0.5) !important;
+        box-shadow: 0 0 18px rgba(59, 130, 246, 0.45), inset 0 0 10px rgba(59, 130, 246, 0.25) !important;
+    }
+
+    .icon-glow-purple {
+        background: rgba(168, 85, 247, 0.18) !important;
+        border: 1.5px solid rgba(168, 85, 247, 0.5) !important;
+        box-shadow: 0 0 18px rgba(168, 85, 247, 0.45), inset 0 0 10px rgba(168, 85, 247, 0.25) !important;
+    }
+
+    .icon-glow-pink {
+        background: rgba(236, 72, 153, 0.18) !important;
+        border: 1.5px solid rgba(236, 72, 153, 0.5) !important;
+        box-shadow: 0 0 18px rgba(236, 72, 153, 0.45), inset 0 0 10px rgba(236, 72, 153, 0.25) !important;
+    }
+
+    .icon-glow-neural {
+        background: linear-gradient(135deg, rgba(6, 182, 212, 0.25) 0%, rgba(168, 85, 247, 0.25) 100%) !important;
+        border: 1.5px solid rgba(6, 182, 212, 0.65) !important;
+        box-shadow: 0 0 24px rgba(6, 182, 212, 0.65), 0 0 16px rgba(168, 85, 247, 0.45), inset 0 0 12px rgba(6, 182, 212, 0.3) !important;
+        animation: neuralPulse 3s infinite ease-in-out !important;
+    }
+
+    @keyframes neuralPulse {
+        0%, 100% {
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.5), 0 0 14px rgba(168, 85, 247, 0.35), inset 0 0 10px rgba(6, 182, 212, 0.2);
+            border-color: rgba(6, 182, 212, 0.55);
+        }
+        50% {
+            box-shadow: 0 0 32px rgba(6, 182, 212, 0.85), 0 0 22px rgba(168, 85, 247, 0.65), inset 0 0 16px rgba(6, 182, 212, 0.4);
+            border-color: rgba(6, 182, 212, 0.95);
+            transform: scale(1.05);
+        }
+    }
+
+    /* Content & Typography */
+    .flow-content {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        text-align: left !important;
+        overflow: hidden !important;
+    }
+
+    .flow-step-tag {
+        font-size: 0.62rem !important;
         font-weight: 800 !important;
-        font-size: 0.88rem !important;
-        line-height: 1.35 !important;
+        letter-spacing: 1px !important;
+        text-transform: uppercase !important;
         margin-bottom: 2px !important;
     }
 
-    .auth-flow-node .node-sub {
-        color: rgba(255, 255, 255, 0.75) !important;
+    .tag-blue { color: #60A5FA !important; }
+    .tag-purple { color: #C084FC !important; }
+    .tag-pink { color: #F472B6 !important; }
+    .tag-cyan { color: #22D3EE !important; }
+
+    .flow-node-title {
+        font-size: 0.94rem !important;
+        font-weight: 900 !important;
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%) !important;
+        -webkit-background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+        line-height: 1.25 !important;
+        margin-bottom: 2px !important;
+        display: inline-block !important;
+    }
+
+    .flow-node-sub {
         font-size: 0.74rem !important;
         font-weight: 500 !important;
+        color: rgba(233, 213, 255, 0.72) !important;
         line-height: 1.35 !important;
+    }
+
+    /* Card Color Variants */
+    .flow-card-blue { border-color: rgba(59, 130, 246, 0.4) !important; }
+    .flow-card-blue:hover { border-color: rgba(59, 130, 246, 0.8) !important; box-shadow: 0 0 30px rgba(59, 130, 246, 0.35), 0 10px 30px rgba(0, 0, 0, 0.5) !important; }
+
+    .flow-card-purple { border-color: rgba(168, 85, 247, 0.45) !important; }
+    .flow-card-purple:hover { border-color: rgba(168, 85, 247, 0.85) !important; box-shadow: 0 0 30px rgba(168, 85, 247, 0.4), 0 10px 30px rgba(0, 0, 0, 0.5) !important; }
+
+    .flow-card-pink { border-color: rgba(236, 72, 153, 0.4) !important; }
+    .flow-card-pink:hover { border-color: rgba(236, 72, 153, 0.8) !important; box-shadow: 0 0 30px rgba(236, 72, 153, 0.35), 0 10px 30px rgba(0, 0, 0, 0.5) !important; }
+
+    .flow-card-gradient {
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(124, 58, 237, 0.25) 50%, rgba(15, 23, 42, 0.95) 100%) !important;
+        border: 1.5px solid rgba(6, 182, 212, 0.55) !important;
+        box-shadow: 0 0 30px rgba(6, 182, 212, 0.25), 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(168, 85, 247, 0.2) !important;
+    }
+
+    .flow-card-gradient:hover {
+        border-color: rgba(6, 182, 212, 0.9) !important;
+        box-shadow: 0 0 40px rgba(6, 182, 212, 0.45), 0 0 20px rgba(168, 85, 247, 0.35) !important;
     }
 
     /* Wire Connectors & Glowing Vector Arrow Pointer System */
@@ -1785,31 +1909,11 @@ HOME_CSS = """
         text-shadow: 0 0 8px #38BDF8 !important;
     }
 
-    /* Center Step Wrappers & Compact Nodes */
+    /* Center Step Wrappers */
     .flow-step-center {
         display: flex !important;
         justify-content: center !important;
         width: 100% !important;
-    }
-
-    .auth-flow-node.compact-node {
-        width: 100% !important;
-        max-width: 270px !important;
-        padding: 10px 14px !important;
-        justify-content: center !important;
-    }
-
-    /* Has Account Decision Diamond/Pill */
-    .flow-decision-diamond {
-        background: linear-gradient(135deg, rgba(236, 72, 153, 0.2) 0%, rgba(168, 85, 247, 0.25) 100%) !important;
-        border: 1px solid rgba(236, 72, 153, 0.5) !important;
-        border-radius: 20px !important;
-        padding: 6px 18px !important;
-        color: #FAFAFA !important;
-        font-weight: 800 !important;
-        font-size: 0.82rem !important;
-        box-shadow: 0 0 15px rgba(236, 72, 153, 0.25) !important;
-        text-align: center !important;
     }
 
     /* Branch Arrow Rows */
@@ -1830,32 +1934,25 @@ HOME_CSS = """
     .branch-label {
         font-size: 0.7rem !important;
         font-weight: 800 !important;
-        padding: 2px 8px !important;
-        border-radius: 10px !important;
+        padding: 3px 10px !important;
+        border-radius: 12px !important;
         margin-bottom: 2px !important;
+        letter-spacing: 0.5px !important;
+        white-space: nowrap !important;
     }
 
     .label-yes {
-        background: rgba(34, 197, 94, 0.2) !important;
+        background: rgba(34, 197, 94, 0.18) !important;
         color: #4ADE80 !important;
-        border: 1px solid rgba(34, 197, 94, 0.4) !important;
+        border: 1px solid rgba(34, 197, 94, 0.45) !important;
+        box-shadow: 0 0 12px rgba(34, 197, 94, 0.25) !important;
     }
 
     .label-no {
-        background: rgba(236, 72, 153, 0.2) !important;
+        background: rgba(236, 72, 153, 0.18) !important;
         color: #F472B6 !important;
-        border: 1px solid rgba(236, 72, 153, 0.4) !important;
-    }
-
-    .flow-branch-cards {
-        display: grid !important;
-        grid-template-columns: 1fr 1fr !important;
-        gap: 12px !important;
-        width: 100% !important;
-    }
-
-    .auth-flow-node.branch-node {
-        padding: 8px 12px !important;
+        border: 1px solid rgba(236, 72, 153, 0.45) !important;
+        box-shadow: 0 0 12px rgba(236, 72, 153, 0.25) !important;
     }
 
     /* SVG Vector Merge Connector Container */
@@ -2632,15 +2729,21 @@ def _render_auth_view():
     with col_showcase:
         st.markdown(
             """<div id="auth-canvas-marker"></div>
-<div class="n8n-header" style="margin-bottom:1rem; text-align:center;">
+<div class="n8n-header" style="margin-bottom:1.2rem; text-align:center;">
 <span>⚡ EduTech AI — Providing Access Flowchart</span>
 </div>
 
-<!-- Step 1: User Arrival -->
+<!-- Step 1: Student Intake / Arrival -->
 <div class="flow-step-center">
-<div class="auth-flow-node compact-node">
-<div class="node-title">👤 User Arrival</div>
-<div class="node-sub">Access Request</div>
+<div class="auth-flow-card flow-card-blue">
+  <div class="flow-icon-container icon-glow-blue">
+    <span class="flow-icon">👤</span>
+  </div>
+  <div class="flow-content">
+    <div class="flow-step-tag tag-blue">STEP 01 • INTAKE</div>
+    <div class="flow-node-title"><span class="gradient-text">Student Arrival</span></div>
+    <div class="flow-node-sub">Initiates secure session request</div>
+  </div>
 </div>
 </div>
 
@@ -2650,11 +2753,17 @@ def _render_auth_view():
 <div class="flow-connector-arrow">▼</div>
 </div>
 
-<!-- Step 2: AI Credential Evaluator -->
+<!-- Step 2: AI Identity Guard -->
 <div class="flow-step-center">
-<div class="auth-flow-node compact-node">
-<div class="node-title">🛡️ AI Credential Evaluator</div>
-<div class="node-sub">Evaluate Status</div>
+<div class="auth-flow-card flow-card-purple">
+  <div class="flow-icon-container icon-glow-purple">
+    <span class="flow-icon">🛡️</span>
+  </div>
+  <div class="flow-content">
+    <div class="flow-step-tag tag-purple">STEP 02 • AI EVALUATION</div>
+    <div class="flow-node-title"><span class="gradient-text">AI Identity Guard</span></div>
+    <div class="flow-node-sub">Inspects credentials & privileges</div>
+  </div>
 </div>
 </div>
 
@@ -2664,25 +2773,31 @@ def _render_auth_view():
 <div class="flow-connector-arrow">▼</div>
 </div>
 
-<!-- Step 3: Has Account? Decision Node -->
+<!-- Step 3: Account Verification Gateway -->
 <div class="flow-step-center">
-<div class="auth-flow-node compact-node">
-<div class="node-title">❓ Has Account?</div>
-<div class="node-sub">Verify Credentials</div>
+<div class="auth-flow-card flow-card-pink">
+  <div class="flow-icon-container icon-glow-pink">
+    <span class="flow-icon">❓</span>
+  </div>
+  <div class="flow-content">
+    <div class="flow-step-tag tag-pink">STEP 03 • ROUTING GATEWAY</div>
+    <div class="flow-node-title"><span class="gradient-text">Account Verification</span></div>
+    <div class="flow-node-sub">Determines authentication pathway</div>
+  </div>
 </div>
 </div>
 
 <!-- 2 Arrows branching to Sign In and Create Account -->
 <div class="flow-branch-arrows">
 <div class="branch-arrow-col">
-<span class="branch-label label-yes">YES (✓)</span>
-<div class="flow-connector-line"></div>
-<div class="flow-connector-arrow color-green">▼</div>
+  <span class="branch-label label-yes">YES • EXISTING USER (✓)</span>
+  <div class="flow-connector-line"></div>
+  <div class="flow-connector-arrow color-green">▼</div>
 </div>
 <div class="branch-arrow-col">
-<span class="branch-label label-no">NO (❌)</span>
-<div class="flow-connector-line"></div>
-<div class="flow-connector-arrow color-pink">▼</div>
+  <span class="branch-label label-no">NO • NEW STUDENT (✨)</span>
+  <div class="flow-connector-line"></div>
+  <div class="flow-connector-arrow color-pink">▼</div>
 </div>
 </div>""", unsafe_allow_html=True)
 
@@ -2690,34 +2805,40 @@ def _render_auth_view():
         flow_col1, flow_col2 = st.columns(2)
         with flow_col1:
             st.markdown('<div id="signin-branch-marker"></div>', unsafe_allow_html=True)
-            if st.button("🔐 Sign In\nEmail & Password", key="flowchart_signin_btn", use_container_width=True):
+            if st.button("🔐 Sign In\nExisting Account Access", key="flowchart_signin_btn", use_container_width=True):
                 st.session_state["auth_form_mode"] = "signin"
                 st.rerun()
         with flow_col2:
             st.markdown('<div id="signup-branch-marker"></div>', unsafe_allow_html=True)
-            if st.button("✨ Create Account\nGet Started Free", key="flowchart_signup_btn", use_container_width=True):
+            if st.button("✨ Create Account\nInstant Free Setup", key="flowchart_signup_btn", use_container_width=True):
                 st.session_state["auth_form_mode"] = "signup"
                 st.rerun()
 
         st.markdown(
             """<!-- Merge Arrow connecting to Dispatch AI Agent Squad block -->
 <div class="flow-merge-svg-container">
-<svg width="100%" height="20" viewBox="0 0 100 20" preserveAspectRatio="none" style="display:block;">
-  <path d="M 25 0 L 25 10" stroke="#34D399" stroke-width="2" fill="none" vector-effect="non-scaling-stroke" />
-  <path d="M 75 0 L 75 10" stroke="#F472B6" stroke-width="2" fill="none" vector-effect="non-scaling-stroke" />
-  <path d="M 25 10 L 75 10" stroke="#A855F7" stroke-width="2" fill="none" vector-effect="non-scaling-stroke" />
-  <path d="M 50 10 L 50 20" stroke="#38BDF8" stroke-width="2" fill="none" vector-effect="non-scaling-stroke" />
+<svg width="100%" height="22" viewBox="0 0 100 22" preserveAspectRatio="none" style="display:block;">
+  <path d="M 25 0 L 25 11" stroke="#34D399" stroke-width="2" fill="none" vector-effect="non-scaling-stroke" />
+  <path d="M 75 0 L 75 11" stroke="#F472B6" stroke-width="2" fill="none" vector-effect="non-scaling-stroke" />
+  <path d="M 25 11 L 75 11" stroke="#A855F7" stroke-width="2" fill="none" vector-effect="non-scaling-stroke" />
+  <path d="M 50 11 L 50 22" stroke="#38BDF8" stroke-width="2" fill="none" vector-effect="non-scaling-stroke" />
 </svg>
 <div class="flow-connector-wrapper" style="margin-top:-6px;">
 <div class="flow-connector-arrow color-cyan">▼</div>
 </div>
 </div>
 
-<!-- Step 5: Dispatch AI Agent Squad block -->
+<!-- Step 5: Dispatch AI Agent Squad block with Glowing Neural Icon -->
 <div class="flow-step-center">
-<div class="auth-flow-node compact-node">
-<div class="node-title">⚡ Dispatch AI Agent Squad</div>
-<div class="node-sub">Instant Workspace Access</div>
+<div class="auth-flow-card flow-card-gradient">
+  <div class="flow-icon-container icon-glow-neural">
+    <span class="flow-icon">🧠</span>
+  </div>
+  <div class="flow-content">
+    <div class="flow-step-tag tag-cyan">STEP 05 • DISPATCH & UNLOCK</div>
+    <div class="flow-node-title"><span class="gradient-text">Spawn AI Agent Squad</span></div>
+    <div class="flow-node-sub">Instant Autonomous Workspace Access</div>
+  </div>
 </div>
 </div>""",
             unsafe_allow_html=True,
