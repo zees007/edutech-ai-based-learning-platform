@@ -1681,10 +1681,15 @@ def render_learning_workspace():
                     doc.body.appendChild(toggle);
                 }
 
+                // Get initial sidebar measurement if present, default to open width ~336px
+                const initSb = doc.querySelector('section[data-testid="stSidebar"]');
+                const initRight = (initSb && initSb.getBoundingClientRect().right > 100) ? initSb.getBoundingClientRect().right : 336;
+
                 // Apply high-end modern glassmorphism styling
                 Object.assign(toggle.style, {
                     position: 'fixed',
                     top: '50%',
+                    left: `${initRight}px`,
                     transform: 'translateY(-50%)',
                     zIndex: '99999999',
                     width: '28px',
@@ -1723,11 +1728,13 @@ def render_learning_workspace():
 
                 function isSidebarOpen() {
                     const sb = doc.querySelector('section[data-testid="stSidebar"]');
-                    if (!sb) return false;
+                    if (!sb) return true; // Default to open in learning workspace
                     const ariaClosed = sb.getAttribute('aria-expanded') === 'false';
-                    const rect = sb.getBoundingClientRect();
+                    if (ariaClosed) return false;
                     const comp = win.getComputedStyle(sb);
-                    return !ariaClosed && rect.width > 50 && rect.right > 50 && comp.display !== 'none';
+                    if (comp.display === 'none') return false;
+                    const rect = sb.getBoundingClientRect();
+                    return rect.right > 50 || rect.width > 50;
                 }
 
                 function updateTogglePosition() {
@@ -1737,7 +1744,8 @@ def render_learning_workspace():
                     
                     if (isSidebarOpen() && sb) {
                         const rect = sb.getBoundingClientRect();
-                        toggle.style.left = `${Math.max(0, rect.right)}px`;
+                        const targetLeft = rect.right > 50 ? rect.right : 336;
+                        toggle.style.left = `${Math.max(0, targetLeft)}px`;
                         if (svg) svg.style.transform = 'rotate(0deg)';
                         toggle.setAttribute('title', 'Collapse Sidebar');
                     } else {
@@ -1746,6 +1754,9 @@ def render_learning_workspace():
                         toggle.setAttribute('title', 'Open Sidebar');
                     }
                 }
+
+                // Run immediately on creation
+                updateTogglePosition();
 
                 toggle.onclick = function(e) {
                     e.preventDefault();
