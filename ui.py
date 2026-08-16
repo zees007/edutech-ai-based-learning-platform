@@ -473,8 +473,27 @@ CUSTOM_CSS = """
         align-items: center !important;
     }
 
-    /* Modern Circular Icon Buttons (Home, Admin) & Popover Button (Profile) */
+    /* Modern Circular Icon Buttons (Admin & Profile) & Mobile Responsive Top Navbar */
     div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        width: 100% !important;
+        gap: 8px !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) > div[data-testid="column"],
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) > div[data-testid="stColumn"] {
+        width: auto !important;
+        min-width: auto !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) > div[data-testid="column"]:first-child,
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) > div[data-testid="stColumn"]:first-child {
+        flex: 1 1 auto !important;
+        display: flex !important;
         align-items: center !important;
     }
 
@@ -483,17 +502,37 @@ CUSTOM_CSS = """
         display: flex !important;
         justify-content: flex-end !important;
         align-items: center !important;
+        flex: 0 0 auto !important;
+    }
+
+    /* Nested button columns for Settings & Profile icons */
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) div[data-testid="stColumn"] div[data-testid="stHorizontalBlock"] {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        align-items: center !important;
+        justify-content: flex-end !important;
+        gap: 8px !important;
+        width: auto !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) div[data-testid="stColumn"] div[data-testid="stHorizontalBlock"] > div {
+        width: 38px !important;
+        min-width: 38px !important;
+        max-width: 38px !important;
+        flex: 0 0 38px !important;
     }
 
     div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) div[data-testid="stButton"],
     div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) div[data-testid="stPopover"] {
         margin: 0 !important;
         padding: 0 !important;
-        display: inline-flex !important;
+        display: flex !important;
         align-items: center !important;
         justify-content: center !important;
         align-self: center !important;
         width: 38px !important;
+        height: 38px !important;
         min-width: 38px !important;
         max-width: 38px !important;
     }
@@ -507,7 +546,7 @@ CUSTOM_CSS = """
         max-width: 38px !important;
         padding: 0 !important;
         border-radius: 50% !important;
-        display: inline-flex !important;
+        display: flex !important;
         align-items: center !important;
         justify-content: center !important;
         text-align: center !important;
@@ -518,14 +557,25 @@ CUSTOM_CSS = """
         backdrop-filter: blur(12px) !important;
         -webkit-backdrop-filter: blur(12px) !important;
         transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        margin: 0 !important;
+        margin: 0 auto !important;
         cursor: pointer !important;
         color: #E9D5FF !important;
         overflow: hidden !important;
         gap: 0 !important;
     }
 
-    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) [data-testid="stIconMaterial"],
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) button > div {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        height: 100% !important;
+        width: 100% !important;
+        margin: 0 auto !important;
+        padding: 0 !important;
+        gap: 0 !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) button [data-testid="stIconMaterial"],
     div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) button svg {
         font-size: 20px !important;
         width: 20px !important;
@@ -535,7 +585,7 @@ CUSTOM_CSS = """
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        margin: auto !important;
+        margin: 0 auto !important;
         transition: all 0.2s ease !important;
     }
 
@@ -569,26 +619,35 @@ CUSTOM_CSS = """
         filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.9)) !important;
     }
 
-    /* Hide Chevron Arrow (2nd icon/SVG) inside stPopover button */
-    div[data-testid="stPopover"] button svg:nth-of-type(2),
-    div[data-testid="stPopover"] button svg:last-of-type,
-    div[data-testid="stPopover"] button span:nth-of-type(2),
-    div[data-testid="stPopover"] button span:last-of-type,
+    /* Hide Chevron / Expand Arrow inside stPopover toggle button without hiding profile icon */
+    div[data-testid="stPopover"] button [data-testid="stIconMaterial"]:last-of-type:not(:first-of-type),
     div[data-testid="stPopover"] button [data-testid="stIconChevron"],
     div[data-testid="stPopover"] button svg[data-testid="stIconChevron"],
-    div[data-testid="stPopover"] button span[data-testid="stIconChevron"],
-    div[data-testid="stPopover"] button i {
+    div[data-testid="stPopover"] button > div > *:nth-child(n+2),
+    div[data-testid="stPopover"] button span + span {
         display: none !important;
         visibility: hidden !important;
         width: 0 !important;
         height: 0 !important;
-        max-width: 0 !important;
-        max-height: 0 !important;
         margin: 0 !important;
         padding: 0 !important;
         opacity: 0 !important;
         pointer-events: none !important;
         position: absolute !important;
+    }
+
+    /* Mobile Responsive Optimizations */
+    @media (max-width: 768px) {
+        .et-learning-nav .et-logo {
+            font-size: 1.15rem !important;
+        }
+        .et-learning-nav .badge-ai {
+            font-size: 0.65rem !important;
+            padding: 1px 6px !important;
+        }
+        div[data-testid="stHorizontalBlock"]:has(.et-learning-nav) {
+            gap: 6px !important;
+        }
     }
 
     /* Popover Content Styling */
@@ -1671,7 +1730,7 @@ def render_learning_workspace():
 
     # ─── TOP NAVBAR: Floating Pill Navbar matching Homepage ──────────
     u_tier = (user_profile.subscription.tier if user_profile.subscription else "normal").upper()
-    top_nav_l, top_nav_r = st.columns([8.2, 1.8], vertical_alignment="center")
+    top_nav_l, top_nav_r = st.columns([8.8, 1.2], vertical_alignment="center")
 
     with top_nav_l:
         st.markdown(
@@ -1680,17 +1739,13 @@ def render_learning_workspace():
         )
 
     with top_nav_r:
-        r_h, r_a, r_p = st.columns(3, gap="small", vertical_alignment="center")
-        with r_h:
-            if st.button("", icon=":material/home:", key="nav_home_btn", help="Home Landing Page", use_container_width=True):
-                st.session_state["view"] = "home"
-                st.rerun()
+        r_a, r_p = st.columns(2, gap="small", vertical_alignment="center")
         with r_a:
-            if st.button("", icon=":material/settings:", key="nav_admin_btn", help="Admin Console & Settings", use_container_width=True):
+            if st.button("", icon=":material/settings:", key="nav_admin_btn", help="Admin Console & Settings", use_container_width=False):
                 st.session_state["view"] = "admin"
                 st.rerun()
         with r_p:
-            with st.popover("", icon=":material/person:", help=f"Profile: {user_profile.first_name} {user_profile.last_name}", use_container_width=True):
+            with st.popover("", icon=":material/person:", help=f"Profile: {user_profile.first_name} {user_profile.last_name}", use_container_width=False):
                 st.markdown(
                     f"""
                     <div style="text-align: center; padding: 4px 0 8px 0;">
