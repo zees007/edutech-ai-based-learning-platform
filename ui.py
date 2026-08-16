@@ -198,7 +198,9 @@ CUSTOM_CSS = """
         opacity: 1 !important;
     }
 
-    /* Hide ALL native default collapse and expand controls visually — Master JS Toggle manages the interaction */
+    /* Hide ALL native default collapse and expand controls & sidebar headers visually */
+    html body div.stApp [data-testid="stSidebarHeader"],
+    html body div.stApp [data-testid="stLogoSpacer"],
     html body div.stApp [data-testid="stSidebarCollapseButton"],
     html body div.stApp [data-testid="stSidebarCollapsedControl"],
     html body div.stApp [data-testid="collapsedControl"],
@@ -207,6 +209,7 @@ CUSTOM_CSS = """
     html body div.stApp header[data-testid="stHeader"] button,
     html body div.stApp [data-testid="stHeader"] button,
     html body div.stApp button[kind="header"] {
+        display: none !important;
         opacity: 0 !important;
         visibility: hidden !important;
         position: fixed !important;
@@ -763,12 +766,12 @@ CUSTOM_CSS = """
     section[data-testid="stSidebar"] [data-testid="stSidebarContent"],
     section[data-testid="stSidebar"] [data-testid="stSidebarUserContent"],
     section[data-testid="stSidebar"] div[data-testid="stVerticalBlock"] {
-        padding-top: 1.0rem !important;
+        padding-top: 0.8rem !important;
         margin-top: 0 !important;
     }
 
     section[data-testid="stSidebar"] [data-testid="stSidebarContent"] {
-        padding-top: 1.0rem !important;
+        padding-top: 0.8rem !important;
         padding-left: 1.0rem !important;
         padding-right: 1.0rem !important;
     }
