@@ -1311,22 +1311,74 @@ HOME_CSS = """
     }
 
     .auth-instructions-pill {
-        background: rgba(255, 255, 255, 0.03) !important;
-        backdrop-filter: blur(10px) !important;
-        -webkit-backdrop-filter: blur(10px) !important;
-        border: 1px solid rgba(168, 85, 247, 0.2) !important;
-        border-radius: 14px !important;
-        padding: 10px 18px !important;
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(124, 58, 237, 0.15) 50%, rgba(15, 23, 42, 0.8) 100%) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        border: 1px solid rgba(168, 85, 247, 0.4) !important;
+        border-radius: 16px !important;
+        padding: 14px 20px !important;
         display: inline-flex !important;
+        align-items: center !important;
+        gap: 16px !important;
         text-align: left !important;
         max-width: 720px !important;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(168, 85, 247, 0.15) !important;
+        transition: all 0.3s ease !important;
+        margin-top: 0.5rem !important;
     }
 
-    .auth-instructions-pill span {
-        font-size: 0.84rem !important;
-        color: rgba(255, 255, 255, 0.8) !important;
-        line-height: 1.4 !important;
+    .auth-instructions-pill:hover {
+        background: linear-gradient(135deg, rgba(124, 58, 237, 0.25) 0%, rgba(59, 130, 246, 0.15) 50%, rgba(15, 23, 42, 0.9) 100%) !important;
+        border-color: rgba(168, 85, 247, 0.7) !important;
+        box-shadow: 0 0 30px rgba(168, 85, 247, 0.25), 0 12px 35px rgba(0, 0, 0, 0.5) !important;
+        transform: translateY(-2px) !important;
+    }
+
+    .auth-instructions-pill .instructions-icon {
+        background: rgba(168, 85, 247, 0.2) !important;
+        border: 1px solid rgba(168, 85, 247, 0.4) !important;
+        width: 48px !important;
+        height: 48px !important;
+        min-width: 48px !important;
+        border-radius: 12px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 1.5rem !important;
+        box-shadow: 0 0 20px rgba(168, 85, 247, 0.3) !important;
+    }
+
+    .auth-instructions-pill .instructions-text {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 6px !important;
+    }
+
+    .auth-instructions-pill h4 {
+        margin: 0 !important;
+        font-size: 0.95rem !important;
+        font-weight: 800 !important;
+        letter-spacing: 0.5px !important;
+        text-transform: uppercase !important;
+    }
+
+    .auth-instructions-pill h4 .gradient-text {
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%) !important;
+        -webkit-background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+        display: inline !important;
+    }
+
+    .auth-instructions-pill p {
+        font-size: 0.88rem !important;
+        color: rgba(255, 255, 255, 0.75) !important;
+        line-height: 1.55 !important;
+        margin: 0 !important;
+    }
+
+    .auth-instructions-pill p b {
+        color: #E9D5FF !important;
+        font-weight: 700 !important;
     }
 
     /* Native Interactive Flowchart Branch Buttons (Zero Page Reload) */
@@ -2562,7 +2614,11 @@ def _render_auth_view():
             <h1 class="auth-title">Access the <span class="gradient-text">AI Learning Workspace</span></h1>
             <p class="auth-subtitle">EduTech AI is an autonomous, multi-agent academic ecosystem. Log in or create a new student account to instantiate your personal supervisor-worker agent swarm.</p>
             <div class="auth-instructions-pill">
-                <span>💡 <b>Access Instructions:</b> Trace the <b>Providing Access Flowchart</b> below. If you already have an account, complete the <b>Sign In</b> form on the right. Otherwise, proceed to the <b>Create Account</b> tab. Upon verification, the system dispatches the AI Agent Squad to instantly grant workspace access.</span>
+                <div class="instructions-icon">💡</div>
+                <div class="instructions-text">
+                    <h4><span class="gradient-text">Access Instructions</span></h4>
+                    <p>Trace the <b>Providing Access Flowchart</b> below. If you already have an account, complete the <b>Sign In</b> form on the right. Otherwise, proceed to the <b>Create Account</b> tab. Upon verification, the system dispatches the AI Agent Squad to instantly grant workspace access.</p>
+                </div>
             </div>
         </div>
         """, unsafe_allow_html=True)
