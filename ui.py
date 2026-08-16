@@ -1235,6 +1235,123 @@ CUSTOM_CSS = """
         padding: 1.2rem !important;
     }
 
+    /* ── Streamlit Dialog / Modal Glowing Sparkling Theme ── */
+    div[data-testid="stModal"],
+    div[role="dialog"] {
+        background: linear-gradient(135deg, rgba(20, 12, 35, 0.98) 0%, rgba(35, 18, 55, 0.98) 100%) !important;
+        border: 2px solid rgba(245, 158, 11, 0.6) !important;
+        border-radius: 24px !important;
+        box-shadow: 0 0 50px rgba(245, 158, 11, 0.4), 0 0 90px rgba(236, 72, 153, 0.35), 0 20px 60px rgba(0, 0, 0, 0.8) !important;
+        backdrop-filter: blur(25px) !important;
+        -webkit-backdrop-filter: blur(25px) !important;
+    }
+
+    div[role="dialog"] header {
+        background: transparent !important;
+    }
+
+    div.sparkling-modal-card {
+        text-align: center !important;
+        padding: 10px 4px !important;
+    }
+
+    div.glowing-trophy-box {
+        width: 84px !important;
+        height: 84px !important;
+        margin: 0 auto 16px auto !important;
+        background: linear-gradient(135deg, #F59E0B 0%, #EC4899 50%, #A855F7 100%) !important;
+        border-radius: 50% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        box-shadow: 0 0 35px rgba(245, 158, 11, 0.7), 0 0 20px rgba(236, 72, 153, 0.5) !important;
+        animation: trophySparkle 2s infinite ease-in-out !important;
+    }
+
+    @keyframes trophySparkle {
+        0%, 100% { transform: scale(1) rotate(0deg); box-shadow: 0 0 30px rgba(245, 158, 11, 0.7); }
+        50% { transform: scale(1.1) rotate(4deg); box-shadow: 0 0 55px rgba(236, 72, 153, 0.9), 0 0 30px rgba(59, 130, 246, 0.6); }
+    }
+
+    span.trophy-emoji {
+        font-size: 3rem !important;
+        filter: drop-shadow(0 4px 10px rgba(0,0,0,0.5)) !important;
+    }
+
+    h2.sparkle-title {
+        font-size: 2rem !important;
+        font-weight: 900 !important;
+        background: linear-gradient(135deg, #FBBF24 0%, #F43F5E 50%, #C084FC 100%) !important;
+        -webkit-background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+        margin-bottom: 8px !important;
+        letter-spacing: -0.5px !important;
+    }
+
+    p.sparkle-subtitle {
+        color: #E2E8F0 !important;
+        font-size: 1rem !important;
+        margin-bottom: 20px !important;
+    }
+
+    div.score-hero-badge {
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(236, 72, 153, 0.15) 100%) !important;
+        border: 1.5px solid rgba(245, 158, 11, 0.5) !important;
+        border-radius: 18px !important;
+        padding: 14px 20px !important;
+        margin: 16px auto 20px auto !important;
+        display: inline-block !important;
+        box-shadow: inset 0 0 15px rgba(245, 158, 11, 0.15), 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    div.score-number {
+        font-size: 2.2rem !important;
+        font-weight: 900 !important;
+        color: #FBBF24 !important;
+        text-shadow: 0 0 15px rgba(245, 158, 11, 0.6) !important;
+        line-height: 1 !important;
+    }
+
+    div.score-label {
+        font-size: 0.78rem !important;
+        color: #CBD5E1 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.8px !important;
+        margin-top: 4px !important;
+        font-weight: 700 !important;
+    }
+
+    div.modal-stats-grid {
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 10px !important;
+        margin-top: 10px !important;
+    }
+
+    div.modal-stat-card {
+        background: rgba(15, 10, 28, 0.8) !important;
+        border: 1px solid rgba(168, 85, 247, 0.35) !important;
+        border-radius: 14px !important;
+        padding: 10px 8px !important;
+        text-align: center !important;
+    }
+
+    div.modal-stat-card span.m-icon {
+        font-size: 1.3rem !important;
+    }
+
+    div.modal-stat-card div.m-val {
+        font-size: 1rem !important;
+        font-weight: 800 !important;
+        color: #FAFAFA !important;
+    }
+
+    div.modal-stat-card div.m-lbl {
+        font-size: 0.7rem !important;
+        color: #94A3B8 !important;
+        text-transform: uppercase !important;
+    }
+
     /* ── Inputs & Selectboxes Theming ────────────────── */
     div[data-testid="stTextInput"] input,
     div[data-testid="stSelectbox"] div[data-baseweb="select"] {
@@ -1820,6 +1937,101 @@ _init_db_once()  # Triggered once on first Streamlit page load
 def get_or_create_memory() -> SharedMemory | None:
     """Retrieve active session from session state."""
     return st.session_state.get("memory")
+
+
+def calculate_overall_topic_score(memory) -> float:
+    """Calculates average quiz accuracy score across all milestones in memory."""
+    if not memory or not memory.steps:
+        return 1.0
+    scores = []
+    for step in memory.steps:
+        s = getattr(step, "quiz_score", None)
+        if s is not None:
+            scores.append(s)
+    if scores:
+        return sum(scores) / len(scores)
+    return 1.0
+
+
+@st.dialog("🎉 Milestone Mastery Accomplished!", width="medium")
+def show_congratulations_dialog(memory):
+    """
+    Renders a sparkling, glowing victory modal dialog with canvas confetti,
+    overall quiz score badge, XP & streak stats, and CTAs.
+    """
+    total_steps = len(memory.steps) if memory and memory.steps else 0
+    xp_val = getattr(memory, "xp_earned", 0)
+    streak_val = getattr(memory, "streak_count", 1)
+    topic_str = getattr(memory, "topic", "this topic")
+    avg_score = calculate_overall_topic_score(memory)
+
+    # Lightweight JS Confetti particle burst inside glowing modal
+    st.components.v1.html(
+        """
+        <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+        <script>
+          setTimeout(() => {
+            confetti({
+              particleCount: 160,
+              spread: 95,
+              origin: { y: 0.4 },
+              colors: ['#EC4899', '#A855F7', '#3B82F6', '#F59E0B', '#10B981']
+            });
+          }, 120);
+        </script>
+        """,
+        height=0,
+    )
+
+    modal_html = f"""<div class="sparkling-modal-card">
+<div class="glowing-trophy-box">
+<span class="trophy-emoji">🏆</span>
+</div>
+<h2 class="sparkle-title">Course Mastery Accomplished!</h2>
+<p class="sparkle-subtitle">Outstanding work! You have completed all <b>{total_steps}</b> milestone steps for <b>{topic_str}</b>.</p>
+<div class="score-hero-badge">
+<div class="score-number">{avg_score:.0%}</div>
+<div class="score-label">Overall Quiz Score</div>
+</div>
+<div class="modal-stats-grid">
+<div class="modal-stat-card">
+<span class="m-icon">⚡</span>
+<div class="m-val">+{xp_val} XP</div>
+<div class="m-lbl">Points Earned</div>
+</div>
+<div class="modal-stat-card">
+<span class="m-icon">🔥</span>
+<div class="m-val">{streak_val} Days</div>
+<div class="m-lbl">Streak Kept</div>
+</div>
+<div class="modal-stat-card">
+<span class="m-icon">🎓</span>
+<div class="m-val">{total_steps}/{total_steps}</div>
+<div class="m-lbl">Milestones</div>
+</div>
+</div>
+</div>"""
+
+    st.markdown(modal_html, unsafe_allow_html=True)
+
+    st.markdown("<br>", unsafe_allow_html=True)
+    c1, c2 = st.columns([1, 1])
+    with c1:
+        if st.button("🚀 Explore New Topic", key="dlg_btn_new_topic", type="primary", use_container_width=True):
+            if memory and getattr(memory, "session_id", None):
+                st.session_state[f"show_victory_modal_{memory.session_id}"] = False
+            st.session_state["memory"] = None
+            st.session_state["view"] = "home"
+            if "last_topic" in st.session_state:
+                del st.session_state["last_topic"]
+            st.query_params.clear()
+            st.rerun()
+    with c2:
+        if st.button("✨ Close & Review Roadmap", key="dlg_btn_close", use_container_width=True):
+            if memory and getattr(memory, "session_id", None):
+                st.session_state[f"show_victory_modal_{memory.session_id}"] = False
+                st.session_state[f"victory_modal_dismissed_{memory.session_id}"] = True
+            st.rerun()
 
 
 def render_learning_workspace():
@@ -2858,8 +3070,9 @@ def render_learning_workspace():
                                     run_async(SessionManager().update_session(memory))
                                 except Exception as e:
                                     logging.warning(f"Could not save final session state: {e}")
-                            st.balloons()
-                            st.success("🎉 **Congratulations! You have completed all milestone steps for this topic!**")
+                            if not st.session_state.get(f"victory_modal_dismissed_{memory.session_id}", False):
+                                st.session_state[f"show_victory_modal_{memory.session_id}"] = True
+                                show_congratulations_dialog(memory)
 
         # ─── RIGHT COLUMN: YouTube Videos & Academic Research Papers ──────
         with col_right:
@@ -2984,8 +3197,9 @@ def render_learning_workspace():
                                 run_async(SessionManager().update_session(memory))
                             except Exception as e:
                                 logging.warning(f"Could not save final session state: {e}")
-                        st.balloons()
-                        st.success("🎉 **Congratulations! You have completed all milestone steps for this topic!**")
+                        if not st.session_state.get(f"victory_modal_dismissed_{memory.session_id}", False):
+                            st.session_state[f"show_victory_modal_{memory.session_id}"] = True
+                            show_congratulations_dialog(memory)
 
 
 def sync_session_with_url():
