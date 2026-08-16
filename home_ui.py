@@ -1169,11 +1169,14 @@ HOME_CSS = """
         box-shadow: 0 0 20px rgba(168, 85, 247, 0.25);
     }
 
-    .feat-card h4 {
-        font-size: 1.05rem;
-        font-weight: 700;
-        color: #FAFAFA;
-        margin-bottom: 0.4rem;
+    .feat-card h4,
+    div[data-testid="stMarkdownContainer"] .feat-card h4,
+    .feat-card > h4 {
+        font-size: 1.12rem !important;
+        font-weight: 800 !important;
+        color: #FAFAFA !important;
+        margin-bottom: 0.5rem !important;
+        letter-spacing: -0.2px !important;
     }
 
     .feat-card p {
@@ -1212,11 +1215,14 @@ HOME_CSS = """
         transform: translateY(-5px);
     }
 
-    .agent-glass h4 {
-        font-size: 1.05rem;
-        font-weight: 700;
-        color: #FAFAFA;
-        margin-bottom: 0.4rem;
+    .agent-glass h4,
+    div[data-testid="stMarkdownContainer"] .agent-glass h4,
+    .agent-glass > h4 {
+        font-size: 1.12rem !important;
+        font-weight: 800 !important;
+        color: #FAFAFA !important;
+        margin-bottom: 0.5rem !important;
+        letter-spacing: -0.2px !important;
     }
 
     .agent-glass p {
