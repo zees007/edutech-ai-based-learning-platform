@@ -1166,17 +1166,51 @@ CUSTOM_CSS = """
         transform: translateY(-2px);
     }
 
-    /* ── Progress Bar Theming ────────────────────────── */
-    div[data-testid="stProgress"] > div {
-        background: rgba(30, 41, 59, 0.6) !important;
-        border-radius: 10px !important;
-        overflow: hidden !important;
-        border: 1px solid rgba(168, 85, 247, 0.25) !important;
+    /* ── Progress Bar Theming (Single Sleek Gradient Bar) ────────── */
+    div[data-testid="stProgress"] {
+        height: 8px !important;
+        min-height: 8px !important;
+        margin: 8px 0 0 0 !important;
+        padding: 0 !important;
     }
 
-    div[data-testid="stProgress"] > div > div > div > div {
-        background: linear-gradient(90deg, #EC4899, #A855F7, #3B82F6) !important;
-        box-shadow: 0 0 15px rgba(168, 85, 247, 0.5) !important;
+    div[data-testid="stProgress"] > div {
+        height: 8px !important;
+        background: rgba(30, 41, 59, 0.7) !important;
+        border-radius: 8px !important;
+        border: 1px solid rgba(168, 85, 247, 0.3) !important;
+        overflow: hidden !important;
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5) !important;
+    }
+
+    div[data-testid="stProgress"] [role="progressbar"],
+    div[data-testid="stProgress"] [role="progressbar"] > div,
+    div[data-testid="stProgress"] > div > div {
+        background: linear-gradient(90deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%) !important;
+        box-shadow: 0 0 12px rgba(168, 85, 247, 0.6) !important;
+        border-radius: 8px !important;
+        height: 100% !important;
+        border: none !important;
+    }
+
+    /* Custom In-Card Glass Progress Bars */
+    .custom-progress-track {
+        width: 100%;
+        height: 7px;
+        background: rgba(30, 41, 59, 0.8);
+        border: 1px solid rgba(168, 85, 247, 0.3);
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.6);
+        margin-top: 4px;
+    }
+
+    .custom-progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%);
+        border-radius: 10px;
+        box-shadow: 0 0 12px rgba(168, 85, 247, 0.7);
+        transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     /* Glassmorphism Dynamic AI Loader */
@@ -2257,28 +2291,38 @@ def render_learning_workspace():
             )
 
         with prog_col3:
+            lvl_pct = min(1.0, max(0.0, float(level_data.get("progress", 0.0))))
             st.markdown(
                 f"""
-                <div class="glass-card" style="margin-bottom:0; padding: 0.75rem 0.8rem;">
-                    <div class="top-progress-label">Level Progress (Lvl {level_data['level']} → {level_data['level']+1})</div>
-                    <div style="font-size:0.85rem; color:#F1F5F9; font-weight:700; margin-bottom:4px;">{total_xp} / {level_data['xp_for_next_level']} XP <span style="font-size:0.75rem; color:#94A3B8;">({level_data['xp_in_level']}/{level_data['xp_needed_for_next']} in Lvl)</span></div>
+                <div class="glass-card" style="margin-bottom:0; padding: 0.85rem 0.9rem; display:flex; flex-direction:column; justify-content:space-between; height:100%;">
+                    <div>
+                        <div class="top-progress-label">Level Progress (Lvl {level_data['level']} → {level_data['level']+1})</div>
+                        <div style="font-size:0.85rem; color:#F1F5F9; font-weight:700; margin-bottom:6px;">{total_xp} / {level_data['xp_for_next_level']} XP <span style="font-size:0.75rem; color:#94A3B8;">({level_data['xp_in_level']}/{level_data['xp_needed_for_next']} in Lvl)</span></div>
+                    </div>
+                    <div class="custom-progress-track">
+                        <div class="custom-progress-fill" style="width: {lvl_pct*100:.1f}%;"></div>
+                    </div>
                 </div>
                 """,
                 unsafe_allow_html=True,
             )
-            st.progress(level_data["progress"])
 
         with prog_col4:
+            topic_pct = (completed_steps / total_steps) if total_steps else 0.0
             st.markdown(
                 f"""
-                <div class="glass-card" style="margin-bottom:0; padding: 0.75rem 0.8rem;">
-                    <div class="top-progress-label">Topic Completion</div>
-                    <div style="font-size:0.85rem; color:#F1F5F9; font-weight:700; margin-bottom:4px;">{completed_steps} of {total_steps} Steps ({completed_steps/total_steps if total_steps else 0:.0%})</div>
+                <div class="glass-card" style="margin-bottom:0; padding: 0.85rem 0.9rem; display:flex; flex-direction:column; justify-content:space-between; height:100%;">
+                    <div>
+                        <div class="top-progress-label">Topic Completion</div>
+                        <div style="font-size:0.85rem; color:#F1F5F9; font-weight:700; margin-bottom:6px;">{completed_steps} of {total_steps} Steps ({topic_pct:.0%})</div>
+                    </div>
+                    <div class="custom-progress-track">
+                        <div class="custom-progress-fill" style="width: {topic_pct*100:.1f}%;"></div>
+                    </div>
                 </div>
                 """,
                 unsafe_allow_html=True,
             )
-            st.progress(completed_steps / total_steps if total_steps else 0.0)
 
         st.markdown("<br>", unsafe_allow_html=True)
 
@@ -2325,8 +2369,18 @@ def render_learning_workspace():
                     st.session_state["active_step_index"] = i
                     st.rerun()
 
-        # Overall Linear Progress Bar
-        st.progress(completed_steps / total_steps if total_steps else 0.0)
+        # Overall Linear Progress Bar (Single Unified Progress Bar)
+        roadmap_pct = (completed_steps / total_steps) if total_steps else 0.0
+        st.markdown(
+            f"""
+            <div style="margin-top: 10px;">
+                <div class="custom-progress-track" style="height: 9px;">
+                    <div class="custom-progress-fill" style="width: {roadmap_pct*100:.1f}%;"></div>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
         current_step = memory.steps[active_idx]
         if current_step.status == StepStatus.PENDING:
