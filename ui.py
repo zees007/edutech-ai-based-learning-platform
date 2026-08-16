@@ -277,23 +277,29 @@ CUSTOM_CSS = """
         text-overflow: ellipsis;
     }
 
-    /* ── Hero Center Typography (Exact Home Page Theme) ────── */
+    /* ── Hero Center Typography (Matches Auth Title Size Exactly) ────── */
     .et-hero {
         text-align: center;
-        padding: 0.2rem 1rem 0.6rem 1rem;
+        padding: 0 !important;
+        margin: 0 auto 0.4rem auto !important;
         position: relative;
     }
 
-    .et-hero h1 {
-        font-size: 3.6rem;
-        font-weight: 900;
-        color: #FAFAFA;
-        line-height: 1.15;
-        letter-spacing: -2px;
-        margin-bottom: 0.8rem;
-        max-width: 840px;
-        margin-left: auto;
-        margin-right: auto;
+    .et-hero h1,
+    div[data-testid="stMarkdownContainer"] .et-hero h1,
+    .et-hero > h1 {
+        font-size: 2.1rem !important;
+        font-weight: 900 !important;
+        color: #FAFAFA !important;
+        line-height: 1.25 !important;
+        letter-spacing: -0.5px !important;
+        margin-top: 0 !important;
+        margin-bottom: 0.5rem !important;
+        padding: 0 !important;
+        max-width: 900px !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        white-space: normal !important;
     }
 
     .et-hero .gradient-text {
@@ -303,11 +309,11 @@ CUSTOM_CSS = """
     }
 
     .et-hero p {
-        font-size: 1.15rem;
-        color: rgba(233, 213, 255, 0.75);
+        font-size: 0.98rem !important;
+        color: rgba(233, 213, 255, 0.75) !important;
         max-width: 660px;
-        margin: 0 auto 1.4rem auto;
-        line-height: 1.7;
+        margin: 0 auto 1.2rem auto;
+        line-height: 1.5 !important;
     }
 
     /* ── Sidebar Guide Callout Banner (Matching Sidebar Handle Theme) ── */
@@ -2602,7 +2608,7 @@ def render_learning_workspace():
         st.markdown(
             """
             <div class="et-hero">
-                <h1>EduTechAI<br/><span class="gradient-text">Learning Workspace</span></h1>
+                <h1>EduTechAI <span class="gradient-text">Learning Workspace</span></h1>
                 <p>An adaptive, intelligent learning studio where specialized AI agents orchestrate personalized roadmaps, intuitive analogies, video deep-dives, and instant mastery checks.</p>
             </div>
             <div class="sidebar-guide-card">
