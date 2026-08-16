@@ -747,7 +747,7 @@ CUSTOM_CSS = """
         margin-bottom: 4px;
     }
 
-    /* ── Sidebar Glassmorphic Theme ─────────────────── */
+    /* ── Sidebar Glassmorphic Theme & Top Padding Adjustment ── */
     html body div.stApp section[data-testid="stSidebar"] {
         display: flex !important;
         visibility: visible !important;
@@ -759,8 +759,92 @@ CUSTOM_CSS = """
         box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5) !important;
     }
 
-    section[data-testid="stSidebar"] div.block-container {
-        padding-top: 1.5rem !important;
+    section[data-testid="stSidebar"] div.block-container,
+    section[data-testid="stSidebar"] [data-testid="stSidebarContent"],
+    section[data-testid="stSidebar"] [data-testid="stSidebarUserContent"],
+    section[data-testid="stSidebar"] div[data-testid="stVerticalBlock"] {
+        padding-top: 1.0rem !important;
+        margin-top: 0 !important;
+    }
+
+    section[data-testid="stSidebar"] [data-testid="stSidebarContent"] {
+        padding-top: 1.0rem !important;
+        padding-left: 1.0rem !important;
+        padding-right: 1.0rem !important;
+    }
+
+    /* Bold Sidebar Widget Labels */
+    section[data-testid="stSidebar"] label[data-testid="stWidgetLabel"] p,
+    section[data-testid="stSidebar"] label[data-testid="stWidgetLabel"] div,
+    section[data-testid="stSidebar"] label {
+        font-weight: 800 !important;
+        font-size: 0.95rem !important;
+        color: #F3E8FF !important;
+        letter-spacing: 0.2px !important;
+    }
+
+    /* ── Animated AI Neural Network Icon in Sidebar Header ── */
+    .sidebar-header-container {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 12px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid rgba(168, 85, 247, 0.25);
+    }
+
+    .neural-icon-wrapper {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, rgba(168, 85, 247, 0.2) 0%, rgba(59, 130, 246, 0.2) 100%);
+        border: 1px solid rgba(168, 85, 247, 0.45);
+        box-shadow: 0 0 15px rgba(168, 85, 247, 0.35);
+        flex-shrink: 0;
+    }
+
+    .neural-network-svg {
+        overflow: visible;
+    }
+
+    .neural-node {
+        animation: neuralPulse 2s infinite ease-in-out;
+        transform-origin: center;
+    }
+    .node-1 { animation-delay: 0s; }
+    .node-2 { animation-delay: 0.5s; }
+    .node-3 { animation-delay: 1.0s; }
+    .node-4 { animation-delay: 1.5s; }
+
+    @keyframes neuralPulse {
+        0%, 100% {
+            transform: scale(1);
+            filter: drop-shadow(0 0 2px rgba(168, 85, 247, 0.6));
+        }
+        50% {
+            transform: scale(1.3);
+            filter: drop-shadow(0 0 6px rgba(6, 182, 212, 0.9));
+        }
+    }
+
+    .neural-pulse-line {
+        animation: dashMove 3s linear infinite;
+    }
+
+    @keyframes dashMove {
+        from { stroke-dashoffset: 20; }
+        to { stroke-dashoffset: 0; }
+    }
+
+    .sidebar-header-text {
+        font-size: 1.02rem;
+        font-weight: 900;
+        color: #FAFAFA;
+        line-height: 1.3;
+        letter-spacing: -0.2px;
     }
 
     .user-profile-sidebar-card {
@@ -1795,7 +1879,43 @@ def render_learning_workspace():
 
     # ─── Sidebar Controls & Gamification (Left Panel) ────────────────
     with st.sidebar:
-        st.markdown("<div style='font-size:1.02rem; font-weight:900; color:#FAFAFA; margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid rgba(168,85,247,0.25);'>🎯 Learning Session Setup</div>", unsafe_allow_html=True)
+        st.markdown(
+            """
+            <div class="sidebar-header-container">
+                <div class="neural-icon-wrapper">
+                    <svg class="neural-network-svg" width="22" height="22" viewBox="0 0 24 24" fill="none">
+                        <line x1="4" y1="12" x2="12" y2="4" stroke="url(#neuralGrad1)" stroke-width="1.8" stroke-dasharray="2 2" class="neural-pulse-line" />
+                        <line x1="4" y1="12" x2="12" y2="20" stroke="url(#neuralGrad1)" stroke-width="1.8" stroke-dasharray="2 2" class="neural-pulse-line" />
+                        <line x1="12" y1="4" x2="20" y2="12" stroke="url(#neuralGrad2)" stroke-width="1.8" stroke-dasharray="2 2" class="neural-pulse-line" />
+                        <line x1="12" y1="20" x2="20" y2="12" stroke="url(#neuralGrad2)" stroke-width="1.8" stroke-dasharray="2 2" class="neural-pulse-line" />
+                        <line x1="12" y1="4" x2="12" y2="20" stroke="url(#neuralGrad3)" stroke-width="1.5" stroke-dasharray="2 2" class="neural-pulse-line" />
+                        <line x1="4" y1="12" x2="20" y2="12" stroke="url(#neuralGrad3)" stroke-width="1.5" class="neural-pulse-line" />
+                        <circle cx="4" cy="12" r="3" fill="#EC4899" class="neural-node node-1" />
+                        <circle cx="12" cy="4" r="3.2" fill="#A855F7" class="neural-node node-2" />
+                        <circle cx="12" cy="20" r="3.2" fill="#3B82F6" class="neural-node node-3" />
+                        <circle cx="20" cy="12" r="3.5" fill="#06B6D4" class="neural-node node-4" />
+                        <defs>
+                            <linearGradient id="neuralGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#EC4899" />
+                                <stop offset="100%" stop-color="#A855F7" />
+                            </linearGradient>
+                            <linearGradient id="neuralGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#A855F7" />
+                                <stop offset="100%" stop-color="#06B6D4" />
+                            </linearGradient>
+                            <linearGradient id="neuralGrad3" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#EC4899" />
+                                <stop offset="50%" stop-color="#A855F7" />
+                                <stop offset="100%" stop-color="#3B82F6" />
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <div class="sidebar-header-text">What do you want to learn today?</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
         
         # Check if quick-launched from home page
         default_topic = st.session_state.pop("quick_launch_topic", None) or st.session_state.get("last_topic", "How does photosynthesis work?")
@@ -1822,9 +1942,9 @@ def render_learning_workspace():
 
         st.markdown("<hr style='border-color:rgba(168,85,247,0.25); margin:12px 0;'>", unsafe_allow_html=True)
 
-        # Learning Mode Selection
+        # Learning Mode Selection (Bold Label)
         mode_option = st.selectbox(
-            "🎨 Learning Mode",
+            "**🎨 Learning Mode**",
             options=["Visual 🎬", "Deep Dive 🔬", "Bite-Sized ⚡"],
             index=0,
             help="Visual: video & diagrams | Deep Dive: papers & proofs | Bite-Sized: quick summaries",
@@ -1836,9 +1956,9 @@ def render_learning_workspace():
         }
         selected_mode = mode_map[mode_option]
 
-        # Student Level Selection
+        # Student Level Selection (Bold Label)
         level_option = st.selectbox(
-            "🎓 Education Level",
+            "**🎓 Education Level**",
             options=["Middle School 🏫", "High School 🎒", "Undergraduate 🏛️", "Graduate 🎓", "General Curious 💡"],
             index=0,
         )
