@@ -73,6 +73,8 @@ HOME_CSS = """
 
     .block-container {
         padding-top: 1.5rem !important;
+        padding-bottom: 1.5rem !important;
+        max-width: 1200px !important;
     }
 
     /* ── Completely Eliminate Default Streamlit Header & Deploy Bar ── */
@@ -1593,14 +1595,14 @@ HOME_CSS = """
     }
 
     /* ── CTA Banner ────────────────────────────────── */
+    /* ── CTA Banner ────────────────────────────────── */
     .cta-banner {
         text-align: center;
-        padding: 4rem 1rem;
-        background:
-            radial-gradient(ellipse 600px 300px at 50% 50%, rgba(139, 92, 246, 0.1) 0%, transparent 70%);
+        padding: 2.5rem 1rem 1.2rem 1rem;
+        background: radial-gradient(ellipse 600px 300px at 50% 50%, rgba(139, 92, 246, 0.1) 0%, transparent 70%);
         border-top: 1px solid rgba(255, 255, 255, 0.04);
         border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-        margin: 2rem 0;
+        margin: 1.2rem 0 0.6rem 0;
     }
 
     .cta-banner h2 {
@@ -1609,48 +1611,72 @@ HOME_CSS = """
         background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        margin-bottom: 0.6rem;
+        margin-bottom: 0.5rem;
     }
 
     .cta-banner p {
-        font-size: 1rem;
-        color: rgba(255, 255, 255, 0.4);
+        font-size: 0.95rem;
+        color: rgba(255, 255, 255, 0.5);
         max-width: 520px;
-        margin: 0 auto 2rem auto;
+        margin: 0 auto 1.2rem auto;
     }
 
     /* ── Footer ────────────────────────────────────── */
     .et-footer {
-        padding: 2rem 0;
-        border-top: 1px solid rgba(255, 255, 255, 0.05);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+        padding: 1.2rem 0 0.4rem 0 !important;
+        margin-top: 1.2rem !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        gap: 16px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
     }
 
     .et-footer-left {
-        color: rgba(255, 255, 255, 0.3);
-        font-size: 0.82rem;
+        color: rgba(255, 255, 255, 0.35) !important;
+        font-size: 0.8rem !important;
+        line-height: 1.4 !important;
     }
 
     .et-footer-left span {
-        font-weight: 700;
-        color: rgba(255, 255, 255, 0.5);
+        font-weight: 800 !important;
+        color: #FAFAFA !important;
     }
 
     .et-footer-links {
-        display: flex;
-        gap: 24px;
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 20px !important;
+        align-items: center !important;
     }
 
     .et-footer-links a {
-        color: rgba(255, 255, 255, 0.3);
-        font-size: 0.82rem;
-        text-decoration: none;
-        transition: color 0.2s;
+        color: rgba(255, 255, 255, 0.4) !important;
+        font-size: 0.8rem !important;
+        text-decoration: none !important;
+        transition: color 0.2s ease !important;
+        white-space: nowrap !important;
     }
 
-    .et-footer-links a:hover { color: #FAFAFA; }
+    .et-footer-links a:hover {
+        color: #C084FC !important;
+    }
+
+    @media (max-width: 768px) {
+        .et-footer {
+            flex-direction: column !important;
+            text-align: center !important;
+            gap: 10px !important;
+            padding: 1rem 0 0.4rem 0 !important;
+        }
+
+        .et-footer-links {
+            justify-content: center !important;
+            gap: 12px !important;
+        }
+    }
 
     /* ── Auth Page Intro Header & Instructions ── */
     .auth-header-container {
@@ -3365,13 +3391,11 @@ def render_home_page():
         if st.button("Select Ultra ✨", key="t_u", use_container_width=True):
             _handle_tier_select("ultra")
 
-    st.markdown("<br/>", unsafe_allow_html=True)
-
     # ── CTA BANNER ────────────────────────────────────────────────
     st.markdown(
         """
         <div class="cta-banner">
-            <h2 style="font-size:2.4rem; font-weight:900; margin-bottom:0.6rem;"><span class="gradient-text">Ready to Accelerate Your Learning?</span></h2>
+            <h2 style="font-size:2.2rem; font-weight:900; margin-bottom:0.5rem;"><span class="gradient-text">Ready to Accelerate Your Learning?</span></h2>
             <p>Join thousands of students and professionals mastering complex topics faster with EduTech AI.</p>
         </div>
         """, unsafe_allow_html=True)
@@ -3386,8 +3410,6 @@ def render_home_page():
             else:
                 st.session_state["view"] = "learning"
                 st.rerun()
-
-    st.markdown("<br/>", unsafe_allow_html=True)
 
     # ── FOOTER ────────────────────────────────────────────────────
     st.markdown(
