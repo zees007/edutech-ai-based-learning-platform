@@ -168,7 +168,7 @@ HOME_CSS = """
         border: 1px solid rgba(168, 85, 247, 0.45) !important;
         border-radius: 50px !important;
         padding: 8px 24px !important;
-        margin: 0rem 0 1.5rem 0 !important;
+        margin: 0 !important;
         box-shadow: 0 0 30px rgba(168, 85, 247, 0.25), 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(168, 85, 247, 0.15) !important;
         width: 100% !important;
         box-sizing: border-box !important;
@@ -1311,100 +1311,201 @@ HOME_CSS = """
     }
 
     .auth-instructions-pill {
-        background: rgba(255, 255, 255, 0.03) !important;
-        backdrop-filter: blur(10px) !important;
-        -webkit-backdrop-filter: blur(10px) !important;
-        border: 1px solid rgba(168, 85, 247, 0.2) !important;
-        border-radius: 14px !important;
-        padding: 10px 18px !important;
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(124, 58, 237, 0.15) 50%, rgba(15, 23, 42, 0.8) 100%) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        border: 1px solid rgba(168, 85, 247, 0.4) !important;
+        border-radius: 16px !important;
+        padding: 14px 20px !important;
         display: inline-flex !important;
+        align-items: center !important;
+        gap: 16px !important;
         text-align: left !important;
         max-width: 720px !important;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(168, 85, 247, 0.15) !important;
+        transition: all 0.3s ease !important;
+        margin-top: 0.5rem !important;
     }
 
-    .auth-instructions-pill span {
-        font-size: 0.84rem !important;
-        color: rgba(255, 255, 255, 0.8) !important;
-        line-height: 1.4 !important;
+    .auth-instructions-pill:hover {
+        background: linear-gradient(135deg, rgba(124, 58, 237, 0.25) 0%, rgba(59, 130, 246, 0.15) 50%, rgba(15, 23, 42, 0.9) 100%) !important;
+        border-color: rgba(168, 85, 247, 0.7) !important;
+        box-shadow: 0 0 30px rgba(168, 85, 247, 0.25), 0 12px 35px rgba(0, 0, 0, 0.5) !important;
+        transform: translateY(-2px) !important;
     }
 
-    /* Native Interactive Flowchart Branch Buttons (Zero Page Reload) */
-    div[data-testid="stColumn"]:has(#signin-branch-marker):not(:has(#signup-branch-marker)) button {
-        background: rgb(20, 13, 33) !important;
-        background-color: rgb(20, 13, 33) !important;
-        border: 1px solid rgba(168, 85, 247, 0.35) !important;
-        border-radius: 14px !important;
+    .auth-instructions-pill .instructions-icon {
+        background: rgba(168, 85, 247, 0.2) !important;
+        border: 1px solid rgba(168, 85, 247, 0.4) !important;
+        width: 48px !important;
+        height: 48px !important;
+        min-width: 48px !important;
+        border-radius: 12px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 1.5rem !important;
+        box-shadow: 0 0 20px rgba(168, 85, 247, 0.3) !important;
+    }
+
+    .auth-instructions-pill .instructions-text {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 6px !important;
+    }
+
+    .auth-instructions-pill h4 {
+        margin: 0 !important;
+        font-size: 0.95rem !important;
+        font-weight: 800 !important;
+        letter-spacing: 0.5px !important;
+        text-transform: uppercase !important;
+    }
+
+    .auth-instructions-pill h4 .gradient-text {
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%) !important;
+        -webkit-background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+        display: inline !important;
+    }
+
+    .auth-instructions-pill p {
+        font-size: 0.88rem !important;
         color: rgba(255, 255, 255, 0.75) !important;
-        padding: 10px 14px !important;
-        min-height: 64px !important;
-        white-space: pre-line !important;
-        text-align: center !important;
-        font-size: 0.74rem !important;
-        font-weight: 500 !important;
-        line-height: 1.35 !important;
-        cursor: pointer !important;
+        line-height: 1.55 !important;
+        margin: 0 !important;
+    }
+
+    .auth-instructions-pill p b {
+        color: #E9D5FF !important;
+        font-weight: 700 !important;
+    }
+
+    /* ── Native Interactive Flowchart Branch Buttons (Zero Page Reload) ── */
+    div.st-key-flowchart_signin_btn,
+    div.st-key-flowchart_signup_btn,
+    div[data-testid="stColumn"]:has(#signin-branch-marker) div[data-testid="stButton"],
+    div[data-testid="stColumn"]:has(#signup-branch-marker) div[data-testid="stButton"] {
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    div.st-key-flowchart_signin_btn button,
+    div.st-key-flowchart_signup_btn button,
+    div[data-testid="stColumn"]:has(#signin-branch-marker) button,
+    div[data-testid="stColumn"]:has(#signup-branch-marker) button {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        justify-content: center !important;
+        background: linear-gradient(135deg, rgba(20, 13, 33, 0.95) 0%, rgba(30, 20, 50, 0.85) 100%) !important;
+        backdrop-filter: blur(16px) !important;
+        -webkit-backdrop-filter: blur(16px) !important;
+        border-radius: 16px !important;
+        padding: 12px 18px !important;
+        min-height: 74px !important;
+        width: 100% !important;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(168, 85, 247, 0.08) !important;
         transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        box-shadow: 0 0 15px rgba(168, 85, 247, 0.15), 0 8px 20px rgba(0, 0, 0, 0.3) !important;
-    }
-
-    div[data-testid="stColumn"]:has(#signin-branch-marker):not(:has(#signup-branch-marker)) button::first-line {
-        font-size: 0.88rem !important;
-        font-weight: 800 !important;
-        color: #FFFFFF !important;
-        line-height: 1.5 !important;
-    }
-
-    div[data-testid="stColumn"]:has(#signin-branch-marker):not(:has(#signup-branch-marker)) button:hover {
-        border-color: rgba(34, 197, 94, 0.85) !important;
-        transform: translateY(-2px) scale(1.02) !important;
-        box-shadow: 0 0 25px rgba(34, 197, 94, 0.45), 0 8px 25px rgba(0, 0, 0, 0.4) !important;
-    }
-
-    div[data-testid="stColumn"]:has(#signup-branch-marker):not(:has(#signin-branch-marker)) button {
-        background: rgb(20, 13, 33) !important;
-        background-color: rgb(20, 13, 33) !important;
-        border: 1px solid rgba(168, 85, 247, 0.35) !important;
-        border-radius: 14px !important;
-        color: rgba(233, 213, 255, 0.8) !important;
-        padding: 10px 14px !important;
-        min-height: 64px !important;
-        white-space: pre-line !important;
-        text-align: center !important;
-        font-size: 0.74rem !important;
-        font-weight: 600 !important;
-        letter-spacing: 0.2px !important;
-        line-height: 1.35 !important;
+        position: relative !important;
+        overflow: hidden !important;
+        box-sizing: border-box !important;
         cursor: pointer !important;
-        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        box-shadow: 0 0 15px rgba(168, 85, 247, 0.15), 0 8px 20px rgba(0, 0, 0, 0.3) !important;
+        text-align: left !important;
     }
 
-    div[data-testid="stColumn"]:has(#signup-branch-marker):not(:has(#signin-branch-marker)) button::first-line {
-        font-size: 0.88rem !important;
-        font-weight: 800 !important;
-        color: #FFFFFF !important;
-        line-height: 1.5 !important;
-        letter-spacing: 0 !important;
+    /* Top Neon Line for Buttons */
+    div.st-key-flowchart_signin_btn button::before,
+    div.st-key-flowchart_signup_btn button::before,
+    div[data-testid="stColumn"]:has(#signin-branch-marker) button::before,
+    div[data-testid="stColumn"]:has(#signup-branch-marker) button::before {
+        content: '' !important;
+        position: absolute !important;
+        top: 0 !important; left: 15% !important; right: 15% !important; height: 2px !important;
+        background: linear-gradient(90deg, transparent 0%, #EC4899 30%, #A855F7 50%, #06B6D4 70%, transparent 100%) !important;
+        border-radius: 2px !important;
+        opacity: 0.65 !important;
+        transition: opacity 0.3s ease, box-shadow 0.3s ease !important;
     }
 
-    div[data-testid="stColumn"]:has(#signup-branch-marker):not(:has(#signin-branch-marker)) button:hover {
-        border-color: rgba(168, 85, 247, 0.85) !important;
-        transform: translateY(-2px) scale(1.02) !important;
-        box-shadow: 0 0 25px rgba(168, 85, 247, 0.45), 0 8px 25px rgba(0, 0, 0, 0.4) !important;
+    div.st-key-flowchart_signin_btn button:hover::before,
+    div.st-key-flowchart_signup_btn button:hover::before,
+    div[data-testid="stColumn"]:has(#signin-branch-marker) button:hover::before,
+    div[data-testid="stColumn"]:has(#signup-branch-marker) button:hover::before {
+        opacity: 1 !important;
+        box-shadow: 0 0 12px #EC4899, 0 0 16px #A855F7 !important;
     }
 
-    /* Active Highlight States */
-    .auth-flow-node.branch-node.clickable-card.active-signin {
-        border-color: rgba(34, 197, 94, 0.8) !important;
-        box-shadow: 0 0 25px rgba(34, 197, 94, 0.45) !important;
-        background: rgba(34, 197, 94, 0.25) !important;
+    /* Borders and Hover for Sign In */
+    div.st-key-flowchart_signin_btn button,
+    div[data-testid="stColumn"]:has(#signin-branch-marker) button {
+        border: 1.5px solid rgba(34, 197, 94, 0.45) !important;
+    }
+    div.st-key-flowchart_signin_btn button:hover,
+    div[data-testid="stColumn"]:has(#signin-branch-marker) button:hover {
+        border-color: rgba(34, 197, 94, 0.95) !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 0 30px rgba(34, 197, 94, 0.45), 0 10px 30px rgba(0, 0, 0, 0.5) !important;
     }
 
-    .auth-flow-node.branch-node.clickable-card.active-signup {
-        border-color: rgba(168, 85, 247, 0.8) !important;
-        box-shadow: 0 0 25px rgba(168, 85, 247, 0.45) !important;
-        background: rgba(168, 85, 247, 0.25) !important;
+    /* Borders and Hover for Sign Up */
+    div.st-key-flowchart_signup_btn button,
+    div[data-testid="stColumn"]:has(#signup-branch-marker) button {
+        border: 1.5px solid rgba(168, 85, 247, 0.45) !important;
+    }
+    div.st-key-flowchart_signup_btn button:hover,
+    div[data-testid="stColumn"]:has(#signup-branch-marker) button:hover {
+        border-color: rgba(168, 85, 247, 0.95) !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 0 30px rgba(168, 85, 247, 0.45), 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+    }
+
+    /* Paragraph Container Inside Button */
+    div.st-key-flowchart_signin_btn button div[data-testid="stMarkdownContainer"],
+    div.st-key-flowchart_signup_btn button div[data-testid="stMarkdownContainer"],
+    div[data-testid="stColumn"]:has(#signin-branch-marker) button div[data-testid="stMarkdownContainer"],
+    div[data-testid="stColumn"]:has(#signup-branch-marker) button div[data-testid="stMarkdownContainer"] {
+        width: 100% !important;
+        text-align: left !important;
+    }
+
+    div.st-key-flowchart_signin_btn button div[data-testid="stMarkdownContainer"] p,
+    div.st-key-flowchart_signup_btn button div[data-testid="stMarkdownContainer"] p,
+    div[data-testid="stColumn"]:has(#signin-branch-marker) button div[data-testid="stMarkdownContainer"] p,
+    div[data-testid="stColumn"]:has(#signup-branch-marker) button div[data-testid="stMarkdownContainer"] p {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        text-align: left !important;
+        gap: 3px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        white-space: pre-line !important;
+        font-size: 0.74rem !important;
+        color: rgba(233, 213, 255, 0.72) !important;
+        line-height: 1.35 !important;
+    }
+
+    /* First Line: Step Tag (Bold) */
+    div.st-key-flowchart_signin_btn button div[data-testid="stMarkdownContainer"] p::first-line,
+    div[data-testid="stColumn"]:has(#signin-branch-marker) button div[data-testid="stMarkdownContainer"] p::first-line {
+        font-size: 0.70rem !important;
+        font-weight: 900 !important;
+        color: #4ADE80 !important;
+        letter-spacing: 1.2px !important;
+        text-transform: uppercase !important;
+        line-height: 1.25 !important;
+    }
+
+    div.st-key-flowchart_signup_btn button div[data-testid="stMarkdownContainer"] p::first-line,
+    div[data-testid="stColumn"]:has(#signup-branch-marker) button div[data-testid="stMarkdownContainer"] p::first-line {
+        font-size: 0.70rem !important;
+        font-weight: 900 !important;
+        color: #C084FC !important;
+        letter-spacing: 1.2px !important;
+        text-transform: uppercase !important;
+        line-height: 1.25 !important;
     }
 
     /* ── Auth Page — Glowing Split-Screen Layout ──────── */
@@ -1417,7 +1518,7 @@ HOME_CSS = """
         border: 1px solid rgba(168, 85, 247, 0.45) !important;
         border-radius: 50px !important;
         padding: 8px 24px !important;
-        margin: 0rem 0 1.5rem 0 !important;
+        margin: 0 !important;
         box-shadow: 0 0 30px rgba(168, 85, 247, 0.25), 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(168, 85, 247, 0.15) !important;
         width: 100% !important;
         box-sizing: border-box !important;
@@ -1596,56 +1697,307 @@ HOME_CSS = """
     /* Auth Right Column — Glassmorphic Auth Form Card (Luminous Glow) */
     div[data-testid="stColumn"]:has(#auth-form-card-marker),
     .auth-form-card {
-        background: rgba(15, 23, 42, 0.88) !important;
-        backdrop-filter: blur(25px) !important;
-        -webkit-backdrop-filter: blur(25px) !important;
-        border: 1px solid rgba(168, 85, 247, 0.45) !important;
+        background: linear-gradient(135deg, rgba(15, 23, 42, 0.94) 0%, rgba(26, 17, 46, 0.9) 100%) !important;
+        backdrop-filter: blur(30px) !important;
+        -webkit-backdrop-filter: blur(30px) !important;
+        border: 1.5px solid rgba(168, 85, 247, 0.45) !important;
         border-radius: 24px !important;
-        padding: 1.8rem 2.2rem 2rem 2.2rem !important;
-        box-shadow: 0 20px 60px -15px rgba(168, 85, 247, 0.35), inset 0 0 30px rgba(168, 85, 247, 0.15) !important;
+        padding: 2rem 2.2rem 2.2rem 2.2rem !important;
+        box-shadow: 0 25px 65px -15px rgba(168, 85, 247, 0.35), inset 0 0 35px rgba(168, 85, 247, 0.12) !important;
         position: relative !important;
         box-sizing: border-box !important;
         height: 100% !important;
+        overflow: hidden !important;
     }
 
-    /* Top-Left Glassmorphic Circular Back Arrow Button on Form Card */
-    div[data-testid="stColumn"]:has(#auth-form-card-marker) button[key="close_auth_form"],
-    button[key="close_auth_form"],
-    button[key="close_auth_form"].st-emotion-cache-165rbpf {
+    /* Top Accent Neon Line for Form Card */
+    div[data-testid="stColumn"]:has(#auth-form-card-marker)::before {
+        content: '' !important;
+        position: absolute !important;
+        top: 0 !important; left: 10% !important; right: 10% !important; height: 3px !important;
+        background: linear-gradient(90deg, transparent 0%, #EC4899 25%, #A855F7 50%, #3B82F6 75%, transparent 100%) !important;
+        border-radius: 3px !important;
+        box-shadow: 0 0 15px #EC4899, 0 0 20px #A855F7 !important;
+    }
+
+    /* Auth Form Header Styling */
+    .auth-form-header {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 6px !important;
+        margin-bottom: 1.2rem !important;
+    }
+
+    .auth-form-badge {
         display: inline-flex !important;
         align-items: center !important;
-        justify-content: center !important;
-        width: 34px !important;
-        height: 34px !important;
-        min-width: 34px !important;
-        min-height: 34px !important;
-        max-width: 34px !important;
-        max-height: 34px !important;
-        border-radius: 50% !important;
-        padding: 0 !important;
-        margin: 0 0 0.8rem 0 !important;
-        background: rgba(255, 255, 255, 0.08) !important;
-        background-color: rgba(255, 255, 255, 0.08) !important;
-        border: 1px solid rgba(255, 255, 255, 0.2) !important;
-        color: rgba(255, 255, 255, 0.85) !important;
-        font-size: 1.1rem !important;
-        font-weight: 700 !important;
-        line-height: 1 !important;
-        cursor: pointer !important;
-        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
-        outline: none !important;
+        gap: 6px !important;
+        font-size: 0.7rem !important;
+        font-weight: 900 !important;
+        letter-spacing: 1px !important;
+        text-transform: uppercase !important;
+        padding: 3px 10px !important;
+        border-radius: 12px !important;
+        width: fit-content !important;
+        margin-bottom: 4px !important;
     }
 
-    div[data-testid="stColumn"]:has(#auth-form-card-marker) button[key="close_auth_form"]:hover,
-    button[key="close_auth_form"]:hover,
-    button[key="close_auth_form"].st-emotion-cache-165rbpf:hover {
+    .auth-badge-signin {
+        background: rgba(34, 197, 94, 0.18) !important;
+        color: #4ADE80 !important;
+        border: 1px solid rgba(34, 197, 94, 0.45) !important;
+        box-shadow: 0 0 12px rgba(34, 197, 94, 0.25) !important;
+    }
+
+    .auth-badge-signup {
+        background: rgba(168, 85, 247, 0.18) !important;
+        color: #C084FC !important;
+        border: 1px solid rgba(168, 85, 247, 0.45) !important;
+        box-shadow: 0 0 12px rgba(168, 85, 247, 0.25) !important;
+    }
+
+    .auth-form-title {
+        font-size: 1.45rem !important;
+        font-weight: 900 !important;
+        margin: 0 !important;
+        line-height: 1.25 !important;
+        color: #FFFFFF !important;
+    }
+
+    .auth-form-subtitle {
+        font-size: 0.86rem !important;
+        color: rgba(233, 213, 255, 0.72) !important;
+        margin: 0 !important;
+        line-height: 1.45 !important;
+    }
+
+    /* Auth Form Elements Styling */
+    div[data-testid="stColumn"]:has(#auth-form-card-marker) div[data-testid="stForm"] {
+        border: none !important;
+        padding: 0 !important;
+        background: transparent !important;
+    }
+
+    div[data-testid="stColumn"]:has(#auth-form-card-marker) label,
+    div[data-testid="stColumn"]:has(#auth-form-card-marker) label p {
+        color: rgba(233, 213, 255, 0.9) !important;
+        font-size: 0.84rem !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.3px !important;
+        margin-bottom: 4px !important;
+    }
+
+    div[data-testid="stColumn"]:has(#auth-form-card-marker) div[data-baseweb="input"],
+    div[data-testid="stColumn"]:has(#auth-form-card-marker) div[data-baseweb="base-input"] {
+        background: rgba(15, 23, 42, 0.7) !important;
+        border: 1.5px solid rgba(168, 85, 247, 0.3) !important;
+        border-radius: 14px !important;
+        transition: all 0.25s ease !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25), inset 0 0 10px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    div[data-testid="stColumn"]:has(#auth-form-card-marker) div[data-baseweb="input"]:hover {
+        border-color: rgba(168, 85, 247, 0.6) !important;
+        box-shadow: 0 0 15px rgba(168, 85, 247, 0.25) !important;
+    }
+
+    div[data-testid="stColumn"]:has(#auth-form-card-marker) div[data-baseweb="input"]:focus-within {
+        border-color: rgba(168, 85, 247, 0.95) !important;
+        box-shadow: 0 0 25px rgba(168, 85, 247, 0.4), inset 0 0 12px rgba(168, 85, 247, 0.15) !important;
+        background: rgba(15, 23, 42, 0.9) !important;
+    }
+
+    div[data-testid="stColumn"]:has(#auth-form-card-marker) input {
+        color: #FAFAFA !important;
+        font-size: 0.92rem !important;
+        font-weight: 500 !important;
+        padding: 10px 14px !important;
+    }
+
+    div[data-testid="stColumn"]:has(#auth-form-card-marker) input::placeholder {
+        color: rgba(233, 213, 255, 0.35) !important;
+    }
+
+    /* Form Submit Button (Vibrant Glow Gradient) */
+    div[data-testid="stColumn"]:has(#auth-form-card-marker) div[data-testid="stFormSubmitButton"] button {
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%) !important;
+        background-color: transparent !important;
+        border: none !important;
+        border-radius: 14px !important;
+        color: #FFFFFF !important;
+        font-weight: 800 !important;
+        font-size: 0.96rem !important;
+        letter-spacing: 0.3px !important;
+        padding: 12px 20px !important;
+        min-height: 48px !important;
+        box-shadow: 0 8px 25px rgba(168, 85, 247, 0.4), 0 0 20px rgba(236, 72, 153, 0.25) !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        cursor: pointer !important;
+        margin-top: 0.8rem !important;
+    }
+
+    div[data-testid="stColumn"]:has(#auth-form-card-marker) div[data-testid="stFormSubmitButton"] button:hover {
+        transform: translateY(-2px) scale(1.01) !important;
+        box-shadow: 0 12px 35px rgba(168, 85, 247, 0.6), 0 0 30px rgba(59, 130, 246, 0.45) !important;
+        color: #FFFFFF !important;
+    }
+
+    /* Sleek Glowing Glass Back Pill Button (Extreme Left Flush) */
+    div[data-testid="stColumn"]:has(#auth-form-card-marker) div[data-testid="stHorizontalBlock"]:first-of-type {
+        margin-left: 0 !important;
+        padding-left: 0 !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+    }
+
+    div[data-testid="stColumn"]:has(#auth-form-card-marker) div[data-testid="stHorizontalBlock"]:first-of-type div[data-testid="stColumn"]:first-child,
+    div[data-testid="stColumn"]:has(#auth-form-card-marker) div[data-testid="stHorizontalBlock"]:first-of-type div[data-testid="column"]:first-child {
+        display: flex !important;
+        justify-content: flex-start !important;
+        align-items: center !important;
+        padding-left: 0 !important;
+        margin-left: 0 !important;
+    }
+
+    div.st-key-close_auth_form,
+    div[data-testid="stColumn"]:has(#auth-form-card-marker) div[data-testid="stButton"]:has(button[key="close_auth_form"]) {
+        margin: 0 !important;
+        padding: 0 !important;
+        display: flex !important;
+        justify-content: flex-start !important;
+        align-self: flex-start !important;
+        width: auto !important;
+    }
+
+    div.st-key-close_auth_form button,
+    div[data-testid="stColumn"]:has(#auth-form-card-marker) button[key="close_auth_form"] {
+        display: inline-flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 6px !important;
+        height: 32px !important;
+        min-height: 32px !important;
+        max-height: 32px !important;
+        padding: 0 14px !important;
+        margin: 0 !important;
+        margin-left: 0 !important;
+        align-self: flex-start !important;
+        border-radius: 20px !important;
+        background: rgba(255, 255, 255, 0.06) !important;
+        background-color: rgba(255, 255, 255, 0.06) !important;
+        border: 1px solid rgba(168, 85, 247, 0.35) !important;
+        color: rgba(233, 213, 255, 0.85) !important;
+        font-size: 0.78rem !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.4px !important;
+        cursor: pointer !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3) !important;
+        white-space: nowrap !important;
+        width: auto !important;
+    }
+
+    div.st-key-close_auth_form button:hover,
+    div[data-testid="stColumn"]:has(#auth-form-card-marker) button[key="close_auth_form"]:hover {
         color: #FFFFFF !important;
         background: rgba(168, 85, 247, 0.25) !important;
         background-color: rgba(168, 85, 247, 0.25) !important;
-        border-color: rgba(168, 85, 247, 0.6) !important;
-        box-shadow: 0 0 15px rgba(168, 85, 247, 0.4) !important;
-        transform: scale(1.1) translateX(-2px) !important;
+        border-color: rgba(168, 85, 247, 0.75) !important;
+        box-shadow: 0 0 18px rgba(168, 85, 247, 0.45) !important;
+        transform: translateX(-3px) !important;
+    }
+
+    .auth-top-badge-wrap {
+        display: flex !important;
+        justify-content: flex-end !important;
+        align-items: center !important;
+        height: 32px !important;
+        margin-bottom: 0.5rem !important;
+    }
+
+    /* ── Luminous Neon Glassmorphism Spinner / Auth Loader ── */
+    div[data-testid="stSpinner"],
+    .stSpinner {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 14px !important;
+        background: linear-gradient(135deg, rgba(20, 13, 33, 0.96) 0%, rgba(30, 20, 50, 0.92) 100%) !important;
+        backdrop-filter: blur(25px) !important;
+        -webkit-backdrop-filter: blur(25px) !important;
+        border: 1.5px solid rgba(168, 85, 247, 0.55) !important;
+        border-radius: 50px !important;
+        padding: 14px 28px !important;
+        margin: 1.2rem auto !important;
+        box-shadow: 0 0 35px rgba(168, 85, 247, 0.35), 0 10px 30px rgba(0, 0, 0, 0.6), inset 0 0 20px rgba(168, 85, 247, 0.15) !important;
+        width: fit-content !important;
+        max-width: 95% !important;
+        box-sizing: border-box !important;
+        animation: spinnerGlowPulse 2.5s infinite ease-in-out !important;
+        position: relative !important;
+        overflow: hidden !important;
+    }
+
+    /* Top Accent Line for Spinner */
+    div[data-testid="stSpinner"]::before,
+    .stSpinner::before {
+        content: '' !important;
+        position: absolute !important;
+        top: 0 !important; left: 15% !important; right: 15% !important; height: 2px !important;
+        background: linear-gradient(90deg, transparent 0%, #EC4899 30%, #A855F7 50%, #06B6D4 70%, transparent 100%) !important;
+        border-radius: 2px !important;
+        box-shadow: 0 0 10px #EC4899, 0 0 14px #A855F7 !important;
+    }
+
+    /* Pulse Glow Animation for Loader */
+    @keyframes spinnerGlowPulse {
+        0%, 100% {
+            border-color: rgba(168, 85, 247, 0.45);
+            box-shadow: 0 0 30px rgba(168, 85, 247, 0.3), 0 10px 30px rgba(0, 0, 0, 0.6), inset 0 0 15px rgba(168, 85, 247, 0.1);
+        }
+        50% {
+            border-color: rgba(6, 182, 212, 0.8);
+            box-shadow: 0 0 45px rgba(6, 182, 212, 0.45), 0 0 30px rgba(168, 85, 247, 0.35), 0 10px 30px rgba(0, 0, 0, 0.7), inset 0 0 25px rgba(6, 182, 212, 0.2);
+            transform: scale(1.02);
+        }
+    }
+
+    /* Spinner Icon Glow & Colors */
+    div[data-testid="stSpinner"] > i,
+    div[data-testid="stSpinner"] svg,
+    .stSpinner svg {
+        border-top-color: #EC4899 !important;
+        border-right-color: #A855F7 !important;
+        border-bottom-color: #06B6D4 !important;
+        border-left-color: transparent !important;
+        filter: drop-shadow(0 0 10px rgba(168, 85, 247, 0.9)) !important;
+        width: 22px !important;
+        height: 22px !important;
+        flex-shrink: 0 !important;
+    }
+
+    /* Spinner Text */
+    div[data-testid="stSpinner"] div[data-testid="stMarkdownContainer"],
+    .stSpinner div[data-testid="stMarkdownContainer"] {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    div[data-testid="stSpinner"] p,
+    .stSpinner p {
+        font-size: 0.92rem !important;
+        font-weight: 800 !important;
+        letter-spacing: 0.4px !important;
+        background: linear-gradient(135deg, #F472B6 0%, #C084FC 50%, #38BDF8 100%) !important;
+        -webkit-background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        line-height: 1.3 !important;
+        text-shadow: 0 0 15px rgba(168, 85, 247, 0.3) !important;
+        white-space: nowrap !important;
     }
 
     div[data-testid="stColumn"]:has(#auth-canvas-marker)::before,
@@ -1663,44 +2015,207 @@ HOME_CSS = """
         border-radius: 0 !important;
     }
 
-    .auth-flow-node {
-        background: rgb(20, 13, 33) !important;
-        background-color: rgb(20, 13, 33) !important;
-        border: 1px solid rgba(168, 85, 247, 0.35) !important;
-        border-radius: 14px !important;
-        padding: 10px 14px !important;
-        min-height: 64px !important;
+    /* ── Modern Auth Flowchart Cards & Glowing Icons ── */
+    .auth-flow-card {
         display: flex !important;
-        flex-direction: column !important;
         align-items: center !important;
-        justify-content: center !important;
-        text-align: center !important;
-        box-shadow: 0 0 15px rgba(168, 85, 247, 0.15), 0 8px 20px rgba(0, 0, 0, 0.3) !important;
-        position: relative !important;
-        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        gap: 14px !important;
+        background: linear-gradient(135deg, rgba(20, 13, 33, 0.95) 0%, rgba(30, 20, 50, 0.85) 100%) !important;
+        backdrop-filter: blur(16px) !important;
+        -webkit-backdrop-filter: blur(16px) !important;
+        border: 1.5px solid rgba(168, 85, 247, 0.35) !important;
+        border-radius: 16px !important;
+        padding: 10px 16px !important;
         width: 100% !important;
+        max-width: 320px !important;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(168, 85, 247, 0.08) !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        position: relative !important;
+        overflow: hidden !important;
         box-sizing: border-box !important;
     }
 
-    .auth-flow-node:hover {
+    .auth-flow-card::before {
+        content: '' !important;
+        position: absolute !important;
+        top: 0 !important; left: 15% !important; right: 15% !important; height: 2px !important;
+        background: linear-gradient(90deg, transparent 0%, #EC4899 30%, #A855F7 50%, #06B6D4 70%, transparent 100%) !important;
+        border-radius: 2px !important;
+        opacity: 0.65 !important;
+        transition: opacity 0.3s ease, box-shadow 0.3s ease !important;
+    }
+
+    .auth-flow-card:hover {
         border-color: rgba(168, 85, 247, 0.75) !important;
-        box-shadow: 0 0 25px rgba(168, 85, 247, 0.35) !important;
+        box-shadow: 0 0 30px rgba(168, 85, 247, 0.35), 0 10px 30px rgba(0, 0, 0, 0.5) !important;
         transform: translateY(-2px) !important;
     }
 
-    .auth-flow-node .node-title {
-        color: #FFFFFF !important;
-        font-weight: 800 !important;
-        font-size: 0.88rem !important;
-        line-height: 1.35 !important;
-        margin-bottom: 2px !important;
+    .auth-flow-card:hover::before {
+        opacity: 1 !important;
+        box-shadow: 0 0 12px #EC4899, 0 0 16px #A855F7 !important;
     }
 
-    .auth-flow-node .node-sub {
-        color: rgba(255, 255, 255, 0.75) !important;
+    /* Glow Icon Container */
+    .flow-icon-container {
+        width: 44px !important;
+        height: 44px !important;
+        min-width: 44px !important;
+        border-radius: 12px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 1.35rem !important;
+        flex-shrink: 0 !important;
+        transition: all 0.3s ease !important;
+    }
+
+    .auth-flow-card:hover .flow-icon-container {
+        transform: scale(1.08) !important;
+    }
+
+    /* Distinct Icon Glow Themes */
+    .icon-glow-blue {
+        background: rgba(59, 130, 246, 0.18) !important;
+        border: 1.5px solid rgba(59, 130, 246, 0.5) !important;
+        box-shadow: 0 0 18px rgba(59, 130, 246, 0.45), inset 0 0 10px rgba(59, 130, 246, 0.25) !important;
+    }
+
+    .icon-glow-purple {
+        background: rgba(168, 85, 247, 0.18) !important;
+        border: 1.5px solid rgba(168, 85, 247, 0.5) !important;
+        box-shadow: 0 0 18px rgba(168, 85, 247, 0.45), inset 0 0 10px rgba(168, 85, 247, 0.25) !important;
+    }
+
+    .icon-glow-pink {
+        background: rgba(236, 72, 153, 0.18) !important;
+        border: 1.5px solid rgba(236, 72, 153, 0.5) !important;
+        box-shadow: 0 0 18px rgba(236, 72, 153, 0.45), inset 0 0 10px rgba(236, 72, 153, 0.25) !important;
+    }
+
+    .icon-glow-green {
+        background: rgba(34, 197, 94, 0.18) !important;
+        border: 1.5px solid rgba(34, 197, 94, 0.5) !important;
+        box-shadow: 0 0 18px rgba(34, 197, 94, 0.45), inset 0 0 10px rgba(34, 197, 94, 0.25) !important;
+    }
+
+    .icon-glow-neural {
+        background: linear-gradient(135deg, rgba(6, 182, 212, 0.25) 0%, rgba(168, 85, 247, 0.25) 100%) !important;
+        border: 1.5px solid rgba(6, 182, 212, 0.65) !important;
+        box-shadow: 0 0 24px rgba(6, 182, 212, 0.65), 0 0 16px rgba(168, 85, 247, 0.45), inset 0 0 12px rgba(6, 182, 212, 0.3) !important;
+        animation: neuralPulse 3s infinite ease-in-out !important;
+    }
+
+    @keyframes neuralPulse {
+        0%, 100% {
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.5), 0 0 14px rgba(168, 85, 247, 0.35), inset 0 0 10px rgba(6, 182, 212, 0.2);
+            border-color: rgba(6, 182, 212, 0.55);
+        }
+        50% {
+            box-shadow: 0 0 32px rgba(6, 182, 212, 0.85), 0 0 22px rgba(168, 85, 247, 0.65), inset 0 0 16px rgba(6, 182, 212, 0.4);
+            border-color: rgba(6, 182, 212, 0.95);
+            transform: scale(1.05);
+        }
+    }
+
+    /* Content & Typography */
+    .flow-content {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        text-align: left !important;
+        overflow: hidden !important;
+    }
+
+    .flow-step-tag {
+        font-size: 0.68rem !important;
+        font-weight: 900 !important;
+        letter-spacing: 1.2px !important;
+        text-transform: uppercase !important;
+        margin-bottom: 3px !important;
+    }
+
+    .tag-blue { color: #60A5FA !important; }
+    .tag-purple { color: #C084FC !important; }
+    .tag-pink { color: #F472B6 !important; }
+    .tag-green { color: #4ADE80 !important; }
+    .tag-cyan { color: #22D3EE !important; }
+
+    .flow-node-title {
+        font-size: 0.94rem !important;
+        font-weight: 900 !important;
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%) !important;
+        -webkit-background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+        line-height: 1.25 !important;
+        margin-bottom: 2px !important;
+        display: inline-block !important;
+    }
+
+    .flow-node-sub {
         font-size: 0.74rem !important;
         font-weight: 500 !important;
+        color: rgba(233, 213, 255, 0.72) !important;
         line-height: 1.35 !important;
+    }
+
+    /* Card Color Variants */
+    .flow-card-blue { border-color: rgba(59, 130, 246, 0.4) !important; }
+    .flow-card-blue:hover { border-color: rgba(59, 130, 246, 0.8) !important; box-shadow: 0 0 30px rgba(59, 130, 246, 0.35), 0 10px 30px rgba(0, 0, 0, 0.5) !important; }
+
+    .flow-card-purple { border-color: rgba(168, 85, 247, 0.45) !important; }
+    .flow-card-purple:hover { border-color: rgba(168, 85, 247, 0.85) !important; box-shadow: 0 0 30px rgba(168, 85, 247, 0.4), 0 10px 30px rgba(0, 0, 0, 0.5) !important; }
+
+    .flow-card-pink { border-color: rgba(236, 72, 153, 0.4) !important; }
+    .flow-card-pink:hover { border-color: rgba(236, 72, 153, 0.8) !important; box-shadow: 0 0 30px rgba(236, 72, 153, 0.35), 0 10px 30px rgba(0, 0, 0, 0.5) !important; }
+
+    .flow-card-green { border-color: rgba(34, 197, 94, 0.45) !important; }
+    .flow-card-green:hover { border-color: rgba(34, 197, 94, 0.85) !important; box-shadow: 0 0 30px rgba(34, 197, 94, 0.4), 0 10px 30px rgba(0, 0, 0, 0.5) !important; }
+
+    /* Branch Cards Layout */
+    .flow-branch-cards {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 12px !important;
+        width: 100% !important;
+        margin: 4px 0 !important;
+    }
+
+    .flow-branch-link {
+        text-decoration: none !important;
+        color: inherit !important;
+        display: block !important;
+        width: 100% !important;
+    }
+
+    .flow-branch-cards .auth-flow-card {
+        max-width: 100% !important;
+        cursor: pointer !important;
+        min-height: 72px !important;
+    }
+
+    /* Active Highlight States */
+    .auth-flow-card.active-branch-signin {
+        background: linear-gradient(135deg, rgba(34, 197, 94, 0.25) 0%, rgba(16, 185, 129, 0.15) 100%) !important;
+        border: 2px solid rgba(34, 197, 94, 0.95) !important;
+        box-shadow: 0 0 35px rgba(34, 197, 94, 0.55), 0 8px 25px rgba(0, 0, 0, 0.5) !important;
+    }
+
+    .auth-flow-card.active-branch-signup {
+        background: linear-gradient(135deg, rgba(168, 85, 247, 0.25) 0%, rgba(147, 51, 234, 0.15) 100%) !important;
+        border: 2px solid rgba(168, 85, 247, 0.95) !important;
+        box-shadow: 0 0 35px rgba(168, 85, 247, 0.55), 0 8px 25px rgba(0, 0, 0, 0.5) !important;
+    }
+
+    .flow-card-gradient {
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(124, 58, 237, 0.25) 50%, rgba(15, 23, 42, 0.95) 100%) !important;
+        border: 1.5px solid rgba(6, 182, 212, 0.55) !important;
+        box-shadow: 0 0 30px rgba(6, 182, 212, 0.25), 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(168, 85, 247, 0.2) !important;
+    }
+
+    .flow-card-gradient:hover {
+        border-color: rgba(6, 182, 212, 0.9) !important;
+        box-shadow: 0 0 40px rgba(6, 182, 212, 0.45), 0 0 20px rgba(168, 85, 247, 0.35) !important;
     }
 
     /* Wire Connectors & Glowing Vector Arrow Pointer System */
@@ -1733,31 +2248,11 @@ HOME_CSS = """
         text-shadow: 0 0 8px #38BDF8 !important;
     }
 
-    /* Center Step Wrappers & Compact Nodes */
+    /* Center Step Wrappers */
     .flow-step-center {
         display: flex !important;
         justify-content: center !important;
         width: 100% !important;
-    }
-
-    .auth-flow-node.compact-node {
-        width: 100% !important;
-        max-width: 270px !important;
-        padding: 10px 14px !important;
-        justify-content: center !important;
-    }
-
-    /* Has Account Decision Diamond/Pill */
-    .flow-decision-diamond {
-        background: linear-gradient(135deg, rgba(236, 72, 153, 0.2) 0%, rgba(168, 85, 247, 0.25) 100%) !important;
-        border: 1px solid rgba(236, 72, 153, 0.5) !important;
-        border-radius: 20px !important;
-        padding: 6px 18px !important;
-        color: #FAFAFA !important;
-        font-weight: 800 !important;
-        font-size: 0.82rem !important;
-        box-shadow: 0 0 15px rgba(236, 72, 153, 0.25) !important;
-        text-align: center !important;
     }
 
     /* Branch Arrow Rows */
@@ -1778,32 +2273,25 @@ HOME_CSS = """
     .branch-label {
         font-size: 0.7rem !important;
         font-weight: 800 !important;
-        padding: 2px 8px !important;
-        border-radius: 10px !important;
+        padding: 3px 10px !important;
+        border-radius: 12px !important;
         margin-bottom: 2px !important;
+        letter-spacing: 0.5px !important;
+        white-space: nowrap !important;
     }
 
     .label-yes {
-        background: rgba(34, 197, 94, 0.2) !important;
+        background: rgba(34, 197, 94, 0.18) !important;
         color: #4ADE80 !important;
-        border: 1px solid rgba(34, 197, 94, 0.4) !important;
+        border: 1px solid rgba(34, 197, 94, 0.45) !important;
+        box-shadow: 0 0 12px rgba(34, 197, 94, 0.25) !important;
     }
 
     .label-no {
-        background: rgba(236, 72, 153, 0.2) !important;
+        background: rgba(236, 72, 153, 0.18) !important;
         color: #F472B6 !important;
-        border: 1px solid rgba(236, 72, 153, 0.4) !important;
-    }
-
-    .flow-branch-cards {
-        display: grid !important;
-        grid-template-columns: 1fr 1fr !important;
-        gap: 12px !important;
-        width: 100% !important;
-    }
-
-    .auth-flow-node.branch-node {
-        padding: 8px 12px !important;
+        border: 1px solid rgba(236, 72, 153, 0.45) !important;
+        box-shadow: 0 0 12px rgba(236, 72, 153, 0.25) !important;
     }
 
     /* SVG Vector Merge Connector Container */
@@ -2562,7 +3050,11 @@ def _render_auth_view():
             <h1 class="auth-title">Access the <span class="gradient-text">AI Learning Workspace</span></h1>
             <p class="auth-subtitle">EduTech AI is an autonomous, multi-agent academic ecosystem. Log in or create a new student account to instantiate your personal supervisor-worker agent swarm.</p>
             <div class="auth-instructions-pill">
-                <span>💡 <b>Access Instructions:</b> Trace the <b>Providing Access Flowchart</b> below. If you already have an account, complete the <b>Sign In</b> form on the right. Otherwise, proceed to the <b>Create Account</b> tab. Upon verification, the system dispatches the AI Agent Squad to instantly grant workspace access.</span>
+                <div class="instructions-icon">💡</div>
+                <div class="instructions-text">
+                    <h4><span class="gradient-text">Access Instructions</span></h4>
+                    <p>Trace the <b>Providing Access Flowchart</b> below. If you already have an account, complete the <b>Sign In</b> form on the right. Otherwise, proceed to the <b>Create Account</b> tab. Upon verification, the system dispatches the AI Agent Squad to instantly grant workspace access.</p>
+                </div>
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -2576,15 +3068,21 @@ def _render_auth_view():
     with col_showcase:
         st.markdown(
             """<div id="auth-canvas-marker"></div>
-<div class="n8n-header" style="margin-bottom:1rem; text-align:center;">
+<div class="n8n-header" style="margin-bottom:1.2rem; text-align:center;">
 <span>⚡ EduTech AI — Providing Access Flowchart</span>
 </div>
 
-<!-- Step 1: User Arrival -->
+<!-- Step 1: Student Intake / Arrival -->
 <div class="flow-step-center">
-<div class="auth-flow-node compact-node">
-<div class="node-title">👤 User Arrival</div>
-<div class="node-sub">Access Request</div>
+<div class="auth-flow-card flow-card-blue">
+  <div class="flow-icon-container icon-glow-blue">
+    <span class="flow-icon">👤</span>
+  </div>
+  <div class="flow-content">
+    <div class="flow-step-tag tag-blue"><b>STEP 01 • INTAKE</b></div>
+    <div class="flow-node-title"><span class="gradient-text">Student Arrival</span></div>
+    <div class="flow-node-sub">Initiates secure session request</div>
+  </div>
 </div>
 </div>
 
@@ -2594,11 +3092,17 @@ def _render_auth_view():
 <div class="flow-connector-arrow">▼</div>
 </div>
 
-<!-- Step 2: AI Credential Evaluator -->
+<!-- Step 2: AI Identity Guard -->
 <div class="flow-step-center">
-<div class="auth-flow-node compact-node">
-<div class="node-title">🛡️ AI Credential Evaluator</div>
-<div class="node-sub">Evaluate Status</div>
+<div class="auth-flow-card flow-card-purple">
+  <div class="flow-icon-container icon-glow-purple">
+    <span class="flow-icon">🛡️</span>
+  </div>
+  <div class="flow-content">
+    <div class="flow-step-tag tag-purple"><b>STEP 02 • AI EVALUATION</b></div>
+    <div class="flow-node-title"><span class="gradient-text">AI Identity Guard</span></div>
+    <div class="flow-node-sub">Inspects credentials & privileges</div>
+  </div>
 </div>
 </div>
 
@@ -2608,60 +3112,72 @@ def _render_auth_view():
 <div class="flow-connector-arrow">▼</div>
 </div>
 
-<!-- Step 3: Has Account? Decision Node -->
+<!-- Step 3: Account Verification Gateway -->
 <div class="flow-step-center">
-<div class="auth-flow-node compact-node">
-<div class="node-title">❓ Has Account?</div>
-<div class="node-sub">Verify Credentials</div>
+<div class="auth-flow-card flow-card-pink">
+  <div class="flow-icon-container icon-glow-pink">
+    <span class="flow-icon">❓</span>
+  </div>
+  <div class="flow-content">
+    <div class="flow-step-tag tag-pink"><b>STEP 03 • ROUTING GATEWAY</b></div>
+    <div class="flow-node-title"><span class="gradient-text">Account Verification</span></div>
+    <div class="flow-node-sub">Determines authentication pathway</div>
+  </div>
 </div>
 </div>
 
 <!-- 2 Arrows branching to Sign In and Create Account -->
 <div class="flow-branch-arrows">
 <div class="branch-arrow-col">
-<span class="branch-label label-yes">YES (✓)</span>
-<div class="flow-connector-line"></div>
-<div class="flow-connector-arrow color-green">▼</div>
+  <span class="branch-label label-yes">YES • EXISTING USER (✓)</span>
+  <div class="flow-connector-line"></div>
+  <div class="flow-connector-arrow color-green">▼</div>
 </div>
 <div class="branch-arrow-col">
-<span class="branch-label label-no">NO (❌)</span>
-<div class="flow-connector-line"></div>
-<div class="flow-connector-arrow color-pink">▼</div>
+  <span class="branch-label label-no">NO • NEW STUDENT (✨)</span>
+  <div class="flow-connector-line"></div>
+  <div class="flow-connector-arrow color-pink">▼</div>
 </div>
 </div>""", unsafe_allow_html=True)
 
-        # Step 4: Native Streamlit Flowchart Action Buttons (Zero Page Reload)
+        # Step 4: Native Streamlit Flowchart Action Cards (Zero Page Reload)
         flow_col1, flow_col2 = st.columns(2)
         with flow_col1:
             st.markdown('<div id="signin-branch-marker"></div>', unsafe_allow_html=True)
-            if st.button("🔐 Sign In\nEmail & Password", key="flowchart_signin_btn", use_container_width=True):
+            if st.button("🔐  STEP 04A • LOGIN\nSign In\nExisting Account Access", key="flowchart_signin_btn", use_container_width=True):
                 st.session_state["auth_form_mode"] = "signin"
                 st.rerun()
         with flow_col2:
             st.markdown('<div id="signup-branch-marker"></div>', unsafe_allow_html=True)
-            if st.button("✨ Create Account\nGet Started Free", key="flowchart_signup_btn", use_container_width=True):
+            if st.button("✨  STEP 04B • REGISTER\nCreate Account\nInstant Free Setup", key="flowchart_signup_btn", use_container_width=True):
                 st.session_state["auth_form_mode"] = "signup"
                 st.rerun()
 
         st.markdown(
             """<!-- Merge Arrow connecting to Dispatch AI Agent Squad block -->
 <div class="flow-merge-svg-container">
-<svg width="100%" height="20" viewBox="0 0 100 20" preserveAspectRatio="none" style="display:block;">
-  <path d="M 25 0 L 25 10" stroke="#34D399" stroke-width="2" fill="none" vector-effect="non-scaling-stroke" />
-  <path d="M 75 0 L 75 10" stroke="#F472B6" stroke-width="2" fill="none" vector-effect="non-scaling-stroke" />
-  <path d="M 25 10 L 75 10" stroke="#A855F7" stroke-width="2" fill="none" vector-effect="non-scaling-stroke" />
-  <path d="M 50 10 L 50 20" stroke="#38BDF8" stroke-width="2" fill="none" vector-effect="non-scaling-stroke" />
+<svg width="100%" height="22" viewBox="0 0 100 22" preserveAspectRatio="none" style="display:block;">
+  <path d="M 25 0 L 25 11" stroke="#34D399" stroke-width="2" fill="none" vector-effect="non-scaling-stroke" />
+  <path d="M 75 0 L 75 11" stroke="#F472B6" stroke-width="2" fill="none" vector-effect="non-scaling-stroke" />
+  <path d="M 25 11 L 75 11" stroke="#A855F7" stroke-width="2" fill="none" vector-effect="non-scaling-stroke" />
+  <path d="M 50 11 L 50 22" stroke="#38BDF8" stroke-width="2" fill="none" vector-effect="non-scaling-stroke" />
 </svg>
 <div class="flow-connector-wrapper" style="margin-top:-6px;">
 <div class="flow-connector-arrow color-cyan">▼</div>
 </div>
 </div>
 
-<!-- Step 5: Dispatch AI Agent Squad block -->
+<!-- Step 5: Dispatch AI Agent Squad block with Glowing Neural Icon -->
 <div class="flow-step-center">
-<div class="auth-flow-node compact-node">
-<div class="node-title">⚡ Dispatch AI Agent Squad</div>
-<div class="node-sub">Instant Workspace Access</div>
+<div class="auth-flow-card flow-card-gradient">
+  <div class="flow-icon-container icon-glow-neural">
+    <span class="flow-icon">🧠</span>
+  </div>
+  <div class="flow-content">
+    <div class="flow-step-tag tag-cyan"><b>STEP 05 • DISPATCH & UNLOCK</b></div>
+    <div class="flow-node-title"><span class="gradient-text">Spawn AI Agent Squad</span></div>
+    <div class="flow-node-sub">Instant Autonomous Workspace Access</div>
+  </div>
 </div>
 </div>""",
             unsafe_allow_html=True,
@@ -2671,29 +3187,48 @@ def _render_auth_view():
         with col_auth:
             st.markdown('<div id="auth-form-card-marker"></div>', unsafe_allow_html=True)
 
-            if st.button("←", key="close_auth_form"):
-                st.session_state["auth_form_mode"] = None
-                st.session_state.pop("auth_tab", None)
-                if "auth_mode" in st.query_params:
-                    del st.query_params["auth_mode"]
-                st.rerun()
+            top_bar_col1, top_bar_col2 = st.columns([1, 1])
+            with top_bar_col1:
+                if st.button("← Back to Canvas", key="close_auth_form", help="Return to full flowchart canvas"):
+                    st.session_state["auth_form_mode"] = None
+                    st.session_state.pop("auth_tab", None)
+                    if "auth_mode" in st.query_params:
+                        del st.query_params["auth_mode"]
+                    st.rerun()
+            with top_bar_col2:
+                if mode == "signin":
+                    st.markdown('<div class="auth-top-badge-wrap"><span class="auth-form-badge auth-badge-signin">🔐 STEP 04A • LOGIN</span></div>', unsafe_allow_html=True)
+                else:
+                    st.markdown('<div class="auth-top-badge-wrap"><span class="auth-form-badge auth-badge-signup">✨ STEP 04B • REGISTER</span></div>', unsafe_allow_html=True)
 
             if mode == "signin":
-                st.markdown("### 🔐 Sign In")
+                st.markdown(
+                    """<div class="auth-form-header">
+  <h2 class="auth-form-title">Sign In to <span class="gradient-text">AI Workspace</span></h2>
+  <p class="auth-form-subtitle">Enter your credentials to resume your personalized curriculum session.</p>
+</div>""",
+                    unsafe_allow_html=True,
+                )
             else:
-                st.markdown("### ✨ Create Account")
+                st.markdown(
+                    """<div class="auth-form-header">
+  <h2 class="auth-form-title">Create Your <span class="gradient-text">Learning Account</span></h2>
+  <p class="auth-form-subtitle">Instantiate your personal autonomous AI agent squad in seconds.</p>
+</div>""",
+                    unsafe_allow_html=True,
+                )
 
             if mode == "signin":
                 with st.form("signin_form"):
                     email_in = st.text_input("Email Address", placeholder="student@example.com")
-                    pass_in = st.text_input("Password", type="password")
-                    sub = st.form_submit_button("Sign In", type="primary", use_container_width=True)
+                    pass_in = st.text_input("Password", type="password", placeholder="••••••••")
+                    sub = st.form_submit_button("Sign In & Launch Agents ⚡", type="primary", use_container_width=True)
 
                 if sub:
                     if not email_in or not pass_in:
                         st.error("Please provide both email and password.")
                     else:
-                        with st.spinner("Authenticating..."):
+                        with st.spinner("⚡ Authenticating & Initializing AI Agent Squad..."):
                             try:
                                 from services.auth_service import AuthService
                                 from services.database import get_db_session
@@ -2719,7 +3254,7 @@ def _render_auth_view():
                         ln = st.text_input("Last Name *", placeholder="Doe")
 
                     se = st.text_input("Email Address *", placeholder="jane.doe@example.com")
-                    sp = st.text_input("Password * (min 6 characters)", type="password")
+                    sp = st.text_input("Password * (min 6 characters)", type="password", placeholder="••••••••")
 
                     col_mob, col_ctry = st.columns(2)
                     with col_mob:
@@ -2727,7 +3262,7 @@ def _render_auth_view():
                     with col_ctry:
                         ctry = st.text_input("Country", placeholder="United States")
 
-                    sub2 = st.form_submit_button("Create Account & Start Learning", type="primary", use_container_width=True)
+                    sub2 = st.form_submit_button("Create Account & Spawn Agent Squad ✨", type="primary", use_container_width=True)
 
                 if sub2:
                     if not fn.strip() or not ln.strip() or not se.strip() or not sp:
@@ -2735,7 +3270,7 @@ def _render_auth_view():
                     elif len(sp) < 6:
                         st.error("Password must be at least 6 characters long.")
                     else:
-                        with st.spinner("Creating account..."):
+                        with st.spinner("✨ Provisioning Workspace & Spawning Agents..."):
                             try:
                                 from models.user_schemas import UserCreateRequest
                                 from services.auth_service import AuthService
