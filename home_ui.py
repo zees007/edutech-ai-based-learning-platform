@@ -1325,6 +1325,7 @@ HOME_CSS = """
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(168, 85, 247, 0.15) !important;
         transition: all 0.3s ease !important;
         margin-top: 0.5rem !important;
+        margin-bottom: 0.5rem !important;
     }
 
     .auth-instructions-pill:hover {
