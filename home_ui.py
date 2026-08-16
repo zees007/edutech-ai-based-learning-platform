@@ -1381,88 +1381,131 @@ HOME_CSS = """
         font-weight: 700 !important;
     }
 
-    /* Native Interactive Flowchart Branch Buttons (Zero Page Reload) */
-    div[data-testid="stColumn"]:has(#signin-branch-marker):not(:has(#signup-branch-marker)) button {
-        background: linear-gradient(135deg, rgba(20, 13, 33, 0.95) 0%, rgba(16, 185, 129, 0.12) 100%) !important;
-        background-color: rgb(20, 13, 33) !important;
+    /* ── Native Interactive Flowchart Branch Buttons (Zero Page Reload) ── */
+    div.st-key-flowchart_signin_btn,
+    div.st-key-flowchart_signup_btn,
+    div[data-testid="stColumn"]:has(#signin-branch-marker) div[data-testid="stButton"],
+    div[data-testid="stColumn"]:has(#signup-branch-marker) div[data-testid="stButton"] {
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    div.st-key-flowchart_signin_btn button,
+    div.st-key-flowchart_signup_btn button,
+    div[data-testid="stColumn"]:has(#signin-branch-marker) button,
+    div[data-testid="stColumn"]:has(#signup-branch-marker) button {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        justify-content: center !important;
+        background: linear-gradient(135deg, rgba(20, 13, 33, 0.95) 0%, rgba(30, 20, 50, 0.85) 100%) !important;
+        backdrop-filter: blur(16px) !important;
+        -webkit-backdrop-filter: blur(16px) !important;
+        border-radius: 16px !important;
+        padding: 12px 18px !important;
+        min-height: 74px !important;
+        width: 100% !important;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(168, 85, 247, 0.08) !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        position: relative !important;
+        overflow: hidden !important;
+        box-sizing: border-box !important;
+        cursor: pointer !important;
+        text-align: left !important;
+    }
+
+    /* Top Neon Line for Buttons */
+    div.st-key-flowchart_signin_btn button::before,
+    div.st-key-flowchart_signup_btn button::before,
+    div[data-testid="stColumn"]:has(#signin-branch-marker) button::before,
+    div[data-testid="stColumn"]:has(#signup-branch-marker) button::before {
+        content: '' !important;
+        position: absolute !important;
+        top: 0 !important; left: 15% !important; right: 15% !important; height: 2px !important;
+        background: linear-gradient(90deg, transparent 0%, #EC4899 30%, #A855F7 50%, #06B6D4 70%, transparent 100%) !important;
+        border-radius: 2px !important;
+        opacity: 0.65 !important;
+        transition: opacity 0.3s ease, box-shadow 0.3s ease !important;
+    }
+
+    div.st-key-flowchart_signin_btn button:hover::before,
+    div.st-key-flowchart_signup_btn button:hover::before,
+    div[data-testid="stColumn"]:has(#signin-branch-marker) button:hover::before,
+    div[data-testid="stColumn"]:has(#signup-branch-marker) button:hover::before {
+        opacity: 1 !important;
+        box-shadow: 0 0 12px #EC4899, 0 0 16px #A855F7 !important;
+    }
+
+    /* Borders and Hover for Sign In */
+    div.st-key-flowchart_signin_btn button,
+    div[data-testid="stColumn"]:has(#signin-branch-marker) button {
         border: 1.5px solid rgba(34, 197, 94, 0.45) !important;
-        border-radius: 16px !important;
-        color: rgba(233, 213, 255, 0.75) !important;
-        padding: 12px 14px !important;
-        min-height: 72px !important;
-        white-space: pre-line !important;
-        text-align: center !important;
-        font-size: 0.74rem !important;
-        font-weight: 500 !important;
-        line-height: 1.4 !important;
-        cursor: pointer !important;
-        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        box-shadow: 0 0 20px rgba(34, 197, 94, 0.2), 0 8px 20px rgba(0, 0, 0, 0.4) !important;
-        position: relative !important;
     }
-
-    div[data-testid="stColumn"]:has(#signin-branch-marker):not(:has(#signup-branch-marker)) button::first-line {
-        font-size: 0.92rem !important;
-        font-weight: 800 !important;
-        color: #4ADE80 !important;
-        line-height: 1.5 !important;
-        text-shadow: 0 0 10px rgba(74, 222, 128, 0.4) !important;
-    }
-
-    div[data-testid="stColumn"]:has(#signin-branch-marker):not(:has(#signup-branch-marker)) button:hover {
+    div.st-key-flowchart_signin_btn button:hover,
+    div[data-testid="stColumn"]:has(#signin-branch-marker) button:hover {
         border-color: rgba(34, 197, 94, 0.95) !important;
-        transform: translateY(-2px) scale(1.02) !important;
-        box-shadow: 0 0 30px rgba(34, 197, 94, 0.5), 0 8px 25px rgba(0, 0, 0, 0.5) !important;
-        color: #FFFFFF !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 0 30px rgba(34, 197, 94, 0.45), 0 10px 30px rgba(0, 0, 0, 0.5) !important;
     }
 
-    div[data-testid="stColumn"]:has(#signup-branch-marker):not(:has(#signin-branch-marker)) button {
-        background: linear-gradient(135deg, rgba(20, 13, 33, 0.95) 0%, rgba(168, 85, 247, 0.12) 100%) !important;
-        background-color: rgb(20, 13, 33) !important;
+    /* Borders and Hover for Sign Up */
+    div.st-key-flowchart_signup_btn button,
+    div[data-testid="stColumn"]:has(#signup-branch-marker) button {
         border: 1.5px solid rgba(168, 85, 247, 0.45) !important;
-        border-radius: 16px !important;
-        color: rgba(233, 213, 255, 0.75) !important;
-        padding: 12px 14px !important;
-        min-height: 72px !important;
-        white-space: pre-line !important;
-        text-align: center !important;
-        font-size: 0.74rem !important;
-        font-weight: 500 !important;
-        letter-spacing: 0.2px !important;
-        line-height: 1.4 !important;
-        cursor: pointer !important;
-        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        box-shadow: 0 0 20px rgba(168, 85, 247, 0.2), 0 8px 20px rgba(0, 0, 0, 0.4) !important;
-        position: relative !important;
     }
-
-    div[data-testid="stColumn"]:has(#signup-branch-marker):not(:has(#signin-branch-marker)) button::first-line {
-        font-size: 0.92rem !important;
-        font-weight: 800 !important;
-        color: #C084FC !important;
-        line-height: 1.5 !important;
-        letter-spacing: 0 !important;
-        text-shadow: 0 0 10px rgba(192, 132, 252, 0.4) !important;
-    }
-
-    div[data-testid="stColumn"]:has(#signup-branch-marker):not(:has(#signin-branch-marker)) button:hover {
+    div.st-key-flowchart_signup_btn button:hover,
+    div[data-testid="stColumn"]:has(#signup-branch-marker) button:hover {
         border-color: rgba(168, 85, 247, 0.95) !important;
-        transform: translateY(-2px) scale(1.02) !important;
-        box-shadow: 0 0 30px rgba(168, 85, 247, 0.5), 0 8px 25px rgba(0, 0, 0, 0.5) !important;
-        color: #FFFFFF !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 0 30px rgba(168, 85, 247, 0.45), 0 10px 30px rgba(0, 0, 0, 0.5) !important;
     }
 
-    /* Active Highlight States */
-    .auth-flow-node.branch-node.clickable-card.active-signin {
-        border-color: rgba(34, 197, 94, 0.8) !important;
-        box-shadow: 0 0 25px rgba(34, 197, 94, 0.45) !important;
-        background: rgba(34, 197, 94, 0.25) !important;
+    /* Paragraph Container Inside Button */
+    div.st-key-flowchart_signin_btn button div[data-testid="stMarkdownContainer"],
+    div.st-key-flowchart_signup_btn button div[data-testid="stMarkdownContainer"],
+    div[data-testid="stColumn"]:has(#signin-branch-marker) button div[data-testid="stMarkdownContainer"],
+    div[data-testid="stColumn"]:has(#signup-branch-marker) button div[data-testid="stMarkdownContainer"] {
+        width: 100% !important;
+        text-align: left !important;
     }
 
-    .auth-flow-node.branch-node.clickable-card.active-signup {
-        border-color: rgba(168, 85, 247, 0.8) !important;
-        box-shadow: 0 0 25px rgba(168, 85, 247, 0.45) !important;
-        background: rgba(168, 85, 247, 0.25) !important;
+    div.st-key-flowchart_signin_btn button div[data-testid="stMarkdownContainer"] p,
+    div.st-key-flowchart_signup_btn button div[data-testid="stMarkdownContainer"] p,
+    div[data-testid="stColumn"]:has(#signin-branch-marker) button div[data-testid="stMarkdownContainer"] p,
+    div[data-testid="stColumn"]:has(#signup-branch-marker) button div[data-testid="stMarkdownContainer"] p {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        text-align: left !important;
+        gap: 3px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        white-space: pre-line !important;
+        font-size: 0.74rem !important;
+        color: rgba(233, 213, 255, 0.72) !important;
+        line-height: 1.35 !important;
+    }
+
+    /* First Line: Step Tag (Bold) */
+    div.st-key-flowchart_signin_btn button div[data-testid="stMarkdownContainer"] p::first-line,
+    div[data-testid="stColumn"]:has(#signin-branch-marker) button div[data-testid="stMarkdownContainer"] p::first-line {
+        font-size: 0.70rem !important;
+        font-weight: 900 !important;
+        color: #4ADE80 !important;
+        letter-spacing: 1.2px !important;
+        text-transform: uppercase !important;
+        line-height: 1.25 !important;
+    }
+
+    div.st-key-flowchart_signup_btn button div[data-testid="stMarkdownContainer"] p::first-line,
+    div[data-testid="stColumn"]:has(#signup-branch-marker) button div[data-testid="stMarkdownContainer"] p::first-line {
+        font-size: 0.70rem !important;
+        font-weight: 900 !important;
+        color: #C084FC !important;
+        letter-spacing: 1.2px !important;
+        text-transform: uppercase !important;
+        line-height: 1.25 !important;
     }
 
     /* ── Auth Page — Glowing Split-Screen Layout ──────── */
@@ -1799,6 +1842,12 @@ HOME_CSS = """
         box-shadow: 0 0 18px rgba(236, 72, 153, 0.45), inset 0 0 10px rgba(236, 72, 153, 0.25) !important;
     }
 
+    .icon-glow-green {
+        background: rgba(34, 197, 94, 0.18) !important;
+        border: 1.5px solid rgba(34, 197, 94, 0.5) !important;
+        box-shadow: 0 0 18px rgba(34, 197, 94, 0.45), inset 0 0 10px rgba(34, 197, 94, 0.25) !important;
+    }
+
     .icon-glow-neural {
         background: linear-gradient(135deg, rgba(6, 182, 212, 0.25) 0%, rgba(168, 85, 247, 0.25) 100%) !important;
         border: 1.5px solid rgba(6, 182, 212, 0.65) !important;
@@ -1828,16 +1877,17 @@ HOME_CSS = """
     }
 
     .flow-step-tag {
-        font-size: 0.62rem !important;
-        font-weight: 800 !important;
-        letter-spacing: 1px !important;
+        font-size: 0.68rem !important;
+        font-weight: 900 !important;
+        letter-spacing: 1.2px !important;
         text-transform: uppercase !important;
-        margin-bottom: 2px !important;
+        margin-bottom: 3px !important;
     }
 
     .tag-blue { color: #60A5FA !important; }
     .tag-purple { color: #C084FC !important; }
     .tag-pink { color: #F472B6 !important; }
+    .tag-green { color: #4ADE80 !important; }
     .tag-cyan { color: #22D3EE !important; }
 
     .flow-node-title {
@@ -1867,6 +1917,44 @@ HOME_CSS = """
 
     .flow-card-pink { border-color: rgba(236, 72, 153, 0.4) !important; }
     .flow-card-pink:hover { border-color: rgba(236, 72, 153, 0.8) !important; box-shadow: 0 0 30px rgba(236, 72, 153, 0.35), 0 10px 30px rgba(0, 0, 0, 0.5) !important; }
+
+    .flow-card-green { border-color: rgba(34, 197, 94, 0.45) !important; }
+    .flow-card-green:hover { border-color: rgba(34, 197, 94, 0.85) !important; box-shadow: 0 0 30px rgba(34, 197, 94, 0.4), 0 10px 30px rgba(0, 0, 0, 0.5) !important; }
+
+    /* Branch Cards Layout */
+    .flow-branch-cards {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 12px !important;
+        width: 100% !important;
+        margin: 4px 0 !important;
+    }
+
+    .flow-branch-link {
+        text-decoration: none !important;
+        color: inherit !important;
+        display: block !important;
+        width: 100% !important;
+    }
+
+    .flow-branch-cards .auth-flow-card {
+        max-width: 100% !important;
+        cursor: pointer !important;
+        min-height: 72px !important;
+    }
+
+    /* Active Highlight States */
+    .auth-flow-card.active-branch-signin {
+        background: linear-gradient(135deg, rgba(34, 197, 94, 0.25) 0%, rgba(16, 185, 129, 0.15) 100%) !important;
+        border: 2px solid rgba(34, 197, 94, 0.95) !important;
+        box-shadow: 0 0 35px rgba(34, 197, 94, 0.55), 0 8px 25px rgba(0, 0, 0, 0.5) !important;
+    }
+
+    .auth-flow-card.active-branch-signup {
+        background: linear-gradient(135deg, rgba(168, 85, 247, 0.25) 0%, rgba(147, 51, 234, 0.15) 100%) !important;
+        border: 2px solid rgba(168, 85, 247, 0.95) !important;
+        box-shadow: 0 0 35px rgba(168, 85, 247, 0.55), 0 8px 25px rgba(0, 0, 0, 0.5) !important;
+    }
 
     .flow-card-gradient {
         background: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(124, 58, 237, 0.25) 50%, rgba(15, 23, 42, 0.95) 100%) !important;
@@ -2740,7 +2828,7 @@ def _render_auth_view():
     <span class="flow-icon">👤</span>
   </div>
   <div class="flow-content">
-    <div class="flow-step-tag tag-blue">STEP 01 • INTAKE</div>
+    <div class="flow-step-tag tag-blue"><b>STEP 01 • INTAKE</b></div>
     <div class="flow-node-title"><span class="gradient-text">Student Arrival</span></div>
     <div class="flow-node-sub">Initiates secure session request</div>
   </div>
@@ -2760,7 +2848,7 @@ def _render_auth_view():
     <span class="flow-icon">🛡️</span>
   </div>
   <div class="flow-content">
-    <div class="flow-step-tag tag-purple">STEP 02 • AI EVALUATION</div>
+    <div class="flow-step-tag tag-purple"><b>STEP 02 • AI EVALUATION</b></div>
     <div class="flow-node-title"><span class="gradient-text">AI Identity Guard</span></div>
     <div class="flow-node-sub">Inspects credentials & privileges</div>
   </div>
@@ -2780,7 +2868,7 @@ def _render_auth_view():
     <span class="flow-icon">❓</span>
   </div>
   <div class="flow-content">
-    <div class="flow-step-tag tag-pink">STEP 03 • ROUTING GATEWAY</div>
+    <div class="flow-step-tag tag-pink"><b>STEP 03 • ROUTING GATEWAY</b></div>
     <div class="flow-node-title"><span class="gradient-text">Account Verification</span></div>
     <div class="flow-node-sub">Determines authentication pathway</div>
   </div>
@@ -2801,16 +2889,16 @@ def _render_auth_view():
 </div>
 </div>""", unsafe_allow_html=True)
 
-        # Step 4: Native Streamlit Flowchart Action Buttons (Zero Page Reload)
+        # Step 4: Native Streamlit Flowchart Action Cards (Zero Page Reload)
         flow_col1, flow_col2 = st.columns(2)
         with flow_col1:
             st.markdown('<div id="signin-branch-marker"></div>', unsafe_allow_html=True)
-            if st.button("🔐 Sign In\nExisting Account Access", key="flowchart_signin_btn", use_container_width=True):
+            if st.button("🔐  STEP 04A • LOGIN\nSign In\nExisting Account Access", key="flowchart_signin_btn", use_container_width=True):
                 st.session_state["auth_form_mode"] = "signin"
                 st.rerun()
         with flow_col2:
             st.markdown('<div id="signup-branch-marker"></div>', unsafe_allow_html=True)
-            if st.button("✨ Create Account\nInstant Free Setup", key="flowchart_signup_btn", use_container_width=True):
+            if st.button("✨  STEP 04B • REGISTER\nCreate Account\nInstant Free Setup", key="flowchart_signup_btn", use_container_width=True):
                 st.session_state["auth_form_mode"] = "signup"
                 st.rerun()
 
@@ -2835,7 +2923,7 @@ def _render_auth_view():
     <span class="flow-icon">🧠</span>
   </div>
   <div class="flow-content">
-    <div class="flow-step-tag tag-cyan">STEP 05 • DISPATCH & UNLOCK</div>
+    <div class="flow-step-tag tag-cyan"><b>STEP 05 • DISPATCH & UNLOCK</b></div>
     <div class="flow-node-title"><span class="gradient-text">Spawn AI Agent Squad</span></div>
     <div class="flow-node-sub">Instant Autonomous Workspace Access</div>
   </div>
