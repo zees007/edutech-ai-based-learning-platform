@@ -165,11 +165,11 @@ HOME_CSS = """
         background: rgba(15, 23, 42, 0.85) !important;
         backdrop-filter: blur(20px) !important;
         -webkit-backdrop-filter: blur(20px) !important;
-        border: 1px solid rgba(168, 85, 247, 0.35) !important;
+        border: 1px solid rgba(168, 85, 247, 0.45) !important;
         border-radius: 50px !important;
         padding: 8px 24px !important;
         margin: 0rem 0 1.5rem 0 !important;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(168, 85, 247, 0.1) !important;
+        box-shadow: 0 0 30px rgba(168, 85, 247, 0.25), 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(168, 85, 247, 0.15) !important;
         width: 100% !important;
         box-sizing: border-box !important;
         align-items: center !important;
