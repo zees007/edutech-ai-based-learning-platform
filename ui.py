@@ -17,8 +17,17 @@ import asyncio
 import logging
 import time
 
+import os
 import streamlit as st
 import streamlit.components.v1 as components
+
+# Sync Streamlit Cloud secrets to os.environ for Pydantic Settings & Services
+if hasattr(st, "secrets"):
+    for key, value in st.secrets.items():
+        if isinstance(value, str) and key not in os.environ:
+            os.environ[key] = value
+        elif isinstance(value, (int, float, bool)) and key not in os.environ:
+            os.environ[key] = str(value)
 
 # ─── Page Configuration ──────────────────────────────────────────
 st.set_page_config(
