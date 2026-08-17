@@ -1732,6 +1732,41 @@ CUSTOM_CSS = """
         overflow: hidden;
     }
 
+    .cluster-spinner {
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        border: 2.5px solid rgba(168, 85, 247, 0.25);
+        border-top-color: #EC4899;
+        border-right-color: #A855F7;
+        border-bottom-color: #06B6D4;
+        border-radius: 50%;
+        animation: spinCluster 0.85s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        vertical-align: middle;
+        margin-right: 8px;
+        box-shadow: 0 0 12px rgba(168, 85, 247, 0.8), inset 0 0 4px rgba(236, 72, 153, 0.4);
+    }
+
+    .agent-mini-spinner {
+        display: inline-block;
+        width: 11px;
+        height: 11px;
+        border: 2px solid rgba(192, 132, 252, 0.3);
+        border-top-color: #F472B6;
+        border-right-color: #C084FC;
+        border-bottom-color: #38BDF8;
+        border-radius: 50%;
+        animation: spinCluster 0.75s linear infinite;
+        vertical-align: middle;
+        margin-right: 5px;
+        box-shadow: 0 0 8px rgba(192, 132, 252, 0.8);
+    }
+
+    @keyframes spinCluster {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
     .agent-workflow-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
@@ -1749,9 +1784,10 @@ CUSTOM_CSS = """
     }
 
     .agent-card-item.active {
-        border-color: rgba(168, 85, 247, 0.7);
-        background: rgba(124, 58, 237, 0.18);
-        box-shadow: 0 0 20px rgba(168, 85, 247, 0.25);
+        border-color: rgba(168, 85, 247, 0.85);
+        background: linear-gradient(135deg, rgba(124, 58, 237, 0.25) 0%, rgba(236, 72, 153, 0.15) 100%);
+        box-shadow: 0 0 25px rgba(168, 85, 247, 0.35), inset 0 0 15px rgba(168, 85, 247, 0.15);
+        transform: translateY(-2px);
     }
 
     .agent-card-item.completed {
@@ -1782,7 +1818,14 @@ CUSTOM_CSS = """
     }
 
     .tag-completed { background: rgba(16, 185, 129, 0.2); color: #34D399; }
-    .tag-active { background: rgba(168, 85, 247, 0.25); color: #C084FC; }
+    .tag-active {
+        background: linear-gradient(135deg, rgba(168, 85, 247, 0.3) 0%, rgba(236, 72, 153, 0.25) 100%);
+        color: #F472B6;
+        border: 1px solid rgba(192, 132, 252, 0.4);
+        box-shadow: 0 0 10px rgba(168, 85, 247, 0.4);
+        display: inline-flex;
+        align-items: center;
+    }
     .tag-waiting { background: rgba(255, 255, 255, 0.05); color: #71717A; }
 
     .agent-desc {
@@ -1890,13 +1933,13 @@ def render_glassy_agent_loader_html(
 ) -> str:
     """
     Renders a vivid Glassmorphism AI Compute loader with glowing mesh gradients,
-    neural network node visualizers, and step-by-step agent workflow cards.
+    neural network node visualizers, glowing spinner, and step-by-step agent workflow cards.
     """
     def _status_tag(status: str) -> str:
         if status == "completed":
             return '<span class="agent-status-tag tag-completed">✓ COMPLETED</span>'
         elif status == "active":
-            return '<span class="agent-status-tag tag-active">⚡ EXECUTING...</span>'
+            return '<span class="agent-status-tag tag-active"><span class="agent-mini-spinner"></span>EXECUTING...</span>'
         else:
             return '<span class="agent-status-tag tag-waiting">⌛ QUEUED</span>'
 
@@ -1913,7 +1956,10 @@ def render_glassy_agent_loader_html(
 <div class="glass-loader-content">
 <div class="loader-header">
 <div>
-<div style="font-size: 0.75rem; font-weight: 800; color: #A78BFA; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 4px;">⚡ EDU-TECH AI COMPUTE CLUSTER &nbsp;•&nbsp; NEURAL INFERENCE</div>
+<div style="display: flex; align-items: center; font-size: 0.75rem; font-weight: 800; color: #A78BFA; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 4px;">
+<span class="cluster-spinner"></span>
+<span>EDU-TECH AI COMPUTE CLUSTER &nbsp;•&nbsp; NEURAL INFERENCE</span>
+</div>
 <div class="loader-title">{title}</div>
 <div style="color: #94A3B8; font-size: 0.88rem; margin-top: 2px;">{subtitle}</div>
 </div>

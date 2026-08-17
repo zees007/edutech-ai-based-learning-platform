@@ -55,10 +55,12 @@ class LLMClient:
             self._groq_client = AsyncGroq(
                 api_key=self.settings.groq_api_key or "",
                 base_url=base_url,
+                timeout=self.settings.llm_timeout,
             )
             logger.info(
                 f"LLM client initialized: provider=groq, "
-                f"base_url={base_url or 'default (Groq Cloud)'}"
+                f"base_url={base_url or 'default (Groq Cloud)'}, "
+                f"timeout={self.settings.llm_timeout}s"
             )
         else:
             raw_base_url = (self.settings.llm_base_url or "").rstrip("/")
@@ -76,11 +78,12 @@ class LLMClient:
 
             self._http_client = httpx.AsyncClient(
                 headers=headers,
-                timeout=httpx.Timeout(180.0, connect=15.0),
+                timeout=httpx.Timeout(self.settings.llm_timeout, connect=15.0),
             )
             logger.info(
                 f"LLM client initialized: provider={self.settings.llm_provider.value}, "
-                f"base_url={self._base_url}"
+                f"base_url={self._base_url}, "
+                f"timeout={self.settings.llm_timeout}s"
             )
 
     async def chat(
