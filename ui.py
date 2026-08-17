@@ -685,21 +685,21 @@ CUSTOM_CSS = """
         flex-direction: row !important;
         align-items: center !important;
         justify-content: center !important;
-        gap: 14px !important;
+        gap: 12px !important;
         background: linear-gradient(135deg, rgba(20, 13, 33, 0.96) 0%, rgba(30, 20, 50, 0.92) 100%) !important;
         backdrop-filter: blur(25px) !important;
         -webkit-backdrop-filter: blur(25px) !important;
         border: 1.5px solid rgba(168, 85, 247, 0.55) !important;
-        border-radius: 50px !important;
-        padding: 14px 28px !important;
+        border-radius: 20px !important;
+        padding: 12px 20px !important;
         margin: 1.2rem auto !important;
         box-shadow: 0 0 35px rgba(168, 85, 247, 0.35), 0 10px 30px rgba(0, 0, 0, 0.6), inset 0 0 20px rgba(168, 85, 247, 0.15) !important;
         width: fit-content !important;
-        max-width: 95% !important;
+        max-width: 100% !important;
         box-sizing: border-box !important;
         animation: spinnerGlowPulse 2.5s infinite ease-in-out !important;
         position: relative !important;
-        overflow: hidden !important;
+        overflow: visible !important;
     }
 
     /* Top Accent Line for Spinner */
@@ -707,7 +707,7 @@ CUSTOM_CSS = """
     .stSpinner::before {
         content: '' !important;
         position: absolute !important;
-        top: 0 !important; left: 15% !important; right: 15% !important; height: 2px !important;
+        top: 0 !important; left: 10% !important; right: 10% !important; height: 2px !important;
         background: linear-gradient(90deg, transparent 0%, #EC4899 30%, #A855F7 50%, #06B6D4 70%, transparent 100%) !important;
         border-radius: 2px !important;
         box-shadow: 0 0 10px #EC4899, 0 0 14px #A855F7 !important;
@@ -745,21 +745,24 @@ CUSTOM_CSS = """
     .stSpinner div[data-testid="stMarkdownContainer"] {
         margin: 0 !important;
         padding: 0 !important;
+        max-width: 100% !important;
     }
 
     div[data-testid="stSpinner"] p,
     .stSpinner p {
-        font-size: 0.92rem !important;
+        font-size: 0.90rem !important;
         font-weight: 800 !important;
-        letter-spacing: 0.4px !important;
+        letter-spacing: 0.3px !important;
         background: linear-gradient(135deg, #F472B6 0%, #C084FC 50%, #38BDF8 100%) !important;
         -webkit-background-clip: text !important;
         -webkit-text-fill-color: transparent !important;
         margin: 0 !important;
         padding: 0 !important;
-        line-height: 1.3 !important;
+        line-height: 1.4 !important;
         text-shadow: 0 0 15px rgba(168, 85, 247, 0.3) !important;
-        white-space: nowrap !important;
+        white-space: normal !important;
+        word-break: break-word !important;
+        text-align: left !important;
     }
 
     /* Popover Content Styling */
