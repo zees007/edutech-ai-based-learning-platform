@@ -6,8 +6,8 @@ To switch providers, just change .env:
 
     # Groq (default)
     LLM_PROVIDER=groq
-    LLM_BASE_URL=https://api.groq.com/openai/v1
     GROQ_API_KEY=gsk_...
+    ORCHESTRATOR_MODEL=llama-3.1-8b-instant
 
     # Ollama (local)
     LLM_PROVIDER=ollama
@@ -20,9 +20,11 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import re
 from typing import Any, AsyncGenerator
 
 from groq import AsyncGroq, RateLimitError
+import httpx
 
 from config import LLMProvider, Settings, get_settings
 
@@ -33,28 +35,56 @@ class LLMClient:
     """
     Unified async LLM client.
 
-    Uses the Groq SDK (which is OpenAI-compatible) as the base client.
-    This means it works with Groq, Ollama, and any OpenAI-compatible endpoint
-    out of the box — just change the base_url.
+    Supports:
+    - Groq Cloud via Groq SDK
+    - Ollama (local) via OpenAI-compatible HTTP API
+    - Any OpenAI-compatible endpoint via HTTP API
     """
 
     def __init__(self, settings: Settings | None = None):
         self.settings = settings or get_settings()
+        self._groq_client: AsyncGroq | None = None
+        self._http_client: httpx.AsyncClient | None = None
+        self._base_url: str = ""
 
-        # For Groq provider, omit base_url (or ignore https://api.groq.com/...) so the Groq SDK uses its native endpoint
-        base_url = self.settings.llm_base_url
         if self.settings.llm_provider == LLMProvider.GROQ:
+            base_url = self.settings.llm_base_url
             if not base_url or "api.groq.com" in base_url:
                 base_url = None
 
-        self._client = AsyncGroq(
-            api_key=self.settings.groq_api_key or "ollama",  # Ollama doesn't need a real key
-            base_url=base_url,
-        )
-        logger.info(
-            f"LLM client initialized: provider={self.settings.llm_provider.value}, "
-            f"base_url={base_url or 'default'}"
-        )
+            self._groq_client = AsyncGroq(
+                api_key=self.settings.groq_api_key or "",
+                base_url=base_url,
+                timeout=self.settings.llm_timeout,
+            )
+            logger.info(
+                f"LLM client initialized: provider=groq, "
+                f"base_url={base_url or 'default (Groq Cloud)'}, "
+                f"timeout={self.settings.llm_timeout}s"
+            )
+        else:
+            raw_base_url = (self.settings.llm_base_url or "").rstrip("/")
+            if not raw_base_url:
+                raw_base_url = "http://localhost:11434/v1"
+            elif self.settings.llm_provider == LLMProvider.OLLAMA and not raw_base_url.endswith("/v1"):
+                raw_base_url = f"{raw_base_url}/v1"
+
+            self._base_url = raw_base_url
+            headers = {"Content-Type": "application/json"}
+            if self.settings.groq_api_key:
+                headers["Authorization"] = f"Bearer {self.settings.groq_api_key}"
+            else:
+                headers["Authorization"] = "Bearer ollama"
+
+            self._http_client = httpx.AsyncClient(
+                headers=headers,
+                timeout=httpx.Timeout(self.settings.llm_timeout, connect=15.0),
+            )
+            logger.info(
+                f"LLM client initialized: provider={self.settings.llm_provider.value}, "
+                f"base_url={self._base_url}, "
+                f"timeout={self.settings.llm_timeout}s"
+            )
 
     async def chat(
         self,
@@ -69,7 +99,7 @@ class LLMClient:
         Send a chat completion request and return the full response text.
 
         Args:
-            model: Model name (e.g., "llama-3.1-8b-instant")
+            model: Model name (e.g., "llama-3.1-8b-instant" or "llama3.1:8b")
             messages: Chat messages [{"role": "system", "content": "..."}, ...]
             temperature: Sampling temperature (0.0 = deterministic, 1.0 = creative)
             max_tokens: Maximum tokens in the response
@@ -79,23 +109,46 @@ class LLMClient:
         Returns:
             The model's response text.
         """
-        completion_kwargs: dict[str, Any] = {
-            "model": model,
-            "messages": messages,
-            "temperature": temperature,
-            "max_tokens": max_tokens,
-            **kwargs,
-        }
-        if response_format is not None:
-            completion_kwargs["response_format"] = response_format
+        if self.settings.llm_provider == LLMProvider.GROQ and self._groq_client:
+            completion_kwargs: dict[str, Any] = {
+                "model": model,
+                "messages": messages,
+                "temperature": temperature,
+                "max_tokens": max_tokens,
+                **kwargs,
+            }
+            if response_format is not None:
+                completion_kwargs["response_format"] = response_format
 
-        response = await self._call_with_retry(
-            self._client.chat.completions.create,
-            **completion_kwargs,
-        )
-        content = response.choices[0].message.content or ""
-        logger.debug(f"LLM response ({model}): {content[:100]}...")
-        return content
+            response = await self._call_with_retry(
+                self._groq_client.chat.completions.create,
+                **completion_kwargs,
+            )
+            content = response.choices[0].message.content or ""
+            logger.debug(f"LLM response ({model}): {content[:100]}...")
+            return content
+        else:
+            url = f"{self._base_url}/chat/completions"
+            payload: dict[str, Any] = {
+                "model": model,
+                "messages": messages,
+                "temperature": temperature,
+                "max_tokens": max_tokens,
+                **kwargs,
+            }
+            if response_format is not None:
+                payload["response_format"] = response_format
+
+            async def _send():
+                assert self._http_client is not None
+                response = await self._http_client.post(url, json=payload)
+                response.raise_for_status()
+                return response.json()
+
+            data = await self._call_with_retry(_send)
+            content = data["choices"][0]["message"]["content"] or ""
+            logger.debug(f"LLM response ({model}): {content[:100]}...")
+            return content
 
     async def chat_stream(
         self,
@@ -111,19 +164,48 @@ class LLMClient:
         Yields:
             Individual text chunks as they arrive from the model.
         """
-        response = await self._call_with_retry(
-            self._client.chat.completions.create,
-            model=model,
-            messages=messages,
-            temperature=temperature,
-            max_tokens=max_tokens,
-            stream=True,
-            **kwargs,
-        )
-
-        async for chunk in response:
-            if chunk.choices and chunk.choices[0].delta.content:
-                yield chunk.choices[0].delta.content
+        if self.settings.llm_provider == LLMProvider.GROQ and self._groq_client:
+            response = await self._call_with_retry(
+                self._groq_client.chat.completions.create,
+                model=model,
+                messages=messages,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                stream=True,
+                **kwargs,
+            )
+            async for chunk in response:
+                if chunk.choices and chunk.choices[0].delta.content:
+                    yield chunk.choices[0].delta.content
+        else:
+            url = f"{self._base_url}/chat/completions"
+            payload: dict[str, Any] = {
+                "model": model,
+                "messages": messages,
+                "temperature": temperature,
+                "max_tokens": max_tokens,
+                "stream": True,
+                **kwargs,
+            }
+            assert self._http_client is not None
+            async with self._http_client.stream("POST", url, json=payload) as resp:
+                resp.raise_for_status()
+                async for line in resp.aiter_lines():
+                    line = line.strip()
+                    if not line or not line.startswith("data:"):
+                        continue
+                    data_str = line[5:].strip()
+                    if data_str == "[DONE]":
+                        break
+                    try:
+                        chunk_data = json.loads(data_str)
+                        choices = chunk_data.get("choices", [])
+                        if choices and "delta" in choices[0]:
+                            delta_content = choices[0]["delta"].get("content", "")
+                            if delta_content:
+                                yield delta_content
+                    except json.JSONDecodeError:
+                        continue
 
     async def chat_json(
         self,
@@ -151,7 +233,6 @@ class LLMClient:
             return json.loads(response_text)
         except json.JSONDecodeError as e:
             logger.error(f"Failed to parse JSON from LLM response: {e}\nResponse: {response_text[:500]}")
-            # Try to extract JSON from the response (common with some models)
             return self._extract_json(response_text)
 
     async def _call_with_retry(self, func, **kwargs) -> Any:
@@ -164,7 +245,10 @@ class LLMClient:
         for attempt in range(max_retries + 1):
             try:
                 return await func(**kwargs)
-            except RateLimitError as e:
+            except (RateLimitError, httpx.HTTPStatusError) as e:
+                if isinstance(e, httpx.HTTPStatusError) and e.response.status_code != 429:
+                    logger.error(f"HTTP error {e.response.status_code}: {e.response.text}")
+                    raise
                 if attempt == max_retries:
                     logger.error(f"Rate limit exceeded after {max_retries} retries")
                     raise
@@ -184,8 +268,6 @@ class LLMClient:
         Try to extract JSON from a text response that may contain extra content.
         Handles cases where models wrap JSON in markdown code blocks.
         """
-        # Try to find JSON within code blocks
-        import re
         json_match = re.search(r"```(?:json)?\s*\n?(.*?)\n?```", text, re.DOTALL)
         if json_match:
             try:
@@ -193,7 +275,6 @@ class LLMClient:
             except json.JSONDecodeError:
                 pass
 
-        # Try to find raw JSON object/array
         for start_char, end_char in [("{", "}"), ("[", "]")]:
             start_idx = text.find(start_char)
             end_idx = text.rfind(end_char)
@@ -203,7 +284,6 @@ class LLMClient:
                 except json.JSONDecodeError:
                     continue
 
-        # Last resort — return empty dict
         logger.error(f"Could not extract JSON from response: {text[:200]}")
         return {}
 

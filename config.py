@@ -80,6 +80,7 @@ class Settings(BaseSettings):
     llm_provider: LLMProvider = LLMProvider.GROQ
     llm_base_url: str | None = None
     groq_api_key: str = ""
+    llm_timeout: float = Field(default=120.0, description="Max timeout in seconds for LLM responses")
 
     # ─── Model Assignments (per agent) ──────────────────────────
     orchestrator_model: str = "llama-3.1-8b-instant"
