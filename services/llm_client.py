@@ -221,19 +221,34 @@ class LLMClient:
 
         Uses lower temperature by default for more deterministic structured output.
         """
-        response_text = await self.chat(
-            model=model,
-            messages=messages,
-            temperature=temperature,
-            max_tokens=max_tokens,
-            response_format={"type": "json_object"},
-            **kwargs,
-        )
         try:
-            return json.loads(response_text)
+            response_text = await self.chat(
+                model=model,
+                messages=messages,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                response_format={"type": "json_object"},
+                **kwargs,
+            )
+        except Exception as e:
+            logger.warning(
+                f"JSON mode request failed ({e}); retrying with standard chat and JSON extraction..."
+            )
+            response_text = await self.chat(
+                model=model,
+                messages=messages,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                **kwargs,
+            )
+
+        # Strip any <think>...</think> reasoning blocks
+        cleaned_text = re.sub(r"<think>.*?</think>", "", response_text, flags=re.DOTALL).strip()
+        try:
+            return json.loads(cleaned_text or response_text)
         except json.JSONDecodeError as e:
             logger.error(f"Failed to parse JSON from LLM response: {e}\nResponse: {response_text[:500]}")
-            return self._extract_json(response_text)
+            return self._extract_json(cleaned_text or response_text)
 
     async def _call_with_retry(self, func, **kwargs) -> Any:
         """
@@ -266,9 +281,10 @@ class LLMClient:
     def _extract_json(text: str) -> dict:
         """
         Try to extract JSON from a text response that may contain extra content.
-        Handles cases where models wrap JSON in markdown code blocks.
+        Handles cases where models wrap JSON in markdown code blocks or output reasoning tokens.
         """
-        json_match = re.search(r"```(?:json)?\s*\n?(.*?)\n?```", text, re.DOTALL)
+        clean_text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
+        json_match = re.search(r"```(?:json)?\s*\n?(.*?)\n?```", clean_text, re.DOTALL)
         if json_match:
             try:
                 return json.loads(json_match.group(1))
@@ -276,11 +292,11 @@ class LLMClient:
                 pass
 
         for start_char, end_char in [("{", "}"), ("[", "]")]:
-            start_idx = text.find(start_char)
-            end_idx = text.rfind(end_char)
+            start_idx = clean_text.find(start_char)
+            end_idx = clean_text.rfind(end_char)
             if start_idx != -1 and end_idx > start_idx:
                 try:
-                    return json.loads(text[start_idx : end_idx + 1])
+                    return json.loads(clean_text[start_idx : end_idx + 1])
                 except json.JSONDecodeError:
                     continue
 
