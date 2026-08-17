@@ -18,34 +18,34 @@ Always generate exactly 3 questions in this specific order:
 ## Output Format
 Respond with a JSON object in this exact structure:
 ```json
-{
+{{
   "questions": [
-    {
+    {{
       "index": 0,
       "question": "What is the primary function of...",
       "question_type": "multiple_choice",
       "options": ["A: Option 1", "B: Option 2", "C: Option 3", "D: Option 4"],
       "correct_answer": "A: Option 1",
       "explanation": "Why this is correct"
-    },
-    {
+    }},
+    {{
       "index": 1,
       "question": "True or False: Statement about the topic.",
       "question_type": "true_false",
       "options": ["True", "False"],
       "correct_answer": "True",
       "explanation": "Why this statement is true"
-    },
-    {
+    }},
+    {{
       "index": 2,
       "question": "Fill in the blank: The key mechanism used in this step is ___.",
       "question_type": "fill_in_blank",
       "options": [],
       "correct_answer": "the term",
       "explanation": "Why this term fills the blank"
-    }
+    }}
   ]
-}
+}}
 ```
 
 ## Rules

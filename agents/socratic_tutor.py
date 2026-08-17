@@ -14,6 +14,7 @@ Supports token-by-token streaming via Groq streaming API for real-time UI render
 
 from __future__ import annotations
 
+import re
 from typing import Any, AsyncGenerator
 
 from agents.base import BaseAgent
@@ -283,6 +284,11 @@ class SocraticTutorAgent(BaseAgent):
 
         The prompt instructs the tutor to use "**Socratic Questions:**" as a delimiter.
         """
+        # Strip any <think>...</think> reasoning blocks
+        cleaned_response = re.sub(r"<think>.*?</think>", "", response, flags=re.DOTALL).strip()
+        if not cleaned_response:
+            cleaned_response = response
+
         # Look for the Socratic Questions section
         delimiter_variants = [
             "**Socratic Questions:**",
@@ -292,12 +298,12 @@ class SocraticTutorAgent(BaseAgent):
             "**Guiding Questions:**",
         ]
 
-        explanation = response
+        explanation = cleaned_response
         questions = []
 
         for delimiter in delimiter_variants:
-            if delimiter in response:
-                parts = response.split(delimiter, 1)
+            if delimiter in cleaned_response:
+                parts = cleaned_response.split(delimiter, 1)
                 explanation = parts[0].strip()
                 questions_text = parts[1].strip()
 

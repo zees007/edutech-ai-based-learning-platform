@@ -2322,6 +2322,26 @@ def render_learning_workspace():
                 st.markdown("<hr style='border-color:rgba(168,85,247,0.25); margin:8px 0;'>", unsafe_allow_html=True)
                 if st.button("⏻ Sign Out", key="nav_logout_btn", type="primary", use_container_width=True):
                     st.session_state["user_profile"] = None
+                    st.session_state["memory"] = None
+                    st.session_state["active_step_index"] = 0
+                    st.session_state["last_topic"] = None
+                    if "quick_launch_topic" in st.session_state:
+                        del st.session_state["quick_launch_topic"]
+                    for k in list(st.session_state.keys()):
+                        if any(
+                            k.startswith(pfx)
+                            for pfx in [
+                                "step_agents_ran_",
+                                "quiz_submitted_",
+                                "saved_user_answers_",
+                                "saved_user_full_answers_",
+                                "xp_awarded_",
+                                "show_victory_modal_",
+                                "victory_modal_dismissed_",
+                                "session_hist_",
+                            ]
+                        ):
+                            del st.session_state[k]
                     st.session_state["view"] = "home"
                     st.query_params.clear()
                     st.toast("Logged out successfully.", icon="ℹ️")
@@ -2638,6 +2658,174 @@ def render_learning_workspace():
         # Start Learning Journey Button
         start_clicked = st.button("🚀 Start Learning Journey", type="primary", use_container_width=True)
 
+        # ─── Sidebar Learning History & Search Component ─────────────────
+        st.markdown("<hr style='border-color:rgba(168,85,247,0.25); margin:18px 0 12px 0;'>", unsafe_allow_html=True)
+        st.markdown(
+            """
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                <div style="font-weight: 800; font-size: 0.92rem; color: #FAFAFA; display: flex; align-items: center; gap: 6px;">
+                    <span>📜</span> <span>Learning History</span>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        # Multi-Criteria Search Input
+        hist_search_val = st.text_input(
+            "Search your learning sessions",
+            value=st.session_state.get("session_hist_search_val", ""),
+            placeholder="🔍 Search topic, mode, level...",
+            key="sb_hist_search_input",
+            label_visibility="collapsed",
+        )
+        if hist_search_val != st.session_state.get("session_hist_search_val", ""):
+            st.session_state["session_hist_search_val"] = hist_search_val
+            st.session_state["session_hist_page"] = 0  # Reset to page 0 on search
+
+        # Status Filter Segment Chips
+        filter_cols = st.columns(3)
+        current_filter = st.session_state.get("session_hist_filter", "all")
+
+        with filter_cols[0]:
+            if st.button("All", key="hist_flt_all", type="primary" if current_filter == "all" else "secondary", use_container_width=True):
+                st.session_state["session_hist_filter"] = "all"
+                st.session_state["session_hist_page"] = 0
+                st.rerun()
+        with filter_cols[1]:
+            if st.button("⚡ Active", key="hist_flt_act", type="primary" if current_filter == "in_progress" else "secondary", use_container_width=True):
+                st.session_state["session_hist_filter"] = "in_progress"
+                st.session_state["session_hist_page"] = 0
+                st.rerun()
+        with filter_cols[2]:
+            if st.button("✅ Done", key="hist_flt_comp", type="primary" if current_filter == "completed" else "secondary", use_container_width=True):
+                st.session_state["session_hist_filter"] = "completed"
+                st.session_state["session_hist_page"] = 0
+                st.rerun()
+
+        current_hist_page = st.session_state.get("session_hist_page", 0)
+        hist_page_size = 20
+
+        # Query User Sessions from Database
+        user_sessions = []
+        total_sessions = 0
+        total_hist_pages = 1
+        try:
+            from models.user_schemas import SearchDTO
+            from services.session_manager import SessionManager
+
+            s_dto = SearchDTO(
+                page=current_hist_page,
+                size=hist_page_size,
+                sortBy="updated_at",
+                isDesc=True,
+                lookupText=hist_search_val.strip() if hist_search_val and hist_search_val.strip() else None,
+            )
+            user_sessions, total_sessions = run_async(
+                SessionManager().search_user_sessions(
+                    user_id=user_profile.id,
+                    dto=s_dto,
+                    status_filter=current_filter,
+                )
+            )
+            total_hist_pages = max(1, (total_sessions + hist_page_size - 1) // hist_page_size) if total_sessions > 0 else 1
+        except Exception as ex_sh:
+            logging.warning(f"Failed to query user session history: {ex_sh}")
+
+        st.markdown(
+            f"<div style='font-size: 0.74rem; color: rgba(233,213,255,0.7); margin: 6px 0 8px 0;'><b>{total_sessions}</b> session(s) • Page {current_hist_page + 1} of {total_hist_pages}</div>",
+            unsafe_allow_html=True,
+        )
+
+        active_mem = st.session_state.get("memory")
+        active_session_id = active_mem.session_id if active_mem else None
+
+        if not user_sessions:
+            st.markdown(
+                """
+                <div style="background: rgba(168,85,247,0.08); border: 1px dashed rgba(168,85,247,0.3); border-radius: 10px; padding: 12px; text-align: center; font-size: 0.78rem; color: rgba(255,255,255,0.65);">
+                    No sessions match. Start a new topic above! 🚀
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+        else:
+            for s_info in user_sessions:
+                s_id = s_info["session_id"]
+                s_topic = s_info["topic"]
+                s_complete = s_info["is_complete"]
+                s_tot_steps = s_info.get("total_steps", 0)
+                s_cur_step = s_info.get("current_step_index", 0)
+                s_xp = s_info.get("xp_earned", 0)
+                is_active_session = (active_session_id == s_id)
+
+                status_tag = "✅ COMPLETED" if s_complete else f"⚡ STEP {min(s_cur_step + 1, s_tot_steps)}/{s_tot_steps}"
+                status_color = "#34D399" if s_complete else "#C084FC"
+                status_bg = "rgba(16, 185, 129, 0.18)" if s_complete else "rgba(168, 85, 247, 0.22)"
+                status_border = "rgba(16, 185, 129, 0.4)" if s_complete else "rgba(168, 85, 247, 0.45)"
+
+                card_active_style = "border: 1.5px solid #A855F7; box-shadow: 0 0 14px rgba(168,85,247,0.45);" if is_active_session else "border: 1px solid rgba(255,255,255,0.08);"
+                truncated_topic = (s_topic[:28] + "...") if len(s_topic) > 28 else s_topic
+
+                st.markdown(
+                    f"""
+                    <div style="background: rgba(15, 10, 26, 0.85); {card_active_style} border-radius: 9px; padding: 7px 9px 5px 9px; margin-bottom: 5px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px;">
+                            <span style="background: {status_bg}; color: {status_color}; border: 1px solid {status_border}; font-size: 0.65rem; font-weight: 800; padding: 1px 6px; border-radius: 9999px; letter-spacing: 0.3px;">{status_tag}</span>
+                            <span style="font-size: 0.7rem; color: #38BDF8; font-weight: 700;">+{s_xp} XP</span>
+                        </div>
+                        <div style="font-weight: 700; font-size: 0.82rem; color: #FAFAFA; line-height: 1.25; margin-bottom: 4px;" title="{s_topic}">{truncated_topic}</div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+
+                rc1, rc2 = st.columns([4.2, 1])
+                with rc1:
+                    r_label = "🟢 Active" if is_active_session else ("Review Roadmap" if s_complete else "Resume Learning →")
+                    if st.button(r_label, key=f"sb_res_{s_id}", type="primary" if is_active_session else "secondary", use_container_width=True, disabled=is_active_session):
+                        with st.spinner("Resuming learning session..."):
+                            loaded = run_async(SessionManager().get_session(s_id))
+                            if loaded:
+                                # Clear transient keys
+                                for k in list(st.session_state.keys()):
+                                    if any(k.startswith(pfx) for pfx in ["step_agents_ran_", "quiz_submitted_", "saved_user_answers_", "saved_user_full_answers_", "xp_awarded_"]):
+                                        del st.session_state[k]
+
+                                st.session_state["memory"] = loaded
+                                target_idx = 0
+                                for idx, step_obj in enumerate(loaded.steps):
+                                    if step_obj.status != StepStatus.COMPLETE:
+                                        target_idx = idx
+                                        break
+                                st.session_state["active_step_index"] = target_idx
+                                st.session_state["last_topic"] = loaded.topic
+                                st.toast(f"Resumed '{loaded.topic}' at Step {target_idx + 1}!", icon="🚀")
+                                st.rerun()
+                with rc2:
+                    if st.button("🗑️", key=f"sb_del_{s_id}", help="Delete this session", use_container_width=True):
+                        run_async(SessionManager().delete_session(s_id, user_id=user_profile.id))
+                        if active_session_id == s_id:
+                            st.session_state["memory"] = None
+                            st.session_state["active_step_index"] = 0
+                        st.toast("Session deleted.", icon="🗑️")
+                        st.rerun()
+
+            # Sidebar Pagination Controls
+            if total_hist_pages > 1:
+                st.markdown("<div style='height: 4px;'></div>", unsafe_allow_html=True)
+                pg_c1, pg_c2, pg_c3 = st.columns([1.2, 2.6, 1.2], vertical_alignment="center")
+                with pg_c1:
+                    if st.button("◀", key="sb_pg_prev", disabled=(current_hist_page <= 0), use_container_width=True):
+                        st.session_state["session_hist_page"] = current_hist_page - 1
+                        st.rerun()
+                with pg_c2:
+                    st.markdown(f"<div style='text-align: center; font-size: 0.75rem; color: #E9D5FF;'>Page <b>{current_hist_page + 1}</b> / <b>{total_hist_pages}</b></div>", unsafe_allow_html=True)
+                with pg_c3:
+                    if st.button("▶", key="sb_pg_next", disabled=(current_hist_page >= total_hist_pages - 1), use_container_width=True):
+                        st.session_state["session_hist_page"] = current_hist_page + 1
+                        st.rerun()
+
     # ─── Session Initialization Logic ────────────────────────────────
     if start_clicked and topic_input:
         st.session_state["last_topic"] = topic_input
@@ -2659,8 +2847,9 @@ def render_learning_workspace():
             unsafe_allow_html=True,
         )
 
-        # Initialize SharedMemory
+        # Initialize SharedMemory with user_id
         new_memory = SharedMemory(
+            user_id=user_profile.id,
             topic=topic_input,
             learning_mode=selected_mode,
             student_level=selected_level,
@@ -2704,10 +2893,10 @@ def render_learning_workspace():
         time.sleep(0.5)
         loader_placeholder.empty()
 
-        # Persist session to PostgreSQL database in Supabase
+        # Persist session to PostgreSQL database linked to current user
         try:
             from services.session_manager import SessionManager
-            run_async(SessionManager().create_session(new_memory))
+            run_async(SessionManager().create_session(new_memory, user_id=user_profile.id))
         except Exception as e:
             logging.warning(f"Could not persist session to database: {e}")
 
@@ -2735,12 +2924,66 @@ def render_learning_workspace():
                     <span>Sidebar</span>
                 </div>
                 <div class="guide-text-content">
-                    Enter any topic in the sidebar & click <span class="gradient-text" style="font-weight: 800;">'Start Learning Journey'</span> to launch your multi-agent studio!
+                    Enter any topic in the sidebar & click <span class="gradient-text" style="font-weight: 800;">'Start Learning Journey'</span> or resume a past journey from your history!
                 </div>
             </div>
             """,
             unsafe_allow_html=True,
         )
+
+        # Quick In-Progress Session Resume Card (if user has active topics in DB)
+        try:
+            from models.user_schemas import SearchDTO
+            from services.session_manager import SessionManager
+            ip_dto = SearchDTO(page=0, size=3, sortBy="updated_at", isDesc=True)
+            ip_sessions, _ = run_async(SessionManager().search_user_sessions(user_profile.id, ip_dto, status_filter="in_progress"))
+            if ip_sessions:
+                st.markdown("### ⚡ **Continue Your Active Journeys**")
+                ip_cols = st.columns(min(len(ip_sessions), 3))
+                for idx_ip, sess_ip in enumerate(ip_sessions[:3]):
+                    with ip_cols[idx_ip]:
+                        s_id = sess_ip["session_id"]
+                        s_top = sess_ip["topic"]
+                        s_cur = sess_ip.get("current_step_index", 0)
+                        s_tot = sess_ip.get("total_steps", 0)
+                        s_xp = sess_ip.get("xp_earned", 0)
+                        s_pct = (s_cur / s_tot * 100) if s_tot else 0
+
+                        st.markdown(
+                            f"""
+                            <div class="glass-card" style="padding: 1rem; border: 1px solid rgba(168,85,247,0.35); margin-bottom: 8px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                    <span style="background: rgba(168, 85, 247, 0.25); color: #C084FC; border: 1px solid rgba(168, 85, 247, 0.5); font-size: 0.72rem; font-weight: 800; padding: 2px 8px; border-radius: 9999px;">⚡ STEP {min(s_cur+1, s_tot)}/{s_tot}</span>
+                                    <span style="font-size: 0.75rem; color: #38BDF8; font-weight: 700;">+{s_xp} XP</span>
+                                </div>
+                                <h4 style="font-size: 0.95rem; font-weight: 800; color: #FAFAFA; margin: 4px 0 8px 0; min-height: 40px;">{s_top}</h4>
+                                <div class="custom-progress-track" style="height: 6px; margin-bottom: 10px;">
+                                    <div class="custom-progress-fill" style="width: {s_pct:.0f}%;"></div>
+                                </div>
+                            </div>
+                            """,
+                            unsafe_allow_html=True,
+                        )
+                        if st.button(f"Resume '{s_top[:16]}...' →", key=f"main_res_{s_id}", type="primary", use_container_width=True):
+                            with st.spinner("Resuming learning session..."):
+                                loaded = run_async(SessionManager().get_session(s_id))
+                                if loaded:
+                                    for k in list(st.session_state.keys()):
+                                        if any(k.startswith(pfx) for pfx in ["step_agents_ran_", "quiz_submitted_", "saved_user_answers_", "saved_user_full_answers_", "xp_awarded_"]):
+                                            del st.session_state[k]
+                                    st.session_state["memory"] = loaded
+                                    target_idx = 0
+                                    for i_st, st_ob in enumerate(loaded.steps):
+                                        if st_ob.status != StepStatus.COMPLETE:
+                                            target_idx = i_st
+                                            break
+                                    st.session_state["active_step_index"] = target_idx
+                                    st.session_state["last_topic"] = loaded.topic
+                                    st.toast(f"Resumed '{loaded.topic}' at Step {target_idx + 1}!", icon="🚀")
+                                    st.rerun()
+                st.markdown("<br>", unsafe_allow_html=True)
+        except Exception as ex_ip:
+            logging.debug(f"Notice: Could not load quick resume cards: {ex_ip}")
         
         # 4 Agent Squad Cards (Matching Landing Page Grid Aesthetic)
         col1, col2, col3, col4 = st.columns(4)

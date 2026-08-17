@@ -81,6 +81,12 @@ class User(LoggedEntity, Base):
         cascade="all, delete-orphan",
         lazy="selectin",
     )
+    sessions: Mapped[list[SessionRecord]] = relationship(
+        "SessionRecord",
+        back_populates="user",
+        cascade="all, delete-orphan",
+        lazy="selectin",
+    )
 
     def __repr__(self) -> str:
         return f"<User {self.id} {self.first_name} {self.last_name} ({self.email})>"
@@ -189,6 +195,9 @@ class SessionRecord(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     session_id: Mapped[str] = mapped_column(String(24), unique=True, index=True, nullable=False)
+    user_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
     topic: Mapped[str] = mapped_column(Text, nullable=False)
     learning_mode: Mapped[str] = mapped_column(String(20), nullable=False, default="visual")
     student_level: Mapped[str] = mapped_column(String(30), nullable=False, default="general")
@@ -202,6 +211,8 @@ class SessionRecord(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, server_default=func.now(), onupdate=func.now()
     )
+
+    user: Mapped[User] = relationship("User", back_populates="sessions")
 
     def __repr__(self) -> str:
         return f"<Session {self.session_id}: '{self.topic[:40]}'>"
