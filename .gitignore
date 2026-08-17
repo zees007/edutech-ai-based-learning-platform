@@ -12,11 +12,13 @@ build/
 venv/
 env/
 
-# ─── Environment Variables ───
+# ─── Environment Variables & Secrets ───
 .env
 .env.*
 .evn
 .evn.*
+.streamlit/secrets.toml
+.streamlit/secrets.*.toml
 
 # ─── Data (generated at runtime) ───
 data/

@@ -5,11 +5,50 @@ Reads all settings from .env file. Every model name, API key, and provider URL
 is configurable here so you can swap providers without touching code.
 """
 
+import os
 from enum import Enum
 from pathlib import Path
+from typing import Any
 
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+def sync_streamlit_secrets() -> None:
+    """
+    Safely synchronize Streamlit secrets (from secrets.toml or Streamlit Cloud Secrets)
+    into os.environ so Pydantic Settings and backend services can read them.
+
+    Catches StreamlitSecretNotFoundError and other exceptions gracefully
+    when no secrets file or cloud secrets are configured.
+    """
+    try:
+        import streamlit as st
+        secrets_obj = getattr(st, "secrets", None)
+        if secrets_obj is None:
+            return
+
+        def _flatten_secrets(data: Any, prefix: str = "") -> None:
+            if hasattr(data, "items"):
+                for k, v in data.items():
+                    key_str = str(k)
+                    flat_key = f"{prefix}{key_str}"
+                    if hasattr(v, "items"):
+                        _flatten_secrets(v, prefix=f"{flat_key}_")
+                    else:
+                        val_str = str(v)
+                        for candidate_key in (key_str, key_str.upper(), flat_key, flat_key.upper()):
+                            if candidate_key not in os.environ:
+                                os.environ[candidate_key] = val_str
+
+        _flatten_secrets(secrets_obj)
+    except Exception:
+        # Streamlit not running, no secrets.toml found, or empty secrets on Streamlit Cloud
+        pass
+
+
+# Run safe secrets sync upon module import
+sync_streamlit_secrets()
 
 
 class LLMProvider(str, Enum):
@@ -121,5 +160,6 @@ def get_settings() -> Settings:
     """Get or create the global settings instance."""
     global _settings
     if _settings is None:
+        sync_streamlit_secrets()
         _settings = Settings()
     return _settings

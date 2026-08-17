@@ -21,13 +21,10 @@ import os
 import streamlit as st
 import streamlit.components.v1 as components
 
-# Sync Streamlit Cloud secrets to os.environ for Pydantic Settings & Services
-if hasattr(st, "secrets"):
-    for key, value in st.secrets.items():
-        if isinstance(value, str) and key not in os.environ:
-            os.environ[key] = value
-        elif isinstance(value, (int, float, bool)) and key not in os.environ:
-            os.environ[key] = str(value)
+from config import sync_streamlit_secrets
+
+# Safely sync Streamlit Cloud secrets to os.environ for Pydantic Settings & Services
+sync_streamlit_secrets()
 
 # ─── Page Configuration ──────────────────────────────────────────
 st.set_page_config(
