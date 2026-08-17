@@ -21,6 +21,11 @@ import logging
 import os
 import streamlit as st
 
+from config import sync_streamlit_secrets
+
+# Safely sync Streamlit Cloud secrets to os.environ
+sync_streamlit_secrets()
+
 logger = logging.getLogger(__name__)
 
 
