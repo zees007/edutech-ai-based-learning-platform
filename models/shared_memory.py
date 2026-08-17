@@ -49,6 +49,7 @@ class SharedMemory(BaseModel):
 
     # ─── Session Info (set once by API layer) ───────────────────
     session_id: str = Field(default_factory=lambda: uuid.uuid4().hex[:12])
+    user_id: str | None = None
     topic: str = ""
     learning_mode: LearningMode = LearningMode.VISUAL
     student_level: str = "general"
