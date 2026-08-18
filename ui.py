@@ -14,10 +14,11 @@ Features:
 from __future__ import annotations
 
 import asyncio
+import html
 import logging
+import os
 import time
 
-import os
 import streamlit as st
 import streamlit.components.v1 as components
 
@@ -936,40 +937,41 @@ CUSTOM_CSS = """
     }
 
     /* ── Glassmorphism Cards & Containers ────────────── */
-    .glass-card, .feat-card, .agent-glass {
-        position: relative;
-        background: linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(124, 58, 237, 0.16) 50%, rgba(15, 23, 42, 0.9) 100%);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border: 1px solid rgba(168, 85, 247, 0.4);
-        border-radius: 18px;
-        padding: 1.4rem;
-        margin-bottom: 1rem;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(168, 85, 247, 0.1);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        overflow: hidden;
+    .glass-card, .feat-card, .agent-glass, div[data-testid="stColumn"]:has(.aj-card-marker), div[data-testid="column"]:has(.aj-card-marker) {
+        position: relative !important;
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(124, 58, 237, 0.16) 50%, rgba(15, 23, 42, 0.9) 100%) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        border: 1px solid rgba(168, 85, 247, 0.4) !important;
+        border-radius: 18px !important;
+        padding: 1.4rem !important;
+        margin-bottom: 1rem !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), 0 0 25px rgba(168, 85, 247, 0.2), inset 0 0 20px rgba(168, 85, 247, 0.1) !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        overflow: hidden !important;
     }
 
-    .glass-card::before, .feat-card::before, .agent-glass::before, .top-progress-card::before {
-        content: '';
-        position: absolute;
-        top: 0; left: 15%; right: 15%; height: 2px;
-        background: linear-gradient(90deg, transparent 0%, #EC4899 30%, #A855F7 50%, #06B6D4 70%, transparent 100%);
-        border-radius: 2px;
-        opacity: 0.75;
-        transition: opacity 0.3s ease, box-shadow 0.3s ease;
+    .glass-card::before, .feat-card::before, .agent-glass::before, .top-progress-card::before, div[data-testid="stColumn"]:has(.aj-card-marker)::before, div[data-testid="column"]:has(.aj-card-marker)::before {
+        content: '' !important;
+        position: absolute !important;
+        top: 0 !important; left: 15% !important; right: 15% !important; height: 2px !important;
+        background: linear-gradient(90deg, transparent 0%, #EC4899 30%, #A855F7 50%, #06B6D4 70%, transparent 100%) !important;
+        border-radius: 2px !important;
+        opacity: 0.75 !important;
+        transition: opacity 0.3s ease, box-shadow 0.3s ease !important;
+        z-index: 5 !important;
     }
 
-    .glass-card:hover, .feat-card:hover, .agent-glass:hover {
-        background: linear-gradient(135deg, rgba(124, 58, 237, 0.28) 0%, rgba(59, 130, 246, 0.2) 50%, rgba(15, 23, 42, 0.95) 100%);
-        border-color: rgba(168, 85, 247, 0.75);
-        box-shadow: 0 0 40px rgba(168, 85, 247, 0.35), 0 12px 35px rgba(0, 0, 0, 0.5);
-        transform: translateY(-3px);
+    .glass-card:hover, .feat-card:hover, .agent-glass:hover, div[data-testid="stColumn"]:has(.aj-card-marker):hover, div[data-testid="column"]:has(.aj-card-marker):hover {
+        background: linear-gradient(135deg, rgba(124, 58, 237, 0.28) 0%, rgba(59, 130, 246, 0.2) 50%, rgba(15, 23, 42, 0.95) 100%) !important;
+        border-color: rgba(168, 85, 247, 0.75) !important;
+        box-shadow: 0 0 40px rgba(168, 85, 247, 0.35), 0 12px 35px rgba(0, 0, 0, 0.5), inset 0 0 25px rgba(168, 85, 247, 0.15) !important;
+        transform: translateY(-3px) !important;
     }
 
-    .glass-card:hover::before, .feat-card:hover::before, .agent-glass:hover::before {
-        opacity: 1;
-        box-shadow: 0 0 14px #EC4899, 0 0 20px #A855F7;
+    .glass-card:hover::before, .feat-card:hover::before, .agent-glass:hover::before, div[data-testid="stColumn"]:has(.aj-card-marker):hover::before, div[data-testid="column"]:has(.aj-card-marker):hover::before {
+        opacity: 1 !important;
+        box-shadow: 0 0 14px #EC4899, 0 0 20px #A855F7 !important;
     }
 
     .feat-card h4, .agent-glass h4, .glass-card h3 {
@@ -2228,6 +2230,92 @@ CUSTOM_CSS = """
         color: #94A3B8;
         line-height: 1.3;
     }
+
+    /* ── Active Journey Resume Cards (Uniform Glass Grid) ── */
+    div[data-testid="stHorizontalBlock"]:has(.aj-card-marker) {
+        align-items: stretch !important;
+        gap: 1.2rem !important;
+        margin-bottom: 1.5rem !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.aj-card-marker) > div[data-testid="stColumn"],
+    div[data-testid="stHorizontalBlock"]:has(.aj-card-marker) > div[data-testid="column"] {
+        display: flex !important;
+        flex-direction: column !important;
+        flex: 1 1 0 !important;
+        height: 100% !important;
+    }
+
+    div[data-testid="stColumn"]:has(.aj-card-marker),
+    div[data-testid="column"]:has(.aj-card-marker) {
+        padding: 1.3rem 1.2rem 1.1rem 1.2rem !important;
+        box-sizing: border-box !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+    }
+
+    div[data-testid="stColumn"]:has(.aj-card-marker) > div[data-testid="stVerticalBlock"],
+    div[data-testid="column"]:has(.aj-card-marker) > div[data-testid="stVerticalBlock"],
+    div[data-testid="stColumn"]:has(.aj-card-marker) > div[data-testid="stVerticalBlockBorderWrapper"],
+    div[data-testid="column"]:has(.aj-card-marker) > div[data-testid="stVerticalBlockBorderWrapper"] {
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+        height: 100% !important;
+        flex: 1 1 auto !important;
+        gap: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    .aj-topic-title {
+        font-size: 0.95rem !important;
+        font-weight: 800 !important;
+        color: #FAFAFA !important;
+        margin: 6px 0 10px 0 !important;
+        line-height: 1.35 !important;
+        height: 2.7em !important;
+        max-height: 2.7em !important;
+        display: -webkit-box !important;
+        -webkit-line-clamp: 2 !important;
+        -webkit-box-orient: vertical !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        word-break: break-word !important;
+    }
+
+    div[data-testid="stColumn"]:has(.aj-card-marker) div[data-testid="stElementContainer"]:has(div[data-testid="stButton"]),
+    div[data-testid="column"]:has(.aj-card-marker) div[data-testid="stElementContainer"]:has(div[data-testid="stButton"]),
+    div[data-testid="stColumn"]:has(.aj-card-marker) div[data-testid="stButton"],
+    div[data-testid="column"]:has(.aj-card-marker) div[data-testid="stButton"] {
+        margin-top: auto !important;
+        margin-bottom: 0 !important;
+        width: 100% !important;
+        padding-top: 14px !important;
+    }
+
+    div[data-testid="stColumn"]:has(.aj-card-marker) div[data-testid="stButton"] button,
+    div[data-testid="column"]:has(.aj-card-marker) div[data-testid="stButton"] button {
+        width: 100% !important;
+        border-radius: 12px !important;
+        font-size: 0.85rem !important;
+        font-weight: 800 !important;
+        padding: 8px 16px !important;
+        min-height: 38px !important;
+        height: 38px !important;
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%) !important;
+        border: none !important;
+        color: #FFFFFF !important;
+        box-shadow: 0 0 20px rgba(236, 72, 153, 0.4), 0 0 14px rgba(168, 85, 247, 0.35) !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+
+    div[data-testid="stColumn"]:has(.aj-card-marker) div[data-testid="stButton"] button:hover,
+    div[data-testid="column"]:has(.aj-card-marker) div[data-testid="stButton"] button:hover {
+        box-shadow: 0 0 32px rgba(236, 72, 153, 0.75), 0 0 20px rgba(6, 182, 212, 0.6) !important;
+        transform: translateY(-2px) !important;
+    }
 </style>
 """
 
@@ -3205,7 +3293,7 @@ def render_learning_workspace():
             ip_dto = SearchDTO(page=0, size=3, sortBy="updated_at", isDesc=True)
             ip_sessions, _ = run_async(SessionManager().search_user_sessions(user_profile.id, ip_dto, status_filter="in_progress"))
             if ip_sessions:
-                st.markdown("### ⚡ **Continue Your Active Journeys**")
+                st.markdown("### ⚡ **Continue Your Recent Active Journeys**")
                 ip_cols = st.columns(min(len(ip_sessions), 3))
                 for idx_ip, sess_ip in enumerate(ip_sessions[:3]):
                     with ip_cols[idx_ip]:
@@ -3216,22 +3304,22 @@ def render_learning_workspace():
                         s_xp = sess_ip.get("xp_earned", 0)
                         s_pct = (s_cur / s_tot * 100) if s_tot else 0
 
+                        esc_top = html.escape(s_top)
                         st.markdown(
                             f"""
-                            <div class="glass-card" style="padding: 1rem; border: 1px solid rgba(168,85,247,0.35); margin-bottom: 8px;">
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                                    <span style="background: rgba(168, 85, 247, 0.25); color: #C084FC; border: 1px solid rgba(168, 85, 247, 0.5); font-size: 0.72rem; font-weight: 800; padding: 2px 8px; border-radius: 9999px;">Step {min(s_cur+1, s_tot)}/{s_tot}</span>
-                                    <span style="font-size: 0.75rem; color: #38BDF8; font-weight: 700;">+{s_xp} XP</span>
-                                </div>
-                                <h4 style="font-size: 0.95rem; font-weight: 800; color: #FAFAFA; margin: 4px 0 8px 0; min-height: 40px;">{s_top}</h4>
-                                <div class="custom-progress-track" style="height: 6px; margin-bottom: 10px;">
-                                    <div class="custom-progress-fill" style="width: {s_pct:.0f}%;"></div>
-                                </div>
+                            <div class="aj-card-marker"></div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                <span style="background: rgba(168, 85, 247, 0.25); color: #C084FC; border: 1px solid rgba(168, 85, 247, 0.5); font-size: 0.72rem; font-weight: 800; padding: 2px 8px; border-radius: 9999px;">Step {min(s_cur+1, s_tot)}/{s_tot}</span>
+                                <span style="font-size: 0.75rem; color: #38BDF8; font-weight: 700;">+{s_xp} XP</span>
+                            </div>
+                            <div class="aj-topic-title" title="{esc_top}">{esc_top}</div>
+                            <div class="custom-progress-track" style="height: 6px; margin-bottom: 12px;">
+                                <div class="custom-progress-fill" style="width: {s_pct:.0f}%;"></div>
                             </div>
                             """,
                             unsafe_allow_html=True,
                         )
-                        if st.button(f"Resume '{s_top[:16]}...' →", key=f"main_res_{s_id}", type="primary", use_container_width=True):
+                        if st.button("Resume →", key=f"main_res_{s_id}", type="primary", use_container_width=True):
                             with st.spinner("Resuming learning session..."):
                                 loaded = run_async(SessionManager().get_session(s_id))
                                 if loaded:
