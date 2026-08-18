@@ -1366,14 +1366,68 @@ CUSTOM_CSS = """
     .prereq-badge {
         background: rgba(251, 191, 36, 0.15);
         color: #FBBF24;
-        border: 1px solid rgba(251, 191, 36, 0.4);
+        border: 1px solid rgba(251, 191, 36, 0.45);
         font-size: 0.72rem;
         font-weight: 800;
         padding: 3px 10px;
         border-radius: 20px;
         text-transform: uppercase;
         letter-spacing: 0.6px;
-        margin-left: 8px;
+        display: inline-flex;
+        align-items: center;
+        height: 24px;
+        box-sizing: border-box;
+        vertical-align: middle;
+    }
+
+    .milestone-badge {
+        background: rgba(99, 102, 241, 0.18);
+        color: #818CF8;
+        border: 1px solid rgba(99, 102, 241, 0.45);
+        font-size: 0.72rem;
+        font-weight: 800;
+        padding: 3px 10px;
+        border-radius: 20px;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        display: inline-flex;
+        align-items: center;
+        height: 24px;
+        box-sizing: border-box;
+        vertical-align: middle;
+    }
+
+    .compact-status-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        font-size: 0.72rem;
+        font-weight: 800;
+        padding: 3px 10px;
+        border-radius: 20px;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        white-space: nowrap;
+        height: 24px;
+        min-height: 24px;
+        box-sizing: border-box;
+        vertical-align: middle;
+    }
+    .compact-status-inprogress {
+        background: rgba(14, 165, 233, 0.2);
+        color: #38BDF8;
+        border: 1px solid rgba(56, 189, 248, 0.5);
+    }
+    .compact-status-complete {
+        background: rgba(16, 185, 129, 0.2);
+        color: #34D399;
+        border: 1px solid rgba(52, 211, 153, 0.5);
+    }
+    .compact-status-pending {
+        background: rgba(100, 116, 139, 0.2);
+        color: #94A3B8;
+        border: 1px solid rgba(148, 163, 184, 0.45);
     }
 
     /* ── Streamlit Button Overrides (Theme Matched) ───── */
@@ -1409,55 +1463,104 @@ CUSTOM_CSS = """
         transform: translateY(-2px) !important;
     }
 
-    /* ── Step Action Regenerate Button (Rightmost Alignment & Start Learning Journey Style) ── */
-    div[data-testid="stVerticalBlock"]:has(div[class*="st-key-regen_btn_"]),
-    div[data-testid="stColumn"]:has(div[class*="st-key-regen_btn_"]) div[data-testid="stVerticalBlock"],
-    div[data-testid="column"]:has(div[class*="st-key-regen_btn_"]) div[data-testid="stVerticalBlock"] {
-        align-items: flex-end !important;
-        justify-content: flex-end !important;
-        width: 100% !important;
+    /* ── Precise In-Line Alignment for Milestone Meta Row & Regenerate Pill ── */
+    div[data-testid="stColumn"]:has(.milestone-badge-row),
+    div[data-testid="column"]:has(.milestone-badge-row),
+    div[data-testid="stColumn"]:has(div[class*="st-key-regen_btn_"]),
+    div[data-testid="column"]:has(div[class*="st-key-regen_btn_"]) {
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        min-height: 28px !important;
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
     }
 
-    div[class*="st-key-regen_btn_"],
-    div.stElementContainer:has(div[class*="st-key-regen_btn_"]),
-    div[data-testid="stElementContainer"]:has(div[class*="st-key-regen_btn_"]) {
+    div[data-testid="stColumn"]:has(.milestone-badge-row) div[data-testid="stElementContainer"],
+    div[data-testid="column"]:has(.milestone-badge-row) div[data-testid="stElementContainer"] {
+        margin: 0 !important;
+        padding: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        height: 26px !important;
+    }
+
+    div[data-testid="stColumn"]:has(.milestone-badge-row) div[data-testid="stMarkdownContainer"] p,
+    div[data-testid="column"]:has(.milestone-badge-row) div[data-testid="stMarkdownContainer"] p {
+        margin: 0 !important;
+        padding: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        height: 26px !important;
+    }
+
+    div[data-testid="stColumn"]:has(div[class*="st-key-regen_btn_"]),
+    div[data-testid="column"]:has(div[class*="st-key-regen_btn_"]) {
+        align-items: flex-end !important;
+        justify-content: center !important;
+        text-align: right !important;
+    }
+
+    div[data-testid="stColumn"]:has(div[class*="st-key-regen_btn_"]) div[data-testid="stVerticalBlock"],
+    div[data-testid="column"]:has(div[class*="st-key-regen_btn_"]) div[data-testid="stVerticalBlock"],
+    div[data-testid="stColumn"]:has(div[class*="st-key-regen_btn_"]) div[data-testid="stElementContainer"],
+    div[data-testid="column"]:has(div[class*="st-key-regen_btn_"]) div[data-testid="stElementContainer"],
+    div[class*="st-key-regen_btn_"] {
         display: flex !important;
         justify-content: flex-end !important;
-        align-self: flex-end !important;
         align-items: center !important;
-        margin-left: auto !important;
-        margin-right: 0 !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        height: 26px !important;
     }
 
     div[class*="st-key-regen_btn_"] button {
         margin-left: auto !important;
         margin-right: 0 !important;
-        align-self: flex-end !important;
         background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%) !important;
         border: none !important;
-        border-radius: 9999px !important;
+        border-radius: 20px !important;
         color: #FFFFFF !important;
-        font-size: 0.85rem !important;
+        font-size: 0.72rem !important;
         font-weight: 800 !important;
-        letter-spacing: 0.4px !important;
-        padding: 7px 20px !important;
-        height: auto !important;
-        min-height: 38px !important;
-        box-shadow: 0 0 20px rgba(236, 72, 153, 0.4), 0 4px 15px rgba(0, 0, 0, 0.3) !important;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        letter-spacing: 0.6px !important;
+        text-transform: uppercase !important;
+        padding: 4px 14px !important;
+        height: 26px !important;
+        min-height: 26px !important;
+        line-height: 1.1 !important;
+        box-shadow: 0 0 12px rgba(236, 72, 153, 0.35) !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
         display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
-        gap: 8px !important;
+        gap: 5px !important;
         cursor: pointer !important;
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+        white-space: nowrap !important;
+        vertical-align: middle !important;
+        overflow: visible !important;
+    }
+
+    div[class*="st-key-regen_btn_"] button div[data-testid="stMarkdownContainer"],
+    div[class*="st-key-regen_btn_"] button div[data-testid="stMarkdownContainer"] p {
+        font-size: 0.72rem !important;
+        font-weight: 800 !important;
+        line-height: 1.1 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.6px !important;
+        white-space: nowrap !important;
+        overflow: visible !important;
+        color: #FFFFFF !important;
     }
 
     div[class*="st-key-regen_btn_"] button:hover {
         background: linear-gradient(135deg, #F43F5E 0%, #9333EA 50%, #2563EB 100%) !important;
-        box-shadow: 0 0 30px rgba(236, 72, 153, 0.7), 0 0 20px rgba(6, 182, 212, 0.5), 0 6px 20px rgba(0, 0, 0, 0.45) !important;
-        color: #FFFFFF !important;
-        transform: translateY(-2px) !important;
+        box-shadow: 0 0 18px rgba(236, 72, 153, 0.6) !important;
+        transform: translateY(-1px) !important;
     }
 
     div[class*="st-key-regen_btn_"] [data-testid="stIconMaterial"] {
@@ -3050,7 +3153,6 @@ def render_learning_workspace():
                                         break
                                 st.session_state["active_step_index"] = target_idx
                                 st.session_state["last_topic"] = loaded.topic
-                                st.toast(f"Opened '{loaded.topic}'!", icon="🚀")
                                 st.rerun()
 
                 with card_cols[1]:
@@ -3157,7 +3259,6 @@ def render_learning_workspace():
                                             break
                                     st.session_state["active_step_index"] = target_idx
                                     st.session_state["last_topic"] = loaded.topic
-                                    st.toast(f"Resumed '{loaded.topic}' at Step {target_idx + 1}!", icon="🚀")
                                     st.rerun()
                 st.markdown("<br>", unsafe_allow_html=True)
         except Exception as ex_ip:
@@ -3535,16 +3636,24 @@ def render_learning_workspace():
 
         st.markdown("<br>", unsafe_allow_html=True)
 
-        # ─── Linear Milestone Learning Roadmap Stepper ───────────────
-        st.markdown("### 🗺️ **Milestone Learning Roadmap**")
-        
         # Check active index
         active_idx = st.session_state.get("active_step_index", 0)
         if active_idx >= len(memory.steps):
             active_idx = 0
-
-        # Render Linear Stepper Nodes
         num_steps = len(memory.steps)
+
+        # ─── Linear Milestone Learning Roadmap Stepper ───────────────
+        st.markdown(
+            f"""
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px;">
+                <span style="font-size: 1.3rem; font-weight: 800; color: #FAFAFA; letter-spacing: 0.2px;">🗺️ Milestone Learning Roadmap</span>
+                <span style="background: linear-gradient(135deg, rgba(236, 72, 153, 0.15) 0%, rgba(168, 85, 247, 0.2) 100%); border: 1px solid rgba(168, 85, 247, 0.4); padding: 4px 14px; border-radius: 9999px; font-size: 0.9rem; font-weight: 700; color: #F1F5F9; box-shadow: 0 2px 10px rgba(168, 85, 247, 0.15);">
+                    🎯 <span style="color: #A78BFA;">Inquiry:</span> {memory.topic}
+                </span>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
         step_cols = st.columns(num_steps)
 
         for i, s in enumerate(memory.steps):
@@ -3645,44 +3754,31 @@ def render_learning_workspace():
             status_class = "pending"
             status_icon = "🔒"
 
-        col_s1, col_s2 = st.columns([2.1, 1.9], vertical_alignment="center")
-        with col_s1:
-            st.markdown(
-                f"""
-                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
-                    <span style="background: rgba(99, 102, 241, 0.2); color: #818CF8; border: 1px solid rgba(99, 102, 241, 0.4); font-size: 0.72rem; font-weight: 800; padding: 2px 10px; border-radius: 9999px; text-transform: uppercase; letter-spacing: 0.8px;">Milestone {active_idx+1} of {num_steps}</span>
-                </div>
-                <h2 style="font-size: 1.45rem; font-weight: 800; color: #F8FAFC; margin: 0 0 4px 0;">{current_step.title}</h2>
-                <div style="font-size: 0.9rem; color: #94A3B8; font-style: italic;">{current_step.description}</div>
-                """,
-                unsafe_allow_html=True,
-            )
-            prereq_val = getattr(current_step, "prerequisite", None)
-            if prereq_val:
-                st.markdown(f'<span class="prereq-badge">Prereq: {prereq_val}</span>', unsafe_allow_html=True)
-            elif getattr(current_step, "is_prerequisite", False):
-                st.markdown('<span class="prereq-badge">Prerequisite Step</span>', unsafe_allow_html=True)
+        prereq_val = getattr(current_step, "prerequisite", None)
+        prereq_badge_html = ""
+        if prereq_val:
+            prereq_badge_html = f'<span class="prereq-badge">Prereq: {prereq_val}</span>'
+        elif getattr(current_step, "is_prerequisite", False):
+            prereq_badge_html = '<span class="prereq-badge">Prerequisite Step</span>'
 
-        with col_s2:
-            # UP: Status Pill Capsule (Right-Aligned)
+        # Row 1: Milestone & Prerequisite badges on left, Regenerate pill on top right
+        col_meta_left, col_meta_right = st.columns([7.2, 2.8], vertical_alignment="center")
+        with col_meta_left:
             st.markdown(
                 f"""
-                <div style="display: flex; justify-content: flex-end; align-items: center; margin-bottom: 8px; width: 100%;">
-                    <div class="pill-capsule pill-status-{status_class}">
-                        <span class="pill-label">Status</span>
-                        <span class="pill-icon-box">{status_icon}</span>
-                        <span class="pill-value">{formatted_status}</span>
-                    </div>
+                <div class="milestone-badge-row" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; height: 26px;">
+                    <span class="milestone-badge">Milestone {active_idx+1} of {num_steps}</span>
+                    {prereq_badge_html}
                 </div>
                 """,
                 unsafe_allow_html=True,
             )
-            # DOWN: Redesigned Regenerate Step Button (Styled like "Start Learning Journey" Button)
+        with col_meta_right:
             if st.button(
-                f"Regenerate Step {active_idx + 1}",
-                icon=":material/refresh:",
+                "↻ Regenerate",
                 key=f"regen_btn_{active_idx}",
                 type="primary",
+                help=f"Regenerate Step {active_idx + 1} content",
             ):
                 setattr(current_step, "tutor_explanation", None)
                 setattr(current_step, "videos", [])
@@ -3691,6 +3787,20 @@ def render_learning_workspace():
                 st.session_state[f"step_agents_ran_{active_idx}"] = False
                 setattr(current_step, "_agent_generated", False)
                 st.rerun()
+
+        # Row 2 & 3: Step Title with Status Pill right after it, followed by description
+        st.markdown(
+            f"""
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 4px 0 4px 0;">
+                <h2 style="font-size: 1.45rem; font-weight: 800; color: #F8FAFC; margin: 0; line-height: 1.25;">{current_step.title}</h2>
+                <span class="compact-status-pill compact-status-{status_class}">
+                    {status_icon} {formatted_status}
+                </span>
+            </div>
+            <div style="font-size: 0.9rem; color: #94A3B8; font-style: italic; margin-top: 2px;">{current_step.description}</div>
+            """,
+            unsafe_allow_html=True,
+        )
 
         st.markdown("---")
 
