@@ -322,61 +322,51 @@ CUSTOM_CSS = """
         line-height: 1.5 !important;
     }
 
-    /* ── Sidebar Guide Callout Banner (Matching Sidebar Handle Theme) ── */
-    .sidebar-guide-card {
+    /* ── ChatGPT & Gemini Bottom Composer Dock ── */
+    .et-gemini-composer-dock {
+        background: linear-gradient(135deg, rgba(17, 12, 30, 0.95) 0%, rgba(28, 18, 50, 0.92) 100%) !important;
+        border: 1.5px solid rgba(168, 85, 247, 0.5) !important;
+        border-radius: 20px !important;
+        padding: 14px 20px 12px 20px !important;
+        margin: 1.2rem 0 0.8rem 0 !important;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), 0 0 30px rgba(168, 85, 247, 0.25), inset 0 0 20px rgba(168, 85, 247, 0.1) !important;
+        backdrop-filter: blur(24px) !important;
+        -webkit-backdrop-filter: blur(24px) !important;
+        transition: all 0.3s ease !important;
+    }
+
+    .et-gemini-composer-dock:hover {
+        border-color: #C084FC !important;
+        box-shadow: 0 14px 50px rgba(0, 0, 0, 0.7), 0 0 45px rgba(168, 85, 247, 0.4) !important;
+    }
+
+    .composer-title-row {
         display: flex;
         align-items: center;
-        justify-content: center;
-        gap: 14px;
-        background: linear-gradient(135deg, rgba(14, 9, 24, 0.95) 0%, rgba(30, 20, 50, 0.85) 100%);
-        border: 1.5px solid rgba(168, 85, 247, 0.6);
-        border-radius: 50px;
-        padding: 0.8rem 1.8rem;
-        margin: 0 auto 2.2rem auto;
-        max-width: 800px;
-        box-shadow: 0 0 30px rgba(168, 85, 247, 0.25), 0 8px 25px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(168, 85, 247, 0.15);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        transition: all 0.3s ease;
+        gap: 8px;
+        margin-bottom: 2px;
     }
 
-    .sidebar-guide-card:hover {
-        border-color: #C084FC;
-        box-shadow: 0 0 40px rgba(168, 85, 247, 0.4), 0 10px 30px rgba(0, 0, 0, 0.6);
-        transform: translateY(-2px);
+    .composer-sparkle-icon {
+        font-size: 1.1rem;
+        animation: pulseGlow 2s infinite ease-in-out;
     }
 
-    .guide-handle-badge {
-        display: inline-flex;
+    .composer-title-text {
+        font-weight: 800;
+        font-size: 0.98rem;
+        color: #FAFAFA;
+        letter-spacing: -0.2px;
+    }
+
+    .composer-chip-header {
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: rgba(233, 213, 255, 0.85);
+        margin-bottom: 6px;
+        display: flex;
         align-items: center;
         gap: 6px;
-        background: rgba(168, 85, 247, 0.25);
-        border: 1.5px solid #A855F7;
-        border-radius: 20px;
-        padding: 5px 12px;
-        color: #E9D5FF;
-        font-size: 0.78rem;
-        font-weight: 800;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        box-shadow: 0 0 14px rgba(168, 85, 247, 0.4);
-        flex-shrink: 0;
-    }
-
-    .guide-chevron-pulse {
-        animation: chevronSlide 1.5s infinite ease-in-out;
-    }
-
-    @keyframes chevronSlide {
-        0%, 100% { transform: translateX(0); }
-        50% { transform: translateX(-4px); }
-    }
-
-    .guide-text-content {
-        font-size: 0.98rem;
-        font-weight: 600;
-        color: #FAFAFA;
-        line-height: 1.4;
     }
 
     /* ── Navbar — Floating Glassmorphism Theme (Learning Workspace) ───────── */
@@ -944,14 +934,30 @@ CUSTOM_CSS = """
         letter-spacing: 0.2px !important;
     }
 
-    /* ── Animated AI Neural Network Icon in Sidebar Header ── */
-    .sidebar-header-container {
+    /* ── ChatGPT & Gemini Sidebar Branding & Section Headers ── */
+    .sidebar-brand-header {
+        padding: 2px 0 10px 0;
+        margin-bottom: 6px;
+        border-bottom: 1px solid rgba(168, 85, 247, 0.22);
+    }
+
+    .sidebar-brand-top {
         display: flex;
         align-items: center;
         gap: 10px;
-        margin-bottom: 12px;
-        padding-bottom: 8px;
-        border-bottom: 1px solid rgba(168, 85, 247, 0.25);
+    }
+
+    .neural-icon-wrapper-small {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, rgba(168, 85, 247, 0.2) 0%, rgba(59, 130, 246, 0.2) 100%);
+        border: 1px solid rgba(168, 85, 247, 0.45);
+        box-shadow: 0 0 12px rgba(168, 85, 247, 0.3);
+        flex-shrink: 0;
     }
 
     .neural-icon-wrapper {
@@ -1000,12 +1006,91 @@ CUSTOM_CSS = """
         to { stroke-dashoffset: 0; }
     }
 
-    .sidebar-header-text {
-        font-size: 1.02rem;
-        font-weight: 900;
+    .sidebar-section-title {
+        font-size: 0.84rem;
+        font-weight: 800;
         color: #FAFAFA;
-        line-height: 1.3;
-        letter-spacing: -0.2px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 6px;
+        letter-spacing: 0.2px;
+    }
+
+    /* ── Sidebar Session History Buttons Styling (ChatGPT/Gemini Style) ── */
+    section[data-testid="stSidebar"] div[data-testid="stColumn"]:first-child button[kind="secondary"] {
+        text-align: left !important;
+        justify-content: flex-start !important;
+        background: rgba(255, 255, 255, 0.03) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        border-radius: 10px !important;
+        padding: 6px 10px !important;
+        font-size: 0.76rem !important;
+        font-weight: 600 !important;
+        color: #F1F5F9 !important;
+        line-height: 1.35 !important;
+        min-height: 44px !important;
+        white-space: pre-wrap !important;
+        transition: all 0.2s ease !important;
+    }
+
+    section[data-testid="stSidebar"] div[data-testid="stColumn"]:first-child button[kind="secondary"]:hover {
+        background: rgba(168, 85, 247, 0.15) !important;
+        border-color: rgba(168, 85, 247, 0.45) !important;
+        color: #FAFAFA !important;
+        transform: translateX(2px) !important;
+    }
+
+    section[data-testid="stSidebar"] div[data-testid="stColumn"]:first-child button[kind="primary"] {
+        text-align: left !important;
+        justify-content: flex-start !important;
+        background: rgba(168, 85, 247, 0.22) !important;
+        border: 1.5px solid #A855F7 !important;
+        border-radius: 10px !important;
+        padding: 6px 10px !important;
+        font-size: 0.76rem !important;
+        font-weight: 700 !important;
+        color: #FAFAFA !important;
+        line-height: 1.35 !important;
+        min-height: 44px !important;
+        box-shadow: 0 0 14px rgba(168, 85, 247, 0.35) !important;
+        white-space: pre-wrap !important;
+    }
+
+    section[data-testid="stSidebar"] div[data-testid="stColumn"]:last-child div[data-testid="stPopover"] button {
+        border-radius: 10px !important;
+        min-height: 44px !important;
+        padding: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        background: rgba(255, 255, 255, 0.03) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        color: rgba(233, 213, 255, 0.7) !important;
+        transition: all 0.2s ease !important;
+    }
+
+    section[data-testid="stSidebar"] div[data-testid="stColumn"]:last-child div[data-testid="stPopover"] button:hover {
+        background: rgba(168, 85, 247, 0.2) !important;
+        border-color: #A855F7 !important;
+        color: #FAFAFA !important;
+    }
+
+    /* ── Streamlit Segmented Control Glassy Theme ── */
+    div[data-testid="stSegmentedControl"] {
+        background: rgba(15, 10, 26, 0.8) !important;
+        border: 1px solid rgba(168, 85, 247, 0.3) !important;
+        border-radius: 12px !important;
+        padding: 2px !important;
+        width: 100% !important;
+    }
+
+    div[data-testid="stSegmentedControl"] button {
+        border-radius: 8px !important;
+        font-weight: 700 !important;
+        font-size: 0.76rem !important;
+        padding: 4px 8px !important;
+        transition: all 0.2s ease !important;
     }
 
     .user-profile-sidebar-card {
@@ -2559,152 +2644,108 @@ def render_learning_workspace():
         width=0,
     )
 
-    # ─── Sidebar Controls & Gamification (Left Panel) ────────────────
+    # ─── Sidebar Controls & History (Left Panel — ChatGPT/Gemini Style) ────
     with st.sidebar:
+        # 1. Top Brand Logo & Animated AI Header
         st.markdown(
             """
-            <div class="sidebar-header-container">
-                <div class="neural-icon-wrapper">
-                    <svg class="neural-network-svg" width="22" height="22" viewBox="0 0 24 24" fill="none">
-                        <line x1="4" y1="12" x2="12" y2="4" stroke="url(#neuralGrad1)" stroke-width="1.8" stroke-dasharray="2 2" class="neural-pulse-line" />
-                        <line x1="4" y1="12" x2="12" y2="20" stroke="url(#neuralGrad1)" stroke-width="1.8" stroke-dasharray="2 2" class="neural-pulse-line" />
-                        <line x1="12" y1="4" x2="20" y2="12" stroke="url(#neuralGrad2)" stroke-width="1.8" stroke-dasharray="2 2" class="neural-pulse-line" />
-                        <line x1="12" y1="20" x2="20" y2="12" stroke="url(#neuralGrad2)" stroke-width="1.8" stroke-dasharray="2 2" class="neural-pulse-line" />
-                        <line x1="12" y1="4" x2="12" y2="20" stroke="url(#neuralGrad3)" stroke-width="1.5" stroke-dasharray="2 2" class="neural-pulse-line" />
-                        <line x1="4" y1="12" x2="20" y2="12" stroke="url(#neuralGrad3)" stroke-width="1.5" class="neural-pulse-line" />
-                        <circle cx="4" cy="12" r="3" fill="#EC4899" class="neural-node node-1" />
-                        <circle cx="12" cy="4" r="3.2" fill="#A855F7" class="neural-node node-2" />
-                        <circle cx="12" cy="20" r="3.2" fill="#3B82F6" class="neural-node node-3" />
-                        <circle cx="20" cy="12" r="3.5" fill="#06B6D4" class="neural-node node-4" />
-                        <defs>
-                            <linearGradient id="neuralGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stop-color="#EC4899" />
-                                <stop offset="100%" stop-color="#A855F7" />
-                            </linearGradient>
-                            <linearGradient id="neuralGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stop-color="#A855F7" />
-                                <stop offset="100%" stop-color="#06B6D4" />
-                            </linearGradient>
-                            <linearGradient id="neuralGrad3" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stop-color="#EC4899" />
-                                <stop offset="50%" stop-color="#A855F7" />
-                                <stop offset="100%" stop-color="#3B82F6" />
-                            </linearGradient>
-                        </defs>
-                    </svg>
-                </div>
-                <div class="sidebar-header-text">What do you want to learn today?</div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-        
-        # Check if quick-launched from home page
-        default_topic = st.session_state.pop("quick_launch_topic", None) or st.session_state.get("last_topic", "How does photosynthesis work?")
-
-        # Topic Input
-        topic_input = st.text_input(
-            "What do you want to master?",
-            value=default_topic,
-            placeholder="e.g. Quantum Computing, Photosynthesis...",
-            label_visibility="collapsed",
-        )
-        
-        # Topic Suggestions
-        st.markdown("<div style='font-size:0.78rem; color:rgba(233,213,255,0.75); font-weight:700; margin: 8px 0 4px 0;'>💡 Instant Topic Prompts:</div>", unsafe_allow_html=True)
-        cols = st.columns(2)
-        if cols[0].button("🌱 Photosynthesis", key="sug1", use_container_width=True):
-            topic_input = "How does photosynthesis work?"
-        if cols[1].button("⚛️ Quantum Physics", key="sug2", use_container_width=True):
-            topic_input = "Explain quantum entanglement"
-        if cols[0].button("🧠 Neural Networks", key="sug3", use_container_width=True):
-            topic_input = "How do neural networks learn?"
-        if cols[1].button("🌊 Ocean Tides", key="sug4", use_container_width=True):
-            topic_input = "What causes ocean tides?"
-
-        st.markdown("<hr style='border-color:rgba(168,85,247,0.25); margin:12px 0;'>", unsafe_allow_html=True)
-
-        # Learning Mode Selection (Bold Label)
-        mode_option = st.selectbox(
-            "**🎨 Learning Mode**",
-            options=["Visual 🎬", "Deep Dive 🔬", "Bite-Sized ⚡"],
-            index=0,
-            help="Visual: video & diagrams | Deep Dive: papers & proofs | Bite-Sized: quick summaries",
-        )
-        mode_map = {
-            "Visual 🎬": LearningMode.VISUAL,
-            "Deep Dive 🔬": LearningMode.DEEP_DIVE,
-            "Bite-Sized ⚡": LearningMode.BITE_SIZED,
-        }
-        selected_mode = mode_map[mode_option]
-
-        # Student Level Selection (Bold Label)
-        level_option = st.selectbox(
-            "**🎓 Education Level**",
-            options=["Middle School 🏫", "High School 🎒", "Undergraduate 🏛️", "Graduate 🎓", "General Curious 💡"],
-            index=0,
-        )
-        level_map = {
-            "Middle School 🏫": "middle_school",
-            "High School 🎒": "high_school",
-            "Undergraduate 🏛️": "undergraduate",
-            "Graduate 🎓": "graduate",
-            "General Curious 💡": "general",
-        }
-        selected_level = level_map[level_option]
-
-        st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
-
-        # Start Learning Journey Button
-        start_clicked = st.button("🚀 Start Learning Journey", type="primary", use_container_width=True)
-
-        # ─── Sidebar Learning History & Search Component ─────────────────
-        st.markdown("<hr style='border-color:rgba(168,85,247,0.25); margin:18px 0 12px 0;'>", unsafe_allow_html=True)
-        st.markdown(
-            """
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                <div style="font-weight: 800; font-size: 0.92rem; color: #FAFAFA; display: flex; align-items: center; gap: 6px;">
-                    <span>📜</span> <span>Learning History</span>
+            <div class="sidebar-brand-header">
+                <div class="sidebar-brand-top">
+                    <div class="neural-icon-wrapper-small">
+                        <svg class="neural-network-svg" width="18" height="18" viewBox="0 0 24 24" fill="none">
+                            <line x1="4" y1="12" x2="12" y2="4" stroke="url(#neuralGrad1)" stroke-width="1.8" stroke-dasharray="2 2" class="neural-pulse-line" />
+                            <line x1="4" y1="12" x2="12" y2="20" stroke="url(#neuralGrad1)" stroke-width="1.8" stroke-dasharray="2 2" class="neural-pulse-line" />
+                            <line x1="12" y1="4" x2="20" y2="12" stroke="url(#neuralGrad2)" stroke-width="1.8" stroke-dasharray="2 2" class="neural-pulse-line" />
+                            <line x1="12" y1="20" x2="20" y2="12" stroke="url(#neuralGrad2)" stroke-width="1.8" stroke-dasharray="2 2" class="neural-pulse-line" />
+                            <circle cx="4" cy="12" r="3" fill="#EC4899" class="neural-node node-1" />
+                            <circle cx="12" cy="4" r="3.2" fill="#A855F7" class="neural-node node-2" />
+                            <circle cx="12" cy="20" r="3.2" fill="#3B82F6" class="neural-node node-3" />
+                            <circle cx="20" cy="12" r="3.2" fill="#06B6D4" class="neural-node node-4" />
+                            <defs>
+                                <linearGradient id="neuralGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#EC4899" />
+                                    <stop offset="100%" stop-color="#A855F7" />
+                                </linearGradient>
+                                <linearGradient id="neuralGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#A855F7" />
+                                    <stop offset="100%" stop-color="#06B6D4" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                    </div>
+                    <div class="et-logo-simple">
+                        ⚡ <span class="accent">EduTech</span> <span class="badge-ai">AI</span>
+                    </div>
                 </div>
             </div>
             """,
             unsafe_allow_html=True,
         )
 
-        # Multi-Criteria Search Input
+        # 2. ChatGPT/Gemini Style "+ New Journey" Pill Button
+        if st.button("✨ New Learning Journey", key="sb_new_journey_btn", type="primary", use_container_width=True):
+            st.session_state["memory"] = None
+            st.session_state["active_step_index"] = 0
+            st.session_state["last_topic"] = None
+            st.session_state["submitted_quizzes"] = {}
+            if "main_topic_query" in st.session_state:
+                del st.session_state["main_topic_query"]
+            for k in list(st.session_state.keys()):
+                if any(k.startswith(pfx) for pfx in ["step_agents_ran_", "quiz_submitted_", "saved_user_answers_", "saved_user_full_answers_", "xp_awarded_"]):
+                    del st.session_state[k]
+            st.toast("Ready for a new learning journey! 🚀", icon="✨")
+            st.rerun()
+
+        st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
+
+        # 3. Learning History Header
+        st.markdown(
+            """
+            <div class="sidebar-section-title">
+                <span>Learning History</span>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        # 4. Search Bar
         hist_search_val = st.text_input(
             "Search your learning sessions",
             value=st.session_state.get("session_hist_search_val", ""),
-            placeholder="🔍 Search topic, mode, level...",
+            placeholder="🔍 Search history...",
             key="sb_hist_search_input",
             label_visibility="collapsed",
         )
         if hist_search_val != st.session_state.get("session_hist_search_val", ""):
             st.session_state["session_hist_search_val"] = hist_search_val
-            st.session_state["session_hist_page"] = 0  # Reset to page 0 on search
+            st.session_state["session_hist_page"] = 0
 
-        # Status Filter Segment Chips
-        filter_cols = st.columns(3)
-        current_filter = st.session_state.get("session_hist_filter", "all")
+        # 5. Single Unified Segmented Filter: All, Active, Done (No icons)
+        seg_options = ["All", "Active", "Done"]
+        seg_default = st.session_state.get("session_hist_seg_filter", "All")
+        if seg_default not in seg_options:
+            seg_default = "All"
+        seg_filter = st.segmented_control(
+            "Filter History",
+            options=seg_options,
+            default=seg_default,
+            key="sb_hist_segmented_control",
+            label_visibility="collapsed",
+        ) or "All"
 
-        with filter_cols[0]:
-            if st.button("All", key="hist_flt_all", type="primary" if current_filter == "all" else "secondary", use_container_width=True):
-                st.session_state["session_hist_filter"] = "all"
-                st.session_state["session_hist_page"] = 0
-                st.rerun()
-        with filter_cols[1]:
-            if st.button("⚡ Active", key="hist_flt_act", type="primary" if current_filter == "in_progress" else "secondary", use_container_width=True):
-                st.session_state["session_hist_filter"] = "in_progress"
-                st.session_state["session_hist_page"] = 0
-                st.rerun()
-        with filter_cols[2]:
-            if st.button("✅ Done", key="hist_flt_comp", type="primary" if current_filter == "completed" else "secondary", use_container_width=True):
-                st.session_state["session_hist_filter"] = "completed"
-                st.session_state["session_hist_page"] = 0
-                st.rerun()
+        if seg_filter != st.session_state.get("session_hist_seg_filter", "All"):
+            st.session_state["session_hist_seg_filter"] = seg_filter
+            st.session_state["session_hist_page"] = 0
+
+        filter_map = {
+            "All": "all",
+            "Active": "in_progress",
+            "Done": "completed",
+        }
+        current_filter = filter_map.get(seg_filter, "all")
 
         current_hist_page = st.session_state.get("session_hist_page", 0)
-        hist_page_size = 20
+        hist_page_size = 15
 
         # Query User Sessions from Database
         user_sessions = []
@@ -2733,7 +2774,7 @@ def render_learning_workspace():
             logging.warning(f"Failed to query user session history: {ex_sh}")
 
         st.markdown(
-            f"<div style='font-size: 0.74rem; color: rgba(233,213,255,0.7); margin: 6px 0 8px 0;'><b>{total_sessions}</b> session(s) • Page {current_hist_page + 1} of {total_hist_pages}</div>",
+            f"<div style='font-size: 0.72rem; color: rgba(233,213,255,0.65); margin: 4px 0 6px 0;'><b>{total_sessions}</b> session(s) • Page {current_hist_page + 1} of {total_hist_pages}</div>",
             unsafe_allow_html=True,
         )
 
@@ -2743,8 +2784,8 @@ def render_learning_workspace():
         if not user_sessions:
             st.markdown(
                 """
-                <div style="background: rgba(168,85,247,0.08); border: 1px dashed rgba(168,85,247,0.3); border-radius: 10px; padding: 12px; text-align: center; font-size: 0.78rem; color: rgba(255,255,255,0.65);">
-                    No sessions match. Start a new topic above! 🚀
+                <div style="background: rgba(168,85,247,0.06); border: 1px dashed rgba(168,85,247,0.25); border-radius: 10px; padding: 12px; text-align: center; font-size: 0.76rem; color: rgba(255,255,255,0.6);">
+                    No sessions match. Start a new topic! 🚀
                 </div>
                 """,
                 unsafe_allow_html=True,
@@ -2759,151 +2800,68 @@ def render_learning_workspace():
                 s_xp = s_info.get("xp_earned", 0)
                 is_active_session = (active_session_id == s_id)
 
-                status_tag = "✅ COMPLETED" if s_complete else f"⚡ STEP {min(s_cur_step + 1, s_tot_steps)}/{s_tot_steps}"
-                status_color = "#34D399" if s_complete else "#C084FC"
-                status_bg = "rgba(16, 185, 129, 0.18)" if s_complete else "rgba(168, 85, 247, 0.22)"
-                status_border = "rgba(16, 185, 129, 0.4)" if s_complete else "rgba(168, 85, 247, 0.45)"
+                # Clean text: No icons in status/step badge!
+                status_tag = "Completed" if s_complete else f"Step {min(s_cur_step + 1, s_tot_steps)}/{s_tot_steps}"
+                
+                # Card button label
+                truncated_title = (s_topic[:22] + "...") if len(s_topic) > 22 else s_topic
+                btn_display = f"{truncated_title}\n{status_tag} • +{s_xp} XP"
 
-                card_active_style = "border: 1.5px solid #A855F7; box-shadow: 0 0 14px rgba(168,85,247,0.45);" if is_active_session else "border: 1px solid rgba(255,255,255,0.08);"
-                truncated_topic = (s_topic[:28] + "...") if len(s_topic) > 28 else s_topic
-
-                st.markdown(
-                    f"""
-                    <div style="background: rgba(15, 10, 26, 0.85); {card_active_style} border-radius: 9px; padding: 7px 9px 5px 9px; margin-bottom: 5px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px;">
-                            <span style="background: {status_bg}; color: {status_color}; border: 1px solid {status_border}; font-size: 0.65rem; font-weight: 800; padding: 1px 6px; border-radius: 9999px; letter-spacing: 0.3px;">{status_tag}</span>
-                            <span style="font-size: 0.7rem; color: #38BDF8; font-weight: 700;">+{s_xp} XP</span>
-                        </div>
-                        <div style="font-weight: 700; font-size: 0.82rem; color: #FAFAFA; line-height: 1.25; margin-bottom: 4px;" title="{s_topic}">{truncated_topic}</div>
-                    </div>
-                    """,
-                    unsafe_allow_html=True,
-                )
-
-                rc1, rc2 = st.columns([4.2, 1])
-                with rc1:
-                    r_label = "🟢 Active" if is_active_session else ("Review Roadmap" if s_complete else "Resume Learning →")
-                    if st.button(r_label, key=f"sb_res_{s_id}", type="primary" if is_active_session else "secondary", use_container_width=True, disabled=is_active_session):
-                        with st.spinner("Resuming learning session..."):
+                card_cols = st.columns([8.2, 1.8], gap="small", vertical_alignment="center")
+                with card_cols[0]:
+                    # Clicking card directly opens and resumes session
+                    if st.button(
+                        btn_display,
+                        key=f"sb_card_{s_id}",
+                        help=f"{s_topic} ({status_tag})",
+                        type="primary" if is_active_session else "secondary",
+                        use_container_width=True,
+                    ):
+                        with st.spinner("Opening session..."):
                             loaded = run_async(SessionManager().get_session(s_id))
                             if loaded:
-                                # Clear transient keys
                                 for k in list(st.session_state.keys()):
                                     if any(k.startswith(pfx) for pfx in ["step_agents_ran_", "quiz_submitted_", "saved_user_answers_", "saved_user_full_answers_", "xp_awarded_"]):
                                         del st.session_state[k]
 
                                 st.session_state["memory"] = loaded
                                 target_idx = 0
-                                for idx, step_obj in enumerate(loaded.steps):
+                                for idx_s, step_obj in enumerate(loaded.steps):
                                     if step_obj.status != StepStatus.COMPLETE:
-                                        target_idx = idx
+                                        target_idx = idx_s
                                         break
                                 st.session_state["active_step_index"] = target_idx
                                 st.session_state["last_topic"] = loaded.topic
-                                st.toast(f"Resumed '{loaded.topic}' at Step {target_idx + 1}!", icon="🚀")
+                                st.toast(f"Opened '{loaded.topic}'!", icon="🚀")
                                 st.rerun()
-                with rc2:
-                    if st.button("🗑️", key=f"sb_del_{s_id}", help="Delete this session", use_container_width=True):
-                        run_async(SessionManager().delete_session(s_id, user_id=user_profile.id))
-                        if active_session_id == s_id:
-                            st.session_state["memory"] = None
-                            st.session_state["active_step_index"] = 0
-                        st.toast("Session deleted.", icon="🗑️")
-                        st.rerun()
+
+                with card_cols[1]:
+                    # 3-dots popover options menu (gives delete option)
+                    with st.popover("", icon=":material/more_vert:", help="Session options", use_container_width=True):
+                        st.markdown(f"<div style='font-size:0.82rem; font-weight:700; color:#FAFAFA; margin-bottom:4px;'>{s_topic[:26]}...</div>", unsafe_allow_html=True)
+                        st.markdown(f"<div style='font-size:0.75rem; color:#A855F7; margin-bottom:8px;'>Status: <b>{status_tag}</b> • <b>+{s_xp} XP</b></div>", unsafe_allow_html=True)
+                        if st.button("🗑️ Delete Session", key=f"sb_del_pop_{s_id}", type="primary", use_container_width=True):
+                            run_async(SessionManager().delete_session(s_id, user_id=user_profile.id))
+                            if active_session_id == s_id:
+                                st.session_state["memory"] = None
+                                st.session_state["active_step_index"] = 0
+                            st.toast("Session deleted.", icon="🗑️")
+                            st.rerun()
 
             # Sidebar Pagination Controls
             if total_hist_pages > 1:
-                st.markdown("<div style='height: 4px;'></div>", unsafe_allow_html=True)
+                st.markdown("<div style='height: 6px;'></div>", unsafe_allow_html=True)
                 pg_c1, pg_c2, pg_c3 = st.columns([1.2, 2.6, 1.2], vertical_alignment="center")
                 with pg_c1:
                     if st.button("◀", key="sb_pg_prev", disabled=(current_hist_page <= 0), use_container_width=True):
                         st.session_state["session_hist_page"] = current_hist_page - 1
                         st.rerun()
                 with pg_c2:
-                    st.markdown(f"<div style='text-align: center; font-size: 0.75rem; color: #E9D5FF;'>Page <b>{current_hist_page + 1}</b> / <b>{total_hist_pages}</b></div>", unsafe_allow_html=True)
+                    st.markdown(f"<div style='text-align: center; font-size: 0.72rem; color: #E9D5FF;'>Page <b>{current_hist_page + 1}</b> / <b>{total_hist_pages}</b></div>", unsafe_allow_html=True)
                 with pg_c3:
                     if st.button("▶", key="sb_pg_next", disabled=(current_hist_page >= total_hist_pages - 1), use_container_width=True):
                         st.session_state["session_hist_page"] = current_hist_page + 1
                         st.rerun()
-
-    # ─── Session Initialization Logic ────────────────────────────────
-    if start_clicked and topic_input:
-        st.session_state["last_topic"] = topic_input
-        
-        loader_placeholder = st.empty()
-
-        # Step 1: Orchestrator Agent decomposing topic into milestone steps
-        loader_placeholder.markdown(
-            render_glassy_agent_loader_html(
-                title=f"Decomposing '{topic_input}'",
-                subtitle="🧠 Orchestrator Agent is analyzing domain knowledge & mapping milestone roadmap...",
-                orchestrator_status="active",
-                socratic_status="waiting",
-                youtube_status="waiting",
-                academic_status="waiting",
-                quiz_status="waiting",
-                progress_percent=25,
-            ),
-            unsafe_allow_html=True,
-        )
-
-        # Initialize SharedMemory with user_id
-        new_memory = SharedMemory(
-            user_id=user_profile.id,
-            topic=topic_input,
-            learning_mode=selected_mode,
-            student_level=selected_level,
-        )
-        
-        # Run Orchestrator Agent
-        orchestrator = OrchestratorAgent()
-        run_async(orchestrator.execute(new_memory))
-        
-        if new_memory.steps:
-            new_memory.steps[0].status = StepStatus.IN_PROGRESS
-            # Step 2: Multi-Agent System collaborating on Step 1 content
-            loader_placeholder.markdown(
-                render_glassy_agent_loader_html(
-                    title=f"Synthesizing Step 1: {new_memory.steps[0].title}",
-                    subtitle="🤖 Multi-Agents (Socratic, YouTube, Academic, Quiz) generating step 1 content concurrently...",
-                    orchestrator_status="completed",
-                    socratic_status="active",
-                    youtube_status="active",
-                    academic_status="active",
-                    quiz_status="active",
-                    progress_percent=70,
-                ),
-                unsafe_allow_html=True,
-            )
-            run_async(generate_all_agent_content_for_step(new_memory.steps[0], new_memory))
-
-        loader_placeholder.markdown(
-            render_glassy_agent_loader_html(
-                title="Finalizing Learning Workspace",
-                subtitle="✨ Persisting session memory & loading interactive workspace...",
-                orchestrator_status="completed",
-                socratic_status="completed",
-                youtube_status="completed",
-                academic_status="completed",
-                quiz_status="completed",
-                progress_percent=100,
-            ),
-            unsafe_allow_html=True,
-        )
-        time.sleep(0.5)
-        loader_placeholder.empty()
-
-        # Persist session to PostgreSQL database linked to current user
-        try:
-            from services.session_manager import SessionManager
-            run_async(SessionManager().create_session(new_memory, user_id=user_profile.id))
-        except Exception as e:
-            logging.warning(f"Could not persist session to database: {e}")
-
-        st.session_state["memory"] = new_memory
-        st.session_state["active_step_index"] = 0
-        st.session_state["submitted_quizzes"] = {}
-        st.rerun()
 
     memory = get_or_create_memory()
 
@@ -2915,17 +2873,6 @@ def render_learning_workspace():
             <div class="et-hero">
                 <h1>EduTechAI <span class="gradient-text">Learning Workspace</span></h1>
                 <p>An adaptive, intelligent learning studio where specialized AI agents orchestrate personalized roadmaps, intuitive analogies, video deep-dives, and instant mastery checks.</p>
-            </div>
-            <div class="sidebar-guide-card">
-                <div class="guide-handle-badge">
-                    <svg class="guide-chevron-pulse" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#E9D5FF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="15 18 9 12 15 6"></polyline>
-                    </svg>
-                    <span>Sidebar</span>
-                </div>
-                <div class="guide-text-content">
-                    Enter any topic in the sidebar & click <span class="gradient-text" style="font-weight: 800;">'Start Learning Journey'</span> or resume a past journey from your history!
-                </div>
             </div>
             """,
             unsafe_allow_html=True,
@@ -2953,7 +2900,7 @@ def render_learning_workspace():
                             f"""
                             <div class="glass-card" style="padding: 1rem; border: 1px solid rgba(168,85,247,0.35); margin-bottom: 8px;">
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                                    <span style="background: rgba(168, 85, 247, 0.25); color: #C084FC; border: 1px solid rgba(168, 85, 247, 0.5); font-size: 0.72rem; font-weight: 800; padding: 2px 8px; border-radius: 9999px;">⚡ STEP {min(s_cur+1, s_tot)}/{s_tot}</span>
+                                    <span style="background: rgba(168, 85, 247, 0.25); color: #C084FC; border: 1px solid rgba(168, 85, 247, 0.5); font-size: 0.72rem; font-weight: 800; padding: 2px 8px; border-radius: 9999px;">Step {min(s_cur+1, s_tot)}/{s_tot}</span>
                                     <span style="font-size: 0.75rem; color: #38BDF8; font-weight: 700;">+{s_xp} XP</span>
                                 </div>
                                 <h4 style="font-size: 0.95rem; font-weight: 800; color: #FAFAFA; margin: 4px 0 8px 0; min-height: 40px;">{s_top}</h4>
@@ -3031,6 +2978,175 @@ def render_learning_workspace():
                 """,
                 unsafe_allow_html=True,
             )
+
+        # ─── Main Page Bottom Level: ChatGPT/Gemini New Journey Composer ───
+        st.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True)
+        
+        # Instant Topic Suggestion Starter Chips
+        st.markdown(
+            """
+            <div class="composer-chip-header">
+                <span>💡 Instant Topic Prompts:</span>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        sug_cols = st.columns(4)
+        preset_prompts = [
+            ("🌱 Photosynthesis", "How does photosynthesis work?"),
+            ("⚛️ Quantum Physics", "Explain quantum entanglement"),
+            ("🧠 Neural Networks", "How do neural networks learn?"),
+            ("🌊 Ocean Tides", "What causes ocean tides?"),
+        ]
+        for i_p, (p_label, p_text) in enumerate(preset_prompts):
+            with sug_cols[i_p]:
+                if st.button(p_label, key=f"main_sug_{i_p}", use_container_width=True):
+                    st.session_state["main_topic_query"] = p_text
+                    st.rerun()
+
+        default_topic_val = (
+            st.session_state.pop("quick_launch_topic", None)
+            or st.session_state.get("main_topic_query", "")
+            or st.session_state.get("last_topic", "")
+        )
+
+        st.markdown(
+            """
+            <div class="et-gemini-composer-dock">
+                <div class="composer-title-row">
+                    <div class="composer-sparkle-icon">✨</div>
+                    <div class="composer-title-text">What do you want to master today?</div>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        main_topic_input = st.text_input(
+            "What do you want to master?",
+            value=default_topic_val,
+            placeholder="Ask EduTechAI anything... (e.g. Quantum Computing, Photosynthesis, Neural Networks, Macroeconomics)",
+            key="main_topic_input_composer",
+            label_visibility="collapsed",
+        )
+
+        tool_col1, tool_col2, tool_col3 = st.columns([1.5, 1.5, 1.8], vertical_alignment="center")
+        with tool_col1:
+            mode_choice = st.selectbox(
+                "**🎨 Learning Mode**",
+                options=["Visual 🎬", "Deep Dive 🔬", "Bite-Sized ⚡"],
+                index=0,
+                key="main_mode_select",
+                help="Visual: video & diagrams | Deep Dive: papers & proofs | Bite-Sized: quick summaries",
+            )
+            mode_map = {
+                "Visual 🎬": LearningMode.VISUAL,
+                "Deep Dive 🔬": LearningMode.DEEP_DIVE,
+                "Bite-Sized ⚡": LearningMode.BITE_SIZED,
+            }
+            selected_mode = mode_map[mode_choice]
+
+        with tool_col2:
+            level_choice = st.selectbox(
+                "**🎓 Education Level**",
+                options=["Middle School 🏫", "High School 🎒", "Undergraduate 🏛️", "Graduate 🎓", "General Curious 💡"],
+                index=0,
+                key="main_level_select",
+            )
+            level_map = {
+                "Middle School 🏫": "middle_school",
+                "High School 🎒": "high_school",
+                "Undergraduate 🏛️": "undergraduate",
+                "Graduate 🎓": "graduate",
+                "General Curious 💡": "general",
+            }
+            selected_level = level_map[level_choice]
+
+        with tool_col3:
+            st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
+            main_start_clicked = st.button("🚀 Start Learning Journey", key="main_launch_journey_btn", type="primary", use_container_width=True)
+
+        if main_start_clicked and main_topic_input.strip():
+            st.session_state["last_topic"] = main_topic_input.strip()
+            if "main_topic_query" in st.session_state:
+                del st.session_state["main_topic_query"]
+
+            loader_placeholder = st.empty()
+
+            # Step 1: Orchestrator Agent decomposing topic into milestone steps
+            loader_placeholder.markdown(
+                render_glassy_agent_loader_html(
+                    title=f"Decomposing '{main_topic_input.strip()}'",
+                    subtitle="🧠 Orchestrator Agent is analyzing domain knowledge & mapping milestone roadmap...",
+                    orchestrator_status="active",
+                    socratic_status="waiting",
+                    youtube_status="waiting",
+                    academic_status="waiting",
+                    quiz_status="waiting",
+                    progress_percent=25,
+                ),
+                unsafe_allow_html=True,
+            )
+
+            # Initialize SharedMemory with user_id
+            new_memory = SharedMemory(
+                user_id=user_profile.id,
+                topic=main_topic_input.strip(),
+                learning_mode=selected_mode,
+                student_level=selected_level,
+            )
+
+            # Run Orchestrator Agent
+            orchestrator = OrchestratorAgent()
+            run_async(orchestrator.execute(new_memory))
+
+            if new_memory.steps:
+                new_memory.steps[0].status = StepStatus.IN_PROGRESS
+                # Step 2: Multi-Agent System collaborating on Step 1 content
+                loader_placeholder.markdown(
+                    render_glassy_agent_loader_html(
+                        title=f"Synthesizing Step 1: {new_memory.steps[0].title}",
+                        subtitle="🤖 Multi-Agents (Socratic, YouTube, Academic, Quiz) generating step 1 content concurrently...",
+                        orchestrator_status="completed",
+                        socratic_status="active",
+                        youtube_status="active",
+                        academic_status="active",
+                        quiz_status="active",
+                        progress_percent=70,
+                    ),
+                    unsafe_allow_html=True,
+                )
+                run_async(generate_all_agent_content_for_step(new_memory.steps[0], new_memory))
+
+            loader_placeholder.markdown(
+                render_glassy_agent_loader_html(
+                    title="Finalizing Learning Workspace",
+                    subtitle="✨ Persisting session memory & loading interactive workspace...",
+                    orchestrator_status="completed",
+                    socratic_status="completed",
+                    youtube_status="completed",
+                    academic_status="completed",
+                    quiz_status="completed",
+                    progress_percent=100,
+                ),
+                unsafe_allow_html=True,
+            )
+            time.sleep(0.5)
+            loader_placeholder.empty()
+
+            # Persist session to PostgreSQL database linked to current user
+            try:
+                from services.session_manager import SessionManager
+                run_async(SessionManager().create_session(new_memory, user_id=user_profile.id))
+            except Exception as e:
+                logging.warning(f"Could not persist session to database: {e}")
+
+            st.session_state["memory"] = new_memory
+            st.session_state["active_step_index"] = 0
+            st.session_state["submitted_quizzes"] = {}
+            st.rerun()
+        elif main_start_clicked and not main_topic_input.strip():
+            st.toast("Please enter a topic to start your learning journey! 💡", icon="⚠️")
 
     else:
         # Active Session Workspace Body (Header already rendered above)
@@ -3633,56 +3749,6 @@ def render_learning_workspace():
                         )
                 else:
                     st.info("Academic Researcher Agent is querying OpenAlex & arXiv...")
-                    memory.xp_earned += earned_xp + calculate_step_xp(memory.streak_count)
-                    memory.mark_step_complete(active_idx)
-
-                    # Persist completion of current step to DB
-                    try:
-                        from services.session_manager import SessionManager
-                        sm = SessionManager()
-                        run_async(sm.update_session(memory))
-                        run_async(sm.save_step_progress(
-                            session_id=memory.session_id,
-                            step_index=active_idx,
-                            status="complete",
-                            quiz_score=score,
-                        ))
-                    except Exception as e:
-                        logging.warning(f"Could not persist step progress: {e}")
-
-                    # Automatically move to Next Step if available!
-                    if active_idx + 1 < len(memory.steps):
-                        next_idx = active_idx + 1
-                        st.session_state["active_step_index"] = next_idx
-                        memory.steps[next_idx].status = StepStatus.IN_PROGRESS
-
-                        # Pre-generate next step's multi-agent content automatically
-                        run_async(generate_all_agent_content_for_step(memory.steps[next_idx], memory))
-                        
-                        try:
-                            from services.session_manager import SessionManager
-                            run_async(SessionManager().save_step_progress(
-                                session_id=memory.session_id,
-                                step_index=next_idx,
-                                status="in_progress",
-                            ))
-                        except Exception as ex:
-                            logging.warning(f"Could not update next step status in DB: {ex}")
-
-                        st.toast(f"🎉 Quiz Passed ({score:.0%})! Automatically advancing to Step {next_idx + 1}!", icon="🚀")
-                        time.sleep(1)
-                        st.rerun()
-                    else:
-                        if not memory.is_complete:
-                            memory.mark_step_complete(active_idx)
-                            try:
-                                from services.session_manager import SessionManager
-                                run_async(SessionManager().update_session(memory))
-                            except Exception as e:
-                                logging.warning(f"Could not save final session state: {e}")
-                        if not st.session_state.get(f"victory_modal_dismissed_{memory.session_id}", False):
-                            st.session_state[f"show_victory_modal_{memory.session_id}"] = True
-                            show_congratulations_dialog(memory)
 
 
 def sync_session_with_url():
