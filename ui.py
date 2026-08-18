@@ -3030,6 +3030,18 @@ def render_learning_workspace():
                                     if any(k.startswith(pfx) for pfx in ["step_agents_ran_", "quiz_submitted_", "saved_user_answers_", "saved_user_full_answers_", "xp_awarded_"]):
                                         del st.session_state[k]
 
+                                for idx_st, st_ob in enumerate(loaded.steps):
+                                    has_step_content = bool(
+                                        getattr(st_ob, "tutor_explanation", None)
+                                        or getattr(st_ob, "quiz", None)
+                                        or getattr(st_ob, "videos", None)
+                                        or getattr(st_ob, "papers", None)
+                                        or getattr(st_ob, "status", None) == StepStatus.COMPLETE
+                                    )
+                                    if has_step_content:
+                                        setattr(st_ob, "_agent_generated", True)
+                                        st.session_state[f"step_agents_ran_{idx_st}"] = True
+
                                 st.session_state["memory"] = loaded
                                 target_idx = 0
                                 for idx_s, step_obj in enumerate(loaded.steps):
@@ -3124,6 +3136,19 @@ def render_learning_workspace():
                                     for k in list(st.session_state.keys()):
                                         if any(k.startswith(pfx) for pfx in ["step_agents_ran_", "quiz_submitted_", "saved_user_answers_", "saved_user_full_answers_", "xp_awarded_"]):
                                             del st.session_state[k]
+
+                                    for idx_st, st_ob in enumerate(loaded.steps):
+                                        has_step_content = bool(
+                                            getattr(st_ob, "tutor_explanation", None)
+                                            or getattr(st_ob, "quiz", None)
+                                            or getattr(st_ob, "videos", None)
+                                            or getattr(st_ob, "papers", None)
+                                            or getattr(st_ob, "status", None) == StepStatus.COMPLETE
+                                        )
+                                        if has_step_content:
+                                            setattr(st_ob, "_agent_generated", True)
+                                            st.session_state[f"step_agents_ran_{idx_st}"] = True
+
                                     st.session_state["memory"] = loaded
                                     target_idx = 0
                                     for i_st, st_ob in enumerate(loaded.steps):
@@ -3570,9 +3595,20 @@ def render_learning_workspace():
         if current_step.status == StepStatus.PENDING:
             current_step.status = StepStatus.IN_PROGRESS
 
-        # Auto-trigger Multi-Agent Execution once per step
+        # Auto-trigger Multi-Agent Execution once per step (skipped if content already exists from history)
         agents_ran_key = f"step_agents_ran_{active_idx}"
-        is_already_generated = getattr(current_step, "_agent_generated", False) or st.session_state.get(agents_ran_key, False)
+        has_existing_content = bool(
+            getattr(current_step, "tutor_explanation", None) 
+            or getattr(current_step, "quiz", None) 
+            or getattr(current_step, "videos", None) 
+            or getattr(current_step, "papers", None)
+            or getattr(current_step, "status", None) == StepStatus.COMPLETE
+        )
+        is_already_generated = (
+            getattr(current_step, "_agent_generated", False) 
+            or st.session_state.get(agents_ran_key, False)
+            or has_existing_content
+        )
 
         if not is_already_generated:
             st.session_state[agents_ran_key] = True
