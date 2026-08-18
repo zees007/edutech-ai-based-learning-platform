@@ -322,51 +322,197 @@ CUSTOM_CSS = """
         line-height: 1.5 !important;
     }
 
-    /* ── ChatGPT & Gemini Bottom Composer Dock ── */
-    .et-gemini-composer-dock {
-        background: linear-gradient(135deg, rgba(17, 12, 30, 0.95) 0%, rgba(28, 18, 50, 0.92) 100%) !important;
-        border: 1.5px solid rgba(168, 85, 247, 0.5) !important;
-        border-radius: 20px !important;
-        padding: 14px 20px 12px 20px !important;
-        margin: 1.2rem 0 0.8rem 0 !important;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), 0 0 30px rgba(168, 85, 247, 0.25), inset 0 0 20px rgba(168, 85, 247, 0.1) !important;
-        backdrop-filter: blur(24px) !important;
-        -webkit-backdrop-filter: blur(24px) !important;
-        transition: all 0.3s ease !important;
+    /* ── App Theme Glass Container Card for Start Journey (Exact Match of Sign In Form in home_ui.py) ── */
+    div[data-testid="stColumn"]:has(#journey-console-card-marker),
+    div[data-testid="column"]:has(#journey-console-card-marker) {
+        background: linear-gradient(135deg, rgba(15, 23, 42, 0.94) 0%, rgba(26, 17, 46, 0.9) 100%) !important;
+        backdrop-filter: blur(30px) !important;
+        -webkit-backdrop-filter: blur(30px) !important;
+        border: 1.5px solid rgba(168, 85, 247, 0.45) !important;
+        border-radius: 24px !important;
+        padding: 2rem 2.2rem 1.6rem 2.2rem !important;
+        margin-top: 0.8rem !important;
+        margin-bottom: 1.4rem !important;
+        box-shadow: 0 25px 65px -15px rgba(168, 85, 247, 0.35), inset 0 0 35px rgba(168, 85, 247, 0.12) !important;
+        position: relative !important;
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
 
-    .et-gemini-composer-dock:hover {
+    div[data-testid="stColumn"]:has(#journey-console-card-marker)::before,
+    div[data-testid="column"]:has(#journey-console-card-marker)::before {
+        content: '' !important;
+        position: absolute !important;
+        top: 0 !important;
+        left: 10% !important;
+        right: 10% !important;
+        height: 3px !important;
+        background: linear-gradient(90deg, transparent 0%, #EC4899 25%, #A855F7 50%, #3B82F6 75%, transparent 100%) !important;
+        border-radius: 3px !important;
+        box-shadow: 0 0 15px #EC4899, 0 0 20px #A855F7 !important;
+        opacity: 1 !important;
+        z-index: 10 !important;
+        transition: opacity 0.3s ease, box-shadow 0.3s ease !important;
+    }
+
+    div[data-testid="stColumn"]:has(#journey-console-card-marker):hover,
+    div[data-testid="column"]:has(#journey-console-card-marker):hover {
+        border-color: rgba(168, 85, 247, 0.85) !important;
+        box-shadow: 0 30px 75px -10px rgba(168, 85, 247, 0.55), inset 0 0 45px rgba(168, 85, 247, 0.2) !important;
+        transform: translateY(-2px) !important;
+    }
+
+    div[data-testid="stColumn"]:has(#journey-console-card-marker):hover::before,
+    div[data-testid="column"]:has(#journey-console-card-marker):hover::before {
+        opacity: 1 !important;
+        box-shadow: 0 0 22px #EC4899, 0 0 30px #A855F7 !important;
+    }
+
+    div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-testid="stForm"],
+    div[data-testid="column"]:has(#journey-console-card-marker) div[data-testid="stForm"] {
+        border: none !important;
+        padding: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+    }
+
+    /* Labels inside journey glass card */
+    div[data-testid="stColumn"]:has(#journey-console-card-marker) label,
+    div[data-testid="stColumn"]:has(#journey-console-card-marker) label p,
+    div[data-testid="column"]:has(#journey-console-card-marker) label,
+    div[data-testid="column"]:has(#journey-console-card-marker) label p {
+        color: rgba(233, 213, 255, 0.92) !important;
+        font-size: 0.86rem !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.3px !important;
+        margin-bottom: 4px !important;
+    }
+
+    /* Inputs & Selectboxes inside journey glass card (Matching Sign In BaseWeb Theme) */
+    div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-baseweb="input"],
+    div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-baseweb="base-input"],
+    div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-baseweb="select"] > div,
+    div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-testid="stSelectbox"] > div > div,
+    div[data-testid="column"]:has(#journey-console-card-marker) div[data-baseweb="input"],
+    div[data-testid="column"]:has(#journey-console-card-marker) div[data-baseweb="base-input"],
+    div[data-testid="column"]:has(#journey-console-card-marker) div[data-baseweb="select"] > div,
+    div[data-testid="column"]:has(#journey-console-card-marker) div[data-testid="stSelectbox"] > div > div {
+        background: rgba(15, 23, 42, 0.75) !important;
+        border: 1.5px solid rgba(168, 85, 247, 0.35) !important;
+        border-radius: 14px !important;
+        transition: all 0.25s ease !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25), inset 0 0 10px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-baseweb="input"]:hover,
+    div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-baseweb="select"] > div:hover,
+    div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-testid="stSelectbox"] > div > div:hover,
+    div[data-testid="column"]:has(#journey-console-card-marker) div[data-baseweb="input"]:hover,
+    div[data-testid="column"]:has(#journey-console-card-marker) div[data-baseweb="select"] > div:hover,
+    div[data-testid="column"]:has(#journey-console-card-marker) div[data-testid="stSelectbox"] > div > div:hover {
+        border-color: rgba(168, 85, 247, 0.65) !important;
+        box-shadow: 0 0 16px rgba(168, 85, 247, 0.28) !important;
+    }
+
+    div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-baseweb="input"]:focus-within,
+    div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-baseweb="select"] > div:focus-within,
+    div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-testid="stSelectbox"] > div > div:focus-within,
+    div[data-testid="column"]:has(#journey-console-card-marker) div[data-baseweb="input"]:focus-within,
+    div[data-testid="column"]:has(#journey-console-card-marker) div[data-baseweb="select"] > div:focus-within,
+    div[data-testid="column"]:has(#journey-console-card-marker) div[data-testid="stSelectbox"] > div > div:focus-within {
+        border-color: rgba(168, 85, 247, 0.95) !important;
+        box-shadow: 0 0 25px rgba(168, 85, 247, 0.45), inset 0 0 12px rgba(168, 85, 247, 0.15) !important;
+        background: rgba(15, 23, 42, 0.92) !important;
+    }
+
+    div[data-testid="stColumn"]:has(#journey-console-card-marker) input,
+    div[data-testid="column"]:has(#journey-console-card-marker) input {
+        color: #FAFAFA !important;
+        font-size: 0.94rem !important;
+        font-weight: 500 !important;
+        padding: 10px 14px !important;
+    }
+
+    div[data-testid="stColumn"]:has(#journey-console-card-marker) input::placeholder,
+    div[data-testid="column"]:has(#journey-console-card-marker) input::placeholder {
+        color: rgba(233, 213, 255, 0.38) !important;
+    }
+
+    /* ✨ Start Journey Theme Button Gradient (Matching Sign In Launch Button) */
+    div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-testid="stFormSubmitButton"] button,
+    div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-testid="stFormSubmitButton"] button[kind="primary"],
+    div[data-testid="column"]:has(#journey-console-card-marker) div[data-testid="stFormSubmitButton"] button,
+    div[data-testid="column"]:has(#journey-console-card-marker) div[data-testid="stFormSubmitButton"] button[kind="primary"] {
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%) !important;
+        background-color: transparent !important;
+        border: none !important;
+        border-radius: 14px !important;
+        color: #FFFFFF !important;
+        font-weight: 800 !important;
+        font-size: 0.96rem !important;
+        letter-spacing: 0.3px !important;
+        padding: 11px 20px !important;
+        min-height: 46px !important;
+        box-shadow: 0 8px 25px rgba(168, 85, 247, 0.4), 0 0 20px rgba(236, 72, 153, 0.25) !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        cursor: pointer !important;
+    }
+
+    div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-testid="stFormSubmitButton"] button:hover,
+    div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-testid="stFormSubmitButton"] button[kind="primary"]:hover,
+    div[data-testid="column"]:has(#journey-console-card-marker) div[data-testid="stFormSubmitButton"] button:hover,
+    div[data-testid="column"]:has(#journey-console-card-marker) div[data-testid="stFormSubmitButton"] button[kind="primary"]:hover {
+        transform: translateY(-2px) scale(1.01) !important;
+        box-shadow: 0 12px 35px rgba(168, 85, 247, 0.6), 0 0 30px rgba(59, 130, 246, 0.45) !important;
+    }
+
+    /* Suggested Inquiries (Inside Container & Left-Aligned) */
+    div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-testid="stButton"],
+    div[data-testid="column"]:has(#journey-console-card-marker) div[data-testid="stButton"] {
+        display: flex !important;
+        justify-content: flex-start !important;
+        width: 100% !important;
+    }
+
+    div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-testid="stButton"] button,
+    div[data-testid="column"]:has(#journey-console-card-marker) div[data-testid="stButton"] button {
+        background: rgba(168, 85, 247, 0.08) !important;
+        border: 1px solid rgba(168, 85, 247, 0.24) !important;
+        color: rgba(243, 232, 255, 0.9) !important;
+        font-size: 0.92rem !important;
+        font-weight: 500 !important;
+        text-align: left !important;
+        justify-content: flex-start !important;
+        padding: 8px 14px !important;
+        border-radius: 12px !important;
+        transition: all 0.2s ease !important;
+        box-shadow: none !important;
+        display: flex !important;
+        align-items: center !important;
+        width: auto !important;
+        min-width: 0 !important;
+        margin-bottom: 4px !important;
+    }
+
+    div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-testid="stButton"] button:hover,
+    div[data-testid="column"]:has(#journey-console-card-marker) div[data-testid="stButton"] button:hover {
+        background: rgba(168, 85, 247, 0.22) !important;
         border-color: #C084FC !important;
-        box-shadow: 0 14px 50px rgba(0, 0, 0, 0.7), 0 0 45px rgba(168, 85, 247, 0.4) !important;
+        border-left: 3px solid #C084FC !important;
+        color: #FFFFFF !important;
+        padding-left: 18px !important;
+        box-shadow: 0 4px 15px rgba(168, 85, 247, 0.3) !important;
     }
 
-    .composer-title-row {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin-bottom: 2px;
-    }
-
-    .composer-sparkle-icon {
-        font-size: 1.1rem;
-        animation: pulseGlow 2s infinite ease-in-out;
-    }
-
-    .composer-title-text {
-        font-weight: 800;
-        font-size: 0.98rem;
-        color: #FAFAFA;
-        letter-spacing: -0.2px;
-    }
-
-    .composer-chip-header {
-        font-size: 0.82rem;
-        font-weight: 700;
-        color: rgba(233, 213, 255, 0.85);
-        margin-bottom: 6px;
+    .journey-tip-footer {
         display: flex;
         align-items: center;
         gap: 6px;
+        font-size: 0.76rem;
+        color: rgba(233, 213, 255, 0.6);
+        margin-top: 8px;
+        padding-top: 4px;
     }
 
     /* ── Navbar — Floating Glassmorphism Theme (Learning Workspace) ───────── */
@@ -2932,77 +3078,18 @@ def render_learning_workspace():
         except Exception as ex_ip:
             logging.debug(f"Notice: Could not load quick resume cards: {ex_ip}")
         
-        # 4 Agent Squad Cards (Matching Landing Page Grid Aesthetic)
-        col1, col2, col3, col4 = st.columns(4)
-        with col1:
-            st.markdown(
-                """
-                <div class="feat-card">
-                    <div class="feat-icon icon-violet">🧩</div>
-                    <h4>Socratic Tutor</h4>
-                    <p style="font-size: 0.84rem; color: rgba(255, 255, 255, 0.65);">Interactive Socratic dialogue with intuitive analogies tailored to your level.</p>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-        with col2:
-            st.markdown(
-                """
-                <div class="feat-card">
-                    <div class="feat-icon icon-cyan">🎬</div>
-                    <h4>YouTube Curator</h4>
-                    <p style="font-size: 0.84rem; color: rgba(255, 255, 255, 0.65);">Pinpoints exact timestamp clips and explanations from top educational videos.</p>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-        with col3:
-            st.markdown(
-                """
-                <div class="feat-card">
-                    <div class="feat-icon icon-blue">📚</div>
-                    <h4>Academic Researcher</h4>
-                    <p style="font-size: 0.84rem; color: rgba(255, 255, 255, 0.65);">Retrieves open-access papers with AI summaries from arXiv & OpenAlex.</p>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-        with col4:
-            st.markdown(
-                """
-                <div class="feat-card">
-                    <div class="feat-icon icon-pink">📝</div>
-                    <h4>Milestone Quiz</h4>
-                    <p style="font-size: 0.84rem; color: rgba(255, 255, 255, 0.65);">Adaptive knowledge checks with real-time feedback, gamification XP & auto-progression.</p>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
 
-        # ─── Main Page Bottom Level: ChatGPT/Gemini New Journey Composer ───
-        st.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True)
-        
-        # Instant Topic Suggestion Starter Chips
+        # ─── Main Page: Centered Heading ("What do you want to learn today?") ───
         st.markdown(
             """
-            <div class="composer-chip-header">
-                <span>💡 Instant Topic Prompts:</span>
+            <div class="et-hero" style="margin-top: 2rem; margin-bottom: 1.2rem;">
+                <h1>What do you want to <span class="gradient-text">learn today?</span></h1>
+                <p>Decompose any concept into adaptive milestones, interactive Socratic lessons, and academic research.</p>
             </div>
             """,
             unsafe_allow_html=True,
         )
-        sug_cols = st.columns(4)
-        preset_prompts = [
-            ("🌱 Photosynthesis", "How does photosynthesis work?"),
-            ("⚛️ Quantum Physics", "Explain quantum entanglement"),
-            ("🧠 Neural Networks", "How do neural networks learn?"),
-            ("🌊 Ocean Tides", "What causes ocean tides?"),
-        ]
-        for i_p, (p_label, p_text) in enumerate(preset_prompts):
-            with sug_cols[i_p]:
-                if st.button(p_label, key=f"main_sug_{i_p}", use_container_width=True):
-                    st.session_state["main_topic_query"] = p_text
-                    st.rerun()
+
 
         default_topic_val = (
             st.session_state.pop("quick_launch_topic", None)
@@ -3010,61 +3097,72 @@ def render_learning_workspace():
             or st.session_state.get("last_topic", "")
         )
 
-        st.markdown(
-            """
-            <div class="et-gemini-composer-dock">
-                <div class="composer-title-row">
-                    <div class="composer-sparkle-icon">✨</div>
-                    <div class="composer-title-text">What do you want to master today?</div>
-                </div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+        # Unified Glassmorphic Console Card (Matching Sign In Auth Card from home_ui.py)
+        card_col = st.columns(1)[0]
+        with card_col:
+            st.markdown('<div id="journey-console-card-marker" class="et-journey-card-container-marker"></div>', unsafe_allow_html=True)
 
-        main_topic_input = st.text_input(
-            "What do you want to master?",
-            value=default_topic_val,
-            placeholder="Ask EduTechAI anything... (e.g. Quantum Computing, Photosynthesis, Neural Networks, Macroeconomics)",
-            key="main_topic_input_composer",
-            label_visibility="collapsed",
-        )
+            # 1. Dropdowns: Mode (Left) and Education Level (Right) placed ABOVE the chat prompt
+            drop_col1, drop_col2 = st.columns(2)
+            with drop_col1:
+                mode_choice = st.selectbox(
+                    "**🎨 Learning Mode**",
+                    options=["Visual 🎬", "Deep Dive 🔬", "Bite-Sized ⚡"],
+                    index=0,
+                    key="main_mode_select",
+                    help="Visual: video & diagrams | Deep Dive: papers & proofs | Bite-Sized: quick summaries",
+                )
+                mode_map = {
+                    "Visual 🎬": LearningMode.VISUAL,
+                    "Deep Dive 🔬": LearningMode.DEEP_DIVE,
+                    "Bite-Sized ⚡": LearningMode.BITE_SIZED,
+                }
+                selected_mode = mode_map[mode_choice]
 
-        tool_col1, tool_col2, tool_col3 = st.columns([1.5, 1.5, 1.8], vertical_alignment="center")
-        with tool_col1:
-            mode_choice = st.selectbox(
-                "**🎨 Learning Mode**",
-                options=["Visual 🎬", "Deep Dive 🔬", "Bite-Sized ⚡"],
-                index=0,
-                key="main_mode_select",
-                help="Visual: video & diagrams | Deep Dive: papers & proofs | Bite-Sized: quick summaries",
-            )
-            mode_map = {
-                "Visual 🎬": LearningMode.VISUAL,
-                "Deep Dive 🔬": LearningMode.DEEP_DIVE,
-                "Bite-Sized ⚡": LearningMode.BITE_SIZED,
-            }
-            selected_mode = mode_map[mode_choice]
+            with drop_col2:
+                level_choice = st.selectbox(
+                    "**🎓 Education Level**",
+                    options=["Middle School 🏫", "High School 🎒", "Undergraduate 🏛️", "Graduate 🎓", "General Curious 💡"],
+                    index=0,
+                    key="main_level_select",
+                )
+                level_map = {
+                    "Middle School 🏫": "middle_school",
+                    "High School 🎒": "high_school",
+                    "Undergraduate 🏛️": "undergraduate",
+                    "Graduate 🎓": "graduate",
+                    "General Curious 💡": "general",
+                }
+                selected_level = level_map[level_choice]
 
-        with tool_col2:
-            level_choice = st.selectbox(
-                "**🎓 Education Level**",
-                options=["Middle School 🏫", "High School 🎒", "Undergraduate 🏛️", "Graduate 🎓", "General Curious 💡"],
-                index=0,
-                key="main_level_select",
-            )
-            level_map = {
-                "Middle School 🏫": "middle_school",
-                "High School 🎒": "high_school",
-                "Undergraduate 🏛️": "undergraduate",
-                "Graduate 🎓": "graduate",
-                "General Curious 💡": "general",
-            }
-            selected_level = level_map[level_choice]
+            # 2. Gemini Style Search Prompt Form with Input + ✨ Start Journey Button
+            with st.form(key="main_journey_launch_form", clear_on_submit=False, border=False):
+                st.markdown('<div class="et-gemini-prompt-form-marker"></div>', unsafe_allow_html=True)
 
-        with tool_col3:
-            st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
-            main_start_clicked = st.button("🚀 Start Learning Journey", key="main_launch_journey_btn", type="primary", use_container_width=True)
+                c_input, c_btn = st.columns([4.8, 1.4], vertical_alignment="center")
+                with c_input:
+                    main_topic_input = st.text_input(
+                        "What do you want to learn?",
+                        value=default_topic_val,
+                        placeholder="Ask EduTechAI anything... (e.g., I want to learn Python programming from zero)",
+                        key="main_topic_input_composer",
+                        label_visibility="collapsed",
+                    )
+                with c_btn:
+                    main_start_clicked = st.form_submit_button("✨ Start Journey", type="primary", use_container_width=True)
+
+            # 3. Suggested Inquiries (Inside Container Card & Left-Aligned)
+            suggested_inquiries = [
+                ("🐍 I want to learn Python programming from zero", "I want to learn Python programming from zero step by step"),
+                ("🧠 Explain Deep Neural Networks and Machine Learning", "How do Deep Neural Networks and Machine Learning models learn?"),
+                ("📐 Intuitive guide to Calculus & Differential Equations", "Intuitive guide to Calculus, Derivatives, and Differential Equations"),
+                ("🧬 How CRISPR-Cas9 Gene Editing works", "How does CRISPR-Cas9 Gene Editing and DNA repair work?"),
+                ("⚗️ Chemical Bonding: Covalent vs Ionic Orbitals", "How do chemical bonds, covalent and ionic molecular orbitals work?"),
+            ]
+            for sug_idx, (sug_label, sug_prompt) in enumerate(suggested_inquiries):
+                if st.button(f"{sug_label}", key=f"sug_btn_{sug_idx}", use_container_width=False):
+                    st.session_state["main_topic_query"] = sug_prompt
+                    st.rerun()
 
         if main_start_clicked and main_topic_input.strip():
             st.session_state["last_topic"] = main_topic_input.strip()
