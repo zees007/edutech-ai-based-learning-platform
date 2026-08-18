@@ -1299,26 +1299,50 @@ CUSTOM_CSS = """
         box-shadow: 0 0 20px rgba(168, 85, 247, 0.65), inset 0 1px 1px rgba(255, 255, 255, 0.35) !important;
     }
 
-    /* ── Collapsible Learning History Header Toggle ── */
-    div[class*="st-key-sb_hist_collapse_toggle_btn"] button {
-        background: transparent !important;
-        border: none !important;
-        box-shadow: none !important;
-        color: #C084FC !important;
-        font-size: 1.1rem !important;
-        padding: 0 !important;
-        height: 28px !important;
-        min-height: 28px !important;
-        width: 28px !important;
-        display: flex !important;
+    /* ── Learning History Header: Single Unified Inline Flex Title & Chevron Arrow ── */
+    .sidebar-section-title.clickable-hist-header {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        gap: 6px !important;
+        margin: 4px 0 6px 0 !important;
+        cursor: pointer !important;
+        user-select: none !important;
+        -webkit-user-select: none !important;
+        padding: 3px 6px 3px 2px !important;
+        border-radius: 6px !important;
+        transition: background 0.15s ease !important;
+        width: fit-content !important;
+    }
+
+    .sidebar-section-title.clickable-hist-header:hover {
+        background: rgba(168, 85, 247, 0.14) !important;
+    }
+
+    .sidebar-section-title.clickable-hist-header .hist-chevron-arrow {
+        margin-left: 2px !important;
+        display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
-        border-radius: 6px !important;
-        transition: background 0.15s ease, transform 0.15s ease !important;
+        transition: stroke 0.15s ease, transform 0.15s ease !important;
+        stroke: #C084FC !important;
+        vertical-align: middle !important;
     }
-    div[class*="st-key-sb_hist_collapse_toggle_btn"] button:hover {
-        background: rgba(168, 85, 247, 0.2) !important;
-        color: #FFFFFF !important;
+
+    .sidebar-section-title.clickable-hist-header:hover .hist-chevron-arrow {
+        stroke: #FFFFFF !important;
+    }
+
+    div[class*="st-key-sb_hist_hidden_toggle_btn"] {
+        display: none !important;
+        position: absolute !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+        height: 0 !important;
+        width: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
     }
 
     /* ── Modern ChatGPT-Style Session History List (No Borders, Zero Gaps, Uniform Hover) ── */
@@ -3305,7 +3329,7 @@ def render_learning_workspace():
                     return doc.querySelector('[data-testid="stSidebarCollapseButton"] button');
                 }
 
-                // Global Delegated click handler for top collapse button
+                // Global Delegated click handler for top collapse button and history collapse toggle
                 doc.addEventListener('click', function(e) {
                     const collapseTarget = e.target && e.target.closest ? e.target.closest('#edutech-sb-collapse-btn, .sidebar-top-collapse-btn') : null;
                     if (collapseTarget) {
@@ -3315,10 +3339,16 @@ def render_learning_workspace():
                         if (closeBtn) {
                             dispatchFullClick(closeBtn);
                         }
-                        setTimeout(updateTogglePosition, 50);
-                        setTimeout(updateTogglePosition, 150);
-                        setTimeout(updateTogglePosition, 300);
-                        setTimeout(updateTogglePosition, 500);
+                    }
+
+                    const histTarget = e.target && e.target.closest ? e.target.closest('#edutech-hist-collapse-header') : null;
+                    if (histTarget) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const hiddenBtn = doc.querySelector('div[class*="st-key-sb_hist_hidden_toggle_btn"] button');
+                        if (hiddenBtn) {
+                            dispatchFullClick(hiddenBtn);
+                        }
                     }
                 }, true);
 
@@ -3487,31 +3517,33 @@ def render_learning_workspace():
 
         st.markdown("<div style='height: 6px;'></div>", unsafe_allow_html=True)
 
-        # 3. Collapsible Learning History Header (Collapsible Accordion)
+        # 3. Learning History Header (100% Inline Single HTML Flexbox Container)
         if "history_section_expanded" not in st.session_state:
             st.session_state["history_section_expanded"] = True
 
         hist_expanded = st.session_state["history_section_expanded"]
-        chevron_icon = "▾" if hist_expanded else "▸"
+        chevron_pts = "6 9 12 15 18 9" if hist_expanded else "9 18 15 12 9 6"
 
-        hist_hdr_l, hist_hdr_r = st.columns([8.4, 1.6], vertical_alignment="center")
-        with hist_hdr_l:
-            st.markdown(
-                """
-                <div class="sidebar-section-title" style="margin: 0;">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C084FC" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <polyline points="12 6 12 12 16 14"></polyline>
-                    </svg>
-                    <span>Learning History</span>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-        with hist_hdr_r:
-            if st.button(chevron_icon, key="sb_hist_collapse_toggle_btn"):
-                st.session_state["history_section_expanded"] = not hist_expanded
-                st.rerun()
+        st.markdown(
+            f"""
+            <div id="edutech-hist-collapse-header" class="sidebar-section-title clickable-hist-header" title="Toggle Learning History">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C084FC" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                <span>Learning History</span>
+                <svg class="hist-chevron-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C084FC" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="{chevron_pts}"></polyline>
+                </svg>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        # Hidden trigger button for Streamlit reactive state rerun
+        if st.button("hidden_hist_toggle", key="sb_hist_hidden_toggle_btn"):
+            st.session_state["history_section_expanded"] = not hist_expanded
+            st.rerun()
 
         if hist_expanded:
             # 4. Search Bar
