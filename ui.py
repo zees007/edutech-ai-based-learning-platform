@@ -322,61 +322,185 @@ CUSTOM_CSS = """
         line-height: 1.5 !important;
     }
 
-    /* ── Sidebar Guide Callout Banner (Matching Sidebar Handle Theme) ── */
-    .sidebar-guide-card {
+    /* ── App Theme Glass Container Card for Start Journey (Exact Match of Sign In Form in home_ui.py) ── */
+    div[data-testid="stColumn"]:has(#journey-console-card-marker),
+    div[data-testid="column"]:has(#journey-console-card-marker) {
+        background: linear-gradient(135deg, rgba(15, 23, 42, 0.94) 0%, rgba(26, 17, 46, 0.9) 100%) !important;
+        backdrop-filter: blur(30px) !important;
+        -webkit-backdrop-filter: blur(30px) !important;
+        border: 1.5px solid rgba(168, 85, 247, 0.45) !important;
+        border-radius: 24px !important;
+        padding: 1.8rem 2.2rem 1.4rem 2.2rem !important;
+        margin-top: 0.8rem !important;
+        margin-bottom: 1.4rem !important;
+        box-shadow: 0 25px 65px -15px rgba(168, 85, 247, 0.35), inset 0 0 35px rgba(168, 85, 247, 0.12) !important;
+        position: relative !important;
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+
+    div[data-testid="stColumn"]:has(#journey-console-card-marker)::before,
+    div[data-testid="column"]:has(#journey-console-card-marker)::before {
+        content: '' !important;
+        position: absolute !important;
+        top: 0 !important;
+        left: 10% !important;
+        right: 10% !important;
+        height: 3px !important;
+        background: linear-gradient(90deg, transparent 0%, #EC4899 25%, #A855F7 50%, #3B82F6 75%, transparent 100%) !important;
+        border-radius: 3px !important;
+        box-shadow: 0 0 15px #EC4899, 0 0 20px #A855F7 !important;
+        opacity: 1 !important;
+        z-index: 10 !important;
+        transition: opacity 0.3s ease, box-shadow 0.3s ease !important;
+    }
+
+    div[data-testid="stColumn"]:has(#journey-console-card-marker):hover,
+    div[data-testid="column"]:has(#journey-console-card-marker):hover {
+        border-color: rgba(168, 85, 247, 0.85) !important;
+        box-shadow: 0 30px 75px -10px rgba(168, 85, 247, 0.55), inset 0 0 45px rgba(168, 85, 247, 0.2) !important;
+        transform: translateY(-2px) !important;
+    }
+
+    div[data-testid="stColumn"]:has(#journey-console-card-marker):hover::before,
+    div[data-testid="column"]:has(#journey-console-card-marker):hover::before {
+        opacity: 1 !important;
+        box-shadow: 0 0 22px #EC4899, 0 0 30px #A855F7 !important;
+    }
+
+    div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-testid="stForm"],
+    div[data-testid="column"]:has(#journey-console-card-marker) div[data-testid="stForm"] {
+        border: none !important;
+        padding: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+    }
+
+    /* Labels inside journey glass card */
+    div[data-testid="stColumn"]:has(#journey-console-card-marker) label,
+    div[data-testid="stColumn"]:has(#journey-console-card-marker) label p,
+    div[data-testid="column"]:has(#journey-console-card-marker) label,
+    div[data-testid="column"]:has(#journey-console-card-marker) label p {
+        color: rgba(233, 213, 255, 0.92) !important;
+        font-size: 0.86rem !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.3px !important;
+        margin-bottom: 4px !important;
+    }
+
+    /* Inputs & Selectboxes inside journey glass card (Matching Sign In BaseWeb Theme) */
+    div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-baseweb="input"],
+    div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-baseweb="base-input"],
+    div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-baseweb="select"] > div,
+    div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-testid="stSelectbox"] > div > div,
+    div[data-testid="column"]:has(#journey-console-card-marker) div[data-baseweb="input"],
+    div[data-testid="column"]:has(#journey-console-card-marker) div[data-baseweb="base-input"],
+    div[data-testid="column"]:has(#journey-console-card-marker) div[data-baseweb="select"] > div,
+    div[data-testid="column"]:has(#journey-console-card-marker) div[data-testid="stSelectbox"] > div > div {
+        background: rgba(15, 23, 42, 0.75) !important;
+        border: 1.5px solid rgba(168, 85, 247, 0.35) !important;
+        border-radius: 14px !important;
+        transition: all 0.25s ease !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25), inset 0 0 10px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-baseweb="input"]:hover,
+    div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-baseweb="select"] > div:hover,
+    div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-testid="stSelectbox"] > div > div:hover,
+    div[data-testid="column"]:has(#journey-console-card-marker) div[data-baseweb="input"]:hover,
+    div[data-testid="column"]:has(#journey-console-card-marker) div[data-baseweb="select"] > div:hover,
+    div[data-testid="column"]:has(#journey-console-card-marker) div[data-testid="stSelectbox"] > div > div:hover {
+        border-color: rgba(168, 85, 247, 0.65) !important;
+        box-shadow: 0 0 16px rgba(168, 85, 247, 0.28) !important;
+    }
+
+    div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-baseweb="input"]:focus-within,
+    div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-baseweb="select"] > div:focus-within,
+    div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-testid="stSelectbox"] > div > div:focus-within,
+    div[data-testid="column"]:has(#journey-console-card-marker) div[data-baseweb="input"]:focus-within,
+    div[data-testid="column"]:has(#journey-console-card-marker) div[data-baseweb="select"] > div:focus-within,
+    div[data-testid="column"]:has(#journey-console-card-marker) div[data-testid="stSelectbox"] > div > div:focus-within {
+        border-color: rgba(168, 85, 247, 0.95) !important;
+        box-shadow: 0 0 25px rgba(168, 85, 247, 0.45), inset 0 0 12px rgba(168, 85, 247, 0.15) !important;
+        background: rgba(15, 23, 42, 0.92) !important;
+    }
+
+    div[data-testid="stColumn"]:has(#journey-console-card-marker) input,
+    div[data-testid="column"]:has(#journey-console-card-marker) input {
+        color: #FAFAFA !important;
+        font-size: 0.94rem !important;
+        font-weight: 500 !important;
+        padding: 10px 14px !important;
+    }
+
+    div[data-testid="stColumn"]:has(#journey-console-card-marker) input::placeholder,
+    div[data-testid="column"]:has(#journey-console-card-marker) input::placeholder {
+        color: rgba(233, 213, 255, 0.38) !important;
+    }
+
+    /* ✨ Start Journey Theme Button Gradient (Matching Sign In Launch Button) */
+    div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-testid="stFormSubmitButton"] button,
+    div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-testid="stFormSubmitButton"] button[kind="primary"],
+    div[data-testid="column"]:has(#journey-console-card-marker) div[data-testid="stFormSubmitButton"] button,
+    div[data-testid="column"]:has(#journey-console-card-marker) div[data-testid="stFormSubmitButton"] button[kind="primary"] {
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%) !important;
+        background-color: transparent !important;
+        border: none !important;
+        border-radius: 14px !important;
+        color: #FFFFFF !important;
+        font-weight: 800 !important;
+        font-size: 0.96rem !important;
+        letter-spacing: 0.3px !important;
+        padding: 11px 20px !important;
+        min-height: 46px !important;
+        box-shadow: 0 8px 25px rgba(168, 85, 247, 0.4), 0 0 20px rgba(236, 72, 153, 0.25) !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        cursor: pointer !important;
+    }
+
+    div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-testid="stFormSubmitButton"] button:hover,
+    div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-testid="stFormSubmitButton"] button[kind="primary"]:hover,
+    div[data-testid="column"]:has(#journey-console-card-marker) div[data-testid="stFormSubmitButton"] button:hover,
+    div[data-testid="column"]:has(#journey-console-card-marker) div[data-testid="stFormSubmitButton"] button[kind="primary"]:hover {
+        transform: translateY(-2px) scale(1.01) !important;
+        box-shadow: 0 12px 35px rgba(168, 85, 247, 0.6), 0 0 30px rgba(59, 130, 246, 0.45) !important;
+    }
+
+    /* Popover Trigger for Topic Suggestions */
+    div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-testid="stPopover"],
+    div[data-testid="column"]:has(#journey-console-card-marker) div[data-testid="stPopover"] {
+        margin-top: 4px !important;
+    }
+
+    div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-testid="stPopover"] button,
+    div[data-testid="column"]:has(#journey-console-card-marker) div[data-testid="stPopover"] button {
+        background: rgba(168, 85, 247, 0.1) !important;
+        border: 1px solid rgba(168, 85, 247, 0.3) !important;
+        border-radius: 10px !important;
+        color: #E9D5FF !important;
+        font-size: 0.84rem !important;
+        font-weight: 600 !important;
+        padding: 5px 12px !important;
+        transition: all 0.2s ease !important;
+    }
+
+    div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-testid="stPopover"] button:hover,
+    div[data-testid="column"]:has(#journey-console-card-marker) div[data-testid="stPopover"] button:hover {
+        background: rgba(168, 85, 247, 0.22) !important;
+        border-color: #C084FC !important;
+        color: #FFFFFF !important;
+        box-shadow: 0 0 12px rgba(168, 85, 247, 0.3) !important;
+    }
+
+    .journey-tip-footer {
         display: flex;
         align-items: center;
-        justify-content: center;
-        gap: 14px;
-        background: linear-gradient(135deg, rgba(14, 9, 24, 0.95) 0%, rgba(30, 20, 50, 0.85) 100%);
-        border: 1.5px solid rgba(168, 85, 247, 0.6);
-        border-radius: 50px;
-        padding: 0.8rem 1.8rem;
-        margin: 0 auto 2.2rem auto;
-        max-width: 800px;
-        box-shadow: 0 0 30px rgba(168, 85, 247, 0.25), 0 8px 25px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(168, 85, 247, 0.15);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        transition: all 0.3s ease;
-    }
-
-    .sidebar-guide-card:hover {
-        border-color: #C084FC;
-        box-shadow: 0 0 40px rgba(168, 85, 247, 0.4), 0 10px 30px rgba(0, 0, 0, 0.6);
-        transform: translateY(-2px);
-    }
-
-    .guide-handle-badge {
-        display: inline-flex;
-        align-items: center;
         gap: 6px;
-        background: rgba(168, 85, 247, 0.25);
-        border: 1.5px solid #A855F7;
-        border-radius: 20px;
-        padding: 5px 12px;
-        color: #E9D5FF;
-        font-size: 0.78rem;
-        font-weight: 800;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        box-shadow: 0 0 14px rgba(168, 85, 247, 0.4);
-        flex-shrink: 0;
-    }
-
-    .guide-chevron-pulse {
-        animation: chevronSlide 1.5s infinite ease-in-out;
-    }
-
-    @keyframes chevronSlide {
-        0%, 100% { transform: translateX(0); }
-        50% { transform: translateX(-4px); }
-    }
-
-    .guide-text-content {
-        font-size: 0.98rem;
-        font-weight: 600;
-        color: #FAFAFA;
-        line-height: 1.4;
+        font-size: 0.76rem;
+        color: rgba(233, 213, 255, 0.6);
+        margin-top: 8px;
+        padding-top: 4px;
     }
 
     /* ── Navbar — Floating Glassmorphism Theme (Learning Workspace) ───────── */
@@ -944,14 +1068,30 @@ CUSTOM_CSS = """
         letter-spacing: 0.2px !important;
     }
 
-    /* ── Animated AI Neural Network Icon in Sidebar Header ── */
-    .sidebar-header-container {
+    /* ── ChatGPT & Gemini Sidebar Branding & Section Headers ── */
+    .sidebar-brand-header {
+        padding: 2px 0 10px 0;
+        margin-bottom: 6px;
+        border-bottom: 1px solid rgba(168, 85, 247, 0.22);
+    }
+
+    .sidebar-brand-top {
         display: flex;
         align-items: center;
         gap: 10px;
-        margin-bottom: 12px;
-        padding-bottom: 8px;
-        border-bottom: 1px solid rgba(168, 85, 247, 0.25);
+    }
+
+    .neural-icon-wrapper-small {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, rgba(168, 85, 247, 0.2) 0%, rgba(59, 130, 246, 0.2) 100%);
+        border: 1px solid rgba(168, 85, 247, 0.45);
+        box-shadow: 0 0 12px rgba(168, 85, 247, 0.3);
+        flex-shrink: 0;
     }
 
     .neural-icon-wrapper {
@@ -1000,12 +1140,91 @@ CUSTOM_CSS = """
         to { stroke-dashoffset: 0; }
     }
 
-    .sidebar-header-text {
-        font-size: 1.02rem;
-        font-weight: 900;
+    .sidebar-section-title {
+        font-size: 0.84rem;
+        font-weight: 800;
         color: #FAFAFA;
-        line-height: 1.3;
-        letter-spacing: -0.2px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 6px;
+        letter-spacing: 0.2px;
+    }
+
+    /* ── Sidebar Session History Buttons Styling (ChatGPT/Gemini Style) ── */
+    section[data-testid="stSidebar"] div[data-testid="stColumn"]:first-child button[kind="secondary"] {
+        text-align: left !important;
+        justify-content: flex-start !important;
+        background: rgba(255, 255, 255, 0.03) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        border-radius: 10px !important;
+        padding: 6px 10px !important;
+        font-size: 0.76rem !important;
+        font-weight: 600 !important;
+        color: #F1F5F9 !important;
+        line-height: 1.35 !important;
+        min-height: 44px !important;
+        white-space: pre-wrap !important;
+        transition: all 0.2s ease !important;
+    }
+
+    section[data-testid="stSidebar"] div[data-testid="stColumn"]:first-child button[kind="secondary"]:hover {
+        background: rgba(168, 85, 247, 0.15) !important;
+        border-color: rgba(168, 85, 247, 0.45) !important;
+        color: #FAFAFA !important;
+        transform: translateX(2px) !important;
+    }
+
+    section[data-testid="stSidebar"] div[data-testid="stColumn"]:first-child button[kind="primary"] {
+        text-align: left !important;
+        justify-content: flex-start !important;
+        background: rgba(168, 85, 247, 0.22) !important;
+        border: 1.5px solid #A855F7 !important;
+        border-radius: 10px !important;
+        padding: 6px 10px !important;
+        font-size: 0.76rem !important;
+        font-weight: 700 !important;
+        color: #FAFAFA !important;
+        line-height: 1.35 !important;
+        min-height: 44px !important;
+        box-shadow: 0 0 14px rgba(168, 85, 247, 0.35) !important;
+        white-space: pre-wrap !important;
+    }
+
+    section[data-testid="stSidebar"] div[data-testid="stColumn"]:last-child div[data-testid="stPopover"] button {
+        border-radius: 10px !important;
+        min-height: 44px !important;
+        padding: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        background: rgba(255, 255, 255, 0.03) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        color: rgba(233, 213, 255, 0.7) !important;
+        transition: all 0.2s ease !important;
+    }
+
+    section[data-testid="stSidebar"] div[data-testid="stColumn"]:last-child div[data-testid="stPopover"] button:hover {
+        background: rgba(168, 85, 247, 0.2) !important;
+        border-color: #A855F7 !important;
+        color: #FAFAFA !important;
+    }
+
+    /* ── Streamlit Segmented Control Glassy Theme ── */
+    div[data-testid="stSegmentedControl"] {
+        background: rgba(15, 10, 26, 0.8) !important;
+        border: 1px solid rgba(168, 85, 247, 0.3) !important;
+        border-radius: 12px !important;
+        padding: 2px !important;
+        width: 100% !important;
+    }
+
+    div[data-testid="stSegmentedControl"] button {
+        border-radius: 8px !important;
+        font-weight: 700 !important;
+        font-size: 0.76rem !important;
+        padding: 4px 8px !important;
+        transition: all 0.2s ease !important;
     }
 
     .user-profile-sidebar-card {
@@ -1147,14 +1366,68 @@ CUSTOM_CSS = """
     .prereq-badge {
         background: rgba(251, 191, 36, 0.15);
         color: #FBBF24;
-        border: 1px solid rgba(251, 191, 36, 0.4);
+        border: 1px solid rgba(251, 191, 36, 0.45);
         font-size: 0.72rem;
         font-weight: 800;
         padding: 3px 10px;
         border-radius: 20px;
         text-transform: uppercase;
         letter-spacing: 0.6px;
-        margin-left: 8px;
+        display: inline-flex;
+        align-items: center;
+        height: 24px;
+        box-sizing: border-box;
+        vertical-align: middle;
+    }
+
+    .milestone-badge {
+        background: rgba(99, 102, 241, 0.18);
+        color: #818CF8;
+        border: 1px solid rgba(99, 102, 241, 0.45);
+        font-size: 0.72rem;
+        font-weight: 800;
+        padding: 3px 10px;
+        border-radius: 20px;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        display: inline-flex;
+        align-items: center;
+        height: 24px;
+        box-sizing: border-box;
+        vertical-align: middle;
+    }
+
+    .compact-status-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        font-size: 0.72rem;
+        font-weight: 800;
+        padding: 3px 10px;
+        border-radius: 20px;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        white-space: nowrap;
+        height: 24px;
+        min-height: 24px;
+        box-sizing: border-box;
+        vertical-align: middle;
+    }
+    .compact-status-inprogress {
+        background: rgba(14, 165, 233, 0.2);
+        color: #38BDF8;
+        border: 1px solid rgba(56, 189, 248, 0.5);
+    }
+    .compact-status-complete {
+        background: rgba(16, 185, 129, 0.2);
+        color: #34D399;
+        border: 1px solid rgba(52, 211, 153, 0.5);
+    }
+    .compact-status-pending {
+        background: rgba(100, 116, 139, 0.2);
+        color: #94A3B8;
+        border: 1px solid rgba(148, 163, 184, 0.45);
     }
 
     /* ── Streamlit Button Overrides (Theme Matched) ───── */
@@ -1190,55 +1463,104 @@ CUSTOM_CSS = """
         transform: translateY(-2px) !important;
     }
 
-    /* ── Step Action Regenerate Button (Rightmost Alignment & Start Learning Journey Style) ── */
-    div[data-testid="stVerticalBlock"]:has(div[class*="st-key-regen_btn_"]),
-    div[data-testid="stColumn"]:has(div[class*="st-key-regen_btn_"]) div[data-testid="stVerticalBlock"],
-    div[data-testid="column"]:has(div[class*="st-key-regen_btn_"]) div[data-testid="stVerticalBlock"] {
-        align-items: flex-end !important;
-        justify-content: flex-end !important;
-        width: 100% !important;
+    /* ── Precise In-Line Alignment for Milestone Meta Row & Regenerate Pill ── */
+    div[data-testid="stColumn"]:has(.milestone-badge-row),
+    div[data-testid="column"]:has(.milestone-badge-row),
+    div[data-testid="stColumn"]:has(div[class*="st-key-regen_btn_"]),
+    div[data-testid="column"]:has(div[class*="st-key-regen_btn_"]) {
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        min-height: 28px !important;
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
     }
 
-    div[class*="st-key-regen_btn_"],
-    div.stElementContainer:has(div[class*="st-key-regen_btn_"]),
-    div[data-testid="stElementContainer"]:has(div[class*="st-key-regen_btn_"]) {
+    div[data-testid="stColumn"]:has(.milestone-badge-row) div[data-testid="stElementContainer"],
+    div[data-testid="column"]:has(.milestone-badge-row) div[data-testid="stElementContainer"] {
+        margin: 0 !important;
+        padding: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        height: 26px !important;
+    }
+
+    div[data-testid="stColumn"]:has(.milestone-badge-row) div[data-testid="stMarkdownContainer"] p,
+    div[data-testid="column"]:has(.milestone-badge-row) div[data-testid="stMarkdownContainer"] p {
+        margin: 0 !important;
+        padding: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        height: 26px !important;
+    }
+
+    div[data-testid="stColumn"]:has(div[class*="st-key-regen_btn_"]),
+    div[data-testid="column"]:has(div[class*="st-key-regen_btn_"]) {
+        align-items: flex-end !important;
+        justify-content: center !important;
+        text-align: right !important;
+    }
+
+    div[data-testid="stColumn"]:has(div[class*="st-key-regen_btn_"]) div[data-testid="stVerticalBlock"],
+    div[data-testid="column"]:has(div[class*="st-key-regen_btn_"]) div[data-testid="stVerticalBlock"],
+    div[data-testid="stColumn"]:has(div[class*="st-key-regen_btn_"]) div[data-testid="stElementContainer"],
+    div[data-testid="column"]:has(div[class*="st-key-regen_btn_"]) div[data-testid="stElementContainer"],
+    div[class*="st-key-regen_btn_"] {
         display: flex !important;
         justify-content: flex-end !important;
-        align-self: flex-end !important;
         align-items: center !important;
-        margin-left: auto !important;
-        margin-right: 0 !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        height: 26px !important;
     }
 
     div[class*="st-key-regen_btn_"] button {
         margin-left: auto !important;
         margin-right: 0 !important;
-        align-self: flex-end !important;
         background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%) !important;
         border: none !important;
-        border-radius: 9999px !important;
+        border-radius: 20px !important;
         color: #FFFFFF !important;
-        font-size: 0.85rem !important;
+        font-size: 0.72rem !important;
         font-weight: 800 !important;
-        letter-spacing: 0.4px !important;
-        padding: 7px 20px !important;
-        height: auto !important;
-        min-height: 38px !important;
-        box-shadow: 0 0 20px rgba(236, 72, 153, 0.4), 0 4px 15px rgba(0, 0, 0, 0.3) !important;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        letter-spacing: 0.6px !important;
+        text-transform: uppercase !important;
+        padding: 4px 14px !important;
+        height: 26px !important;
+        min-height: 26px !important;
+        line-height: 1.1 !important;
+        box-shadow: 0 0 12px rgba(236, 72, 153, 0.35) !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
         display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
-        gap: 8px !important;
+        gap: 5px !important;
         cursor: pointer !important;
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+        white-space: nowrap !important;
+        vertical-align: middle !important;
+        overflow: visible !important;
+    }
+
+    div[class*="st-key-regen_btn_"] button div[data-testid="stMarkdownContainer"],
+    div[class*="st-key-regen_btn_"] button div[data-testid="stMarkdownContainer"] p {
+        font-size: 0.72rem !important;
+        font-weight: 800 !important;
+        line-height: 1.1 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.6px !important;
+        white-space: nowrap !important;
+        overflow: visible !important;
+        color: #FFFFFF !important;
     }
 
     div[class*="st-key-regen_btn_"] button:hover {
         background: linear-gradient(135deg, #F43F5E 0%, #9333EA 50%, #2563EB 100%) !important;
-        box-shadow: 0 0 30px rgba(236, 72, 153, 0.7), 0 0 20px rgba(6, 182, 212, 0.5), 0 6px 20px rgba(0, 0, 0, 0.45) !important;
-        color: #FFFFFF !important;
-        transform: translateY(-2px) !important;
+        box-shadow: 0 0 18px rgba(236, 72, 153, 0.6) !important;
+        transform: translateY(-1px) !important;
     }
 
     div[class*="st-key-regen_btn_"] [data-testid="stIconMaterial"] {
@@ -1639,19 +1961,46 @@ CUSTOM_CSS = """
         transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    /* Glassmorphism Dynamic AI Loader */
+    /* Fullscreen Faded Glassmorphic Overlay for AI Compute Cluster */
+    .glass-loader-overlay-backdrop {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        background: rgba(10, 15, 29, 0.84) !important;
+        backdrop-filter: blur(18px) !important;
+        -webkit-backdrop-filter: blur(18px) !important;
+        z-index: 999999 !important;
+        display: flex !important;
+        align-items: flex-start !important;
+        justify-content: center !important;
+        padding: 8vh 24px 40px 24px !important;
+        box-sizing: border-box !important;
+        overflow-y: auto !important;
+        animation: fadeInOverlay 0.25s ease-out !important;
+    }
+
+    @keyframes fadeInOverlay {
+        from { opacity: 0; backdrop-filter: blur(0px); }
+        to { opacity: 1; backdrop-filter: blur(18px); }
+    }
+
+    /* Glassmorphism Dynamic AI Loader Box */
     .glass-loader-box {
-        position: relative;
-        background: rgba(15, 23, 42, 0.85);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border: 1px solid rgba(168, 85, 247, 0.35);
-        border-radius: 20px;
-        padding: 1.8rem;
-        margin: 1.5rem 0;
-        overflow: hidden;
-        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 0 30px rgba(124, 58, 237, 0.15);
-        animation: n8nPulseGlow 3s infinite ease-in-out;
+        position: relative !important;
+        background: linear-gradient(135deg, rgba(15, 23, 42, 0.96) 0%, rgba(26, 17, 46, 0.94) 100%) !important;
+        backdrop-filter: blur(30px) !important;
+        -webkit-backdrop-filter: blur(30px) !important;
+        border: 1.5px solid rgba(168, 85, 247, 0.5) !important;
+        border-radius: 24px !important;
+        padding: 2rem 2.2rem !important;
+        margin: 10px auto 30px auto !important;
+        max-width: 860px !important;
+        width: 100% !important;
+        overflow: hidden !important;
+        box-shadow: 0 30px 80px -10px rgba(0, 0, 0, 0.8), 0 0 45px rgba(168, 85, 247, 0.3), inset 0 0 35px rgba(168, 85, 247, 0.12) !important;
+        animation: n8nPulseGlow 3s infinite ease-in-out !important;
     }
 
     .glass-loader-mesh {
@@ -1677,22 +2026,58 @@ CUSTOM_CSS = """
     .loader-header {
         display: flex;
         align-items: center;
-        justify-content: space-between;
+        justify-content: center;
+        position: relative;
         margin-bottom: 1.2rem;
         padding-bottom: 0.8rem;
         border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        width: 100%;
+        text-align: center;
+    }
+
+    .loader-header-inner {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        width: 100%;
+    }
+
+    .loader-cluster-tag {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.76rem;
+        font-weight: 800;
+        color: #A78BFA;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        margin-bottom: 6px;
+        text-align: center;
     }
 
     .loader-title {
-        font-size: 1.25rem;
+        font-size: 1.28rem;
         font-weight: 800;
         background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #06B6D4 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         letter-spacing: 0.5px;
+        text-align: center;
+    }
+
+    .loader-subtitle {
+        color: #94A3B8;
+        font-size: 0.88rem;
+        margin-top: 2px;
+        text-align: center;
     }
 
     .loader-metrics-badge {
+        position: absolute;
+        top: 0;
+        right: 0;
         background: rgba(30, 41, 59, 0.8);
         border: 1px solid rgba(168, 85, 247, 0.4);
         border-radius: 30px;
@@ -1703,6 +2088,13 @@ CUSTOM_CSS = """
         display: flex;
         align-items: center;
         gap: 6px;
+    }
+
+    @media (max-width: 640px) {
+        .loader-metrics-badge {
+            position: static;
+            margin-top: 8px;
+        }
     }
 
     @keyframes pulseTravel1 {
@@ -1954,17 +2346,18 @@ def render_glassy_agent_loader_html(
         else:
             return "agent-card-item"
 
-    return f"""<div class="glass-loader-box">
+    return f"""<div class="glass-loader-overlay-backdrop">
+<div class="glass-loader-box">
 <div class="glass-loader-mesh"></div>
 <div class="glass-loader-content">
 <div class="loader-header">
-<div>
-<div style="display: flex; align-items: center; font-size: 0.75rem; font-weight: 800; color: #A78BFA; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 4px;">
+<div class="loader-header-inner">
+<div class="loader-cluster-tag">
 <span class="cluster-spinner"></span>
 <span>EDU-TECH AI COMPUTE CLUSTER &nbsp;•&nbsp; NEURAL INFERENCE</span>
 </div>
 <div class="loader-title">{title}</div>
-<div style="color: #94A3B8; font-size: 0.88rem; margin-top: 2px;">{subtitle}</div>
+<div class="loader-subtitle">{subtitle}</div>
 </div>
 <div class="loader-metrics-badge">
 <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#10B981; box-shadow:0 0 8px #10B981;"></span>
@@ -2073,6 +2466,7 @@ def render_glassy_agent_loader_html(
 {_status_tag(quiz_status)}
 </div>
 <div class="agent-desc">Structuring adaptive comprehension questions & XP reward multipliers.</div>
+</div>
 </div>
 </div>
 </div>
@@ -2559,152 +2953,108 @@ def render_learning_workspace():
         width=0,
     )
 
-    # ─── Sidebar Controls & Gamification (Left Panel) ────────────────
+    # ─── Sidebar Controls & History (Left Panel — ChatGPT/Gemini Style) ────
     with st.sidebar:
+        # 1. Top Brand Logo & Animated AI Header
         st.markdown(
             """
-            <div class="sidebar-header-container">
-                <div class="neural-icon-wrapper">
-                    <svg class="neural-network-svg" width="22" height="22" viewBox="0 0 24 24" fill="none">
-                        <line x1="4" y1="12" x2="12" y2="4" stroke="url(#neuralGrad1)" stroke-width="1.8" stroke-dasharray="2 2" class="neural-pulse-line" />
-                        <line x1="4" y1="12" x2="12" y2="20" stroke="url(#neuralGrad1)" stroke-width="1.8" stroke-dasharray="2 2" class="neural-pulse-line" />
-                        <line x1="12" y1="4" x2="20" y2="12" stroke="url(#neuralGrad2)" stroke-width="1.8" stroke-dasharray="2 2" class="neural-pulse-line" />
-                        <line x1="12" y1="20" x2="20" y2="12" stroke="url(#neuralGrad2)" stroke-width="1.8" stroke-dasharray="2 2" class="neural-pulse-line" />
-                        <line x1="12" y1="4" x2="12" y2="20" stroke="url(#neuralGrad3)" stroke-width="1.5" stroke-dasharray="2 2" class="neural-pulse-line" />
-                        <line x1="4" y1="12" x2="20" y2="12" stroke="url(#neuralGrad3)" stroke-width="1.5" class="neural-pulse-line" />
-                        <circle cx="4" cy="12" r="3" fill="#EC4899" class="neural-node node-1" />
-                        <circle cx="12" cy="4" r="3.2" fill="#A855F7" class="neural-node node-2" />
-                        <circle cx="12" cy="20" r="3.2" fill="#3B82F6" class="neural-node node-3" />
-                        <circle cx="20" cy="12" r="3.5" fill="#06B6D4" class="neural-node node-4" />
-                        <defs>
-                            <linearGradient id="neuralGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stop-color="#EC4899" />
-                                <stop offset="100%" stop-color="#A855F7" />
-                            </linearGradient>
-                            <linearGradient id="neuralGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stop-color="#A855F7" />
-                                <stop offset="100%" stop-color="#06B6D4" />
-                            </linearGradient>
-                            <linearGradient id="neuralGrad3" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stop-color="#EC4899" />
-                                <stop offset="50%" stop-color="#A855F7" />
-                                <stop offset="100%" stop-color="#3B82F6" />
-                            </linearGradient>
-                        </defs>
-                    </svg>
-                </div>
-                <div class="sidebar-header-text">What do you want to learn today?</div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-        
-        # Check if quick-launched from home page
-        default_topic = st.session_state.pop("quick_launch_topic", None) or st.session_state.get("last_topic", "How does photosynthesis work?")
-
-        # Topic Input
-        topic_input = st.text_input(
-            "What do you want to master?",
-            value=default_topic,
-            placeholder="e.g. Quantum Computing, Photosynthesis...",
-            label_visibility="collapsed",
-        )
-        
-        # Topic Suggestions
-        st.markdown("<div style='font-size:0.78rem; color:rgba(233,213,255,0.75); font-weight:700; margin: 8px 0 4px 0;'>💡 Instant Topic Prompts:</div>", unsafe_allow_html=True)
-        cols = st.columns(2)
-        if cols[0].button("🌱 Photosynthesis", key="sug1", use_container_width=True):
-            topic_input = "How does photosynthesis work?"
-        if cols[1].button("⚛️ Quantum Physics", key="sug2", use_container_width=True):
-            topic_input = "Explain quantum entanglement"
-        if cols[0].button("🧠 Neural Networks", key="sug3", use_container_width=True):
-            topic_input = "How do neural networks learn?"
-        if cols[1].button("🌊 Ocean Tides", key="sug4", use_container_width=True):
-            topic_input = "What causes ocean tides?"
-
-        st.markdown("<hr style='border-color:rgba(168,85,247,0.25); margin:12px 0;'>", unsafe_allow_html=True)
-
-        # Learning Mode Selection (Bold Label)
-        mode_option = st.selectbox(
-            "**🎨 Learning Mode**",
-            options=["Visual 🎬", "Deep Dive 🔬", "Bite-Sized ⚡"],
-            index=0,
-            help="Visual: video & diagrams | Deep Dive: papers & proofs | Bite-Sized: quick summaries",
-        )
-        mode_map = {
-            "Visual 🎬": LearningMode.VISUAL,
-            "Deep Dive 🔬": LearningMode.DEEP_DIVE,
-            "Bite-Sized ⚡": LearningMode.BITE_SIZED,
-        }
-        selected_mode = mode_map[mode_option]
-
-        # Student Level Selection (Bold Label)
-        level_option = st.selectbox(
-            "**🎓 Education Level**",
-            options=["Middle School 🏫", "High School 🎒", "Undergraduate 🏛️", "Graduate 🎓", "General Curious 💡"],
-            index=0,
-        )
-        level_map = {
-            "Middle School 🏫": "middle_school",
-            "High School 🎒": "high_school",
-            "Undergraduate 🏛️": "undergraduate",
-            "Graduate 🎓": "graduate",
-            "General Curious 💡": "general",
-        }
-        selected_level = level_map[level_option]
-
-        st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
-
-        # Start Learning Journey Button
-        start_clicked = st.button("🚀 Start Learning Journey", type="primary", use_container_width=True)
-
-        # ─── Sidebar Learning History & Search Component ─────────────────
-        st.markdown("<hr style='border-color:rgba(168,85,247,0.25); margin:18px 0 12px 0;'>", unsafe_allow_html=True)
-        st.markdown(
-            """
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                <div style="font-weight: 800; font-size: 0.92rem; color: #FAFAFA; display: flex; align-items: center; gap: 6px;">
-                    <span>📜</span> <span>Learning History</span>
+            <div class="sidebar-brand-header">
+                <div class="sidebar-brand-top">
+                    <div class="neural-icon-wrapper-small">
+                        <svg class="neural-network-svg" width="18" height="18" viewBox="0 0 24 24" fill="none">
+                            <line x1="4" y1="12" x2="12" y2="4" stroke="url(#neuralGrad1)" stroke-width="1.8" stroke-dasharray="2 2" class="neural-pulse-line" />
+                            <line x1="4" y1="12" x2="12" y2="20" stroke="url(#neuralGrad1)" stroke-width="1.8" stroke-dasharray="2 2" class="neural-pulse-line" />
+                            <line x1="12" y1="4" x2="20" y2="12" stroke="url(#neuralGrad2)" stroke-width="1.8" stroke-dasharray="2 2" class="neural-pulse-line" />
+                            <line x1="12" y1="20" x2="20" y2="12" stroke="url(#neuralGrad2)" stroke-width="1.8" stroke-dasharray="2 2" class="neural-pulse-line" />
+                            <circle cx="4" cy="12" r="3" fill="#EC4899" class="neural-node node-1" />
+                            <circle cx="12" cy="4" r="3.2" fill="#A855F7" class="neural-node node-2" />
+                            <circle cx="12" cy="20" r="3.2" fill="#3B82F6" class="neural-node node-3" />
+                            <circle cx="20" cy="12" r="3.2" fill="#06B6D4" class="neural-node node-4" />
+                            <defs>
+                                <linearGradient id="neuralGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#EC4899" />
+                                    <stop offset="100%" stop-color="#A855F7" />
+                                </linearGradient>
+                                <linearGradient id="neuralGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#A855F7" />
+                                    <stop offset="100%" stop-color="#06B6D4" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                    </div>
+                    <div class="et-logo-simple">
+                        ⚡ <span class="accent">EduTech</span> <span class="badge-ai">AI</span>
+                    </div>
                 </div>
             </div>
             """,
             unsafe_allow_html=True,
         )
 
-        # Multi-Criteria Search Input
+        # 2. ChatGPT/Gemini Style "+ New Journey" Pill Button
+        if st.button("✨ New Learning Journey", key="sb_new_journey_btn", type="primary", use_container_width=True):
+            st.session_state["memory"] = None
+            st.session_state["active_step_index"] = 0
+            st.session_state["last_topic"] = None
+            st.session_state["submitted_quizzes"] = {}
+            if "main_topic_query" in st.session_state:
+                del st.session_state["main_topic_query"]
+            for k in list(st.session_state.keys()):
+                if any(k.startswith(pfx) for pfx in ["step_agents_ran_", "quiz_submitted_", "saved_user_answers_", "saved_user_full_answers_", "xp_awarded_"]):
+                    del st.session_state[k]
+            st.toast("Ready for a new learning journey! 🚀", icon="✨")
+            st.rerun()
+
+        st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
+
+        # 3. Learning History Header
+        st.markdown(
+            """
+            <div class="sidebar-section-title">
+                <span>Learning History</span>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        # 4. Search Bar
         hist_search_val = st.text_input(
             "Search your learning sessions",
             value=st.session_state.get("session_hist_search_val", ""),
-            placeholder="🔍 Search topic, mode, level...",
+            placeholder="🔍 Search history...",
             key="sb_hist_search_input",
             label_visibility="collapsed",
         )
         if hist_search_val != st.session_state.get("session_hist_search_val", ""):
             st.session_state["session_hist_search_val"] = hist_search_val
-            st.session_state["session_hist_page"] = 0  # Reset to page 0 on search
+            st.session_state["session_hist_page"] = 0
 
-        # Status Filter Segment Chips
-        filter_cols = st.columns(3)
-        current_filter = st.session_state.get("session_hist_filter", "all")
+        # 5. Single Unified Segmented Filter: All, Active, Done (No icons)
+        seg_options = ["All", "Active", "Done"]
+        seg_default = st.session_state.get("session_hist_seg_filter", "All")
+        if seg_default not in seg_options:
+            seg_default = "All"
+        seg_filter = st.segmented_control(
+            "Filter History",
+            options=seg_options,
+            default=seg_default,
+            key="sb_hist_segmented_control",
+            label_visibility="collapsed",
+        ) or "All"
 
-        with filter_cols[0]:
-            if st.button("All", key="hist_flt_all", type="primary" if current_filter == "all" else "secondary", use_container_width=True):
-                st.session_state["session_hist_filter"] = "all"
-                st.session_state["session_hist_page"] = 0
-                st.rerun()
-        with filter_cols[1]:
-            if st.button("⚡ Active", key="hist_flt_act", type="primary" if current_filter == "in_progress" else "secondary", use_container_width=True):
-                st.session_state["session_hist_filter"] = "in_progress"
-                st.session_state["session_hist_page"] = 0
-                st.rerun()
-        with filter_cols[2]:
-            if st.button("✅ Done", key="hist_flt_comp", type="primary" if current_filter == "completed" else "secondary", use_container_width=True):
-                st.session_state["session_hist_filter"] = "completed"
-                st.session_state["session_hist_page"] = 0
-                st.rerun()
+        if seg_filter != st.session_state.get("session_hist_seg_filter", "All"):
+            st.session_state["session_hist_seg_filter"] = seg_filter
+            st.session_state["session_hist_page"] = 0
+
+        filter_map = {
+            "All": "all",
+            "Active": "in_progress",
+            "Done": "completed",
+        }
+        current_filter = filter_map.get(seg_filter, "all")
 
         current_hist_page = st.session_state.get("session_hist_page", 0)
-        hist_page_size = 20
+        hist_page_size = 15
 
         # Query User Sessions from Database
         user_sessions = []
@@ -2733,7 +3083,7 @@ def render_learning_workspace():
             logging.warning(f"Failed to query user session history: {ex_sh}")
 
         st.markdown(
-            f"<div style='font-size: 0.74rem; color: rgba(233,213,255,0.7); margin: 6px 0 8px 0;'><b>{total_sessions}</b> session(s) • Page {current_hist_page + 1} of {total_hist_pages}</div>",
+            f"<div style='font-size: 0.72rem; color: rgba(233,213,255,0.65); margin: 4px 0 6px 0;'><b>{total_sessions}</b> session(s) • Page {current_hist_page + 1} of {total_hist_pages}</div>",
             unsafe_allow_html=True,
         )
 
@@ -2743,8 +3093,8 @@ def render_learning_workspace():
         if not user_sessions:
             st.markdown(
                 """
-                <div style="background: rgba(168,85,247,0.08); border: 1px dashed rgba(168,85,247,0.3); border-radius: 10px; padding: 12px; text-align: center; font-size: 0.78rem; color: rgba(255,255,255,0.65);">
-                    No sessions match. Start a new topic above! 🚀
+                <div style="background: rgba(168,85,247,0.06); border: 1px dashed rgba(168,85,247,0.25); border-radius: 10px; padding: 12px; text-align: center; font-size: 0.76rem; color: rgba(255,255,255,0.6);">
+                    No sessions match. Start a new topic! 🚀
                 </div>
                 """,
                 unsafe_allow_html=True,
@@ -2759,151 +3109,79 @@ def render_learning_workspace():
                 s_xp = s_info.get("xp_earned", 0)
                 is_active_session = (active_session_id == s_id)
 
-                status_tag = "✅ COMPLETED" if s_complete else f"⚡ STEP {min(s_cur_step + 1, s_tot_steps)}/{s_tot_steps}"
-                status_color = "#34D399" if s_complete else "#C084FC"
-                status_bg = "rgba(16, 185, 129, 0.18)" if s_complete else "rgba(168, 85, 247, 0.22)"
-                status_border = "rgba(16, 185, 129, 0.4)" if s_complete else "rgba(168, 85, 247, 0.45)"
+                # Clean text: No icons in status/step badge!
+                status_tag = "Completed" if s_complete else f"Step {min(s_cur_step + 1, s_tot_steps)}/{s_tot_steps}"
+                
+                # Card button label
+                truncated_title = (s_topic[:22] + "...") if len(s_topic) > 22 else s_topic
+                btn_display = f"{truncated_title}\n{status_tag} • +{s_xp} XP"
 
-                card_active_style = "border: 1.5px solid #A855F7; box-shadow: 0 0 14px rgba(168,85,247,0.45);" if is_active_session else "border: 1px solid rgba(255,255,255,0.08);"
-                truncated_topic = (s_topic[:28] + "...") if len(s_topic) > 28 else s_topic
-
-                st.markdown(
-                    f"""
-                    <div style="background: rgba(15, 10, 26, 0.85); {card_active_style} border-radius: 9px; padding: 7px 9px 5px 9px; margin-bottom: 5px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px;">
-                            <span style="background: {status_bg}; color: {status_color}; border: 1px solid {status_border}; font-size: 0.65rem; font-weight: 800; padding: 1px 6px; border-radius: 9999px; letter-spacing: 0.3px;">{status_tag}</span>
-                            <span style="font-size: 0.7rem; color: #38BDF8; font-weight: 700;">+{s_xp} XP</span>
-                        </div>
-                        <div style="font-weight: 700; font-size: 0.82rem; color: #FAFAFA; line-height: 1.25; margin-bottom: 4px;" title="{s_topic}">{truncated_topic}</div>
-                    </div>
-                    """,
-                    unsafe_allow_html=True,
-                )
-
-                rc1, rc2 = st.columns([4.2, 1])
-                with rc1:
-                    r_label = "🟢 Active" if is_active_session else ("Review Roadmap" if s_complete else "Resume Learning →")
-                    if st.button(r_label, key=f"sb_res_{s_id}", type="primary" if is_active_session else "secondary", use_container_width=True, disabled=is_active_session):
-                        with st.spinner("Resuming learning session..."):
+                card_cols = st.columns([8.2, 1.8], gap="small", vertical_alignment="center")
+                with card_cols[0]:
+                    # Clicking card directly opens and resumes session
+                    if st.button(
+                        btn_display,
+                        key=f"sb_card_{s_id}",
+                        help=f"{s_topic} ({status_tag})",
+                        type="primary" if is_active_session else "secondary",
+                        use_container_width=True,
+                    ):
+                        with st.spinner("Opening session..."):
                             loaded = run_async(SessionManager().get_session(s_id))
                             if loaded:
-                                # Clear transient keys
                                 for k in list(st.session_state.keys()):
                                     if any(k.startswith(pfx) for pfx in ["step_agents_ran_", "quiz_submitted_", "saved_user_answers_", "saved_user_full_answers_", "xp_awarded_"]):
                                         del st.session_state[k]
 
+                                for idx_st, st_ob in enumerate(loaded.steps):
+                                    has_step_content = bool(
+                                        getattr(st_ob, "tutor_explanation", None)
+                                        or getattr(st_ob, "quiz", None)
+                                        or getattr(st_ob, "videos", None)
+                                        or getattr(st_ob, "papers", None)
+                                        or getattr(st_ob, "status", None) == StepStatus.COMPLETE
+                                    )
+                                    if has_step_content:
+                                        setattr(st_ob, "_agent_generated", True)
+                                        st.session_state[f"step_agents_ran_{idx_st}"] = True
+
                                 st.session_state["memory"] = loaded
                                 target_idx = 0
-                                for idx, step_obj in enumerate(loaded.steps):
+                                for idx_s, step_obj in enumerate(loaded.steps):
                                     if step_obj.status != StepStatus.COMPLETE:
-                                        target_idx = idx
+                                        target_idx = idx_s
                                         break
                                 st.session_state["active_step_index"] = target_idx
                                 st.session_state["last_topic"] = loaded.topic
-                                st.toast(f"Resumed '{loaded.topic}' at Step {target_idx + 1}!", icon="🚀")
                                 st.rerun()
-                with rc2:
-                    if st.button("🗑️", key=f"sb_del_{s_id}", help="Delete this session", use_container_width=True):
-                        run_async(SessionManager().delete_session(s_id, user_id=user_profile.id))
-                        if active_session_id == s_id:
-                            st.session_state["memory"] = None
-                            st.session_state["active_step_index"] = 0
-                        st.toast("Session deleted.", icon="🗑️")
-                        st.rerun()
+
+                with card_cols[1]:
+                    # 3-dots popover options menu (gives delete option)
+                    with st.popover("", icon=":material/more_vert:", help="Session options", use_container_width=True):
+                        st.markdown(f"<div style='font-size:0.82rem; font-weight:700; color:#FAFAFA; margin-bottom:4px;'>{s_topic[:26]}...</div>", unsafe_allow_html=True)
+                        st.markdown(f"<div style='font-size:0.75rem; color:#A855F7; margin-bottom:8px;'>Status: <b>{status_tag}</b> • <b>+{s_xp} XP</b></div>", unsafe_allow_html=True)
+                        if st.button("🗑️ Delete Session", key=f"sb_del_pop_{s_id}", type="primary", use_container_width=True):
+                            run_async(SessionManager().delete_session(s_id, user_id=user_profile.id))
+                            if active_session_id == s_id:
+                                st.session_state["memory"] = None
+                                st.session_state["active_step_index"] = 0
+                            st.toast("Session deleted.", icon="🗑️")
+                            st.rerun()
 
             # Sidebar Pagination Controls
             if total_hist_pages > 1:
-                st.markdown("<div style='height: 4px;'></div>", unsafe_allow_html=True)
+                st.markdown("<div style='height: 6px;'></div>", unsafe_allow_html=True)
                 pg_c1, pg_c2, pg_c3 = st.columns([1.2, 2.6, 1.2], vertical_alignment="center")
                 with pg_c1:
                     if st.button("◀", key="sb_pg_prev", disabled=(current_hist_page <= 0), use_container_width=True):
                         st.session_state["session_hist_page"] = current_hist_page - 1
                         st.rerun()
                 with pg_c2:
-                    st.markdown(f"<div style='text-align: center; font-size: 0.75rem; color: #E9D5FF;'>Page <b>{current_hist_page + 1}</b> / <b>{total_hist_pages}</b></div>", unsafe_allow_html=True)
+                    st.markdown(f"<div style='text-align: center; font-size: 0.72rem; color: #E9D5FF;'>Page <b>{current_hist_page + 1}</b> / <b>{total_hist_pages}</b></div>", unsafe_allow_html=True)
                 with pg_c3:
                     if st.button("▶", key="sb_pg_next", disabled=(current_hist_page >= total_hist_pages - 1), use_container_width=True):
                         st.session_state["session_hist_page"] = current_hist_page + 1
                         st.rerun()
-
-    # ─── Session Initialization Logic ────────────────────────────────
-    if start_clicked and topic_input:
-        st.session_state["last_topic"] = topic_input
-        
-        loader_placeholder = st.empty()
-
-        # Step 1: Orchestrator Agent decomposing topic into milestone steps
-        loader_placeholder.markdown(
-            render_glassy_agent_loader_html(
-                title=f"Decomposing '{topic_input}'",
-                subtitle="🧠 Orchestrator Agent is analyzing domain knowledge & mapping milestone roadmap...",
-                orchestrator_status="active",
-                socratic_status="waiting",
-                youtube_status="waiting",
-                academic_status="waiting",
-                quiz_status="waiting",
-                progress_percent=25,
-            ),
-            unsafe_allow_html=True,
-        )
-
-        # Initialize SharedMemory with user_id
-        new_memory = SharedMemory(
-            user_id=user_profile.id,
-            topic=topic_input,
-            learning_mode=selected_mode,
-            student_level=selected_level,
-        )
-        
-        # Run Orchestrator Agent
-        orchestrator = OrchestratorAgent()
-        run_async(orchestrator.execute(new_memory))
-        
-        if new_memory.steps:
-            new_memory.steps[0].status = StepStatus.IN_PROGRESS
-            # Step 2: Multi-Agent System collaborating on Step 1 content
-            loader_placeholder.markdown(
-                render_glassy_agent_loader_html(
-                    title=f"Synthesizing Step 1: {new_memory.steps[0].title}",
-                    subtitle="🤖 Multi-Agents (Socratic, YouTube, Academic, Quiz) generating step 1 content concurrently...",
-                    orchestrator_status="completed",
-                    socratic_status="active",
-                    youtube_status="active",
-                    academic_status="active",
-                    quiz_status="active",
-                    progress_percent=70,
-                ),
-                unsafe_allow_html=True,
-            )
-            run_async(generate_all_agent_content_for_step(new_memory.steps[0], new_memory))
-
-        loader_placeholder.markdown(
-            render_glassy_agent_loader_html(
-                title="Finalizing Learning Workspace",
-                subtitle="✨ Persisting session memory & loading interactive workspace...",
-                orchestrator_status="completed",
-                socratic_status="completed",
-                youtube_status="completed",
-                academic_status="completed",
-                quiz_status="completed",
-                progress_percent=100,
-            ),
-            unsafe_allow_html=True,
-        )
-        time.sleep(0.5)
-        loader_placeholder.empty()
-
-        # Persist session to PostgreSQL database linked to current user
-        try:
-            from services.session_manager import SessionManager
-            run_async(SessionManager().create_session(new_memory, user_id=user_profile.id))
-        except Exception as e:
-            logging.warning(f"Could not persist session to database: {e}")
-
-        st.session_state["memory"] = new_memory
-        st.session_state["active_step_index"] = 0
-        st.session_state["submitted_quizzes"] = {}
-        st.rerun()
 
     memory = get_or_create_memory()
 
@@ -2915,17 +3193,6 @@ def render_learning_workspace():
             <div class="et-hero">
                 <h1>EduTechAI <span class="gradient-text">Learning Workspace</span></h1>
                 <p>An adaptive, intelligent learning studio where specialized AI agents orchestrate personalized roadmaps, intuitive analogies, video deep-dives, and instant mastery checks.</p>
-            </div>
-            <div class="sidebar-guide-card">
-                <div class="guide-handle-badge">
-                    <svg class="guide-chevron-pulse" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#E9D5FF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="15 18 9 12 15 6"></polyline>
-                    </svg>
-                    <span>Sidebar</span>
-                </div>
-                <div class="guide-text-content">
-                    Enter any topic in the sidebar & click <span class="gradient-text" style="font-weight: 800;">'Start Learning Journey'</span> or resume a past journey from your history!
-                </div>
             </div>
             """,
             unsafe_allow_html=True,
@@ -2953,7 +3220,7 @@ def render_learning_workspace():
                             f"""
                             <div class="glass-card" style="padding: 1rem; border: 1px solid rgba(168,85,247,0.35); margin-bottom: 8px;">
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                                    <span style="background: rgba(168, 85, 247, 0.25); color: #C084FC; border: 1px solid rgba(168, 85, 247, 0.5); font-size: 0.72rem; font-weight: 800; padding: 2px 8px; border-radius: 9999px;">⚡ STEP {min(s_cur+1, s_tot)}/{s_tot}</span>
+                                    <span style="background: rgba(168, 85, 247, 0.25); color: #C084FC; border: 1px solid rgba(168, 85, 247, 0.5); font-size: 0.72rem; font-weight: 800; padding: 2px 8px; border-radius: 9999px;">Step {min(s_cur+1, s_tot)}/{s_tot}</span>
                                     <span style="font-size: 0.75rem; color: #38BDF8; font-weight: 700;">+{s_xp} XP</span>
                                 </div>
                                 <h4 style="font-size: 0.95rem; font-weight: 800; color: #FAFAFA; margin: 4px 0 8px 0; min-height: 40px;">{s_top}</h4>
@@ -2971,6 +3238,19 @@ def render_learning_workspace():
                                     for k in list(st.session_state.keys()):
                                         if any(k.startswith(pfx) for pfx in ["step_agents_ran_", "quiz_submitted_", "saved_user_answers_", "saved_user_full_answers_", "xp_awarded_"]):
                                             del st.session_state[k]
+
+                                    for idx_st, st_ob in enumerate(loaded.steps):
+                                        has_step_content = bool(
+                                            getattr(st_ob, "tutor_explanation", None)
+                                            or getattr(st_ob, "quiz", None)
+                                            or getattr(st_ob, "videos", None)
+                                            or getattr(st_ob, "papers", None)
+                                            or getattr(st_ob, "status", None) == StepStatus.COMPLETE
+                                        )
+                                        if has_step_content:
+                                            setattr(st_ob, "_agent_generated", True)
+                                            st.session_state[f"step_agents_ran_{idx_st}"] = True
+
                                     st.session_state["memory"] = loaded
                                     target_idx = 0
                                     for i_st, st_ob in enumerate(loaded.steps):
@@ -2979,58 +3259,278 @@ def render_learning_workspace():
                                             break
                                     st.session_state["active_step_index"] = target_idx
                                     st.session_state["last_topic"] = loaded.topic
-                                    st.toast(f"Resumed '{loaded.topic}' at Step {target_idx + 1}!", icon="🚀")
                                     st.rerun()
                 st.markdown("<br>", unsafe_allow_html=True)
         except Exception as ex_ip:
             logging.debug(f"Notice: Could not load quick resume cards: {ex_ip}")
         
-        # 4 Agent Squad Cards (Matching Landing Page Grid Aesthetic)
-        col1, col2, col3, col4 = st.columns(4)
-        with col1:
-            st.markdown(
-                """
-                <div class="feat-card">
-                    <div class="feat-icon icon-violet">🧩</div>
-                    <h4>Socratic Tutor</h4>
-                    <p style="font-size: 0.84rem; color: rgba(255, 255, 255, 0.65);">Interactive Socratic dialogue with intuitive analogies tailored to your level.</p>
+
+        # ─── Main Page: Centered Heading ("What do you want to learn today?") ───
+        st.markdown(
+            """
+            <div class="et-hero" style="margin-top: 2rem; margin-bottom: 1.2rem;">
+                <h1>What do you want to <span class="gradient-text">learn today?</span></h1>
+                <p>Decompose any concept into adaptive milestones, interactive Socratic lessons, and academic research.</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+
+        if "quick_launch_topic" in st.session_state:
+            st.session_state["main_topic_input_composer"] = st.session_state.pop("quick_launch_topic")
+        elif "main_topic_query" in st.session_state:
+            st.session_state["main_topic_input_composer"] = st.session_state.pop("main_topic_query")
+
+        # Centered ChatGPT-Style Layout with Balanced Left/Right Margins
+        pad_l, card_col, pad_r = st.columns([0.8, 8.4, 0.8])
+        with card_col:
+            st.markdown('<div id="journey-console-card-marker" class="et-journey-card-container-marker"></div>', unsafe_allow_html=True)
+
+            # 1. Dropdowns: Mode (Left) and Education Level (Right) placed ABOVE the chat prompt
+            drop_col1, drop_col2 = st.columns(2)
+            with drop_col1:
+                mode_choice = st.selectbox(
+                    "**🎨 Learning Mode**",
+                    options=["Visual 🎬", "Deep Dive 🔬", "Bite-Sized ⚡"],
+                    index=0,
+                    key="main_mode_select",
+                    help="Visual: video & diagrams | Deep Dive: papers & proofs | Bite-Sized: quick summaries",
+                )
+                mode_map = {
+                    "Visual 🎬": LearningMode.VISUAL,
+                    "Deep Dive 🔬": LearningMode.DEEP_DIVE,
+                    "Bite-Sized ⚡": LearningMode.BITE_SIZED,
+                }
+                selected_mode = mode_map[mode_choice]
+
+            with drop_col2:
+                level_choice = st.selectbox(
+                    "**🎓 Education Level**",
+                    options=["Middle School 🏫", "High School 🎒", "Undergraduate 🏛️", "Graduate 🎓", "General Curious 💡"],
+                    index=0,
+                    key="main_level_select",
+                )
+                level_map = {
+                    "Middle School 🏫": "middle_school",
+                    "High School 🎒": "high_school",
+                    "Undergraduate 🏛️": "undergraduate",
+                    "Graduate 🎓": "graduate",
+                    "General Curious 💡": "general",
+                }
+                selected_level = level_map[level_choice]
+
+            # 2. Gemini Style Search Prompt Form with Input + ✨ Start Journey Button
+            with st.form(key="main_journey_launch_form", clear_on_submit=False, border=False):
+                st.markdown('<div class="et-gemini-prompt-form-marker"></div>', unsafe_allow_html=True)
+
+                c_input, c_btn = st.columns([4.8, 1.4], vertical_alignment="center")
+                with c_input:
+                    main_topic_input = st.text_input(
+                        "What do you want to learn?",
+                        placeholder="Ask EduTechAI anything... (e.g., I want to learn Python programming from zero)",
+                        key="main_topic_input_composer",
+                        label_visibility="collapsed",
+                    )
+                with c_btn:
+                    main_start_clicked = st.form_submit_button("✨ Start Journey", type="primary", use_container_width=True)
+
+            # 3. Space-Efficient Suggested Topics Popover Drawer (Instant Client-Side Fill, Zero Page Reload)
+            with st.popover("💡 Browse Suggested Topics", use_container_width=False):
+                st.markdown("<div style='font-size:0.88rem; font-weight:700; color:#E9D5FF; margin-bottom:4px;'>🌟 Curated Learning Prompts</div>", unsafe_allow_html=True)
+                
+                topics_html = """
+                <style>
+                    body {
+                        margin: 0;
+                        padding: 0;
+                        background: transparent;
+                        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                        overflow: hidden;
+                    }
+                    .topic-list {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 8px;
+                        padding: 4px 6px 4px 2px;
+                        max-height: 240px;
+                        overflow-y: auto;
+                        overflow-x: hidden;
+                        scrollbar-width: thin;
+                        scrollbar-color: rgba(168, 85, 247, 0.45) transparent;
+                        box-sizing: border-box;
+                    }
+                    .topic-list::-webkit-scrollbar {
+                        width: 6px;
+                    }
+                    .topic-list::-webkit-scrollbar-track {
+                        background: rgba(15, 23, 42, 0.4);
+                        border-radius: 4px;
+                    }
+                    .topic-list::-webkit-scrollbar-thumb {
+                        background: rgba(168, 85, 247, 0.45);
+                        border-radius: 4px;
+                    }
+                    .topic-list::-webkit-scrollbar-thumb:hover {
+                        background: rgba(168, 85, 247, 0.75);
+                    }
+                    .topic-item {
+                        display: flex;
+                        align-items: center;
+                        background: rgba(168, 85, 247, 0.1);
+                        border: 1px solid rgba(168, 85, 247, 0.28);
+                        border-radius: 10px;
+                        color: #FAFAFA;
+                        font-size: 0.88rem;
+                        font-weight: 500;
+                        padding: 10px 14px;
+                        cursor: pointer;
+                        text-align: left;
+                        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+                        outline: none;
+                        width: 100%;
+                        box-sizing: border-box;
+                    }
+                    .topic-item:hover {
+                        background: rgba(168, 85, 247, 0.26);
+                        border-color: #C084FC;
+                        border-left: 3px solid #C084FC;
+                        padding-left: 18px;
+                        color: #FFFFFF;
+                        box-shadow: 0 4px 15px rgba(168, 85, 247, 0.35);
+                        transform: translateX(2px);
+                    }
+                </style>
+                <div class="topic-list">
+                    <button class="topic-item" onclick="selectTopic('I want to learn Python programming from zero step by step')">
+                        🐍 I want to learn Python programming from zero
+                    </button>
+                    <button class="topic-item" onclick="selectTopic('How do Deep Neural Networks and Machine Learning models learn?')">
+                        🧠 Explain Deep Neural Networks and Machine Learning
+                    </button>
+                    <button class="topic-item" onclick="selectTopic('Intuitive guide to Calculus, Derivatives, and Differential Equations')">
+                        📐 Intuitive guide to Calculus & Differential Equations
+                    </button>
+                    <button class="topic-item" onclick="selectTopic('How does CRISPR-Cas9 Gene Editing and DNA repair work?')">
+                        🧬 How CRISPR-Cas9 Gene Editing works
+                    </button>
+                    <button class="topic-item" onclick="selectTopic('How do chemical bonds, covalent and ionic molecular orbitals work?')">
+                        ⚗️ Chemical Bonding: Covalent vs Ionic Orbitals
+                    </button>
                 </div>
-                """,
+                <script>
+                function selectTopic(text) {
+                    try {
+                        const pdoc = window.parent.document;
+                        const input = pdoc.querySelector('input[placeholder*="Ask EduTechAI"]') 
+                                   || pdoc.querySelector('div[data-testid="stColumn"]:has(#journey-console-card-marker) input')
+                                   || pdoc.querySelector('input[aria-label="What do you want to learn?"]');
+                        if (input) {
+                            const nativeSetter = Object.getOwnPropertyDescriptor(window.parent.HTMLInputElement.prototype, 'value').set;
+                            if (nativeSetter) {
+                                nativeSetter.call(input, text);
+                            } else {
+                                input.value = text;
+                            }
+                            input.dispatchEvent(new Event('input', { bubbles: true }));
+                            input.dispatchEvent(new Event('change', { bubbles: true }));
+                            input.focus();
+                        }
+                        // Close popover
+                        pdoc.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', keyCode: 27, which: 27, bubbles: true }));
+                        const popBtn = pdoc.querySelector('div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-testid="stPopover"] button');
+                        if (popBtn) {
+                            popBtn.click();
+                        }
+                    } catch (e) {
+                        console.error("Topic select error:", e);
+                    }
+                }
+                </script>
+                """
+                components.html(topics_html, height=250, scrolling=False)
+
+        if main_start_clicked and main_topic_input.strip():
+            st.session_state["last_topic"] = main_topic_input.strip()
+            if "main_topic_query" in st.session_state:
+                del st.session_state["main_topic_query"]
+
+            loader_placeholder = st.empty()
+
+            # Step 1: Orchestrator Agent decomposing topic into milestone steps
+            loader_placeholder.markdown(
+                render_glassy_agent_loader_html(
+                    title=f"Decomposing '{main_topic_input.strip()}'",
+                    subtitle="🧠 Orchestrator Agent is analyzing domain knowledge & mapping milestone roadmap...",
+                    orchestrator_status="active",
+                    socratic_status="waiting",
+                    youtube_status="waiting",
+                    academic_status="waiting",
+                    quiz_status="waiting",
+                    progress_percent=25,
+                ),
                 unsafe_allow_html=True,
             )
-        with col2:
-            st.markdown(
-                """
-                <div class="feat-card">
-                    <div class="feat-icon icon-cyan">🎬</div>
-                    <h4>YouTube Curator</h4>
-                    <p style="font-size: 0.84rem; color: rgba(255, 255, 255, 0.65);">Pinpoints exact timestamp clips and explanations from top educational videos.</p>
-                </div>
-                """,
+
+            # Initialize SharedMemory with user_id
+            new_memory = SharedMemory(
+                user_id=user_profile.id,
+                topic=main_topic_input.strip(),
+                learning_mode=selected_mode,
+                student_level=selected_level,
+            )
+
+            # Run Orchestrator Agent
+            orchestrator = OrchestratorAgent()
+            run_async(orchestrator.execute(new_memory))
+
+            if new_memory.steps:
+                new_memory.steps[0].status = StepStatus.IN_PROGRESS
+                # Step 2: Multi-Agent System collaborating on Step 1 content
+                loader_placeholder.markdown(
+                    render_glassy_agent_loader_html(
+                        title=f"Synthesizing Step 1: {new_memory.steps[0].title}",
+                        subtitle="🤖 Multi-Agents (Socratic, YouTube, Academic, Quiz) generating step 1 content concurrently...",
+                        orchestrator_status="completed",
+                        socratic_status="active",
+                        youtube_status="active",
+                        academic_status="active",
+                        quiz_status="active",
+                        progress_percent=70,
+                    ),
+                    unsafe_allow_html=True,
+                )
+                run_async(generate_all_agent_content_for_step(new_memory.steps[0], new_memory))
+
+            loader_placeholder.markdown(
+                render_glassy_agent_loader_html(
+                    title="Finalizing Learning Workspace",
+                    subtitle="✨ Persisting session memory & loading interactive workspace...",
+                    orchestrator_status="completed",
+                    socratic_status="completed",
+                    youtube_status="completed",
+                    academic_status="completed",
+                    quiz_status="completed",
+                    progress_percent=100,
+                ),
                 unsafe_allow_html=True,
             )
-        with col3:
-            st.markdown(
-                """
-                <div class="feat-card">
-                    <div class="feat-icon icon-blue">📚</div>
-                    <h4>Academic Researcher</h4>
-                    <p style="font-size: 0.84rem; color: rgba(255, 255, 255, 0.65);">Retrieves open-access papers with AI summaries from arXiv & OpenAlex.</p>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-        with col4:
-            st.markdown(
-                """
-                <div class="feat-card">
-                    <div class="feat-icon icon-pink">📝</div>
-                    <h4>Milestone Quiz</h4>
-                    <p style="font-size: 0.84rem; color: rgba(255, 255, 255, 0.65);">Adaptive knowledge checks with real-time feedback, gamification XP & auto-progression.</p>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
+            time.sleep(0.5)
+            loader_placeholder.empty()
+
+            # Persist session to PostgreSQL database linked to current user
+            try:
+                from services.session_manager import SessionManager
+                run_async(SessionManager().create_session(new_memory, user_id=user_profile.id))
+            except Exception as e:
+                logging.warning(f"Could not persist session to database: {e}")
+
+            st.session_state["memory"] = new_memory
+            st.session_state["active_step_index"] = 0
+            st.session_state["submitted_quizzes"] = {}
+            st.rerun()
+        elif main_start_clicked and not main_topic_input.strip():
+            st.toast("Please enter a topic to start your learning journey! 💡", icon="⚠️")
 
     else:
         # Active Session Workspace Body (Header already rendered above)
@@ -3136,16 +3636,24 @@ def render_learning_workspace():
 
         st.markdown("<br>", unsafe_allow_html=True)
 
-        # ─── Linear Milestone Learning Roadmap Stepper ───────────────
-        st.markdown("### 🗺️ **Milestone Learning Roadmap**")
-        
         # Check active index
         active_idx = st.session_state.get("active_step_index", 0)
         if active_idx >= len(memory.steps):
             active_idx = 0
-
-        # Render Linear Stepper Nodes
         num_steps = len(memory.steps)
+
+        # ─── Linear Milestone Learning Roadmap Stepper ───────────────
+        st.markdown(
+            f"""
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px;">
+                <span style="font-size: 1.3rem; font-weight: 800; color: #FAFAFA; letter-spacing: 0.2px;">🗺️ Milestone Learning Roadmap</span>
+                <span style="background: linear-gradient(135deg, rgba(236, 72, 153, 0.15) 0%, rgba(168, 85, 247, 0.2) 100%); border: 1px solid rgba(168, 85, 247, 0.4); padding: 4px 14px; border-radius: 9999px; font-size: 0.9rem; font-weight: 700; color: #F1F5F9; box-shadow: 0 2px 10px rgba(168, 85, 247, 0.15);">
+                    🎯 <span style="color: #A78BFA;">Inquiry:</span> {memory.topic}
+                </span>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
         step_cols = st.columns(num_steps)
 
         for i, s in enumerate(memory.steps):
@@ -3196,9 +3704,20 @@ def render_learning_workspace():
         if current_step.status == StepStatus.PENDING:
             current_step.status = StepStatus.IN_PROGRESS
 
-        # Auto-trigger Multi-Agent Execution once per step
+        # Auto-trigger Multi-Agent Execution once per step (skipped if content already exists from history)
         agents_ran_key = f"step_agents_ran_{active_idx}"
-        is_already_generated = getattr(current_step, "_agent_generated", False) or st.session_state.get(agents_ran_key, False)
+        has_existing_content = bool(
+            getattr(current_step, "tutor_explanation", None) 
+            or getattr(current_step, "quiz", None) 
+            or getattr(current_step, "videos", None) 
+            or getattr(current_step, "papers", None)
+            or getattr(current_step, "status", None) == StepStatus.COMPLETE
+        )
+        is_already_generated = (
+            getattr(current_step, "_agent_generated", False) 
+            or st.session_state.get(agents_ran_key, False)
+            or has_existing_content
+        )
 
         if not is_already_generated:
             st.session_state[agents_ran_key] = True
@@ -3235,44 +3754,31 @@ def render_learning_workspace():
             status_class = "pending"
             status_icon = "🔒"
 
-        col_s1, col_s2 = st.columns([2.1, 1.9], vertical_alignment="center")
-        with col_s1:
-            st.markdown(
-                f"""
-                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
-                    <span style="background: rgba(99, 102, 241, 0.2); color: #818CF8; border: 1px solid rgba(99, 102, 241, 0.4); font-size: 0.72rem; font-weight: 800; padding: 2px 10px; border-radius: 9999px; text-transform: uppercase; letter-spacing: 0.8px;">Milestone {active_idx+1} of {num_steps}</span>
-                </div>
-                <h2 style="font-size: 1.45rem; font-weight: 800; color: #F8FAFC; margin: 0 0 4px 0;">{current_step.title}</h2>
-                <div style="font-size: 0.9rem; color: #94A3B8; font-style: italic;">{current_step.description}</div>
-                """,
-                unsafe_allow_html=True,
-            )
-            prereq_val = getattr(current_step, "prerequisite", None)
-            if prereq_val:
-                st.markdown(f'<span class="prereq-badge">Prereq: {prereq_val}</span>', unsafe_allow_html=True)
-            elif getattr(current_step, "is_prerequisite", False):
-                st.markdown('<span class="prereq-badge">Prerequisite Step</span>', unsafe_allow_html=True)
+        prereq_val = getattr(current_step, "prerequisite", None)
+        prereq_badge_html = ""
+        if prereq_val:
+            prereq_badge_html = f'<span class="prereq-badge">Prereq: {prereq_val}</span>'
+        elif getattr(current_step, "is_prerequisite", False):
+            prereq_badge_html = '<span class="prereq-badge">Prerequisite Step</span>'
 
-        with col_s2:
-            # UP: Status Pill Capsule (Right-Aligned)
+        # Row 1: Milestone & Prerequisite badges on left, Regenerate pill on top right
+        col_meta_left, col_meta_right = st.columns([7.2, 2.8], vertical_alignment="center")
+        with col_meta_left:
             st.markdown(
                 f"""
-                <div style="display: flex; justify-content: flex-end; align-items: center; margin-bottom: 8px; width: 100%;">
-                    <div class="pill-capsule pill-status-{status_class}">
-                        <span class="pill-label">Status</span>
-                        <span class="pill-icon-box">{status_icon}</span>
-                        <span class="pill-value">{formatted_status}</span>
-                    </div>
+                <div class="milestone-badge-row" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; height: 26px;">
+                    <span class="milestone-badge">Milestone {active_idx+1} of {num_steps}</span>
+                    {prereq_badge_html}
                 </div>
                 """,
                 unsafe_allow_html=True,
             )
-            # DOWN: Redesigned Regenerate Step Button (Styled like "Start Learning Journey" Button)
+        with col_meta_right:
             if st.button(
-                f"Regenerate Step {active_idx + 1}",
-                icon=":material/refresh:",
+                "↻ Regenerate",
                 key=f"regen_btn_{active_idx}",
                 type="primary",
+                help=f"Regenerate Step {active_idx + 1} content",
             ):
                 setattr(current_step, "tutor_explanation", None)
                 setattr(current_step, "videos", [])
@@ -3281,6 +3787,20 @@ def render_learning_workspace():
                 st.session_state[f"step_agents_ran_{active_idx}"] = False
                 setattr(current_step, "_agent_generated", False)
                 st.rerun()
+
+        # Row 2 & 3: Step Title with Status Pill right after it, followed by description
+        st.markdown(
+            f"""
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 4px 0 4px 0;">
+                <h2 style="font-size: 1.45rem; font-weight: 800; color: #F8FAFC; margin: 0; line-height: 1.25;">{current_step.title}</h2>
+                <span class="compact-status-pill compact-status-{status_class}">
+                    {status_icon} {formatted_status}
+                </span>
+            </div>
+            <div style="font-size: 0.9rem; color: #94A3B8; font-style: italic; margin-top: 2px;">{current_step.description}</div>
+            """,
+            unsafe_allow_html=True,
+        )
 
         st.markdown("---")
 
@@ -3633,56 +4153,6 @@ def render_learning_workspace():
                         )
                 else:
                     st.info("Academic Researcher Agent is querying OpenAlex & arXiv...")
-                    memory.xp_earned += earned_xp + calculate_step_xp(memory.streak_count)
-                    memory.mark_step_complete(active_idx)
-
-                    # Persist completion of current step to DB
-                    try:
-                        from services.session_manager import SessionManager
-                        sm = SessionManager()
-                        run_async(sm.update_session(memory))
-                        run_async(sm.save_step_progress(
-                            session_id=memory.session_id,
-                            step_index=active_idx,
-                            status="complete",
-                            quiz_score=score,
-                        ))
-                    except Exception as e:
-                        logging.warning(f"Could not persist step progress: {e}")
-
-                    # Automatically move to Next Step if available!
-                    if active_idx + 1 < len(memory.steps):
-                        next_idx = active_idx + 1
-                        st.session_state["active_step_index"] = next_idx
-                        memory.steps[next_idx].status = StepStatus.IN_PROGRESS
-
-                        # Pre-generate next step's multi-agent content automatically
-                        run_async(generate_all_agent_content_for_step(memory.steps[next_idx], memory))
-                        
-                        try:
-                            from services.session_manager import SessionManager
-                            run_async(SessionManager().save_step_progress(
-                                session_id=memory.session_id,
-                                step_index=next_idx,
-                                status="in_progress",
-                            ))
-                        except Exception as ex:
-                            logging.warning(f"Could not update next step status in DB: {ex}")
-
-                        st.toast(f"🎉 Quiz Passed ({score:.0%})! Automatically advancing to Step {next_idx + 1}!", icon="🚀")
-                        time.sleep(1)
-                        st.rerun()
-                    else:
-                        if not memory.is_complete:
-                            memory.mark_step_complete(active_idx)
-                            try:
-                                from services.session_manager import SessionManager
-                                run_async(SessionManager().update_session(memory))
-                            except Exception as e:
-                                logging.warning(f"Could not save final session state: {e}")
-                        if not st.session_state.get(f"victory_modal_dismissed_{memory.session_id}", False):
-                            st.session_state[f"show_victory_modal_{memory.session_id}"] = True
-                            show_congratulations_dialog(memory)
 
 
 def sync_session_with_url():
