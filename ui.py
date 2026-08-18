@@ -3197,26 +3197,16 @@ def render_learning_workspace():
         st.toast("🔒 Authentication Required: Please sign in or create an account to access the AI learning workspace.", icon="🔒")
         st.rerun()
 
-    # ─── TOP NAVBAR: Clean Floating Pill Navbar ──────────────────────────
+    # ─── TOP NAVBAR: Active Topic Breadcrumb (Without Duplicated Top Logo) ──
     mem_check = get_or_create_memory()
     if mem_check and getattr(mem_check, "topic", None):
         t_esc = html.escape(mem_check.topic)
         st.markdown(
             f"""
-            <div class="et-learning-nav" style="display: flex; justify-content: space-between; align-items: center;">
-                <div class="et-logo">⚡ <span class="accent">EduTech</span> <span class="badge-ai">AI</span></div>
+            <div class="et-learning-nav" style="display: flex; justify-content: flex-end; align-items: center;">
                 <div class="et-nav-topic" title="{t_esc}">
                     <span>📖</span> <span>{t_esc}</span>
                 </div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-    else:
-        st.markdown(
-            """
-            <div class="et-learning-nav">
-                <div class="et-logo">⚡ <span class="accent">EduTech</span> <span class="badge-ai">AI</span></div>
             </div>
             """,
             unsafe_allow_html=True,
@@ -3344,20 +3334,13 @@ def render_learning_workspace():
                     return rect.width > 50 && rect.right > 50;
                 }
 
-                // 1. Inject Master Sidebar Toggle Button
-                let toggle = doc.getElementById('edutech-sidebar-master-toggle');
-                if (!toggle) {
-                    toggle = doc.createElement('div');
-                    toggle.id = 'edutech-sidebar-master-toggle';
-                    toggle.innerHTML = `
-                        <svg id="edutech-toggle-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E9D5FF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1); pointer-events: none;">
-                            <polyline points="15 18 9 12 15 6"></polyline>
-                        </svg>
-                    `;
-                    doc.body.appendChild(toggle);
+                // Remove legacy master toggle if present
+                const oldToggle = doc.getElementById('edutech-sidebar-master-toggle');
+                if (oldToggle && oldToggle.parentNode) {
+                    oldToggle.parentNode.removeChild(oldToggle);
                 }
 
-                // 2. Inject Collapsed Mini Icon Rail
+                // Inject Collapsed Mini Icon Rail
                 let miniRail = doc.getElementById('edutech-collapsed-mini-rail');
                 if (!miniRail) {
                     miniRail = doc.createElement('div');
@@ -3382,7 +3365,7 @@ def render_learning_workspace():
                         </div>
                         <div style="flex-grow: 1;"></div>
                         <div class="mr-item mr-profile" id="mr-btn-profile" title="Profile & Settings">
-                            <div style="width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, rgba(168, 85, 247, 0.5) 0%, rgba(59, 130, 246, 0.5) 100%); display: flex; align-items: center; justify-content: center; font-size: 0.9rem; border: 1.5px solid #A855F7;">👤</div>
+                            <div style="width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, rgba(168, 85, 247, 0.5) 0%, rgba(59, 130, 246, 0.5) 100%); display: flex; align-items: center; justify-content: center; font-size: 0.9rem; border: 1.5px solid #A855F7;">&#128100;</div>
                         </div>
                     `;
                     doc.body.appendChild(miniRail);
@@ -3394,7 +3377,7 @@ def render_learning_workspace():
                             e.stopPropagation();
                             const expBtn = findExpandButton();
                             if (expBtn) dispatchFullClick(expBtn);
-                            setTimeout(updateTogglePosition, 100);
+                            setTimeout(updateRailVisibility, 100);
                         };
                     }
                     const newItem = miniRail.querySelector('#mr-btn-new-journey');
@@ -3417,7 +3400,7 @@ def render_learning_workspace():
                             e.stopPropagation();
                             const expBtn = findExpandButton();
                             if (expBtn) dispatchFullClick(expBtn);
-                            setTimeout(updateTogglePosition, 100);
+                            setTimeout(updateRailVisibility, 100);
                         };
                     }
                     const profItem = miniRail.querySelector('#mr-btn-profile');
@@ -3435,97 +3418,24 @@ def render_learning_workspace():
                     }
                 }
 
-                const initSb = doc.querySelector('section[data-testid="stSidebar"]');
-                const initRight = (initSb && initSb.getBoundingClientRect().right > 100) ? initSb.getBoundingClientRect().right : 336;
-
-                Object.assign(toggle.style, {
-                    position: 'fixed',
-                    top: '50%',
-                    left: `${Math.max(10, initRight - 19)}px`,
-                    transform: 'translateY(-50%)',
-                    zIndex: '99999999',
-                    width: '38px',
-                    height: '38px',
-                    background: 'rgba(14, 9, 24, 0.95)',
-                    border: '2px solid #A855F7',
-                    borderRadius: '50%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                    boxShadow: '0 0 18px rgba(168, 85, 247, 0.5), 0 4px 14px rgba(0, 0, 0, 0.55)',
-                    backdropFilter: 'blur(16px)',
-                    webkitBackdropFilter: 'blur(16px)',
-                    transition: 'left 0.15s cubic-bezier(0.4, 0, 0.2, 1), transform 0.18s cubic-bezier(0.4, 0, 0.2, 1), background 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease',
-                    userSelect: 'none',
-                    webkitUserSelect: 'none',
-                    visibility: 'visible',
-                    opacity: '1',
-                    pointerEvents: 'auto',
-                });
-
-                toggle.onmouseenter = () => {
-                    toggle.style.transform = 'translateY(-50%) scale(1.12)';
-                    toggle.style.background = 'rgba(168, 85, 247, 0.35)';
-                    toggle.style.borderColor = '#C084FC';
-                    toggle.style.boxShadow = '0 0 28px rgba(168, 85, 247, 0.85), 0 0 12px rgba(6, 182, 212, 0.5)';
-                };
-                toggle.onmouseleave = () => {
-                    toggle.style.transform = 'translateY(-50%) scale(1)';
-                    toggle.style.background = 'rgba(14, 9, 24, 0.95)';
-                    toggle.style.borderColor = '#A855F7';
-                    toggle.style.boxShadow = '0 0 18px rgba(168, 85, 247, 0.5), 0 4px 14px rgba(0, 0, 0, 0.55)';
-                };
-
-                function updateTogglePosition() {
-                    if (!toggle || !toggle.parentNode) return;
-                    const sb = doc.querySelector('section[data-testid="stSidebar"]');
-                    const svg = toggle.querySelector('#edutech-toggle-chevron');
+                function updateRailVisibility() {
                     const mr = doc.getElementById('edutech-collapsed-mini-rail');
-                    
-                    if (isSidebarOpen() && sb) {
-                        const rect = sb.getBoundingClientRect();
-                        const targetLeft = rect.right > 50 ? rect.right : 336;
-                        toggle.style.left = `${Math.max(10, targetLeft - 19)}px`;
-                        if (svg) svg.style.transform = 'rotate(0deg)';
-                        toggle.setAttribute('title', 'Collapse Sidebar');
-                        if (mr) mr.style.display = 'none';
-                    } else {
-                        toggle.style.left = '64px';
-                        if (svg) svg.style.transform = 'rotate(180deg)';
-                        toggle.setAttribute('title', 'Expand Sidebar');
-                        if (mr) mr.style.display = 'flex';
-                    }
+                    if (!mr) return;
+                    mr.style.display = isSidebarOpen() ? 'none' : 'flex';
                 }
 
-                updateTogglePosition();
+                updateRailVisibility();
 
-                toggle.onclick = function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    if (isSidebarOpen()) {
-                        const closeBtn = findCollapseButton();
-                        if (closeBtn) dispatchFullClick(closeBtn);
-                    } else {
-                        const expandBtn = findExpandButton();
-                        if (expandBtn) dispatchFullClick(expandBtn);
-                    }
-                    setTimeout(updateTogglePosition, 50);
-                    setTimeout(updateTogglePosition, 150);
-                    setTimeout(updateTogglePosition, 300);
-                    setTimeout(updateTogglePosition, 500);
-                };
-
-                if (!win._edutechToggleTracking) {
-                    win._edutechToggleTracking = true;
+                if (!win._edutechRailTracking) {
+                    win._edutechRailTracking = true;
                     function track() {
-                        updateTogglePosition();
+                        updateRailVisibility();
                         requestAnimationFrame(track);
                     }
                     requestAnimationFrame(track);
                 }
             } catch (err) {
-                console.error("Master Sidebar Toggle error:", err);
+                console.error("Sidebar rail controller error:", err);
             }
         })();
         </script>
