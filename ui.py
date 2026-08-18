@@ -1858,19 +1858,46 @@ CUSTOM_CSS = """
         transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    /* Glassmorphism Dynamic AI Loader */
+    /* Fullscreen Faded Glassmorphic Overlay for AI Compute Cluster */
+    .glass-loader-overlay-backdrop {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        background: rgba(10, 15, 29, 0.84) !important;
+        backdrop-filter: blur(18px) !important;
+        -webkit-backdrop-filter: blur(18px) !important;
+        z-index: 999999 !important;
+        display: flex !important;
+        align-items: flex-start !important;
+        justify-content: center !important;
+        padding: 8vh 24px 40px 24px !important;
+        box-sizing: border-box !important;
+        overflow-y: auto !important;
+        animation: fadeInOverlay 0.25s ease-out !important;
+    }
+
+    @keyframes fadeInOverlay {
+        from { opacity: 0; backdrop-filter: blur(0px); }
+        to { opacity: 1; backdrop-filter: blur(18px); }
+    }
+
+    /* Glassmorphism Dynamic AI Loader Box */
     .glass-loader-box {
-        position: relative;
-        background: rgba(15, 23, 42, 0.85);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border: 1px solid rgba(168, 85, 247, 0.35);
-        border-radius: 20px;
-        padding: 1.8rem;
-        margin: 1.5rem 0;
-        overflow: hidden;
-        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 0 30px rgba(124, 58, 237, 0.15);
-        animation: n8nPulseGlow 3s infinite ease-in-out;
+        position: relative !important;
+        background: linear-gradient(135deg, rgba(15, 23, 42, 0.96) 0%, rgba(26, 17, 46, 0.94) 100%) !important;
+        backdrop-filter: blur(30px) !important;
+        -webkit-backdrop-filter: blur(30px) !important;
+        border: 1.5px solid rgba(168, 85, 247, 0.5) !important;
+        border-radius: 24px !important;
+        padding: 2rem 2.2rem !important;
+        margin: 10px auto 30px auto !important;
+        max-width: 860px !important;
+        width: 100% !important;
+        overflow: hidden !important;
+        box-shadow: 0 30px 80px -10px rgba(0, 0, 0, 0.8), 0 0 45px rgba(168, 85, 247, 0.3), inset 0 0 35px rgba(168, 85, 247, 0.12) !important;
+        animation: n8nPulseGlow 3s infinite ease-in-out !important;
     }
 
     .glass-loader-mesh {
@@ -1896,22 +1923,58 @@ CUSTOM_CSS = """
     .loader-header {
         display: flex;
         align-items: center;
-        justify-content: space-between;
+        justify-content: center;
+        position: relative;
         margin-bottom: 1.2rem;
         padding-bottom: 0.8rem;
         border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        width: 100%;
+        text-align: center;
+    }
+
+    .loader-header-inner {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        width: 100%;
+    }
+
+    .loader-cluster-tag {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.76rem;
+        font-weight: 800;
+        color: #A78BFA;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        margin-bottom: 6px;
+        text-align: center;
     }
 
     .loader-title {
-        font-size: 1.25rem;
+        font-size: 1.28rem;
         font-weight: 800;
         background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #06B6D4 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         letter-spacing: 0.5px;
+        text-align: center;
+    }
+
+    .loader-subtitle {
+        color: #94A3B8;
+        font-size: 0.88rem;
+        margin-top: 2px;
+        text-align: center;
     }
 
     .loader-metrics-badge {
+        position: absolute;
+        top: 0;
+        right: 0;
         background: rgba(30, 41, 59, 0.8);
         border: 1px solid rgba(168, 85, 247, 0.4);
         border-radius: 30px;
@@ -1922,6 +1985,13 @@ CUSTOM_CSS = """
         display: flex;
         align-items: center;
         gap: 6px;
+    }
+
+    @media (max-width: 640px) {
+        .loader-metrics-badge {
+            position: static;
+            margin-top: 8px;
+        }
     }
 
     @keyframes pulseTravel1 {
@@ -2173,17 +2243,18 @@ def render_glassy_agent_loader_html(
         else:
             return "agent-card-item"
 
-    return f"""<div class="glass-loader-box">
+    return f"""<div class="glass-loader-overlay-backdrop">
+<div class="glass-loader-box">
 <div class="glass-loader-mesh"></div>
 <div class="glass-loader-content">
 <div class="loader-header">
-<div>
-<div style="display: flex; align-items: center; font-size: 0.75rem; font-weight: 800; color: #A78BFA; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 4px;">
+<div class="loader-header-inner">
+<div class="loader-cluster-tag">
 <span class="cluster-spinner"></span>
 <span>EDU-TECH AI COMPUTE CLUSTER &nbsp;•&nbsp; NEURAL INFERENCE</span>
 </div>
 <div class="loader-title">{title}</div>
-<div style="color: #94A3B8; font-size: 0.88rem; margin-top: 2px;">{subtitle}</div>
+<div class="loader-subtitle">{subtitle}</div>
 </div>
 <div class="loader-metrics-badge">
 <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#10B981; box-shadow:0 0 8px #10B981;"></span>
@@ -2292,6 +2363,7 @@ def render_glassy_agent_loader_html(
 {_status_tag(quiz_status)}
 </div>
 <div class="agent-desc">Structuring adaptive comprehension questions & XP reward multipliers.</div>
+</div>
 </div>
 </div>
 </div>
