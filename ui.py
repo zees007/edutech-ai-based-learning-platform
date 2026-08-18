@@ -330,7 +330,7 @@ CUSTOM_CSS = """
         -webkit-backdrop-filter: blur(30px) !important;
         border: 1.5px solid rgba(168, 85, 247, 0.45) !important;
         border-radius: 24px !important;
-        padding: 2rem 2.2rem 1.6rem 2.2rem !important;
+        padding: 1.8rem 2.2rem 1.4rem 2.2rem !important;
         margin-top: 0.8rem !important;
         margin-bottom: 1.4rem !important;
         box-shadow: 0 25px 65px -15px rgba(168, 85, 247, 0.35), inset 0 0 35px rgba(168, 85, 247, 0.12) !important;
@@ -467,42 +467,30 @@ CUSTOM_CSS = """
         box-shadow: 0 12px 35px rgba(168, 85, 247, 0.6), 0 0 30px rgba(59, 130, 246, 0.45) !important;
     }
 
-    /* Suggested Inquiries (Inside Container & Left-Aligned) */
-    div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-testid="stButton"],
-    div[data-testid="column"]:has(#journey-console-card-marker) div[data-testid="stButton"] {
-        display: flex !important;
-        justify-content: flex-start !important;
-        width: 100% !important;
+    /* Popover Trigger for Topic Suggestions */
+    div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-testid="stPopover"],
+    div[data-testid="column"]:has(#journey-console-card-marker) div[data-testid="stPopover"] {
+        margin-top: 4px !important;
     }
 
-    div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-testid="stButton"] button,
-    div[data-testid="column"]:has(#journey-console-card-marker) div[data-testid="stButton"] button {
-        background: rgba(168, 85, 247, 0.08) !important;
-        border: 1px solid rgba(168, 85, 247, 0.24) !important;
-        color: rgba(243, 232, 255, 0.9) !important;
-        font-size: 0.92rem !important;
-        font-weight: 500 !important;
-        text-align: left !important;
-        justify-content: flex-start !important;
-        padding: 8px 14px !important;
-        border-radius: 12px !important;
+    div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-testid="stPopover"] button,
+    div[data-testid="column"]:has(#journey-console-card-marker) div[data-testid="stPopover"] button {
+        background: rgba(168, 85, 247, 0.1) !important;
+        border: 1px solid rgba(168, 85, 247, 0.3) !important;
+        border-radius: 10px !important;
+        color: #E9D5FF !important;
+        font-size: 0.84rem !important;
+        font-weight: 600 !important;
+        padding: 5px 12px !important;
         transition: all 0.2s ease !important;
-        box-shadow: none !important;
-        display: flex !important;
-        align-items: center !important;
-        width: auto !important;
-        min-width: 0 !important;
-        margin-bottom: 4px !important;
     }
 
-    div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-testid="stButton"] button:hover,
-    div[data-testid="column"]:has(#journey-console-card-marker) div[data-testid="stButton"] button:hover {
+    div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-testid="stPopover"] button:hover,
+    div[data-testid="column"]:has(#journey-console-card-marker) div[data-testid="stPopover"] button:hover {
         background: rgba(168, 85, 247, 0.22) !important;
         border-color: #C084FC !important;
-        border-left: 3px solid #C084FC !important;
         color: #FFFFFF !important;
-        padding-left: 18px !important;
-        box-shadow: 0 4px 15px rgba(168, 85, 247, 0.3) !important;
+        box-shadow: 0 0 12px rgba(168, 85, 247, 0.3) !important;
     }
 
     .journey-tip-footer {
@@ -3091,14 +3079,13 @@ def render_learning_workspace():
         )
 
 
-        default_topic_val = (
-            st.session_state.pop("quick_launch_topic", None)
-            or st.session_state.get("main_topic_query", "")
-            or st.session_state.get("last_topic", "")
-        )
+        if "quick_launch_topic" in st.session_state:
+            st.session_state["main_topic_input_composer"] = st.session_state.pop("quick_launch_topic")
+        elif "main_topic_query" in st.session_state:
+            st.session_state["main_topic_input_composer"] = st.session_state.pop("main_topic_query")
 
-        # Unified Glassmorphic Console Card (Matching Sign In Auth Card from home_ui.py)
-        card_col = st.columns(1)[0]
+        # Centered ChatGPT-Style Layout with Balanced Left/Right Margins
+        pad_l, card_col, pad_r = st.columns([0.8, 8.4, 0.8])
         with card_col:
             st.markdown('<div id="journey-console-card-marker" class="et-journey-card-container-marker"></div>', unsafe_allow_html=True)
 
@@ -3143,7 +3130,6 @@ def render_learning_workspace():
                 with c_input:
                     main_topic_input = st.text_input(
                         "What do you want to learn?",
-                        value=default_topic_val,
                         placeholder="Ask EduTechAI anything... (e.g., I want to learn Python programming from zero)",
                         key="main_topic_input_composer",
                         label_visibility="collapsed",
@@ -3151,18 +3137,120 @@ def render_learning_workspace():
                 with c_btn:
                     main_start_clicked = st.form_submit_button("✨ Start Journey", type="primary", use_container_width=True)
 
-            # 3. Suggested Inquiries (Inside Container Card & Left-Aligned)
-            suggested_inquiries = [
-                ("🐍 I want to learn Python programming from zero", "I want to learn Python programming from zero step by step"),
-                ("🧠 Explain Deep Neural Networks and Machine Learning", "How do Deep Neural Networks and Machine Learning models learn?"),
-                ("📐 Intuitive guide to Calculus & Differential Equations", "Intuitive guide to Calculus, Derivatives, and Differential Equations"),
-                ("🧬 How CRISPR-Cas9 Gene Editing works", "How does CRISPR-Cas9 Gene Editing and DNA repair work?"),
-                ("⚗️ Chemical Bonding: Covalent vs Ionic Orbitals", "How do chemical bonds, covalent and ionic molecular orbitals work?"),
-            ]
-            for sug_idx, (sug_label, sug_prompt) in enumerate(suggested_inquiries):
-                if st.button(f"{sug_label}", key=f"sug_btn_{sug_idx}", use_container_width=False):
-                    st.session_state["main_topic_query"] = sug_prompt
-                    st.rerun()
+            # 3. Space-Efficient Suggested Topics Popover Drawer (Instant Client-Side Fill, Zero Page Reload)
+            with st.popover("💡 Browse Suggested Topics", use_container_width=False):
+                st.markdown("<div style='font-size:0.88rem; font-weight:700; color:#E9D5FF; margin-bottom:4px;'>🌟 Curated Learning Prompts</div>", unsafe_allow_html=True)
+                
+                topics_html = """
+                <style>
+                    body {
+                        margin: 0;
+                        padding: 0;
+                        background: transparent;
+                        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                        overflow: hidden;
+                    }
+                    .topic-list {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 8px;
+                        padding: 4px 6px 4px 2px;
+                        max-height: 240px;
+                        overflow-y: auto;
+                        overflow-x: hidden;
+                        scrollbar-width: thin;
+                        scrollbar-color: rgba(168, 85, 247, 0.45) transparent;
+                        box-sizing: border-box;
+                    }
+                    .topic-list::-webkit-scrollbar {
+                        width: 6px;
+                    }
+                    .topic-list::-webkit-scrollbar-track {
+                        background: rgba(15, 23, 42, 0.4);
+                        border-radius: 4px;
+                    }
+                    .topic-list::-webkit-scrollbar-thumb {
+                        background: rgba(168, 85, 247, 0.45);
+                        border-radius: 4px;
+                    }
+                    .topic-list::-webkit-scrollbar-thumb:hover {
+                        background: rgba(168, 85, 247, 0.75);
+                    }
+                    .topic-item {
+                        display: flex;
+                        align-items: center;
+                        background: rgba(168, 85, 247, 0.1);
+                        border: 1px solid rgba(168, 85, 247, 0.28);
+                        border-radius: 10px;
+                        color: #FAFAFA;
+                        font-size: 0.88rem;
+                        font-weight: 500;
+                        padding: 10px 14px;
+                        cursor: pointer;
+                        text-align: left;
+                        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+                        outline: none;
+                        width: 100%;
+                        box-sizing: border-box;
+                    }
+                    .topic-item:hover {
+                        background: rgba(168, 85, 247, 0.26);
+                        border-color: #C084FC;
+                        border-left: 3px solid #C084FC;
+                        padding-left: 18px;
+                        color: #FFFFFF;
+                        box-shadow: 0 4px 15px rgba(168, 85, 247, 0.35);
+                        transform: translateX(2px);
+                    }
+                </style>
+                <div class="topic-list">
+                    <button class="topic-item" onclick="selectTopic('I want to learn Python programming from zero step by step')">
+                        🐍 I want to learn Python programming from zero
+                    </button>
+                    <button class="topic-item" onclick="selectTopic('How do Deep Neural Networks and Machine Learning models learn?')">
+                        🧠 Explain Deep Neural Networks and Machine Learning
+                    </button>
+                    <button class="topic-item" onclick="selectTopic('Intuitive guide to Calculus, Derivatives, and Differential Equations')">
+                        📐 Intuitive guide to Calculus & Differential Equations
+                    </button>
+                    <button class="topic-item" onclick="selectTopic('How does CRISPR-Cas9 Gene Editing and DNA repair work?')">
+                        🧬 How CRISPR-Cas9 Gene Editing works
+                    </button>
+                    <button class="topic-item" onclick="selectTopic('How do chemical bonds, covalent and ionic molecular orbitals work?')">
+                        ⚗️ Chemical Bonding: Covalent vs Ionic Orbitals
+                    </button>
+                </div>
+                <script>
+                function selectTopic(text) {
+                    try {
+                        const pdoc = window.parent.document;
+                        const input = pdoc.querySelector('input[placeholder*="Ask EduTechAI"]') 
+                                   || pdoc.querySelector('div[data-testid="stColumn"]:has(#journey-console-card-marker) input')
+                                   || pdoc.querySelector('input[aria-label="What do you want to learn?"]');
+                        if (input) {
+                            const nativeSetter = Object.getOwnPropertyDescriptor(window.parent.HTMLInputElement.prototype, 'value').set;
+                            if (nativeSetter) {
+                                nativeSetter.call(input, text);
+                            } else {
+                                input.value = text;
+                            }
+                            input.dispatchEvent(new Event('input', { bubbles: true }));
+                            input.dispatchEvent(new Event('change', { bubbles: true }));
+                            input.focus();
+                        }
+                        // Close popover
+                        pdoc.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', keyCode: 27, which: 27, bubbles: true }));
+                        const popBtn = pdoc.querySelector('div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-testid="stPopover"] button');
+                        if (popBtn) {
+                            popBtn.click();
+                        }
+                    } catch (e) {
+                        console.error("Topic select error:", e);
+                    }
+                }
+                </script>
+                """
+                components.html(topics_html, height=250, scrolling=False)
 
         if main_start_clicked and main_topic_input.strip():
             st.session_state["last_topic"] = main_topic_input.strip()
