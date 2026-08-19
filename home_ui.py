@@ -3885,11 +3885,15 @@ def _quick_demo_login(email: str, pw: str):
 
         p = run_async(_do())
         st.session_state["user_profile"] = p
+        if st.session_state.get("target_upgrade_tier") in ["pro", "ultra"]:
+            st.session_state["show_upgrade_modal"] = True
         st.session_state["view"] = "learning"
         st.toast(f"Logged in as {p.first_name}", icon="⚡")
         st.rerun()
     except Exception:
         st.session_state["user_profile"] = _make_demo_profile(email)
+        if st.session_state.get("target_upgrade_tier") in ["pro", "ultra"]:
+            st.session_state["show_upgrade_modal"] = True
         st.session_state["view"] = "learning"
         st.toast(f"Demo ({'PRO' if 'pro' in email else 'NORMAL'} Tier)", icon="⚡")
         st.rerun()
@@ -3900,30 +3904,17 @@ def _handle_tier_select(tier: str):
     st.session_state["selected_tier"] = tier
 
     if not up:
+        st.session_state["target_upgrade_tier"] = tier.lower()
         st.session_state["auth_tab"] = "signup"
         st.session_state["view"] = "auth"
-        st.toast(f"🔒 Sign in to select {tier.upper()} Tier.", icon="🔒")
+        st.toast(f"🔒 Sign in or create an account to upgrade to {tier.upper()} Tier.", icon="🔒")
+        st.rerun()
+    elif tier.lower() in ["pro", "ultra"]:
+        st.session_state["target_upgrade_tier"] = tier.lower()
+        st.session_state["show_upgrade_modal"] = True
         st.rerun()
     else:
-        try:
-            from models.subscription_schemas import SubscriptionUpdateRequest
-            from services.database import get_db_session
-            from services.subscription_service import SubscriptionService
-            from services.auth_service import AuthService
-            from services.user_service import UserService
+        st.toast(f"Current Plan: FREE ({tier.upper()})", icon="⚡")
+        st.session_state["view"] = "learning"
+        st.rerun()
 
-            async def _up():
-                async with get_db_session() as db:
-                    await SubscriptionService.update_user_subscription_tier(db, user_id=up.id,
-                                                                           request=SubscriptionUpdateRequest(tier=tier))
-                    u = await UserService.get_user_by_id(db, up.id)
-                    return AuthService.get_user_current_profile(u)
-
-            p = run_async(_up())
-            st.session_state["user_profile"] = p
-            st.toast(f"Subscription → {tier.upper()}!", icon="⭐")
-            st.rerun()
-        except Exception:
-            st.toast(f"Tier: {tier.upper()}", icon="⚡")
-            st.session_state["view"] = "learning"
-            st.rerun()

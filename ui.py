@@ -3921,6 +3921,17 @@ def render_learning_workspace():
                     unsafe_allow_html=True,
                 )
 
+                if u_tier != "ULTRA":
+                    upgrade_target = "ultra" if u_tier == "PRO" else "pro"
+                    if st.button(f"⚡ Upgrade to {upgrade_target.upper()}", key="sb_pop_upgrade_btn", type="primary", use_container_width=True):
+                        st.session_state["target_upgrade_tier"] = upgrade_target
+                        st.session_state["show_upgrade_modal"] = True
+                        st.rerun()
+
+                if st.button("💳 Billing & Plan", key="sb_pop_billing_btn", use_container_width=True):
+                    st.session_state["show_billing_portal_modal"] = True
+                    st.rerun()
+
                 if st.button("⚙️ Admin Console", key="sb_pop_admin_btn", use_container_width=True):
                     st.session_state["view"] = "admin"
                     st.rerun()
@@ -5029,3 +5040,15 @@ elif current_view in ["home", "auth", "pricing"]:
     render_home_page()
 else:
     render_learning_workspace()
+
+# ─── Modal Dialog Controllers ──────────────────────────────────────
+if st.session_state.get("show_upgrade_modal"):
+    from services.subscription_ui import render_subscription_upgrade_dialog
+    target_t = st.session_state.get("target_upgrade_tier", "pro")
+    render_subscription_upgrade_dialog(target_t)
+
+if st.session_state.get("show_billing_portal_modal"):
+    from services.subscription_ui import render_user_billing_portal_dialog
+    render_user_billing_portal_dialog()
+
+

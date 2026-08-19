@@ -169,16 +169,53 @@ class Subscription(Base):
     )
     tier: Mapped[str] = mapped_column(String(50), nullable=False, default="normal", index=True)
     status: Mapped[str] = mapped_column(String(50), nullable=False, default="active")
+    billing_cycle: Mapped[str] = mapped_column(String(20), nullable=False, default="monthly")
+    price_amount: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
     current_period_start: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, server_default=func.now()
     )
     current_period_end: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    gateway_provider: Mapped[str] = mapped_column(String(50), nullable=False, default="sandbox")
+    gateway_subscription_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    gateway_customer_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    gateway_metadata: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     payment_gateway_ref: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    cancel_at_period_end: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    auto_renew: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
 
     user: Mapped[User] = relationship("User", back_populates="subscription")
+    transactions: Mapped[list[PaymentTransaction]] = relationship("PaymentTransaction", back_populates="subscription", cascade="all, delete-orphan")
 
     def __repr__(self) -> str:
-        return f"<Subscription user={self.user_id} tier={self.tier} status={self.status}>"
+        return f"<Subscription user={self.user_id} tier={self.tier} provider={self.gateway_provider} status={self.status}>"
+
+
+class PaymentTransaction(Base):
+    """
+    Ledger record for subscription charges, invoices, and refunds.
+    """
+
+    __tablename__ = "payment_transactions"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    transaction_id: Mapped[str] = mapped_column(String(100), unique=True, nullable=False, index=True)
+    user_id: Mapped[str] = mapped_column(String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    subscription_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("subscriptions.id", ondelete="SET NULL"), nullable=True)
+    gateway_provider: Mapped[str] = mapped_column(String(50), nullable=False, default="paddle")
+    amount: Mapped[float] = mapped_column(Float, nullable=False)
+    currency: Mapped[str] = mapped_column(String(10), nullable=False, default="USD")
+    status: Mapped[str] = mapped_column(String(30), nullable=False, default="completed")
+    tier: Mapped[str] = mapped_column(String(30), nullable=False)
+    billing_cycle: Mapped[str] = mapped_column(String(20), nullable=False, default="monthly")
+    payment_method: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    coupon_code: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, server_default=func.now())
+
+    subscription: Mapped[Subscription | None] = relationship("Subscription", back_populates="transactions")
+
+    def __repr__(self) -> str:
+        return f"<PaymentTransaction id={self.transaction_id} provider={self.gateway_provider} amount={self.amount} status={self.status}>"
+
 
 
 
