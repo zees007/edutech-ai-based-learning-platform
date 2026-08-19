@@ -1065,11 +1065,173 @@ CUSTOM_CSS = """
         margin-top: 0 !important;
     }
 
-    section[data-testid="stSidebar"] [data-testid="stSidebarContent"] {
+    /* ── Fixed Viewport Sidebar Layout & Bottom Sticky Footer ── */
+    html body div.stApp section[data-testid="stSidebar"] [data-testid="stSidebarContent"] {
         padding-top: 1rem !important;
         padding-left: 0.9rem !important;
         padding-right: 0.9rem !important;
-        padding-bottom: 1.2rem !important;
+        padding-bottom: 0.8rem !important;
+        display: flex !important;
+        flex-direction: column !important;
+        height: 100vh !important;
+        max-height: 100vh !important;
+        overflow: hidden !important;
+        box-sizing: border-box !important;
+    }
+
+    html body div.stApp section[data-testid="stSidebar"] [data-testid="stSidebarUserContent"] {
+        display: flex !important;
+        flex-direction: column !important;
+        flex: 1 1 0% !important;
+        min-height: 0 !important;
+        height: 100% !important;
+        overflow: hidden !important;
+    }
+
+    html body div.stApp section[data-testid="stSidebar"] [data-testid="stSidebarUserContent"] > div[data-testid="stVerticalBlock"] {
+        display: flex !important;
+        flex-direction: column !important;
+        flex: 1 1 0% !important;
+        min-height: 0 !important;
+        height: 100% !important;
+        gap: 0px !important;
+    }
+
+    /* Target middle scrollable container inside sidebar block */
+    html body div.stApp section[data-testid="stSidebar"] [data-testid="stSidebarUserContent"] > div[data-testid="stVerticalBlock"] > div:nth-child(2) {
+        flex: 1 1 auto !important;
+        min-height: 0 !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        padding-right: 4px !important;
+    }
+
+    /* Scrollbar styling for sidebar scroll area */
+    html body div.stApp section[data-testid="stSidebar"] [data-testid="stSidebarUserContent"] > div[data-testid="stVerticalBlock"] > div:nth-child(2)::-webkit-scrollbar {
+        width: 4px;
+    }
+    html body div.stApp section[data-testid="stSidebar"] [data-testid="stSidebarUserContent"] > div[data-testid="stVerticalBlock"] > div:nth-child(2)::-webkit-scrollbar-thumb {
+        background: rgba(168, 85, 247, 0.3);
+        border-radius: 4px;
+    }
+
+    /* Ensure footer containers sit fixed at the very bottom */
+    section[data-testid="stSidebar"] div[data-testid="stSidebarUserContent"] > div[data-testid="stVerticalBlock"] > div:has(.sidebar-user-footer-divider),
+    section[data-testid="stSidebar"] div[data-testid="stSidebarUserContent"] > div[data-testid="stVerticalBlock"] > div:has(div.sidebar-footer-wrapper) {
+        margin-top: auto !important;
+        flex-shrink: 0 !important;
+    }
+
+    .sidebar-footer-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 4px;
+        width: 100%;
+    }
+
+    .sidebar-user-footer-divider {
+        border-top: 1px solid rgba(168, 85, 247, 0.25);
+        margin: 14px 0 10px 0;
+        box-shadow: 0 -1px 8px rgba(168, 85, 247, 0.2);
+    }
+
+    /* Redesigned User Profile Card with App Theme */
+    .user-profile-bottom-card {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 12px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, rgba(30, 20, 50, 0.6) 0%, rgba(124, 58, 237, 0.15) 100%);
+        border: 1px solid rgba(168, 85, 247, 0.35);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), inset 0 0 12px rgba(168, 85, 247, 0.1);
+        backdrop-filter: blur(12px);
+        cursor: default;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .user-profile-bottom-card:hover {
+        background: linear-gradient(135deg, rgba(45, 25, 75, 0.75) 0%, rgba(168, 85, 247, 0.28) 100%);
+        border-color: #C084FC;
+        box-shadow: 0 6px 20px rgba(168, 85, 247, 0.35), inset 0 0 16px rgba(168, 85, 247, 0.2);
+        transform: translateY(-1px);
+    }
+
+    .user-avatar-pill {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%);
+        border: 1.5px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 0 12px rgba(168, 85, 247, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        flex-shrink: 0;
+        color: #FFFFFF;
+    }
+
+    .user-info-text {
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    .user-name-title {
+        font-size: 0.85rem;
+        font-weight: 800;
+        color: #FAFAFA;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        line-height: 1.2;
+        letter-spacing: 0.2px;
+    }
+
+    .user-tier-subtitle {
+        font-size: 0.64rem;
+        font-weight: 800;
+        color: #C084FC;
+        letter-spacing: 0.6px;
+        line-height: 1.1;
+        text-transform: uppercase;
+        margin-top: 1px;
+    }
+
+    /* Redesigned Circular Settings Icon Button */
+    div[class*="st-key-sb_settings_popover_btn"] div[data-testid="stPopover"] button {
+        width: 38px !important;
+        height: 38px !important;
+        min-width: 38px !important;
+        max-width: 38px !important;
+        min-height: 38px !important;
+        max-height: 38px !important;
+        border-radius: 50% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        background: linear-gradient(135deg, rgba(168, 85, 247, 0.25) 0%, rgba(59, 130, 246, 0.2) 100%) !important;
+        border: 1.5px solid rgba(168, 85, 247, 0.45) !important;
+        color: #E9D5FF !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), 0 0 10px rgba(168, 85, 247, 0.2) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+
+    div[class*="st-key-sb_settings_popover_btn"] div[data-testid="stPopover"] button:hover {
+        background: linear-gradient(135deg, rgba(236, 72, 153, 0.4) 0%, rgba(168, 85, 247, 0.55) 100%) !important;
+        border-color: #C084FC !important;
+        color: #FFFFFF !important;
+        box-shadow: 0 0 18px rgba(168, 85, 247, 0.6) !important;
+        transform: rotate(45deg) scale(1.06) !important;
     }
 
     /* Bold Sidebar Widget Labels */
@@ -1186,7 +1348,8 @@ CUSTOM_CSS = """
         justify-content: center !important;
         gap: 8px !important;
         padding: 9px 14px !important;
-        margin-top: 10px;
+        margin-top: 30px !important;
+        margin-bottom: 14px !important;
         min-height: 44px !important;
     }
 
@@ -1214,8 +1377,8 @@ CUSTOM_CSS = """
         display: flex;
         align-items: center;
         gap: 8px;
-        margin-top: 4px;
-        margin-bottom: 6px;
+        margin-top: 10px;
+        margin-bottom: 12px;
         letter-spacing: 0.2px;
     }
 
@@ -1226,6 +1389,11 @@ CUSTOM_CSS = """
     }
 
     /* ── Modern Glassmorphic Search Bar in Sidebar ── */
+    div[class*="st-key-sb_hist_search_input"] {
+        margin-top: 10px !important;
+        margin-bottom: 12px !important;
+    }
+
     div[class*="st-key-sb_hist_search_input"] input {
         background: rgba(255, 255, 255, 0.04) !important;
         border: 1px solid rgba(168, 85, 247, 0.22) !important;
@@ -1243,6 +1411,11 @@ CUSTOM_CSS = """
     }
 
     /* ── Redesigned Modern Filter Pills: All, Active, Completed ── */
+    div[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(div[class*="st-key-sb_flt_"]) {
+        margin-top: 6px !important;
+        margin-bottom: 12px !important;
+    }
+
     html body div.stApp section[data-testid="stSidebar"] div[class*="st-key-sb_flt_"] button,
     div[class*="st-key-sb_flt_"] button {
         height: 32px !important;
@@ -1292,6 +1465,7 @@ CUSTOM_CSS = """
         box-shadow: 0 0 14px rgba(168, 85, 247, 0.45), inset 0 1px 1px rgba(255, 255, 255, 0.25) !important;
         text-align: center !important;
         justify-content: center !important;
+        margin-bottom: 10px !important;
     }
     html body div.stApp section[data-testid="stSidebar"] div[class*="st-key-sb_flt_active"] button:hover,
     div[class*="st-key-sb_flt_active"] button:hover {
@@ -1306,7 +1480,7 @@ CUSTOM_CSS = """
         align-items: center !important;
         justify-content: flex-start !important;
         gap: 6px !important;
-        margin: 4px 0 6px 0 !important;
+        margin: 10px 0 12px 0 !important;
         cursor: pointer !important;
         user-select: none !important;
         -webkit-user-select: none !important;
@@ -1346,7 +1520,19 @@ CUSTOM_CSS = """
         overflow: hidden !important;
     }
 
-    /* ── Modern ChatGPT-Style Session History List (No Borders, Zero Gaps, Uniform Hover) ── */
+    /* ── Learning History Dedicated Container Gap Removal ── */
+    section[data-testid="stSidebar"] div[data-testid="stVerticalBlock"]:has(.sb-hist-container-marker),
+    section[data-testid="stSidebar"] div[data-testid="stVerticalBlockBorderWrapper"]:has(.sb-hist-container-marker) {
+        gap: 0px !important;
+        row-gap: 0px !important;
+    }
+
+    section[data-testid="stSidebar"] div[data-testid="stVerticalBlock"]:has(> div[data-testid="stHorizontalBlock"]:has(div[class*="st-key-sb_card_"])) {
+        gap: 0px !important;
+        row-gap: 10px !important;
+    }
+
+    /* Fallback direct sibling selector for cards */
     section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(div[class*="st-key-sb_card_"]) {
         margin: 0px 0 !important;
         padding: 0px 4px 0px 6px !important;
@@ -1559,9 +1745,14 @@ CUSTOM_CSS = """
     }
 
     /* ── Sidebar Bottom Footer: User Profile & Settings ── */
+    section[data-testid="stSidebar"] div[data-testid="stSidebarUserContent"] > div[data-testid="stVerticalBlock"] > div:has(.sidebar-user-footer-divider),
+    section[data-testid="stSidebar"] div[data-testid="stSidebarUserContent"] > div[data-testid="stVerticalBlock"] > div:has(> div[data-testid="stHorizontalBlock"]:has(div.user-profile-bottom-card)) {
+        margin-top: auto !important;
+    }
+
     .sidebar-user-footer-divider {
         border-top: 1px solid rgba(168, 85, 247, 0.22);
-        margin: 14px 0 8px 0;
+        margin: 14px 0 10px 0;
     }
 
     .user-profile-bottom-card {
@@ -3224,20 +3415,6 @@ def render_learning_workspace():
         st.toast("🔒 Authentication Required: Please sign in or create an account to access the AI learning workspace.", icon="🔒")
         st.rerun()
 
-    # ─── TOP NAVBAR: Active Topic Breadcrumb (Without Duplicated Top Logo) ──
-    mem_check = get_or_create_memory()
-    if mem_check and getattr(mem_check, "topic", None):
-        t_esc = html.escape(mem_check.topic)
-        st.markdown(
-            f"""
-            <div class="et-learning-nav" style="display: flex; justify-content: flex-end; align-items: center;">
-                <div class="et-nav-topic" title="{t_esc}">
-                    <span>📖</span> <span>{t_esc}</span>
-                </div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
 
     memory = get_or_create_memory()
 
@@ -3623,7 +3800,7 @@ def render_learning_workspace():
                 logging.warning(f"Failed to query user session history: {ex_sh}")
 
             st.markdown(
-                f"<div style='font-size: 0.72rem; color: rgba(233,213,255,0.65); margin: 3px 0 6px 0;'><b>{len(user_sessions)}</b> of <b>{total_sessions}</b> session(s)</div>",
+                f"<div style='font-size: 0.72rem; color: rgba(233,213,255,0.65); margin: 3px 0 15px 0;'><b>{len(user_sessions)}</b> of <b>{total_sessions}</b> session(s)</div>",
                 unsafe_allow_html=True,
             )
 
@@ -3636,66 +3813,68 @@ def render_learning_workspace():
                     unsafe_allow_html=True,
                 )
             else:
-                for s_info in user_sessions:
-                    s_id = s_info["session_id"]
-                    s_topic = s_info["topic"]
-                    s_complete = s_info["is_complete"]
-                    s_tot_steps = s_info.get("total_steps", 0)
-                    s_cur_step = s_info.get("current_step_index", 0)
-                    s_xp = s_info.get("xp_earned", 0)
-                    is_active_session = (active_session_id == s_id)
+                with st.container():
+                    st.markdown("<div class='sb-hist-container-marker' style='display:none;'></div>", unsafe_allow_html=True)
+                    for s_info in user_sessions:
+                        s_id = s_info["session_id"]
+                        s_topic = s_info["topic"]
+                        s_complete = s_info["is_complete"]
+                        s_tot_steps = s_info.get("total_steps", 0)
+                        s_cur_step = s_info.get("current_step_index", 0)
+                        s_xp = s_info.get("xp_earned", 0)
+                        is_active_session = (active_session_id == s_id)
 
-                    status_tag = "Completed" if s_complete else f"Step {min(s_cur_step + 1, s_tot_steps)}/{s_tot_steps}"
-                    btn_display = s_topic
+                        status_tag = "Completed" if s_complete else f"Step {min(s_cur_step + 1, s_tot_steps)}/{s_tot_steps}"
+                        btn_display = s_topic
 
-                    card_cols = st.columns([9.0, 1.0], gap="small", vertical_alignment="center")
-                    with card_cols[0]:
-                        if st.button(
-                            btn_display,
-                            key=f"sb_card_{s_id}",
-                            type="primary" if is_active_session else "secondary",
-                            use_container_width=True,
-                        ):
-                            with st.spinner("Opening session..."):
-                                loaded = run_async(SessionManager().get_session(s_id))
-                                if loaded:
-                                    for k in list(st.session_state.keys()):
-                                        if any(k.startswith(pfx) for pfx in ["step_agents_ran_", "quiz_submitted_", "saved_user_answers_", "saved_user_full_answers_", "xp_awarded_"]):
-                                            del st.session_state[k]
+                        card_cols = st.columns([9.0, 1.0], gap="small", vertical_alignment="center")
+                        with card_cols[0]:
+                            if st.button(
+                                btn_display,
+                                key=f"sb_card_{s_id}",
+                                type="primary" if is_active_session else "secondary",
+                                use_container_width=True,
+                            ):
+                                with st.spinner("Opening session..."):
+                                    loaded = run_async(SessionManager().get_session(s_id))
+                                    if loaded:
+                                        for k in list(st.session_state.keys()):
+                                            if any(k.startswith(pfx) for pfx in ["step_agents_ran_", "quiz_submitted_", "saved_user_answers_", "saved_user_full_answers_", "xp_awarded_"]):
+                                                del st.session_state[k]
 
-                                    for idx_st, st_ob in enumerate(loaded.steps):
-                                        has_step_content = bool(
-                                            getattr(st_ob, "tutor_explanation", None)
-                                            or getattr(st_ob, "quiz", None)
-                                            or getattr(st_ob, "videos", None)
-                                            or getattr(st_ob, "papers", None)
-                                            or getattr(st_ob, "status", None) == StepStatus.COMPLETE
-                                        )
-                                        if has_step_content:
-                                            setattr(st_ob, "_agent_generated", True)
-                                            st.session_state[f"step_agents_ran_{idx_st}"] = True
+                                        for idx_st, st_ob in enumerate(loaded.steps):
+                                            has_step_content = bool(
+                                                getattr(st_ob, "tutor_explanation", None)
+                                                or getattr(st_ob, "quiz", None)
+                                                or getattr(st_ob, "videos", None)
+                                                or getattr(st_ob, "papers", None)
+                                                or getattr(st_ob, "status", None) == StepStatus.COMPLETE
+                                            )
+                                            if has_step_content:
+                                                setattr(st_ob, "_agent_generated", True)
+                                                st.session_state[f"step_agents_ran_{idx_st}"] = True
 
-                                    st.session_state["memory"] = loaded
-                                    target_idx = 0
-                                    for idx_s, step_obj in enumerate(loaded.steps):
-                                        if step_obj.status != StepStatus.COMPLETE:
-                                            target_idx = idx_s
-                                            break
-                                    st.session_state["active_step_index"] = target_idx
-                                    st.session_state["last_topic"] = loaded.topic
+                                        st.session_state["memory"] = loaded
+                                        target_idx = 0
+                                        for idx_s, step_obj in enumerate(loaded.steps):
+                                            if step_obj.status != StepStatus.COMPLETE:
+                                                target_idx = idx_s
+                                                break
+                                        st.session_state["active_step_index"] = target_idx
+                                        st.session_state["last_topic"] = loaded.topic
+                                        st.rerun()
+
+                        with card_cols[1]:
+                            with st.popover("", icon=":material/more_horiz:", use_container_width=True):
+                                st.markdown(f"<div style='font-size:0.82rem; font-weight:700; color:#FAFAFA; margin-bottom:4px;'>{s_topic[:26]}...</div>", unsafe_allow_html=True)
+                                st.markdown(f"<div style='font-size:0.75rem; color:#A855F7; margin-bottom:8px;'>Status: <b>{status_tag}</b> • <b>+{s_xp} XP</b></div>", unsafe_allow_html=True)
+                                if st.button("🗑️ Delete Session", key=f"sb_del_pop_{s_id}", type="primary", use_container_width=True):
+                                    run_async(SessionManager().delete_session(s_id, user_id=user_profile.id))
+                                    if active_session_id == s_id:
+                                        st.session_state["memory"] = None
+                                        st.session_state["active_step_index"] = 0
+                                    st.toast("Session deleted.", icon="🗑️")
                                     st.rerun()
-
-                    with card_cols[1]:
-                        with st.popover("", icon=":material/more_horiz:", use_container_width=True):
-                            st.markdown(f"<div style='font-size:0.82rem; font-weight:700; color:#FAFAFA; margin-bottom:4px;'>{s_topic[:26]}...</div>", unsafe_allow_html=True)
-                            st.markdown(f"<div style='font-size:0.75rem; color:#A855F7; margin-bottom:8px;'>Status: <b>{status_tag}</b> • <b>+{s_xp} XP</b></div>", unsafe_allow_html=True)
-                            if st.button("🗑️ Delete Session", key=f"sb_del_pop_{s_id}", type="primary", use_container_width=True):
-                                run_async(SessionManager().delete_session(s_id, user_id=user_profile.id))
-                                if active_session_id == s_id:
-                                    st.session_state["memory"] = None
-                                    st.session_state["active_step_index"] = 0
-                                st.toast("Session deleted.", icon="🗑️")
-                                st.rerun()
 
                 # Progressive Loading "Load More" Button
                 if total_sessions > len(user_sessions):
@@ -3726,6 +3905,7 @@ def render_learning_workspace():
             )
 
         with prof_cols[1]:
+            st.markdown("<div class='st-key-sb_settings_popover_btn'>", unsafe_allow_html=True)
             with st.popover("", icon=":material/settings:", use_container_width=True):
                 st.markdown(
                     f"""
@@ -3773,6 +3953,7 @@ def render_learning_workspace():
                     st.query_params.clear()
                     st.toast("Logged out successfully.", icon="ℹ️")
                     st.rerun()
+            st.markdown("</div>", unsafe_allow_html=True)
 
     memory = get_or_create_memory()
 
