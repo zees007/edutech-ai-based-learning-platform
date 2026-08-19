@@ -207,7 +207,7 @@ CUSTOM_CSS = """
         opacity: 1 !important;
     }
 
-    /* Hide ALL native default collapse and expand controls & sidebar headers visually */
+    /* Hide ALL native default collapse and expand controls & sidebar headers visually while keeping them click-active in viewport */
     html body div.stApp [data-testid="stSidebarHeader"],
     html body div.stApp [data-testid="stLogoSpacer"],
     html body div.stApp [data-testid="stSidebarCollapseButton"],
@@ -218,21 +218,21 @@ CUSTOM_CSS = """
     html body div.stApp header[data-testid="stHeader"] button,
     html body div.stApp [data-testid="stHeader"] button,
     html body div.stApp button[kind="header"] {
-        display: none !important;
         opacity: 0 !important;
-        visibility: hidden !important;
         position: fixed !important;
-        top: -9999px !important;
-        left: -9999px !important;
-        width: 0px !important;
-        height: 0px !important;
-        max-width: 0px !important;
-        max-height: 0px !important;
+        top: 10px !important;
+        left: 10px !important;
+        width: 32px !important;
+        height: 32px !important;
+        max-width: 32px !important;
+        max-height: 32px !important;
         padding: 0 !important;
         margin: 0 !important;
         border: none !important;
         overflow: hidden !important;
-        pointer-events: none !important;
+        pointer-events: auto !important;
+        visibility: visible !important;
+        z-index: 1 !important;
     }
 
     /* ── Logo — Exact Home Page Branding ─────────────── */
@@ -1034,8 +1034,8 @@ CUSTOM_CSS = """
         margin-bottom: 4px;
     }
 
-    /* ── Sidebar Glassmorphic Theme & Top Padding Adjustment ── */
-    html body div.stApp section[data-testid="stSidebar"] {
+    /* ── Sidebar Glassmorphic Theme & Layout Architecture ── */
+    html body div.stApp section[data-testid="stSidebar"]:not([aria-expanded="false"]) {
         display: flex !important;
         visibility: visible !important;
         opacity: 1 !important;
@@ -1046,18 +1046,192 @@ CUSTOM_CSS = """
         box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5) !important;
     }
 
+    html body div.stApp section[data-testid="stSidebar"][aria-expanded="false"] {
+        display: none !important;
+        visibility: hidden !important;
+        width: 0px !important;
+        min-width: 0px !important;
+        max-width: 0px !important;
+        margin-left: -9999px !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+
     section[data-testid="stSidebar"] div.block-container,
     section[data-testid="stSidebar"] [data-testid="stSidebarContent"],
     section[data-testid="stSidebar"] [data-testid="stSidebarUserContent"],
     section[data-testid="stSidebar"] div[data-testid="stVerticalBlock"] {
-        padding-top: 0.8rem !important;
+        padding-top: 0.15rem !important;
         margin-top: 0 !important;
     }
 
-    section[data-testid="stSidebar"] [data-testid="stSidebarContent"] {
-        padding-top: 0.8rem !important;
-        padding-left: 1.0rem !important;
-        padding-right: 1.0rem !important;
+    /* ── Fixed Viewport Sidebar Layout & Bottom Sticky Footer ── */
+    html body div.stApp section[data-testid="stSidebar"] [data-testid="stSidebarContent"] {
+        padding-top: 1rem !important;
+        padding-left: 0.9rem !important;
+        padding-right: 0.9rem !important;
+        padding-bottom: 0.8rem !important;
+        display: flex !important;
+        flex-direction: column !important;
+        height: 100vh !important;
+        max-height: 100vh !important;
+        overflow: hidden !important;
+        box-sizing: border-box !important;
+    }
+
+    html body div.stApp section[data-testid="stSidebar"] [data-testid="stSidebarUserContent"] {
+        display: flex !important;
+        flex-direction: column !important;
+        flex: 1 1 0% !important;
+        min-height: 0 !important;
+        height: 100% !important;
+        overflow: hidden !important;
+    }
+
+    html body div.stApp section[data-testid="stSidebar"] [data-testid="stSidebarUserContent"] > div[data-testid="stVerticalBlock"] {
+        display: flex !important;
+        flex-direction: column !important;
+        flex: 1 1 0% !important;
+        min-height: 0 !important;
+        height: 100% !important;
+        gap: 0px !important;
+    }
+
+    /* Target middle scrollable container inside sidebar block */
+    html body div.stApp section[data-testid="stSidebar"] [data-testid="stSidebarUserContent"] > div[data-testid="stVerticalBlock"] > div:nth-child(2) {
+        flex: 1 1 auto !important;
+        min-height: 0 !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        padding-right: 4px !important;
+    }
+
+    /* Scrollbar styling for sidebar scroll area */
+    html body div.stApp section[data-testid="stSidebar"] [data-testid="stSidebarUserContent"] > div[data-testid="stVerticalBlock"] > div:nth-child(2)::-webkit-scrollbar {
+        width: 4px;
+    }
+    html body div.stApp section[data-testid="stSidebar"] [data-testid="stSidebarUserContent"] > div[data-testid="stVerticalBlock"] > div:nth-child(2)::-webkit-scrollbar-thumb {
+        background: rgba(168, 85, 247, 0.3);
+        border-radius: 4px;
+    }
+
+    /* Ensure footer containers sit fixed at the very bottom */
+    section[data-testid="stSidebar"] div[data-testid="stSidebarUserContent"] > div[data-testid="stVerticalBlock"] > div:has(.sidebar-user-footer-divider),
+    section[data-testid="stSidebar"] div[data-testid="stSidebarUserContent"] > div[data-testid="stVerticalBlock"] > div:has(div.sidebar-footer-wrapper) {
+        margin-top: auto !important;
+        flex-shrink: 0 !important;
+    }
+
+    .sidebar-footer-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 4px;
+        width: 100%;
+    }
+
+    .sidebar-user-footer-divider {
+        border-top: 1px solid rgba(168, 85, 247, 0.25);
+        margin: 14px 0 10px 0;
+        box-shadow: 0 -1px 8px rgba(168, 85, 247, 0.2);
+    }
+
+    /* Redesigned User Profile Card with App Theme */
+    .user-profile-bottom-card {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 12px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, rgba(30, 20, 50, 0.6) 0%, rgba(124, 58, 237, 0.15) 100%);
+        border: 1px solid rgba(168, 85, 247, 0.35);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), inset 0 0 12px rgba(168, 85, 247, 0.1);
+        backdrop-filter: blur(12px);
+        cursor: default;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .user-profile-bottom-card:hover {
+        background: linear-gradient(135deg, rgba(45, 25, 75, 0.75) 0%, rgba(168, 85, 247, 0.28) 100%);
+        border-color: #C084FC;
+        box-shadow: 0 6px 20px rgba(168, 85, 247, 0.35), inset 0 0 16px rgba(168, 85, 247, 0.2);
+        transform: translateY(-1px);
+    }
+
+    .user-avatar-pill {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%);
+        border: 1.5px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 0 12px rgba(168, 85, 247, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        flex-shrink: 0;
+        color: #FFFFFF;
+    }
+
+    .user-info-text {
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    .user-name-title {
+        font-size: 0.85rem;
+        font-weight: 800;
+        color: #FAFAFA;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        line-height: 1.2;
+        letter-spacing: 0.2px;
+    }
+
+    .user-tier-subtitle {
+        font-size: 0.64rem;
+        font-weight: 800;
+        color: #C084FC;
+        letter-spacing: 0.6px;
+        line-height: 1.1;
+        text-transform: uppercase;
+        margin-top: 1px;
+    }
+
+    /* Redesigned Circular Settings Icon Button */
+    div[class*="st-key-sb_settings_popover_btn"] div[data-testid="stPopover"] button {
+        width: 38px !important;
+        height: 38px !important;
+        min-width: 38px !important;
+        max-width: 38px !important;
+        min-height: 38px !important;
+        max-height: 38px !important;
+        border-radius: 50% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        background: linear-gradient(135deg, rgba(168, 85, 247, 0.25) 0%, rgba(59, 130, 246, 0.2) 100%) !important;
+        border: 1.5px solid rgba(168, 85, 247, 0.45) !important;
+        color: #E9D5FF !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), 0 0 10px rgba(168, 85, 247, 0.2) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+
+    div[class*="st-key-sb_settings_popover_btn"] div[data-testid="stPopover"] button:hover {
+        background: linear-gradient(135deg, rgba(236, 72, 153, 0.4) 0%, rgba(168, 85, 247, 0.55) 100%) !important;
+        border-color: #C084FC !important;
+        color: #FFFFFF !important;
+        box-shadow: 0 0 18px rgba(168, 85, 247, 0.6) !important;
+        transform: rotate(45deg) scale(1.06) !important;
     }
 
     /* Bold Sidebar Widget Labels */
@@ -1070,17 +1244,46 @@ CUSTOM_CSS = """
         letter-spacing: 0.2px !important;
     }
 
-    /* ── ChatGPT & Gemini Sidebar Branding & Section Headers ── */
+    /* ── Sidebar Top Header & Collapse Button ── */
     .sidebar-brand-header {
-        padding: 2px 0 10px 0;
-        margin-bottom: 6px;
-        border-bottom: 1px solid rgba(168, 85, 247, 0.22);
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        padding: 4px 0 10px 0 !important;
+        margin-top: 0 !important;
+        margin-bottom: 8px !important;
+        border-top: none !important;
+        border-bottom: 1px solid rgba(168, 85, 247, 0.2) !important;
+        width: 100% !important;
     }
 
     .sidebar-brand-top {
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 8px;
+    }
+
+    .sidebar-top-collapse-btn {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(168, 85, 247, 0.35);
+        border-radius: 8px;
+        width: 32px;
+        height: 32px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        padding: 0;
+        color: #E9D5FF;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .sidebar-top-collapse-btn:hover {
+        background: rgba(168, 85, 247, 0.25);
+        border-color: #C084FC;
+        box-shadow: 0 0 12px rgba(168, 85, 247, 0.5);
+        transform: scale(1.06);
     }
 
     .neural-icon-wrapper-small {
@@ -1093,19 +1296,6 @@ CUSTOM_CSS = """
         background: linear-gradient(135deg, rgba(168, 85, 247, 0.2) 0%, rgba(59, 130, 246, 0.2) 100%);
         border: 1px solid rgba(168, 85, 247, 0.45);
         box-shadow: 0 0 12px rgba(168, 85, 247, 0.3);
-        flex-shrink: 0;
-    }
-
-    .neural-icon-wrapper {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 32px;
-        height: 32px;
-        border-radius: 10px;
-        background: linear-gradient(135deg, rgba(168, 85, 247, 0.2) 0%, rgba(59, 130, 246, 0.2) 100%);
-        border: 1px solid rgba(168, 85, 247, 0.45);
-        box-shadow: 0 0 15px rgba(168, 85, 247, 0.35);
         flex-shrink: 0;
     }
 
@@ -1142,74 +1332,379 @@ CUSTOM_CSS = """
         to { stroke-dashoffset: 0; }
     }
 
+    /* ── ChatGPT-Grade "New Learning Journey" Button with White Edit Icon ── */
+    div[class*="st-key-sb_new_journey_btn"] button {
+        background: linear-gradient(135deg, rgba(236, 72, 153, 0.3) 0%, rgba(168, 85, 247, 0.42) 50%, rgba(59, 130, 246, 0.3) 100%) !important;
+        border: 1.5px solid rgba(168, 85, 247, 0.6) !important;
+        border-radius: 12px !important;
+        color: #FFFFFF !important;
+        font-weight: 800 !important;
+        font-size: 0.88rem !important;
+        letter-spacing: 0.2px !important;
+        box-shadow: 0 0 18px rgba(168, 85, 247, 0.35) !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 8px !important;
+        padding: 9px 14px !important;
+        margin-top: 30px !important;
+        margin-bottom: 14px !important;
+        min-height: 44px !important;
+    }
+
+    div[class*="st-key-sb_new_journey_btn"] button:hover {
+        background: linear-gradient(135deg, rgba(236, 72, 153, 0.5) 0%, rgba(168, 85, 247, 0.62) 50%, rgba(59, 130, 246, 0.5) 100%) !important;
+        border-color: #C084FC !important;
+        box-shadow: 0 0 26px rgba(168, 85, 247, 0.65), 0 0 10px rgba(6, 182, 212, 0.4) !important;
+        transform: translateY(-1px) !important;
+        color: #FFFFFF !important;
+    }
+
+    div[class*="st-key-sb_new_journey_btn"] button span[data-testid="stIconMaterial"],
+    div[class*="st-key-sb_new_journey_btn"] button svg {
+        color: #FFFFFF !important;
+        fill: #FFFFFF !important;
+        font-size: 1.22rem !important;
+        filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8)) !important;
+    }
+
+    /* ── Learning History Header with Icon ── */
     .sidebar-section-title {
         font-size: 0.84rem;
         font-weight: 800;
         color: #FAFAFA;
         display: flex;
         align-items: center;
-        gap: 6px;
-        margin-bottom: 6px;
+        gap: 8px;
+        margin-top: 10px;
+        margin-bottom: 12px;
         letter-spacing: 0.2px;
     }
 
-    /* ── Sidebar Session History Buttons Styling (ChatGPT/Gemini Style) ── */
-    section[data-testid="stSidebar"] div[data-testid="stColumn"]:first-child button[kind="secondary"] {
-        text-align: left !important;
-        justify-content: flex-start !important;
-        background: rgba(255, 255, 255, 0.03) !important;
-        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    .sidebar-section-title svg {
+        color: #C084FC;
+        stroke: #C084FC;
+        flex-shrink: 0;
+    }
+
+    /* ── Modern Glassmorphic Search Bar in Sidebar ── */
+    div[class*="st-key-sb_hist_search_input"] {
+        margin-top: 10px !important;
+        margin-bottom: 12px !important;
+    }
+
+    div[class*="st-key-sb_hist_search_input"] input {
+        background: rgba(255, 255, 255, 0.04) !important;
+        border: 1px solid rgba(168, 85, 247, 0.22) !important;
         border-radius: 10px !important;
-        padding: 6px 10px !important;
-        font-size: 0.76rem !important;
-        font-weight: 600 !important;
-        color: #F1F5F9 !important;
-        line-height: 1.35 !important;
-        min-height: 44px !important;
-        white-space: pre-wrap !important;
+        color: #F3E8FF !important;
+        font-size: 0.82rem !important;
+        padding: 7px 12px !important;
+        height: 36px !important;
         transition: all 0.2s ease !important;
     }
-
-    section[data-testid="stSidebar"] div[data-testid="stColumn"]:first-child button[kind="secondary"]:hover {
-        background: rgba(168, 85, 247, 0.15) !important;
-        border-color: rgba(168, 85, 247, 0.45) !important;
-        color: #FAFAFA !important;
-        transform: translateX(2px) !important;
+    div[class*="st-key-sb_hist_search_input"] input:focus {
+        background: rgba(255, 255, 255, 0.07) !important;
+        border-color: #A855F7 !important;
+        box-shadow: 0 0 12px rgba(168, 85, 247, 0.35) !important;
     }
 
-    section[data-testid="stSidebar"] div[data-testid="stColumn"]:first-child button[kind="primary"] {
-        text-align: left !important;
-        justify-content: flex-start !important;
-        background: rgba(168, 85, 247, 0.22) !important;
-        border: 1.5px solid #A855F7 !important;
-        border-radius: 10px !important;
-        padding: 6px 10px !important;
+    /* ── Redesigned Modern Filter Pills: All, Active, Completed ── */
+    div[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(div[class*="st-key-sb_flt_"]) {
+        margin-top: 6px !important;
+        margin-bottom: 12px !important;
+    }
+
+    html body div.stApp section[data-testid="stSidebar"] div[class*="st-key-sb_flt_"] button,
+    div[class*="st-key-sb_flt_"] button {
+        height: 32px !important;
+        min-height: 32px !important;
+        max-height: 32px !important;
         font-size: 0.76rem !important;
-        font-weight: 700 !important;
-        color: #FAFAFA !important;
-        line-height: 1.35 !important;
-        min-height: 44px !important;
-        box-shadow: 0 0 14px rgba(168, 85, 247, 0.35) !important;
-        white-space: pre-wrap !important;
-    }
-
-    section[data-testid="stSidebar"] div[data-testid="stColumn"]:last-child div[data-testid="stPopover"] button {
-        border-radius: 10px !important;
-        min-height: 44px !important;
-        padding: 0 !important;
+        font-weight: 600 !important;
+        border-radius: 20px !important;
+        padding: 0 6px !important;
+        margin: 0 !important;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        letter-spacing: 0.1px !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        background: rgba(255, 255, 255, 0.03) !important;
-        border: 1px solid rgba(255, 255, 255, 0.08) !important;
-        color: rgba(233, 213, 255, 0.7) !important;
-        transition: all 0.2s ease !important;
+        text-align: center !important;
+        box-shadow: none !important;
+        white-space: nowrap !important;
+        width: 100% !important;
     }
 
-    section[data-testid="stSidebar"] div[data-testid="stColumn"]:last-child div[data-testid="stPopover"] button:hover {
-        background: rgba(168, 85, 247, 0.2) !important;
-        border-color: #A855F7 !important;
-        color: #FAFAFA !important;
+    /* Inactive Filter Pill */
+    html body div.stApp section[data-testid="stSidebar"] div[class*="st-key-sb_flt_inactive"] button,
+    div[class*="st-key-sb_flt_inactive"] button {
+        background: rgba(255, 255, 255, 0.03) !important;
+        border: 1px solid rgba(168, 85, 247, 0.18) !important;
+        color: rgba(233, 213, 255, 0.65) !important;
+        text-align: center !important;
+        justify-content: center !important;
+    }
+    html body div.stApp section[data-testid="stSidebar"] div[class*="st-key-sb_flt_inactive"] button:hover,
+    div[class*="st-key-sb_flt_inactive"] button:hover {
+        background: rgba(168, 85, 247, 0.14) !important;
+        border-color: rgba(168, 85, 247, 0.45) !important;
+        color: #F3E8FF !important;
+        transform: translateY(-1px) !important;
+        box-shadow: 0 2px 8px rgba(168, 85, 247, 0.2) !important;
+    }
+
+    /* Active Filter Pill */
+    html body div.stApp section[data-testid="stSidebar"] div[class*="st-key-sb_flt_active"] button,
+    div[class*="st-key-sb_flt_active"] button {
+        background: linear-gradient(135deg, rgba(168, 85, 247, 0.45) 0%, rgba(59, 130, 246, 0.35) 100%) !important;
+        border: 1.5px solid #C084FC !important;
+        color: #FFFFFF !important;
+        font-weight: 700 !important;
+        box-shadow: 0 0 14px rgba(168, 85, 247, 0.45), inset 0 1px 1px rgba(255, 255, 255, 0.25) !important;
+        text-align: center !important;
+        justify-content: center !important;
+        margin-bottom: 10px !important;
+    }
+    html body div.stApp section[data-testid="stSidebar"] div[class*="st-key-sb_flt_active"] button:hover,
+    div[class*="st-key-sb_flt_active"] button:hover {
+        background: linear-gradient(135deg, rgba(168, 85, 247, 0.55) 0%, rgba(59, 130, 246, 0.45) 100%) !important;
+        border-color: #E9D5FF !important;
+        box-shadow: 0 0 20px rgba(168, 85, 247, 0.65), inset 0 1px 1px rgba(255, 255, 255, 0.35) !important;
+    }
+
+    /* ── Learning History Header: Single Unified Inline Flex Title & Chevron Arrow ── */
+    .sidebar-section-title.clickable-hist-header {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        gap: 6px !important;
+        margin: 10px 0 12px 0 !important;
+        cursor: pointer !important;
+        user-select: none !important;
+        -webkit-user-select: none !important;
+        padding: 3px 6px 3px 2px !important;
+        border-radius: 6px !important;
+        transition: background 0.15s ease !important;
+        width: fit-content !important;
+    }
+
+    .sidebar-section-title.clickable-hist-header:hover {
+        background: rgba(168, 85, 247, 0.14) !important;
+    }
+
+    .sidebar-section-title.clickable-hist-header .hist-chevron-arrow {
+        margin-left: 2px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        transition: stroke 0.15s ease, transform 0.15s ease !important;
+        stroke: #C084FC !important;
+        vertical-align: middle !important;
+    }
+
+    .sidebar-section-title.clickable-hist-header:hover .hist-chevron-arrow {
+        stroke: #FFFFFF !important;
+    }
+
+    div[class*="st-key-sb_hist_hidden_toggle_btn"] {
+        display: none !important;
+        position: absolute !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+        height: 0 !important;
+        width: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+    }
+
+    /* ── Learning History Dedicated Container Gap Removal ── */
+    section[data-testid="stSidebar"] div[data-testid="stVerticalBlock"]:has(.sb-hist-container-marker),
+    section[data-testid="stSidebar"] div[data-testid="stVerticalBlockBorderWrapper"]:has(.sb-hist-container-marker) {
+        gap: 0px !important;
+        row-gap: 0px !important;
+    }
+
+    section[data-testid="stSidebar"] div[data-testid="stVerticalBlock"]:has(> div[data-testid="stHorizontalBlock"]:has(div[class*="st-key-sb_card_"])) {
+        gap: 0px !important;
+        row-gap: 10px !important;
+    }
+
+    /* Fallback direct sibling selector for cards */
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(div[class*="st-key-sb_card_"]) {
+        margin: 0px 0 !important;
+        padding: 0px 4px 0px 6px !important;
+        gap: 0px !important;
+        border-radius: 8px !important;
+        border: none !important;
+        box-shadow: none !important;
+        background: transparent !important;
+        transition: background 0.12s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Entire row uniform highlight on hover */
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(div[class*="st-key-sb_card_"]):hover {
+        background: rgba(255, 255, 255, 0.08) !important;
+    }
+
+    /* Active session row highlight */
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(div[class*="st-key-sb_card_"] button[kind="primary"]) {
+        background: rgba(168, 85, 247, 0.16) !important;
+    }
+
+    /* First Column: 0 Margin & 0 Padding so Text Starts from Very Left */
+    html body div.stApp section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(div[class*="st-key-sb_card_"]) > div[data-testid="stColumn"]:first-child,
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(div[class*="st-key-sb_card_"]) > div[data-testid="stColumn"]:first-child {
+        margin: 0 !important;
+        padding: 0 !important;
+        flex: 1 1 auto !important;
+        min-width: 0 !important;
+        width: calc(100% - 30px) !important;
+        overflow: hidden !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 0px !important;
+    }
+
+    html body div.stApp section[data-testid="stSidebar"] div[class*="st-key-sb_card_"],
+    section[data-testid="stSidebar"] div[class*="st-key-sb_card_"] {
+        flex: 1 1 auto !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+        display: block !important;
+        text-align: left !important;
+    
+    }
+
+    html body div.stApp section[data-testid="stSidebar"] div[class*="st-key-sb_card_"] button,
+    section[data-testid="stSidebar"] div[class*="st-key-sb_card_"] button {
+        text-align: left !important;
+        -webkit-box-pack: start !important;
+        justify-content: flex-start !important;
+        -webkit-box-align: center !important;
+        align-items: center !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        border-radius: 6px !important;
+        padding: 6px 0px 6px 2px !important;
+        margin: 0 !important;
+        font-size: 0.82rem !important;
+        font-weight: 500 !important;
+        color: #E2E8F0 !important;
+        line-height: 1.3 !important;
+        min-height: 34px !important;
+        height: 34px !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        transition: color 0.12s ease !important;
+        width: 100% !important;
+        display: flex !important;
+    }
+
+    html body div.stApp section[data-testid="stSidebar"] div[class*="st-key-sb_card_"] button > div,
+    html body div.stApp section[data-testid="stSidebar"] div[class*="st-key-sb_card_"] button > div:first-child,
+    html body div.stApp section[data-testid="stSidebar"] div[class*="st-key-sb_card_"] button div[data-testid="stMarkdownContainer"],
+    html body div.stApp section[data-testid="stSidebar"] div[class*="st-key-sb_card_"] button div p,
+    html body div.stApp section[data-testid="stSidebar"] div[class*="st-key-sb_card_"] button p,
+    html body div.stApp section[data-testid="stSidebar"] div[class*="st-key-sb_card_"] button span {
+        text-align: left !important;
+        -webkit-box-pack: start !important;
+        justify-content: flex-start !important;
+        align-items: flex-start !important;
+        align-self: flex-start !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        display: block !important;
+    }
+
+    html body div.stApp section[data-testid="stSidebar"] div[class*="st-key-sb_card_"] button:hover,
+    section[data-testid="stSidebar"] div[class*="st-key-sb_card_"] button:hover {
+        background: transparent !important;
+        color: #FFFFFF !important;
+        border: none !important;
+        box-shadow: none !important;
+        transform: none !important;
+    }
+
+    html body div.stApp section[data-testid="stSidebar"] div[class*="st-key-sb_card_"] button[kind="primary"],
+    section[data-testid="stSidebar"] div[class*="st-key-sb_card_"] button[kind="primary"] {
+        color: #FFFFFF !important;
+        font-weight: 600 !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    /* Second Column: Pinned to Most Right with Aligned 3-Dots Button */
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(div[class*="st-key-sb_card_"]) > div[data-testid="stColumn"]:last-child {
+        margin: 0 0 0 auto !important;
+        padding: 0 !important;
+        flex: 0 0 28px !important;
+        width: 28px !important;
+        min-width: 28px !important;
+        max-width: 28px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-end !important;
+    }
+
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(div[class*="st-key-sb_card_"]) div[data-testid="stPopover"] {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 28px !important;
+        display: flex !important;
+        justify-content: flex-end !important;
+        align-items: center !important;
+    }
+
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(div[class*="st-key-sb_card_"]) div[data-testid="stPopover"] button {
+        opacity: 0 !important;
+        visibility: hidden !important;
+        border-radius: 6px !important;
+        min-height: 26px !important;
+        height: 26px !important;
+        width: 26px !important;
+        min-width: 26px !important;
+        max-width: 26px !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        color: rgba(233, 213, 255, 0.7) !important;
+        transition: opacity 0.12s ease, visibility 0.12s ease, background 0.12s ease, color 0.12s ease !important;
+    }
+
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(div[class*="st-key-sb_card_"]):hover div[data-testid="stPopover"] button,
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(div[class*="st-key-sb_card_"]) div[data-testid="stPopover"]:focus-within button,
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(div[class*="st-key-sb_card_"]) div[data-testid="stPopover"] button[aria-expanded="true"] {
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(div[class*="st-key-sb_card_"]) div[data-testid="stPopover"] button:hover {
+        background: rgba(255, 255, 255, 0.15) !important;
+        color: #FFFFFF !important;
     }
 
     /* ── Streamlit Segmented Control Glassy Theme ── */
@@ -1227,6 +1722,109 @@ CUSTOM_CSS = """
         font-size: 0.76rem !important;
         padding: 4px 8px !important;
         transition: all 0.2s ease !important;
+    }
+
+    /* ── Progressive 20-Item "Load More" Button ── */
+    div[class*="st-key-sb_load_more_btn"] button {
+        background: rgba(168, 85, 247, 0.1) !important;
+        border: 1px dashed rgba(168, 85, 247, 0.4) !important;
+        border-radius: 10px !important;
+        color: #E9D5FF !important;
+        font-size: 0.78rem !important;
+        font-weight: 700 !important;
+        padding: 6px 12px !important;
+        margin-top: 6px !important;
+        transition: all 0.2s ease !important;
+    }
+
+    div[class*="st-key-sb_load_more_btn"] button:hover {
+        background: rgba(168, 85, 247, 0.25) !important;
+        border-color: #C084FC !important;
+        color: #FFFFFF !important;
+        box-shadow: 0 0 14px rgba(168, 85, 247, 0.35) !important;
+    }
+
+    /* ── Sidebar Bottom Footer: User Profile & Settings ── */
+    section[data-testid="stSidebar"] div[data-testid="stSidebarUserContent"] > div[data-testid="stVerticalBlock"] > div:has(.sidebar-user-footer-divider),
+    section[data-testid="stSidebar"] div[data-testid="stSidebarUserContent"] > div[data-testid="stVerticalBlock"] > div:has(> div[data-testid="stHorizontalBlock"]:has(div.user-profile-bottom-card)) {
+        margin-top: auto !important;
+    }
+
+    .sidebar-user-footer-divider {
+        border-top: 1px solid rgba(168, 85, 247, 0.22);
+        margin: 14px 0 10px 0;
+    }
+
+    .user-profile-bottom-card {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 5px 8px;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(168, 85, 247, 0.25);
+        cursor: default;
+        transition: all 0.2s ease;
+    }
+
+    .user-profile-bottom-card:hover {
+        background: rgba(168, 85, 247, 0.12);
+        border-color: rgba(168, 85, 247, 0.45);
+    }
+
+    .user-avatar-pill {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, rgba(168, 85, 247, 0.35) 0%, rgba(59, 130, 246, 0.35) 100%);
+        border: 1px solid rgba(168, 85, 247, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.05rem;
+        flex-shrink: 0;
+    }
+
+    .user-info-text {
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .user-name-title {
+        font-size: 0.82rem;
+        font-weight: 800;
+        color: #FAFAFA;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        line-height: 1.2;
+    }
+
+    .user-tier-subtitle {
+        font-size: 0.65rem;
+        font-weight: 800;
+        color: #C084FC;
+        letter-spacing: 0.5px;
+        line-height: 1.1;
+    }
+
+    div[class*="st-key-sb_pop_logout_btn"] button {
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%) !important;
+        border: none !important;
+        border-radius: 10px !important;
+        color: #FFFFFF !important;
+        font-weight: 800 !important;
+        font-size: 0.88rem !important;
+        padding: 8px 12px !important;
+        box-shadow: 0 0 16px rgba(236, 72, 153, 0.4) !important;
+        transition: all 0.2s ease !important;
+    }
+
+    div[class*="st-key-sb_pop_logout_btn"] button:hover {
+        box-shadow: 0 0 24px rgba(236, 72, 153, 0.7) !important;
+        transform: translateY(-1px) !important;
     }
 
     .user-profile-sidebar-card {
@@ -1250,6 +1848,53 @@ CUSTOM_CSS = """
         text-transform: uppercase;
         letter-spacing: 0.6px;
         box-shadow: 0 0 10px rgba(168, 85, 247, 0.25);
+    }
+
+    /* ── Collapsed Mini Icon Rail ── */
+    #edutech-collapsed-mini-rail {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 54px;
+        background: #0B0715;
+        border-right: 1px solid rgba(168, 85, 247, 0.25);
+        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.4);
+        z-index: 999999;
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        padding: 14px 0;
+        gap: 12px;
+        user-select: none;
+        -webkit-user-select: none;
+    }
+
+    .mr-item {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(168, 85, 247, 0.3);
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        color: #E9D5FF;
+    }
+
+    .mr-item:hover {
+        background: rgba(168, 85, 247, 0.3);
+        border-color: #C084FC;
+        box-shadow: 0 0 14px rgba(168, 85, 247, 0.6);
+        transform: scale(1.08);
+    }
+
+    .mr-item.mr-new-journey {
+        background: linear-gradient(135deg, rgba(236, 72, 153, 0.4) 0%, rgba(168, 85, 247, 0.5) 100%);
+        border-color: rgba(168, 85, 247, 0.7);
+        box-shadow: 0 0 12px rgba(168, 85, 247, 0.4);
     }
 
     /* ── Pill Capsules System ────────────────────────── */
@@ -2770,39 +3415,519 @@ def render_learning_workspace():
         st.toast("🔒 Authentication Required: Please sign in or create an account to access the AI learning workspace.", icon="🔒")
         st.rerun()
 
-    # ─── TOP NAVBAR: Floating Pill Navbar matching Homepage (rendered first) ──────────
-    u_tier = (user_profile.subscription.tier if user_profile.subscription else "normal").upper()
-    top_nav_l, top_nav_r = st.columns([8.8, 1.2], vertical_alignment="center")
 
-    with top_nav_l:
+    memory = get_or_create_memory()
+
+    # Master Sidebar Toggle, Collapse Sync & Collapsed Mini-Rail Controller
+    components.html(
+        """
+        <script>
+        (function() {
+            try {
+                const doc = window.parent.document;
+                const win = window.parent;
+
+                function dispatchFullClick(el) {
+                    if (!el) return;
+                    try {
+                        const btn = (el.tagName === 'BUTTON') ? el : (el.querySelector('button') || el);
+                        const rect = btn.getBoundingClientRect();
+                        const cx = rect.width > 0 ? (rect.left + rect.width / 2) : 16;
+                        const cy = rect.height > 0 ? (rect.top + rect.height / 2) : 16;
+                        const opts = { bubbles: true, cancelable: true, view: win, clientX: cx, clientY: cy, composed: true };
+                        
+                        btn.dispatchEvent(new PointerEvent('pointerdown', opts));
+                        btn.dispatchEvent(new MouseEvent('mousedown', opts));
+                        btn.dispatchEvent(new PointerEvent('pointerup', opts));
+                        btn.dispatchEvent(new MouseEvent('mouseup', opts));
+                        btn.dispatchEvent(new MouseEvent('click', opts));
+                        if (typeof btn.click === 'function') {
+                            btn.click();
+                        }
+                    } catch(err) {
+                        try { if (typeof el.click === 'function') el.click(); } catch(e) {}
+                    }
+                }
+
+                function findExpandButton() {
+                    const selectors = [
+                        '[data-testid="stSidebarCollapsedControl"] button',
+                        '[data-testid="collapsedControl"] button',
+                        'header[data-testid="stHeader"] [data-testid="stSidebarCollapsedControl"] button',
+                        'header[data-testid="stHeader"] [data-testid="collapsedControl"] button',
+                        '[data-testid="stSidebarCollapsedControl"]',
+                        '[data-testid="collapsedControl"]',
+                        'button[data-testid="stSidebarCollapseButton"]',
+                        '[data-testid="stSidebarCollapseButton"] button',
+                        'section[data-testid="stSidebar"] [data-testid="stSidebarCollapseButton"] button',
+                        'header[data-testid="stHeader"] button',
+                        'button[aria-label*="Expand" i]',
+                        'button[aria-label*="Open sidebar" i]',
+                        'button[title*="Expand" i]',
+                        'button[title*="Open sidebar" i]'
+                    ];
+                    for (let s of selectors) {
+                        let el = doc.querySelector(s);
+                        if (el) return (el.tagName === 'BUTTON' ? el : (el.querySelector('button') || el));
+                    }
+
+                    const allBtns = doc.querySelectorAll('header[data-testid="stHeader"] button, [data-testid="stHeader"] button, button');
+                    for (let b of allBtns) {
+                        const aria = (b.getAttribute('aria-label') || '').toLowerCase();
+                        const title = (b.getAttribute('title') || '').toLowerCase();
+                        if (aria.includes('expand') || aria.includes('open sidebar') || title.includes('expand') || title.includes('open sidebar')) {
+                            return b;
+                        }
+                    }
+                    return null;
+                }
+
+                function findCollapseButton() {
+                    const selectors = [
+                        'section[data-testid="stSidebar"] [data-testid="stSidebarCollapseButton"] button',
+                        '[data-testid="stSidebarCollapseButton"] button',
+                        'section[data-testid="stSidebar"] [data-testid="stSidebarHeader"] button',
+                        '[data-testid="stSidebarHeader"] button',
+                        'section[data-testid="stSidebar"] button[aria-label*="Close" i]',
+                        'section[data-testid="stSidebar"] button[aria-label*="Collapse" i]',
+                        'button[aria-label*="Close sidebar" i]',
+                        'button[aria-label*="Collapse sidebar" i]'
+                    ];
+                    for (let s of selectors) {
+                        let el = doc.querySelector(s);
+                        if (el) return (el.tagName === 'BUTTON' ? el : (el.querySelector('button') || el));
+                    }
+
+                    const allSbBtns = doc.querySelectorAll('section[data-testid="stSidebar"] button, [data-testid="stSidebarHeader"] button');
+                    for (let b of allSbBtns) {
+                        const aria = (b.getAttribute('aria-label') || '').toLowerCase();
+                        const title = (b.getAttribute('title') || '').toLowerCase();
+                        if (aria.includes('close') || aria.includes('collapse') || title.includes('close') || title.includes('collapse')) {
+                            return b;
+                        }
+                    }
+                    return doc.querySelector('[data-testid="stSidebarCollapseButton"] button');
+                }
+
+                // Global Delegated click handler for top collapse button and history collapse toggle
+                doc.addEventListener('click', function(e) {
+                    const collapseTarget = e.target && e.target.closest ? e.target.closest('#edutech-sb-collapse-btn, .sidebar-top-collapse-btn') : null;
+                    if (collapseTarget) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const closeBtn = findCollapseButton();
+                        if (closeBtn) {
+                            dispatchFullClick(closeBtn);
+                        }
+                    }
+
+                    const histTarget = e.target && e.target.closest ? e.target.closest('#edutech-hist-collapse-header') : null;
+                    if (histTarget) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const hiddenBtn = doc.querySelector('div[class*="st-key-sb_hist_hidden_toggle_btn"] button');
+                        if (hiddenBtn) {
+                            dispatchFullClick(hiddenBtn);
+                        }
+                    }
+                }, true);
+
+                function isSidebarOpen() {
+                    const sb = doc.querySelector('section[data-testid="stSidebar"]');
+                    if (!sb) return false;
+                    const ariaExpanded = sb.getAttribute('aria-expanded');
+                    if (ariaExpanded === 'false') return false;
+                    if (ariaExpanded === 'true') return true;
+                    const comp = win.getComputedStyle(sb);
+                    if (comp.display === 'none' || comp.visibility === 'hidden' || comp.opacity === '0') return false;
+                    const rect = sb.getBoundingClientRect();
+                    return rect.width > 50 && rect.right > 50;
+                }
+
+                // Remove legacy master toggle if present
+                const oldToggle = doc.getElementById('edutech-sidebar-master-toggle');
+                if (oldToggle && oldToggle.parentNode) {
+                    oldToggle.parentNode.removeChild(oldToggle);
+                }
+
+                // Inject Collapsed Mini Icon Rail
+                let miniRail = doc.getElementById('edutech-collapsed-mini-rail');
+                if (!miniRail) {
+                    miniRail = doc.createElement('div');
+                    miniRail.id = 'edutech-collapsed-mini-rail';
+                    miniRail.innerHTML = `
+                        <div class="mr-item mr-logo-expand" id="mr-btn-expand" title="Expand Sidebar (Click to Open)">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C084FC" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="9 18 15 12 9 6"></polyline>
+                            </svg>
+                        </div>
+                        <div class="mr-item mr-new-journey" id="mr-btn-new-journey" title="New Learning Journey">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 20h9"></path>
+                                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                            </svg>
+                        </div>
+                        <div class="mr-item mr-history" id="mr-btn-history" title="Learning History">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C084FC" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                        </div>
+                        <div style="flex-grow: 1;"></div>
+                        <div class="mr-item mr-profile" id="mr-btn-profile" title="Profile & Settings">
+                            <div style="width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, rgba(168, 85, 247, 0.5) 0%, rgba(59, 130, 246, 0.5) 100%); display: flex; align-items: center; justify-content: center; font-size: 0.9rem; border: 1.5px solid #A855F7;">&#128100;</div>
+                        </div>
+                    `;
+                    doc.body.appendChild(miniRail);
+
+                    const expandItem = miniRail.querySelector('#mr-btn-expand');
+                    if (expandItem) {
+                        expandItem.onclick = function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            const expBtn = findExpandButton();
+                            if (expBtn) dispatchFullClick(expBtn);
+                            setTimeout(updateRailVisibility, 100);
+                        };
+                    }
+                    const newItem = miniRail.querySelector('#mr-btn-new-journey');
+                    if (newItem) {
+                        newItem.onclick = function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            const expBtn = findExpandButton();
+                            if (expBtn) dispatchFullClick(expBtn);
+                            setTimeout(() => {
+                                const njBtn = doc.querySelector('div[class*="st-key-sb_new_journey_btn"] button');
+                                if (njBtn) dispatchFullClick(njBtn);
+                            }, 250);
+                        };
+                    }
+                    const histItem = miniRail.querySelector('#mr-btn-history');
+                    if (histItem) {
+                        histItem.onclick = function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            const expBtn = findExpandButton();
+                            if (expBtn) dispatchFullClick(expBtn);
+                            setTimeout(updateRailVisibility, 100);
+                        };
+                    }
+                    const profItem = miniRail.querySelector('#mr-btn-profile');
+                    if (profItem) {
+                        profItem.onclick = function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            const expBtn = findExpandButton();
+                            if (expBtn) dispatchFullClick(expBtn);
+                            setTimeout(() => {
+                                const popBtn = doc.querySelector('section[data-testid="stSidebar"] div[data-testid="stPopover"] button');
+                                if (popBtn) dispatchFullClick(popBtn);
+                            }, 250);
+                        };
+                    }
+                }
+
+                function updateRailVisibility() {
+                    const mr = doc.getElementById('edutech-collapsed-mini-rail');
+                    if (!mr) return;
+                    mr.style.display = isSidebarOpen() ? 'none' : 'flex';
+                }
+
+                updateRailVisibility();
+
+                if (!win._edutechRailTracking) {
+                    win._edutechRailTracking = true;
+                    function track() {
+                        updateRailVisibility();
+                        requestAnimationFrame(track);
+                    }
+                    requestAnimationFrame(track);
+                }
+            } catch (err) {
+                console.error("Sidebar rail controller error:", err);
+            }
+        })();
+        </script>
+        """,
+        height=0,
+        width=0,
+    )
+
+    # ─── Sidebar Controls & History (Left Panel — ChatGPT Theme) ────
+    with st.sidebar:
+        # 1. Top Brand Logo & Collapse Arrow Button (Unified Flex Header at the very top)
         st.markdown(
-            '<div class="et-learning-nav"><div class="et-logo">⚡ <span class="accent">EduTech</span> <span class="badge-ai">AI</span></div></div>',
+            """
+            <div class="sidebar-brand-header">
+                <div class="sidebar-brand-top">
+                    <div class="et-logo-simple">
+                        ⚡ <span class="accent">EduTech</span> <span class="badge-ai">AI</span>
+                    </div>
+                </div>
+                <button id="edutech-sb-collapse-btn" class="sidebar-top-collapse-btn" title="Collapse sidebar" type="button">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E9D5FF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                </button>
+            </div>
+            """,
             unsafe_allow_html=True,
         )
 
-    with top_nav_r:
-        r_a, r_p = st.columns(2, gap="small", vertical_alignment="center")
-        with r_a:
-            if st.button("", icon=":material/settings:", key="nav_admin_btn", help="Admin Console & Settings", use_container_width=False):
-                st.session_state["view"] = "admin"
-                st.rerun()
-        with r_p:
-            with st.popover("", icon=":material/person:", help=f"Profile: {user_profile.first_name} {user_profile.last_name}", use_container_width=False):
+        # 2. ChatGPT-Grade "New Learning Journey" Button with White Edit Icon
+        if st.button(
+            "New Learning Journey",
+            key="sb_new_journey_btn",
+            icon=":material/edit_square:",
+            type="primary",
+            use_container_width=True,
+        ):
+            st.session_state["memory"] = None
+            st.session_state["active_step_index"] = 0
+            st.session_state["last_topic"] = None
+            st.session_state["submitted_quizzes"] = {}
+            if "main_topic_query" in st.session_state:
+                del st.session_state["main_topic_query"]
+            for k in list(st.session_state.keys()):
+                if any(k.startswith(pfx) for pfx in ["step_agents_ran_", "quiz_submitted_", "saved_user_answers_", "saved_user_full_answers_", "xp_awarded_"]):
+                    del st.session_state[k]
+            st.toast("Ready for a new learning journey! 🚀", icon="✨")
+            st.rerun()
+
+        st.markdown("<div style='height: 6px;'></div>", unsafe_allow_html=True)
+
+        # 3. Learning History Header (100% Inline Single HTML Flexbox Container)
+        if "history_section_expanded" not in st.session_state:
+            st.session_state["history_section_expanded"] = True
+
+        hist_expanded = st.session_state["history_section_expanded"]
+        chevron_pts = "6 9 12 15 18 9" if hist_expanded else "9 18 15 12 9 6"
+
+        st.markdown(
+            f"""
+            <div id="edutech-hist-collapse-header" class="sidebar-section-title clickable-hist-header" title="Toggle Learning History">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C084FC" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                <span>Learning History</span>
+                <svg class="hist-chevron-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C084FC" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="{chevron_pts}"></polyline>
+                </svg>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        # Hidden trigger button for Streamlit reactive state rerun
+        if st.button("hidden_hist_toggle", key="sb_hist_hidden_toggle_btn"):
+            st.session_state["history_section_expanded"] = not hist_expanded
+            st.rerun()
+
+        if hist_expanded:
+            # 4. Search Bar
+            hist_search_val = st.text_input(
+                "Search your learning sessions",
+                value=st.session_state.get("session_hist_search_val", ""),
+                placeholder="🔍 Search history...",
+                key="sb_hist_search_input",
+                label_visibility="collapsed",
+            )
+            if hist_search_val != st.session_state.get("session_hist_search_val", ""):
+                st.session_state["session_hist_search_val"] = hist_search_val
+                st.session_state["session_hist_limit"] = 20
+
+            # 5. Redesigned Modern Filter Pills: All, Active, Completed
+            current_flt = st.session_state.get("session_hist_seg_filter", "All")
+            flt_col1, flt_col2, flt_col3 = st.columns(3, gap="small")
+            with flt_col1:
+                is_all = (current_flt == "All")
+                all_key = f"sb_flt_{'active_all' if is_all else 'inactive_all'}"
+                if st.button("● All", key=all_key, use_container_width=True):
+                    if current_flt != "All":
+                        st.session_state["session_hist_seg_filter"] = "All"
+                        st.session_state["session_hist_limit"] = 20
+                        st.rerun()
+            with flt_col2:
+                is_act = (current_flt == "Active")
+                act_key = f"sb_flt_{'active_act' if is_act else 'inactive_act'}"
+                if st.button("⚡ Active", key=act_key, use_container_width=True):
+                    if current_flt != "Active":
+                        st.session_state["session_hist_seg_filter"] = "Active"
+                        st.session_state["session_hist_limit"] = 20
+                        st.rerun()
+            with flt_col3:
+                is_comp = (current_flt == "Completed")
+                comp_key = f"sb_flt_{'active_comp' if is_comp else 'inactive_comp'}"
+                if st.button("✓ Completed", key=comp_key, use_container_width=True):
+                    if current_flt != "Completed":
+                        st.session_state["session_hist_seg_filter"] = "Completed"
+                        st.session_state["session_hist_limit"] = 20
+                        st.rerun()
+
+            filter_map = {
+                "All": "all",
+                "Active": "in_progress",
+                "Completed": "completed",
+            }
+            current_filter = filter_map.get(current_flt, "all")
+
+            hist_limit = st.session_state.get("session_hist_limit", 20)
+
+            # Query User Sessions from Database
+            user_sessions = []
+            total_sessions = 0
+            try:
+                from models.user_schemas import SearchDTO
+                from services.session_manager import SessionManager
+
+                s_dto = SearchDTO(
+                    page=0,
+                    size=hist_limit,
+                    sortBy="updated_at",
+                    isDesc=True,
+                    lookupText=hist_search_val.strip() if hist_search_val and hist_search_val.strip() else None,
+                )
+                user_sessions, total_sessions = run_async(
+                    SessionManager().search_user_sessions(
+                        user_id=user_profile.id,
+                        dto=s_dto,
+                        status_filter=current_filter,
+                    )
+                )
+            except Exception as ex_sh:
+                logging.warning(f"Failed to query user session history: {ex_sh}")
+
+            st.markdown(
+                f"<div style='font-size: 0.72rem; color: rgba(233,213,255,0.65); margin: 3px 0 15px 0;'><b>{len(user_sessions)}</b> of <b>{total_sessions}</b> session(s)</div>",
+                unsafe_allow_html=True,
+            )
+
+            active_mem = st.session_state.get("memory")
+            active_session_id = active_mem.session_id if active_mem else None
+
+            if not user_sessions:
+                st.markdown(
+                    "<div style='background: rgba(168,85,247,0.06); border: 1px dashed rgba(168,85,247,0.25); border-radius: 10px; padding: 12px; text-align: center; font-size: 0.76rem; color: rgba(255,255,255,0.6);'>No sessions match. Start a new topic!</div>",
+                    unsafe_allow_html=True,
+                )
+            else:
+                with st.container():
+                    st.markdown("<div class='sb-hist-container-marker' style='display:none;'></div>", unsafe_allow_html=True)
+                    for s_info in user_sessions:
+                        s_id = s_info["session_id"]
+                        s_topic = s_info["topic"]
+                        s_complete = s_info["is_complete"]
+                        s_tot_steps = s_info.get("total_steps", 0)
+                        s_cur_step = s_info.get("current_step_index", 0)
+                        s_xp = s_info.get("xp_earned", 0)
+                        is_active_session = (active_session_id == s_id)
+
+                        status_tag = "Completed" if s_complete else f"Step {min(s_cur_step + 1, s_tot_steps)}/{s_tot_steps}"
+                        btn_display = s_topic
+
+                        card_cols = st.columns([9.0, 1.0], gap="small", vertical_alignment="center")
+                        with card_cols[0]:
+                            if st.button(
+                                btn_display,
+                                key=f"sb_card_{s_id}",
+                                type="primary" if is_active_session else "secondary",
+                                use_container_width=True,
+                            ):
+                                with st.spinner("Opening session..."):
+                                    loaded = run_async(SessionManager().get_session(s_id))
+                                    if loaded:
+                                        for k in list(st.session_state.keys()):
+                                            if any(k.startswith(pfx) for pfx in ["step_agents_ran_", "quiz_submitted_", "saved_user_answers_", "saved_user_full_answers_", "xp_awarded_"]):
+                                                del st.session_state[k]
+
+                                        for idx_st, st_ob in enumerate(loaded.steps):
+                                            has_step_content = bool(
+                                                getattr(st_ob, "tutor_explanation", None)
+                                                or getattr(st_ob, "quiz", None)
+                                                or getattr(st_ob, "videos", None)
+                                                or getattr(st_ob, "papers", None)
+                                                or getattr(st_ob, "status", None) == StepStatus.COMPLETE
+                                            )
+                                            if has_step_content:
+                                                setattr(st_ob, "_agent_generated", True)
+                                                st.session_state[f"step_agents_ran_{idx_st}"] = True
+
+                                        st.session_state["memory"] = loaded
+                                        target_idx = 0
+                                        for idx_s, step_obj in enumerate(loaded.steps):
+                                            if step_obj.status != StepStatus.COMPLETE:
+                                                target_idx = idx_s
+                                                break
+                                        st.session_state["active_step_index"] = target_idx
+                                        st.session_state["last_topic"] = loaded.topic
+                                        st.rerun()
+
+                        with card_cols[1]:
+                            with st.popover("", icon=":material/more_horiz:", use_container_width=True):
+                                st.markdown(f"<div style='font-size:0.82rem; font-weight:700; color:#FAFAFA; margin-bottom:4px;'>{s_topic[:26]}...</div>", unsafe_allow_html=True)
+                                st.markdown(f"<div style='font-size:0.75rem; color:#A855F7; margin-bottom:8px;'>Status: <b>{status_tag}</b> • <b>+{s_xp} XP</b></div>", unsafe_allow_html=True)
+                                if st.button("🗑️ Delete Session", key=f"sb_del_pop_{s_id}", type="primary", use_container_width=True):
+                                    run_async(SessionManager().delete_session(s_id, user_id=user_profile.id))
+                                    if active_session_id == s_id:
+                                        st.session_state["memory"] = None
+                                        st.session_state["active_step_index"] = 0
+                                    st.toast("Session deleted.", icon="🗑️")
+                                    st.rerun()
+
+                # Progressive Loading "Load More" Button
+                if total_sessions > len(user_sessions):
+                    if st.button(f"↓ Load More ({len(user_sessions)} of {total_sessions})", key="sb_load_more_btn", use_container_width=True):
+                        st.session_state["session_hist_limit"] = hist_limit + 20
+                        st.rerun()
+
+        # ─── Sidebar Bottom Footer: User Profile & Settings ───────────────────
+        st.markdown("<div class='sidebar-user-footer-divider'></div>", unsafe_allow_html=True)
+
+        prof_cols = st.columns([7.8, 2.2], gap="small", vertical_alignment="center")
+        with prof_cols[0]:
+            user_display_name = f"{user_profile.first_name or ''} {user_profile.last_name or ''}".strip() or "Student"
+            u_tier = (user_profile.subscription.tier if user_profile.subscription else "normal").upper()
+            truncated_name = (user_display_name[:18] + "...") if len(user_display_name) > 18 else user_display_name
+
+            st.markdown(
+                f"""
+                <div class="user-profile-bottom-card" title="{html.escape(user_display_name)} ({u_tier})">
+                    <div class="user-avatar-pill">&#128100;</div>
+                    <div class="user-info-text">
+                        <div class="user-name-title">{html.escape(truncated_name)}</div>
+                        <div class="user-tier-subtitle">{u_tier} TIER</div>
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+        with prof_cols[1]:
+            st.markdown("<div class='st-key-sb_settings_popover_btn'>", unsafe_allow_html=True)
+            with st.popover("", icon=":material/settings:", use_container_width=True):
                 st.markdown(
                     f"""
-                    <div style="text-align: center; padding: 4px 0 8px 0;">
-                        <div style="font-size: 2.2rem; margin-bottom: 4px;">👤</div>
-                        <div style="font-weight: 800; font-size: 1.05rem; color: #FAFAFA;">{user_profile.first_name} {user_profile.last_name}</div>
-                        <div style="font-size: 0.8rem; color: rgba(233, 213, 255, 0.7); margin-bottom: 8px;">{user_profile.email if hasattr(user_profile, 'email') and user_profile.email else 'Student'}</div>
+                    <div style="text-align: center; padding: 6px 0 10px 0;">
+                        <div style="font-size: 2.2rem; margin-bottom: 4px;">&#128100;</div>
+                        <div style="font-weight: 800; font-size: 1.05rem; color: #FAFAFA;">{html.escape(user_display_name)}</div>
+                        <div style="font-size: 0.8rem; color: rgba(233, 213, 255, 0.7); margin-bottom: 8px;">{html.escape(user_profile.email if hasattr(user_profile, 'email') and user_profile.email else 'Student')}</div>
                         <div style="display: inline-block; background: rgba(168, 85, 247, 0.25); border: 1px solid rgba(168, 85, 247, 0.5); border-radius: 20px; padding: 2px 12px; font-size: 0.75rem; font-weight: 800; color: #C084FC; text-transform: uppercase;">
-                            ✨ {u_tier} Tier
+                            {u_tier} Tier
                         </div>
                     </div>
                     """,
                     unsafe_allow_html=True,
                 )
+
+                if st.button("⚙️ Admin Console", key="sb_pop_admin_btn", use_container_width=True):
+                    st.session_state["view"] = "admin"
+                    st.rerun()
+
                 st.markdown("<hr style='border-color:rgba(168,85,247,0.25); margin:8px 0;'>", unsafe_allow_html=True)
-                if st.button("⏻ Sign Out", key="nav_logout_btn", type="primary", use_container_width=True):
+
+                if st.button("⏻ Sign Out", key="sb_pop_logout_btn", type="primary", use_container_width=True):
                     st.session_state["user_profile"] = None
                     st.session_state["memory"] = None
                     st.session_state["active_step_index"] = 0
@@ -2828,448 +3953,7 @@ def render_learning_workspace():
                     st.query_params.clear()
                     st.toast("Logged out successfully.", icon="ℹ️")
                     st.rerun()
-
-    memory = get_or_create_memory()
-
-    # Master Sidebar Toggle & Auto-Expand Controller (Senior Frontend Architecture)
-    components.html(
-        """
-        <script>
-        (function() {
-            try {
-                const doc = window.parent.document;
-                const win = window.parent;
-
-                function dispatchFullClick(el) {
-                    if (!el) return;
-                    try {
-                        const opts = { bubbles: true, cancelable: true, view: win };
-                        el.dispatchEvent(new MouseEvent('mousedown', opts));
-                        el.dispatchEvent(new MouseEvent('mouseup', opts));
-                        el.dispatchEvent(new MouseEvent('click', opts));
-                        if (typeof el.click === 'function') el.click();
-                    } catch(err) {
-                        if (typeof el.click === 'function') el.click();
-                    }
-                }
-
-                function findExpandButton() {
-                    // 1. Direct standard Streamlit testids
-                    let btn = doc.querySelector('[data-testid="stSidebarCollapsedControl"] button, [data-testid="collapsedControl"] button');
-                    if (btn) return btn;
-
-                    // 2. Search all buttons inside header
-                    const headerBtns = doc.querySelectorAll('header[data-testid="stHeader"] button, [data-testid="stHeader"] button, button[kind="header"]');
-                    for (let b of headerBtns) {
-                        const str = ((b.getAttribute('aria-label') || '') + ' ' + (b.getAttribute('title') || '') + ' ' + b.className).toLowerCase();
-                        if (!str.includes('deploy') && !str.includes('menu') && !b.closest('.stDeployButton') && !b.closest('[data-testid="stAppDeployButton"]')) {
-                            return b;
-                        }
-                    }
-
-                    // 3. Search document-wide for expand / sidebar buttons
-                    const allBtns = doc.querySelectorAll('button');
-                    for (let b of allBtns) {
-                        const aria = (b.getAttribute('aria-label') || '').toLowerCase();
-                        const title = (b.getAttribute('title') || '').toLowerCase();
-                        if (aria.includes('expand') || aria.includes('open sidebar') || title.includes('expand') || title.includes('open sidebar')) {
-                            return b;
-                        }
-                    }
-
-                    // 4. Fallback to container itself
-                    const container = doc.querySelector('[data-testid="stSidebarCollapsedControl"], [data-testid="collapsedControl"]');
-                    if (container) return container;
-
-                    return null;
-                }
-
-                function findCollapseButton() {
-                    let btn = doc.querySelector('section[data-testid="stSidebar"] [data-testid="stSidebarCollapseButton"] button, section[data-testid="stSidebar"] button[aria-label*="Close" i], section[data-testid="stSidebar"] button[aria-label*="Collapse" i]');
-                    if (btn) return btn;
-
-                    const allSbBtns = doc.querySelectorAll('section[data-testid="stSidebar"] button');
-                    for (let b of allSbBtns) {
-                        const aria = (b.getAttribute('aria-label') || '').toLowerCase();
-                        const title = (b.getAttribute('title') || '').toLowerCase();
-                        if (aria.includes('close') || aria.includes('collapse') || title.includes('close') || title.includes('collapse')) {
-                            return b;
-                        }
-                    }
-                    return doc.querySelector('[data-testid="stSidebarCollapseButton"] button');
-                }
-
-                // Auto-expand sidebar if collapsed on initial workspace landing
-                function ensureSidebarOpen() {
-                    const sidebar = doc.querySelector('section[data-testid="stSidebar"]');
-                    const isCollapsed = !sidebar || 
-                                        sidebar.getAttribute('aria-expanded') === 'false' || 
-                                        sidebar.getBoundingClientRect().width === 0 ||
-                                        window.getComputedStyle(sidebar).display === 'none';
-                    if (isCollapsed) {
-                        const targetBtn = findExpandButton();
-                        if (targetBtn) {
-                            dispatchFullClick(targetBtn);
-                        }
-                    }
-                }
-                ensureSidebarOpen();
-                setTimeout(ensureSidebarOpen, 150);
-                setTimeout(ensureSidebarOpen, 400);
-
-                // Inject Master Sidebar Toggle Button directly onto parent document body (immune to transforms & clipping)
-                let toggle = doc.getElementById('edutech-sidebar-master-toggle');
-                if (!toggle) {
-                    toggle = doc.createElement('div');
-                    toggle.id = 'edutech-sidebar-master-toggle';
-                    toggle.innerHTML = `
-                        <svg id="edutech-toggle-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E9D5FF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1); pointer-events: none;">
-                            <polyline points="15 18 9 12 15 6"></polyline>
-                        </svg>
-                    `;
-                    doc.body.appendChild(toggle);
-                }
-
-                // Get initial sidebar measurement if present, default to open width ~336px
-                const initSb = doc.querySelector('section[data-testid="stSidebar"]');
-                const initRight = (initSb && initSb.getBoundingClientRect().right > 100) ? initSb.getBoundingClientRect().right : 336;
-
-                // Apply high-end circular glassmorphic styling
-                Object.assign(toggle.style, {
-                    position: 'fixed',
-                    top: '50%',
-                    left: `${Math.max(10, initRight - 19)}px`,
-                    transform: 'translateY(-50%)',
-                    zIndex: '99999999',
-                    width: '38px',
-                    height: '38px',
-                    background: 'rgba(14, 9, 24, 0.95)',
-                    border: '2px solid #A855F7',
-                    borderRadius: '50%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                    boxShadow: '0 0 18px rgba(168, 85, 247, 0.5), 0 4px 14px rgba(0, 0, 0, 0.55)',
-                    backdropFilter: 'blur(16px)',
-                    webkitBackdropFilter: 'blur(16px)',
-                    transition: 'left 0.15s cubic-bezier(0.4, 0, 0.2, 1), transform 0.18s cubic-bezier(0.4, 0, 0.2, 1), background 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease',
-                    userSelect: 'none',
-                    webkitUserSelect: 'none',
-                    visibility: 'visible',
-                    opacity: '1',
-                    pointerEvents: 'auto',
-                });
-
-                toggle.onmouseenter = () => {
-                    toggle.style.transform = 'translateY(-50%) scale(1.12)';
-                    toggle.style.background = 'rgba(168, 85, 247, 0.35)';
-                    toggle.style.borderColor = '#C084FC';
-                    toggle.style.boxShadow = '0 0 28px rgba(168, 85, 247, 0.85), 0 0 12px rgba(6, 182, 212, 0.5)';
-                };
-                toggle.onmouseleave = () => {
-                    toggle.style.transform = 'translateY(-50%) scale(1)';
-                    toggle.style.background = 'rgba(14, 9, 24, 0.95)';
-                    toggle.style.borderColor = '#A855F7';
-                    toggle.style.boxShadow = '0 0 18px rgba(168, 85, 247, 0.5), 0 4px 14px rgba(0, 0, 0, 0.55)';
-                };
-
-                function isSidebarOpen() {
-                    const sb = doc.querySelector('section[data-testid="stSidebar"]');
-                    if (!sb) return true; // Default to open in learning workspace
-                    const ariaClosed = sb.getAttribute('aria-expanded') === 'false';
-                    if (ariaClosed) return false;
-                    const comp = win.getComputedStyle(sb);
-                    if (comp.display === 'none') return false;
-                    const rect = sb.getBoundingClientRect();
-                    return rect.right > 50 || rect.width > 50;
-                }
-
-                function updateTogglePosition() {
-                    if (!toggle || !toggle.parentNode) return;
-                    const sb = doc.querySelector('section[data-testid="stSidebar"]');
-                    const svg = toggle.querySelector('#edutech-toggle-chevron');
-                    
-                    if (isSidebarOpen() && sb) {
-                        const rect = sb.getBoundingClientRect();
-                        const targetLeft = rect.right > 50 ? rect.right : 336;
-                        toggle.style.left = `${Math.max(10, targetLeft - 19)}px`;
-                        if (svg) svg.style.transform = 'rotate(0deg)';
-                        toggle.setAttribute('title', 'Collapse Sidebar');
-                    } else {
-                        toggle.style.left = '10px';
-                        if (svg) svg.style.transform = 'rotate(180deg)';
-                        toggle.setAttribute('title', 'Open Sidebar');
-                    }
-                }
-
-                // Run immediately on creation
-                updateTogglePosition();
-
-                toggle.onclick = function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    if (isSidebarOpen()) {
-                        const closeBtn = findCollapseButton();
-                        if (closeBtn) dispatchFullClick(closeBtn);
-                    } else {
-                        const expandBtn = findExpandButton();
-                        if (expandBtn) dispatchFullClick(expandBtn);
-                    }
-                    setTimeout(updateTogglePosition, 50);
-                    setTimeout(updateTogglePosition, 150);
-                    setTimeout(updateTogglePosition, 300);
-                    setTimeout(updateTogglePosition, 500);
-                };
-
-                // Continually sync button position smoothly
-                if (!win._edutechToggleTracking) {
-                    win._edutechToggleTracking = true;
-                    function track() {
-                        updateTogglePosition();
-                        requestAnimationFrame(track);
-                    }
-                    requestAnimationFrame(track);
-                }
-            } catch (err) {
-                console.error("Master Sidebar Toggle error:", err);
-            }
-        })();
-        </script>
-        """,
-        height=0,
-        width=0,
-    )
-
-    # ─── Sidebar Controls & History (Left Panel — ChatGPT/Gemini Style) ────
-    with st.sidebar:
-        # 1. Top Brand Logo & Animated AI Header
-        st.markdown(
-            """
-            <div class="sidebar-brand-header">
-                <div class="sidebar-brand-top">
-                    <div class="neural-icon-wrapper-small">
-                        <svg class="neural-network-svg" width="18" height="18" viewBox="0 0 24 24" fill="none">
-                            <line x1="4" y1="12" x2="12" y2="4" stroke="url(#neuralGrad1)" stroke-width="1.8" stroke-dasharray="2 2" class="neural-pulse-line" />
-                            <line x1="4" y1="12" x2="12" y2="20" stroke="url(#neuralGrad1)" stroke-width="1.8" stroke-dasharray="2 2" class="neural-pulse-line" />
-                            <line x1="12" y1="4" x2="20" y2="12" stroke="url(#neuralGrad2)" stroke-width="1.8" stroke-dasharray="2 2" class="neural-pulse-line" />
-                            <line x1="12" y1="20" x2="20" y2="12" stroke="url(#neuralGrad2)" stroke-width="1.8" stroke-dasharray="2 2" class="neural-pulse-line" />
-                            <circle cx="4" cy="12" r="3" fill="#EC4899" class="neural-node node-1" />
-                            <circle cx="12" cy="4" r="3.2" fill="#A855F7" class="neural-node node-2" />
-                            <circle cx="12" cy="20" r="3.2" fill="#3B82F6" class="neural-node node-3" />
-                            <circle cx="20" cy="12" r="3.2" fill="#06B6D4" class="neural-node node-4" />
-                            <defs>
-                                <linearGradient id="neuralGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
-                                    <stop offset="0%" stop-color="#EC4899" />
-                                    <stop offset="100%" stop-color="#A855F7" />
-                                </linearGradient>
-                                <linearGradient id="neuralGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
-                                    <stop offset="0%" stop-color="#A855F7" />
-                                    <stop offset="100%" stop-color="#06B6D4" />
-                                </linearGradient>
-                            </defs>
-                        </svg>
-                    </div>
-                    <div class="et-logo-simple">
-                        ⚡ <span class="accent">EduTech</span> <span class="badge-ai">AI</span>
-                    </div>
-                </div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-        # 2. ChatGPT/Gemini Style "+ New Journey" Pill Button
-        if st.button("✨ New Learning Journey", key="sb_new_journey_btn", type="primary", use_container_width=True):
-            st.session_state["memory"] = None
-            st.session_state["active_step_index"] = 0
-            st.session_state["last_topic"] = None
-            st.session_state["submitted_quizzes"] = {}
-            if "main_topic_query" in st.session_state:
-                del st.session_state["main_topic_query"]
-            for k in list(st.session_state.keys()):
-                if any(k.startswith(pfx) for pfx in ["step_agents_ran_", "quiz_submitted_", "saved_user_answers_", "saved_user_full_answers_", "xp_awarded_"]):
-                    del st.session_state[k]
-            st.toast("Ready for a new learning journey! 🚀", icon="✨")
-            st.rerun()
-
-        st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
-
-        # 3. Learning History Header
-        st.markdown(
-            """
-            <div class="sidebar-section-title">
-                <span>Learning History</span>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-        # 4. Search Bar
-        hist_search_val = st.text_input(
-            "Search your learning sessions",
-            value=st.session_state.get("session_hist_search_val", ""),
-            placeholder="🔍 Search history...",
-            key="sb_hist_search_input",
-            label_visibility="collapsed",
-        )
-        if hist_search_val != st.session_state.get("session_hist_search_val", ""):
-            st.session_state["session_hist_search_val"] = hist_search_val
-            st.session_state["session_hist_page"] = 0
-
-        # 5. Single Unified Segmented Filter: All, Active, Done (No icons)
-        seg_options = ["All", "Active", "Done"]
-        seg_default = st.session_state.get("session_hist_seg_filter", "All")
-        if seg_default not in seg_options:
-            seg_default = "All"
-        seg_filter = st.segmented_control(
-            "Filter History",
-            options=seg_options,
-            default=seg_default,
-            key="sb_hist_segmented_control",
-            label_visibility="collapsed",
-        ) or "All"
-
-        if seg_filter != st.session_state.get("session_hist_seg_filter", "All"):
-            st.session_state["session_hist_seg_filter"] = seg_filter
-            st.session_state["session_hist_page"] = 0
-
-        filter_map = {
-            "All": "all",
-            "Active": "in_progress",
-            "Done": "completed",
-        }
-        current_filter = filter_map.get(seg_filter, "all")
-
-        current_hist_page = st.session_state.get("session_hist_page", 0)
-        hist_page_size = 15
-
-        # Query User Sessions from Database
-        user_sessions = []
-        total_sessions = 0
-        total_hist_pages = 1
-        try:
-            from models.user_schemas import SearchDTO
-            from services.session_manager import SessionManager
-
-            s_dto = SearchDTO(
-                page=current_hist_page,
-                size=hist_page_size,
-                sortBy="updated_at",
-                isDesc=True,
-                lookupText=hist_search_val.strip() if hist_search_val and hist_search_val.strip() else None,
-            )
-            user_sessions, total_sessions = run_async(
-                SessionManager().search_user_sessions(
-                    user_id=user_profile.id,
-                    dto=s_dto,
-                    status_filter=current_filter,
-                )
-            )
-            total_hist_pages = max(1, (total_sessions + hist_page_size - 1) // hist_page_size) if total_sessions > 0 else 1
-        except Exception as ex_sh:
-            logging.warning(f"Failed to query user session history: {ex_sh}")
-
-        st.markdown(
-            f"<div style='font-size: 0.72rem; color: rgba(233,213,255,0.65); margin: 4px 0 6px 0;'><b>{total_sessions}</b> session(s) • Page {current_hist_page + 1} of {total_hist_pages}</div>",
-            unsafe_allow_html=True,
-        )
-
-        active_mem = st.session_state.get("memory")
-        active_session_id = active_mem.session_id if active_mem else None
-
-        if not user_sessions:
-            st.markdown(
-                """
-                <div style="background: rgba(168,85,247,0.06); border: 1px dashed rgba(168,85,247,0.25); border-radius: 10px; padding: 12px; text-align: center; font-size: 0.76rem; color: rgba(255,255,255,0.6);">
-                    No sessions match. Start a new topic! 🚀
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-        else:
-            for s_info in user_sessions:
-                s_id = s_info["session_id"]
-                s_topic = s_info["topic"]
-                s_complete = s_info["is_complete"]
-                s_tot_steps = s_info.get("total_steps", 0)
-                s_cur_step = s_info.get("current_step_index", 0)
-                s_xp = s_info.get("xp_earned", 0)
-                is_active_session = (active_session_id == s_id)
-
-                # Clean text: No icons in status/step badge!
-                status_tag = "Completed" if s_complete else f"Step {min(s_cur_step + 1, s_tot_steps)}/{s_tot_steps}"
-                
-                # Card button label
-                truncated_title = (s_topic[:22] + "...") if len(s_topic) > 22 else s_topic
-                btn_display = f"{truncated_title}\n{status_tag} • +{s_xp} XP"
-
-                card_cols = st.columns([8.2, 1.8], gap="small", vertical_alignment="center")
-                with card_cols[0]:
-                    # Clicking card directly opens and resumes session
-                    if st.button(
-                        btn_display,
-                        key=f"sb_card_{s_id}",
-                        help=f"{s_topic} ({status_tag})",
-                        type="primary" if is_active_session else "secondary",
-                        use_container_width=True,
-                    ):
-                        with st.spinner("Opening session..."):
-                            loaded = run_async(SessionManager().get_session(s_id))
-                            if loaded:
-                                for k in list(st.session_state.keys()):
-                                    if any(k.startswith(pfx) for pfx in ["step_agents_ran_", "quiz_submitted_", "saved_user_answers_", "saved_user_full_answers_", "xp_awarded_"]):
-                                        del st.session_state[k]
-
-                                for idx_st, st_ob in enumerate(loaded.steps):
-                                    has_step_content = bool(
-                                        getattr(st_ob, "tutor_explanation", None)
-                                        or getattr(st_ob, "quiz", None)
-                                        or getattr(st_ob, "videos", None)
-                                        or getattr(st_ob, "papers", None)
-                                        or getattr(st_ob, "status", None) == StepStatus.COMPLETE
-                                    )
-                                    if has_step_content:
-                                        setattr(st_ob, "_agent_generated", True)
-                                        st.session_state[f"step_agents_ran_{idx_st}"] = True
-
-                                st.session_state["memory"] = loaded
-                                target_idx = 0
-                                for idx_s, step_obj in enumerate(loaded.steps):
-                                    if step_obj.status != StepStatus.COMPLETE:
-                                        target_idx = idx_s
-                                        break
-                                st.session_state["active_step_index"] = target_idx
-                                st.session_state["last_topic"] = loaded.topic
-                                st.rerun()
-
-                with card_cols[1]:
-                    # 3-dots popover options menu (gives delete option)
-                    with st.popover("", icon=":material/more_vert:", help="Session options", use_container_width=True):
-                        st.markdown(f"<div style='font-size:0.82rem; font-weight:700; color:#FAFAFA; margin-bottom:4px;'>{s_topic[:26]}...</div>", unsafe_allow_html=True)
-                        st.markdown(f"<div style='font-size:0.75rem; color:#A855F7; margin-bottom:8px;'>Status: <b>{status_tag}</b> • <b>+{s_xp} XP</b></div>", unsafe_allow_html=True)
-                        if st.button("🗑️ Delete Session", key=f"sb_del_pop_{s_id}", type="primary", use_container_width=True):
-                            run_async(SessionManager().delete_session(s_id, user_id=user_profile.id))
-                            if active_session_id == s_id:
-                                st.session_state["memory"] = None
-                                st.session_state["active_step_index"] = 0
-                            st.toast("Session deleted.", icon="🗑️")
-                            st.rerun()
-
-            # Sidebar Pagination Controls
-            if total_hist_pages > 1:
-                st.markdown("<div style='height: 6px;'></div>", unsafe_allow_html=True)
-                pg_c1, pg_c2, pg_c3 = st.columns([1.2, 2.6, 1.2], vertical_alignment="center")
-                with pg_c1:
-                    if st.button("◀", key="sb_pg_prev", disabled=(current_hist_page <= 0), use_container_width=True):
-                        st.session_state["session_hist_page"] = current_hist_page - 1
-                        st.rerun()
-                with pg_c2:
-                    st.markdown(f"<div style='text-align: center; font-size: 0.72rem; color: #E9D5FF;'>Page <b>{current_hist_page + 1}</b> / <b>{total_hist_pages}</b></div>", unsafe_allow_html=True)
-                with pg_c3:
-                    if st.button("▶", key="sb_pg_next", disabled=(current_hist_page >= total_hist_pages - 1), use_container_width=True):
-                        st.session_state["session_hist_page"] = current_hist_page + 1
-                        st.rerun()
+            st.markdown("</div>", unsafe_allow_html=True)
 
     memory = get_or_create_memory()
 
