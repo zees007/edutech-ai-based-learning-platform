@@ -59,6 +59,18 @@ class SubscriptionService:
             db.add(sub)
             await db.commit()
             await db.refresh(sub)
+        else:
+            # Automatic Expiry Check: If period has ended & auto-renew is disabled, auto-downgrade to normal
+            now = datetime.now(timezone.utc).replace(tzinfo=None)
+            if sub.tier != "normal" and sub.current_period_end and sub.current_period_end < now:
+                if sub.cancel_at_period_end or not sub.auto_renew:
+                    sub.tier = "normal"
+                    sub.status = "canceled"
+                    user = await UserService.get_user_by_id(db, user_id)
+                    await SubscriptionService._sync_user_role(db, user, "normal")
+                    await db.commit()
+                    await db.refresh(sub)
+
         return sub
 
     @staticmethod

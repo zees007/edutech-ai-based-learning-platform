@@ -1249,7 +1249,7 @@ CUSTOM_CSS = """
         display: flex !important;
         align-items: center !important;
         justify-content: space-between !important;
-        padding: 4px 0 10px 0 !important;
+        padding: 4px 4px 10px 0 !important;
         margin-top: 0 !important;
         margin-bottom: 8px !important;
         border-top: none !important;
@@ -3943,6 +3943,10 @@ def render_learning_workspace():
                     st.session_state["memory"] = None
                     st.session_state["active_step_index"] = 0
                     st.session_state["last_topic"] = None
+                    st.session_state["show_upgrade_modal"] = False
+                    st.session_state["show_billing_portal_modal"] = False
+                    if "target_upgrade_tier" in st.session_state:
+                        del st.session_state["target_upgrade_tier"]
                     if "quick_launch_topic" in st.session_state:
                         del st.session_state["quick_launch_topic"]
                     for k in list(st.session_state.keys()):
@@ -5042,12 +5046,12 @@ else:
     render_learning_workspace()
 
 # ─── Modal Dialog Controllers ──────────────────────────────────────
-if st.session_state.get("show_upgrade_modal"):
+if st.session_state.get("show_upgrade_modal") and st.session_state.get("user_profile"):
     from services.subscription_ui import render_subscription_upgrade_dialog
     target_t = st.session_state.get("target_upgrade_tier", "pro")
     render_subscription_upgrade_dialog(target_t)
 
-if st.session_state.get("show_billing_portal_modal"):
+if st.session_state.get("show_billing_portal_modal") and st.session_state.get("user_profile"):
     from services.subscription_ui import render_user_billing_portal_dialog
     render_user_billing_portal_dialog()
 

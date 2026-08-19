@@ -3780,6 +3780,11 @@ def _render_auth_view():
 
                                 p = run_async(_login())
                                 st.session_state["user_profile"] = p
+                                user_t = (p.subscription.tier if p.subscription else "normal").lower()
+                                if user_t == "normal" and st.session_state.get("target_upgrade_tier") in ["pro", "ultra"]:
+                                    st.session_state["show_upgrade_modal"] = True
+                                else:
+                                    st.session_state["show_upgrade_modal"] = False
                                 st.session_state["view"] = "learning"
                                 st.toast(f"Welcome back, {p.first_name}!", icon="✅")
                                 st.rerun()
@@ -3832,6 +3837,11 @@ def _render_auth_view():
 
                                 p = run_async(_signup())
                                 st.session_state["user_profile"] = p
+                                user_t = (p.subscription.tier if p.subscription else "normal").lower()
+                                if user_t == "normal" and st.session_state.get("target_upgrade_tier") in ["pro", "ultra"]:
+                                    st.session_state["show_upgrade_modal"] = True
+                                else:
+                                    st.session_state["show_upgrade_modal"] = False
                                 st.session_state["view"] = "learning"
                                 st.toast(f"Welcome, {p.first_name}! Account created successfully.", icon="🎉")
                                 st.rerun()
@@ -3885,15 +3895,22 @@ def _quick_demo_login(email: str, pw: str):
 
         p = run_async(_do())
         st.session_state["user_profile"] = p
-        if st.session_state.get("target_upgrade_tier") in ["pro", "ultra"]:
+        user_t = (p.subscription.tier if p.subscription else "normal").lower()
+        if user_t == "normal" and st.session_state.get("target_upgrade_tier") in ["pro", "ultra"]:
             st.session_state["show_upgrade_modal"] = True
+        else:
+            st.session_state["show_upgrade_modal"] = False
         st.session_state["view"] = "learning"
         st.toast(f"Logged in as {p.first_name}", icon="⚡")
         st.rerun()
     except Exception:
-        st.session_state["user_profile"] = _make_demo_profile(email)
-        if st.session_state.get("target_upgrade_tier") in ["pro", "ultra"]:
+        p = _make_demo_profile(email)
+        st.session_state["user_profile"] = p
+        user_t = (p.subscription.tier if p.subscription else "normal").lower()
+        if user_t == "normal" and st.session_state.get("target_upgrade_tier") in ["pro", "ultra"]:
             st.session_state["show_upgrade_modal"] = True
+        else:
+            st.session_state["show_upgrade_modal"] = False
         st.session_state["view"] = "learning"
         st.toast(f"Demo ({'PRO' if 'pro' in email else 'NORMAL'} Tier)", icon="⚡")
         st.rerun()
