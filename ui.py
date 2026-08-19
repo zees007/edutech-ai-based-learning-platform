@@ -1066,7 +1066,7 @@ CUSTOM_CSS = """
     }
 
     section[data-testid="stSidebar"] [data-testid="stSidebarContent"] {
-        padding-top: 0.15rem !important;
+        padding-top: 1rem !important;
         padding-left: 0.9rem !important;
         padding-right: 0.9rem !important;
         padding-bottom: 1.2rem !important;
@@ -1186,6 +1186,7 @@ CUSTOM_CSS = """
         justify-content: center !important;
         gap: 8px !important;
         padding: 9px 14px !important;
+        margin-top: 10px;
         min-height: 44px !important;
     }
 
@@ -1383,6 +1384,7 @@ CUSTOM_CSS = """
         overflow: hidden !important;
         display: flex !important;
         align-items: center !important;
+        gap: 0px !important;
     }
 
     html body div.stApp section[data-testid="stSidebar"] div[class*="st-key-sb_card_"],
@@ -1395,6 +1397,7 @@ CUSTOM_CSS = """
         overflow: hidden !important;
         display: block !important;
         text-align: left !important;
+    
     }
 
     html body div.stApp section[data-testid="stSidebar"] div[class*="st-key-sb_card_"] button,
