@@ -1905,13 +1905,12 @@ CUSTOM_CSS = """
 
     html body div.stApp section[data-testid="stSidebar"] div[class*="st-key-sb_flt_"] button,
     div[class*="st-key-sb_flt_"] button {
-        height: 32px !important;
+        height: auto !important;
         min-height: 32px !important;
-        max-height: 32px !important;
-        font-size: 0.76rem !important;
+        font-size: 0.74rem !important;
         font-weight: 600 !important;
-        border-radius: 20px !important;
-        padding: 0 6px !important;
+        border-radius: 18px !important;
+        padding: 4px 6px !important;
         margin: 0 !important;
         transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
         letter-spacing: 0.1px !important;
@@ -1920,26 +1919,57 @@ CUSTOM_CSS = """
         justify-content: center !important;
         text-align: center !important;
         box-shadow: none !important;
-        white-space: nowrap !important;
+        white-space: normal !important;
+        word-break: break-word !important;
+        overflow-wrap: break-word !important;
+        text-wrap: wrap !important;
+        line-height: 1.15 !important;
         width: 100% !important;
+        gap: 4px !important;
+    }
+
+    /* Text wrapping inside child markdown / text containers */
+    div[class*="st-key-sb_flt_"] button div[data-testid="stMarkdownContainer"],
+    div[class*="st-key-sb_flt_"] button p,
+    div[class*="st-key-sb_flt_"] button span {
+        white-space: normal !important;
+        word-break: break-word !important;
+        overflow-wrap: break-word !important;
+        text-wrap: wrap !important;
+        text-align: center !important;
+        line-height: 1.15 !important;
+    }
+
+    /* All Icons inside filter buttons must look pure white */
+    div[class*="st-key-sb_flt_"] button [data-testid="stIconMaterial"],
+    div[class*="st-key-sb_flt_"] button svg,
+    div[class*="st-key-sb_flt_"] button span:has(svg),
+    div[class*="st-key-sb_flt_"] button [data-testid="stIconMaterial"] * {
+        color: #FFFFFF !important;
+        fill: #FFFFFF !important;
+        font-size: 15px !important;
+        width: 15px !important;
+        height: 15px !important;
+        filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.6)) !important;
+        flex-shrink: 0 !important;
     }
 
     /* Inactive Filter Pill */
     html body div.stApp section[data-testid="stSidebar"] div[class*="st-key-sb_flt_inactive"] button,
     div[class*="st-key-sb_flt_inactive"] button {
-        background: rgba(255, 255, 255, 0.03) !important;
-        border: 1px solid rgba(168, 85, 247, 0.18) !important;
-        color: rgba(233, 213, 255, 0.65) !important;
+        background: rgba(255, 255, 255, 0.04) !important;
+        border: 1px solid rgba(168, 85, 247, 0.22) !important;
+        color: rgba(233, 213, 255, 0.75) !important;
         text-align: center !important;
         justify-content: center !important;
     }
     html body div.stApp section[data-testid="stSidebar"] div[class*="st-key-sb_flt_inactive"] button:hover,
     div[class*="st-key-sb_flt_inactive"] button:hover {
-        background: rgba(168, 85, 247, 0.14) !important;
-        border-color: rgba(168, 85, 247, 0.45) !important;
-        color: #F3E8FF !important;
+        background: rgba(168, 85, 247, 0.18) !important;
+        border-color: rgba(168, 85, 247, 0.55) !important;
+        color: #FFFFFF !important;
         transform: translateY(-1px) !important;
-        box-shadow: 0 2px 8px rgba(168, 85, 247, 0.2) !important;
+        box-shadow: 0 2px 8px rgba(168, 85, 247, 0.25) !important;
     }
 
     /* Active Filter Pill */
@@ -1952,7 +1982,7 @@ CUSTOM_CSS = """
         box-shadow: 0 0 14px rgba(168, 85, 247, 0.45), inset 0 1px 1px rgba(255, 255, 255, 0.25) !important;
         text-align: center !important;
         justify-content: center !important;
-        margin-bottom: 10px !important;
+        margin-bottom: 0 !important;
     }
     html body div.stApp section[data-testid="stSidebar"] div[class*="st-key-sb_flt_active"] button:hover,
     div[class*="st-key-sb_flt_active"] button:hover {
@@ -4445,7 +4475,7 @@ def render_learning_workspace():
             with flt_col1:
                 is_all = (current_flt == "All")
                 all_key = f"sb_flt_{'active_all' if is_all else 'inactive_all'}"
-                if st.button("● All", key=all_key, use_container_width=True):
+                if st.button("All", icon=":material/apps:", key=all_key, use_container_width=True):
                     if current_flt != "All":
                         st.session_state["session_hist_seg_filter"] = "All"
                         st.session_state["session_hist_limit"] = 20
@@ -4453,7 +4483,7 @@ def render_learning_workspace():
             with flt_col2:
                 is_act = (current_flt == "Active")
                 act_key = f"sb_flt_{'active_act' if is_act else 'inactive_act'}"
-                if st.button("⚡ Active", key=act_key, use_container_width=True):
+                if st.button("Active", icon=":material/bolt:", key=act_key, use_container_width=True):
                     if current_flt != "Active":
                         st.session_state["session_hist_seg_filter"] = "Active"
                         st.session_state["session_hist_limit"] = 20
@@ -4461,7 +4491,7 @@ def render_learning_workspace():
             with flt_col3:
                 is_comp = (current_flt == "Completed")
                 comp_key = f"sb_flt_{'active_comp' if is_comp else 'inactive_comp'}"
-                if st.button("✓ Completed", key=comp_key, use_container_width=True):
+                if st.button("Completed", icon=":material/check_circle:", key=comp_key, use_container_width=True):
                     if current_flt != "Completed":
                         st.session_state["session_hist_seg_filter"] = "Completed"
                         st.session_state["session_hist_limit"] = 20
