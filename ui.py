@@ -1124,127 +1124,267 @@ CUSTOM_CSS = """
         left: 0 !important;
         right: 0 !important;
         background: #0B0715 !important; /* solid sidebar background color */
-        padding: 10px 14px 14px 14px !important;
-        border-top: 1px solid rgba(168, 85, 247, 0.25) !important;
+        padding: 8px 12px 12px 12px !important;
+        border-top: 1px solid rgba(168, 85, 247, 0.22) !important;
         box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.5) !important;
         z-index: 99 !important;
         box-sizing: border-box !important;
     }
 
     .sidebar-user-footer-divider {
-        display: none !important;
+        display: block !important;
+        border: none !important;
+        border-top: 1px solid rgba(168, 85, 247, 0.22) !important;
+        margin: 0 0 8px 0 !important;
+        width: 100% !important;
+        box-shadow: 0 0 8px rgba(168, 85, 247, 0.15) !important;
     }
 
-    .sidebar-footer-wrapper {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin-top: 4px;
-        width: 100%;
+    /* Redesigned User Profile Row (App Theme Glassmorphic Card) */
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(.user-profile-bottom-card) {
+        margin: 0px 0 !important;
+        padding: 6px 10px !important;
+        gap: 6px !important;
+        border-radius: 12px !important;
+        background: linear-gradient(135deg, rgba(30, 20, 50, 0.55) 0%, rgba(124, 58, 237, 0.15) 50%, rgba(15, 23, 42, 0.8) 100%) !important;
+        backdrop-filter: blur(16px) !important;
+        -webkit-backdrop-filter: blur(16px) !important;
+        border: 1px solid rgba(168, 85, 247, 0.28) !important;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), inset 0 0 12px rgba(168, 85, 247, 0.08) !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        min-height: 46px !important;
     }
 
-    .sidebar-user-footer-divider {
-        border-top: 1px solid rgba(168, 85, 247, 0.25);
-        margin: 14px 0 10px 0;
-        box-shadow: 0 -1px 8px rgba(168, 85, 247, 0.2);
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(.user-profile-bottom-card):hover {
+        background: linear-gradient(135deg, rgba(45, 25, 75, 0.72) 0%, rgba(124, 58, 237, 0.24) 50%, rgba(15, 23, 42, 0.92) 100%) !important;
+        border-color: rgba(168, 85, 247, 0.55) !important;
+        box-shadow: 0 6px 20px rgba(168, 85, 247, 0.22), inset 0 0 16px rgba(168, 85, 247, 0.12) !important;
     }
 
-    /* Redesigned User Profile Card with App Theme */
+    /* All columns and intermediate wrappers inside the profile card aligned center */
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(.user-profile-bottom-card) > div[data-testid="stColumn"],
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(.user-profile-bottom-card) > div[data-testid="column"] {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        min-height: 0 !important;
+    }
+
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(.user-profile-bottom-card) div[data-testid="stVerticalBlock"],
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(.user-profile-bottom-card) div[data-testid="stElementContainer"],
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(.user-profile-bottom-card) div.element-container,
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(.user-profile-bottom-card) div[data-testid="stMarkdownContainer"],
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(.user-profile-bottom-card) div.stMarkdown {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        gap: 0 !important;
+        height: auto !important;
+        min-height: 0 !important;
+        width: 100% !important;
+    }
+
+    /* First Column: Avatar & User Info */
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(.user-profile-bottom-card) > div[data-testid="stColumn"]:first-child,
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(.user-profile-bottom-card) > div[data-testid="column"]:first-child {
+        flex: 1 1 auto !important;
+        min-width: 0 !important;
+        justify-content: flex-start !important;
+    }
+
     .user-profile-bottom-card {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 8px 12px;
-        border-radius: 14px;
-        background: linear-gradient(135deg, rgba(30, 20, 50, 0.6) 0%, rgba(124, 58, 237, 0.15) 100%);
-        border: 1px solid rgba(168, 85, 247, 0.35);
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), inset 0 0 12px rgba(168, 85, 247, 0.1);
-        backdrop-filter: blur(12px);
-        cursor: default;
-        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-        width: 100%;
-        box-sizing: border-box;
-    }
-
-    .user-profile-bottom-card:hover {
-        background: linear-gradient(135deg, rgba(45, 25, 75, 0.75) 0%, rgba(168, 85, 247, 0.28) 100%);
-        border-color: #C084FC;
-        box-shadow: 0 6px 20px rgba(168, 85, 247, 0.35), inset 0 0 16px rgba(168, 85, 247, 0.2);
-        transform: translateY(-1px);
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: 9px !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        cursor: default !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
     }
 
     .user-avatar-pill {
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%);
-        border: 1.5px solid rgba(255, 255, 255, 0.3);
-        box-shadow: 0 0 12px rgba(168, 85, 247, 0.5);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.1rem;
-        flex-shrink: 0;
-        color: #FFFFFF;
-    }
-
-    .user-info-text {
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        flex: 1 1 auto;
-        min-width: 0;
-    }
-
-    .user-name-title {
-        font-size: 0.85rem;
-        font-weight: 800;
-        color: #FAFAFA;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        line-height: 1.2;
-        letter-spacing: 0.2px;
-    }
-
-    .user-tier-subtitle {
-        font-size: 0.64rem;
-        font-weight: 800;
-        color: #C084FC;
-        letter-spacing: 0.6px;
-        line-height: 1.1;
-        text-transform: uppercase;
-        margin-top: 1px;
-    }
-
-    /* Redesigned Circular Settings Icon Button */
-    div[class*="st-key-sb_settings_popover_btn"] div[data-testid="stPopover"] button {
-        width: 38px !important;
-        height: 38px !important;
-        min-width: 38px !important;
-        max-width: 38px !important;
-        min-height: 38px !important;
-        max-height: 38px !important;
+        width: 32px !important;
+        height: 32px !important;
+        min-width: 32px !important;
+        max-width: 32px !important;
         border-radius: 50% !important;
-        padding: 0 !important;
-        margin: 0 !important;
-        background: linear-gradient(135deg, rgba(168, 85, 247, 0.25) 0%, rgba(59, 130, 246, 0.2) 100%) !important;
-        border: 1.5px solid rgba(168, 85, 247, 0.45) !important;
-        color: #E9D5FF !important;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), 0 0 10px rgba(168, 85, 247, 0.2) !important;
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%) !important;
+        border: 1.5px solid rgba(255, 255, 255, 0.3) !important;
+        box-shadow: 0 0 10px rgba(168, 85, 247, 0.4) !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        font-size: 0.92rem !important;
+        flex-shrink: 0 !important;
+        color: #FFFFFF !important;
+        margin: 0 !important;
     }
 
+    .user-info-text {
+        overflow: hidden !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        align-items: flex-start !important;
+        flex: 1 1 auto !important;
+        min-width: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        gap: 1px !important;
+    }
+
+    .user-name-title {
+        font-size: 0.84rem !important;
+        font-weight: 700 !important;
+        color: #FAFAFA !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        line-height: 1.2 !important;
+        letter-spacing: 0.2px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .user-tier-subtitle {
+        font-size: 0.63rem !important;
+        font-weight: 800 !important;
+        color: #C084FC !important;
+        letter-spacing: 0.5px !important;
+        line-height: 1.1 !important;
+        text-transform: uppercase !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* Second Column: Settings Popover Button */
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(.user-profile-bottom-card) > div[data-testid="stColumn"]:last-child,
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(.user-profile-bottom-card) > div[data-testid="column"]:last-child {
+        margin: 0 0 0 auto !important;
+        padding: 0 !important;
+        flex: 0 0 32px !important;
+        width: 32px !important;
+        min-width: 32px !important;
+        max-width: 32px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-end !important;
+    }
+
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(.user-profile-bottom-card) div[data-testid="stPopover"],
+    div[class*="st-key-sb_settings_popover_btn"] div[data-testid="stPopover"] {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 32px !important;
+        height: 32px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(.user-profile-bottom-card) div[data-testid="stPopover"] button,
+    div[class*="st-key-sb_settings_popover_btn"] div[data-testid="stPopover"] button {
+        border-radius: 50% !important;
+        min-height: 32px !important;
+        height: 32px !important;
+        width: 32px !important;
+        min-width: 32px !important;
+        max-width: 32px !important;
+        max-height: 32px !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        background: rgba(168, 85, 247, 0.14) !important;
+        border: 1px solid rgba(168, 85, 247, 0.3) !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25) !important;
+        color: #E9D5FF !important;
+        opacity: 0.9 !important;
+        visibility: visible !important;
+        cursor: pointer !important;
+        transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        overflow: hidden !important;
+        gap: 0 !important;
+    }
+
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(.user-profile-bottom-card) div[data-testid="stPopover"] button > div,
+    div[class*="st-key-sb_settings_popover_btn"] div[data-testid="stPopover"] button > div {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        height: 100% !important;
+        width: 100% !important;
+        margin: 0 auto !important;
+        padding: 0 !important;
+        gap: 0 !important;
+    }
+
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(.user-profile-bottom-card):hover div[data-testid="stPopover"] button,
+    div[class*="st-key-sb_settings_popover_btn"] div[data-testid="stPopover"]:focus-within button,
+    div[class*="st-key-sb_settings_popover_btn"] div[data-testid="stPopover"] button[aria-expanded="true"] {
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(.user-profile-bottom-card) div[data-testid="stPopover"] button:hover,
     div[class*="st-key-sb_settings_popover_btn"] div[data-testid="stPopover"] button:hover {
-        background: linear-gradient(135deg, rgba(236, 72, 153, 0.4) 0%, rgba(168, 85, 247, 0.55) 100%) !important;
+        border-radius: 50% !important;
+        background: linear-gradient(135deg, rgba(236, 72, 153, 0.35) 0%, rgba(168, 85, 247, 0.5) 100%) !important;
         border-color: #C084FC !important;
         color: #FFFFFF !important;
-        box-shadow: 0 0 18px rgba(168, 85, 247, 0.6) !important;
-        transform: rotate(45deg) scale(1.06) !important;
+        box-shadow: 0 0 14px rgba(168, 85, 247, 0.6) !important;
+        transform: rotate(45deg) scale(1.08) !important;
+        cursor: pointer !important;
+    }
+
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(.user-profile-bottom-card) div[data-testid="stPopover"] button [data-testid="stIconMaterial"],
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(.user-profile-bottom-card) div[data-testid="stPopover"] button svg,
+    div[class*="st-key-sb_settings_popover_btn"] div[data-testid="stPopover"] button [data-testid="stIconMaterial"],
+    div[class*="st-key-sb_settings_popover_btn"] div[data-testid="stPopover"] button svg {
+        font-size: 19px !important;
+        width: 19px !important;
+        height: 19px !important;
+        color: inherit !important;
+        fill: currentColor !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        margin: 0 auto !important;
+        padding: 0 !important;
+        line-height: 1 !important;
+        transform: none !important;
+    }
+
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(.user-profile-bottom-card) div[data-testid="stPopover"] button div[data-testid="stMarkdownContainer"],
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(.user-profile-bottom-card) div[data-testid="stPopover"] button p,
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(.user-profile-bottom-card) div[data-testid="stPopover"] button span,
+    div[class*="st-key-sb_settings_popover_btn"] div[data-testid="stPopover"] button div[data-testid="stMarkdownContainer"],
+    div[class*="st-key-sb_settings_popover_btn"] div[data-testid="stPopover"] button p,
+    div[class*="st-key-sb_settings_popover_btn"] div[data-testid="stPopover"] button span {
+        padding: 0 !important;
+        margin: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
+        line-height: 1 !important;
+        height: 100% !important;
     }
 
     /* Bold Sidebar Widget Labels */
@@ -1761,66 +1901,6 @@ CUSTOM_CSS = """
     section[data-testid="stSidebar"] div[data-testid="stSidebarUserContent"] > div[data-testid="stVerticalBlock"] > div:has(.sidebar-user-footer-divider),
     section[data-testid="stSidebar"] div[data-testid="stSidebarUserContent"] > div[data-testid="stVerticalBlock"] > div:has(> div[data-testid="stHorizontalBlock"]:has(div.user-profile-bottom-card)) {
         margin-top: auto !important;
-    }
-
-    .sidebar-user-footer-divider {
-        border-top: 1px solid rgba(168, 85, 247, 0.22);
-        margin: 14px 0 10px 0;
-    }
-
-    .user-profile-bottom-card {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 5px 8px;
-        border-radius: 10px;
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid rgba(168, 85, 247, 0.25);
-        cursor: default;
-        transition: all 0.2s ease;
-    }
-
-    .user-profile-bottom-card:hover {
-        background: rgba(168, 85, 247, 0.12);
-        border-color: rgba(168, 85, 247, 0.45);
-    }
-
-    .user-avatar-pill {
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, rgba(168, 85, 247, 0.35) 0%, rgba(59, 130, 246, 0.35) 100%);
-        border: 1px solid rgba(168, 85, 247, 0.5);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.05rem;
-        flex-shrink: 0;
-    }
-
-    .user-info-text {
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-    }
-
-    .user-name-title {
-        font-size: 0.82rem;
-        font-weight: 800;
-        color: #FAFAFA;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        line-height: 1.2;
-    }
-
-    .user-tier-subtitle {
-        font-size: 0.65rem;
-        font-weight: 800;
-        color: #C084FC;
-        letter-spacing: 0.5px;
-        line-height: 1.1;
     }
 
     div[class*="st-key-sb_pop_logout_btn"] button {
@@ -4144,96 +4224,95 @@ def render_learning_workspace():
                         st.rerun()
 
         # ─── Sidebar Bottom Footer: User Profile & Settings ───────────────────
-        st.markdown("<div class='sidebar-user-footer-divider'></div>", unsafe_allow_html=True)
+        with st.container():
+            st.markdown("<div class='sidebar-user-footer-divider'></div>", unsafe_allow_html=True)
 
-        prof_cols = st.columns([7.8, 2.2], gap="small", vertical_alignment="center")
-        with prof_cols[0]:
-            user_display_name = f"{user_profile.first_name or ''} {user_profile.last_name or ''}".strip() or "Student"
-            u_tier = (user_profile.subscription.tier if user_profile.subscription else "normal").upper()
-            truncated_name = (user_display_name[:18] + "...") if len(user_display_name) > 18 else user_display_name
+            prof_cols = st.columns([8.6, 1.4], gap="small", vertical_alignment="center")
+            with prof_cols[0]:
+                user_display_name = f"{user_profile.first_name or ''} {user_profile.last_name or ''}".strip() or "Student"
+                u_tier = (user_profile.subscription.tier if user_profile.subscription else "normal").upper()
+                truncated_name = (user_display_name[:20] + "...") if len(user_display_name) > 20 else user_display_name
 
-            st.markdown(
-                f"""
-                <div class="user-profile-bottom-card" title="{html.escape(user_display_name)} ({u_tier})">
-                    <div class="user-avatar-pill">&#128100;</div>
-                    <div class="user-info-text">
-                        <div class="user-name-title">{html.escape(truncated_name)}</div>
-                        <div class="user-tier-subtitle">{u_tier} TIER</div>
-                    </div>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-
-        with prof_cols[1]:
-            st.markdown("<div class='st-key-sb_settings_popover_btn'>", unsafe_allow_html=True)
-            with st.popover("", icon=":material/settings:", use_container_width=True):
                 st.markdown(
                     f"""
-                    <div style="text-align: center; padding: 6px 0 10px 0;">
-                        <div style="font-size: 2.2rem; margin-bottom: 4px;">&#128100;</div>
-                        <div style="font-weight: 800; font-size: 1.05rem; color: #FAFAFA;">{html.escape(user_display_name)}</div>
-                        <div style="font-size: 0.8rem; color: rgba(233, 213, 255, 0.7); margin-bottom: 8px;">{html.escape(user_profile.email if hasattr(user_profile, 'email') and user_profile.email else 'Student')}</div>
-                        <div style="display: inline-block; background: rgba(168, 85, 247, 0.25); border: 1px solid rgba(168, 85, 247, 0.5); border-radius: 20px; padding: 2px 12px; font-size: 0.75rem; font-weight: 800; color: #C084FC; text-transform: uppercase;">
-                            {u_tier} Tier
+                    <div class="user-profile-bottom-card" title="{html.escape(user_display_name)} ({u_tier})">
+                        <div class="user-avatar-pill">&#128100;</div>
+                        <div class="user-info-text">
+                            <div class="user-name-title">{html.escape(truncated_name)}</div>
+                            <div class="user-tier-subtitle">{u_tier} TIER</div>
                         </div>
                     </div>
                     """,
                     unsafe_allow_html=True,
                 )
 
-                if u_tier != "ULTRA":
-                    upgrade_target = "ultra" if u_tier == "PRO" else "pro"
-                    if st.button(f"⚡ Upgrade to {upgrade_target.upper()}", key="sb_pop_upgrade_btn", type="primary", use_container_width=True):
-                        st.session_state["show_billing_portal_modal"] = False
-                        st.session_state["target_upgrade_tier"] = upgrade_target
-                        st.session_state["show_upgrade_modal"] = True
+            with prof_cols[1]:
+                with st.popover("", icon=":material/settings:", key="sb_settings_popover_btn", use_container_width=True):
+                    st.markdown(
+                        f"""
+                        <div style="text-align: center; padding: 6px 0 10px 0;">
+                            <div style="font-size: 2.2rem; margin-bottom: 4px;">&#128100;</div>
+                            <div style="font-weight: 800; font-size: 1.05rem; color: #FAFAFA;">{html.escape(user_display_name)}</div>
+                            <div style="font-size: 0.8rem; color: rgba(233, 213, 255, 0.7); margin-bottom: 8px;">{html.escape(user_profile.email if hasattr(user_profile, 'email') and user_profile.email else 'Student')}</div>
+                            <div style="display: inline-block; background: rgba(168, 85, 247, 0.25); border: 1px solid rgba(168, 85, 247, 0.5); border-radius: 20px; padding: 2px 12px; font-size: 0.75rem; font-weight: 800; color: #C084FC; text-transform: uppercase;">
+                                {u_tier} Tier
+                            </div>
+                        </div>
+                        """,
+                        unsafe_allow_html=True,
+                    )
+
+                    if u_tier != "ULTRA":
+                        upgrade_target = "ultra" if u_tier == "PRO" else "pro"
+                        if st.button(f"⚡ Upgrade to {upgrade_target.upper()}", key="sb_pop_upgrade_btn", type="primary", use_container_width=True):
+                            st.session_state["show_billing_portal_modal"] = False
+                            st.session_state["target_upgrade_tier"] = upgrade_target
+                            st.session_state["show_upgrade_modal"] = True
+                            st.rerun()
+
+                    if st.button("💳 Billing & Plan", key="sb_pop_billing_btn", use_container_width=True):
+                        st.session_state["show_upgrade_modal"] = False
+                        st.session_state["show_billing_portal_modal"] = True
                         st.rerun()
 
-                if st.button("💳 Billing & Plan", key="sb_pop_billing_btn", use_container_width=True):
-                    st.session_state["show_upgrade_modal"] = False
-                    st.session_state["show_billing_portal_modal"] = True
-                    st.rerun()
+                    if st.button("⚙️ Admin Console", key="sb_pop_admin_btn", use_container_width=True):
+                        st.session_state["show_upgrade_modal"] = False
+                        st.session_state["show_billing_portal_modal"] = False
+                        st.session_state["view"] = "admin"
+                        st.rerun()
 
-                if st.button("⚙️ Admin Console", key="sb_pop_admin_btn", use_container_width=True):
-                    st.session_state["show_upgrade_modal"] = False
-                    st.session_state["show_billing_portal_modal"] = False
-                    st.session_state["view"] = "admin"
-                    st.rerun()
+                    st.markdown("<hr style='border-color:rgba(168,85,247,0.25); margin:8px 0;'>", unsafe_allow_html=True)
 
-                st.markdown("<hr style='border-color:rgba(168,85,247,0.25); margin:8px 0;'>", unsafe_allow_html=True)
-
-                if st.button("⏻ Sign Out", key="sb_pop_logout_btn", type="primary", use_container_width=True):
-                    st.session_state["user_profile"] = None
-                    st.session_state["memory"] = None
-                    st.session_state["active_step_index"] = 0
-                    st.session_state["last_topic"] = None
-                    st.session_state["show_upgrade_modal"] = False
-                    st.session_state["show_billing_portal_modal"] = False
-                    if "target_upgrade_tier" in st.session_state:
-                        del st.session_state["target_upgrade_tier"]
-                    if "quick_launch_topic" in st.session_state:
-                        del st.session_state["quick_launch_topic"]
-                    for k in list(st.session_state.keys()):
-                        if any(
-                            k.startswith(pfx)
-                            for pfx in [
-                                "step_agents_ran_",
-                                "quiz_submitted_",
-                                "saved_user_answers_",
-                                "saved_user_full_answers_",
-                                "xp_awarded_",
-                                "show_victory_modal_",
-                                "victory_modal_dismissed_",
-                                "session_hist_",
-                            ]
-                        ):
-                            del st.session_state[k]
-                    st.session_state["view"] = "home"
-                    st.query_params.clear()
-                    st.toast("Logged out successfully.", icon="ℹ️")
-                    st.rerun()
-            st.markdown("</div>", unsafe_allow_html=True)
+                    if st.button("⏻ Sign Out", key="sb_pop_logout_btn", type="primary", use_container_width=True):
+                        st.session_state["user_profile"] = None
+                        st.session_state["memory"] = None
+                        st.session_state["active_step_index"] = 0
+                        st.session_state["last_topic"] = None
+                        st.session_state["show_upgrade_modal"] = False
+                        st.session_state["show_billing_portal_modal"] = False
+                        if "target_upgrade_tier" in st.session_state:
+                            del st.session_state["target_upgrade_tier"]
+                        if "quick_launch_topic" in st.session_state:
+                            del st.session_state["quick_launch_topic"]
+                        for k in list(st.session_state.keys()):
+                            if any(
+                                k.startswith(pfx)
+                                for pfx in [
+                                    "step_agents_ran_",
+                                    "quiz_submitted_",
+                                    "saved_user_answers_",
+                                    "saved_user_full_answers_",
+                                    "xp_awarded_",
+                                    "show_victory_modal_",
+                                    "victory_modal_dismissed_",
+                                    "session_hist_",
+                                ]
+                            ):
+                                del st.session_state[k]
+                            st.session_state["view"] = "home"
+                        st.query_params.clear()
+                        st.toast("Logged out successfully.", icon="ℹ️")
+                        st.rerun()
 
     memory = get_or_create_memory()
 
