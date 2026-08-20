@@ -30,7 +30,7 @@ def run_async(coro: Any) -> Any:
     return loop.run_until_complete(coro)
 
 
-@st.dialog("⚡ Upgrade Your EduTechAI Subscription", width="large")
+@st.dialog("⚡ Upgrade Your EduTechAI Subscription", width="medium")
 def render_subscription_upgrade_dialog(default_tier: str = "pro"):
     """
     Renders the interactive subscription upgrade dialog with plan switcher and multi-gateway checkout.
@@ -247,10 +247,13 @@ def render_subscription_upgrade_dialog(default_tier: str = "pro"):
                 st.error(f"Payment failed: {ex}")
 
 
-@st.dialog("💳 Subscription & Billing Portal", width="large")
+@st.dialog("💳 Subscription & Billing Portal", width="medium")
 def render_user_billing_portal_dialog():
     """Dialog wrapper for the user billing portal."""
     render_user_billing_portal()
+
+
+
 
 
 def render_user_billing_portal():

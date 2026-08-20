@@ -901,6 +901,7 @@ CUSTOM_CSS = """
         box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 25px rgba(168, 85, 247, 0.25) !important;
         color: #FAFAFA !important;
         min-width: 260px !important;
+        z-index: 99999 !important;
     }
 
     div[data-testid="stPopoverBody"] hr {
@@ -2367,8 +2368,14 @@ CUSTOM_CSS = """
     }
 
     /* ── Streamlit Dialog / Modal Glowing Sparkling Theme ── */
+    div[data-testid="stModalContainer"],
+    div[data-testid="stDialog"] {
+        z-index: 9999999 !important;
+    }
+
     div[data-testid="stModal"],
     div[role="dialog"] {
+        z-index: 9999999 !important;
         background: linear-gradient(135deg, rgba(20, 12, 35, 0.98) 0%, rgba(35, 18, 55, 0.98) 100%) !important;
         border: 2px solid rgba(245, 158, 11, 0.6) !important;
         border-radius: 24px !important;
@@ -3924,15 +3931,19 @@ def render_learning_workspace():
                 if u_tier != "ULTRA":
                     upgrade_target = "ultra" if u_tier == "PRO" else "pro"
                     if st.button(f"⚡ Upgrade to {upgrade_target.upper()}", key="sb_pop_upgrade_btn", type="primary", use_container_width=True):
+                        st.session_state["show_billing_portal_modal"] = False
                         st.session_state["target_upgrade_tier"] = upgrade_target
                         st.session_state["show_upgrade_modal"] = True
                         st.rerun()
 
                 if st.button("💳 Billing & Plan", key="sb_pop_billing_btn", use_container_width=True):
+                    st.session_state["show_upgrade_modal"] = False
                     st.session_state["show_billing_portal_modal"] = True
                     st.rerun()
 
                 if st.button("⚙️ Admin Console", key="sb_pop_admin_btn", use_container_width=True):
+                    st.session_state["show_upgrade_modal"] = False
+                    st.session_state["show_billing_portal_modal"] = False
                     st.session_state["view"] = "admin"
                     st.rerun()
 
@@ -5046,13 +5057,16 @@ else:
     render_learning_workspace()
 
 # ─── Modal Dialog Controllers ──────────────────────────────────────
-if st.session_state.get("show_upgrade_modal") and st.session_state.get("user_profile"):
+# Use pop() to consume the flag on the rerun that opens the dialog.
+# The dialog stays open via Streamlit's internal fragment/dialog state.
+# When dismissed (X or outside click), the full rerun finds no flag → dialog won't reopen.
+if st.session_state.pop("show_upgrade_modal", False) and st.session_state.get("user_profile"):
     from services.subscription_ui import render_subscription_upgrade_dialog
-    target_t = st.session_state.get("target_upgrade_tier", "pro")
+    target_t = st.session_state.pop("target_upgrade_tier", "pro")
     render_subscription_upgrade_dialog(target_t)
-
-if st.session_state.get("show_billing_portal_modal") and st.session_state.get("user_profile"):
+elif st.session_state.pop("show_billing_portal_modal", False) and st.session_state.get("user_profile"):
     from services.subscription_ui import render_user_billing_portal_dialog
     render_user_billing_portal_dialog()
+
 
 
