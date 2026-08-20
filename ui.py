@@ -1875,26 +1875,80 @@ CUSTOM_CSS = """
         flex-shrink: 0;
     }
 
-    /* ── Modern Glassmorphic Search Bar in Sidebar ── */
+    /* ── Modern Glassmorphic Search Bar in Sidebar with Guaranteed White Search Icon ── */
     div[class*="st-key-sb_hist_search_input"] {
         margin-top: 10px !important;
         margin-bottom: 12px !important;
+        position: relative !important;
     }
 
-    div[class*="st-key-sb_hist_search_input"] input {
-        background: rgba(255, 255, 255, 0.04) !important;
-        border: 1px solid rgba(168, 85, 247, 0.22) !important;
-        border-radius: 10px !important;
-        color: #F3E8FF !important;
-        font-size: 0.82rem !important;
-        padding: 7px 12px !important;
-        height: 36px !important;
-        transition: all 0.2s ease !important;
+    div[class*="st-key-sb_hist_search_input"]::before {
+        content: '' !important;
+        position: absolute !important;
+        left: 11px !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+        width: 15px !important;
+        height: 15px !important;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23FFFFFF' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'%3E%3C/circle%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'%3E%3C/line%3E%3C/svg%3E") !important;
+        background-repeat: no-repeat !important;
+        background-size: contain !important;
+        z-index: 10 !important;
+        pointer-events: none !important;
+        opacity: 0.95 !important;
+        filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.6)) !important;
     }
-    div[class*="st-key-sb_hist_search_input"] input:focus {
-        background: rgba(255, 255, 255, 0.07) !important;
+
+    /* Single border and background container */
+    div[class*="st-key-sb_hist_search_input"] div[data-baseweb="input"],
+    div[class*="st-key-sb_hist_search_input"] div[data-baseweb="base-input"] {
+        background-color: rgba(255, 255, 255, 0.04) !important;
+        border: 1px solid rgba(168, 85, 247, 0.25) !important;
+        border-radius: 10px !important;
+        height: 36px !important;
+        min-height: 36px !important;
+        box-shadow: none !important;
+        outline: none !important;
+        transition: all 0.2s ease !important;
+        padding: 0 !important;
+    }
+
+    div[class*="st-key-sb_hist_search_input"] div[data-baseweb="input"]:focus-within {
+        background-color: rgba(255, 255, 255, 0.07) !important;
         border-color: #A855F7 !important;
         box-shadow: 0 0 12px rgba(168, 85, 247, 0.35) !important;
+    }
+
+    /* Input Field: Completely borderless and transparent to prevent double border */
+    div[class*="st-key-sb_hist_search_input"] input {
+        background: transparent !important;
+        background-image: none !important;
+        border: 0 !important;
+        border-width: 0 !important;
+        border-style: none !important;
+        border-color: transparent !important;
+        outline: none !important;
+        box-shadow: none !important;
+        color: #F3E8FF !important;
+        font-size: 0.82rem !important;
+        padding: 0 10px 0 34px !important;
+        height: 100% !important;
+        min-height: 34px !important;
+    }
+
+    div[class*="st-key-sb_hist_search_input"] input:focus,
+    div[class*="st-key-sb_hist_search_input"] input:active,
+    div[class*="st-key-sb_hist_search_input"] input:focus-visible {
+        border: 0 !important;
+        border-width: 0 !important;
+        border-color: transparent !important;
+        outline: none !important;
+        box-shadow: none !important;
+    }
+
+    div[class*="st-key-sb_hist_search_input"] input::placeholder {
+        color: rgba(233, 213, 255, 0.55) !important;
+        font-size: 0.78rem !important;
     }
 
     /* ── Redesigned Modern Filter Pills: All, Active, Completed ── */
@@ -4461,7 +4515,7 @@ def render_learning_workspace():
             hist_search_val = st.text_input(
                 "Search your learning sessions",
                 value=st.session_state.get("session_hist_search_val", ""),
-                placeholder="🔍 Search history...",
+                placeholder="Search sessions by topic or concept...",
                 key="sb_hist_search_input",
                 label_visibility="collapsed",
             )
