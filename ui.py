@@ -4660,13 +4660,12 @@ def render_learning_workspace():
                                         st.rerun()
 
                         with card_cols[1]:
-                            with st.popover("", icon=":material/more_vert:", use_container_width=True):
+                            with st.popover("", icon=":material/more_vert:", use_container_width=True, key=f"session_pop_{s_id}"):
                                 if st.button("Delete", icon=":material/delete:", key=f"sb_del_pop_{s_id}", type="secondary", use_container_width=True):
                                     run_async(SessionManager().delete_session(s_id, user_id=user_profile.id))
                                     if active_session_id == s_id:
                                         st.session_state["memory"] = None
                                         st.session_state["active_step_index"] = 0
-                                    st.toast("Session deleted.", icon="🗑️")
                                     st.rerun()
 
                 # Progressive Loading "Load More" Button
