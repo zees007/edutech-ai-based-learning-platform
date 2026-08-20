@@ -894,38 +894,189 @@ CUSTOM_CSS = """
         text-align: left !important;
     }
 
-    /* Popover Content Styling */
+    /* ── Popover Content Styling — Theme Glassmorphism ── */
     div[data-testid="stPopoverBody"] {
-        background: rgba(15, 23, 42, 0.95) !important;
-        backdrop-filter: blur(24px) !important;
-        -webkit-backdrop-filter: blur(24px) !important;
-        border: 1px solid rgba(168, 85, 247, 0.5) !important;
-        border-radius: 16px !important;
+        background: linear-gradient(145deg, rgba(15, 10, 26, 0.96) 0%, rgba(26, 17, 46, 0.94) 50%, rgba(15, 23, 42, 0.96) 100%) !important;
+        backdrop-filter: blur(28px) !important;
+        -webkit-backdrop-filter: blur(28px) !important;
+        border: 1.5px solid rgba(168, 85, 247, 0.4) !important;
+        border-radius: 18px !important;
         padding: 16px !important;
-        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 25px rgba(168, 85, 247, 0.25) !important;
+        box-shadow: 0 25px 60px -10px rgba(0, 0, 0, 0.8), 0 0 30px rgba(168, 85, 247, 0.25), inset 0 0 25px rgba(168, 85, 247, 0.08) !important;
         color: #FAFAFA !important;
-        min-width: 260px !important;
+        min-width: 270px !important;
+        max-width: 320px !important;
         z-index: 99999 !important;
     }
 
-    div[data-testid="stPopoverBody"] hr {
-        border-color: rgba(168, 85, 247, 0.25) !important;
+    div[data-testid="stPopoverBody"] hr,
+    .pop-divider {
+        border: none !important;
+        border-top: 1px solid rgba(168, 85, 247, 0.25) !important;
         margin: 10px 0 !important;
+        width: 100% !important;
+        box-shadow: 0 0 8px rgba(168, 85, 247, 0.15) !important;
     }
 
-    div[data-testid="stPopoverBody"] button {
+    /* User Profile Card inside Popover */
+    .pop-user-card {
+        text-align: center;
+        padding: 12px 10px 14px 10px;
+        margin-bottom: 12px;
+        background: linear-gradient(135deg, rgba(30, 20, 50, 0.6) 0%, rgba(124, 58, 237, 0.15) 100%);
+        border: 1px solid rgba(168, 85, 247, 0.3);
+        border-radius: 14px;
+        box-shadow: inset 0 0 15px rgba(168, 85, 247, 0.08);
+    }
+
+    .pop-avatar-glow {
+        width: 46px;
+        height: 46px;
+        margin: 0 auto 8px auto;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%);
+        border: 1.5px solid rgba(255, 255, 255, 0.35);
+        box-shadow: 0 0 18px rgba(168, 85, 247, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.35rem;
+        color: #FFFFFF;
+    }
+
+    .pop-user-name {
+        font-weight: 800;
+        font-size: 1.02rem;
+        color: #FAFAFA;
+        line-height: 1.2;
+        margin-bottom: 2px;
+    }
+
+    .pop-user-email {
+        font-size: 0.76rem;
+        color: rgba(233, 213, 255, 0.65);
+        margin-bottom: 8px;
+        word-break: break-all;
+    }
+
+    .pop-tier-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: linear-gradient(135deg, rgba(168, 85, 247, 0.25) 0%, rgba(59, 130, 246, 0.2) 100%);
+        border: 1px solid rgba(168, 85, 247, 0.5);
+        border-radius: 20px;
+        padding: 2px 10px;
+        font-size: 0.70rem;
+        font-weight: 800;
+        color: #E9D5FF;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+    }
+
+    .pop-tier-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #34D399;
+        box-shadow: 0 0 6px #34D399;
+        display: inline-block;
+    }
+
+    /* Popover Upgrade Button */
+    div[class*="st-key-sb_pop_upgrade_btn"] button {
         width: 100% !important;
-        max-width: none !important;
-        height: auto !important;
-        max-height: none !important;
         min-height: 38px !important;
-        padding: 8px 16px !important;
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%) !important;
+        border: none !important;
         border-radius: 10px !important;
-        font-size: 0.88rem !important;
+        color: #FFFFFF !important;
+        font-weight: 800 !important;
+        font-size: 0.86rem !important;
+        letter-spacing: 0.2px !important;
+        box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4) !important;
+        margin-bottom: 6px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 6px !important;
+        cursor: pointer !important;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+
+    div[class*="st-key-sb_pop_upgrade_btn"] button:hover {
+        box-shadow: 0 6px 20px rgba(168, 85, 247, 0.65) !important;
+        transform: translateY(-1px) !important;
+    }
+
+    /* Popover Menu Action Buttons (Billing, Admin) */
+    div[class*="st-key-sb_pop_billing_btn"] button,
+    div[class*="st-key-sb_pop_admin_btn"] button {
+        width: 100% !important;
+        min-height: 38px !important;
+        background: rgba(255, 255, 255, 0.04) !important;
+        border: 1px solid rgba(168, 85, 247, 0.25) !important;
+        border-radius: 10px !important;
+        color: #F3E8FF !important;
+        font-weight: 600 !important;
+        font-size: 0.85rem !important;
+        margin-bottom: 6px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        padding: 8px 14px !important;
+        gap: 8px !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+    }
+
+    div[class*="st-key-sb_pop_billing_btn"] button:hover,
+    div[class*="st-key-sb_pop_admin_btn"] button:hover {
+        background: rgba(168, 85, 247, 0.18) !important;
+        border-color: rgba(168, 85, 247, 0.6) !important;
+        color: #FFFFFF !important;
+        transform: translateX(3px) !important;
+        box-shadow: 0 2px 10px rgba(168, 85, 247, 0.25) !important;
+    }
+
+    /* Popover Sign Out Button */
+    div[class*="st-key-sb_pop_logout_btn"] button {
+        width: 100% !important;
+        min-height: 38px !important;
+        background: rgba(239, 68, 68, 0.12) !important;
+        border: 1px solid rgba(239, 68, 68, 0.35) !important;
+        border-radius: 10px !important;
+        color: #FCA5A5 !important;
         font-weight: 700 !important;
+        font-size: 0.85rem !important;
+        margin-top: 4px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 6px !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+        box-shadow: none !important;
+    }
+
+    div[class*="st-key-sb_pop_logout_btn"] button:hover {
+        background: rgba(239, 68, 68, 0.25) !important;
+        border-color: rgba(239, 68, 68, 0.75) !important;
+        color: #FFFFFF !important;
+        box-shadow: 0 0 16px rgba(239, 68, 68, 0.4) !important;
+        transform: translateY(-1px) !important;
+    }
+
+    /* Session Delete Popover Button (History Items) */
+    div[class*="st-key-sb_del_pop_"] button {
+        width: 100% !important;
+        min-height: 36px !important;
         background: rgba(239, 68, 68, 0.15) !important;
         border: 1px solid rgba(239, 68, 68, 0.4) !important;
+        border-radius: 10px !important;
         color: #FCA5A5 !important;
+        font-size: 0.84rem !important;
+        font-weight: 700 !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
@@ -933,7 +1084,7 @@ CUSTOM_CSS = """
         transition: all 0.2s ease !important;
     }
 
-    div[data-testid="stPopoverBody"] button:hover {
+    div[class*="st-key-sb_del_pop_"] button:hover {
         background: rgba(239, 68, 68, 0.3) !important;
         border-color: rgba(239, 68, 68, 0.8) !important;
         box-shadow: 0 0 16px rgba(239, 68, 68, 0.4) !important;
@@ -4250,13 +4401,11 @@ def render_learning_workspace():
                 with st.popover("", icon=":material/settings:", key="sb_settings_popover_btn", use_container_width=True):
                     st.markdown(
                         f"""
-                        <div style="text-align: center; padding: 6px 0 10px 0;">
-                            <div style="font-size: 2.2rem; margin-bottom: 4px;">&#128100;</div>
-                            <div style="font-weight: 800; font-size: 1.05rem; color: #FAFAFA;">{html.escape(user_display_name)}</div>
-                            <div style="font-size: 0.8rem; color: rgba(233, 213, 255, 0.7); margin-bottom: 8px;">{html.escape(user_profile.email if hasattr(user_profile, 'email') and user_profile.email else 'Student')}</div>
-                            <div style="display: inline-block; background: rgba(168, 85, 247, 0.25); border: 1px solid rgba(168, 85, 247, 0.5); border-radius: 20px; padding: 2px 12px; font-size: 0.75rem; font-weight: 800; color: #C084FC; text-transform: uppercase;">
-                                {u_tier} Tier
-                            </div>
+                        <div class="pop-user-card">
+                            <div class="pop-avatar-glow">&#128100;</div>
+                            <div class="pop-user-name">{html.escape(user_display_name)}</div>
+                            <div class="pop-user-email">{html.escape(user_profile.email if hasattr(user_profile, 'email') and user_profile.email else 'Student')}</div>
+                            <div class="pop-tier-badge"><span class="pop-tier-dot"></span>{u_tier} MEMBER</div>
                         </div>
                         """,
                         unsafe_allow_html=True,
@@ -4283,7 +4432,7 @@ def render_learning_workspace():
 
                     st.markdown("<hr style='border-color:rgba(168,85,247,0.25); margin:8px 0;'>", unsafe_allow_html=True)
 
-                    if st.button("⏻ Sign Out", key="sb_pop_logout_btn", type="primary", use_container_width=True):
+                    if st.button("⏻ Sign Out", key="sb_pop_logout_btn", use_container_width=True):
                         st.session_state["user_profile"] = None
                         st.session_state["memory"] = None
                         st.session_state["active_step_index"] = 0
