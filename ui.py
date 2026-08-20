@@ -2299,6 +2299,16 @@ CUSTOM_CSS = """
         visibility: visible !important;
     }
 
+    @media (hover: none), (max-width: 768px) {
+        section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(div[class*="st-key-sb_card_"]) div[data-testid="stPopover"] button {
+            opacity: 0.6 !important;
+            visibility: visible !important;
+        }
+        section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(div[class*="st-key-sb_card_"]) div[data-testid="stPopover"] button:active {
+            opacity: 1 !important;
+        }
+    }
+
     section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(div[class*="st-key-sb_card_"]) div[data-testid="stPopover"] button:hover {
         background: rgba(255, 255, 255, 0.15) !important;
         color: #FFFFFF !important;
