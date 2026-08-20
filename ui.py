@@ -1079,28 +1079,78 @@ CUSTOM_CSS = """
         transform: translateY(-1px) !important;
     }
 
-    /* Session Delete Popover Button (History Items) */
-    div[class*="st-key-sb_del_pop_"] button {
-        width: 100% !important;
-        min-height: 36px !important;
-        background: rgba(239, 68, 68, 0.15) !important;
-        border: 1px solid rgba(239, 68, 68, 0.4) !important;
-        border-radius: 10px !important;
-        color: #FCA5A5 !important;
-        font-size: 0.84rem !important;
-        font-weight: 700 !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        gap: 6px !important;
-        transition: all 0.2s ease !important;
+    /* Session Delete Popover Body — Borderless, minimal, compact with proper padding */
+    div[data-testid="stPopoverBody"]:has(div[class*="st-key-sb_del_pop_"]) {
+        border: none !important;
+        border-radius: 12px !important;
+        padding: 6px 8px !important;
+        min-width: 125px !important;
+        max-width: 145px !important;
+        background: rgba(20, 13, 33, 0.96) !important;
+        backdrop-filter: blur(24px) !important;
+        -webkit-backdrop-filter: blur(24px) !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.75), 0 0 15px rgba(168, 85, 247, 0.15) !important;
+        margin: 0 !important;
     }
 
-    div[class*="st-key-sb_del_pop_"] button:hover {
-        background: rgba(239, 68, 68, 0.3) !important;
-        border-color: rgba(239, 68, 68, 0.8) !important;
-        box-shadow: 0 0 16px rgba(239, 68, 68, 0.4) !important;
-        color: #FFFFFF !important;
+    /* Session Delete Popover Button: Simple text with dustbin icon, completely borderless */
+    div[data-testid="stPopoverBody"] div[class*="st-key-sb_del_pop_"] button,
+    div[class*="st-key-sb_del_pop_"] button,
+    div[data-testid="stPopoverBody"]:has(div[class*="st-key-sb_del_pop_"]) button {
+        width: 100% !important;
+        min-height: 32px !important;
+        height: 32px !important;
+        background: transparent !important;
+        border: 0 !important;
+        border-color: transparent !important;
+        outline: none !important;
+        box-shadow: none !important;
+        border-radius: 8px !important;
+        color: #F87171 !important;
+        font-size: 0.84rem !important;
+        font-weight: 600 !important;
+        letter-spacing: 0.1px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        gap: 8px !important;
+        padding: 6px 10px !important;
+        margin: 0 !important;
+        transition: all 0.18s ease !important;
+        cursor: pointer !important;
+    }
+
+    div[data-testid="stPopoverBody"] div[class*="st-key-sb_del_pop_"] button:hover,
+    div[class*="st-key-sb_del_pop_"] button:hover,
+    div[data-testid="stPopoverBody"]:has(div[class*="st-key-sb_del_pop_"]) button:hover {
+        background: rgba(239, 68, 68, 0.18) !important;
+        border: 0 !important;
+        border-color: transparent !important;
+        outline: none !important;
+        box-shadow: none !important;
+        color: #FF6B6B !important;
+    }
+
+    div[data-testid="stPopoverBody"] div[class*="st-key-sb_del_pop_"] button:focus,
+    div[data-testid="stPopoverBody"] div[class*="st-key-sb_del_pop_"] button:active,
+    div[data-testid="stPopoverBody"] div[class*="st-key-sb_del_pop_"] button:focus-visible,
+    div[class*="st-key-sb_del_pop_"] button:focus,
+    div[class*="st-key-sb_del_pop_"] button:active,
+    div[class*="st-key-sb_del_pop_"] button:focus-visible {
+        background: rgba(239, 68, 68, 0.18) !important;
+        border: 0 !important;
+        border-color: transparent !important;
+        outline: none !important;
+        box-shadow: none !important;
+        color: #FF6B6B !important;
+    }
+
+    div[class*="st-key-sb_del_pop_"] button [data-testid="stIconMaterial"],
+    div[class*="st-key-sb_del_pop_"] button svg {
+        color: inherit !important;
+        font-size: 18px !important;
+        width: 18px !important;
+        height: 18px !important;
     }
 
     /* ── Glassmorphism Cards & Containers ────────────── */
@@ -1984,15 +2034,16 @@ CUSTOM_CSS = """
         margin: 0 !important;
         padding: 0 !important;
         width: 28px !important;
+        height: 28px !important;
         display: flex !important;
-        justify-content: flex-end !important;
+        justify-content: center !important;
         align-items: center !important;
     }
 
     section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(div[class*="st-key-sb_card_"]) div[data-testid="stPopover"] button {
         opacity: 0 !important;
         visibility: hidden !important;
-        border-radius: 6px !important;
+        border-radius: 50% !important;
         min-height: 26px !important;
         height: 26px !important;
         width: 26px !important;
@@ -2008,6 +2059,31 @@ CUSTOM_CSS = """
         box-shadow: none !important;
         color: rgba(233, 213, 255, 0.7) !important;
         transition: opacity 0.12s ease, visibility 0.12s ease, background 0.12s ease, color 0.12s ease !important;
+        overflow: hidden !important;
+    }
+
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(div[class*="st-key-sb_card_"]) div[data-testid="stPopover"] button > div {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        height: 100% !important;
+        width: 100% !important;
+        margin: 0 auto !important;
+        padding: 0 !important;
+        gap: 0 !important;
+    }
+
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(div[class*="st-key-sb_card_"]) div[data-testid="stPopover"] button [data-testid="stIconMaterial"],
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(div[class*="st-key-sb_card_"]) div[data-testid="stPopover"] button svg {
+        font-size: 18px !important;
+        width: 18px !important;
+        height: 18px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        margin: 0 auto !important;
+        padding: 0 !important;
+        line-height: 1 !important;
     }
 
     section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(div[class*="st-key-sb_card_"]):hover div[data-testid="stPopover"] button,
@@ -4368,10 +4444,8 @@ def render_learning_workspace():
                                         st.rerun()
 
                         with card_cols[1]:
-                            with st.popover("", icon=":material/more_horiz:", use_container_width=True):
-                                st.markdown(f"<div style='font-size:0.82rem; font-weight:700; color:#FAFAFA; margin-bottom:4px;'>{s_topic[:26]}...</div>", unsafe_allow_html=True)
-                                st.markdown(f"<div style='font-size:0.75rem; color:#A855F7; margin-bottom:8px;'>Status: <b>{status_tag}</b> • <b>+{s_xp} XP</b></div>", unsafe_allow_html=True)
-                                if st.button("🗑️ Delete Session", key=f"sb_del_pop_{s_id}", type="primary", use_container_width=True):
+                            with st.popover("", icon=":material/more_vert:", use_container_width=True):
+                                if st.button("Delete", icon=":material/delete:", key=f"sb_del_pop_{s_id}", type="secondary", use_container_width=True):
                                     run_async(SessionManager().delete_session(s_id, user_id=user_profile.id))
                                     if active_session_id == s_id:
                                         st.session_state["memory"] = None
