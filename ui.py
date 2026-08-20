@@ -95,6 +95,10 @@ CUSTOM_CSS = """
     .block-container {
         padding-top: 1.5rem !important;
         padding-bottom: 3rem !important;
+        max-width: 1280px !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        box-sizing: border-box !important;
     }
 
     /* Eliminate spacing from 0-height custom components, wrappers, and background elements */
@@ -901,6 +905,7 @@ CUSTOM_CSS = """
         box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 25px rgba(168, 85, 247, 0.25) !important;
         color: #FAFAFA !important;
         min-width: 260px !important;
+        z-index: 99999 !important;
     }
 
     div[data-testid="stPopoverBody"] hr {
@@ -1066,60 +1071,68 @@ CUSTOM_CSS = """
     }
 
     /* ── Fixed Viewport Sidebar Layout & Bottom Sticky Footer ── */
+    html body div.stApp section[data-testid="stSidebar"] {
+        position: relative !important;
+    }
+
     html body div.stApp section[data-testid="stSidebar"] [data-testid="stSidebarContent"] {
         padding-top: 1rem !important;
         padding-left: 0.9rem !important;
         padding-right: 0.9rem !important;
-        padding-bottom: 0.8rem !important;
-        display: flex !important;
-        flex-direction: column !important;
+        padding-bottom: 90px !important; /* Large padding to clear the absolute footer */
         height: 100vh !important;
         max-height: 100vh !important;
-        overflow: hidden !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
         box-sizing: border-box !important;
+        position: relative !important;
+    }
+
+    /* Native Sidebar Scrollbar Styling */
+    html body div.stApp section[data-testid="stSidebar"] [data-testid="stSidebarContent"]::-webkit-scrollbar {
+        width: 6px !important;
+        display: block !important;
+    }
+    html body div.stApp section[data-testid="stSidebar"] [data-testid="stSidebarContent"]::-webkit-scrollbar-track {
+        background: rgba(15, 23, 42, 0.3) !important;
+        border-radius: 4px !important;
+    }
+    html body div.stApp section[data-testid="stSidebar"] [data-testid="stSidebarContent"]::-webkit-scrollbar-thumb {
+        background: rgba(168, 85, 247, 0.45) !important;
+        border-radius: 4px !important;
+    }
+    html body div.stApp section[data-testid="stSidebar"] [data-testid="stSidebarContent"]::-webkit-scrollbar-thumb:hover {
+        background: rgba(168, 85, 247, 0.75) !important;
     }
 
     html body div.stApp section[data-testid="stSidebar"] [data-testid="stSidebarUserContent"] {
-        display: flex !important;
-        flex-direction: column !important;
-        flex: 1 1 0% !important;
-        min-height: 0 !important;
-        height: 100% !important;
-        overflow: hidden !important;
+        display: block !important;
+        height: auto !important;
+        overflow: visible !important;
     }
 
     html body div.stApp section[data-testid="stSidebar"] [data-testid="stSidebarUserContent"] > div[data-testid="stVerticalBlock"] {
-        display: flex !important;
-        flex-direction: column !important;
-        flex: 1 1 0% !important;
-        min-height: 0 !important;
-        height: 100% !important;
+        display: block !important;
+        height: auto !important;
         gap: 0px !important;
     }
 
-    /* Target middle scrollable container inside sidebar block */
-    html body div.stApp section[data-testid="stSidebar"] [data-testid="stSidebarUserContent"] > div[data-testid="stVerticalBlock"] > div:nth-child(2) {
-        flex: 1 1 auto !important;
-        min-height: 0 !important;
-        overflow-y: auto !important;
-        overflow-x: hidden !important;
-        padding-right: 4px !important;
+    /* Pinned Footer Column container at the absolute bottom of the sidebar */
+    html body div.stApp section[data-testid="stSidebar"] [data-testid="stSidebarUserContent"] > div[data-testid="stVerticalBlock"] > div:last-child {
+        position: absolute !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        background: #0B0715 !important; /* solid sidebar background color */
+        padding: 10px 14px 14px 14px !important;
+        border-top: 1px solid rgba(168, 85, 247, 0.25) !important;
+        box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.5) !important;
+        z-index: 99 !important;
+        box-sizing: border-box !important;
     }
 
-    /* Scrollbar styling for sidebar scroll area */
-    html body div.stApp section[data-testid="stSidebar"] [data-testid="stSidebarUserContent"] > div[data-testid="stVerticalBlock"] > div:nth-child(2)::-webkit-scrollbar {
-        width: 4px;
-    }
-    html body div.stApp section[data-testid="stSidebar"] [data-testid="stSidebarUserContent"] > div[data-testid="stVerticalBlock"] > div:nth-child(2)::-webkit-scrollbar-thumb {
-        background: rgba(168, 85, 247, 0.3);
-        border-radius: 4px;
-    }
-
-    /* Ensure footer containers sit fixed at the very bottom */
-    section[data-testid="stSidebar"] div[data-testid="stSidebarUserContent"] > div[data-testid="stVerticalBlock"] > div:has(.sidebar-user-footer-divider),
-    section[data-testid="stSidebar"] div[data-testid="stSidebarUserContent"] > div[data-testid="stVerticalBlock"] > div:has(div.sidebar-footer-wrapper) {
-        margin-top: auto !important;
-        flex-shrink: 0 !important;
+    .sidebar-user-footer-divider {
+        display: none !important;
     }
 
     .sidebar-footer-wrapper {
@@ -1249,7 +1262,7 @@ CUSTOM_CSS = """
         display: flex !important;
         align-items: center !important;
         justify-content: space-between !important;
-        padding: 4px 0 10px 0 !important;
+        padding: 4px 4px 10px 0 !important;
         margin-top: 0 !important;
         margin-bottom: 8px !important;
         border-top: none !important;
@@ -2302,8 +2315,134 @@ CUSTOM_CSS = """
         transform: translateY(-2px) !important;
     }
 
-    /* Mobile & Tablet Responsive Layout for Tutor Chat & Suggested Questions */
+    /* ── Desktop & Mobile Responsive Layout Engine ── */
+    @media (min-width: 769px) {
+        html body div.stApp:has(section[data-testid="stSidebar"][aria-expanded="false"]) .block-container {
+            padding-left: calc(54px + 2rem) !important;
+            padding-right: 2rem !important;
+        }
+    }
+
+    /* Mobile & Tablet Responsive Layout */
     @media (max-width: 768px) {
+        .block-container {
+            padding-top: 3.8rem !important;
+            padding-bottom: 2.5rem !important;
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
+            max-width: 100% !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+        }
+
+        /* Floating Sidebar Toggle Button on Mobile (instead of 100vh column covering left edge) */
+        #edutech-collapsed-mini-rail {
+            top: 12px !important;
+            left: 12px !important;
+            bottom: auto !important;
+            width: 44px !important;
+            height: 44px !important;
+            border-radius: 12px !important;
+            padding: 0 !important;
+            justify-content: center !important;
+            background: rgba(15, 23, 42, 0.94) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border: 1.5px solid rgba(168, 85, 247, 0.5) !important;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6), 0 0 15px rgba(168, 85, 247, 0.35) !important;
+            z-index: 999999 !important;
+        }
+        #edutech-collapsed-mini-rail .mr-item:not(#mr-btn-expand) {
+            display: none !important;
+        }
+        #edutech-collapsed-mini-rail .mr-item#mr-btn-expand {
+            width: 100% !important;
+            height: 100% !important;
+            border: none !important;
+            background: transparent !important;
+            box-shadow: none !important;
+            transform: none !important;
+            margin-top: 10px !important;
+        }
+
+        /* Journey Console on Mobile: Full width, balanced centering without empty side spacer columns */
+        div[data-testid="stHorizontalBlock"]:has(#journey-console-card-marker) {
+            flex-direction: column !important;
+            width: 100% !important;
+            gap: 0px !important;
+        }
+        div[data-testid="stHorizontalBlock"]:has(#journey-console-card-marker) > div[data-testid="stColumn"],
+        div[data-testid="stHorizontalBlock"]:has(#journey-console-card-marker) > div[data-testid="column"] {
+            width: 100% !important;
+            min-width: 100% !important;
+            flex: 1 1 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        div[data-testid="stHorizontalBlock"]:has(#journey-console-card-marker) > div[data-testid="stColumn"]:not(:has(#journey-console-card-marker)),
+        div[data-testid="stHorizontalBlock"]:has(#journey-console-card-marker) > div[data-testid="column"]:not(:has(#journey-console-card-marker)) {
+            display: none !important;
+            height: 0px !important;
+            width: 0px !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+
+        /* Glass Cards and Form Margins on Mobile */
+        div[data-testid="stColumn"]:has(#journey-console-card-marker),
+        div[data-testid="column"]:has(#journey-console-card-marker) {
+            padding: 1.2rem 1rem !important;
+            border-radius: 18px !important;
+            margin-top: 0.4rem !important;
+            margin-bottom: 1rem !important;
+        }
+
+        /* Top Hero Header on Mobile */
+        .et-hero h1 {
+            font-size: 1.65rem !important;
+            padding: 0 0.5rem !important;
+        }
+        .et-hero p {
+            font-size: 0.88rem !important;
+            padding: 0 0.5rem !important;
+        }
+
+        /* Progress & Milestone Dashboard on Mobile */
+        .top-progress-card {
+            padding: 1rem !important;
+            border-radius: 16px !important;
+        }
+
+        /* Milestone Buttons Row on Mobile: Horizontal scrollable track */
+        div[data-testid="stHorizontalBlock"]:has(button[key*="linear_step_btn_"]) {
+            display: flex !important;
+            flex-direction: row !important;
+            flex-wrap: nowrap !important;
+            overflow-x: auto !important;
+            padding-bottom: 8px !important;
+            gap: 8px !important;
+            scrollbar-width: thin;
+        }
+        div[data-testid="stHorizontalBlock"]:has(button[key*="linear_step_btn_"]) > div[data-testid="stColumn"],
+        div[data-testid="stHorizontalBlock"]:has(button[key*="linear_step_btn_"]) > div[data-testid="column"] {
+            min-width: 140px !important;
+            flex: 0 0 140px !important;
+        }
+
+        /* Dropdown Selectors Stack on Mobile */
+        div[data-testid="stHorizontalBlock"]:has(div[class*="st-key-main_mode_select"]) {
+            flex-direction: column !important;
+            gap: 8px !important;
+        }
+        div[data-testid="stHorizontalBlock"]:has(div[class*="st-key-main_mode_select"]) > div[data-testid="stColumn"],
+        div[data-testid="stHorizontalBlock"]:has(div[class*="st-key-main_mode_select"]) > div[data-testid="column"] {
+            width: 100% !important;
+            flex: 1 1 100% !important;
+        }
+
+        /* Tutor Chat Form on Mobile */
         div[data-testid="stForm"]:has(div[class*="st-key-chat_in_"]) div[data-testid="stHorizontalBlock"] {
             flex-direction: column !important;
             align-items: stretch !important;
@@ -2334,6 +2473,92 @@ CUSTOM_CSS = """
         div[data-testid="stHorizontalBlock"]:has(button[key*="sug_q_"]) > div[data-testid="column"] {
             width: 100% !important;
             flex: 1 1 100% !important;
+        }
+
+        /* ── Mobile Sidebar Layout Fixes ── */
+
+        /* ── Mobile Sidebar Layout Fixes ── */
+
+        /* Allow sidebar to use full mobile height and enable proper scroll */
+        html body div.stApp section[data-testid="stSidebar"] {
+            width: 85vw !important;
+            max-width: 320px !important;
+            position: relative !important;
+        }
+
+        html body div.stApp section[data-testid="stSidebar"] [data-testid="stSidebarContent"] {
+            padding-top: 1rem !important;
+            padding-left: 0.9rem !important;
+            padding-right: 0.9rem !important;
+            padding-bottom: 90px !important; /* Clears absolute footer */
+            height: 100dvh !important;
+            max-height: 100dvh !important;
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+            -webkit-overflow-scrolling: touch !important;
+            box-sizing: border-box !important;
+            position: relative !important;
+        }
+
+        /* Webkit scrollbar styling on mobile */
+        html body div.stApp section[data-testid="stSidebar"] [data-testid="stSidebarContent"]::-webkit-scrollbar {
+            width: 6px !important;
+            display: block !important;
+        }
+        html body div.stApp section[data-testid="stSidebar"] [data-testid="stSidebarContent"]::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.3) !important;
+            border-radius: 4px !important;
+        }
+        html body div.stApp section[data-testid="stSidebar"] [data-testid="stSidebarContent"]::-webkit-scrollbar-thumb {
+            background: rgba(168, 85, 247, 0.45) !important;
+            border-radius: 4px !important;
+        }
+
+        html body div.stApp section[data-testid="stSidebar"] [data-testid="stSidebarUserContent"] {
+            display: block !important;
+            height: auto !important;
+            overflow: visible !important;
+        }
+
+        html body div.stApp section[data-testid="stSidebar"] [data-testid="stSidebarUserContent"] > div[data-testid="stVerticalBlock"] {
+            display: block !important;
+            height: auto !important;
+            gap: 0px !important;
+        }
+
+        /* Sticky footer: Pinned profile card + settings always at bottom of mobile viewport */
+        html body div.stApp section[data-testid="stSidebar"] [data-testid="stSidebarUserContent"] > div[data-testid="stVerticalBlock"] > div:last-child {
+            position: absolute !important;
+            bottom: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            background: #0B0715 !important; /* solid sidebar bg */
+            padding: 10px 14px 14px 14px !important;
+            border-top: 1px solid rgba(168, 85, 247, 0.25) !important;
+            box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.5) !important;
+            z-index: 99 !important;
+            box-sizing: border-box !important;
+        }
+
+        /* Profile + Settings row wrap protection */
+        section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(div[class*="st-key-sb_settings_popover_btn"]) {
+            flex-wrap: nowrap !important;
+            overflow: visible !important;
+        }
+
+        /* Ensure settings gear icon is visible and not clipped */
+        div[class*="st-key-sb_settings_popover_btn"] {
+            overflow: visible !important;
+        }
+        div[class*="st-key-sb_settings_popover_btn"] div[data-testid="stPopover"] {
+            overflow: visible !important;
+        }
+        div[class*="st-key-sb_settings_popover_btn"] div[data-testid="stPopover"] button {
+            width: 38px !important;
+            height: 38px !important;
+            min-width: 38px !important;
+            min-height: 38px !important;
+            overflow: visible !important;
         }
     }
 
@@ -2367,8 +2592,14 @@ CUSTOM_CSS = """
     }
 
     /* ── Streamlit Dialog / Modal Glowing Sparkling Theme ── */
+    div[data-testid="stModalContainer"],
+    div[data-testid="stDialog"] {
+        z-index: 9999999 !important;
+    }
+
     div[data-testid="stModal"],
     div[role="dialog"] {
+        z-index: 9999999 !important;
         background: linear-gradient(135deg, rgba(20, 12, 35, 0.98) 0%, rgba(35, 18, 55, 0.98) 100%) !important;
         border: 2px solid rgba(245, 158, 11, 0.6) !important;
         border-radius: 24px !important;
@@ -3509,7 +3740,11 @@ def render_learning_workspace():
                     return doc.querySelector('[data-testid="stSidebarCollapseButton"] button');
                 }
 
-                // Global Delegated click handler for top collapse button and history collapse toggle
+                function isMobileView() {
+                    return win.innerWidth <= 768 || (win.matchMedia && win.matchMedia('(max-width: 768px)').matches);
+                }
+
+                // Global Delegated click handler for top collapse button, history collapse toggle, and mobile auto-close
                 doc.addEventListener('click', function(e) {
                     const collapseTarget = e.target && e.target.closest ? e.target.closest('#edutech-sb-collapse-btn, .sidebar-top-collapse-btn') : null;
                     if (collapseTarget) {
@@ -3519,6 +3754,7 @@ def render_learning_workspace():
                         if (closeBtn) {
                             dispatchFullClick(closeBtn);
                         }
+                        return;
                     }
 
                     const histTarget = e.target && e.target.closest ? e.target.closest('#edutech-hist-collapse-header') : null;
@@ -3528,6 +3764,31 @@ def render_learning_workspace():
                         const hiddenBtn = doc.querySelector('div[class*="st-key-sb_hist_hidden_toggle_btn"] button');
                         if (hiddenBtn) {
                             dispatchFullClick(hiddenBtn);
+                        }
+                        return;
+                    }
+
+                    // Auto-close sidebar on mobile view when user taps any action item / session / button inside sidebar
+                    if (isMobileView() && isSidebarOpen()) {
+                        const sb = doc.querySelector('section[data-testid="stSidebar"]');
+                        const isInsideSidebar = sb && sb.contains(e.target);
+                        const isInsideSettingsPopover = Boolean(e.target.closest('div[data-testid="stPopoverBody"]'));
+
+                        if (isInsideSidebar || isInsideSettingsPopover) {
+                            // Exclude search inputs, text inputs, dropdown menus, popover toggle, and accordion header
+                            const isSearchOrInput = Boolean(e.target.closest('input, textarea, [data-baseweb="select"], [data-baseweb="menu"], #edutech-hist-collapse-header, div[class*="st-key-sb_hist_hidden_toggle_btn"], div[class*="st-key-sb_settings_popover_btn"] > div[data-testid="stPopover"] > button'));
+                            const isActionButton = Boolean(e.target.closest('button, [role="button"], a, .mr-item, div[class*="st-key-sb_card_"], div[class*="st-key-sb_new_journey_btn"], div[class*="st-key-sb_flt_"], div[class*="st-key-sb_load_more_btn"], div[class*="st-key-sb_del_"], div[class*="st-key-sb_pop_"]'));
+
+                            if (isActionButton && !isSearchOrInput && !win._edutechMobileCollapseDebounce) {
+                                win._edutechMobileCollapseDebounce = true;
+                                setTimeout(function() {
+                                    if (isSidebarOpen()) {
+                                        const closeBtn = findCollapseButton();
+                                        if (closeBtn) closeBtn.click();
+                                    }
+                                    win._edutechMobileCollapseDebounce = false;
+                                }, 300);
+                            }
                         }
                     }
                 }, true);
@@ -3921,7 +4182,22 @@ def render_learning_workspace():
                     unsafe_allow_html=True,
                 )
 
+                if u_tier != "ULTRA":
+                    upgrade_target = "ultra" if u_tier == "PRO" else "pro"
+                    if st.button(f"⚡ Upgrade to {upgrade_target.upper()}", key="sb_pop_upgrade_btn", type="primary", use_container_width=True):
+                        st.session_state["show_billing_portal_modal"] = False
+                        st.session_state["target_upgrade_tier"] = upgrade_target
+                        st.session_state["show_upgrade_modal"] = True
+                        st.rerun()
+
+                if st.button("💳 Billing & Plan", key="sb_pop_billing_btn", use_container_width=True):
+                    st.session_state["show_upgrade_modal"] = False
+                    st.session_state["show_billing_portal_modal"] = True
+                    st.rerun()
+
                 if st.button("⚙️ Admin Console", key="sb_pop_admin_btn", use_container_width=True):
+                    st.session_state["show_upgrade_modal"] = False
+                    st.session_state["show_billing_portal_modal"] = False
                     st.session_state["view"] = "admin"
                     st.rerun()
 
@@ -3932,6 +4208,10 @@ def render_learning_workspace():
                     st.session_state["memory"] = None
                     st.session_state["active_step_index"] = 0
                     st.session_state["last_topic"] = None
+                    st.session_state["show_upgrade_modal"] = False
+                    st.session_state["show_billing_portal_modal"] = False
+                    if "target_upgrade_tier" in st.session_state:
+                        del st.session_state["target_upgrade_tier"]
                     if "quick_launch_topic" in st.session_state:
                         del st.session_state["quick_launch_topic"]
                     for k in list(st.session_state.keys()):
@@ -5029,3 +5309,18 @@ elif current_view in ["home", "auth", "pricing"]:
     render_home_page()
 else:
     render_learning_workspace()
+
+# ─── Modal Dialog Controllers ──────────────────────────────────────
+# Use pop() to consume the flag on the rerun that opens the dialog.
+# The dialog stays open via Streamlit's internal fragment/dialog state.
+# When dismissed (X or outside click), the full rerun finds no flag → dialog won't reopen.
+if st.session_state.pop("show_upgrade_modal", False) and st.session_state.get("user_profile"):
+    from services.subscription_ui import render_subscription_upgrade_dialog
+    target_t = st.session_state.pop("target_upgrade_tier", "pro")
+    render_subscription_upgrade_dialog(target_t)
+elif st.session_state.pop("show_billing_portal_modal", False) and st.session_state.get("user_profile"):
+    from services.subscription_ui import render_user_billing_portal_dialog
+    render_user_billing_portal_dialog()
+
+
+
