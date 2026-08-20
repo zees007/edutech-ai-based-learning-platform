@@ -4299,9 +4299,9 @@ def render_learning_workspace():
                         const isInsideSettingsPopover = Boolean(e.target.closest('div[data-testid="stPopoverBody"]'));
 
                         if (isInsideSidebar || isInsideSettingsPopover) {
-                            // Exclude search inputs, text inputs, dropdown menus, popover toggle, and accordion header
-                            const isSearchOrInput = Boolean(e.target.closest('input, textarea, [data-baseweb="select"], [data-baseweb="menu"], #edutech-hist-collapse-header, div[class*="st-key-sb_hist_hidden_toggle_btn"], div[class*="st-key-sb_settings_popover_btn"] > div[data-testid="stPopover"] > button'));
-                            const isActionButton = Boolean(e.target.closest('button, [role="button"], a, .mr-item, div[class*="st-key-sb_card_"], div[class*="st-key-sb_new_journey_btn"], div[class*="st-key-sb_flt_"], div[class*="st-key-sb_load_more_btn"], div[class*="st-key-sb_del_"], div[class*="st-key-sb_pop_"]'));
+                            // Exclude search inputs, text inputs, dropdown menus, popover toggle, accordion header, and history interactions (filters, load more, delete)
+                            const isSearchOrInput = Boolean(e.target.closest('input, textarea, [data-baseweb="select"], [data-baseweb="menu"], #edutech-hist-collapse-header, div[class*="st-key-sb_hist_hidden_toggle_btn"], div[data-testid="stPopover"], div[class*="st-key-sb_flt_"], div[class*="st-key-sb_load_more_btn"], div[class*="st-key-sb_del_"]'));
+                            const isActionButton = Boolean(e.target.closest('button, [role="button"], a, .mr-item, div[class*="st-key-sb_card_"], div[class*="st-key-sb_new_journey_btn"], div[class*="st-key-sb_pop_"]'));
 
                             if (isActionButton && !isSearchOrInput && !win._edutechMobileCollapseDebounce) {
                                 win._edutechMobileCollapseDebounce = true;
