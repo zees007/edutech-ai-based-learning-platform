@@ -901,28 +901,26 @@ CUSTOM_CSS = """
         -webkit-backdrop-filter: blur(28px) !important;
         border: 1.5px solid rgba(168, 85, 247, 0.4) !important;
         border-radius: 18px !important;
-        padding: 16px !important;
-        box-shadow: 0 25px 60px -10px rgba(0, 0, 0, 0.8), 0 0 30px rgba(168, 85, 247, 0.25), inset 0 0 25px rgba(168, 85, 247, 0.08) !important;
+        padding: 14px !important;
+        box-shadow: 0 25px 60px -10px rgba(0, 0, 0, 0.85), 0 0 30px rgba(168, 85, 247, 0.25), inset 0 0 25px rgba(168, 85, 247, 0.08) !important;
         color: #FAFAFA !important;
         min-width: 270px !important;
         max-width: 320px !important;
         z-index: 99999 !important;
     }
 
-    div[data-testid="stPopoverBody"] hr,
-    .pop-divider {
+    div[data-testid="stPopoverBody"] hr {
         border: none !important;
         border-top: 1px solid rgba(168, 85, 247, 0.25) !important;
-        margin: 10px 0 !important;
-        width: 100% !important;
+        margin: 8px 0 !important;
         box-shadow: 0 0 8px rgba(168, 85, 247, 0.15) !important;
     }
 
     /* User Profile Card inside Popover */
     .pop-user-card {
         text-align: center;
-        padding: 12px 10px 14px 10px;
-        margin-bottom: 12px;
+        padding: 10px 8px 12px 8px;
+        margin-bottom: 10px;
         background: linear-gradient(135deg, rgba(30, 20, 50, 0.6) 0%, rgba(124, 58, 237, 0.15) 100%);
         border: 1px solid rgba(168, 85, 247, 0.3);
         border-radius: 14px;
@@ -930,17 +928,17 @@ CUSTOM_CSS = """
     }
 
     .pop-avatar-glow {
-        width: 46px;
-        height: 46px;
-        margin: 0 auto 8px auto;
+        width: 44px;
+        height: 44px;
+        margin: 0 auto 6px auto;
         border-radius: 50%;
         background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%);
         border: 1.5px solid rgba(255, 255, 255, 0.35);
-        box-shadow: 0 0 18px rgba(168, 85, 247, 0.5);
+        box-shadow: 0 0 16px rgba(168, 85, 247, 0.5);
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.35rem;
+        font-size: 1.3rem;
         color: #FFFFFF;
     }
 
@@ -983,51 +981,54 @@ CUSTOM_CSS = """
         display: inline-block;
     }
 
-    /* Popover Upgrade Button */
+    /* Upgrade Button — Gradient CTA */
     div[class*="st-key-sb_pop_upgrade_btn"] button {
         width: 100% !important;
-        min-height: 38px !important;
+        min-height: 40px !important;
         background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%) !important;
         border: none !important;
-        border-radius: 10px !important;
+        border-radius: 12px !important;
         color: #FFFFFF !important;
         font-weight: 800 !important;
-        font-size: 0.86rem !important;
+        font-size: 0.88rem !important;
         letter-spacing: 0.2px !important;
-        box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4) !important;
+        box-shadow: 0 4px 16px rgba(168, 85, 247, 0.4) !important;
         margin-bottom: 6px !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        gap: 6px !important;
+        gap: 8px !important;
         cursor: pointer !important;
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
 
     div[class*="st-key-sb_pop_upgrade_btn"] button:hover {
-        box-shadow: 0 6px 20px rgba(168, 85, 247, 0.65) !important;
-        transform: translateY(-1px) !important;
+        box-shadow: 0 6px 24px rgba(168, 85, 247, 0.65), 0 0 15px rgba(236, 72, 153, 0.4) !important;
+        transform: translateY(-1px) scale(1.01) !important;
+        color: #FFFFFF !important;
     }
 
-    /* Popover Menu Action Buttons (Billing, Admin) */
+    /* Menu Action Items: Billing & Plan, Admin Console (Gemini / Claude Style List Rows) */
     div[class*="st-key-sb_pop_billing_btn"] button,
     div[class*="st-key-sb_pop_admin_btn"] button {
         width: 100% !important;
         min-height: 38px !important;
         background: rgba(255, 255, 255, 0.04) !important;
-        border: 1px solid rgba(168, 85, 247, 0.25) !important;
-        border-radius: 10px !important;
+        border: 1px solid rgba(168, 85, 247, 0.22) !important;
+        border-radius: 12px !important;
         color: #F3E8FF !important;
         font-weight: 600 !important;
-        font-size: 0.85rem !important;
+        font-size: 0.86rem !important;
         margin-bottom: 6px !important;
         display: flex !important;
         align-items: center !important;
         justify-content: flex-start !important;
+        text-align: left !important;
         padding: 8px 14px !important;
-        gap: 8px !important;
+        gap: 10px !important;
         cursor: pointer !important;
-        transition: all 0.2s ease !important;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        box-shadow: none !important;
     }
 
     div[class*="st-key-sb_pop_billing_btn"] button:hover,
@@ -1036,18 +1037,29 @@ CUSTOM_CSS = """
         border-color: rgba(168, 85, 247, 0.6) !important;
         color: #FFFFFF !important;
         transform: translateX(3px) !important;
-        box-shadow: 0 2px 10px rgba(168, 85, 247, 0.25) !important;
+        box-shadow: 0 2px 12px rgba(168, 85, 247, 0.25) !important;
     }
 
-    /* Popover Sign Out Button */
+    div[class*="st-key-sb_pop_billing_btn"] button > div,
+    div[class*="st-key-sb_pop_admin_btn"] button > div,
+    div[class*="st-key-sb_pop_billing_btn"] button p,
+    div[class*="st-key-sb_pop_admin_btn"] button p {
+        text-align: left !important;
+        justify-content: flex-start !important;
+        align-items: center !important;
+        display: flex !important;
+        width: 100% !important;
+    }
+
+    /* Sign Out Button */
     div[class*="st-key-sb_pop_logout_btn"] button {
         width: 100% !important;
-        min-height: 38px !important;
-        background: rgba(239, 68, 68, 0.12) !important;
-        border: 1px solid rgba(239, 68, 68, 0.35) !important;
-        border-radius: 10px !important;
+        min-height: 36px !important;
+        background: rgba(239, 68, 68, 0.1) !important;
+        border: 1px solid rgba(239, 68, 68, 0.3) !important;
+        border-radius: 12px !important;
         color: #FCA5A5 !important;
-        font-weight: 700 !important;
+        font-weight: 600 !important;
         font-size: 0.85rem !important;
         margin-top: 4px !important;
         display: flex !important;
@@ -1061,9 +1073,9 @@ CUSTOM_CSS = """
 
     div[class*="st-key-sb_pop_logout_btn"] button:hover {
         background: rgba(239, 68, 68, 0.25) !important;
-        border-color: rgba(239, 68, 68, 0.75) !important;
+        border-color: rgba(239, 68, 68, 0.7) !important;
         color: #FFFFFF !important;
-        box-shadow: 0 0 16px rgba(239, 68, 68, 0.4) !important;
+        box-shadow: 0 0 14px rgba(239, 68, 68, 0.35) !important;
         transform: translateY(-1px) !important;
     }
 
@@ -1089,7 +1101,6 @@ CUSTOM_CSS = """
         border-color: rgba(239, 68, 68, 0.8) !important;
         box-shadow: 0 0 16px rgba(239, 68, 68, 0.4) !important;
         color: #FFFFFF !important;
-        transform: translateY(-1px) !important;
     }
 
     /* ── Glassmorphism Cards & Containers ────────────── */
@@ -4432,7 +4443,7 @@ def render_learning_workspace():
 
                     st.markdown("<hr style='border-color:rgba(168,85,247,0.25); margin:8px 0;'>", unsafe_allow_html=True)
 
-                    if st.button("⏻ Sign Out", key="sb_pop_logout_btn", use_container_width=True):
+                    if st.button("⏻ Sign Out", key="sb_pop_logout_btn", type="primary", use_container_width=True):
                         st.session_state["user_profile"] = None
                         st.session_state["memory"] = None
                         st.session_state["active_step_index"] = 0
