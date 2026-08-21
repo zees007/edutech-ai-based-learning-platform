@@ -4255,10 +4255,15 @@ async def generate_all_agent_content_for_step(step, memory: SharedMemory) -> Non
         tasks.append(curator.curate_videos(step, memory.topic, memory.student_level))
         task_keys.append("videos")
 
+    # Link session-level academic papers instantly (0ms delay)
+    session_papers = getattr(memory, "academic_papers", []) or []
     if not getattr(step, "papers", None):
-        researcher = AcademicResearcherAgent()
-        tasks.append(researcher.curate_papers(step, memory.topic))
-        task_keys.append("papers")
+        if session_papers:
+            setattr(step, "papers", session_papers)
+        else:
+            researcher = AcademicResearcherAgent()
+            tasks.append(researcher.curate_papers(step, memory.topic, memory.student_level, memory.learning_mode))
+            task_keys.append("papers")
 
     if not getattr(step, "quiz", None):
         quiz_agent = QuizAgent()
@@ -5306,8 +5311,19 @@ def render_learning_workspace():
             orchestrator = OrchestratorAgent()
             run_async(orchestrator.execute(new_memory))
 
+            # Run Academic Researcher Agent ONCE for the session (gated by level/mode)
+            academic_researcher = AcademicResearcherAgent()
+            session_papers = run_async(academic_researcher.curate_papers_for_session(
+                topic=new_memory.topic,
+                student_level=new_memory.student_level,
+                learning_mode=new_memory.learning_mode,
+            ))
+            new_memory.academic_papers = session_papers or []
+
             if new_memory.steps:
                 new_memory.steps[0].status = StepStatus.IN_PROGRESS
+                if new_memory.academic_papers:
+                    setattr(new_memory.steps[0], "papers", new_memory.academic_papers)
                 # Step 2: Multi-Agent System collaborating on Step 1 content
                 loader_placeholder.markdown(
                     render_glassy_agent_loader_html(
@@ -5973,7 +5989,12 @@ def render_learning_workspace():
             # 4. 📚 Academic Researcher Agent
             with st.expander("📚 **Academic Research Papers & Preprints**", expanded=True):
                 st.markdown('<div class="sec-marker-papers" style="display:none;"></div>', unsafe_allow_html=True)
-                step_papers = getattr(current_step, "papers", []) or []
+                step_papers = getattr(current_step, "papers", []) or getattr(memory, "academic_papers", []) or []
+
+                is_younger = str(getattr(memory, "student_level", "")).lower() in ["middle_school", "high_school"]
+                mode_str = memory.learning_mode.value if hasattr(memory.learning_mode, "value") else str(memory.learning_mode)
+                is_bite_sized = mode_str == "bite_sized"
+
                 if step_papers:
                     for idx, paper in enumerate(step_papers):
                         p_title = get_item_attr(paper, "title", "Research Paper")
@@ -5997,8 +6018,12 @@ def render_learning_workspace():
                             """,
                             unsafe_allow_html=True,
                         )
+                elif is_younger:
+                    st.info("🎓 Academic research papers are omitted for younger learners to keep content focused and accessible.")
+                elif is_bite_sized:
+                    st.info("⚡ Bite-Sized mode is active — academic research is omitted for rapid learning.")
                 else:
-                    st.info("Academic Researcher Agent is querying OpenAlex & arXiv...")
+                    st.caption("No open-access preprints indexed for this specific topic.")
 
 
 def sync_session_with_url():

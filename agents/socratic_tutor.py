@@ -49,14 +49,21 @@ class SocraticTutorAgent(BaseAgent):
         desc = getattr(step, "description", "")
         is_pre = str(getattr(step, "is_prerequisite", False))
 
+        step_idx = getattr(step, "index", 0)
+        is_first = (step_idx == 0)
+        step_num = step_idx + 1
+
         template = self._load_prompt_template("socratic_tutor")
         system_prompt = self._format_prompt(
             template,
             topic=topic,
             step_title=title,
             step_description=desc,
+            step_number=step_num,
+            total_steps=max(step_num, 1),
             student_level=student_level,
             learning_mode=mode_enum.value,
+            is_first_step=str(is_first),
             is_prerequisite=is_pre,
         )
 
@@ -144,14 +151,21 @@ class SocraticTutorAgent(BaseAgent):
         step_result.status = StepStatus.IN_PROGRESS
 
         # Load and format the prompt
+        is_first_step = (step_index == 0)
+        total_steps = len(memory.steps)
+        step_number = step_index + 1
+
         template = self._load_prompt_template("socratic_tutor")
         system_prompt = self._format_prompt(
             template,
             topic=memory.topic,
             step_title=step.title,
             step_description=step.description,
+            step_number=step_number,
+            total_steps=total_steps,
             student_level=memory.student_level,
             learning_mode=memory.learning_mode.value,
+            is_first_step=str(is_first_step),
             is_prerequisite=str(step.is_prerequisite),
         )
 
@@ -231,14 +245,21 @@ class SocraticTutorAgent(BaseAgent):
             return
 
         # Build the same prompt as execute()
+        is_first_step = (step_index == 0)
+        total_steps = len(memory.steps)
+        step_number = step_index + 1
+
         template = self._load_prompt_template("socratic_tutor")
         system_prompt = self._format_prompt(
             template,
             topic=memory.topic,
             step_title=step.title,
             step_description=step.description,
+            step_number=step_number,
+            total_steps=total_steps,
             student_level=memory.student_level,
             learning_mode=memory.learning_mode.value,
+            is_first_step=str(is_first_step),
             is_prerequisite=str(step.is_prerequisite),
         )
 
