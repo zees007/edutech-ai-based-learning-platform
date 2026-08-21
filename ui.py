@@ -328,6 +328,8 @@ CUSTOM_CSS = """
     }
 
     /* ── App Theme Glass Container Card for Start Journey (Exact Match of Sign In Form in home_ui.py) ── */
+    div.st-key-journey_console_card_wrapper,
+    div[class*="st-key-journey_console_card_wrapper"],
     div[data-testid="stColumn"]:has(#journey-console-card-marker),
     div[data-testid="column"]:has(#journey-console-card-marker) {
         background: linear-gradient(135deg, rgba(15, 23, 42, 0.94) 0%, rgba(26, 17, 46, 0.9) 100%) !important;
@@ -336,8 +338,9 @@ CUSTOM_CSS = """
         border: 1.5px solid rgba(168, 85, 247, 0.45) !important;
         border-radius: 24px !important;
         padding: 1.8rem 2.2rem 1.4rem 2.2rem !important;
-        margin-top: 0.8rem !important;
-        margin-bottom: 1.4rem !important;
+        margin: 0.8rem auto 1.4rem auto !important;
+        max-width: 840px !important;
+        width: 100% !important;
         box-shadow: 0 25px 65px -15px rgba(168, 85, 247, 0.35), inset 0 0 35px rgba(168, 85, 247, 0.12) !important;
         position: relative !important;
         box-sizing: border-box !important;
@@ -345,6 +348,8 @@ CUSTOM_CSS = """
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
 
+    div.st-key-journey_console_card_wrapper::before,
+    div[class*="st-key-journey_console_card_wrapper"]::before,
     div[data-testid="stColumn"]:has(#journey-console-card-marker)::before,
     div[data-testid="column"]:has(#journey-console-card-marker)::before {
         content: '' !important;
@@ -361,6 +366,8 @@ CUSTOM_CSS = """
         transition: opacity 0.3s ease, box-shadow 0.3s ease !important;
     }
 
+    div.st-key-journey_console_card_wrapper:hover,
+    div[class*="st-key-journey_console_card_wrapper"]:hover,
     div[data-testid="stColumn"]:has(#journey-console-card-marker):hover,
     div[data-testid="column"]:has(#journey-console-card-marker):hover {
         border-color: rgba(168, 85, 247, 0.85) !important;
@@ -368,12 +375,16 @@ CUSTOM_CSS = """
         transform: translateY(-2px) !important;
     }
 
+    div.st-key-journey_console_card_wrapper:hover::before,
+    div[class*="st-key-journey_console_card_wrapper"]:hover::before,
     div[data-testid="stColumn"]:has(#journey-console-card-marker):hover::before,
     div[data-testid="column"]:has(#journey-console-card-marker):hover::before {
         opacity: 1 !important;
         box-shadow: 0 0 22px #EC4899, 0 0 30px #A855F7 !important;
     }
 
+    div.st-key-journey_console_card_wrapper div[data-testid="stForm"],
+    div[class*="st-key-journey_console_card_wrapper"] div[data-testid="stForm"],
     div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-testid="stForm"],
     div[data-testid="column"]:has(#journey-console-card-marker) div[data-testid="stForm"] {
         border: none !important;
@@ -383,6 +394,10 @@ CUSTOM_CSS = """
     }
 
     /* Labels inside journey glass card */
+    div.st-key-journey_console_card_wrapper label,
+    div.st-key-journey_console_card_wrapper label p,
+    div[class*="st-key-journey_console_card_wrapper"] label,
+    div[class*="st-key-journey_console_card_wrapper"] label p,
     div[data-testid="stColumn"]:has(#journey-console-card-marker) label,
     div[data-testid="stColumn"]:has(#journey-console-card-marker) label p,
     div[data-testid="column"]:has(#journey-console-card-marker) label,
@@ -395,6 +410,14 @@ CUSTOM_CSS = """
     }
 
     /* Inputs & Selectboxes inside journey glass card (Matching Sign In BaseWeb Theme) */
+    div.st-key-journey_console_card_wrapper div[data-baseweb="input"],
+    div.st-key-journey_console_card_wrapper div[data-baseweb="base-input"],
+    div.st-key-journey_console_card_wrapper div[data-baseweb="select"] > div,
+    div.st-key-journey_console_card_wrapper div[data-testid="stSelectbox"] > div > div,
+    div[class*="st-key-journey_console_card_wrapper"] div[data-baseweb="input"],
+    div[class*="st-key-journey_console_card_wrapper"] div[data-baseweb="base-input"],
+    div[class*="st-key-journey_console_card_wrapper"] div[data-baseweb="select"] > div,
+    div[class*="st-key-journey_console_card_wrapper"] div[data-testid="stSelectbox"] > div > div,
     div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-baseweb="input"],
     div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-baseweb="base-input"],
     div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-baseweb="select"] > div,
@@ -410,6 +433,12 @@ CUSTOM_CSS = """
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25), inset 0 0 10px rgba(0, 0, 0, 0.3) !important;
     }
 
+    div.st-key-journey_console_card_wrapper div[data-baseweb="input"]:hover,
+    div.st-key-journey_console_card_wrapper div[data-baseweb="select"] > div:hover,
+    div.st-key-journey_console_card_wrapper div[data-testid="stSelectbox"] > div > div:hover,
+    div[class*="st-key-journey_console_card_wrapper"] div[data-baseweb="input"]:hover,
+    div[class*="st-key-journey_console_card_wrapper"] div[data-baseweb="select"] > div:hover,
+    div[class*="st-key-journey_console_card_wrapper"] div[data-testid="stSelectbox"] > div > div:hover,
     div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-baseweb="input"]:hover,
     div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-baseweb="select"] > div:hover,
     div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-testid="stSelectbox"] > div > div:hover,
@@ -420,6 +449,12 @@ CUSTOM_CSS = """
         box-shadow: 0 0 16px rgba(168, 85, 247, 0.28) !important;
     }
 
+    div.st-key-journey_console_card_wrapper div[data-baseweb="input"]:focus-within,
+    div.st-key-journey_console_card_wrapper div[data-baseweb="select"] > div:focus-within,
+    div.st-key-journey_console_card_wrapper div[data-testid="stSelectbox"] > div > div:focus-within,
+    div[class*="st-key-journey_console_card_wrapper"] div[data-baseweb="input"]:focus-within,
+    div[class*="st-key-journey_console_card_wrapper"] div[data-baseweb="select"] > div:focus-within,
+    div[class*="st-key-journey_console_card_wrapper"] div[data-testid="stSelectbox"] > div > div:focus-within,
     div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-baseweb="input"]:focus-within,
     div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-baseweb="select"] > div:focus-within,
     div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-testid="stSelectbox"] > div > div:focus-within,
@@ -431,6 +466,8 @@ CUSTOM_CSS = """
         background: rgba(15, 23, 42, 0.92) !important;
     }
 
+    div.st-key-journey_console_card_wrapper input,
+    div[class*="st-key-journey_console_card_wrapper"] input,
     div[data-testid="stColumn"]:has(#journey-console-card-marker) input,
     div[data-testid="column"]:has(#journey-console-card-marker) input {
         color: #FAFAFA !important;
@@ -439,12 +476,18 @@ CUSTOM_CSS = """
         padding: 10px 14px !important;
     }
 
+    div.st-key-journey_console_card_wrapper input::placeholder,
+    div[class*="st-key-journey_console_card_wrapper"] input::placeholder,
     div[data-testid="stColumn"]:has(#journey-console-card-marker) input::placeholder,
     div[data-testid="column"]:has(#journey-console-card-marker) input::placeholder {
         color: rgba(233, 213, 255, 0.38) !important;
     }
 
     /* ✨ Start Journey Theme Button Gradient (Matching Sign In Launch Button) */
+    div.st-key-journey_console_card_wrapper div[data-testid="stFormSubmitButton"] button,
+    div.st-key-journey_console_card_wrapper div[data-testid="stFormSubmitButton"] button[kind="primary"],
+    div[class*="st-key-journey_console_card_wrapper"] div[data-testid="stFormSubmitButton"] button,
+    div[class*="st-key-journey_console_card_wrapper"] div[data-testid="stFormSubmitButton"] button[kind="primary"],
     div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-testid="stFormSubmitButton"] button,
     div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-testid="stFormSubmitButton"] button[kind="primary"],
     div[data-testid="column"]:has(#journey-console-card-marker) div[data-testid="stFormSubmitButton"] button,
@@ -464,6 +507,10 @@ CUSTOM_CSS = """
         cursor: pointer !important;
     }
 
+    div.st-key-journey_console_card_wrapper div[data-testid="stFormSubmitButton"] button:hover,
+    div.st-key-journey_console_card_wrapper div[data-testid="stFormSubmitButton"] button[kind="primary"]:hover,
+    div[class*="st-key-journey_console_card_wrapper"] div[data-testid="stFormSubmitButton"] button:hover,
+    div[class*="st-key-journey_console_card_wrapper"] div[data-testid="stFormSubmitButton"] button[kind="primary"]:hover,
     div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-testid="stFormSubmitButton"] button:hover,
     div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-testid="stFormSubmitButton"] button[kind="primary"]:hover,
     div[data-testid="column"]:has(#journey-console-card-marker) div[data-testid="stFormSubmitButton"] button:hover,
@@ -473,6 +520,8 @@ CUSTOM_CSS = """
     }
 
     /* Popover Trigger for Topic Suggestions */
+    div.st-key-journey_console_card_wrapper div[data-testid="stPopover"],
+    div[class*="st-key-journey_console_card_wrapper"] div[data-testid="stPopover"],
     div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-testid="stPopover"],
     div[data-testid="column"]:has(#journey-console-card-marker) div[data-testid="stPopover"] {
         margin-top: 4px !important;
@@ -2906,6 +2955,8 @@ CUSTOM_CSS = """
             flex-direction: column !important;
             width: 100% !important;
             gap: 0px !important;
+            padding: 0 !important;
+            margin: 0 !important;
         }
         div[data-testid="stHorizontalBlock"]:has(#journey-console-card-marker) > div[data-testid="stColumn"],
         div[data-testid="stHorizontalBlock"]:has(#journey-console-card-marker) > div[data-testid="column"] {
@@ -2924,23 +2975,39 @@ CUSTOM_CSS = """
             margin: 0 !important;
         }
 
-        /* Glass Cards and Form Margins on Mobile */
+        /* Glass Cards and Form Margins & Padding on Mobile */
+        div.st-key-journey_console_card_wrapper,
+        div[class*="st-key-journey_console_card_wrapper"],
         div[data-testid="stColumn"]:has(#journey-console-card-marker),
         div[data-testid="column"]:has(#journey-console-card-marker) {
-            padding: 1.2rem 1rem !important;
+            padding: 1.15rem 0.95rem 0.95rem 0.95rem !important;
             border-radius: 18px !important;
             margin-top: 0.4rem !important;
-            margin-bottom: 1rem !important;
+            margin-bottom: 1.1rem !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
+            max-width: 100% !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
         }
 
         /* Top Hero Header on Mobile */
+        .et-hero {
+            margin-top: 0.6rem !important;
+            margin-bottom: 0.6rem !important;
+            padding: 0 4px !important;
+        }
         .et-hero h1 {
-            font-size: 1.65rem !important;
-            padding: 0 0.5rem !important;
+            font-size: 1.6rem !important;
+            padding: 0 0.4rem !important;
+            line-height: 1.3 !important;
+            margin-bottom: 0.35rem !important;
         }
         .et-hero p {
             font-size: 0.88rem !important;
-            padding: 0 0.5rem !important;
+            padding: 0 0.4rem !important;
+            margin-bottom: 0.75rem !important;
+            line-height: 1.45 !important;
         }
 
         /* Progress & Milestone Dashboard on Mobile */
@@ -2969,11 +3036,41 @@ CUSTOM_CSS = """
         div[data-testid="stHorizontalBlock"]:has(div[class*="st-key-main_mode_select"]) {
             flex-direction: column !important;
             gap: 8px !important;
+            margin-bottom: 4px !important;
         }
         div[data-testid="stHorizontalBlock"]:has(div[class*="st-key-main_mode_select"]) > div[data-testid="stColumn"],
         div[data-testid="stHorizontalBlock"]:has(div[class*="st-key-main_mode_select"]) > div[data-testid="column"] {
             width: 100% !important;
             flex: 1 1 100% !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+
+        /* Prompt Form Row on Mobile (Topic Input + Start Journey Button) */
+        div[data-testid="stForm"]:has(.et-gemini-prompt-form-marker) div[data-testid="stHorizontalBlock"],
+        div[data-testid="stForm"]:has(div[class*="st-key-main_topic_input_composer"]) div[data-testid="stHorizontalBlock"] {
+            flex-direction: column !important;
+            align-items: stretch !important;
+            gap: 10px !important;
+            margin-top: 4px !important;
+        }
+        div[data-testid="stForm"]:has(.et-gemini-prompt-form-marker) div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"],
+        div[data-testid="stForm"]:has(div[class*="st-key-main_topic_input_composer"]) div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"],
+        div[data-testid="stForm"]:has(.et-gemini-prompt-form-marker) div[data-testid="stHorizontalBlock"] > div[data-testid="column"],
+        div[data-testid="stForm"]:has(div[class*="st-key-main_topic_input_composer"]) div[data-testid="stHorizontalBlock"] > div[data-testid="column"] {
+            width: 100% !important;
+            flex: 1 1 100% !important;
+            min-width: 100% !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        div[data-testid="stForm"]:has(.et-gemini-prompt-form-marker) div[data-testid="stFormSubmitButton"] button,
+        div[data-testid="stForm"]:has(div[class*="st-key-main_topic_input_composer"]) div[data-testid="stFormSubmitButton"] button {
+            width: 100% !important;
+            min-height: 44px !important;
+            height: auto !important;
+            font-size: 0.95rem !important;
+            padding: 10px 14px !important;
         }
 
         /* Tutor Chat Form on Mobile */
@@ -3776,6 +3873,30 @@ CUSTOM_CSS = """
         div[data-testid="stHorizontalBlock"]:has(.sec-marker-tutor) > div[data-testid="stColumn"] > div[data-testid="stElementContainer"]:not(:has(.sec-marker-tutor)):not(:has(.sec-marker-youtube)):not(:has(.sec-marker-papers)):not(:has(.sec-marker-quiz)):not(:has([data-testid="stExpander"])),
         div[data-testid="stHorizontalBlock"]:has(.sec-marker-tutor) > div[data-testid="stColumn"] > div.element-container:not(:has(.sec-marker-tutor)):not(:has(.sec-marker-youtube)):not(:has(.sec-marker-papers)):not(:has(.sec-marker-quiz)):not(:has([data-testid="stExpander"])) {
             display: none !important;
+        }
+    }
+
+    @media (max-width: 480px) {
+        div.st-key-journey_console_card_wrapper,
+        div[class*="st-key-journey_console_card_wrapper"],
+        div[data-testid="stColumn"]:has(#journey-console-card-marker),
+        div[data-testid="column"]:has(#journey-console-card-marker) {
+            padding: 1rem 0.85rem 0.85rem 0.85rem !important;
+            border-radius: 16px !important;
+            margin-top: 0.35rem !important;
+            margin-bottom: 0.9rem !important;
+            max-width: 100% !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+        }
+
+        .et-hero h1 {
+            font-size: 1.45rem !important;
+            padding: 0 4px !important;
+        }
+        .et-hero p {
+            font-size: 0.84rem !important;
+            padding: 0 4px !important;
         }
     }
 </style>
@@ -4900,7 +5021,7 @@ def render_learning_workspace():
         # ─── Main Page: Centered Heading ("What do you want to learn today?") ───
         st.markdown(
             """
-            <div class="et-hero" style="margin-top: 2rem; margin-bottom: 1.2rem;">
+            <div class="et-hero">
                 <h1>What do you want to <span class="gradient-text">learn today?</span></h1>
                 <p>Decompose any concept into adaptive milestones, interactive Socratic lessons, and academic research.</p>
             </div>
@@ -4914,9 +5035,8 @@ def render_learning_workspace():
         elif "main_topic_query" in st.session_state:
             st.session_state["main_topic_input_composer"] = st.session_state.pop("main_topic_query")
 
-        # Centered ChatGPT-Style Layout with Balanced Left/Right Margins
-        pad_l, card_col, pad_r = st.columns([0.8, 8.4, 0.8])
-        with card_col:
+        # Centered ChatGPT-Style Journey Card
+        with st.container(key="journey_console_card_wrapper"):
             st.markdown('<div id="journey-console-card-marker" class="et-journey-card-container-marker"></div>', unsafe_allow_html=True)
 
             # 1. Dropdowns: Mode (Left) and Education Level (Right) placed ABOVE the chat prompt
@@ -5054,7 +5174,8 @@ def render_learning_workspace():
                 function selectTopic(text) {
                     try {
                         const pdoc = window.parent.document;
-                        const input = pdoc.querySelector('input[placeholder*="Ask EduTechAI"]') 
+                        const input = pdoc.querySelector('div[class*="st-key-journey_console_card_wrapper"] input')
+                                   || pdoc.querySelector('input[placeholder*="Ask EduTechAI"]') 
                                    || pdoc.querySelector('div[data-testid="stColumn"]:has(#journey-console-card-marker) input')
                                    || pdoc.querySelector('input[aria-label="What do you want to learn?"]');
                         if (input) {
@@ -5070,7 +5191,8 @@ def render_learning_workspace():
                         }
                         // Close popover
                         pdoc.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', keyCode: 27, which: 27, bubbles: true }));
-                        const popBtn = pdoc.querySelector('div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-testid="stPopover"] button');
+                        const popBtn = pdoc.querySelector('div[class*="st-key-journey_console_card_wrapper"] div[data-testid="stPopover"] button')
+                                    || pdoc.querySelector('div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-testid="stPopover"] button');
                         if (popBtn) {
                             popBtn.click();
                         }
