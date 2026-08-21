@@ -3726,6 +3726,58 @@ CUSTOM_CSS = """
         box-shadow: 0 0 32px rgba(236, 72, 153, 0.75), 0 0 20px rgba(6, 182, 212, 0.6) !important;
         transform: translateY(-2px) !important;
     }
+
+    /* ── Mobile Ordering for Learning Workspace Sections ───────── */
+    @media (max-width: 768px) {
+        /* Unbox the column wrappers so all 4 cards become direct flex children */
+        div[data-testid="stHorizontalBlock"]:has(.sec-marker-tutor) {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 1.25rem !important;
+        }
+
+        div[data-testid="stHorizontalBlock"]:has(.sec-marker-tutor) > div[data-testid="stColumn"] {
+            display: contents !important;
+        }
+
+        /* 1. 🧩 Socratic Tutor Chat */
+        div[data-testid="stHorizontalBlock"]:has(.sec-marker-tutor) div[data-testid="stElementContainer"]:has(.sec-marker-tutor),
+        div[data-testid="stHorizontalBlock"]:has(.sec-marker-tutor) div.element-container:has(.sec-marker-tutor),
+        div[data-testid="stHorizontalBlock"]:has(.sec-marker-tutor) div[data-testid="stExpander"]:has(.sec-marker-tutor),
+        div[data-testid="stHorizontalBlock"]:has(.sec-marker-tutor) div.stExpander:has(.sec-marker-tutor) {
+            order: 1 !important;
+        }
+
+        /* 2. 🎬 Recommended YouTube Video Clips & Timestamps */
+        div[data-testid="stHorizontalBlock"]:has(.sec-marker-tutor) div[data-testid="stElementContainer"]:has(.sec-marker-youtube),
+        div[data-testid="stHorizontalBlock"]:has(.sec-marker-tutor) div.element-container:has(.sec-marker-youtube),
+        div[data-testid="stHorizontalBlock"]:has(.sec-marker-tutor) div[data-testid="stExpander"]:has(.sec-marker-youtube),
+        div[data-testid="stHorizontalBlock"]:has(.sec-marker-tutor) div.stExpander:has(.sec-marker-youtube) {
+            order: 2 !important;
+        }
+
+        /* 3. 📚 Academic Research Papers & Preprints */
+        div[data-testid="stHorizontalBlock"]:has(.sec-marker-tutor) div[data-testid="stElementContainer"]:has(.sec-marker-papers),
+        div[data-testid="stHorizontalBlock"]:has(.sec-marker-tutor) div.element-container:has(.sec-marker-papers),
+        div[data-testid="stHorizontalBlock"]:has(.sec-marker-tutor) div[data-testid="stExpander"]:has(.sec-marker-papers),
+        div[data-testid="stHorizontalBlock"]:has(.sec-marker-tutor) div.stExpander:has(.sec-marker-papers) {
+            order: 3 !important;
+        }
+
+        /* 4. 📝 Milestone Knowledge Check Quiz */
+        div[data-testid="stHorizontalBlock"]:has(.sec-marker-tutor) div[data-testid="stElementContainer"]:has(.sec-marker-quiz),
+        div[data-testid="stHorizontalBlock"]:has(.sec-marker-tutor) div.element-container:has(.sec-marker-quiz),
+        div[data-testid="stHorizontalBlock"]:has(.sec-marker-tutor) div[data-testid="stExpander"]:has(.sec-marker-quiz),
+        div[data-testid="stHorizontalBlock"]:has(.sec-marker-tutor) div.stExpander:has(.sec-marker-quiz) {
+            order: 4 !important;
+        }
+
+        /* Hide desktop <br> spacing elements between expanders on mobile */
+        div[data-testid="stHorizontalBlock"]:has(.sec-marker-tutor) > div[data-testid="stColumn"] > div[data-testid="stElementContainer"]:not(:has(.sec-marker-tutor)):not(:has(.sec-marker-youtube)):not(:has(.sec-marker-papers)):not(:has(.sec-marker-quiz)):not(:has([data-testid="stExpander"])),
+        div[data-testid="stHorizontalBlock"]:has(.sec-marker-tutor) > div[data-testid="stColumn"] > div.element-container:not(:has(.sec-marker-tutor)):not(:has(.sec-marker-youtube)):not(:has(.sec-marker-papers)):not(:has(.sec-marker-quiz)):not(:has([data-testid="stExpander"])) {
+            display: none !important;
+        }
+    }
 </style>
 """
 
@@ -5391,6 +5443,7 @@ def render_learning_workspace():
         with col_left:
             # 1. 🧩 Socratic Tutor Chat Interface
             with st.expander("🧩 **Socratic Tutor Chat**", expanded=True):
+                st.markdown('<div class="sec-marker-tutor" style="display:none;"></div>', unsafe_allow_html=True)
                 tutor_exp = getattr(current_step, "tutor_explanation", None)
                 
                 # Render initial Socratic Explanation as Assistant Chat Message
@@ -5469,6 +5522,7 @@ def render_learning_workspace():
 
             # 2. 📝 Milestone Comprehension Quiz & Auto-Advance Logic
             with st.expander("📝 **Milestone Knowledge Check Quiz**", expanded=True):
+                st.markdown('<div class="sec-marker-quiz" style="display:none;"></div>', unsafe_allow_html=True)
                 step_quiz = getattr(current_step, "quiz", []) or []
                 if not step_quiz:
                     st.info("Quiz Agent is generating questions for this milestone...")
@@ -5661,6 +5715,7 @@ def render_learning_workspace():
         with col_right:
             # 3. 🎬 YouTube Curator Agent (Max 3 videos)
             with st.expander("🎬 **Recommended YouTube Video Clips & Timestamps**", expanded=True):
+                st.markdown('<div class="sec-marker-youtube" style="display:none;"></div>', unsafe_allow_html=True)
                 step_vids = (getattr(current_step, "videos", []) or [])[:3]
                 if step_vids:
                     for idx, vid in enumerate(step_vids):
@@ -5707,6 +5762,7 @@ def render_learning_workspace():
 
             # 4. 📚 Academic Researcher Agent
             with st.expander("📚 **Academic Research Papers & Preprints**", expanded=True):
+                st.markdown('<div class="sec-marker-papers" style="display:none;"></div>', unsafe_allow_html=True)
                 step_papers = getattr(current_step, "papers", []) or []
                 if step_papers:
                     for idx, paper in enumerate(step_papers):
