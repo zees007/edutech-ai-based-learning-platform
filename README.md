@@ -73,6 +73,8 @@ All content adapts dynamically based on the selected **Learning Mode** and **Edu
 
 ## System Architecture
 
+> 📖 **Looking for deep technical specs?** See [TECHNICAL.md](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/TECHNICAL.md) for full agent state machine specs, prompt engineering frameworks, and sequence diagrams.
+
 ### Multi-Agent Design
 
 EduTechAI uses a **supervisor–worker** agent pattern. There is **no direct agent-to-agent communication**. All agents read from and write to a central **SharedMemory** object.
@@ -175,7 +177,10 @@ Step 4: "Photosynthesis in the Bigger Picture"
 
 **What it does:**
 - Writes a **personalized explanation** for each milestone step
-- Uses **everyday analogies** to make abstract concepts tangible (e.g., explaining electron flow as "water flowing through a garden hose")
+- **Progressive Analogy Strategy:**
+  - **Step 1:** Introduces a memorable **Anchor Analogy** tailored to student level (`middle_school`, `high_school`, `undergraduate`) to establish the mental model.
+  - **Subsequent Steps:** Transitions to **direct mechanics, real-world industry case studies, and concrete examples** without forcing repetitive metaphors.
+- **Visual Concept Diagrams:** Automatically embeds syntactically clean **Mermaid.js architecture/flowchart diagrams** in `visual` and `deep_dive` modes (skipped in `bite_sized`).
 - Generates **1–2 guiding Socratic questions** at the end of each explanation to encourage deeper thinking
 - Adapts vocabulary, depth, and style based on both Education Level and Learning Mode
 - Maintains **conversation continuity** — uses the last 6 conversation turns as context for follow-up questions
@@ -210,19 +215,22 @@ Step 4: "Photosynthesis in the Bigger Picture"
 
 ### 4. Academic Researcher Agent
 
-**Role:** Searches open-access scholarly repositories for papers and articles relevant to each learning step.
+**Role:** Searches open-access scholarly repositories for landmark papers, articles, and preprints on the learning topic.
+
+**Architecture (Session-Level Curation):**
+- **Searches ONCE per session** at topic initialization across 3 academic sources in parallel.
+- Stores top landmark/survey research in `SharedMemory` (`memory.academic_papers`), enabling **0ms instant step transitions** without slow per-step API re-fetching.
+- **Smart Audience Gating:**
+  - **Middle School & High School:** Automatically **skipped** (0 API calls) to avoid cognitive overload.
+  - **Bite-Sized Mode:** Automatically **skipped** (0 API calls) to keep rapid revision uncluttered.
+  - **Undergraduate & Graduate:** Curates 3–4 seminal papers across OpenAlex, Semantic Scholar, and arXiv.
 
 **Sources searched in parallel:**
 | Source | Coverage | Special Feature |
 |--------|----------|-----------------|
-| **OpenAlex** | Broad multidisciplinary (250M+ works) | Free, open metadata |
+| **OpenAlex** | Broad multidisciplinary (250M+ works) | Global citation metrics & open metadata |
 | **Semantic Scholar** | Computer science, biomedical, and more | AI-generated TLDR summaries |
 | **arXiv** | STEM preprints | Free full-text PDFs |
-
-**Mode adaptations:**
-- **Deep Dive mode:** Returns up to 3 papers per step — full depth
-- **Visual mode:** Returns up to 2 papers per step — lighter academic load
-- **Bite-Sized mode:** **Skips academic search entirely** — focuses on quick understanding
 
 ---
 
