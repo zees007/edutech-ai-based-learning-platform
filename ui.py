@@ -328,6 +328,8 @@ CUSTOM_CSS = """
     }
 
     /* ── App Theme Glass Container Card for Start Journey (Exact Match of Sign In Form in home_ui.py) ── */
+    div.st-key-journey_console_card_wrapper,
+    div[class*="st-key-journey_console_card_wrapper"],
     div[data-testid="stColumn"]:has(#journey-console-card-marker),
     div[data-testid="column"]:has(#journey-console-card-marker) {
         background: linear-gradient(135deg, rgba(15, 23, 42, 0.94) 0%, rgba(26, 17, 46, 0.9) 100%) !important;
@@ -336,8 +338,9 @@ CUSTOM_CSS = """
         border: 1.5px solid rgba(168, 85, 247, 0.45) !important;
         border-radius: 24px !important;
         padding: 1.8rem 2.2rem 1.4rem 2.2rem !important;
-        margin-top: 0.8rem !important;
-        margin-bottom: 1.4rem !important;
+        margin: 0.8rem auto 1.4rem auto !important;
+        max-width: 840px !important;
+        width: 100% !important;
         box-shadow: 0 25px 65px -15px rgba(168, 85, 247, 0.35), inset 0 0 35px rgba(168, 85, 247, 0.12) !important;
         position: relative !important;
         box-sizing: border-box !important;
@@ -345,6 +348,8 @@ CUSTOM_CSS = """
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
 
+    div.st-key-journey_console_card_wrapper::before,
+    div[class*="st-key-journey_console_card_wrapper"]::before,
     div[data-testid="stColumn"]:has(#journey-console-card-marker)::before,
     div[data-testid="column"]:has(#journey-console-card-marker)::before {
         content: '' !important;
@@ -361,6 +366,8 @@ CUSTOM_CSS = """
         transition: opacity 0.3s ease, box-shadow 0.3s ease !important;
     }
 
+    div.st-key-journey_console_card_wrapper:hover,
+    div[class*="st-key-journey_console_card_wrapper"]:hover,
     div[data-testid="stColumn"]:has(#journey-console-card-marker):hover,
     div[data-testid="column"]:has(#journey-console-card-marker):hover {
         border-color: rgba(168, 85, 247, 0.85) !important;
@@ -368,12 +375,16 @@ CUSTOM_CSS = """
         transform: translateY(-2px) !important;
     }
 
+    div.st-key-journey_console_card_wrapper:hover::before,
+    div[class*="st-key-journey_console_card_wrapper"]:hover::before,
     div[data-testid="stColumn"]:has(#journey-console-card-marker):hover::before,
     div[data-testid="column"]:has(#journey-console-card-marker):hover::before {
         opacity: 1 !important;
         box-shadow: 0 0 22px #EC4899, 0 0 30px #A855F7 !important;
     }
 
+    div.st-key-journey_console_card_wrapper div[data-testid="stForm"],
+    div[class*="st-key-journey_console_card_wrapper"] div[data-testid="stForm"],
     div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-testid="stForm"],
     div[data-testid="column"]:has(#journey-console-card-marker) div[data-testid="stForm"] {
         border: none !important;
@@ -383,6 +394,10 @@ CUSTOM_CSS = """
     }
 
     /* Labels inside journey glass card */
+    div.st-key-journey_console_card_wrapper label,
+    div.st-key-journey_console_card_wrapper label p,
+    div[class*="st-key-journey_console_card_wrapper"] label,
+    div[class*="st-key-journey_console_card_wrapper"] label p,
     div[data-testid="stColumn"]:has(#journey-console-card-marker) label,
     div[data-testid="stColumn"]:has(#journey-console-card-marker) label p,
     div[data-testid="column"]:has(#journey-console-card-marker) label,
@@ -395,6 +410,14 @@ CUSTOM_CSS = """
     }
 
     /* Inputs & Selectboxes inside journey glass card (Matching Sign In BaseWeb Theme) */
+    div.st-key-journey_console_card_wrapper div[data-baseweb="input"],
+    div.st-key-journey_console_card_wrapper div[data-baseweb="base-input"],
+    div.st-key-journey_console_card_wrapper div[data-baseweb="select"] > div,
+    div.st-key-journey_console_card_wrapper div[data-testid="stSelectbox"] > div > div,
+    div[class*="st-key-journey_console_card_wrapper"] div[data-baseweb="input"],
+    div[class*="st-key-journey_console_card_wrapper"] div[data-baseweb="base-input"],
+    div[class*="st-key-journey_console_card_wrapper"] div[data-baseweb="select"] > div,
+    div[class*="st-key-journey_console_card_wrapper"] div[data-testid="stSelectbox"] > div > div,
     div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-baseweb="input"],
     div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-baseweb="base-input"],
     div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-baseweb="select"] > div,
@@ -410,6 +433,12 @@ CUSTOM_CSS = """
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25), inset 0 0 10px rgba(0, 0, 0, 0.3) !important;
     }
 
+    div.st-key-journey_console_card_wrapper div[data-baseweb="input"]:hover,
+    div.st-key-journey_console_card_wrapper div[data-baseweb="select"] > div:hover,
+    div.st-key-journey_console_card_wrapper div[data-testid="stSelectbox"] > div > div:hover,
+    div[class*="st-key-journey_console_card_wrapper"] div[data-baseweb="input"]:hover,
+    div[class*="st-key-journey_console_card_wrapper"] div[data-baseweb="select"] > div:hover,
+    div[class*="st-key-journey_console_card_wrapper"] div[data-testid="stSelectbox"] > div > div:hover,
     div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-baseweb="input"]:hover,
     div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-baseweb="select"] > div:hover,
     div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-testid="stSelectbox"] > div > div:hover,
@@ -420,6 +449,12 @@ CUSTOM_CSS = """
         box-shadow: 0 0 16px rgba(168, 85, 247, 0.28) !important;
     }
 
+    div.st-key-journey_console_card_wrapper div[data-baseweb="input"]:focus-within,
+    div.st-key-journey_console_card_wrapper div[data-baseweb="select"] > div:focus-within,
+    div.st-key-journey_console_card_wrapper div[data-testid="stSelectbox"] > div > div:focus-within,
+    div[class*="st-key-journey_console_card_wrapper"] div[data-baseweb="input"]:focus-within,
+    div[class*="st-key-journey_console_card_wrapper"] div[data-baseweb="select"] > div:focus-within,
+    div[class*="st-key-journey_console_card_wrapper"] div[data-testid="stSelectbox"] > div > div:focus-within,
     div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-baseweb="input"]:focus-within,
     div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-baseweb="select"] > div:focus-within,
     div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-testid="stSelectbox"] > div > div:focus-within,
@@ -431,6 +466,8 @@ CUSTOM_CSS = """
         background: rgba(15, 23, 42, 0.92) !important;
     }
 
+    div.st-key-journey_console_card_wrapper input,
+    div[class*="st-key-journey_console_card_wrapper"] input,
     div[data-testid="stColumn"]:has(#journey-console-card-marker) input,
     div[data-testid="column"]:has(#journey-console-card-marker) input {
         color: #FAFAFA !important;
@@ -439,12 +476,18 @@ CUSTOM_CSS = """
         padding: 10px 14px !important;
     }
 
+    div.st-key-journey_console_card_wrapper input::placeholder,
+    div[class*="st-key-journey_console_card_wrapper"] input::placeholder,
     div[data-testid="stColumn"]:has(#journey-console-card-marker) input::placeholder,
     div[data-testid="column"]:has(#journey-console-card-marker) input::placeholder {
         color: rgba(233, 213, 255, 0.38) !important;
     }
 
     /* ✨ Start Journey Theme Button Gradient (Matching Sign In Launch Button) */
+    div.st-key-journey_console_card_wrapper div[data-testid="stFormSubmitButton"] button,
+    div.st-key-journey_console_card_wrapper div[data-testid="stFormSubmitButton"] button[kind="primary"],
+    div[class*="st-key-journey_console_card_wrapper"] div[data-testid="stFormSubmitButton"] button,
+    div[class*="st-key-journey_console_card_wrapper"] div[data-testid="stFormSubmitButton"] button[kind="primary"],
     div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-testid="stFormSubmitButton"] button,
     div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-testid="stFormSubmitButton"] button[kind="primary"],
     div[data-testid="column"]:has(#journey-console-card-marker) div[data-testid="stFormSubmitButton"] button,
@@ -464,6 +507,10 @@ CUSTOM_CSS = """
         cursor: pointer !important;
     }
 
+    div.st-key-journey_console_card_wrapper div[data-testid="stFormSubmitButton"] button:hover,
+    div.st-key-journey_console_card_wrapper div[data-testid="stFormSubmitButton"] button[kind="primary"]:hover,
+    div[class*="st-key-journey_console_card_wrapper"] div[data-testid="stFormSubmitButton"] button:hover,
+    div[class*="st-key-journey_console_card_wrapper"] div[data-testid="stFormSubmitButton"] button[kind="primary"]:hover,
     div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-testid="stFormSubmitButton"] button:hover,
     div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-testid="stFormSubmitButton"] button[kind="primary"]:hover,
     div[data-testid="column"]:has(#journey-console-card-marker) div[data-testid="stFormSubmitButton"] button:hover,
@@ -473,6 +520,8 @@ CUSTOM_CSS = """
     }
 
     /* Popover Trigger for Topic Suggestions */
+    div.st-key-journey_console_card_wrapper div[data-testid="stPopover"],
+    div[class*="st-key-journey_console_card_wrapper"] div[data-testid="stPopover"],
     div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-testid="stPopover"],
     div[data-testid="column"]:has(#journey-console-card-marker) div[data-testid="stPopover"] {
         margin-top: 4px !important;
@@ -894,51 +943,385 @@ CUSTOM_CSS = """
         text-align: left !important;
     }
 
-    /* Popover Content Styling */
+    /* ── Popover & Modal / Dialog Containers (100% Borderless) ── */
+    div[data-testid="stPopoverBody"],
+    div[data-baseweb="popover"],
+    div[data-baseweb="popover"] > div,
+    [data-baseweb="popover"],
+    [data-baseweb="popover"] > div,
+    div[data-testid="stPopoverContent"],
+    div[data-testid="stPopoverBody"] > div,
+    div[data-testid="stModal"],
+    div[data-testid="stModal"] > div,
+    div[data-testid="stModal"] > div > div,
+    div[data-testid="stModal"] section,
+    div[data-testid="stModal"] [data-baseweb="modal"],
+    div[data-testid="stDialog"],
+    div[data-testid="stDialog"] section,
+    div[role="dialog"],
+    div[role="dialog"] > div,
+    section[role="dialog"],
+    [data-baseweb="modal"],
+    [data-baseweb="modal"] > div,
+    [data-baseweb="modal-body"] {
+        border: 0 !important;
+        border-width: 0 !important;
+        border-style: none !important;
+        border-color: transparent !important;
+        outline: none !important;
+    }
+
     div[data-testid="stPopoverBody"] {
-        background: rgba(15, 23, 42, 0.95) !important;
-        backdrop-filter: blur(24px) !important;
-        -webkit-backdrop-filter: blur(24px) !important;
-        border: 1px solid rgba(168, 85, 247, 0.5) !important;
-        border-radius: 16px !important;
-        padding: 16px !important;
-        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 25px rgba(168, 85, 247, 0.25) !important;
+        background: linear-gradient(145deg, rgba(15, 10, 26, 0.96) 0%, rgba(26, 17, 46, 0.94) 50%, rgba(15, 23, 42, 0.96) 100%) !important;
+        backdrop-filter: blur(28px) !important;
+        -webkit-backdrop-filter: blur(28px) !important;
+        border-radius: 18px !important;
+        padding: 14px !important;
+        box-shadow: 0 25px 60px -10px rgba(0, 0, 0, 0.85), 0 0 30px rgba(168, 85, 247, 0.2) !important;
         color: #FAFAFA !important;
-        min-width: 260px !important;
+        min-width: 270px !important;
+        max-width: 320px !important;
         z-index: 99999 !important;
     }
 
-    div[data-testid="stPopoverBody"] hr {
-        border-color: rgba(168, 85, 247, 0.25) !important;
-        margin: 10px 0 !important;
+    /* ── Popover Inner Buttons — Strip ALL borders globally ── */
+    div[data-testid="stPopoverBody"] button,
+    div[data-testid="stPopoverBody"] .stButton > button,
+    div[data-testid="stPopoverBody"] button[kind="secondary"],
+    div[data-testid="stPopoverBody"] button[kind="primary"],
+    div[data-testid="stPopoverBody"] button[data-testid="baseButton-secondary"],
+    div[data-testid="stPopoverBody"] button[data-testid="baseButton-primary"],
+    [data-baseweb="popover"] button,
+    [data-baseweb="popover"] .stButton > button,
+    div[class*="st-key-sb_pop_"] button,
+    div[class*="st-key-sb_del_pop_"] button {
+        border: 0 !important;
+        border-width: 0 !important;
+        border-style: none !important;
+        border-color: transparent !important;
+        outline: none !important;
+        box-shadow: none !important;
     }
 
-    div[data-testid="stPopoverBody"] button {
+    div[data-testid="stPopoverBody"] button:hover,
+    div[data-testid="stPopoverBody"] button:focus,
+    div[data-testid="stPopoverBody"] button:active,
+    div[data-testid="stPopoverBody"] button:focus-visible,
+    [data-baseweb="popover"] button:hover,
+    [data-baseweb="popover"] button:focus,
+    [data-baseweb="popover"] button:active,
+    [data-baseweb="popover"] button:focus-visible,
+    div[class*="st-key-sb_pop_"] button:hover,
+    div[class*="st-key-sb_pop_"] button:focus,
+    div[class*="st-key-sb_pop_"] button:active,
+    div[class*="st-key-sb_pop_"] button:focus-visible,
+    div[class*="st-key-sb_del_pop_"] button:hover,
+    div[class*="st-key-sb_del_pop_"] button:focus,
+    div[class*="st-key-sb_del_pop_"] button:active,
+    div[class*="st-key-sb_del_pop_"] button:focus-visible {
+        border: 0 !important;
+        border-width: 0 !important;
+        border-style: none !important;
+        border-color: transparent !important;
+        outline: none !important;
+        box-shadow: none !important;
+    }
+
+    div[data-testid="stPopoverBody"] hr {
+        border: none !important;
+        border-top: 1px solid rgba(168, 85, 247, 0.18) !important;
+        margin: 8px 0 !important;
+        box-shadow: none !important;
+    }
+
+    /* User Profile Card inside Popover */
+    .pop-user-card {
+        text-align: center;
+        padding: 10px 8px 12px 8px;
+        margin-bottom: 10px;
+        background: rgba(255, 255, 255, 0.04);
+        border: none;
+        border-radius: 14px;
+        box-shadow: none;
+    }
+
+    .pop-avatar-glow {
+        width: 44px;
+        height: 44px;
+        margin: 0 auto 6px auto;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%);
+        border: 1.5px solid rgba(255, 255, 255, 0.35);
+        box-shadow: 0 0 16px rgba(168, 85, 247, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        color: #FFFFFF;
+    }
+
+    .pop-user-name {
+        font-weight: 800;
+        font-size: 1.02rem;
+        color: #FAFAFA;
+        line-height: 1.2;
+        margin-bottom: 2px;
+    }
+
+    .pop-user-email {
+        font-size: 0.76rem;
+        color: rgba(233, 213, 255, 0.65);
+        margin-bottom: 8px;
+        word-break: break-all;
+    }
+
+    .pop-tier-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: linear-gradient(135deg, rgba(168, 85, 247, 0.25) 0%, rgba(59, 130, 246, 0.2) 100%);
+        border: none;
+        border-radius: 20px;
+        padding: 2px 10px;
+        font-size: 0.70rem;
+        font-weight: 800;
+        color: #E9D5FF;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+    }
+
+    .pop-tier-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #34D399;
+        box-shadow: 0 0 6px #34D399;
+        display: inline-block;
+    }
+
+    /* ── Settings Popover List Menu Items (Zero Margin & 100% Borderless) ── */
+    div[class*="st-key-sb_pop_upgrade_btn"],
+    div[class*="st-key-sb_pop_billing_btn"],
+    div[class*="st-key-sb_pop_admin_btn"],
+    div[data-testid="stPopoverBody"] div:has(> div[class*="st-key-sb_pop_upgrade_btn"]),
+    div[data-testid="stPopoverBody"] div:has(> div[class*="st-key-sb_pop_billing_btn"]),
+    div[data-testid="stPopoverBody"] div:has(> div[class*="st-key-sb_pop_admin_btn"]) {
+        margin: 0 !important;
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+        padding: 0 !important;
+    }
+
+    div[class*="st-key-sb_pop_upgrade_btn"] button,
+    div[class*="st-key-sb_pop_billing_btn"] button,
+    div[class*="st-key-sb_pop_admin_btn"] button {
         width: 100% !important;
-        max-width: none !important;
-        height: auto !important;
-        max-height: none !important;
+        min-height: 36px !important;
+        height: 36px !important;
+        background: transparent !important;
+        border: 0 !important;
+        border-color: transparent !important;
+        outline: none !important;
+        box-shadow: none !important;
+        border-radius: 8px !important;
+        color: #F3E8FF !important;
+        font-weight: 600 !important;
+        font-size: 0.86rem !important;
+        margin: 0 !important;
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        text-align: left !important;
+        padding: 4px 10px !important;
+        gap: 10px !important;
+        cursor: pointer !important;
+        transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+
+    div[class*="st-key-sb_pop_upgrade_btn"] button {
+        color: #F472B6 !important;
+    }
+
+    div[class*="st-key-sb_pop_upgrade_btn"] button:hover,
+    div[class*="st-key-sb_pop_billing_btn"] button:hover,
+    div[class*="st-key-sb_pop_admin_btn"] button:hover,
+    div[data-testid="stPopoverBody"] div[class*="st-key-sb_pop_upgrade_btn"] button:hover,
+    div[data-testid="stPopoverBody"] div[class*="st-key-sb_pop_billing_btn"] button:hover,
+    div[data-testid="stPopoverBody"] div[class*="st-key-sb_pop_admin_btn"] button:hover {
+        background: linear-gradient(90deg, rgba(168, 85, 247, 0.28) 0%, rgba(124, 58, 237, 0.24) 100%) !important;
+        border: 0 !important;
+        border-color: transparent !important;
+        outline: none !important;
+        color: #FFFFFF !important;
+        transform: translateX(4px) !important;
+        cursor: pointer !important;
+        box-shadow: 0 2px 10px rgba(168, 85, 247, 0.25) !important;
+    }
+
+    div[class*="st-key-sb_pop_upgrade_btn"] button:hover [data-testid="stIconMaterial"],
+    div[class*="st-key-sb_pop_upgrade_btn"] button:hover svg {
+        color: #F472B6 !important;
+        filter: drop-shadow(0 0 6px rgba(244, 114, 182, 0.8)) !important;
+    }
+
+    div[class*="st-key-sb_pop_billing_btn"] button:hover [data-testid="stIconMaterial"],
+    div[class*="st-key-sb_pop_billing_btn"] button:hover svg,
+    div[class*="st-key-sb_pop_admin_btn"] button:hover [data-testid="stIconMaterial"],
+    div[class*="st-key-sb_pop_admin_btn"] button:hover svg {
+        color: #C084FC !important;
+        filter: drop-shadow(0 0 6px rgba(192, 132, 252, 0.8)) !important;
+    }
+
+    div[class*="st-key-sb_pop_upgrade_btn"] button:focus,
+    div[class*="st-key-sb_pop_billing_btn"] button:focus,
+    div[class*="st-key-sb_pop_admin_btn"] button:focus,
+    div[class*="st-key-sb_pop_upgrade_btn"] button:active,
+    div[class*="st-key-sb_pop_billing_btn"] button:active,
+    div[class*="st-key-sb_pop_admin_btn"] button:active {
+        background: rgba(168, 85, 247, 0.22) !important;
+        border: 0 !important;
+        border-color: transparent !important;
+        outline: none !important;
+        box-shadow: none !important;
+    }
+
+    div[class*="st-key-sb_pop_upgrade_btn"] button > div,
+    div[class*="st-key-sb_pop_billing_btn"] button > div,
+    div[class*="st-key-sb_pop_admin_btn"] button > div,
+    div[class*="st-key-sb_pop_upgrade_btn"] button p,
+    div[class*="st-key-sb_pop_billing_btn"] button p,
+    div[class*="st-key-sb_pop_admin_btn"] button p {
+        text-align: left !important;
+        justify-content: flex-start !important;
+        align-items: center !important;
+        display: flex !important;
+        width: 100% !important;
+        gap: 10px !important;
+    }
+
+    div[class*="st-key-sb_pop_upgrade_btn"] button [data-testid="stIconMaterial"],
+    div[class*="st-key-sb_pop_billing_btn"] button [data-testid="stIconMaterial"],
+    div[class*="st-key-sb_pop_admin_btn"] button [data-testid="stIconMaterial"],
+    div[class*="st-key-sb_pop_upgrade_btn"] button svg,
+    div[class*="st-key-sb_pop_billing_btn"] button svg,
+    div[class*="st-key-sb_pop_admin_btn"] button svg {
+        color: inherit !important;
+        font-size: 19px !important;
+        width: 19px !important;
+        height: 19px !important;
+        flex-shrink: 0 !important;
+    }
+
+    /* Sign Out Button (Restored as before) */
+    div[class*="st-key-sb_pop_logout_btn"] {
+        margin-top: 6px !important;
+        margin-bottom: 0 !important;
+    }
+
+    div[class*="st-key-sb_pop_logout_btn"] button {
+        width: 100% !important;
         min-height: 38px !important;
-        padding: 8px 16px !important;
+        height: 38px !important;
+        background: rgba(239, 68, 68, 0.12) !important;
+        border: 1px solid rgba(239, 68, 68, 0.35) !important;
         border-radius: 10px !important;
-        font-size: 0.88rem !important;
-        font-weight: 700 !important;
-        background: rgba(239, 68, 68, 0.15) !important;
-        border: 1px solid rgba(239, 68, 68, 0.4) !important;
         color: #FCA5A5 !important;
+        font-weight: 700 !important;
+        font-size: 0.85rem !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
         gap: 6px !important;
+        cursor: pointer !important;
         transition: all 0.2s ease !important;
+        box-shadow: none !important;
+        margin: 0 !important;
+        padding: 6px 12px !important;
     }
 
-    div[data-testid="stPopoverBody"] button:hover {
-        background: rgba(239, 68, 68, 0.3) !important;
-        border-color: rgba(239, 68, 68, 0.8) !important;
-        box-shadow: 0 0 16px rgba(239, 68, 68, 0.4) !important;
+    div[class*="st-key-sb_pop_logout_btn"] button:hover {
+        background: rgba(239, 68, 68, 0.25) !important;
+        border-color: rgba(239, 68, 68, 0.75) !important;
         color: #FFFFFF !important;
+        box-shadow: 0 0 16px rgba(239, 68, 68, 0.4) !important;
         transform: translateY(-1px) !important;
+        cursor: pointer !important;
+    }
+
+    /* Session Delete Popover Body — Borderless, minimal, compact with proper padding */
+    div[data-testid="stPopoverBody"]:has(div[class*="st-key-sb_del_pop_"]) {
+        border: none !important;
+        border-radius: 12px !important;
+        padding: 6px 8px !important;
+        min-width: 125px !important;
+        max-width: 145px !important;
+        background: rgba(20, 13, 33, 0.96) !important;
+        backdrop-filter: blur(24px) !important;
+        -webkit-backdrop-filter: blur(24px) !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.75), 0 0 15px rgba(168, 85, 247, 0.15) !important;
+        margin: 0 !important;
+    }
+
+    /* Session Delete Popover Button: Simple text with dustbin icon, completely borderless */
+    div[data-testid="stPopoverBody"] div[class*="st-key-sb_del_pop_"] button,
+    div[class*="st-key-sb_del_pop_"] button,
+    div[data-testid="stPopoverBody"]:has(div[class*="st-key-sb_del_pop_"]) button {
+        width: 100% !important;
+        min-height: 32px !important;
+        height: 32px !important;
+        background: transparent !important;
+        border: 0 !important;
+        border-color: transparent !important;
+        outline: none !important;
+        box-shadow: none !important;
+        border-radius: 8px !important;
+        color: #F87171 !important;
+        font-size: 0.84rem !important;
+        font-weight: 600 !important;
+        letter-spacing: 0.1px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        gap: 8px !important;
+        padding: 6px 10px !important;
+        margin: 0 !important;
+        transition: all 0.18s ease !important;
+        cursor: pointer !important;
+    }
+
+    div[data-testid="stPopoverBody"] div[class*="st-key-sb_del_pop_"] button:hover,
+    div[class*="st-key-sb_del_pop_"] button:hover,
+    div[data-testid="stPopoverBody"]:has(div[class*="st-key-sb_del_pop_"]) button:hover {
+        background: rgba(239, 68, 68, 0.18) !important;
+        border: 0 !important;
+        border-color: transparent !important;
+        outline: none !important;
+        box-shadow: none !important;
+        color: #FF6B6B !important;
+    }
+
+    div[data-testid="stPopoverBody"] div[class*="st-key-sb_del_pop_"] button:focus,
+    div[data-testid="stPopoverBody"] div[class*="st-key-sb_del_pop_"] button:active,
+    div[data-testid="stPopoverBody"] div[class*="st-key-sb_del_pop_"] button:focus-visible,
+    div[class*="st-key-sb_del_pop_"] button:focus,
+    div[class*="st-key-sb_del_pop_"] button:active,
+    div[class*="st-key-sb_del_pop_"] button:focus-visible {
+        background: rgba(239, 68, 68, 0.18) !important;
+        border: 0 !important;
+        border-color: transparent !important;
+        outline: none !important;
+        box-shadow: none !important;
+        color: #FF6B6B !important;
+    }
+
+    div[class*="st-key-sb_del_pop_"] button [data-testid="stIconMaterial"],
+    div[class*="st-key-sb_del_pop_"] button svg {
+        color: inherit !important;
+        font-size: 18px !important;
+        width: 18px !important;
+        height: 18px !important;
     }
 
     /* ── Glassmorphism Cards & Containers ────────────── */
@@ -1124,127 +1507,267 @@ CUSTOM_CSS = """
         left: 0 !important;
         right: 0 !important;
         background: #0B0715 !important; /* solid sidebar background color */
-        padding: 10px 14px 14px 14px !important;
-        border-top: 1px solid rgba(168, 85, 247, 0.25) !important;
+        padding: 8px 12px 12px 12px !important;
+        border-top: 1px solid rgba(168, 85, 247, 0.22) !important;
         box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.5) !important;
         z-index: 99 !important;
         box-sizing: border-box !important;
     }
 
     .sidebar-user-footer-divider {
-        display: none !important;
+        display: block !important;
+        border: none !important;
+        border-top: 1px solid rgba(168, 85, 247, 0.22) !important;
+        margin: 0 0 8px 0 !important;
+        width: 100% !important;
+        box-shadow: 0 0 8px rgba(168, 85, 247, 0.15) !important;
     }
 
-    .sidebar-footer-wrapper {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin-top: 4px;
-        width: 100%;
+    /* Redesigned User Profile Row (App Theme Glassmorphic Card) */
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(.user-profile-bottom-card) {
+        margin: 0px 0 !important;
+        padding: 6px 10px !important;
+        gap: 6px !important;
+        border-radius: 12px !important;
+        background: linear-gradient(135deg, rgba(30, 20, 50, 0.55) 0%, rgba(124, 58, 237, 0.15) 50%, rgba(15, 23, 42, 0.8) 100%) !important;
+        backdrop-filter: blur(16px) !important;
+        -webkit-backdrop-filter: blur(16px) !important;
+        border: 1px solid rgba(168, 85, 247, 0.28) !important;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), inset 0 0 12px rgba(168, 85, 247, 0.08) !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        min-height: 46px !important;
     }
 
-    .sidebar-user-footer-divider {
-        border-top: 1px solid rgba(168, 85, 247, 0.25);
-        margin: 14px 0 10px 0;
-        box-shadow: 0 -1px 8px rgba(168, 85, 247, 0.2);
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(.user-profile-bottom-card):hover {
+        background: linear-gradient(135deg, rgba(45, 25, 75, 0.72) 0%, rgba(124, 58, 237, 0.24) 50%, rgba(15, 23, 42, 0.92) 100%) !important;
+        border-color: rgba(168, 85, 247, 0.55) !important;
+        box-shadow: 0 6px 20px rgba(168, 85, 247, 0.22), inset 0 0 16px rgba(168, 85, 247, 0.12) !important;
     }
 
-    /* Redesigned User Profile Card with App Theme */
+    /* All columns and intermediate wrappers inside the profile card aligned center */
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(.user-profile-bottom-card) > div[data-testid="stColumn"],
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(.user-profile-bottom-card) > div[data-testid="column"] {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        min-height: 0 !important;
+    }
+
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(.user-profile-bottom-card) div[data-testid="stVerticalBlock"],
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(.user-profile-bottom-card) div[data-testid="stElementContainer"],
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(.user-profile-bottom-card) div.element-container,
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(.user-profile-bottom-card) div[data-testid="stMarkdownContainer"],
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(.user-profile-bottom-card) div.stMarkdown {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        gap: 0 !important;
+        height: auto !important;
+        min-height: 0 !important;
+        width: 100% !important;
+    }
+
+    /* First Column: Avatar & User Info */
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(.user-profile-bottom-card) > div[data-testid="stColumn"]:first-child,
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(.user-profile-bottom-card) > div[data-testid="column"]:first-child {
+        flex: 1 1 auto !important;
+        min-width: 0 !important;
+        justify-content: flex-start !important;
+    }
+
     .user-profile-bottom-card {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 8px 12px;
-        border-radius: 14px;
-        background: linear-gradient(135deg, rgba(30, 20, 50, 0.6) 0%, rgba(124, 58, 237, 0.15) 100%);
-        border: 1px solid rgba(168, 85, 247, 0.35);
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), inset 0 0 12px rgba(168, 85, 247, 0.1);
-        backdrop-filter: blur(12px);
-        cursor: default;
-        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-        width: 100%;
-        box-sizing: border-box;
-    }
-
-    .user-profile-bottom-card:hover {
-        background: linear-gradient(135deg, rgba(45, 25, 75, 0.75) 0%, rgba(168, 85, 247, 0.28) 100%);
-        border-color: #C084FC;
-        box-shadow: 0 6px 20px rgba(168, 85, 247, 0.35), inset 0 0 16px rgba(168, 85, 247, 0.2);
-        transform: translateY(-1px);
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: 9px !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        cursor: default !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
     }
 
     .user-avatar-pill {
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%);
-        border: 1.5px solid rgba(255, 255, 255, 0.3);
-        box-shadow: 0 0 12px rgba(168, 85, 247, 0.5);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.1rem;
-        flex-shrink: 0;
-        color: #FFFFFF;
-    }
-
-    .user-info-text {
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        flex: 1 1 auto;
-        min-width: 0;
-    }
-
-    .user-name-title {
-        font-size: 0.85rem;
-        font-weight: 800;
-        color: #FAFAFA;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        line-height: 1.2;
-        letter-spacing: 0.2px;
-    }
-
-    .user-tier-subtitle {
-        font-size: 0.64rem;
-        font-weight: 800;
-        color: #C084FC;
-        letter-spacing: 0.6px;
-        line-height: 1.1;
-        text-transform: uppercase;
-        margin-top: 1px;
-    }
-
-    /* Redesigned Circular Settings Icon Button */
-    div[class*="st-key-sb_settings_popover_btn"] div[data-testid="stPopover"] button {
-        width: 38px !important;
-        height: 38px !important;
-        min-width: 38px !important;
-        max-width: 38px !important;
-        min-height: 38px !important;
-        max-height: 38px !important;
+        width: 32px !important;
+        height: 32px !important;
+        min-width: 32px !important;
+        max-width: 32px !important;
         border-radius: 50% !important;
-        padding: 0 !important;
-        margin: 0 !important;
-        background: linear-gradient(135deg, rgba(168, 85, 247, 0.25) 0%, rgba(59, 130, 246, 0.2) 100%) !important;
-        border: 1.5px solid rgba(168, 85, 247, 0.45) !important;
-        color: #E9D5FF !important;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), 0 0 10px rgba(168, 85, 247, 0.2) !important;
+        background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #3B82F6 100%) !important;
+        border: 1.5px solid rgba(255, 255, 255, 0.3) !important;
+        box-shadow: 0 0 10px rgba(168, 85, 247, 0.4) !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        font-size: 0.92rem !important;
+        flex-shrink: 0 !important;
+        color: #FFFFFF !important;
+        margin: 0 !important;
     }
 
+    .user-info-text {
+        overflow: hidden !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        align-items: flex-start !important;
+        flex: 1 1 auto !important;
+        min-width: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        gap: 1px !important;
+    }
+
+    .user-name-title {
+        font-size: 0.84rem !important;
+        font-weight: 700 !important;
+        color: #FAFAFA !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        line-height: 1.2 !important;
+        letter-spacing: 0.2px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .user-tier-subtitle {
+        font-size: 0.63rem !important;
+        font-weight: 800 !important;
+        color: #C084FC !important;
+        letter-spacing: 0.5px !important;
+        line-height: 1.1 !important;
+        text-transform: uppercase !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* Second Column: Settings Popover Button */
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(.user-profile-bottom-card) > div[data-testid="stColumn"]:last-child,
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(.user-profile-bottom-card) > div[data-testid="column"]:last-child {
+        margin: 0 0 0 auto !important;
+        padding: 0 !important;
+        flex: 0 0 32px !important;
+        width: 32px !important;
+        min-width: 32px !important;
+        max-width: 32px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-end !important;
+    }
+
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(.user-profile-bottom-card) div[data-testid="stPopover"],
+    div[class*="st-key-sb_settings_popover_btn"] div[data-testid="stPopover"] {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 32px !important;
+        height: 32px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(.user-profile-bottom-card) div[data-testid="stPopover"] button,
+    div[class*="st-key-sb_settings_popover_btn"] div[data-testid="stPopover"] button {
+        border-radius: 50% !important;
+        min-height: 32px !important;
+        height: 32px !important;
+        width: 32px !important;
+        min-width: 32px !important;
+        max-width: 32px !important;
+        max-height: 32px !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        background: rgba(168, 85, 247, 0.14) !important;
+        border: 1px solid rgba(168, 85, 247, 0.3) !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25) !important;
+        color: #E9D5FF !important;
+        opacity: 0.9 !important;
+        visibility: visible !important;
+        cursor: pointer !important;
+        transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        overflow: hidden !important;
+        gap: 0 !important;
+    }
+
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(.user-profile-bottom-card) div[data-testid="stPopover"] button > div,
+    div[class*="st-key-sb_settings_popover_btn"] div[data-testid="stPopover"] button > div {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        height: 100% !important;
+        width: 100% !important;
+        margin: 0 auto !important;
+        padding: 0 !important;
+        gap: 0 !important;
+    }
+
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(.user-profile-bottom-card):hover div[data-testid="stPopover"] button,
+    div[class*="st-key-sb_settings_popover_btn"] div[data-testid="stPopover"]:focus-within button,
+    div[class*="st-key-sb_settings_popover_btn"] div[data-testid="stPopover"] button[aria-expanded="true"] {
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(.user-profile-bottom-card) div[data-testid="stPopover"] button:hover,
     div[class*="st-key-sb_settings_popover_btn"] div[data-testid="stPopover"] button:hover {
-        background: linear-gradient(135deg, rgba(236, 72, 153, 0.4) 0%, rgba(168, 85, 247, 0.55) 100%) !important;
+        border-radius: 50% !important;
+        background: linear-gradient(135deg, rgba(236, 72, 153, 0.35) 0%, rgba(168, 85, 247, 0.5) 100%) !important;
         border-color: #C084FC !important;
         color: #FFFFFF !important;
-        box-shadow: 0 0 18px rgba(168, 85, 247, 0.6) !important;
-        transform: rotate(45deg) scale(1.06) !important;
+        box-shadow: 0 0 14px rgba(168, 85, 247, 0.6) !important;
+        transform: rotate(45deg) scale(1.08) !important;
+        cursor: pointer !important;
+    }
+
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(.user-profile-bottom-card) div[data-testid="stPopover"] button [data-testid="stIconMaterial"],
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(.user-profile-bottom-card) div[data-testid="stPopover"] button svg,
+    div[class*="st-key-sb_settings_popover_btn"] div[data-testid="stPopover"] button [data-testid="stIconMaterial"],
+    div[class*="st-key-sb_settings_popover_btn"] div[data-testid="stPopover"] button svg {
+        font-size: 19px !important;
+        width: 19px !important;
+        height: 19px !important;
+        color: inherit !important;
+        fill: currentColor !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        margin: 0 auto !important;
+        padding: 0 !important;
+        line-height: 1 !important;
+        transform: none !important;
+    }
+
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(.user-profile-bottom-card) div[data-testid="stPopover"] button div[data-testid="stMarkdownContainer"],
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(.user-profile-bottom-card) div[data-testid="stPopover"] button p,
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(.user-profile-bottom-card) div[data-testid="stPopover"] button span,
+    div[class*="st-key-sb_settings_popover_btn"] div[data-testid="stPopover"] button div[data-testid="stMarkdownContainer"],
+    div[class*="st-key-sb_settings_popover_btn"] div[data-testid="stPopover"] button p,
+    div[class*="st-key-sb_settings_popover_btn"] div[data-testid="stPopover"] button span {
+        padding: 0 !important;
+        margin: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
+        line-height: 1 !important;
+        height: 100% !important;
     }
 
     /* Bold Sidebar Widget Labels */
@@ -1401,26 +1924,80 @@ CUSTOM_CSS = """
         flex-shrink: 0;
     }
 
-    /* ── Modern Glassmorphic Search Bar in Sidebar ── */
+    /* ── Modern Glassmorphic Search Bar in Sidebar with Guaranteed White Search Icon ── */
     div[class*="st-key-sb_hist_search_input"] {
         margin-top: 10px !important;
         margin-bottom: 12px !important;
+        position: relative !important;
     }
 
-    div[class*="st-key-sb_hist_search_input"] input {
-        background: rgba(255, 255, 255, 0.04) !important;
-        border: 1px solid rgba(168, 85, 247, 0.22) !important;
-        border-radius: 10px !important;
-        color: #F3E8FF !important;
-        font-size: 0.82rem !important;
-        padding: 7px 12px !important;
-        height: 36px !important;
-        transition: all 0.2s ease !important;
+    div[class*="st-key-sb_hist_search_input"]::before {
+        content: '' !important;
+        position: absolute !important;
+        left: 11px !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+        width: 15px !important;
+        height: 15px !important;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23FFFFFF' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'%3E%3C/circle%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'%3E%3C/line%3E%3C/svg%3E") !important;
+        background-repeat: no-repeat !important;
+        background-size: contain !important;
+        z-index: 10 !important;
+        pointer-events: none !important;
+        opacity: 0.95 !important;
+        filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.6)) !important;
     }
-    div[class*="st-key-sb_hist_search_input"] input:focus {
-        background: rgba(255, 255, 255, 0.07) !important;
+
+    /* Single border and background container */
+    div[class*="st-key-sb_hist_search_input"] div[data-baseweb="input"],
+    div[class*="st-key-sb_hist_search_input"] div[data-baseweb="base-input"] {
+        background-color: rgba(255, 255, 255, 0.04) !important;
+        border: 1px solid rgba(168, 85, 247, 0.25) !important;
+        border-radius: 10px !important;
+        height: 36px !important;
+        min-height: 36px !important;
+        box-shadow: none !important;
+        outline: none !important;
+        transition: all 0.2s ease !important;
+        padding: 0 !important;
+    }
+
+    div[class*="st-key-sb_hist_search_input"] div[data-baseweb="input"]:focus-within {
+        background-color: rgba(255, 255, 255, 0.07) !important;
         border-color: #A855F7 !important;
         box-shadow: 0 0 12px rgba(168, 85, 247, 0.35) !important;
+    }
+
+    /* Input Field: Completely borderless and transparent to prevent double border */
+    div[class*="st-key-sb_hist_search_input"] input {
+        background: transparent !important;
+        background-image: none !important;
+        border: 0 !important;
+        border-width: 0 !important;
+        border-style: none !important;
+        border-color: transparent !important;
+        outline: none !important;
+        box-shadow: none !important;
+        color: #F3E8FF !important;
+        font-size: 0.82rem !important;
+        padding: 0 10px 0 34px !important;
+        height: 100% !important;
+        min-height: 34px !important;
+    }
+
+    div[class*="st-key-sb_hist_search_input"] input:focus,
+    div[class*="st-key-sb_hist_search_input"] input:active,
+    div[class*="st-key-sb_hist_search_input"] input:focus-visible {
+        border: 0 !important;
+        border-width: 0 !important;
+        border-color: transparent !important;
+        outline: none !important;
+        box-shadow: none !important;
+    }
+
+    div[class*="st-key-sb_hist_search_input"] input::placeholder {
+        color: rgba(233, 213, 255, 0.55) !important;
+        font-size: 0.78rem !important;
     }
 
     /* ── Redesigned Modern Filter Pills: All, Active, Completed ── */
@@ -1431,13 +2008,12 @@ CUSTOM_CSS = """
 
     html body div.stApp section[data-testid="stSidebar"] div[class*="st-key-sb_flt_"] button,
     div[class*="st-key-sb_flt_"] button {
-        height: 32px !important;
+        height: auto !important;
         min-height: 32px !important;
-        max-height: 32px !important;
-        font-size: 0.76rem !important;
+        font-size: 0.74rem !important;
         font-weight: 600 !important;
-        border-radius: 20px !important;
-        padding: 0 6px !important;
+        border-radius: 18px !important;
+        padding: 4px 6px !important;
         margin: 0 !important;
         transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
         letter-spacing: 0.1px !important;
@@ -1446,26 +2022,57 @@ CUSTOM_CSS = """
         justify-content: center !important;
         text-align: center !important;
         box-shadow: none !important;
-        white-space: nowrap !important;
+        white-space: normal !important;
+        word-break: break-word !important;
+        overflow-wrap: break-word !important;
+        text-wrap: wrap !important;
+        line-height: 1.15 !important;
         width: 100% !important;
+        gap: 4px !important;
+    }
+
+    /* Text wrapping inside child markdown / text containers */
+    div[class*="st-key-sb_flt_"] button div[data-testid="stMarkdownContainer"],
+    div[class*="st-key-sb_flt_"] button p,
+    div[class*="st-key-sb_flt_"] button span {
+        white-space: normal !important;
+        word-break: break-word !important;
+        overflow-wrap: break-word !important;
+        text-wrap: wrap !important;
+        text-align: center !important;
+        line-height: 1.15 !important;
+    }
+
+    /* All Icons inside filter buttons must look pure white */
+    div[class*="st-key-sb_flt_"] button [data-testid="stIconMaterial"],
+    div[class*="st-key-sb_flt_"] button svg,
+    div[class*="st-key-sb_flt_"] button span:has(svg),
+    div[class*="st-key-sb_flt_"] button [data-testid="stIconMaterial"] * {
+        color: #FFFFFF !important;
+        fill: #FFFFFF !important;
+        font-size: 15px !important;
+        width: 15px !important;
+        height: 15px !important;
+        filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.6)) !important;
+        flex-shrink: 0 !important;
     }
 
     /* Inactive Filter Pill */
     html body div.stApp section[data-testid="stSidebar"] div[class*="st-key-sb_flt_inactive"] button,
     div[class*="st-key-sb_flt_inactive"] button {
-        background: rgba(255, 255, 255, 0.03) !important;
-        border: 1px solid rgba(168, 85, 247, 0.18) !important;
-        color: rgba(233, 213, 255, 0.65) !important;
+        background: rgba(255, 255, 255, 0.04) !important;
+        border: 1px solid rgba(168, 85, 247, 0.22) !important;
+        color: rgba(233, 213, 255, 0.75) !important;
         text-align: center !important;
         justify-content: center !important;
     }
     html body div.stApp section[data-testid="stSidebar"] div[class*="st-key-sb_flt_inactive"] button:hover,
     div[class*="st-key-sb_flt_inactive"] button:hover {
-        background: rgba(168, 85, 247, 0.14) !important;
-        border-color: rgba(168, 85, 247, 0.45) !important;
-        color: #F3E8FF !important;
+        background: rgba(168, 85, 247, 0.18) !important;
+        border-color: rgba(168, 85, 247, 0.55) !important;
+        color: #FFFFFF !important;
         transform: translateY(-1px) !important;
-        box-shadow: 0 2px 8px rgba(168, 85, 247, 0.2) !important;
+        box-shadow: 0 2px 8px rgba(168, 85, 247, 0.25) !important;
     }
 
     /* Active Filter Pill */
@@ -1478,7 +2085,7 @@ CUSTOM_CSS = """
         box-shadow: 0 0 14px rgba(168, 85, 247, 0.45), inset 0 1px 1px rgba(255, 255, 255, 0.25) !important;
         text-align: center !important;
         justify-content: center !important;
-        margin-bottom: 10px !important;
+        margin-bottom: 0 !important;
     }
     html body div.stApp section[data-testid="stSidebar"] div[class*="st-key-sb_flt_active"] button:hover,
     div[class*="st-key-sb_flt_active"] button:hover {
@@ -1682,15 +2289,16 @@ CUSTOM_CSS = """
         margin: 0 !important;
         padding: 0 !important;
         width: 28px !important;
+        height: 28px !important;
         display: flex !important;
-        justify-content: flex-end !important;
+        justify-content: center !important;
         align-items: center !important;
     }
 
     section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(div[class*="st-key-sb_card_"]) div[data-testid="stPopover"] button {
         opacity: 0 !important;
         visibility: hidden !important;
-        border-radius: 6px !important;
+        border-radius: 50% !important;
         min-height: 26px !important;
         height: 26px !important;
         width: 26px !important;
@@ -1706,6 +2314,31 @@ CUSTOM_CSS = """
         box-shadow: none !important;
         color: rgba(233, 213, 255, 0.7) !important;
         transition: opacity 0.12s ease, visibility 0.12s ease, background 0.12s ease, color 0.12s ease !important;
+        overflow: hidden !important;
+    }
+
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(div[class*="st-key-sb_card_"]) div[data-testid="stPopover"] button > div {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        height: 100% !important;
+        width: 100% !important;
+        margin: 0 auto !important;
+        padding: 0 !important;
+        gap: 0 !important;
+    }
+
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(div[class*="st-key-sb_card_"]) div[data-testid="stPopover"] button [data-testid="stIconMaterial"],
+    section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(div[class*="st-key-sb_card_"]) div[data-testid="stPopover"] button svg {
+        font-size: 18px !important;
+        width: 18px !important;
+        height: 18px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        margin: 0 auto !important;
+        padding: 0 !important;
+        line-height: 1 !important;
     }
 
     section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(div[class*="st-key-sb_card_"]):hover div[data-testid="stPopover"] button,
@@ -1713,6 +2346,16 @@ CUSTOM_CSS = """
     section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(div[class*="st-key-sb_card_"]) div[data-testid="stPopover"] button[aria-expanded="true"] {
         opacity: 1 !important;
         visibility: visible !important;
+    }
+
+    @media (hover: none), (max-width: 768px) {
+        section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(div[class*="st-key-sb_card_"]) div[data-testid="stPopover"] button {
+            opacity: 0.6 !important;
+            visibility: visible !important;
+        }
+        section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(div[class*="st-key-sb_card_"]) div[data-testid="stPopover"] button:active {
+            opacity: 1 !important;
+        }
     }
 
     section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(div[class*="st-key-sb_card_"]) div[data-testid="stPopover"] button:hover {
@@ -1761,66 +2404,6 @@ CUSTOM_CSS = """
     section[data-testid="stSidebar"] div[data-testid="stSidebarUserContent"] > div[data-testid="stVerticalBlock"] > div:has(.sidebar-user-footer-divider),
     section[data-testid="stSidebar"] div[data-testid="stSidebarUserContent"] > div[data-testid="stVerticalBlock"] > div:has(> div[data-testid="stHorizontalBlock"]:has(div.user-profile-bottom-card)) {
         margin-top: auto !important;
-    }
-
-    .sidebar-user-footer-divider {
-        border-top: 1px solid rgba(168, 85, 247, 0.22);
-        margin: 14px 0 10px 0;
-    }
-
-    .user-profile-bottom-card {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 5px 8px;
-        border-radius: 10px;
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid rgba(168, 85, 247, 0.25);
-        cursor: default;
-        transition: all 0.2s ease;
-    }
-
-    .user-profile-bottom-card:hover {
-        background: rgba(168, 85, 247, 0.12);
-        border-color: rgba(168, 85, 247, 0.45);
-    }
-
-    .user-avatar-pill {
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, rgba(168, 85, 247, 0.35) 0%, rgba(59, 130, 246, 0.35) 100%);
-        border: 1px solid rgba(168, 85, 247, 0.5);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.05rem;
-        flex-shrink: 0;
-    }
-
-    .user-info-text {
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-    }
-
-    .user-name-title {
-        font-size: 0.82rem;
-        font-weight: 800;
-        color: #FAFAFA;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        line-height: 1.2;
-    }
-
-    .user-tier-subtitle {
-        font-size: 0.65rem;
-        font-weight: 800;
-        color: #C084FC;
-        letter-spacing: 0.5px;
-        line-height: 1.1;
     }
 
     div[class*="st-key-sb_pop_logout_btn"] button {
@@ -2372,6 +2955,8 @@ CUSTOM_CSS = """
             flex-direction: column !important;
             width: 100% !important;
             gap: 0px !important;
+            padding: 0 !important;
+            margin: 0 !important;
         }
         div[data-testid="stHorizontalBlock"]:has(#journey-console-card-marker) > div[data-testid="stColumn"],
         div[data-testid="stHorizontalBlock"]:has(#journey-console-card-marker) > div[data-testid="column"] {
@@ -2390,23 +2975,39 @@ CUSTOM_CSS = """
             margin: 0 !important;
         }
 
-        /* Glass Cards and Form Margins on Mobile */
+        /* Glass Cards and Form Margins & Padding on Mobile */
+        div.st-key-journey_console_card_wrapper,
+        div[class*="st-key-journey_console_card_wrapper"],
         div[data-testid="stColumn"]:has(#journey-console-card-marker),
         div[data-testid="column"]:has(#journey-console-card-marker) {
-            padding: 1.2rem 1rem !important;
+            padding: 1.15rem 0.95rem 0.95rem 0.95rem !important;
             border-radius: 18px !important;
             margin-top: 0.4rem !important;
-            margin-bottom: 1rem !important;
+            margin-bottom: 1.1rem !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
+            max-width: 100% !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
         }
 
         /* Top Hero Header on Mobile */
+        .et-hero {
+            margin-top: 0.6rem !important;
+            margin-bottom: 0.6rem !important;
+            padding: 0 4px !important;
+        }
         .et-hero h1 {
-            font-size: 1.65rem !important;
-            padding: 0 0.5rem !important;
+            font-size: 1.6rem !important;
+            padding: 0 0.4rem !important;
+            line-height: 1.3 !important;
+            margin-bottom: 0.35rem !important;
         }
         .et-hero p {
             font-size: 0.88rem !important;
-            padding: 0 0.5rem !important;
+            padding: 0 0.4rem !important;
+            margin-bottom: 0.75rem !important;
+            line-height: 1.45 !important;
         }
 
         /* Progress & Milestone Dashboard on Mobile */
@@ -2435,11 +3036,41 @@ CUSTOM_CSS = """
         div[data-testid="stHorizontalBlock"]:has(div[class*="st-key-main_mode_select"]) {
             flex-direction: column !important;
             gap: 8px !important;
+            margin-bottom: 4px !important;
         }
         div[data-testid="stHorizontalBlock"]:has(div[class*="st-key-main_mode_select"]) > div[data-testid="stColumn"],
         div[data-testid="stHorizontalBlock"]:has(div[class*="st-key-main_mode_select"]) > div[data-testid="column"] {
             width: 100% !important;
             flex: 1 1 100% !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+
+        /* Prompt Form Row on Mobile (Topic Input + Start Journey Button) */
+        div[data-testid="stForm"]:has(.et-gemini-prompt-form-marker) div[data-testid="stHorizontalBlock"],
+        div[data-testid="stForm"]:has(div[class*="st-key-main_topic_input_composer"]) div[data-testid="stHorizontalBlock"] {
+            flex-direction: column !important;
+            align-items: stretch !important;
+            gap: 10px !important;
+            margin-top: 4px !important;
+        }
+        div[data-testid="stForm"]:has(.et-gemini-prompt-form-marker) div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"],
+        div[data-testid="stForm"]:has(div[class*="st-key-main_topic_input_composer"]) div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"],
+        div[data-testid="stForm"]:has(.et-gemini-prompt-form-marker) div[data-testid="stHorizontalBlock"] > div[data-testid="column"],
+        div[data-testid="stForm"]:has(div[class*="st-key-main_topic_input_composer"]) div[data-testid="stHorizontalBlock"] > div[data-testid="column"] {
+            width: 100% !important;
+            flex: 1 1 100% !important;
+            min-width: 100% !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        div[data-testid="stForm"]:has(.et-gemini-prompt-form-marker) div[data-testid="stFormSubmitButton"] button,
+        div[data-testid="stForm"]:has(div[class*="st-key-main_topic_input_composer"]) div[data-testid="stFormSubmitButton"] button {
+            width: 100% !important;
+            min-height: 44px !important;
+            height: auto !important;
+            font-size: 0.95rem !important;
+            padding: 10px 14px !important;
         }
 
         /* Tutor Chat Form on Mobile */
@@ -3192,8 +3823,149 @@ CUSTOM_CSS = """
         box-shadow: 0 0 32px rgba(236, 72, 153, 0.75), 0 0 20px rgba(6, 182, 212, 0.6) !important;
         transform: translateY(-2px) !important;
     }
+
+    /* ── Mobile Ordering for Learning Workspace Sections ───────── */
+    @media (max-width: 768px) {
+        /* Unbox the column wrappers so all 4 cards become direct flex children */
+        div[data-testid="stHorizontalBlock"]:has(.sec-marker-tutor) {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 1.25rem !important;
+        }
+
+        div[data-testid="stHorizontalBlock"]:has(.sec-marker-tutor) > div[data-testid="stColumn"] {
+            display: contents !important;
+        }
+
+        /* 1. 🧩 Socratic Tutor Chat */
+        div[data-testid="stHorizontalBlock"]:has(.sec-marker-tutor) div[data-testid="stElementContainer"]:has(.sec-marker-tutor),
+        div[data-testid="stHorizontalBlock"]:has(.sec-marker-tutor) div.element-container:has(.sec-marker-tutor),
+        div[data-testid="stHorizontalBlock"]:has(.sec-marker-tutor) div[data-testid="stExpander"]:has(.sec-marker-tutor),
+        div[data-testid="stHorizontalBlock"]:has(.sec-marker-tutor) div.stExpander:has(.sec-marker-tutor) {
+            order: 1 !important;
+        }
+
+        /* 2. 🎬 Recommended YouTube Video Clips & Timestamps */
+        div[data-testid="stHorizontalBlock"]:has(.sec-marker-tutor) div[data-testid="stElementContainer"]:has(.sec-marker-youtube),
+        div[data-testid="stHorizontalBlock"]:has(.sec-marker-tutor) div.element-container:has(.sec-marker-youtube),
+        div[data-testid="stHorizontalBlock"]:has(.sec-marker-tutor) div[data-testid="stExpander"]:has(.sec-marker-youtube),
+        div[data-testid="stHorizontalBlock"]:has(.sec-marker-tutor) div.stExpander:has(.sec-marker-youtube) {
+            order: 2 !important;
+        }
+
+        /* 3. 📚 Academic Research Papers & Preprints */
+        div[data-testid="stHorizontalBlock"]:has(.sec-marker-tutor) div[data-testid="stElementContainer"]:has(.sec-marker-papers),
+        div[data-testid="stHorizontalBlock"]:has(.sec-marker-tutor) div.element-container:has(.sec-marker-papers),
+        div[data-testid="stHorizontalBlock"]:has(.sec-marker-tutor) div[data-testid="stExpander"]:has(.sec-marker-papers),
+        div[data-testid="stHorizontalBlock"]:has(.sec-marker-tutor) div.stExpander:has(.sec-marker-papers) {
+            order: 3 !important;
+        }
+
+        /* 4. 📝 Milestone Knowledge Check Quiz */
+        div[data-testid="stHorizontalBlock"]:has(.sec-marker-tutor) div[data-testid="stElementContainer"]:has(.sec-marker-quiz),
+        div[data-testid="stHorizontalBlock"]:has(.sec-marker-tutor) div.element-container:has(.sec-marker-quiz),
+        div[data-testid="stHorizontalBlock"]:has(.sec-marker-tutor) div[data-testid="stExpander"]:has(.sec-marker-quiz),
+        div[data-testid="stHorizontalBlock"]:has(.sec-marker-tutor) div.stExpander:has(.sec-marker-quiz) {
+            order: 4 !important;
+        }
+
+        /* Hide desktop <br> spacing elements between expanders on mobile */
+        div[data-testid="stHorizontalBlock"]:has(.sec-marker-tutor) > div[data-testid="stColumn"] > div[data-testid="stElementContainer"]:not(:has(.sec-marker-tutor)):not(:has(.sec-marker-youtube)):not(:has(.sec-marker-papers)):not(:has(.sec-marker-quiz)):not(:has([data-testid="stExpander"])),
+        div[data-testid="stHorizontalBlock"]:has(.sec-marker-tutor) > div[data-testid="stColumn"] > div.element-container:not(:has(.sec-marker-tutor)):not(:has(.sec-marker-youtube)):not(:has(.sec-marker-papers)):not(:has(.sec-marker-quiz)):not(:has([data-testid="stExpander"])) {
+            display: none !important;
+        }
+    }
+
+    @media (max-width: 480px) {
+        div.st-key-journey_console_card_wrapper,
+        div[class*="st-key-journey_console_card_wrapper"],
+        div[data-testid="stColumn"]:has(#journey-console-card-marker),
+        div[data-testid="column"]:has(#journey-console-card-marker) {
+            padding: 1rem 0.85rem 0.85rem 0.85rem !important;
+            border-radius: 16px !important;
+            margin-top: 0.35rem !important;
+            margin-bottom: 0.9rem !important;
+            max-width: 100% !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+        }
+
+        .et-hero h1 {
+            font-size: 1.45rem !important;
+            padding: 0 4px !important;
+        }
+        .et-hero p {
+            font-size: 0.84rem !important;
+            padding: 0 4px !important;
+        }
+    }
 </style>
 """
+
+
+def trigger_scroll_to_top(key_suffix: str = ""):
+    """Injects client-side JavaScript to smoothly scroll the page to the top."""
+    scroll_js = """
+    <div id="scroll-to-top-anchor-__KEY__" style="display:none; height:0; width:0;"></div>
+    <script>
+    (function() {
+        function doScrollTop() {
+            try {
+                var win = window.parent || window;
+                var doc = win.document;
+                
+                // 1. Scroll window directly
+                if (typeof win.scrollTo === 'function') {
+                    win.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+                }
+
+                // 2. Scroll all scrollable main app containers
+                var selectors = [
+                    'html',
+                    'body',
+                    '.main',
+                    'section.main',
+                    '.stApp',
+                    '[data-testid="stAppViewContainer"]',
+                    '[data-testid="stMain"]',
+                    '[data-testid="stMainBlockContainer"]',
+                    '.block-container'
+                ];
+                
+                selectors.forEach(function(sel) {
+                    var el = doc.querySelector(sel);
+                    if (el) {
+                        try {
+                            if (typeof el.scrollTo === 'function') {
+                                el.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+                            }
+                            el.scrollTop = 0;
+                        } catch(err) {}
+                    }
+                });
+
+                // 3. Ensure top anchor is brought into view
+                var topAnchor = doc.querySelector('#edutech-top-page-anchor')
+                             || doc.querySelector('.top-progress-card')
+                             || doc.querySelector('.block-container');
+                if (topAnchor && typeof topAnchor.scrollIntoView === 'function') {
+                    topAnchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            } catch (e) {
+                console.debug("Scroll to top notice:", e);
+            }
+        }
+
+        // Execute immediately and across subsequent frames for dynamic layout stability
+        doScrollTop();
+        setTimeout(doScrollTop, 50);
+        setTimeout(doScrollTop, 150);
+        setTimeout(doScrollTop, 350);
+        setTimeout(doScrollTop, 700);
+    })();
+    </script>
+    """.replace("__KEY__", str(key_suffix))
+    components.html(scroll_js, height=0, width=0)
 
 
 def format_display_text(val: Any) -> str:
@@ -3636,6 +4408,9 @@ def render_learning_workspace():
     """Renders the student learning workspace with the glassy AI theme."""
     st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
 
+    # Top anchor for smooth scroll to top
+    st.markdown('<div id="edutech-top-page-anchor"></div>', unsafe_allow_html=True)
+
     # Background ambient glow orbs
     st.markdown('<div class="glow-bg"></div>', unsafe_allow_html=True)
 
@@ -3775,9 +4550,9 @@ def render_learning_workspace():
                         const isInsideSettingsPopover = Boolean(e.target.closest('div[data-testid="stPopoverBody"]'));
 
                         if (isInsideSidebar || isInsideSettingsPopover) {
-                            // Exclude search inputs, text inputs, dropdown menus, popover toggle, and accordion header
-                            const isSearchOrInput = Boolean(e.target.closest('input, textarea, [data-baseweb="select"], [data-baseweb="menu"], #edutech-hist-collapse-header, div[class*="st-key-sb_hist_hidden_toggle_btn"], div[class*="st-key-sb_settings_popover_btn"] > div[data-testid="stPopover"] > button'));
-                            const isActionButton = Boolean(e.target.closest('button, [role="button"], a, .mr-item, div[class*="st-key-sb_card_"], div[class*="st-key-sb_new_journey_btn"], div[class*="st-key-sb_flt_"], div[class*="st-key-sb_load_more_btn"], div[class*="st-key-sb_del_"], div[class*="st-key-sb_pop_"]'));
+                            // Exclude search inputs, text inputs, dropdown menus, popover toggle, accordion header, and history interactions (filters, load more, delete)
+                            const isSearchOrInput = Boolean(e.target.closest('input, textarea, [data-baseweb="select"], [data-baseweb="menu"], #edutech-hist-collapse-header, div[class*="st-key-sb_hist_hidden_toggle_btn"], div[data-testid="stPopover"], div[class*="st-key-sb_flt_"], div[class*="st-key-sb_load_more_btn"], div[class*="st-key-sb_del_"]'));
+                            const isActionButton = Boolean(e.target.closest('button, [role="button"], a, .mr-item, div[class*="st-key-sb_card_"], div[class*="st-key-sb_new_journey_btn"], div[class*="st-key-sb_pop_"]'));
 
                             if (isActionButton && !isSearchOrInput && !win._edutechMobileCollapseDebounce) {
                                 win._edutechMobileCollapseDebounce = true;
@@ -3991,7 +4766,7 @@ def render_learning_workspace():
             hist_search_val = st.text_input(
                 "Search your learning sessions",
                 value=st.session_state.get("session_hist_search_val", ""),
-                placeholder="🔍 Search history...",
+                placeholder="Search sessions by topic or concept...",
                 key="sb_hist_search_input",
                 label_visibility="collapsed",
             )
@@ -4005,7 +4780,7 @@ def render_learning_workspace():
             with flt_col1:
                 is_all = (current_flt == "All")
                 all_key = f"sb_flt_{'active_all' if is_all else 'inactive_all'}"
-                if st.button("● All", key=all_key, use_container_width=True):
+                if st.button("All", icon=":material/apps:", key=all_key, use_container_width=True):
                     if current_flt != "All":
                         st.session_state["session_hist_seg_filter"] = "All"
                         st.session_state["session_hist_limit"] = 20
@@ -4013,7 +4788,7 @@ def render_learning_workspace():
             with flt_col2:
                 is_act = (current_flt == "Active")
                 act_key = f"sb_flt_{'active_act' if is_act else 'inactive_act'}"
-                if st.button("⚡ Active", key=act_key, use_container_width=True):
+                if st.button("Active", icon=":material/bolt:", key=act_key, use_container_width=True):
                     if current_flt != "Active":
                         st.session_state["session_hist_seg_filter"] = "Active"
                         st.session_state["session_hist_limit"] = 20
@@ -4021,7 +4796,7 @@ def render_learning_workspace():
             with flt_col3:
                 is_comp = (current_flt == "Completed")
                 comp_key = f"sb_flt_{'active_comp' if is_comp else 'inactive_comp'}"
-                if st.button("✓ Completed", key=comp_key, use_container_width=True):
+                if st.button("Completed", icon=":material/check_circle:", key=comp_key, use_container_width=True):
                     if current_flt != "Completed":
                         st.session_state["session_hist_seg_filter"] = "Completed"
                         st.session_state["session_hist_limit"] = 20
@@ -4126,15 +4901,12 @@ def render_learning_workspace():
                                         st.rerun()
 
                         with card_cols[1]:
-                            with st.popover("", icon=":material/more_horiz:", use_container_width=True):
-                                st.markdown(f"<div style='font-size:0.82rem; font-weight:700; color:#FAFAFA; margin-bottom:4px;'>{s_topic[:26]}...</div>", unsafe_allow_html=True)
-                                st.markdown(f"<div style='font-size:0.75rem; color:#A855F7; margin-bottom:8px;'>Status: <b>{status_tag}</b> • <b>+{s_xp} XP</b></div>", unsafe_allow_html=True)
-                                if st.button("🗑️ Delete Session", key=f"sb_del_pop_{s_id}", type="primary", use_container_width=True):
+                            with st.popover("", icon=":material/more_vert:", use_container_width=True, key=f"session_pop_{s_id}"):
+                                if st.button("Delete", icon=":material/delete:", key=f"sb_del_pop_{s_id}", type="secondary", use_container_width=True):
                                     run_async(SessionManager().delete_session(s_id, user_id=user_profile.id))
                                     if active_session_id == s_id:
                                         st.session_state["memory"] = None
                                         st.session_state["active_step_index"] = 0
-                                    st.toast("Session deleted.", icon="🗑️")
                                     st.rerun()
 
                 # Progressive Loading "Load More" Button
@@ -4144,96 +4916,93 @@ def render_learning_workspace():
                         st.rerun()
 
         # ─── Sidebar Bottom Footer: User Profile & Settings ───────────────────
-        st.markdown("<div class='sidebar-user-footer-divider'></div>", unsafe_allow_html=True)
+        with st.container():
+            st.markdown("<div class='sidebar-user-footer-divider'></div>", unsafe_allow_html=True)
 
-        prof_cols = st.columns([7.8, 2.2], gap="small", vertical_alignment="center")
-        with prof_cols[0]:
-            user_display_name = f"{user_profile.first_name or ''} {user_profile.last_name or ''}".strip() or "Student"
-            u_tier = (user_profile.subscription.tier if user_profile.subscription else "normal").upper()
-            truncated_name = (user_display_name[:18] + "...") if len(user_display_name) > 18 else user_display_name
+            prof_cols = st.columns([8.6, 1.4], gap="small", vertical_alignment="center")
+            with prof_cols[0]:
+                user_display_name = f"{user_profile.first_name or ''} {user_profile.last_name or ''}".strip() or "Student"
+                u_tier = (user_profile.subscription.tier if user_profile.subscription else "normal").upper()
+                truncated_name = (user_display_name[:20] + "...") if len(user_display_name) > 20 else user_display_name
 
-            st.markdown(
-                f"""
-                <div class="user-profile-bottom-card" title="{html.escape(user_display_name)} ({u_tier})">
-                    <div class="user-avatar-pill">&#128100;</div>
-                    <div class="user-info-text">
-                        <div class="user-name-title">{html.escape(truncated_name)}</div>
-                        <div class="user-tier-subtitle">{u_tier} TIER</div>
-                    </div>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-
-        with prof_cols[1]:
-            st.markdown("<div class='st-key-sb_settings_popover_btn'>", unsafe_allow_html=True)
-            with st.popover("", icon=":material/settings:", use_container_width=True):
                 st.markdown(
                     f"""
-                    <div style="text-align: center; padding: 6px 0 10px 0;">
-                        <div style="font-size: 2.2rem; margin-bottom: 4px;">&#128100;</div>
-                        <div style="font-weight: 800; font-size: 1.05rem; color: #FAFAFA;">{html.escape(user_display_name)}</div>
-                        <div style="font-size: 0.8rem; color: rgba(233, 213, 255, 0.7); margin-bottom: 8px;">{html.escape(user_profile.email if hasattr(user_profile, 'email') and user_profile.email else 'Student')}</div>
-                        <div style="display: inline-block; background: rgba(168, 85, 247, 0.25); border: 1px solid rgba(168, 85, 247, 0.5); border-radius: 20px; padding: 2px 12px; font-size: 0.75rem; font-weight: 800; color: #C084FC; text-transform: uppercase;">
-                            {u_tier} Tier
+                    <div class="user-profile-bottom-card" title="{html.escape(user_display_name)} ({u_tier})">
+                        <div class="user-avatar-pill">&#128100;</div>
+                        <div class="user-info-text">
+                            <div class="user-name-title">{html.escape(truncated_name)}</div>
+                            <div class="user-tier-subtitle">{u_tier} TIER</div>
                         </div>
                     </div>
                     """,
                     unsafe_allow_html=True,
                 )
 
-                if u_tier != "ULTRA":
-                    upgrade_target = "ultra" if u_tier == "PRO" else "pro"
-                    if st.button(f"⚡ Upgrade to {upgrade_target.upper()}", key="sb_pop_upgrade_btn", type="primary", use_container_width=True):
-                        st.session_state["show_billing_portal_modal"] = False
-                        st.session_state["target_upgrade_tier"] = upgrade_target
-                        st.session_state["show_upgrade_modal"] = True
+            with prof_cols[1]:
+                with st.popover("", icon=":material/settings:", key="sb_settings_popover_btn", use_container_width=True):
+                    st.markdown(
+                        f"""
+                        <div class="pop-user-card">
+                            <div class="pop-avatar-glow">&#128100;</div>
+                            <div class="pop-user-name">{html.escape(user_display_name)}</div>
+                            <div class="pop-user-email">{html.escape(user_profile.email if hasattr(user_profile, 'email') and user_profile.email else 'Student')}</div>
+                            <div class="pop-tier-badge"><span class="pop-tier-dot"></span>{u_tier} MEMBER</div>
+                        </div>
+                        """,
+                        unsafe_allow_html=True,
+                    )
+
+                    if u_tier != "ULTRA":
+                        upgrade_target = "ultra" if u_tier == "PRO" else "pro"
+                        if st.button(f"Upgrade to {upgrade_target.upper()}", icon=":material/bolt:", key="sb_pop_upgrade_btn", use_container_width=True):
+                            st.session_state["show_billing_portal_modal"] = False
+                            st.session_state["target_upgrade_tier"] = upgrade_target
+                            st.session_state["show_upgrade_modal"] = True
+                            st.rerun()
+
+                    if st.button("Billing & Plan", icon=":material/credit_card:", key="sb_pop_billing_btn", use_container_width=True):
+                        st.session_state["show_upgrade_modal"] = False
+                        st.session_state["show_billing_portal_modal"] = True
                         st.rerun()
 
-                if st.button("💳 Billing & Plan", key="sb_pop_billing_btn", use_container_width=True):
-                    st.session_state["show_upgrade_modal"] = False
-                    st.session_state["show_billing_portal_modal"] = True
-                    st.rerun()
+                    if st.button("Admin Console", icon=":material/admin_panel_settings:", key="sb_pop_admin_btn", use_container_width=True):
+                        st.session_state["show_upgrade_modal"] = False
+                        st.session_state["show_billing_portal_modal"] = False
+                        st.session_state["view"] = "admin"
+                        st.rerun()
 
-                if st.button("⚙️ Admin Console", key="sb_pop_admin_btn", use_container_width=True):
-                    st.session_state["show_upgrade_modal"] = False
-                    st.session_state["show_billing_portal_modal"] = False
-                    st.session_state["view"] = "admin"
-                    st.rerun()
+                    st.markdown("<hr style='border-color:rgba(168,85,247,0.18); margin:8px 0;'>", unsafe_allow_html=True)
 
-                st.markdown("<hr style='border-color:rgba(168,85,247,0.25); margin:8px 0;'>", unsafe_allow_html=True)
-
-                if st.button("⏻ Sign Out", key="sb_pop_logout_btn", type="primary", use_container_width=True):
-                    st.session_state["user_profile"] = None
-                    st.session_state["memory"] = None
-                    st.session_state["active_step_index"] = 0
-                    st.session_state["last_topic"] = None
-                    st.session_state["show_upgrade_modal"] = False
-                    st.session_state["show_billing_portal_modal"] = False
-                    if "target_upgrade_tier" in st.session_state:
-                        del st.session_state["target_upgrade_tier"]
-                    if "quick_launch_topic" in st.session_state:
-                        del st.session_state["quick_launch_topic"]
-                    for k in list(st.session_state.keys()):
-                        if any(
-                            k.startswith(pfx)
-                            for pfx in [
-                                "step_agents_ran_",
-                                "quiz_submitted_",
-                                "saved_user_answers_",
-                                "saved_user_full_answers_",
-                                "xp_awarded_",
-                                "show_victory_modal_",
-                                "victory_modal_dismissed_",
-                                "session_hist_",
-                            ]
-                        ):
-                            del st.session_state[k]
-                    st.session_state["view"] = "home"
-                    st.query_params.clear()
-                    st.toast("Logged out successfully.", icon="ℹ️")
-                    st.rerun()
-            st.markdown("</div>", unsafe_allow_html=True)
+                    if st.button("Sign Out", icon=":material/logout:", key="sb_pop_logout_btn", use_container_width=True):
+                        st.session_state["user_profile"] = None
+                        st.session_state["memory"] = None
+                        st.session_state["active_step_index"] = 0
+                        st.session_state["last_topic"] = None
+                        st.session_state["show_upgrade_modal"] = False
+                        st.session_state["show_billing_portal_modal"] = False
+                        if "target_upgrade_tier" in st.session_state:
+                            del st.session_state["target_upgrade_tier"]
+                        if "quick_launch_topic" in st.session_state:
+                            del st.session_state["quick_launch_topic"]
+                        for k in list(st.session_state.keys()):
+                            if any(
+                                k.startswith(pfx)
+                                for pfx in [
+                                    "step_agents_ran_",
+                                    "quiz_submitted_",
+                                    "saved_user_answers_",
+                                    "saved_user_full_answers_",
+                                    "xp_awarded_",
+                                    "show_victory_modal_",
+                                    "victory_modal_dismissed_",
+                                    "session_hist_",
+                                ]
+                            ):
+                                del st.session_state[k]
+                            st.session_state["view"] = "home"
+                        st.query_params.clear()
+                        st.toast("Logged out successfully.", icon="ℹ️")
+                        st.rerun()
 
     memory = get_or_create_memory()
 
@@ -4320,7 +5089,7 @@ def render_learning_workspace():
         # ─── Main Page: Centered Heading ("What do you want to learn today?") ───
         st.markdown(
             """
-            <div class="et-hero" style="margin-top: 2rem; margin-bottom: 1.2rem;">
+            <div class="et-hero">
                 <h1>What do you want to <span class="gradient-text">learn today?</span></h1>
                 <p>Decompose any concept into adaptive milestones, interactive Socratic lessons, and academic research.</p>
             </div>
@@ -4334,9 +5103,8 @@ def render_learning_workspace():
         elif "main_topic_query" in st.session_state:
             st.session_state["main_topic_input_composer"] = st.session_state.pop("main_topic_query")
 
-        # Centered ChatGPT-Style Layout with Balanced Left/Right Margins
-        pad_l, card_col, pad_r = st.columns([0.8, 8.4, 0.8])
-        with card_col:
+        # Centered ChatGPT-Style Journey Card
+        with st.container(key="journey_console_card_wrapper"):
             st.markdown('<div id="journey-console-card-marker" class="et-journey-card-container-marker"></div>', unsafe_allow_html=True)
 
             # 1. Dropdowns: Mode (Left) and Education Level (Right) placed ABOVE the chat prompt
@@ -4474,7 +5242,8 @@ def render_learning_workspace():
                 function selectTopic(text) {
                     try {
                         const pdoc = window.parent.document;
-                        const input = pdoc.querySelector('input[placeholder*="Ask EduTechAI"]') 
+                        const input = pdoc.querySelector('div[class*="st-key-journey_console_card_wrapper"] input')
+                                   || pdoc.querySelector('input[placeholder*="Ask EduTechAI"]') 
                                    || pdoc.querySelector('div[data-testid="stColumn"]:has(#journey-console-card-marker) input')
                                    || pdoc.querySelector('input[aria-label="What do you want to learn?"]');
                         if (input) {
@@ -4490,7 +5259,8 @@ def render_learning_workspace():
                         }
                         // Close popover
                         pdoc.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', keyCode: 27, which: 27, bubbles: true }));
-                        const popBtn = pdoc.querySelector('div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-testid="stPopover"] button');
+                        const popBtn = pdoc.querySelector('div[class*="st-key-journey_console_card_wrapper"] div[data-testid="stPopover"] button')
+                                    || pdoc.querySelector('div[data-testid="stColumn"]:has(#journey-console-card-marker) div[data-testid="stPopover"] button');
                         if (popBtn) {
                             popBtn.click();
                         }
@@ -4694,6 +5464,18 @@ def render_learning_workspace():
             active_idx = 0
         num_steps = len(memory.steps)
 
+        # Trigger smooth scroll-to-top on step change or when agents finish responding
+        step_scroll_key = f"step_scrolled_{memory.session_id}_{active_idx}"
+        should_scroll = False
+        if not st.session_state.get(step_scroll_key, False):
+            st.session_state[step_scroll_key] = True
+            should_scroll = True
+        elif st.session_state.pop("scroll_to_top_trigger", False):
+            should_scroll = True
+
+        if should_scroll:
+            trigger_scroll_to_top(key_suffix=f"{active_idx}_{int(time.time()*1000)}")
+
         # ─── Linear Milestone Learning Roadmap Stepper ───────────────
         st.markdown(
             f"""
@@ -4737,6 +5519,8 @@ def render_learning_workspace():
                     help=f"Step {i+1}: {s.title} ({s.status.value.replace('_', ' ').title()})"
                 ):
                     st.session_state["active_step_index"] = i
+                    st.session_state["scroll_to_top_trigger"] = True
+                    st.session_state[f"step_scrolled_{memory.session_id}_{i}"] = False
                     st.rerun()
 
         # Overall Linear Progress Bar (Single Unified Progress Bar)
@@ -4790,6 +5574,8 @@ def render_learning_workspace():
             )
             run_async(generate_all_agent_content_for_step(current_step, memory))
             loader_placeholder.empty()
+            st.session_state["scroll_to_top_trigger"] = True
+            st.session_state[f"step_scrolled_{memory.session_id}_{active_idx}"] = False
             st.rerun()
 
         st.markdown("<br>", unsafe_allow_html=True)
@@ -4838,6 +5624,8 @@ def render_learning_workspace():
                 setattr(current_step, "quiz", [])
                 st.session_state[f"step_agents_ran_{active_idx}"] = False
                 setattr(current_step, "_agent_generated", False)
+                st.session_state["scroll_to_top_trigger"] = True
+                st.session_state[f"step_scrolled_{memory.session_id}_{active_idx}"] = False
                 st.rerun()
 
         # Row 2 & 3: Step Title with Status Pill right after it, followed by description
@@ -4863,6 +5651,7 @@ def render_learning_workspace():
         with col_left:
             # 1. 🧩 Socratic Tutor Chat Interface
             with st.expander("🧩 **Socratic Tutor Chat**", expanded=True):
+                st.markdown('<div class="sec-marker-tutor" style="display:none;"></div>', unsafe_allow_html=True)
                 tutor_exp = getattr(current_step, "tutor_explanation", None)
                 
                 # Render initial Socratic Explanation as Assistant Chat Message
@@ -4941,6 +5730,7 @@ def render_learning_workspace():
 
             # 2. 📝 Milestone Comprehension Quiz & Auto-Advance Logic
             with st.expander("📝 **Milestone Knowledge Check Quiz**", expanded=True):
+                st.markdown('<div class="sec-marker-quiz" style="display:none;"></div>', unsafe_allow_html=True)
                 step_quiz = getattr(current_step, "quiz", []) or []
                 if not step_quiz:
                     st.info("Quiz Agent is generating questions for this milestone...")
@@ -5099,6 +5889,8 @@ def render_learning_workspace():
                                 use_container_width=True,
                             ):
                                 st.session_state["active_step_index"] = next_idx
+                                st.session_state["scroll_to_top_trigger"] = True
+                                st.session_state[f"step_scrolled_{memory.session_id}_{next_idx}"] = False
                                 memory.steps[next_idx].status = StepStatus.IN_PROGRESS
                                 st.session_state[f"step_agents_ran_{next_idx}"] = True
                                 setattr(memory.steps[next_idx], "_agent_generated", True)
@@ -5133,6 +5925,7 @@ def render_learning_workspace():
         with col_right:
             # 3. 🎬 YouTube Curator Agent (Max 3 videos)
             with st.expander("🎬 **Recommended YouTube Video Clips & Timestamps**", expanded=True):
+                st.markdown('<div class="sec-marker-youtube" style="display:none;"></div>', unsafe_allow_html=True)
                 step_vids = (getattr(current_step, "videos", []) or [])[:3]
                 if step_vids:
                     for idx, vid in enumerate(step_vids):
@@ -5179,6 +5972,7 @@ def render_learning_workspace():
 
             # 4. 📚 Academic Researcher Agent
             with st.expander("📚 **Academic Research Papers & Preprints**", expanded=True):
+                st.markdown('<div class="sec-marker-papers" style="display:none;"></div>', unsafe_allow_html=True)
                 step_papers = getattr(current_step, "papers", []) or []
                 if step_papers:
                     for idx, paper in enumerate(step_papers):
