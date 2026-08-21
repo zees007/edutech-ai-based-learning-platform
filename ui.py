@@ -3903,6 +3903,71 @@ CUSTOM_CSS = """
 """
 
 
+def trigger_scroll_to_top(key_suffix: str = ""):
+    """Injects client-side JavaScript to smoothly scroll the page to the top."""
+    scroll_js = """
+    <div id="scroll-to-top-anchor-__KEY__" style="display:none; height:0; width:0;"></div>
+    <script>
+    (function() {
+        function doScrollTop() {
+            try {
+                var win = window.parent || window;
+                var doc = win.document;
+                
+                // 1. Scroll window directly
+                if (typeof win.scrollTo === 'function') {
+                    win.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+                }
+
+                // 2. Scroll all scrollable main app containers
+                var selectors = [
+                    'html',
+                    'body',
+                    '.main',
+                    'section.main',
+                    '.stApp',
+                    '[data-testid="stAppViewContainer"]',
+                    '[data-testid="stMain"]',
+                    '[data-testid="stMainBlockContainer"]',
+                    '.block-container'
+                ];
+                
+                selectors.forEach(function(sel) {
+                    var el = doc.querySelector(sel);
+                    if (el) {
+                        try {
+                            if (typeof el.scrollTo === 'function') {
+                                el.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+                            }
+                            el.scrollTop = 0;
+                        } catch(err) {}
+                    }
+                });
+
+                // 3. Ensure top anchor is brought into view
+                var topAnchor = doc.querySelector('#edutech-top-page-anchor')
+                             || doc.querySelector('.top-progress-card')
+                             || doc.querySelector('.block-container');
+                if (topAnchor && typeof topAnchor.scrollIntoView === 'function') {
+                    topAnchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            } catch (e) {
+                console.debug("Scroll to top notice:", e);
+            }
+        }
+
+        // Execute immediately and across subsequent frames for dynamic layout stability
+        doScrollTop();
+        setTimeout(doScrollTop, 50);
+        setTimeout(doScrollTop, 150);
+        setTimeout(doScrollTop, 350);
+        setTimeout(doScrollTop, 700);
+    })();
+    </script>
+    """.replace("__KEY__", str(key_suffix))
+    components.html(scroll_js, height=0, width=0)
+
+
 def format_display_text(val: Any) -> str:
     """Format enum or string values by replacing underscores with spaces and applying title case."""
     if val is None:
@@ -4342,6 +4407,9 @@ def show_congratulations_dialog(memory):
 def render_learning_workspace():
     """Renders the student learning workspace with the glassy AI theme."""
     st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
+
+    # Top anchor for smooth scroll to top
+    st.markdown('<div id="edutech-top-page-anchor"></div>', unsafe_allow_html=True)
 
     # Background ambient glow orbs
     st.markdown('<div class="glow-bg"></div>', unsafe_allow_html=True)
@@ -5396,6 +5464,18 @@ def render_learning_workspace():
             active_idx = 0
         num_steps = len(memory.steps)
 
+        # Trigger smooth scroll-to-top on step change or when agents finish responding
+        step_scroll_key = f"step_scrolled_{memory.session_id}_{active_idx}"
+        should_scroll = False
+        if not st.session_state.get(step_scroll_key, False):
+            st.session_state[step_scroll_key] = True
+            should_scroll = True
+        elif st.session_state.pop("scroll_to_top_trigger", False):
+            should_scroll = True
+
+        if should_scroll:
+            trigger_scroll_to_top(key_suffix=f"{active_idx}_{int(time.time()*1000)}")
+
         # ─── Linear Milestone Learning Roadmap Stepper ───────────────
         st.markdown(
             f"""
@@ -5439,6 +5519,8 @@ def render_learning_workspace():
                     help=f"Step {i+1}: {s.title} ({s.status.value.replace('_', ' ').title()})"
                 ):
                     st.session_state["active_step_index"] = i
+                    st.session_state["scroll_to_top_trigger"] = True
+                    st.session_state[f"step_scrolled_{memory.session_id}_{i}"] = False
                     st.rerun()
 
         # Overall Linear Progress Bar (Single Unified Progress Bar)
@@ -5492,6 +5574,8 @@ def render_learning_workspace():
             )
             run_async(generate_all_agent_content_for_step(current_step, memory))
             loader_placeholder.empty()
+            st.session_state["scroll_to_top_trigger"] = True
+            st.session_state[f"step_scrolled_{memory.session_id}_{active_idx}"] = False
             st.rerun()
 
         st.markdown("<br>", unsafe_allow_html=True)
@@ -5540,6 +5624,8 @@ def render_learning_workspace():
                 setattr(current_step, "quiz", [])
                 st.session_state[f"step_agents_ran_{active_idx}"] = False
                 setattr(current_step, "_agent_generated", False)
+                st.session_state["scroll_to_top_trigger"] = True
+                st.session_state[f"step_scrolled_{memory.session_id}_{active_idx}"] = False
                 st.rerun()
 
         # Row 2 & 3: Step Title with Status Pill right after it, followed by description
@@ -5803,6 +5889,8 @@ def render_learning_workspace():
                                 use_container_width=True,
                             ):
                                 st.session_state["active_step_index"] = next_idx
+                                st.session_state["scroll_to_top_trigger"] = True
+                                st.session_state[f"step_scrolled_{memory.session_id}_{next_idx}"] = False
                                 memory.steps[next_idx].status = StepStatus.IN_PROGRESS
                                 st.session_state[f"step_agents_ran_{next_idx}"] = True
                                 setattr(memory.steps[next_idx], "_agent_generated", True)
