@@ -76,6 +76,33 @@ async def get_current_user(
     return user
 
 
+def has_privilege(user: User, privilege_code: str) -> bool:
+    """Check if the user possesses a specific privilege, including SuperAdmin and domain full-access bypasses."""
+    if user.retired:
+        return False
+    user_privs = {
+        priv.code
+        for role in user.roles if not role.retired
+        for priv in role.privileges
+        if priv.code
+    }
+    
+    if "ET_ALL" in user_privs:
+        return True
+    if privilege_code in user_privs:
+        return True
+    
+    # Module level FULL_ACCESS parent match
+    if "_" in privilege_code:
+        parts = privilege_code.split("_")
+        domain = parts[-1]
+        parent_group_code = f"ET_FULL_ACCESS_{domain}"
+        if parent_group_code in user_privs:
+            return True
+            
+    return False
+
+
 def require_privilege(*privilege_codes: str):
     """
     FastAPI security dependency factory for fine-grained privilege check.

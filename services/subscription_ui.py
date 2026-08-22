@@ -268,7 +268,7 @@ def render_user_billing_portal():
 
     user_id = up.id
     sub = getattr(up, "subscription", None)
-    current_tier = (sub.tier if (sub and getattr(sub, "tier", None)) else getattr(up, "tier", "normal")).upper()
+    current_tier = (sub.tier if (sub and getattr(sub, "tier", None)) else getattr(up, "tier", "free")).upper()
     status_str = (sub.status if (sub and getattr(sub, "status", None)) else "active").capitalize()
     provider_str = (sub.gateway_provider if (sub and getattr(sub, "gateway_provider", None)) else "sandbox").upper()
     cycle_str = (sub.billing_cycle if (sub and getattr(sub, "billing_cycle", None)) else "monthly").capitalize()
@@ -306,7 +306,7 @@ def render_user_billing_portal():
                 st.rerun()
 
     with col2:
-        if current_tier != "NORMAL":
+        if current_tier != "FREE":
             st.markdown("##### Manage Subscription & Cancellation")
             st.write("Need to pause or cancel your subscription?")
             

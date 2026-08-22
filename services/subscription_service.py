@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 # Standard tier role names mapped to lower-case subscription tier codes
 TIER_ROLE_NAME_MAP = {
-    "normal": "Normal",
+    "free": "Free",
     "pro": "Pro",
     "ultra": "Ultra",
 }
@@ -41,7 +41,7 @@ class SubscriptionService:
     @staticmethod
     async def get_subscription_by_user_id(db: AsyncSession, user_id: str) -> Subscription:
         """
-        Retrieve a user's subscription record. Creates default 'normal' tier if none exists.
+        Retrieve a user's subscription record. Creates default 'free' tier if none exists.
         """
         stmt = select(Subscription).where(Subscription.user_id == user_id)
         res = await db.execute(stmt)
@@ -50,7 +50,7 @@ class SubscriptionService:
             # Auto-create free tier subscription for existing user
             sub = Subscription(
                 user_id=user_id,
-                tier="normal",
+                tier="free",
                 status="active",
                 billing_cycle="monthly",
                 price_amount=0.0,
@@ -60,14 +60,14 @@ class SubscriptionService:
             await db.commit()
             await db.refresh(sub)
         else:
-            # Automatic Expiry Check: If period has ended & auto-renew is disabled, auto-downgrade to normal
+            # Automatic Expiry Check: If period has ended & auto-renew is disabled, auto-downgrade to free
             now = datetime.now(timezone.utc).replace(tzinfo=None)
-            if sub.tier != "normal" and sub.current_period_end and sub.current_period_end < now:
+            if sub.tier != "free" and sub.current_period_end and sub.current_period_end < now:
                 if sub.cancel_at_period_end or not sub.auto_renew:
-                    sub.tier = "normal"
+                    sub.tier = "free"
                     sub.status = "canceled"
                     user = await UserService.get_user_by_id(db, user_id)
-                    await SubscriptionService._sync_user_role(db, user, "normal")
+                    await SubscriptionService._sync_user_role(db, user, "free")
                     await db.commit()
                     await db.refresh(sub)
 
@@ -265,7 +265,7 @@ class SubscriptionService:
         """
         sub = await SubscriptionService.get_subscription_by_user_id(db, user_id)
 
-        if sub.tier == "normal":
+        if sub.tier == "free":
             raise BadRequestException(
                 error_code="CANNOT_CANCEL_FREE",
                 errors="User is already on the Free tier.",
@@ -277,12 +277,12 @@ class SubscriptionService:
             await provider.cancel_subscription(sub.gateway_subscription_id, immediate=dto.immediate)
 
         if dto.immediate:
-            sub.tier = "normal"
+            sub.tier = "free"
             sub.status = "canceled"
             sub.auto_renew = False
             sub.cancel_at_period_end = False
             user = await UserService.get_user_by_id(db, user_id)
-            await SubscriptionService._sync_user_role(db, user, "normal")
+            await SubscriptionService._sync_user_role(db, user, "free")
         else:
             sub.cancel_at_period_end = True
             sub.auto_renew = False
@@ -308,7 +308,7 @@ class SubscriptionService:
 
     @staticmethod
     async def _sync_user_role(db: AsyncSession, user: User, target_tier: str) -> None:
-        """Helper to sync DB roles (Normal, Pro, Ultra) for a User entity."""
+        """Helper to sync DB roles (Free, Pro, Ultra) for a User entity."""
         target_role_name = TIER_ROLE_NAME_MAP[target_tier.lower()]
         r_stmt = select(Role).where(Role.name == target_role_name, Role.retired == False)
         r_res = await db.execute(r_stmt)

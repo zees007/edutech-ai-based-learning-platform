@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 # Standard Plan Base Pricing Structure
 PRICING_CATALOG: Dict[str, Dict[str, float]] = {
-    "normal": {"monthly": 0.0, "annual": 0.0},
+    "free": {"monthly": 0.0, "annual": 0.0},
     "pro": {"monthly": 19.0, "annual": 180.0},    # ~$15/mo billed annually (~20% off)
     "ultra": {"monthly": 49.0, "annual": 470.0},   # ~$39/mo billed annually (~20% off)
 }

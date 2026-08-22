@@ -61,7 +61,7 @@ async def update_user_subscription_tier(
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Directly upgrade or downgrade a user's subscription tier (normal, pro, ultra).
+    Directly upgrade or downgrade a user's subscription tier (free, pro, ultra).
     Automatically updates the user's assigned role in the database.
     """
     sub = await SubscriptionService.update_user_subscription_tier(db, user_id, request)

@@ -78,10 +78,23 @@ class SessionManager:
                 )
                 db.add(sp)
 
+            await db.commit()
             logger.info(
                 f"Session {memory.session_id} (user={effective_user_id}) and {len(memory.steps)} step progress records persisted to database."
             )
             return record
+
+    async def get_monthly_session_count(self, user_id: str) -> int:
+        """Count how many sessions the user created in the current calendar month."""
+        now = datetime.utcnow()
+        start_of_month = datetime(now.year, now.month, 1)
+        async with get_db_session() as db:
+            query = select(func.count(SessionRecord.id)).where(
+                SessionRecord.user_id == user_id,
+                SessionRecord.created_at >= start_of_month
+            )
+            res = await db.execute(query)
+            return res.scalar_one() or 0
 
     async def get_session(self, session_id: str) -> SharedMemory | None:
         """Retrieve a session from the database and reconstruct SharedMemory."""

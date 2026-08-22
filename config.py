@@ -91,6 +91,13 @@ class Settings(BaseSettings):
     youtube_api_key: str = ""
     youtube_max_results: int = 5
     youtube_daily_search_limit: int = 100
+    free_youtube_limit: int = 1
+    pro_youtube_limit: int = 3
+    ultra_youtube_limit: int = 5
+
+    # ─── Socratic Follow-up Limits ───────────────────────────────
+    free_followup_limit: int = 1
+    pro_followup_limit: int = 5
 
     # ─── Academic APIs ───────────────────────────────────────────
     openalex_email: str = ""

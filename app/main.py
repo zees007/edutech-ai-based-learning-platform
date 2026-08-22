@@ -126,10 +126,11 @@ def create_app() -> FastAPI:
         )
 
     # ─── Routers ─────────────────────────────────────────────
-    from app.routers import auth, learning, quiz, roles, subscriptions, users, websocket
+    from app.routers import auth, learning, quiz, roles, subscriptions, users, websocket, exports
 
     app.include_router(auth.router, prefix="/api/v1", tags=["Auth"])
     app.include_router(learning.router, prefix="/api", tags=["Learning"])
+    app.include_router(exports.router, prefix="/api", tags=["Exports"])
     app.include_router(quiz.router, prefix="/api", tags=["Quiz"])
     app.include_router(users.router, prefix="/api/v1", tags=["Users"])
     app.include_router(roles.router, prefix="/api/v1", tags=["Roles"])

@@ -1,0 +1,19 @@
+4422:     user_profile = st.session_state.get("user_profile")
+4424:         st.session_state["auth_tab"] = "login"
+4425:         st.session_state["view"] = "auth"
+4984:                         st.session_state["user_profile"] = None
+5120:             user_profile = st.session_state.get("user_profile")
+5762:                         st.session_state[f"tutor_chat_{active_idx}"].append({"role": "user", "text": question_to_send})
+5763:                         st.session_state[f"tutor_chat_{active_idx}"].append({"role": "tutor", "text": ans})
+5783:                     saved_user_answers = st.session_state.get(f"saved_user_answers_{active_idx}") or getattr(current_step, "user_answers", {})
+5784:                     saved_user_full_answers = st.session_state.get(f"saved_user_full_answers_{active_idx}") or getattr(current_step, "user_full_answers", {})
+5851:                             st.session_state[f"saved_user_answers_{active_idx}"] = user_answers
+5852:                             st.session_state[f"saved_user_full_answers_{active_idx}"] = user_full_answers
+6070:     if not st.session_state.get("user_profile"):
+6078:                     st.session_state["user_profile"] = _make_demo_profile(email_val)
+6091:                         st.session_state["user_profile"] = p
+6095:                         st.session_state["user_profile"] = _make_demo_profile(uemail)
+6113:                             st.session_state["user_profile"] = p
+6121:     user_profile = st.session_state.get("user_profile")
+6157: if st.session_state.pop("show_upgrade_modal", False) and st.session_state.get("user_profile"):
+6161: elif st.session_state.pop("show_billing_portal_modal", False) and st.session_state.get("user_profile"):

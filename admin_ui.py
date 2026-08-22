@@ -184,7 +184,7 @@ def render_admin_panel():
             user_rows = []
             for u in users_list:
                 roles_str = ", ".join([r.name for r in u.roles if not r.retired]) if u.roles else "None"
-                sub_tier = u.subscription.tier.upper() if u.subscription else "NORMAL"
+                sub_tier = u.subscription.tier.upper() if u.subscription else "FREE"
                 user_rows.append({
                     "ID": u.id,
                     "Name": f"{u.first_name} {u.last_name}",
@@ -316,7 +316,7 @@ def render_admin_panel():
 
         sub_table = []
         for u in sub_users:
-            tier = u.subscription.tier if u.subscription else "normal"
+            tier = u.subscription.tier if u.subscription else "free"
             status = u.subscription.status if u.subscription else "active"
             sub_table.append({
                 "User ID": u.id,
@@ -341,14 +341,14 @@ def render_admin_panel():
 
         if selected_sub_user_id:
             target_sub_user = next(u for u in sub_users if u.id == selected_sub_user_id)
-            current_t = target_sub_user.subscription.tier if target_sub_user.subscription else "normal"
+            current_t = target_sub_user.subscription.tier if target_sub_user.subscription else "free"
 
             col_t1, col_t2 = st.columns(2)
             with col_t1:
                 new_tier = st.selectbox(
                     "Target Subscription Tier:",
-                    options=["normal", "pro", "ultra"],
-                    index=["normal", "pro", "ultra"].index(current_t) if current_t in ["normal", "pro", "ultra"] else 0,
+                    options=["free", "pro", "ultra"],
+                    index=["free", "pro", "ultra"].index(current_t) if current_t in ["free", "pro", "ultra"] else 0,
                     format_func=lambda t: f"{t.upper()} Tier",
                 )
             with col_t2:
@@ -388,13 +388,13 @@ def render_admin_panel():
 
         all_u, total_u, total_r, total_p = run_async(fetch_metrics())
 
-        normal_count = sum(1 for u in all_u if u.subscription and u.subscription.tier == "normal")
+        free_count = sum(1 for u in all_u if u.subscription and u.subscription.tier == "free")
         pro_count = sum(1 for u in all_u if u.subscription and u.subscription.tier == "pro")
         ultra_count = sum(1 for u in all_u if u.subscription and u.subscription.tier == "ultra")
 
         m1, m2, m3, m4, m5 = st.columns(5)
         m1.metric("Total Users", total_u)
-        m2.metric("Normal Tier (Free)", normal_count)
+        m2.metric("Free Tier", free_count)
         m3.metric("Pro Subscribers", pro_count)
         m4.metric("Ultra Subscribers", ultra_count)
         m5.metric("System Roles", total_r)
@@ -404,7 +404,7 @@ def render_admin_panel():
 
         dist_data = {
             "Tier": ["Normal (Free)", "Pro", "Ultra"],
-            "User Count": [normal_count, pro_count, ultra_count],
+            "User Count": [free_count, pro_count, ultra_count],
         }
         st.bar_chart(dist_data, x="Tier", y="User Count", color="Tier")
 

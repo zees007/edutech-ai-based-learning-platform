@@ -246,6 +246,7 @@ class StepResult(BaseModel):
     youtube_clips: list[YouTubeClip] = Field(default_factory=list)
     academic_papers: list[AcademicPaper] = Field(default_factory=list)
     quiz: Quiz | None = None
+    follow_up_count: int = 0
 
 
 # ═══════════════════════════════════════════════════════════════════
