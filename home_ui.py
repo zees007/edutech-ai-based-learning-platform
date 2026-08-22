@@ -3424,11 +3424,13 @@ def render_home_page():
             </div>
             <hr class="price-divider"/>
             <div class="price-feat-list">
-                <div class="price-feat"><span class="chk">✓</span> 5 AI Sessions / mo</div>
-                <div class="price-feat"><span class="chk">✓</span> Standard Socratic Tutor</div>
-                <div class="price-feat"><span class="chk">✓</span> 3 Education Levels</div>
-                <div class="price-feat"><span class="chk">✓</span> Milestone Journeys</div>
-                <div class="price-feat"><span class="chk">✓</span> Basic Quizzes & XP</div>
+                <div class="price-feat"><span class="chk">✓</span> <b>10 AI Sessions</b> / month</div>
+                <div class="price-feat"><span class="chk">✓</span> <b>1 Follow-Up Question</b> / step</div>
+                <div class="price-feat"><span class="chk">✓</span> <b>1 YouTube Video</b> / step</div>
+                <div class="price-feat"><span class="chk">✓</span> Bite-Sized Learning Mode</div>
+                <div class="price-feat"><span class="chk">✓</span> Milestone Quizzes & XP</div>
+                <div class="price-feat"><span class="chk">✓</span> All 5 Education Levels</div>
+                <div class="price-feat"><span class="chk">✓</span> Session History & Recovery</div>
             </div>
             """, unsafe_allow_html=True)
         if st.button("Start Free", key="t_n", use_container_width=True):
@@ -3442,15 +3444,17 @@ def render_home_page():
             <div class="price-header-wrap">
                 <div class="price-name">Pro</div>
                 <div class="price-amount">$19<sub>/mo</sub></div>
-                <div class="price-desc">Full agent squad, deep research, visual modes & 1.5x XP.</div>
+                <div class="price-desc">Full agent squad, visual modes, research preprints & Markdown export.</div>
             </div>
             <hr class="price-divider"/>
             <div class="price-feat-list">
                 <div class="price-feat"><span class="chk">✓</span> <b>Unlimited</b> AI Sessions</div>
-                <div class="price-feat"><span class="chk">✓</span> All 5 Education Levels</div>
-                <div class="price-feat"><span class="chk">✓</span> Visual & Deep-Dive Modes</div>
-                <div class="price-feat"><span class="chk">✓</span> <b>YouTube Deep-Linking</b></div>
-                <div class="price-feat"><span class="chk">✓</span> Academic Paper Curation</div>
+                <div class="price-feat"><span class="chk">✓</span> <b>5 Follow-Up Questions</b> / step</div>
+                <div class="price-feat"><span class="chk">✓</span> <b>3 YouTube Videos</b> / step (Clips)</div>
+                <div class="price-feat"><span class="chk">✓</span> <b>Visual & Deep-Dive Modes</b></div>
+                <div class="price-feat"><span class="chk">✓</span> Academic Preprints & AI TL;DR</div>
+                <div class="price-feat"><span class="chk">✓</span> Step Content Regeneration</div>
+                <div class="price-feat"><span class="chk">✓</span> <b>Markdown (.md) Export</b></div>
                 <div class="price-feat"><span class="chk">✓</span> <b>1.5x XP Multiplier</b></div>
             </div>
             """, unsafe_allow_html=True)
@@ -3464,16 +3468,18 @@ def render_home_page():
             <div class="price-header-wrap">
                 <div class="price-name">Ultra</div>
                 <div class="price-amount">$49<sub>/mo</sub></div>
-                <div class="price-desc">Priority execution, custom personas, 2x XP & 24/7 support.</div>
+                <div class="price-desc">Unrestricted multi-agent squad, full research, PDF export & 2x XP.</div>
             </div>
             <hr class="price-divider"/>
             <div class="price-feat-list">
-                <div class="price-feat"><span class="chk">✓</span> Everything in Pro +</div>
+                <div class="price-feat"><span class="chk">✓</span> <b>Everything in Pro +</b></div>
+                <div class="price-feat"><span class="chk">✓</span> <b>Unlimited Follow-Up Chat</b></div>
+                <div class="price-feat"><span class="chk">✓</span> <b>5 YouTube Videos</b> / step</div>
+                <div class="price-feat"><span class="chk">✓</span> <b>Full-Text Academic Research</b></div>
+                <div class="price-feat"><span class="chk">✓</span> <b>Markdown + PDF (.pdf) Export</b></div>
                 <div class="price-feat"><span class="chk">✓</span> Priority Multi-Agent Exec</div>
-                <div class="price-feat"><span class="chk">✓</span> Unlimited Paper Downloads</div>
-                <div class="price-feat"><span class="chk">✓</span> Custom Socratic Persona</div>
-                <div class="price-feat"><span class="chk">✓</span> <b>2x XP Boost</b></div>
-                <div class="price-feat"><span class="chk">✓</span> 24/7 AI Support</div>
+                <div class="price-feat"><span class="chk">✓</span> <b>2x XP Boost</b> & Fast Leveling</div>
+                <div class="price-feat"><span class="chk">✓</span> 24/7 Priority Support</div>
             </div>
             """, unsafe_allow_html=True)
         if st.button("Select Ultra ✨", key="t_u", use_container_width=True):
