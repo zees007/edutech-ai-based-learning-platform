@@ -78,9 +78,34 @@ class YouTubeCuratorAgent(BaseAgent):
                 self.logger.info(f"No YouTube videos found for: {search_query}")
                 return
 
-            # Step 2-4: For each video, try to get transcript and find best timestamp
+            # Step 2: Determine User Tier Limit
+            from services.database import get_db_session
+            from models.db_models import User, Role
+            from sqlalchemy.orm import selectinload
+            from sqlalchemy import select
+            
+            user_roles = []
+            async with get_db_session() as db:
+                res = await db.execute(
+                    select(User).options(selectinload(User.roles).selectinload(Role.privileges))
+                    .where(User.id == memory.user_id)
+                )
+                u = res.scalar_one_or_none()
+                if u:
+                    user_roles = [r.name for r in u.roles if not r.retired]
+            
+            from config import get_settings
+            settings = get_settings()
+            
+            limit = settings.free_youtube_limit
+            if "Ultra" in user_roles or "Admin" in user_roles:
+                limit = settings.ultra_youtube_limit
+            elif "Pro" in user_roles:
+                limit = settings.pro_youtube_limit
+
+            # Step 3-5: For each video, try to get transcript and find best timestamp
             clips = []
-            for video in videos[:3]:  # Process top 3 results
+            for video in videos[:limit]:  # Process top N results based on tier
                 try:
                     clip = await client.get_timestamped_clip(
                         video_id=video["video_id"],

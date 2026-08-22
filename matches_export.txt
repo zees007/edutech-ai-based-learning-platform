@@ -1,0 +1,21 @@
+3906: def trigger_scroll_to_top(key_suffix: str = ""):
+3971: def format_display_text(val: Any) -> str:
+3979: def get_mode_icon(mode_val: Any) -> str:
+3991: def get_audience_icon(aud_val: Any) -> str:
+4005: def get_item_attr(item: Any, key: str, default: Any = None) -> Any:
+4012: def safe_set_attr(item: Any, key: str, value: Any) -> None:
+4023: def format_quiz_options(raw_opts: Any) -> list[str]:
+4041: def is_answer_correct(selected_full: str, selected_key: str, correct_raw: str) -> bool:
+4055: def render_glassy_agent_loader_html(
+4069:     def _status_tag(status: str) -> str:
+4077:     def _card_class(status: str) -> str:
+4213: def run_async(coro):
+4223: async def generate_all_agent_content_for_step(step, memory: SharedMemory) -> None:
+4302: def _init_db_once():
+4312: def get_or_create_memory() -> SharedMemory | None:
+4317: def calculate_overall_topic_score(memory) -> float:
+4332: def show_congratulations_dialog(memory):
+4412: def render_learning_workspace():
+6083: def sync_session_with_url():
+6117:                     async def _restore():
+6135:                         async def _restore_by_email():

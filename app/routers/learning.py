@@ -18,12 +18,14 @@ import logging
 from fastapi import APIRouter, Depends, Query
 
 from agents.orchestrator import OrchestratorAgent
-from app.dependencies import get_current_user, require_privilege
-from app.exceptions import BadRequestException, NotFoundException
+from app.dependencies import get_current_user, require_privilege, has_privilege
+from app.exceptions import BadRequestException, NotFoundException, ForbiddenException
 from app.privileges_config import (
     ET_INTERACT_LEARNING_SESSION,
     ET_START_LEARNING_SESSION,
     ET_VIEW_LEARNING_HISTORY,
+    ET_ACCESS_ADVANCED_MODES,
+    ET_REGENERATE_STEP,
 )
 from models.db_models import User
 from models.schemas import (
@@ -82,6 +84,25 @@ async def start_learning_session(
     logger.info(
         f"New learning session for user '{current_user.id}': topic='{request.topic}', mode={request.learning_mode}"
     )
+
+    # 1. Enforce Learning Mode Privilege
+    if request.learning_mode in [LearningMode.VISUAL, LearningMode.DEEP_DIVE]:
+        if not has_privilege(current_user, ET_ACCESS_ADVANCED_MODES):
+            raise ForbiddenException(
+                error_code="MODE_UPGRADE_REQUIRED",
+                errors="Upgrade to Pro or Ultra to access Visual or Deep Dive modes."
+            )
+
+    # 2. Enforce Monthly Session Quota for Free Tier
+    # (Assuming any user without ET_ACCESS_ADVANCED_MODES is on the Free tier)
+    is_premium = has_privilege(current_user, ET_ACCESS_ADVANCED_MODES)
+    if not is_premium:
+        monthly_sessions = await session_manager.get_monthly_session_count(current_user.id)
+        if monthly_sessions >= 10:
+            raise ForbiddenException(
+                error_code="SESSION_QUOTA_EXCEEDED",
+                errors="You have reached your limit of 10 free AI sessions this month. Upgrade to Pro for unlimited sessions."
+            )
 
     # Create SharedMemory for this session
     memory = SharedMemory(
@@ -142,7 +163,11 @@ async def get_session_state(session_id: str):
     "/sessions/{session_id}/step/{step_index}/complete",
     dependencies=[Depends(require_privilege(ET_INTERACT_LEARNING_SESSION))],
 )
-async def complete_step(session_id: str, step_index: int):
+async def complete_step(
+    session_id: str, 
+    step_index: int,
+    current_user: User = Depends(get_current_user)
+):
     """
     Mark a step as complete and advance the session progress.
     Awards XP via Gamification service.
@@ -162,7 +187,17 @@ async def complete_step(session_id: str, step_index: int):
     from services.gamification import calculate_step_xp
 
     base_xp = calculate_step_xp(streak_count=memory.streak_count)
-    memory.xp_earned += base_xp
+    
+    # Apply XP Multiplier (Ultra=2.0x, Pro=1.5x, Free=1.0x)
+    user_roles = [r.name for r in current_user.roles if not r.retired]
+    multiplier = 1.0
+    if "Ultra" in user_roles or "Admin" in user_roles:
+        multiplier = 2.0
+    elif "Pro" in user_roles:
+        multiplier = 1.5
+        
+    awarded_xp = int(base_xp * multiplier)
+    memory.xp_earned += awarded_xp
 
     # Persist to database
     try:
@@ -176,16 +211,54 @@ async def complete_step(session_id: str, step_index: int):
         logger.warning(f"Failed to persist step progress to DB: {e}")
 
     logger.info(
-        f"Session {session_id}: step {step_index} completed (+{base_xp} XP, total={memory.xp_earned})"
+        f"Session {session_id}: step {step_index} completed (+{awarded_xp} XP, total={memory.xp_earned})"
     )
 
     return {
         "message": f"Step {step_index} completed!",
-        "xp_earned": base_xp,
+        "xp_earned": awarded_xp,
         "total_xp": memory.xp_earned,
         "next_step_index": memory.current_step_index,
         "is_session_complete": memory.is_complete,
         "progress_percentage": memory.progress_percentage,
+    }
+
+@router.post(
+    "/sessions/{session_id}/step/{step_index}/regenerate",
+    dependencies=[Depends(require_privilege(ET_REGENERATE_STEP))],
+)
+async def regenerate_step(
+    session_id: str, 
+    step_index: int,
+):
+    """
+    Regenerate the content and results for a specific step.
+    Requires ET_REGENERATE_STEP privilege (Pro/Ultra feature).
+    """
+    memory = await get_session_or_404(session_id)
+
+    if step_index < 0 or step_index >= len(memory.steps):
+        raise BadRequestException(
+            error_code="INVALID_STEP_INDEX",
+            errors=f"Step index {step_index} out of range [0, {len(memory.steps) - 1}]",
+        )
+
+    # Clear the step result so it can be regenerated upon next interaction or load
+    if step_index in memory.step_results:
+        del memory.step_results[step_index]
+    
+    # We could optionally trigger the agents right here, but typically the orchestrator/ws layer 
+    # lazy-loads or we just return success and let the client re-fetch/re-interact.
+
+    try:
+        await session_manager.update_session(memory)
+    except Exception as e:
+        logger.warning(f"Failed to update session after step regeneration: {e}")
+
+    logger.info(f"Session {session_id}: step {step_index} cleared for regeneration")
+
+    return {
+        "message": f"Step {step_index} has been marked for regeneration.",
     }
 
 
@@ -193,12 +266,25 @@ async def complete_step(session_id: str, step_index: int):
     "/sessions/{session_id}/mode",
     dependencies=[Depends(require_privilege(ET_INTERACT_LEARNING_SESSION))],
 )
-async def change_learning_mode(session_id: str, request: ModeChangeRequest):
+async def change_learning_mode(
+    session_id: str, 
+    request: ModeChangeRequest,
+    current_user: User = Depends(get_current_user)
+):
     """
     Switch the learning mode for an active session.
     Affects how subsequent steps are generated (content depth, media emphasis).
     """
     memory = await get_session_or_404(session_id)
+    
+    # Check privilege for advanced modes
+    if request.learning_mode in [LearningMode.VISUAL, LearningMode.DEEP_DIVE]:
+        if not has_privilege(current_user, ET_ACCESS_ADVANCED_MODES):
+            raise ForbiddenException(
+                error_code="MODE_UPGRADE_REQUIRED",
+                errors="Upgrade to Pro or Ultra to access Visual or Deep Dive modes."
+            )
+
     old_mode = memory.learning_mode
     memory.learning_mode = request.learning_mode
 

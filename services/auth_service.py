@@ -17,7 +17,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.exceptions import UnauthorizedException
 from config import get_settings
 from models.auth_schemas import UserCurrentProfileResponse
-from models.db_models import User
+from models.db_models import User, Role
 from models.subscription_schemas import SubscriptionResponse
 from services.user_service import UserService
 
@@ -96,7 +96,15 @@ class AuthService:
 
         Raises UnauthorizedException on invalid credentials or retired account status.
         """
-        stmt = select(User).where(User.email == email)
+        from sqlalchemy.orm import selectinload
+        stmt = (
+            select(User)
+            .options(
+                selectinload(User.roles).selectinload(Role.privileges),
+                selectinload(User.subscription)
+            )
+            .where(User.email == email)
+        )
         res = await db.execute(stmt)
         user = res.scalar_one_or_none()
 

@@ -144,14 +144,12 @@ async def init_db(settings: Settings | None = None) -> None:
         if "postgresql" in settings.database_url and settings.database_schema:
             schema = settings.database_schema
             await conn.execute(text(f'CREATE SCHEMA IF NOT EXISTS "{schema}";'))
-        await conn.run_sync(Base.metadata.create_all)
-    logger.info(f"Database tables created/verified in schema '{settings.database_schema}'.")
 
-    # Automatically run pending migrations on server restart
+    # Automatically run pending Alembic migrations on server startup
     await run_auto_migrations()
 
     _db_initialized = True
-    logger.info("Database initialization complete — future calls will be skipped.")
+    logger.info(f"Database initialization complete in schema '{settings.database_schema}'. Future calls will be skipped.")
 
 
 

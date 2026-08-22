@@ -1,0 +1,28 @@
+4422:     user_profile = st.session_state.get("user_profile")
+4423:     if not user_profile:
+4835:                         user_id=user_profile.id,
+4911:                                     run_async(SessionManager().delete_session(s_id, user_id=user_profile.id))
+4929:                 user_display_name = f"{user_profile.first_name or ''} {user_profile.last_name or ''}".strip() or "Student"
+4930:                 u_tier = (user_profile.subscription.tier if user_profile.subscription else "free").upper()
+4953:                             <div class="pop-user-email">{html.escape(user_profile.email if hasattr(user_profile, 'email') and user_profile.email else 'Student')}</div>
+4973:                     is_admin = hasattr(user_profile, 'roles') and "Admin" in user_profile.roles
+4984:                         st.session_state["user_profile"] = None
+5034:             ip_sessions, _ = run_async(SessionManager().search_user_sessions(user_profile.id, ip_dto, status_filter="in_progress"))
+5120:             user_profile = st.session_state.get("user_profile")
+5122:             if user_profile and hasattr(user_profile, 'roles'):
+5123:                 user_roles = user_profile.roles
+5323:                 user_id=user_profile.id,
+5381:                 run_async(SessionManager().create_session(new_memory, user_id=user_profile.id))
+5649:         has_regen_priv = "ET_REGENERATE_STEP" in user_profile.privilege_codes if user_profile and hasattr(user_profile, 'privilege_codes') else False
+6070:     if not st.session_state.get("user_profile"):
+6078:                     st.session_state["user_profile"] = _make_demo_profile(email_val)
+6091:                         st.session_state["user_profile"] = p
+6095:                         st.session_state["user_profile"] = _make_demo_profile(uemail)
+6113:                             st.session_state["user_profile"] = p
+6121:     user_profile = st.session_state.get("user_profile")
+6122:     if user_profile:
+6123:         st.query_params["user_id"] = user_profile.id
+6124:         if hasattr(user_profile, "email") and user_profile.email:
+6125:             st.query_params["user_email"] = user_profile.email
+6157: if st.session_state.pop("show_upgrade_modal", False) and st.session_state.get("user_profile"):
+6161: elif st.session_state.pop("show_billing_portal_modal", False) and st.session_state.get("user_profile"):

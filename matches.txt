@@ -1,0 +1,72 @@
+6: - Real-time Socratic Tutoring with age-appropriate explanations & analogies
+7: - Dynamic YouTube video search with precise timestamp deep-linking
+45: from agents.socratic_tutor import SocraticTutorAgent
+46: from agents.youtube_curator import YouTubeCuratorAgent
+2821:     /* ── Socratic Tutor Clean Input Row (No Outer Border) ── */
+3840:         /* 1. 🧩 Socratic Tutor Chat */
+3848:         /* 2. 🎬 Recommended YouTube Video Clips & Timestamps */
+3849:         div[data-testid="stHorizontalBlock"]:has(.sec-marker-tutor) div[data-testid="stElementContainer"]:has(.sec-marker-youtube),
+3850:         div[data-testid="stHorizontalBlock"]:has(.sec-marker-tutor) div.element-container:has(.sec-marker-youtube),
+3851:         div[data-testid="stHorizontalBlock"]:has(.sec-marker-tutor) div[data-testid="stExpander"]:has(.sec-marker-youtube),
+3852:         div[data-testid="stHorizontalBlock"]:has(.sec-marker-tutor) div.stExpander:has(.sec-marker-youtube) {
+3873:         div[data-testid="stHorizontalBlock"]:has(.sec-marker-tutor) > div[data-testid="stColumn"] > div[data-testid="stElementContainer"]:not(:has(.sec-marker-tutor)):not(:has(.sec-marker-youtube)):not(:has(.sec-marker-papers)):not(:has(.sec-marker-quiz)):not(:has([data-testid="stExpander"])),
+3874:         div[data-testid="stHorizontalBlock"]:has(.sec-marker-tutor) > div[data-testid="stColumn"] > div.element-container:not(:has(.sec-marker-tutor)):not(:has(.sec-marker-youtube)):not(:has(.sec-marker-papers)):not(:has(.sec-marker-quiz)):not(:has([data-testid="stExpander"])) {
+4059:     socratic_status: str = "waiting",
+4060:     youtube_status: str = "waiting",
+4152: <text x="520" y="53" font-size="10" font-weight="700" text-anchor="middle" fill="#93C5FD">Socratic</text>
+4156: <text x="520" y="103" font-size="10" font-weight="700" text-anchor="middle" fill="#67E8F9">YouTube</text>
+4178: <div class="{_card_class(socratic_status)}">
+4180: <span class="agent-name">💬 Socratic Tutor</span>
+4181: {_status_tag(socratic_status)}
+4185: <div class="{_card_class(youtube_status)}">
+4187: <span class="agent-name">📺 YouTube Curator</span>
+4188: {_status_tag(youtube_status)}
+4225:     Run Socratic Tutor, YouTube Curator, Academic Researcher, and Quiz Agent
+4232:     # 1. Generate Socratic Explanation first so Quiz Agent has full context
+4234:         tutor = SocraticTutorAgent()
+4240:                     setattr(step, "socratic_questions", exp_res[1])
+4243:                 st.session_state[f"socratic_qs_{step.index}"] = exp_res[1]
+4247:             logging.error(f"Socratic Tutor failed for step {step.index}: {e}")
+4249:     # 2. Run YouTube Curator, Academic Researcher, and Quiz Agent concurrently
+4254:         curator = YouTubeCuratorAgent()
+4255:         tasks.append(curator.curate_videos(step, memory.topic, memory.student_level))
+4265:             tasks.append(researcher.curate_papers(step, memory.topic, memory.student_level, memory.learning_mode))
+5101:                 <p>Decompose any concept into adaptive milestones, interactive Socratic lessons, and academic research.</p>
+5184:                 st.markdown("<div style='font-size:0.88rem; font-weight:700; color:#E9D5FF; margin-bottom:4px;'>🌟 Curated Learning Prompts</div>", unsafe_allow_html=True)
+5312:                     socratic_status="waiting",
+5313:                     youtube_status="waiting",
+5335:             session_papers = run_async(academic_researcher.curate_papers_for_session(
+5350:                         subtitle="🤖 Multi-Agents (Socratic, YouTube, Academic, Quiz) generating step 1 content concurrently...",
+5352:                         socratic_status="active",
+5353:                         youtube_status="active",
+5367:                     socratic_status="completed",
+5368:                     youtube_status="completed",
+5600:                     subtitle="🧩 Multi-Agent System (Socratic, YouTube, Academic, Quiz) generating step content...",
+5602:                     socratic_status="active",
+5603:                     youtube_status="active",
+5687:         # ─── LEFT COLUMN: Socratic Tutor & Milestone Quiz ─────────────────
+5689:             # 1. 🧩 Socratic Tutor Chat Interface
+5690:             with st.expander("🧩 **Socratic Tutor Chat**", expanded=True):
+5694:                 # Render initial Socratic Explanation as Assistant Chat Message
+5699:                     st.info("Socratic Tutor Agent is preparing the explanation...")
+5713:                 # Suggested Socratic Questions Chips
+5714:                 socratic_qs = (
+5715:                     get_item_attr(current_step, "socratic_questions", [])
+5716:                     or st.session_state.get(f"socratic_qs_{active_idx}", [])
+5723:                 st.markdown("<small>💡 **Suggested Questions for Socratic Tutor:**</small>", unsafe_allow_html=True)
+5724:                 q_cols = st.columns(min(len(socratic_qs[:2]), 2))
+5727:                 for q_i, sug_q in enumerate(socratic_qs[:2]):
+5732:                 # Socratic Follow-Up Chat Input Row
+5737:                             "Ask Socratic Tutor...",
+5739:                             placeholder="Ask Socratic Tutor a follow-up question or for an analogy...",
+5748:                     with st.spinner("🧩 Socratic Tutor is answering..."):
+5749:                         tutor = SocraticTutorAgent()
+5961:         # ─── RIGHT COLUMN: YouTube Videos & Academic Research Papers ──────
+5963:             # 3. 🎬 YouTube Curator Agent (Max 3 videos)
+5964:             with st.expander("🎬 **Recommended YouTube Video Clips & Timestamps**", expanded=True):
+5965:                 st.markdown('<div class="sec-marker-youtube" style="display:none;"></div>', unsafe_allow_html=True)
+5970:                         v_channel = get_item_attr(vid, "channel", "YouTube")
+5977:                             v_embed = f"https://www.youtube.com/embed/{v_video_id}?start={int(v_ts)}"
+5979:                         v_url = get_item_attr(vid, "timestamp_url", "") or get_item_attr(vid, "url", "") or f"https://www.youtube.com/watch?v={v_video_id}&t={int(v_ts)}"
+5989:                             st.video(f"https://www.youtube.com/watch?v={v_video_id}", start_time=int(v_ts))
+6006:                     st.info("YouTube Curator Agent is curating video clips...")

@@ -23,7 +23,7 @@ async def test_user_subscription_and_role_lifecycle(app):
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://testserver"
     ) as client:
-        # 1. Create User (verifying dynamic assignment of 'Normal' role & subscription)
+        # 1. Create User (verifying dynamic assignment of 'Free' role & subscription)
         create_payload = {
             "first_name": "Sub",
             "last_name": "Tester",
@@ -52,9 +52,9 @@ async def test_user_subscription_and_role_lifecycle(app):
 
         # Verify initial roles and subscription in user creation response
         assert len(user_data["roles"]) >= 1
-        assert any(r["name"] == "Normal" for r in user_data["roles"])
+        assert any(r["name"] == "Free" for r in user_data["roles"])
         assert user_data["subscription"] is not None
-        assert user_data["subscription"]["tier"] == "normal"
+        assert user_data["subscription"]["tier"] == "free"
         assert user_data["subscription"]["status"] == "active"
 
         # 2. Get User Roles & Privileges
@@ -62,7 +62,7 @@ async def test_user_subscription_and_role_lifecycle(app):
         assert res.status_code == 200
         priv_data = res.json()
         assert priv_data["user_id"] == user_id
-        assert any(r["name"] == "Normal" for r in priv_data["roles"])
+        assert any(r["name"] == "Free" for r in priv_data["roles"])
         assert "ET_START_LEARNING_SESSION" in priv_data["privilege_codes"]
 
         # 3. Upgrade Subscription Tier to 'Pro'
@@ -83,7 +83,7 @@ async def test_user_subscription_and_role_lifecycle(app):
         updated_user = res.json()
         role_names = [r["name"] for r in updated_user["roles"]]
         assert "Pro" in role_names
-        assert "Normal" not in role_names
+        assert "Free" not in role_names
 
         # Verify new privileges (e.g. ET_UPGRADE_SUBSCRIPTION)
         res = await client.get(f"/api/v1/users/{user_id}/roles")
@@ -108,20 +108,20 @@ async def test_user_subscription_and_role_lifecycle(app):
         assert any(r["name"] == "Ultra" for r in priv_data["roles"])
         assert "ET_DOWNGRADE_SUBSCRIPTION" in priv_data["privilege_codes"]
 
-        # 6. Downgrade Subscription Tier back to 'Normal'
+        # 6. Downgrade Subscription Tier back to 'Free'
         downgrade_payload = {
-            "tier": "normal",
+            "tier": "free",
             "status": "active",
         }
         res = await client.put(f"/api/v1/subscriptions/users/{user_id}/tier", json=downgrade_payload)
         assert res.status_code == 200
         sub_res = res.json()
-        assert sub_res["tier"] == "normal"
+        assert sub_res["tier"] == "free"
 
-        # Verify role reverted back to 'Normal'
+        # Verify role reverted back to 'Free'
         res = await client.get(f"/api/v1/users/{user_id}")
         assert res.status_code == 200
         reverted_user = res.json()
         reverted_roles = [r["name"] for r in reverted_user["roles"]]
-        assert "Normal" in reverted_roles
+        assert "Free" in reverted_roles
         assert "Ultra" not in reverted_roles

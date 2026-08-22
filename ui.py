@@ -4408,6 +4408,44 @@ def show_congratulations_dialog(memory):
                 st.session_state[f"victory_modal_dismissed_{memory.session_id}"] = True
             st.rerun()
 
+    user_profile = st.session_state.get("user_profile")
+    if user_profile and hasattr(user_profile, 'roles'):
+        r_names = [r.name for r in user_profile.roles if not getattr(r, 'retired', False)] if isinstance(user_profile.roles, list) and hasattr(user_profile.roles[0], 'name') else user_profile.roles
+        
+        can_export_md = "Pro" in r_names or "Ultra" in r_names or "Admin" in r_names
+        can_export_pdf = "Ultra" in r_names or "Admin" in r_names
+        
+        if can_export_md or can_export_pdf:
+            st.markdown("<hr style='margin: 15px 0; border-color: rgba(255,255,255,0.1);'>", unsafe_allow_html=True)
+            st.markdown("#### 📥 Export Your Session", unsafe_allow_html=True)
+            ec1, ec2 = st.columns([1, 1])
+            
+            from app.routers.exports import generate_markdown, generate_pdf
+            
+            with ec1:
+                if can_export_md:
+                    md_data = generate_markdown(memory)
+                    st.download_button(
+                        "Download Markdown 📝", 
+                        data=md_data, 
+                        file_name=f"session_{getattr(memory, 'session_id', 'export')}.md", 
+                        mime="text/markdown",
+                        use_container_width=True
+                    )
+            with ec2:
+                if can_export_pdf:
+                    try:
+                        pdf_data = generate_pdf(memory)
+                        st.download_button(
+                            "Download PDF 📄", 
+                            data=pdf_data, 
+                            file_name=f"session_{getattr(memory, 'session_id', 'export')}.pdf", 
+                            mime="application/pdf",
+                            use_container_width=True
+                        )
+                    except Exception as e:
+                        st.error("PDF Generation failed.")
+
 
 def render_learning_workspace():
     """Renders the student learning workspace with the glassy AI theme."""
@@ -4927,7 +4965,7 @@ def render_learning_workspace():
             prof_cols = st.columns([8.6, 1.4], gap="small", vertical_alignment="center")
             with prof_cols[0]:
                 user_display_name = f"{user_profile.first_name or ''} {user_profile.last_name or ''}".strip() or "Student"
-                u_tier = (user_profile.subscription.tier if user_profile.subscription else "normal").upper()
+                u_tier = (user_profile.subscription.tier if user_profile.subscription else "free").upper()
                 truncated_name = (user_display_name[:20] + "...") if len(user_display_name) > 20 else user_display_name
 
                 st.markdown(
@@ -4970,11 +5008,13 @@ def render_learning_workspace():
                         st.session_state["show_billing_portal_modal"] = True
                         st.rerun()
 
-                    if st.button("Admin Console", icon=":material/admin_panel_settings:", key="sb_pop_admin_btn", use_container_width=True):
-                        st.session_state["show_upgrade_modal"] = False
-                        st.session_state["show_billing_portal_modal"] = False
-                        st.session_state["view"] = "admin"
-                        st.rerun()
+                    is_admin = hasattr(user_profile, 'roles') and "Admin" in user_profile.roles
+                    if is_admin:
+                        if st.button("Admin Console", icon=":material/admin_panel_settings:", key="sb_pop_admin_btn", use_container_width=True):
+                            st.session_state["show_upgrade_modal"] = False
+                            st.session_state["show_billing_portal_modal"] = False
+                            st.session_state["view"] = "admin"
+                            st.rerun()
 
                     st.markdown("<hr style='border-color:rgba(168,85,247,0.18); margin:8px 0;'>", unsafe_allow_html=True)
 
@@ -5114,14 +5154,31 @@ def render_learning_workspace():
 
             # 1. Dropdowns: Mode (Left) and Education Level (Right) placed ABOVE the chat prompt
             drop_col1, drop_col2 = st.columns(2)
+            
+            user_profile = st.session_state.get("user_profile")
+            is_premium = False
+            if user_profile and hasattr(user_profile, 'roles'):
+                user_roles = user_profile.roles
+                is_premium = any(role in ["Pro", "Ultra", "Admin"] for role in user_roles)
+
             with drop_col1:
+                if is_premium:
+                    mode_options = ["Visual 🎬", "Deep Dive 🔬", "Bite-Sized ⚡"]
+                    mode_help = "Visual: video & diagrams | Deep Dive: papers & proofs | Bite-Sized: quick summaries"
+                else:
+                    mode_options = ["Bite-Sized ⚡"]
+                    mode_help = "🔒 Upgrade to Pro to unlock Visual & Deep Dive modes"
+                    
                 mode_choice = st.selectbox(
                     "**🎨 Learning Mode**",
-                    options=["Visual 🎬", "Deep Dive 🔬", "Bite-Sized ⚡"],
+                    options=mode_options,
                     index=0,
                     key="main_mode_select",
-                    help="Visual: video & diagrams | Deep Dive: papers & proofs | Bite-Sized: quick summaries",
+                    help=mode_help,
                 )
+                if not is_premium:
+                    st.caption("🔒 *Upgrade to Pro to access Visual & Deep Dive modes*")
+                
                 mode_map = {
                     "Visual 🎬": LearningMode.VISUAL,
                     "Deep Dive 🔬": LearningMode.DEEP_DIVE,
@@ -5627,22 +5684,24 @@ def render_learning_workspace():
                 """,
                 unsafe_allow_html=True,
             )
+        has_regen_priv = "ET_REGENERATE_STEP" in user_profile.privilege_codes if user_profile and hasattr(user_profile, 'privilege_codes') else False
         with col_meta_right:
-            if st.button(
-                "↻ Regenerate",
-                key=f"regen_btn_{active_idx}",
-                type="primary",
-                help=f"Regenerate Step {active_idx + 1} content",
-            ):
-                setattr(current_step, "tutor_explanation", None)
-                setattr(current_step, "videos", [])
-                setattr(current_step, "papers", [])
-                setattr(current_step, "quiz", [])
-                st.session_state[f"step_agents_ran_{active_idx}"] = False
-                setattr(current_step, "_agent_generated", False)
-                st.session_state["scroll_to_top_trigger"] = True
-                st.session_state[f"step_scrolled_{memory.session_id}_{active_idx}"] = False
-                st.rerun()
+            if has_regen_priv:
+                if st.button(
+                    "↻ Regenerate",
+                    key=f"regen_btn_{active_idx}",
+                    type="primary",
+                    help=f"Regenerate Step {active_idx + 1} content",
+                ):
+                    setattr(current_step, "tutor_explanation", None)
+                    setattr(current_step, "videos", [])
+                    setattr(current_step, "papers", [])
+                    setattr(current_step, "quiz", [])
+                    st.session_state[f"step_agents_ran_{active_idx}"] = False
+                    setattr(current_step, "_agent_generated", False)
+                    st.session_state["scroll_to_top_trigger"] = True
+                    st.session_state[f"step_scrolled_{memory.session_id}_{active_idx}"] = False
+                    st.rerun()
 
         # Row 2 & 3: Step Title with Status Pill right after it, followed by description
         st.markdown(
@@ -5699,29 +5758,52 @@ def render_learning_workspace():
                     ]
                 )
 
+                from config import get_settings
+                settings = get_settings()
+                user_profile = st.session_state.get("user_profile")
+                f_limit = settings.free_followup_limit
+                is_unlimited = False
+                r_names = []
+                if user_profile and hasattr(user_profile, 'roles'):
+                    r_names = [r.name for r in user_profile.roles if not getattr(r, 'retired', False)] if isinstance(user_profile.roles, list) and hasattr(user_profile.roles[0], 'name') else user_profile.roles
+                    if "Pro" in r_names or "Ultra" in r_names or "Admin" in r_names:
+                        f_limit = settings.pro_followup_limit
+                    if hasattr(user_profile, 'privilege_codes') and "ET_UNLIMITED_FOLLOW_UPS" in user_profile.privilege_codes:
+                        is_unlimited = True
+                
+                chat_history = st.session_state.get(f"tutor_chat_{active_idx}", [])
+                user_msg_count = sum(1 for m in chat_history if m.get("role") == "user")
+
                 st.markdown("<small>💡 **Suggested Questions for Socratic Tutor:**</small>", unsafe_allow_html=True)
                 q_cols = st.columns(min(len(socratic_qs[:2]), 2))
                 triggered_q = None
 
+                limit_reached = not is_unlimited and user_msg_count >= f_limit
                 for q_i, sug_q in enumerate(socratic_qs[:2]):
                     with q_cols[q_i]:
-                        if st.button(f"💬 {sug_q}", key=f"sug_q_{active_idx}_{q_i}", use_container_width=True):
+                        if st.button(f"💬 {sug_q}", key=f"sug_q_{active_idx}_{q_i}", use_container_width=True, disabled=limit_reached):
                             triggered_q = sug_q
 
-                # Socratic Follow-Up Chat Input Row
-                with st.form(key=f"tutor_chat_form_{active_idx}", clear_on_submit=True, border=False):
-                    c_in, c_btn = st.columns([4.2, 1.2], vertical_alignment="center")
-                    with c_in:
-                        user_prompt = st.text_input(
-                            "Ask Socratic Tutor...",
-                            key=f"chat_in_{active_idx}",
-                            placeholder="Ask Socratic Tutor a follow-up question or for an analogy...",
-                            label_visibility="collapsed",
-                        )
-                    with c_btn:
-                        send_chat = st.form_submit_button("Ask Tutor ✨", type="primary", use_container_width=True)
-
-                question_to_send = triggered_q or (user_prompt.strip() if send_chat and user_prompt.strip() else None)
+                if limit_reached:
+                    upgrade_msg = "Upgrade to Ultra for unlimited follow up!" if "Pro" in r_names else "Upgrade to Pro for more questions!"
+                    st.warning(f"⚠️ **Follow-up limit reached ({f_limit}/{f_limit}) for this step.** {upgrade_msg}")
+                    question_to_send = None
+                else:
+                    # Socratic Follow-Up Chat Input Row
+                    with st.form(key=f"tutor_chat_form_{active_idx}", clear_on_submit=True, border=False):
+                        c_in, c_btn = st.columns([4.2, 1.2], vertical_alignment="center")
+                        with c_in:
+                            ph = "Ask an unlimited follow-up..." if is_unlimited else f"Ask a follow-up... ({user_msg_count}/{f_limit} used)"
+                            user_prompt = st.text_input(
+                                "Ask Socratic Tutor...",
+                                key=f"chat_in_{active_idx}",
+                                placeholder=ph,
+                                label_visibility="collapsed",
+                            )
+                        with c_btn:
+                            send_chat = st.form_submit_button("Ask Tutor ✨", type="primary", use_container_width=True)
+    
+                    question_to_send = triggered_q or (user_prompt.strip() if send_chat and user_prompt.strip() else None)
 
                 if question_to_send:
                     with st.spinner("🧩 Socratic Tutor is answering..."):
@@ -5939,10 +6021,20 @@ def render_learning_workspace():
 
         # ─── RIGHT COLUMN: YouTube Videos & Academic Research Papers ──────
         with col_right:
-            # 3. 🎬 YouTube Curator Agent (Max 3 videos)
+            # 3. 🎬 YouTube Curator Agent
             with st.expander("🎬 **Recommended YouTube Video Clips & Timestamps**", expanded=True):
                 st.markdown('<div class="sec-marker-youtube" style="display:none;"></div>', unsafe_allow_html=True)
-                step_vids = (getattr(current_step, "videos", []) or [])[:3]
+                from config import get_settings
+                settings = get_settings()
+                user_profile = st.session_state.get("user_profile")
+                limit = settings.free_youtube_limit
+                if user_profile and hasattr(user_profile, 'roles'):
+                    r_names = [r.name for r in user_profile.roles if not getattr(r, 'retired', False)] if isinstance(user_profile.roles, list) and hasattr(user_profile.roles[0], 'name') else user_profile.roles
+                    if "Ultra" in r_names or "Admin" in r_names:
+                        limit = settings.ultra_youtube_limit
+                    elif "Pro" in r_names:
+                        limit = settings.pro_youtube_limit
+                step_vids = (getattr(current_step, "videos", []) or [])[:limit]
                 if step_vids:
                     for idx, vid in enumerate(step_vids):
                         v_title = get_item_attr(vid, "title", "Educational Video")
@@ -6019,7 +6111,7 @@ def render_learning_workspace():
                             unsafe_allow_html=True,
                         )
                 elif is_younger:
-                    st.info("🎓 Academic research papers are omitted for younger learners to keep content focused and accessible.")
+                    st.info("🎓 Academic research papers are omitted. Our education level check determined this content is for younger learners, so we're keeping it focused and accessible. (Available for: Undergraduate, Graduate, and General levels)")
                 elif is_bite_sized:
                     st.info("⚡ Bite-Sized mode is active — academic research is omitted for rapid learning.")
                 else:

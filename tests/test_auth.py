@@ -83,17 +83,17 @@ async def test_auth_full_lifecycle(app):
         assert profile["email"] == test_email
         assert profile["first_name"] == "Auth"
         assert isinstance(profile["roles"], list)
-        assert "Normal" in profile["roles"]
+        assert "Free" in profile["roles"]
         assert all(isinstance(r, str) for r in profile["roles"])
         assert isinstance(profile["privilege_codes"], list)
-        assert profile["subscription"]["tier"] == "normal"
+        assert profile["subscription"]["tier"] == "free"
 
-        # 5. Access /api/v1/test-guard/user-read (Normal user role has USER_READ privilege)
+        # 5. Access /api/v1/test-guard/user-read (Free user role has USER_READ privilege)
         guard_res = await client.get("/api/v1/test-guard/user-read")
         assert guard_res.status_code == 200
         assert guard_res.json()["access"] == "granted"
 
-        # 6. Access /api/v1/test-guard/super-admin (Normal user lacks SuperAdmin role -> should 403)
+        # 6. Access /api/v1/test-guard/super-admin (Free user lacks SuperAdmin role -> should 403)
         role_guard_res = await client.get("/api/v1/test-guard/super-admin")
         assert role_guard_res.status_code == 403
         assert role_guard_res.json()["error_code"] == "ROLE_REQUIRED"

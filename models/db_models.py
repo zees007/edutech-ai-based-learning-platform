@@ -158,7 +158,7 @@ class Role(LoggedEntity, Base):
 
 class Subscription(Base):
     """
-    Tracks user subscription tier (Normal, Pro, Ultra) and billing status.
+    Tracks user subscription tier (Free, Pro, Ultra) and billing status.
     """
 
     __tablename__ = "subscriptions"
@@ -167,7 +167,7 @@ class Subscription(Base):
     user_id: Mapped[str] = mapped_column(
         String(36), ForeignKey("users.id", ondelete="CASCADE"), unique=True, nullable=False, index=True
     )
-    tier: Mapped[str] = mapped_column(String(50), nullable=False, default="normal", index=True)
+    tier: Mapped[str] = mapped_column(String(50), nullable=False, default="free", index=True)
     status: Mapped[str] = mapped_column(String(50), nullable=False, default="active")
     billing_cycle: Mapped[str] = mapped_column(String(20), nullable=False, default="monthly")
     price_amount: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)

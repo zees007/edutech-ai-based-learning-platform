@@ -1,0 +1,35 @@
+.\admin_ui.py:366: return await SubscriptionService.update_user_subscription_tier(session, selected_sub_user_id, req)
+.\home_ui.py:3449: <div class="price-feat"><span class="chk">✓</span> <b>Unlimited</b> AI Sessions</div>
+.\home_ui.py:3784: if user_t == "free" and st.session_state.get("target_upgrade_tier") in ["pro", "ultra"]:
+.\home_ui.py:3841: if user_t == "free" and st.session_state.get("target_upgrade_tier") in ["pro", "ultra"]:
+.\home_ui.py:3875: st.session_state["selected_tier"] = tier
+.\home_ui.py:3878: st.session_state["target_upgrade_tier"] = tier.lower()
+.\home_ui.py:3884: st.session_state["target_upgrade_tier"] = tier.lower()
+.\README.md:391: | **Interactive Learning Sessions** | ✅ Unlimited | ✅ Unlimited | ✅ Unlimited |
+.\README.md:392: | **Session History & Recovery** | ✅ Unlimited | ✅ Unlimited | ✅ Unlimited |
+.\scratch_search_session_limits.py:3: with open('session_limits_results.txt', 'w', encoding='utf-8') as out:
+.\scratch_search_session_limits.py:14: if ('session' in lower and ('limit' in lower or 'quota' in lower or 'max' in lower or 'tier' in lower or 'restrict' in lower or 'count' in lower)):
+.\ui.py:4818: st.session_state["session_hist_limit"] = 20
+.\ui.py:4829: st.session_state["session_hist_limit"] = 20
+.\ui.py:4837: st.session_state["session_hist_limit"] = 20
+.\ui.py:4845: st.session_state["session_hist_limit"] = 20
+.\ui.py:4855: hist_limit = st.session_state.get("session_hist_limit", 20)
+.\ui.py:4958: st.session_state["session_hist_limit"] = hist_limit + 20
+.\ui.py:5002: st.session_state["target_upgrade_tier"] = upgrade_target
+.\ui.py:5028: if "target_upgrade_tier" in st.session_state:
+.\ui.py:5029: del st.session_state["target_upgrade_tier"]
+.\ui.py:6230: target_t = st.session_state.pop("target_upgrade_tier", "pro")
+.\app\routers\learning.py:96: # 2. Enforce Monthly Session Quota for Free Tier
+.\app\routers\learning.py:100: monthly_sessions = await session_manager.get_monthly_session_count(current_user.id)
+.\app\routers\learning.py:103: error_code="SESSION_QUOTA_EXCEEDED",
+.\app\routers\learning.py:104: errors="You have reached your limit of 10 free AI sessions this month. Upgrade to Pro for unlimited sessions."
+.\services\session_manager.py:87: async def get_monthly_session_count(self, user_id: str) -> int:
+.\services\session_manager.py:88: """Count how many sessions the user created in the current calendar month."""
+.\services\session_manager.py:92: query = select(func.count(SessionRecord.id)).where(
+.\services\session_manager.py:332: async def list_sessions(self, limit: int = 20) -> list[dict]:
+.\services\subscription_service.py:310: async def _sync_user_role(db: AsyncSession, user: User, target_tier: str) -> None:
+.\services\subscription_ui.py:60: Unlock unlimited AI sessions, deep research paper curation, video clips, and accelerated XP boosts.
+.\services\subscription_ui.py:186: st.session_state["target_upgrade_tier"] = target_tier
+.\services\subscription_ui.py:223: if "target_upgrade_tier" in st.session_state:
+.\services\subscription_ui.py:224: del st.session_state["target_upgrade_tier"]
+.\services\subscription_ui.py:304: st.session_state["target_upgrade_tier"] = "ultra" if current_tier == "PRO" else "pro"

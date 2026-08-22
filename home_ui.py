@@ -3153,7 +3153,7 @@ def render_home_page():
 
     with nav_col3:
         if user_profile:
-            u_tier = (user_profile.subscription.tier if user_profile.subscription else "normal").upper()
+            u_tier = (user_profile.subscription.tier if user_profile.subscription else "free").upper()
             st.markdown(f'<div style="color:rgba(255,255,255,0.7);font-size:0.85rem;padding-top:6px;">👋 <b style="color:#FAFAFA;">{user_profile.first_name}</b> · <span style="color:#C084FC;font-weight:800;">{u_tier}</span></div>', unsafe_allow_html=True)
         else:
             nb1, nb2 = st.columns(2)
@@ -3424,15 +3424,17 @@ def render_home_page():
             </div>
             <hr class="price-divider"/>
             <div class="price-feat-list">
-                <div class="price-feat"><span class="chk">✓</span> 5 AI Sessions / mo</div>
-                <div class="price-feat"><span class="chk">✓</span> Standard Socratic Tutor</div>
-                <div class="price-feat"><span class="chk">✓</span> 3 Education Levels</div>
-                <div class="price-feat"><span class="chk">✓</span> Milestone Journeys</div>
-                <div class="price-feat"><span class="chk">✓</span> Basic Quizzes & XP</div>
+                <div class="price-feat"><span class="chk">✓</span> <b>10 AI Sessions</b> / month</div>
+                <div class="price-feat"><span class="chk">✓</span> <b>1 Follow-Up Question</b> / step</div>
+                <div class="price-feat"><span class="chk">✓</span> <b>1 YouTube Video</b> / step</div>
+                <div class="price-feat"><span class="chk">✓</span> Bite-Sized Learning Mode</div>
+                <div class="price-feat"><span class="chk">✓</span> Milestone Quizzes & XP</div>
+                <div class="price-feat"><span class="chk">✓</span> All 5 Education Levels</div>
+                <div class="price-feat"><span class="chk">✓</span> Session History & Recovery</div>
             </div>
             """, unsafe_allow_html=True)
         if st.button("Start Free", key="t_n", use_container_width=True):
-            _handle_tier_select("normal")
+            _handle_tier_select("free")
 
     with p2:
         st.markdown(
@@ -3442,15 +3444,17 @@ def render_home_page():
             <div class="price-header-wrap">
                 <div class="price-name">Pro</div>
                 <div class="price-amount">$19<sub>/mo</sub></div>
-                <div class="price-desc">Full agent squad, deep research, visual modes & 1.5x XP.</div>
+                <div class="price-desc">Full agent squad, visual modes, research preprints & Markdown export.</div>
             </div>
             <hr class="price-divider"/>
             <div class="price-feat-list">
                 <div class="price-feat"><span class="chk">✓</span> <b>Unlimited</b> AI Sessions</div>
-                <div class="price-feat"><span class="chk">✓</span> All 5 Education Levels</div>
-                <div class="price-feat"><span class="chk">✓</span> Visual & Deep-Dive Modes</div>
-                <div class="price-feat"><span class="chk">✓</span> <b>YouTube Deep-Linking</b></div>
-                <div class="price-feat"><span class="chk">✓</span> Academic Paper Curation</div>
+                <div class="price-feat"><span class="chk">✓</span> <b>5 Follow-Up Questions</b> / step</div>
+                <div class="price-feat"><span class="chk">✓</span> <b>3 YouTube Videos</b> / step (Clips)</div>
+                <div class="price-feat"><span class="chk">✓</span> <b>Visual & Deep-Dive Modes</b></div>
+                <div class="price-feat"><span class="chk">✓</span> Academic Preprints & AI TL;DR</div>
+                <div class="price-feat"><span class="chk">✓</span> Step Content Regeneration</div>
+                <div class="price-feat"><span class="chk">✓</span> <b>Markdown (.md) Export</b></div>
                 <div class="price-feat"><span class="chk">✓</span> <b>1.5x XP Multiplier</b></div>
             </div>
             """, unsafe_allow_html=True)
@@ -3464,16 +3468,18 @@ def render_home_page():
             <div class="price-header-wrap">
                 <div class="price-name">Ultra</div>
                 <div class="price-amount">$49<sub>/mo</sub></div>
-                <div class="price-desc">Priority execution, custom personas, 2x XP & 24/7 support.</div>
+                <div class="price-desc">Unrestricted multi-agent squad, full research, PDF export & 2x XP.</div>
             </div>
             <hr class="price-divider"/>
             <div class="price-feat-list">
-                <div class="price-feat"><span class="chk">✓</span> Everything in Pro +</div>
+                <div class="price-feat"><span class="chk">✓</span> <b>Everything in Pro +</b></div>
+                <div class="price-feat"><span class="chk">✓</span> <b>Unlimited Follow-Up Chat</b></div>
+                <div class="price-feat"><span class="chk">✓</span> <b>5 YouTube Videos</b> / step</div>
+                <div class="price-feat"><span class="chk">✓</span> <b>Full-Text Academic Research</b></div>
+                <div class="price-feat"><span class="chk">✓</span> <b>Markdown + PDF (.pdf) Export</b></div>
                 <div class="price-feat"><span class="chk">✓</span> Priority Multi-Agent Exec</div>
-                <div class="price-feat"><span class="chk">✓</span> Unlimited Paper Downloads</div>
-                <div class="price-feat"><span class="chk">✓</span> Custom Socratic Persona</div>
-                <div class="price-feat"><span class="chk">✓</span> <b>2x XP Boost</b></div>
-                <div class="price-feat"><span class="chk">✓</span> 24/7 AI Support</div>
+                <div class="price-feat"><span class="chk">✓</span> <b>2x XP Boost</b> & Fast Leveling</div>
+                <div class="price-feat"><span class="chk">✓</span> 24/7 Priority Support</div>
             </div>
             """, unsafe_allow_html=True)
         if st.button("Select Ultra ✨", key="t_u", use_container_width=True):
@@ -3780,8 +3786,8 @@ def _render_auth_view():
 
                                 p = run_async(_login())
                                 st.session_state["user_profile"] = p
-                                user_t = (p.subscription.tier if p.subscription else "normal").lower()
-                                if user_t == "normal" and st.session_state.get("target_upgrade_tier") in ["pro", "ultra"]:
+                                user_t = (p.subscription.tier if p.subscription else "free").lower()
+                                if user_t == "free" and st.session_state.get("target_upgrade_tier") in ["pro", "ultra"]:
                                     st.session_state["show_upgrade_modal"] = True
                                 else:
                                     st.session_state["show_upgrade_modal"] = False
@@ -3837,8 +3843,8 @@ def _render_auth_view():
 
                                 p = run_async(_signup())
                                 st.session_state["user_profile"] = p
-                                user_t = (p.subscription.tier if p.subscription else "normal").lower()
-                                if user_t == "normal" and st.session_state.get("target_upgrade_tier") in ["pro", "ultra"]:
+                                user_t = (p.subscription.tier if p.subscription else "free").lower()
+                                if user_t == "free" and st.session_state.get("target_upgrade_tier") in ["pro", "ultra"]:
                                     st.session_state["show_upgrade_modal"] = True
                                 else:
                                     st.session_state["show_upgrade_modal"] = False
@@ -3868,52 +3874,6 @@ def _render_auth_view():
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 #  HELPERS
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-def _make_demo_profile(email: str):
-    from models.auth_schemas import UserCurrentProfileResponse
-    from models.subscription_schemas import SubscriptionResponse
-    from datetime import datetime, timezone
-
-    t = "pro" if "pro" in email else "normal"
-    return UserCurrentProfileResponse(
-        id="demo-user-123", first_name="Demo", last_name="Learner", email=email,
-        created_at=datetime.now(timezone.utc), roles=["student"],
-        subscription=SubscriptionResponse(id=1, user_id="demo-user-123", tier=t, status="active",
-                                          current_period_start=datetime.now(timezone.utc)),
-        privilege_codes=["ET_VIEW_LESSON", "ET_TAKE_QUIZ", "ET_VIEW_SUBSCRIPTION"],
-    )
-
-
-def _quick_demo_login(email: str, pw: str):
-    try:
-        from services.auth_service import AuthService
-        from services.database import get_db_session
-
-        async def _do():
-            async with get_db_session() as db:
-                u = await AuthService.authenticate_user(db, email, pw)
-                return AuthService.get_user_current_profile(u)
-
-        p = run_async(_do())
-        st.session_state["user_profile"] = p
-        user_t = (p.subscription.tier if p.subscription else "normal").lower()
-        if user_t == "normal" and st.session_state.get("target_upgrade_tier") in ["pro", "ultra"]:
-            st.session_state["show_upgrade_modal"] = True
-        else:
-            st.session_state["show_upgrade_modal"] = False
-        st.session_state["view"] = "learning"
-        st.toast(f"Logged in as {p.first_name}", icon="⚡")
-        st.rerun()
-    except Exception:
-        p = _make_demo_profile(email)
-        st.session_state["user_profile"] = p
-        user_t = (p.subscription.tier if p.subscription else "normal").lower()
-        if user_t == "normal" and st.session_state.get("target_upgrade_tier") in ["pro", "ultra"]:
-            st.session_state["show_upgrade_modal"] = True
-        else:
-            st.session_state["show_upgrade_modal"] = False
-        st.session_state["view"] = "learning"
-        st.toast(f"Demo ({'PRO' if 'pro' in email else 'NORMAL'} Tier)", icon="⚡")
-        st.rerun()
 
 
 def _handle_tier_select(tier: str):

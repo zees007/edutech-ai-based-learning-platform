@@ -43,7 +43,7 @@ class UserService:
     async def create_user(db: AsyncSession, dto: UserCreateRequest) -> User:
         """
         Create a new user. Raises ConflictException if email already exists.
-        Dynamically fetches and assigns the active 'Normal' tier role and initializes a 'normal' subscription.
+        Dynamically fetches and assigns the active 'Free' tier role and initializes a 'free' subscription.
         """
         # Check duplicate email
         stmt = select(User).where(User.email == dto.email)
@@ -56,12 +56,12 @@ class UserService:
 
         hashed_password = UserService.hash_password(dto.password)
 
-        # Query default 'Normal' subscription tier role dynamically from DB
-        role_stmt = select(Role).where(Role.name == "Normal", Role.retired == False)
+        # Query default 'Free' subscription tier role dynamically from DB
+        role_stmt = select(Role).where(Role.name == "Free", Role.retired == False)
         role_res = await db.execute(role_stmt)
-        normal_role = role_res.scalar_one_or_none()
+        free_role = role_res.scalar_one_or_none()
 
-        roles_to_assign = [normal_role] if normal_role else []
+        roles_to_assign = [free_role] if free_role else []
 
         user = User(
             first_name=dto.first_name,
@@ -78,14 +78,14 @@ class UserService:
         # Create active default subscription
         subscription = Subscription(
             user_id=user.id,
-            tier="normal",
+            tier="free",
             status="active",
         )
         db.add(subscription)
 
         await db.commit()
         await db.refresh(user)
-        logger.info(f"User created with default 'Normal' role & subscription: {user.id} ({user.email})")
+        logger.info(f"User created with default 'Free' role & subscription: {user.id} ({user.email})")
         return user
 
     @staticmethod

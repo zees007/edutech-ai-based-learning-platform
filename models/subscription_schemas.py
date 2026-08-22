@@ -16,7 +16,7 @@ class SubscriptionResponse(BaseModel):
 
     id: int
     user_id: str
-    tier: str = Field(..., description="Subscription tier: normal, pro, ultra")
+    tier: str = Field(..., description="Subscription tier: free, pro, ultra")
     status: str = Field(..., description="Subscription status: active, canceled, expired, past_due")
     billing_cycle: str = Field(default="monthly", description="Billing cycle: monthly, annual")
     price_amount: float = Field(default=0.0, description="Current tier recurring price")
@@ -35,7 +35,7 @@ class SubscriptionResponse(BaseModel):
 class SubscriptionUpdateRequest(BaseModel):
     """Payload for updating/upgrading a user's subscription tier directly."""
 
-    tier: str = Field(..., description="Target subscription tier: normal, pro, ultra")
+    tier: str = Field(..., description="Target subscription tier: free, pro, ultra")
     status: str = Field(default="active", description="Status of subscription: active, canceled, expired")
     billing_cycle: str = Field(default="monthly", description="Billing cycle: monthly, annual")
     gateway_provider: str | None = Field(default="sandbox", description="Payment gateway code")
