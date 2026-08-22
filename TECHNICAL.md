@@ -28,6 +28,14 @@ This document provides comprehensive technical documentation for the EduTechAI a
    - [Follow-up Socratic Chat Sequence](#follow-up-socratic-chat-sequence)
 6. [Data Persistence & Session Recovery](#6-data-persistence--session-recovery)
 7. [Configuration & Model Routing](#7-configuration--model-routing)
+8. [Role-Based Access Control (RBAC) & Subscription Tiers](#8-role-based-access-control-rbac--subscription-tiers)
+   - [Privilege Catalog & Domain Grouping](#privilege-catalog--domain-grouping)
+   - [Role-to-Privilege Matrix](#role-to-privilege-matrix)
+   - [Runtime Limit Resolution](#runtime-limit-resolution)
+   - [Dual-Layer Enforcement Architecture](#dual-layer-enforcement-architecture)
+9. [Session Export Engine](#9-session-export-engine)
+   - [Document Generation Pipeline](#document-generation-pipeline)
+   - [Mermaid Diagram Handling](#mermaid-diagram-handling)
 
 ---
 
@@ -303,3 +311,134 @@ YOUTUBE_DAILY_SEARCH_LIMIT=100
 SEMANTIC_SCHOLAR_API_KEY=
 OPENALEX_EMAIL=your-email@domain.com
 ```
+
+---
+
+## 8. Role-Based Access Control (RBAC) & Subscription Tiers
+
+EduTechAI employs a fine-grained RBAC architecture defining **33 privilege constants** grouped into 6 system domains (`app/privileges_config.py`).
+
+### Privilege Catalog & Domain Grouping
+
+1. **Root / SuperAdmin (`ET_ALL`)**: System-wide bypass granting access to all API routes and UI actions.
+2. **User Administration (`ET_FULL_ACCESS_USER`, `ET_CREATE_USER`, `ET_VIEW_USER`, `ET_EDIT_USER`, `ET_RETIRE_USER`, `ET_SEARCH_USER`, `ET_ASSIGN_USER_ROLE`)**: Manages identity and user status.
+3. **Role & Privilege Administration (`ET_FULL_ACCESS_ROLE`, `ET_CREATE_ROLE`, `ET_VIEW_ROLE`, `ET_EDIT_ROLE`, `ET_RETIRE_ROLE`, `ET_SEARCH_ROLE`, `ET_VIEW_PRIVILEGE`)**: Dynamic custom role creation and privilege assignment.
+4. **Subscription Management (`ET_FULL_ACCESS_SUBSCRIPTION`, `ET_VIEW_SUBSCRIPTION`, `ET_UPGRADE_SUBSCRIPTION`, `ET_DOWNGRADE_SUBSCRIPTION`)**: Plan lifecycle control.
+5. **Learning & Agent Gating**:
+   - `ET_START_LEARNING_SESSION`: Initiate topic journeys
+   - `ET_INTERACT_LEARNING_SESSION`: Step progression & quiz interaction
+   - `ET_VIEW_LEARNING_HISTORY`: Historical session retrieval
+   - `ET_ACCESS_ADVANCED_MODES`: Unlocks **Visual** & **Deep Dive** modes
+   - `ET_ACCESS_YOUTUBE_BASIC` & `ET_ACCESS_YOUTUBE_ADVANCED`: Tier-based YouTube video curation limits
+   - `ET_ACCESS_ACADEMIC_SEARCH`: Access open-access research papers & TL;DRs
+   - `ET_ACCESS_FULL_TEXT_RESEARCH`: Deep scholarly text analysis
+   - `ET_REGENERATE_STEP`: Trigger alternative analogy generation
+   - `ET_UNLIMITED_FOLLOW_UPS`: Bypass follow-up chat caps
+   - `ET_EXPORT_MARKDOWN`: Export learning sessions to `.md`
+   - `ET_EXPORT_PDF`: Export learning sessions to `.pdf`
+6. **Assessment & Quizzes (`ET_FULL_ACCESS_QUIZ`, `ET_GENERATE_QUIZ`, `ET_SUBMIT_QUIZ`)**: Formative assessment execution.
+
+### Role-to-Privilege Matrix
+
+```
+┌───────────────────────────────┬──────┬─────┬───────┬───────┐
+│ Privilege Code                │ Free │ Pro │ Ultra │ Admin │
+├───────────────────────────────┼──────┼─────┼───────┼───────┤
+│ ET_START_LEARNING_SESSION     │ Yes  │ Yes │ Yes   │ All   │
+│ ET_INTERACT_LEARNING_SESSION  │ Yes  │ Yes │ Yes   │ All   │
+│ ET_VIEW_LEARNING_HISTORY      │ Yes  │ Yes │ Yes   │ All   │
+│ ET_GENERATE_QUIZ              │ Yes  │ Yes │ Yes   │ All   │
+│ ET_SUBMIT_QUIZ                │ Yes  │ Yes │ Yes   │ All   │
+│ ET_VIEW_SUBSCRIPTION          │ Yes  │ Yes │ Yes   │ All   │
+│ ET_UPGRADE_SUBSCRIPTION       │ Yes  │ Yes │ Yes   │ All   │
+│ ET_ACCESS_YOUTUBE_BASIC       │ Yes  │ Yes │ Yes   │ All   │
+│ ET_DOWNGRADE_SUBSCRIPTION     │ -    │ Yes │ Yes   │ All   │
+│ ET_ACCESS_ADVANCED_MODES      │ -    │ Yes │ Yes   │ All   │
+│ ET_ACCESS_YOUTUBE_ADVANCED    │ -    │ Yes │ Yes   │ All   │
+│ ET_ACCESS_ACADEMIC_SEARCH     │ -    │ Yes │ Yes   │ All   │
+│ ET_REGENERATE_STEP            │ -    │ Yes │ Yes   │ All   │
+│ ET_EXPORT_MARKDOWN            │ -    │ Yes │ Yes   │ All   │
+│ ET_ACCESS_FULL_TEXT_RESEARCH  │ -    │ -   │ Yes   │ All   │
+│ ET_UNLIMITED_FOLLOW_UPS       │ -    │ -   │ Yes   │ All   │
+│ ET_EXPORT_PDF                 │ -    │ -   │ Yes   │ All   │
+│ ET_ALL (SuperAdmin Bypass)    │ -    │ -   │ -     │ Yes   │
+└───────────────────────────────┴──────┴─────┴───────┴───────┘
+```
+
+### Runtime Limit Resolution
+
+Limits are parameterized in `config.py` and dynamically evaluated based on the active user's role hierarchy and privilege set:
+
+```python
+# 1. Monthly Learning Session Quotas (app/routers/learning.py)
+is_premium = has_privilege(current_user, ET_ACCESS_ADVANCED_MODES)
+if not is_premium:
+    monthly_sessions = await session_manager.get_monthly_session_count(current_user.id)
+    if monthly_sessions >= 10:  # Free Tier capped at 10 sessions/mo
+        raise ForbiddenException(error_code="SESSION_QUOTA_EXCEEDED", errors="Monthly limit reached.")
+
+# 2. Video Curation Capacity per Step
+limit = settings.free_youtube_limit          # Default: 1
+if "Ultra" in roles or "Admin" in roles:
+    limit = settings.ultra_youtube_limit     # Default: 5
+elif "Pro" in roles:
+    limit = settings.pro_youtube_limit       # Default: 3
+
+# 3. Socratic Follow-Up Chat Limits
+followup_limit = settings.free_followup_limit   # Default: 1
+if "Pro" in roles:
+    followup_limit = settings.pro_followup_limit # Default: 5
+if "ET_UNLIMITED_FOLLOW_UPS" in privilege_codes:
+    is_unlimited = True
+```
+
+### Dual-Layer Enforcement Architecture
+
+1. **FastAPI Route Layer**: Enforces permissions and quotas at the API perimeter using dependency injection:
+   ```python
+   @router.get("/{session_id}/pdf", dependencies=[Depends(require_privilege(ET_EXPORT_PDF))])
+   ```
+2. **Streamlit UI Presentation Layer**: Performs reactive UI element gating:
+   - Evaluates monthly session counts and prevents journey initialization when quotas are exceeded.
+   - Disables suggested question chips and shows warning banners when follow-up limits are met.
+   - Renders contextual upgrade messaging (`Upgrade to Pro` vs `Upgrade to Ultra`).
+   - Slices agent outputs (`step.videos[:limit]`) to guarantee tier compliance.
+
+---
+
+## 9. Session Export Engine
+
+The export system converts learning sessions stored in `SharedMemory` into portable study artifacts (`app/routers/exports.py`).
+
+### Document Generation Pipeline
+
+```
+┌─────────────────────┐
+│    SharedMemory     │ (Extracts: metadata, step explanations, YouTube
+└──────────┬──────────┘  timestamps, academic papers, quiz feedback)
+           │
+           ▼
+┌─────────────────────┐
+│ generate_markdown() │ ──► Outputs: Rich Markdown (.md) document
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│ Regex Sanitization  │ (Substitutes JS-dependent ```mermaid blocks with
+└──────────┬──────────┘  callout guidance for compatible .md readers)
+           │
+           ▼
+┌─────────────────────┐
+│ markdown.markdown() │ (Parses Markdown → HTML with tables extension)
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│  xhtml2pdf (pisa)   │ ──► Outputs: A4 PDF byte stream with styled
+└─────────────────────┘     typography, blue headers, and data tables
+```
+
+### Mermaid Diagram Handling
+- **Markdown Export**: Fenced ` ```mermaid ` code blocks are preserved verbatim, rendering interactively in modern Markdown editors (Obsidian, GitHub, Typora).
+- **PDF Export**: Since headless PDF generation does not execute browser JavaScript, raw Mermaid text is stripped and replaced with a clean instructional callout pointing to the Markdown file.
+

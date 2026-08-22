@@ -22,6 +22,8 @@ An adaptive, interactive educational workspace powered by **autonomous AI agents
 - [Learning Modes](#learning-modes)
 - [Education Levels](#education-levels)
 - [Gamification & XP System](#gamification--xp-system)
+- [Subscription Plans & RBAC](#subscription-plans--rbac)
+- [Session Export (Markdown & PDF)](#session-export-markdown--pdf)
 - [How a Learning Session Works (End-to-End)](#how-a-learning-session-works-end-to-end)
 - [Session Persistence & History](#session-persistence--history)
 - [Step Navigation (Go Back / Forward)](#step-navigation-go-back--forward)
@@ -63,6 +65,8 @@ All content adapts dynamically based on the selected **Learning Mode** and **Edu
 | 📚 **Academic Research** | Searches OpenAlex, Semantic Scholar, and arXiv for open-access papers with AI-generated summaries |
 | 📝 **Dynamic Quizzes** | Generates 2–3 contextual comprehension questions per step with instant grading |
 | 🏆 **Gamification** | XP rewards, streak tracking, and a 10-level progression system |
+| 💎 **Tiered Subscriptions (RBAC)** | Free, Pro, and Ultra tiers with calibrated limits for videos, follow-ups, and advanced tools |
+| 📥 **Rich Session Exports** | Download complete learning journeys in Markdown (`.md`) or professionally styled PDF (`.pdf`) |
 | 🎨 **Three Learning Modes** | Visual, Deep Dive, and Bite-Sized — each adapts all agent outputs |
 | 🎓 **Five Education Levels** | Middle School through Graduate — language and complexity calibrate automatically |
 | 💬 **Follow-up Chat** | Ask the Socratic Tutor follow-up questions at any step |
@@ -370,6 +374,49 @@ The **Progress Header** in the UI displays:
 
 ---
 
+## 💎 Subscription Plans & RBAC
+
+EduTechAI integrates a comprehensive **Role-Based Access Control (RBAC)** architecture governed by 33 granular system privileges. Each subscription plan unlocks tailored features, agent capacities, and specialized export tools.
+
+### Subscription Tiers Matrix
+
+| Feature / Capability | 🥉 Free Tier | 🥈 Pro Tier | 🥇 Ultra Tier |
+| :--- | :--- | :--- | :--- |
+| **Socratic Follow-Up Chat** | Max **1 question** / step (`FREE_FOLLOWUP_LIMIT=1`) | Max **5 questions** / step (`PRO_FOLLOWUP_LIMIT=5`) | **Unlimited** questions / step (`ET_UNLIMITED_FOLLOW_UPS`) |
+| **YouTube Video Curation** | Max **1 clip** / step (`FREE_YOUTUBE_LIMIT=1`) | Max **3 clips** / step (`PRO_YOUTUBE_LIMIT=3`) | Max **5 clips** / step (`ULTRA_YOUTUBE_LIMIT=5`) |
+| **Learning Modes** | Standard / Bite-Sized | **All Modes** (Visual, Deep Dive, Bite-Sized) | **All Modes** (Visual, Deep Dive, Bite-Sized) |
+| **Academic Research** | Omitted / Baseline check | **Preprints & AI TL;DR** (OpenAlex, arXiv, Semantic Scholar) | **Full-Text Research & Insights** |
+| **Step Content Regeneration** | ❌ Disabled | ✅ Enabled (`ET_REGENERATE_STEP`) | ✅ Enabled (`ET_REGENERATE_STEP`) |
+| **Session Export** | ❌ None | 📝 **Markdown (`.md`)** | 📝 **Markdown (`.md`)** + 📄 **PDF (`.pdf`)** |
+| **Interactive Learning Sessions** | Max **10 sessions** / month | **Unlimited** AI Sessions | **Unlimited** AI Sessions |
+| **Session History & Recovery** | Full access to past sessions | Full access to past sessions | Full access to past sessions |
+| **Milestone Quizzes & XP** | ✅ Full Access | ✅ Full Access | ✅ Full Access |
+| **Subscription Management** | View & Upgrade | View, Upgrade, Downgrade | View, Downgrade |
+
+> 🛡️ **SuperAdmin Role:** An internal `Admin` role exists with full system bypass (`ET_ALL`), granting access to all endpoints, user management, and role/privilege administration.
+
+---
+
+## 📥 Session Export (Markdown & PDF)
+
+Students on **Pro** and **Ultra** plans can export their complete learning session upon mastering milestones or completing topics:
+
+### 📝 Markdown Export (`.md`) — *Pro & Ultra*
+- **Best for:** Notion, Obsidian, GitHub, Bear, and personal digital gardens.
+- **Includes:** 
+  - 📋 **Session Header Table:** Learning Mode, Student Level, Steps Completed, XP Earned, Streak, and Timestamp.
+  - 🎓 **Step-by-Step Lessons:** Socratic explanations, suggested follow-up questions, timestamped YouTube video links, and academic paper summaries.
+  - 📊 **Interactive Diagrams:** Preserves raw `mermaid` code blocks that render natively in GitHub and Obsidian.
+  - 📝 **Quiz Results & Feedback:** Submitted student answers, correct answers, ✅/❌ indicators, and rationale.
+  - 🏆 **Session Summary Footer:** Overall quiz accuracy score and gamification achievements.
+
+### 📄 PDF Export (`.pdf`) — *Ultra Exclusive*
+- **Best for:** Printable study guides, offline reading, classroom distribution, and archival.
+- **Styling:** Formatted with custom typography, blue hierarchy headers, styled tables, and blockquotes.
+- **Mermaid Handling:** Automatically detects Mermaid code blocks and replaces them with a friendly callout guiding the student to view the interactive diagram in the accompanying `.md` export.
+
+---
+
 ## How a Learning Session Works (End-to-End)
 
 Here is the complete flow from when a student enters a topic to when they complete a step:
@@ -635,12 +682,17 @@ edutechai
 
 ### REST API
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/health` | Health check — returns `{ "status": "healthy", "version": "0.1.0" }` |
-| `POST` | `/api/learn` | Start a new learning session (topic, mode, level) |
-| `GET` | `/api/sessions/{session_id}` | Retrieve an existing session |
-| `POST` | `/api/quiz/submit` | Submit quiz answers and get grading results |
+| Method | Endpoint | Required Privilege | Description |
+|--------|----------|-------------------|-------------|
+| `GET` | `/health` | *Public* | Health check — returns `{ "status": "healthy", "version": "0.1.0" }` |
+| `POST` | `/api/v1/auth/login` | *Public* | Authenticate user and receive JWT bearer token |
+| `POST` | `/api/learn` | `ET_START_LEARNING_SESSION` | Start a new learning session (topic, mode, level) |
+| `GET` | `/api/sessions/{session_id}` | `ET_INTERACT_LEARNING_SESSION` | Retrieve an existing session state and milestones |
+| `POST` | `/api/quiz/submit` | `ET_SUBMIT_QUIZ` | Submit quiz answers and get grading results |
+| `GET` | `/api/export/{session_id}/md` | `ET_EXPORT_MARKDOWN` | Export complete session as a rich Markdown document |
+| `GET` | `/api/export/{session_id}/pdf` | `ET_EXPORT_PDF` | Export complete session as a styled PDF document |
+| `GET` | `/api/v1/subscriptions/users/{id}` | `ET_VIEW_SUBSCRIPTION` | View current user subscription tier and privileges |
+| `PUT` | `/api/v1/subscriptions/users/{id}/tier` | `ET_UPGRADE_SUBSCRIPTION` | Upgrade or downgrade user subscription tier |
 
 ### WebSocket
 
@@ -717,12 +769,13 @@ The database uses **SQLAlchemy async ORM**, so switching between SQLite and Post
 
 ## Future Roadmap
 
-- **User authentication** — User accounts, login, and personal dashboards
-- **Achievement badges** — Unlock achievements for learning milestones
-- **Spaced repetition** — Revisit topics at scientifically optimal intervals
-- **Collaborative learning** — Study groups and peer discussions
-- **Mobile responsive** — Optimized mobile frontend
-- **Export notes** — Download learning summaries as PDF
+- [x] **User Authentication & RBAC** — Multi-role management, JWT auth, and granular privileges
+- [x] **Subscription Tiers** — Free, Pro, and Ultra tiers with runtime limit calibration
+- [x] **Session Exports** — Markdown and styled PDF generation for completed sessions
+- [ ] **Achievement badges** — Unlock achievements for learning milestones
+- [ ] **Spaced repetition** — Revisit topics at scientifically optimal intervals
+- [ ] **Collaborative learning** — Study groups and peer discussions
+- [ ] **Mobile responsive UI** — Optimized mobile and tablet frontend
 
 ---
 
