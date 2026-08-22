@@ -4408,6 +4408,44 @@ def show_congratulations_dialog(memory):
                 st.session_state[f"victory_modal_dismissed_{memory.session_id}"] = True
             st.rerun()
 
+    user_profile = st.session_state.get("user_profile")
+    if user_profile and hasattr(user_profile, 'roles'):
+        r_names = [r.name for r in user_profile.roles if not getattr(r, 'retired', False)] if isinstance(user_profile.roles, list) and hasattr(user_profile.roles[0], 'name') else user_profile.roles
+        
+        can_export_md = "Pro" in r_names or "Ultra" in r_names or "Admin" in r_names
+        can_export_pdf = "Ultra" in r_names or "Admin" in r_names
+        
+        if can_export_md or can_export_pdf:
+            st.markdown("<hr style='margin: 15px 0; border-color: rgba(255,255,255,0.1);'>", unsafe_allow_html=True)
+            st.markdown("#### 📥 Export Your Session", unsafe_allow_html=True)
+            ec1, ec2 = st.columns([1, 1])
+            
+            from app.routers.exports import generate_markdown, generate_pdf
+            
+            with ec1:
+                if can_export_md:
+                    md_data = generate_markdown(memory)
+                    st.download_button(
+                        "Download Markdown 📝", 
+                        data=md_data, 
+                        file_name=f"session_{getattr(memory, 'session_id', 'export')}.md", 
+                        mime="text/markdown",
+                        use_container_width=True
+                    )
+            with ec2:
+                if can_export_pdf:
+                    try:
+                        pdf_data = generate_pdf(memory)
+                        st.download_button(
+                            "Download PDF 📄", 
+                            data=pdf_data, 
+                            file_name=f"session_{getattr(memory, 'session_id', 'export')}.pdf", 
+                            mime="application/pdf",
+                            use_container_width=True
+                        )
+                    except Exception as e:
+                        st.error("PDF Generation failed.")
+
 
 def render_learning_workspace():
     """Renders the student learning workspace with the glassy AI theme."""

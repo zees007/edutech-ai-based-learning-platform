@@ -3,7 +3,10 @@ from __future__ import annotations
 import logging
 
 from fastapi import APIRouter, Depends
-from fastapi.responses import PlainTextResponse
+from fastapi.responses import PlainTextResponse, Response
+import io
+import markdown
+from xhtml2pdf import pisa
 
 from app.dependencies import get_current_user, require_privilege
 from app.exceptions import NotFoundException
@@ -45,6 +48,40 @@ def generate_markdown(memory) -> str:
     return md
 
 
+def generate_pdf(memory) -> bytes:
+    """Generate a PDF byte stream from the learning session memory."""
+    md_content = generate_markdown(memory)
+    html_content = markdown.markdown(md_content)
+    
+    styled_html = f"""
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <style>
+            @page {{ size: a4; margin: 2cm; }}
+            body {{ font-family: Helvetica, Arial, sans-serif; font-size: 12pt; line-height: 1.5; color: #1E293B; }}
+            h1 {{ color: #2563EB; border-bottom: 2px solid #E5E7EB; padding-bottom: 5px; }}
+            h2 {{ color: #1D4ED8; margin-top: 20px; border-bottom: 1px solid #E5E7EB; }}
+            h3 {{ color: #3B82F6; }}
+            p {{ margin-bottom: 10px; }}
+            a {{ color: #2563EB; text-decoration: none; }}
+        </style>
+    </head>
+    <body>
+        {html_content}
+    </body>
+    </html>
+    """
+    
+    pdf_buffer = io.BytesIO()
+    pisa_status = pisa.CreatePDF(io.StringIO(styled_html), dest=pdf_buffer)
+    
+    if pisa_status.err:
+        raise Exception("Failed to generate PDF")
+        
+    return pdf_buffer.getvalue()
+
+
 @router.get(
     "/{session_id}/md",
     response_class=PlainTextResponse,
@@ -71,7 +108,7 @@ async def export_session_markdown(
 
 @router.get(
     "/{session_id}/pdf",
-    response_class=PlainTextResponse,
+    response_class=Response,
     dependencies=[Depends(require_privilege(ET_EXPORT_PDF))],
 )
 async def export_session_pdf(
@@ -86,11 +123,13 @@ async def export_session_pdf(
     if memory.user_id != current_user.id:
         raise NotFoundException(error_code="SESSION_NOT_FOUND", errors="Session not found.")
 
-    # PDF generation logic requires a library like reportlab or weasyprint.
-    # We will return the markdown content directly as a placeholder
-    md_content = generate_markdown(memory)
-    
-    return PlainTextResponse(
-        content=md_content,
-        headers={"Content-Disposition": f"attachment; filename=\"session_{session_id}.txt\""},
-    )
+    try:
+        pdf_bytes = generate_pdf(memory)
+        return Response(
+            content=pdf_bytes,
+            media_type="application/pdf",
+            headers={"Content-Disposition": f"attachment; filename=\"session_{session_id}.pdf\""},
+        )
+    except Exception as e:
+        logger.error(f"Failed to generate PDF for session {session_id}: {e}")
+        return PlainTextResponse(content="Error generating PDF", status_code=500)
