@@ -6,12 +6,76 @@ import 'package:devzees_edutechai_client/presentation/widgets/gradient_button.da
 import 'package:devzees_edutechai_client/presentation/widgets/gradient_text.dart';
 import 'package:devzees_edutechai_client/core/constants/responsive.dart';
 
-class PricingSection extends StatelessWidget {
+class PricingSection extends StatefulWidget {
   const PricingSection({Key? key}) : super(key: key);
+
+  @override
+  State<PricingSection> createState() => _PricingSectionState();
+}
+
+class _PricingSectionState extends State<PricingSection> {
+  final PageController _pageController = PageController(viewportFraction: 0.88);
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final bool isMobile = Responsive.isMobile(context);
+
+    final cards = [
+      const _PricingCard(
+        name: 'Free',
+        price: '\$0',
+        description: 'Essential AI tutoring for curious learners starting out.',
+        features: [
+          '10 AI Sessions / month',
+          '1 Follow-Up Question / step',
+          '1 YouTube Video / step',
+          'Bite-Sized Learning Mode',
+          'Milestone Quizzes & XP',
+          'All 5 Education Levels',
+          'Session History & Recovery',
+        ],
+        buttonText: 'Start Free',
+      ),
+      const _PricingCard(
+        name: 'Pro',
+        price: '\$19',
+        description: 'Full agent squad, visual modes, research preprints & Markdown export.',
+        features: [
+          'Unlimited AI Sessions',
+          '5 Follow-Up Questions / step',
+          '3 YouTube Videos / step (Clips)',
+          'Visual & Deep-Dive Modes',
+          'Academic Preprints & AI TL;DR',
+          'Step Content Regeneration',
+          'Markdown (.md) Export',
+          '1.5x XP Multiplier',
+        ],
+        buttonText: 'Upgrade to Pro ⚡',
+        isPopular: true,
+      ),
+      const _PricingCard(
+        name: 'Ultra',
+        price: '\$49',
+        description: 'Unrestricted multi-agent squad, full research, PDF export & 2x XP.',
+        features: [
+          'Everything in Pro +',
+          'Unlimited Follow-Up Chat',
+          '5 YouTube Videos / step',
+          'Full-Text Academic Research',
+          'Markdown + PDF (.pdf) Export',
+          'Priority Multi-Agent Exec',
+          '2x XP Boost & Fast Leveling',
+          '24/7 Priority Support',
+        ],
+        buttonText: 'Select Ultra ✨',
+      ),
+    ];
 
     return Column(
       children: [
@@ -24,72 +88,38 @@ class PricingSection extends StatelessWidget {
         ),
         const SizedBox(height: 48),
         
-        Flex(
-          direction: isMobile ? Axis.vertical : Axis.horizontal,
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              flex: isMobile ? 0 : 1,
-              child: const _PricingCard(
-                name: 'Free',
-                price: '\$0',
-                description: 'Essential AI tutoring for curious learners starting out.',
-                features: [
-                  '10 AI Sessions / month',
-                  '1 Follow-Up Question / step',
-                  '1 YouTube Video / step',
-                  'Bite-Sized Learning Mode',
-                  'Milestone Quizzes & XP',
-                  'All 5 Education Levels',
-                  'Session History & Recovery',
-                ],
-                buttonText: 'Start Free',
-              ),
+        if (isMobile)
+          SizedBox(
+            height: 720, // Tall enough for the Ultra card on mobile
+            child: PageView.builder(
+              controller: _pageController,
+              itemCount: cards.length,
+              itemBuilder: (context, index) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                  child: Align(
+                    alignment: Alignment.topCenter,
+                    child: SingleChildScrollView(
+                      physics: const NeverScrollableScrollPhysics(),
+                      child: cards[index],
+                    ),
+                  ),
+                );
+              },
             ),
-            if (isMobile) const SizedBox(height: 24) else const SizedBox(width: 24),
-            Expanded(
-              flex: isMobile ? 0 : 1,
-              child: const _PricingCard(
-                name: 'Pro',
-                price: '\$19',
-                description: 'Full agent squad, visual modes, research preprints & Markdown export.',
-                features: [
-                  'Unlimited AI Sessions',
-                  '5 Follow-Up Questions / step',
-                  '3 YouTube Videos / step (Clips)',
-                  'Visual & Deep-Dive Modes',
-                  'Academic Preprints & AI TL;DR',
-                  'Step Content Regeneration',
-                  'Markdown (.md) Export',
-                  '1.5x XP Multiplier',
-                ],
-                buttonText: 'Upgrade to Pro ⚡',
-                isPopular: true,
-              ),
-            ),
-            if (isMobile) const SizedBox(height: 24) else const SizedBox(width: 24),
-            Expanded(
-              flex: isMobile ? 0 : 1,
-              child: const _PricingCard(
-                name: 'Ultra',
-                price: '\$49',
-                description: 'Unrestricted multi-agent squad, full research, PDF export & 2x XP.',
-                features: [
-                  'Everything in Pro +',
-                  'Unlimited Follow-Up Chat',
-                  '5 YouTube Videos / step',
-                  'Full-Text Academic Research',
-                  'Markdown + PDF (.pdf) Export',
-                  'Priority Multi-Agent Exec',
-                  '2x XP Boost & Fast Leveling',
-                  '24/7 Priority Support',
-                ],
-                buttonText: 'Select Ultra ✨',
-              ),
-            ),
-          ],
-        ),
+          )
+        else
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(child: cards[0]),
+              const SizedBox(width: 24),
+              Expanded(child: cards[1]),
+              const SizedBox(width: 24),
+              Expanded(child: cards[2]),
+            ],
+          ),
       ],
     );
   }
