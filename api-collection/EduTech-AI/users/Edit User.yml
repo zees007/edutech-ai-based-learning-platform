@@ -1,0 +1,26 @@
+info:
+  name: Edit User
+  type: http
+  seq: 2
+
+http:
+  method: PUT
+  url: "{{baseUrl}}/api/v1/users/bdcb38f5-8395-48e3-8b1f-0a470775908e/edit"
+  body:
+    type: json
+    data: |-
+      {
+        "first_name": "Zeeshan",
+        "last_name": "Adil",
+        "email": "abc@gmail.com",
+        "password": "Test2day",
+        "mobile": "9899551324",
+        "country":"India"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,22 @@
+info:
+  name: Create Role
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/v1/roles/create"
+  body:
+    type: json
+    data: |-
+      {
+        "name": "Super Administrator",
+        "privilegeIds": [1, 2]
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

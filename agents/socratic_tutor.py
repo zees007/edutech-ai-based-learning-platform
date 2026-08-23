@@ -14,7 +14,8 @@ Supports token-by-token streaming via Groq streaming API for real-time UI render
 
 from __future__ import annotations
 
-from typing import AsyncGenerator
+import re
+from typing import Any, AsyncGenerator
 
 from agents.base import BaseAgent
 from models.schemas import StepStatus
@@ -30,6 +31,106 @@ class SocraticTutorAgent(BaseAgent):
     - 1-2 guiding Socratic questions
     - Adapts style based on learning mode and student level
     """
+
+    async def explain_step_with_questions(
+        self,
+        step: Any,
+        topic: str = "",
+        learning_mode: Any = "visual",
+        student_level: str = "general",
+    ) -> tuple[str, list[str]]:
+        """Generate explanation AND 2 suggested Socratic questions."""
+        from models.schemas import LearningMode
+
+        mode_val = learning_mode.value if hasattr(learning_mode, "value") else str(learning_mode)
+        mode_enum = LearningMode(mode_val) if mode_val in [m.value for m in LearningMode] else LearningMode.VISUAL
+
+        title = getattr(step, "title", str(step))
+        desc = getattr(step, "description", "")
+        is_pre = str(getattr(step, "is_prerequisite", False))
+
+        step_idx = getattr(step, "index", 0)
+        is_first = (step_idx == 0)
+        step_num = step_idx + 1
+
+        template = self._load_prompt_template("socratic_tutor")
+        system_prompt = self._format_prompt(
+            template,
+            topic=topic,
+            step_title=title,
+            step_description=desc,
+            step_number=step_num,
+            total_steps=max(step_num, 1),
+            student_level=student_level,
+            learning_mode=mode_enum.value,
+            is_first_step=str(is_first),
+            is_prerequisite=is_pre,
+        )
+
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": f"Please explain this step: {title} — {desc}"},
+        ]
+
+        model = self.settings.get_model_for_agent("socratic_tutor")
+        try:
+            response = await self.llm.chat(
+                model=model,
+                messages=messages,
+                temperature=0.7,
+                max_tokens=2048,
+            )
+            return self._parse_response(response)
+        except Exception as e:
+            self.logger.error(f"Socratic Tutor LLM call failed: {e}")
+            fallback_exp = f"Let's explore **{title}** together! {desc}"
+            fallback_q = [
+                f"How does {title} apply in real life?",
+                f"Why is {title} essential to understanding {topic}?",
+            ]
+            return fallback_exp, fallback_q
+
+    async def answer_followup(
+        self,
+        question: str,
+        step_title: str,
+        step_description: str,
+        explanation: str,
+        topic: str,
+        student_level: str,
+        chat_history: list[dict[str, str]] | None = None,
+    ) -> str:
+        """Answer a student's follow-up question about the current step."""
+        system_prompt = (
+            f"You are the Socratic Tutor Agent teaching a {student_level} level student about '{topic}'.\n"
+            f"Current Step: '{step_title}' — {step_description}\n"
+            f"Previous Explanation given: {explanation[:1500]}\n\n"
+            f"Rule: Answer the student's question clearly with a supportive, Socratic tone using analogies. "
+            f"End with a short guiding question to check their understanding."
+        )
+
+        messages = [{"role": "system", "content": system_prompt}]
+
+        if chat_history:
+            for turn in chat_history[-6:]:
+                messages.append({
+                    "role": "user" if turn.get("role") == "user" else "assistant",
+                    "content": turn.get("text", ""),
+                })
+
+        messages.append({"role": "user", "content": question})
+
+        model = self.settings.get_model_for_agent("socratic_tutor")
+        try:
+            return await self.llm.chat(
+                model=model,
+                messages=messages,
+                temperature=0.7,
+                max_tokens=1024,
+            )
+        except Exception as e:
+            self.logger.error(f"Failed to answer follow-up question: {e}")
+            return f"That's a great question about {step_title}! How do you think it connects to {topic}?"
 
     async def execute(self, memory: SharedMemory, step_index: int | None = None) -> None:
         """
@@ -50,14 +151,21 @@ class SocraticTutorAgent(BaseAgent):
         step_result.status = StepStatus.IN_PROGRESS
 
         # Load and format the prompt
+        is_first_step = (step_index == 0)
+        total_steps = len(memory.steps)
+        step_number = step_index + 1
+
         template = self._load_prompt_template("socratic_tutor")
         system_prompt = self._format_prompt(
             template,
             topic=memory.topic,
             step_title=step.title,
             step_description=step.description,
+            step_number=step_number,
+            total_steps=total_steps,
             student_level=memory.student_level,
             learning_mode=memory.learning_mode.value,
+            is_first_step=str(is_first_step),
             is_prerequisite=str(step.is_prerequisite),
         )
 
@@ -137,14 +245,21 @@ class SocraticTutorAgent(BaseAgent):
             return
 
         # Build the same prompt as execute()
+        is_first_step = (step_index == 0)
+        total_steps = len(memory.steps)
+        step_number = step_index + 1
+
         template = self._load_prompt_template("socratic_tutor")
         system_prompt = self._format_prompt(
             template,
             topic=memory.topic,
             step_title=step.title,
             step_description=step.description,
+            step_number=step_number,
+            total_steps=total_steps,
             student_level=memory.student_level,
             learning_mode=memory.learning_mode.value,
+            is_first_step=str(is_first_step),
             is_prerequisite=str(step.is_prerequisite),
         )
 
@@ -190,6 +305,11 @@ class SocraticTutorAgent(BaseAgent):
 
         The prompt instructs the tutor to use "**Socratic Questions:**" as a delimiter.
         """
+        # Strip any <think>...</think> reasoning blocks
+        cleaned_response = re.sub(r"<think>.*?</think>", "", response, flags=re.DOTALL).strip()
+        if not cleaned_response:
+            cleaned_response = response
+
         # Look for the Socratic Questions section
         delimiter_variants = [
             "**Socratic Questions:**",
@@ -199,12 +319,12 @@ class SocraticTutorAgent(BaseAgent):
             "**Guiding Questions:**",
         ]
 
-        explanation = response
+        explanation = cleaned_response
         questions = []
 
         for delimiter in delimiter_variants:
-            if delimiter in response:
-                parts = response.split(delimiter, 1)
+            if delimiter in cleaned_response:
+                parts = cleaned_response.split(delimiter, 1)
                 explanation = parts[0].strip()
                 questions_text = parts[1].strip()
 

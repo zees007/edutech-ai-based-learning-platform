@@ -30,6 +30,7 @@ from datetime import datetime
 from pydantic import BaseModel, Field
 
 from models.schemas import (
+    AcademicPaper,
     ConversationTurn,
     LearningMode,
     MilestoneStep,
@@ -49,6 +50,7 @@ class SharedMemory(BaseModel):
 
     # ─── Session Info (set once by API layer) ───────────────────
     session_id: str = Field(default_factory=lambda: uuid.uuid4().hex[:12])
+    user_id: str | None = None
     topic: str = ""
     learning_mode: LearningMode = LearningMode.VISUAL
     student_level: str = "general"
@@ -59,6 +61,9 @@ class SharedMemory(BaseModel):
     prerequisite_summary: str | None = None
     steps: list[MilestoneStep] = Field(default_factory=list)
     current_step_index: int = 0
+
+    # ─── Session-Level Academic Research (curated once per session) ───
+    academic_papers: list[AcademicPaper] = Field(default_factory=list)
 
     # ─── Per-Step Agent Outputs (written by worker agents) ──────
     step_results: dict[int, StepResult] = Field(default_factory=dict)

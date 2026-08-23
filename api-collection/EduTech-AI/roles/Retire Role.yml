@@ -1,0 +1,18 @@
+info:
+  name: Retire Role
+  type: http
+  seq: 4
+
+http:
+  method: DELETE
+  url: "{{baseUrl}}/api/v1/roles/b85d0fee-4373-4eb2-ad9e-18fba274a798/retire"
+  body:
+    type: json
+    data: ""
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

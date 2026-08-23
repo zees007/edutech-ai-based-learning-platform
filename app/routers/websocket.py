@@ -266,6 +266,47 @@ async def _handle_chat(session_id: str, memory: SharedMemory):
     if not ws:
         return
 
+    step_index = memory.current_step_index
+    step_result = memory.get_step_result(step_index)
+    
+    # ─── Enforce Follow-up Limits ───
+    from services.database import get_db_session
+    from sqlalchemy.orm import selectinload
+    from sqlalchemy import select
+    from models.db_models import User, Role
+    from app.dependencies import has_privilege
+    from app.privileges_config import ET_UNLIMITED_FOLLOW_UPS
+    
+    async with get_db_session() as db:
+        res = await db.execute(
+            select(User).options(selectinload(User.roles).selectinload(Role.privileges))
+            .where(User.id == memory.user_id)
+        )
+        user = res.scalar_one_or_none()
+        
+    is_unlimited = False
+    user_roles = []
+    if user:
+        is_unlimited = has_privilege(user, ET_UNLIMITED_FOLLOW_UPS)
+        user_roles = [r.name for r in user.roles if not r.retired]
+        
+    from config import get_settings
+    settings = get_settings()
+    
+    limit = settings.free_followup_limit
+    if "Pro" in user_roles:
+        limit = settings.pro_followup_limit
+        
+    if not is_unlimited and step_result.follow_up_count >= limit:
+        await ws.send_json({
+            "event_type": "error",
+            "message": f"Follow-up limit reached for this step. Upgrade for more questions.",
+        })
+        return
+            
+    step_result.follow_up_count += 1
+
+
     tutor = SocraticTutorAgent()
     synthesizer = SynthesizerAgent()
 

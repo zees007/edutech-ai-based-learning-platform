@@ -51,36 +51,43 @@ def calculate_level(total_xp: int) -> dict:
         else:
             break
 
-    # Calculate progress to next level
     if next_level:
         xp_in_level = total_xp - current["xp_required"]
         xp_needed = next_level["xp_required"] - current["xp_required"]
-        progress = (xp_in_level / xp_needed) * 100.0 if xp_needed > 0 else 100.0
+        progress = (xp_in_level / xp_needed) if xp_needed > 0 else 1.0
     else:
-        progress = 100.0
+        xp_in_level = total_xp - current["xp_required"]
+        xp_needed = 0
+        progress = 1.0
 
     return {
         "level": current["level"],
         "title": current["title"],
         "total_xp": total_xp,
-        "xp_for_next_level": next_level["xp_required"] if next_level else None,
-        "progress_to_next": round(progress, 1),
+        "xp_for_current_level": current["xp_required"],
+        "xp_for_next_level": next_level["xp_required"] if next_level else current["xp_required"],
+        "xp_in_level": xp_in_level,
+        "xp_needed_for_next": xp_needed,
+        "progress": round(progress, 2),
+        "progress_to_next": round(progress * 100.0, 1),
     }
 
 
-def calculate_quiz_xp(correct_count: int, total_questions: int) -> int:
+def calculate_quiz_xp(correct_count: int | float, total_questions: int = 1) -> int:
     """
     Calculate XP earned from a quiz.
 
-    Args:
-        correct_count: Number of correct answers.
-        total_questions: Total number of questions.
-
-    Returns:
-        Total XP earned from the quiz.
+    Supports calling with:
+    - calculate_quiz_xp(correct_count, total_questions)
+    - calculate_quiz_xp(score_float)
     """
-    base_xp = correct_count * XP_QUIZ_PER_QUESTION
-    accuracy = correct_count / total_questions if total_questions > 0 else 0
+    if isinstance(correct_count, float) and correct_count <= 1.0 and total_questions == 1:
+        accuracy = correct_count
+        base_xp = int(accuracy * 50)
+    else:
+        c_count = int(correct_count)
+        base_xp = c_count * XP_QUIZ_PER_QUESTION
+        accuracy = c_count / total_questions if total_questions > 0 else 0
 
     # Accuracy bonus for perfect scores
     accuracy_bonus = XP_QUIZ_ACCURACY_BONUS if accuracy == 1.0 else int(accuracy * XP_QUIZ_ACCURACY_BONUS)

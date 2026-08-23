@@ -1,0 +1,102 @@
+Drop all tables scripts:
+
+DROP TABLE IF EXISTS "edutechAI".payment_transactions CASCADE;
+DROP TABLE IF EXISTS "edutechAI".subscriptions CASCADE;
+DROP TABLE IF EXISTS "edutechAI".gamification CASCADE;
+DROP TABLE IF EXISTS "edutechAI".step_progress CASCADE;
+DROP TABLE IF EXISTS "edutechAI".sessions CASCADE;
+DROP TABLE IF EXISTS "edutechAI".user_roles CASCADE;
+DROP TABLE IF EXISTS "edutechAI".role_privileges CASCADE;
+DROP TABLE IF EXISTS "edutechAI".roles CASCADE;
+DROP TABLE IF EXISTS "edutechAI".privileges CASCADE;
+DROP TABLE IF EXISTS "edutechAI".users CASCADE;
+DROP TABLE IF EXISTS "edutechAI".alembic_version CASCADE;
+
+----------------------------------------------------------------------
+RBAC SEEDING QUERIES
+----------------------------------------------------------------------
+
+1. Insert Privileges:
+INSERT INTO privileges (name, code) VALUES ('Start Learning Session', 'ET_START_LEARNING_SESSION') ON CONFLICT DO NOTHING;
+INSERT INTO privileges (name, code) VALUES ('Interact Learning Session', 'ET_INTERACT_LEARNING_SESSION') ON CONFLICT DO NOTHING;
+INSERT INTO privileges (name, code) VALUES ('View Learning History', 'ET_VIEW_LEARNING_HISTORY') ON CONFLICT DO NOTHING;
+INSERT INTO privileges (name, code) VALUES ('Generate Quiz', 'ET_GENERATE_QUIZ') ON CONFLICT DO NOTHING;
+INSERT INTO privileges (name, code) VALUES ('Submit Quiz', 'ET_SUBMIT_QUIZ') ON CONFLICT DO NOTHING;
+INSERT INTO privileges (name, code) VALUES ('View Subscription', 'ET_VIEW_SUBSCRIPTION') ON CONFLICT DO NOTHING;
+INSERT INTO privileges (name, code) VALUES ('Upgrade Subscription', 'ET_UPGRADE_SUBSCRIPTION') ON CONFLICT DO NOTHING;
+INSERT INTO privileges (name, code) VALUES ('Access Youtube Basic', 'ET_ACCESS_YOUTUBE_BASIC') ON CONFLICT DO NOTHING;
+INSERT INTO privileges (name, code) VALUES ('Downgrade Subscription', 'ET_DOWNGRADE_SUBSCRIPTION') ON CONFLICT DO NOTHING;
+INSERT INTO privileges (name, code) VALUES ('Access Advanced Modes', 'ET_ACCESS_ADVANCED_MODES') ON CONFLICT DO NOTHING;
+INSERT INTO privileges (name, code) VALUES ('Access Youtube Advanced', 'ET_ACCESS_YOUTUBE_ADVANCED') ON CONFLICT DO NOTHING;
+INSERT INTO privileges (name, code) VALUES ('Access Academic Search', 'ET_ACCESS_ACADEMIC_SEARCH') ON CONFLICT DO NOTHING;
+INSERT INTO privileges (name, code) VALUES ('Regenerate Step', 'ET_REGENERATE_STEP') ON CONFLICT DO NOTHING;
+INSERT INTO privileges (name, code) VALUES ('Export Markdown', 'ET_EXPORT_MARKDOWN') ON CONFLICT DO NOTHING;
+INSERT INTO privileges (name, code) VALUES ('Access Full Text Research', 'ET_ACCESS_FULL_TEXT_RESEARCH') ON CONFLICT DO NOTHING;
+INSERT INTO privileges (name, code) VALUES ('Unlimited Follow Ups', 'ET_UNLIMITED_FOLLOW_UPS') ON CONFLICT DO NOTHING;
+INSERT INTO privileges (name, code) VALUES ('Export Pdf', 'ET_EXPORT_PDF') ON CONFLICT DO NOTHING;
+INSERT INTO privileges (name, code) VALUES ('All', 'ET_ALL') ON CONFLICT DO NOTHING;
+
+2. Insert Roles:
+INSERT INTO roles (id, name, retired) VALUES (gen_random_uuid(), 'Free', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO roles (id, name, retired) VALUES (gen_random_uuid(), 'Pro', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO roles (id, name, retired) VALUES (gen_random_uuid(), 'Ultra', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO roles (id, name, retired) VALUES (gen_random_uuid(), 'Admin', false) ON CONFLICT (name) DO NOTHING;
+
+3. Map Role Privileges:
+INSERT INTO role_privileges (role_id, privilege_id)
+SELECT r.id, p.id FROM roles r, privileges p
+WHERE r.name = 'Free' AND p.code IN (
+    'ET_START_LEARNING_SESSION', 'ET_INTERACT_LEARNING_SESSION', 'ET_VIEW_LEARNING_HISTORY',
+    'ET_GENERATE_QUIZ', 'ET_SUBMIT_QUIZ', 'ET_VIEW_SUBSCRIPTION', 'ET_UPGRADE_SUBSCRIPTION',
+    'ET_ACCESS_YOUTUBE_BASIC'
+) ON CONFLICT DO NOTHING;
+
+INSERT INTO role_privileges (role_id, privilege_id)
+SELECT r.id, p.id FROM roles r, privileges p
+WHERE r.name = 'Pro' AND p.code IN (
+    'ET_START_LEARNING_SESSION', 'ET_INTERACT_LEARNING_SESSION', 'ET_VIEW_LEARNING_HISTORY',
+    'ET_GENERATE_QUIZ', 'ET_SUBMIT_QUIZ', 'ET_VIEW_SUBSCRIPTION', 'ET_UPGRADE_SUBSCRIPTION',
+    'ET_ACCESS_YOUTUBE_BASIC', 'ET_DOWNGRADE_SUBSCRIPTION', 'ET_ACCESS_ADVANCED_MODES',
+    'ET_ACCESS_YOUTUBE_ADVANCED', 'ET_ACCESS_ACADEMIC_SEARCH', 'ET_REGENERATE_STEP',
+    'ET_EXPORT_MARKDOWN'
+) ON CONFLICT DO NOTHING;
+
+INSERT INTO role_privileges (role_id, privilege_id)
+SELECT r.id, p.id FROM roles r, privileges p
+WHERE r.name = 'Ultra' AND p.code IN (
+    'ET_START_LEARNING_SESSION', 'ET_INTERACT_LEARNING_SESSION', 'ET_VIEW_LEARNING_HISTORY',
+    'ET_GENERATE_QUIZ', 'ET_SUBMIT_QUIZ', 'ET_VIEW_SUBSCRIPTION', 'ET_UPGRADE_SUBSCRIPTION',
+    'ET_ACCESS_YOUTUBE_BASIC', 'ET_DOWNGRADE_SUBSCRIPTION', 'ET_ACCESS_ADVANCED_MODES',
+    'ET_ACCESS_YOUTUBE_ADVANCED', 'ET_ACCESS_ACADEMIC_SEARCH', 'ET_REGENERATE_STEP',
+    'ET_EXPORT_MARKDOWN', 'ET_ACCESS_FULL_TEXT_RESEARCH', 'ET_UNLIMITED_FOLLOW_UPS',
+    'ET_EXPORT_PDF'
+) ON CONFLICT DO NOTHING;
+
+INSERT INTO role_privileges (role_id, privilege_id)
+SELECT r.id, p.id FROM roles r, privileges p
+WHERE r.name = 'Admin' AND p.code IN ('ET_ALL') ON CONFLICT DO NOTHING;
+
+
+----------------------------------------------------------------------
+ROLE AND PRIVILEGES MATRIX
+----------------------------------------------------------------------
+| Privilege Code                   | Free | Pro | Ultra | Admin |
+|----------------------------------|------|-----|-------|-------|
+| ET_START_LEARNING_SESSION        | Yes  | Yes | Yes   | -     |
+| ET_INTERACT_LEARNING_SESSION     | Yes  | Yes | Yes   | -     |
+| ET_VIEW_LEARNING_HISTORY         | Yes  | Yes | Yes   | -     |
+| ET_GENERATE_QUIZ                 | Yes  | Yes | Yes   | -     |
+| ET_SUBMIT_QUIZ                   | Yes  | Yes | Yes   | -     |
+| ET_VIEW_SUBSCRIPTION             | Yes  | Yes | Yes   | -     |
+| ET_UPGRADE_SUBSCRIPTION          | Yes  | Yes | Yes   | -     |
+| ET_ACCESS_YOUTUBE_BASIC          | Yes  | Yes | Yes   | -     |
+| ET_DOWNGRADE_SUBSCRIPTION        | -    | Yes | Yes   | -     |
+| ET_ACCESS_ADVANCED_MODES         | -    | Yes | Yes   | -     |
+| ET_ACCESS_YOUTUBE_ADVANCED       | -    | Yes | Yes   | -     |
+| ET_ACCESS_ACADEMIC_SEARCH        | -    | Yes | Yes   | -     |
+| ET_REGENERATE_STEP               | -    | Yes | Yes   | -     |
+| ET_EXPORT_MARKDOWN               | -    | Yes | Yes   | -     |
+| ET_ACCESS_FULL_TEXT_RESEARCH     | -    | -   | Yes   | -     |
+| ET_UNLIMITED_FOLLOW_UPS          | -    | -   | Yes   | -     |
+| ET_EXPORT_PDF                    | -    | -   | Yes   | -     |
+| ET_ALL (SuperAdmin Bypass)       | -    | -   | -     | Yes   |

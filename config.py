@@ -5,11 +5,50 @@ Reads all settings from .env file. Every model name, API key, and provider URL
 is configurable here so you can swap providers without touching code.
 """
 
+import os
 from enum import Enum
 from pathlib import Path
+from typing import Any
 
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+def sync_streamlit_secrets() -> None:
+    """
+    Safely synchronize Streamlit secrets (from secrets.toml or Streamlit Cloud Secrets)
+    into os.environ so Pydantic Settings and backend services can read them.
+
+    Catches StreamlitSecretNotFoundError and other exceptions gracefully
+    when no secrets file or cloud secrets are configured.
+    """
+    try:
+        import streamlit as st
+        secrets_obj = getattr(st, "secrets", None)
+        if secrets_obj is None:
+            return
+
+        def _flatten_secrets(data: Any, prefix: str = "") -> None:
+            if hasattr(data, "items"):
+                for k, v in data.items():
+                    key_str = str(k)
+                    flat_key = f"{prefix}{key_str}"
+                    if hasattr(v, "items"):
+                        _flatten_secrets(v, prefix=f"{flat_key}_")
+                    else:
+                        val_str = str(v)
+                        for candidate_key in (key_str, key_str.upper(), flat_key, flat_key.upper()):
+                            if candidate_key not in os.environ:
+                                os.environ[candidate_key] = val_str
+
+        _flatten_secrets(secrets_obj)
+    except Exception:
+        # Streamlit not running, no secrets.toml found, or empty secrets on Streamlit Cloud
+        pass
+
+
+# Run safe secrets sync upon module import
+sync_streamlit_secrets()
 
 
 class LLMProvider(str, Enum):
@@ -41,6 +80,7 @@ class Settings(BaseSettings):
     llm_provider: LLMProvider = LLMProvider.GROQ
     llm_base_url: str | None = None
     groq_api_key: str = ""
+    llm_timeout: float = Field(default=120.0, description="Max timeout in seconds for LLM responses")
 
     # ─── Model Assignments (per agent) ──────────────────────────
     orchestrator_model: str = "llama-3.1-8b-instant"
@@ -51,6 +91,13 @@ class Settings(BaseSettings):
     youtube_api_key: str = ""
     youtube_max_results: int = 5
     youtube_daily_search_limit: int = 100
+    free_youtube_limit: int = 1
+    pro_youtube_limit: int = 3
+    ultra_youtube_limit: int = 5
+
+    # ─── Socratic Follow-up Limits ───────────────────────────────
+    free_followup_limit: int = 1
+    pro_followup_limit: int = 5
 
     # ─── Academic APIs ───────────────────────────────────────────
     openalex_email: str = ""
@@ -58,6 +105,8 @@ class Settings(BaseSettings):
 
     # ─── Database ────────────────────────────────────────────────
     database_url: str = "sqlite+aiosqlite:///./data/edutechai.db"
+    database_schema: str = "edutechAI"
+    auto_create_tables: bool = True
 
     # ─── Vector Store ────────────────────────────────────────────
     chroma_persist_dir: str = "./data/chroma_db"
@@ -68,9 +117,24 @@ class Settings(BaseSettings):
     port: int = 8000
     debug: bool = True
 
+    # ─── JWT Security & Auth ─────────────────────────────────────
+    jwt_secret_key: str = "D5rTsC2QeoxN3LRGPcFR6KJX5Z/SXw/J8JINJ2Kh35c="
+    jwt_algorithm: str = "HS256"
+    jwt_expire_minutes: int = 60
+
     # ─── Rate Limiting ───────────────────────────────────────────
     groq_max_retries: int = Field(default=3, description="Max retries on Groq rate limit")
     groq_retry_delay: float = Field(default=1.0, description="Base delay between retries (seconds)")
+
+    @field_validator("database_url")
+    @classmethod
+    def normalize_database_url(cls, v: str) -> str:
+        """Ensure async driver (asyncpg) is used for PostgreSQL connections."""
+        if v.startswith("postgres://"):
+            return "postgresql+asyncpg://" + v[len("postgres://"):]
+        if v.startswith("postgresql://"):
+            return "postgresql+asyncpg://" + v[len("postgresql://"):]
+        return v
 
     @field_validator("groq_api_key")
     @classmethod
@@ -104,5 +168,6 @@ def get_settings() -> Settings:
     """Get or create the global settings instance."""
     global _settings
     if _settings is None:
+        sync_streamlit_secrets()
         _settings = Settings()
     return _settings

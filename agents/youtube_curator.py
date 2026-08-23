@@ -18,6 +18,7 @@ Writes: memory.step_results[step_index].youtube_clips[]
 from __future__ import annotations
 
 import logging
+from typing import Any
 
 from agents.base import BaseAgent
 from models.schemas import YouTubeClip
@@ -34,6 +35,20 @@ class YouTubeCuratorAgent(BaseAgent):
     fetches their transcripts, and finds precise timestamp ranges that
     match the step's content.
     """
+
+    async def curate_videos(self, step: Any, topic: str = "", student_level: str = "general") -> list[YouTubeClip]:
+        """Convenience method to curate YouTube videos for a step."""
+        try:
+            from services.youtube_client import YouTubeClient
+            client = YouTubeClient()
+            title = getattr(step, "title", str(step))
+            clean_title = title.split(":")[0].strip() if ":" in title else title
+            query = f"{topic} {clean_title}".strip()
+            videos = await client.search_videos(query)
+            return videos or []
+        except Exception as e:
+            self.logger.error(f"YouTube curation failed: {e}")
+            return []
 
     async def execute(self, memory: SharedMemory, step_index: int | None = None) -> None:
         """Find relevant YouTube clips for the given step."""
@@ -63,9 +78,34 @@ class YouTubeCuratorAgent(BaseAgent):
                 self.logger.info(f"No YouTube videos found for: {search_query}")
                 return
 
-            # Step 2-4: For each video, try to get transcript and find best timestamp
+            # Step 2: Determine User Tier Limit
+            from services.database import get_db_session
+            from models.db_models import User, Role
+            from sqlalchemy.orm import selectinload
+            from sqlalchemy import select
+            
+            user_roles = []
+            async with get_db_session() as db:
+                res = await db.execute(
+                    select(User).options(selectinload(User.roles).selectinload(Role.privileges))
+                    .where(User.id == memory.user_id)
+                )
+                u = res.scalar_one_or_none()
+                if u:
+                    user_roles = [r.name for r in u.roles if not r.retired]
+            
+            from config import get_settings
+            settings = get_settings()
+            
+            limit = settings.free_youtube_limit
+            if "Ultra" in user_roles or "Admin" in user_roles:
+                limit = settings.ultra_youtube_limit
+            elif "Pro" in user_roles:
+                limit = settings.pro_youtube_limit
+
+            # Step 3-5: For each video, try to get transcript and find best timestamp
             clips = []
-            for video in videos[:3]:  # Process top 3 results
+            for video in videos[:limit]:  # Process top N results based on tier
                 try:
                     clip = await client.get_timestamped_clip(
                         video_id=video["video_id"],
