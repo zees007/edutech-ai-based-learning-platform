@@ -1,0 +1,82 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "DEV-Server",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/devzees-edutechai-server/main.py",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}/devzees-edutechai-server",
+      "envFile": "${workspaceFolder}/devzees-edutechai-server/.env"
+    },
+    {
+      "name": "Flutter Client (Web - Port 3000)",
+      "request": "launch",
+      "type": "dart",
+      "program": "${workspaceFolder}/devzees-edutechai-client/lib/main.dart",
+      "cwd": "${workspaceFolder}/devzees-edutechai-client",
+      "args": [
+        "-d",
+        "chrome",
+        "--web-port",
+        "3000"
+      ]
+    },
+    {
+      "name": "Flutter Client (Mobile Emulator)",
+      "request": "launch",
+      "type": "dart",
+      "program": "${workspaceFolder}/devzees-edutechai-client/lib/main.dart",
+      "cwd": "${workspaceFolder}/devzees-edutechai-client"
+    },
+    {
+      "name": "Old Streamlit UI",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "streamlit",
+      "args": [
+        "run",
+        "${workspaceFolder}/devzees-edutechai-server/ui.py"
+      ],
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}/devzees-edutechai-server",
+      "envFile": "${workspaceFolder}/devzees-edutechai-server/.env"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "DEV - ALL (Server + Web Client)",
+      "configurations": [
+        "DEV-Server",
+        "Flutter Client (Web - Port 3000)"
+      ],
+      "stopAll": true
+    },
+    {
+      "name": "DEV - ALL (Server + Mobile Emulator)",
+      "configurations": [
+        "DEV-Server",
+        "Flutter Client (Mobile Emulator)"
+      ],
+      "stopAll": true
+    },
+    {
+      "name": "DEV - ALL (Server + StreamLit)",
+      "configurations": [
+        "DEV-Server",
+        "Old Streamlit UI"
+      ],
+      "stopAll": true
+    },
+    {
+      "name": "DEV - ALL (Server + Web Client + Emulator)",
+      "configurations": [
+        "DEV-Server",
+        "Flutter Client (Web - Port 3000)",
+        "Flutter Client (Mobile Emulator)"
+      ],
+      "stopAll": true
+    }
+  ]
+}
