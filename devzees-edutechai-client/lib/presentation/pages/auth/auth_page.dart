@@ -18,6 +18,7 @@ class AuthPage extends StatefulWidget {
 
 class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin {
   bool _isLogin = true;
+  bool _isFlowchartExpanded = false;
 
   // Animation controllers for subtle effects
   late AnimationController _pulseController;
@@ -164,15 +165,9 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
   
   Widget _buildMobileLayout() {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // Canvas on top for context
-        AuthCanvas(
-          isLogin: _isLogin,
-          onAuthModeChanged: _setAuthMode,
-        ),
-        const SizedBox(height: 48),
-        // The Glass Form Card with Header Inside
+        // The Glass Form Card with Header Inside (First for mobile)
         AnimatedBuilder(
           animation: _pulseAnimation,
           builder: (context, child) {
@@ -198,6 +193,50 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
               ],
             ),
           ),
+        ),
+        const SizedBox(height: 32),
+        // Expandable Flowchart Toggle
+        Center(
+          child: OutlinedButton.icon(
+            onPressed: () {
+              setState(() {
+                _isFlowchartExpanded = !_isFlowchartExpanded;
+              });
+            },
+            icon: Icon(
+              _isFlowchartExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+              color: Colors.white70,
+            ),
+            label: Text(
+              _isFlowchartExpanded ? "Hide Access Flowchart" : "View Access Flowchart",
+              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+            ),
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              side: BorderSide(color: const Color(0xFFA855F7).withValues(alpha: 0.5)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+              backgroundColor: const Color(0xFFA855F7).withValues(alpha: 0.1),
+            ),
+          ),
+        ),
+        const SizedBox(height: 24),
+        // Expanded Content
+        AnimatedSize(
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.easeInOut,
+          alignment: Alignment.topCenter,
+          child: _isFlowchartExpanded
+              ? Column(
+                  children: [
+                    _buildInstructionsCard(true),
+                    const SizedBox(height: 24),
+                    AuthCanvas(
+                      isLogin: _isLogin,
+                      onAuthModeChanged: _setAuthMode,
+                    ),
+                  ],
+                )
+              : const SizedBox(width: double.infinity),
         ),
       ],
     );
@@ -252,44 +291,50 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
             textAlign: TextAlign.center,
           ),
         ),
-        const SizedBox(height: 32),
-        Container(
-          constraints: const BoxConstraints(maxWidth: 800),
-          padding: EdgeInsets.all(isMobile ? 20 : 24),
-          decoration: BoxDecoration(
-            color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
-            border: Border.all(color: const Color(0xFF3B82F6).withValues(alpha: 0.3)),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        if (!isMobile) ...[
+          const SizedBox(height: 32),
+          _buildInstructionsCard(isMobile),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildInstructionsCard(bool isMobile) {
+    return Container(
+      constraints: const BoxConstraints(maxWidth: 800),
+      padding: EdgeInsets.all(isMobile ? 20 : 24),
+      decoration: BoxDecoration(
+        color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
+        border: Border.all(color: const Color(0xFF3B82F6).withValues(alpha: 0.3)),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             children: [
-              Row(
-                children: [
-                  const Text("💡", style: TextStyle(fontSize: 20)),
-                  const SizedBox(width: 12),
-                  GradientText(
-                    "Access Instructions",
-                    style: TextStyle(
-                      fontSize: isMobile ? 16 : 18, // Reduced from 18:20
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Text(
-                "Trace the Providing Access Flowchart below. If you already have an account, complete the Sign In form on the right. Otherwise, proceed to the Create Account tab. Upon verification, the system dispatches the AI Agent Squad to instantly grant workspace access.",
+              const Text("💡", style: TextStyle(fontSize: 20)),
+              const SizedBox(width: 12),
+              GradientText(
+                "Access Instructions",
                 style: TextStyle(
-                  fontSize: isMobile ? 12 : 13, // Reduced from 14:15
-                  color: Colors.white.withValues(alpha: 0.7), // Reduced opacity from 0.9
-                  height: 1.5,
+                  fontSize: isMobile ? 16 : 18, // Reduced from 18:20
+                  fontWeight: FontWeight.w800,
                 ),
               ),
             ],
           ),
-        ),
-      ],
+          const SizedBox(height: 12),
+          Text(
+            "Trace the Providing Access Flowchart below. If you already have an account, complete the Sign In form on the right. Otherwise, proceed to the Create Account tab. Upon verification, the system dispatches the AI Agent Squad to instantly grant workspace access.",
+            style: TextStyle(
+              fontSize: isMobile ? 12 : 13, // Reduced from 14:15
+              color: Colors.white.withValues(alpha: 0.7), // Reduced opacity from 0.9
+              height: 1.5,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
