@@ -8,7 +8,8 @@ import 'package:devzees_edutechai_client/core/constants/responsive.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class HomeNavbar extends StatelessWidget {
-  const HomeNavbar({Key? key}) : super(key: key);
+  final Function(String)? onNavTap;
+  const HomeNavbar({Key? key, this.onNavTap}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -76,10 +77,10 @@ class HomeNavbar extends StatelessWidget {
           if (!Responsive.isMobile(context))
             Row(
               children: [
-                _NavPill(title: 'About', onTap: () {}),
-                _NavPill(title: 'Features', onTap: () {}),
-                _NavPill(title: 'Agents', onTap: () {}),
-                _NavPill(title: 'Pricing', onTap: () {}),
+                _NavPill(title: 'About', onTap: () => onNavTap?.call('about')),
+                _NavPill(title: 'Features', onTap: () => onNavTap?.call('features')),
+                _NavPill(title: 'Agents', onTap: () => onNavTap?.call('agents')),
+                _NavPill(title: 'Pricing', onTap: () => onNavTap?.call('pricing')),
               ],
             ),
             
@@ -105,7 +106,7 @@ class HomeNavbar extends StatelessWidget {
               ),
               if (Responsive.isMobile(context)) ...[
                 const SizedBox(width: 4),
-                const _MobileMenuButton(),
+                _MobileMenuButton(onNavTap: onNavTap),
               ],
             ],
           ),
@@ -167,7 +168,8 @@ class _NavPillState extends State<_NavPill> {
 }
 
 class _MobileMenuButton extends StatefulWidget {
-  const _MobileMenuButton({Key? key}) : super(key: key);
+  final Function(String)? onNavTap;
+  const _MobileMenuButton({Key? key, this.onNavTap}) : super(key: key);
 
   @override
   State<_MobileMenuButton> createState() => _MobileMenuButtonState();
@@ -195,7 +197,10 @@ class _MobileMenuButtonState extends State<_MobileMenuButton> {
         child: PopupMenuButton<String>(
           onOpened: () => setState(() => _isOpen = true),
           onCanceled: () => setState(() => _isOpen = false),
-          onSelected: (value) => setState(() => _isOpen = false),
+          onSelected: (value) {
+            setState(() => _isOpen = false);
+            widget.onNavTap?.call(value);
+          },
           icon: const Icon(Icons.menu, color: Colors.white),
           color: Colors.transparent,
           elevation: 0,

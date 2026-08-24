@@ -97,28 +97,24 @@ class _PricingSectionState extends State<PricingSection> {
               itemBuilder: (context, index) {
                 return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                  child: Align(
-                    alignment: Alignment.topCenter,
-                    child: SingleChildScrollView(
-                      physics: const NeverScrollableScrollPhysics(),
-                      child: cards[index],
-                    ),
-                  ),
+                  child: cards[index],
                 );
               },
             ),
           )
         else
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(child: cards[0]),
-              const SizedBox(width: 24),
-              Expanded(child: cards[1]),
-              const SizedBox(width: 24),
-              Expanded(child: cards[2]),
-            ],
+          IntrinsicHeight(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(child: cards[0]),
+                const SizedBox(width: 24),
+                Expanded(child: cards[1]),
+                const SizedBox(width: 24),
+                Expanded(child: cards[2]),
+              ],
+            ),
           ),
       ],
     );
@@ -151,17 +147,25 @@ class _PricingCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (isPopular)
-            Container(
-              margin: const EdgeInsets.only(bottom: 16),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-              decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.primary),
+            Center(
+              child: Container(
+                margin: const EdgeInsets.only(bottom: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                  gradient: AppColors.primaryGradient,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.accentPink.withValues(alpha: 0.35),
+                      blurRadius: 10,
+                      spreadRadius: 0,
+                    ),
+                  ],
+                ),
+                child: const Text('MOST POPULAR ⭐', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
               ),
-              child: const Text('MOST POPULAR ⭐', style: TextStyle(color: AppColors.primary, fontSize: 12, fontWeight: FontWeight.bold)),
             ),
-          Text(name, style: AppTextStyles.h3),
+          Text(name, style: AppTextStyles.h3.copyWith(color: AppColors.accentPink)),
           const SizedBox(height: 8),
           Row(
             crossAxisAlignment: CrossAxisAlignment.baseline,
@@ -186,6 +190,7 @@ class _PricingCard extends StatelessWidget {
               ],
             ),
           )),
+          const Spacer(),
           const SizedBox(height: 32),
           if (isPopular)
             GradientButton(
