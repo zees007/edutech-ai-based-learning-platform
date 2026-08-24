@@ -74,15 +74,63 @@ class _LearningPageState extends State<LearningPage> {
   }
 
   Widget _buildMainContent() {
-    return Center(
-      child: Text(
-        'Main Learning Area\n(To be implemented)',
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          color: Colors.white.withValues(alpha: 0.3),
-          fontSize: 24,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 48.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Wrap(
+                alignment: WrapAlignment.center,
+                children: [
+                  Text(
+                    'EduTechAI ',
+                    style: GoogleFonts.inter(
+                      fontSize: 32,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                  GradientText(
+                    'Learning Workspace',
+                    style: GoogleFonts.inter(
+                      fontSize: 32,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'An adaptive, intelligent learning studio where specialized AI agents orchestrate personalized roadmaps, intuitive analogies, video deep-dives, and instant mastery checks.',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                  fontSize: 16,
+                  color: Colors.white.withValues(alpha: 0.7),
+                  height: 1.6,
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
+        const Expanded(
+          child: Center(
+            child: Text(
+              'Workspace Content\n(To be implemented)',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white24,
+                fontSize: 20,
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
