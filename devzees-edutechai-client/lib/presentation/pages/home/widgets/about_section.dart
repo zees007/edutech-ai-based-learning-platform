@@ -23,18 +23,34 @@ class AboutSection extends StatelessWidget {
         ),
         const SizedBox(height: 48),
         
-        // Metric Stats Row
-        Wrap(
-          spacing: 16,
-          runSpacing: 16,
-          alignment: WrapAlignment.center,
-          children: const [
-            _StatPill(number: '6', label: 'AI Agents'),
-            _StatPill(number: '5', label: 'Education Levels'),
-            _StatPill(number: '100%', label: 'Academic Integration'),
-            _StatPill(number: '10', label: 'Progression Levels'),
-          ],
-        ),
+        // Metric Stats Cards
+        if (isMobile)
+          GridView.count(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            crossAxisCount: 2,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+            childAspectRatio: 1.2,
+            children: const [
+              _StatCard(number: '6', label: 'AI Agents'),
+              _StatCard(number: '5', label: 'Education Levels'),
+              _StatCard(number: '100%', label: 'Academic Integration'),
+              _StatCard(number: '10', label: 'Progression Levels'),
+            ],
+          )
+        else
+          Row(
+            children: const [
+              Expanded(child: _StatCard(number: '6', label: 'AI Agents')),
+              SizedBox(width: 16),
+              Expanded(child: _StatCard(number: '5', label: 'Education Levels')),
+              SizedBox(width: 16),
+              Expanded(child: _StatCard(number: '100%', label: 'Academic Integration')),
+              SizedBox(width: 16),
+              Expanded(child: _StatCard(number: '10', label: 'Progression Levels')),
+            ],
+          ),
         const SizedBox(height: 48),
         
         // Unified Mission & Technology Card
@@ -86,27 +102,23 @@ class AboutSection extends StatelessWidget {
   }
 }
 
-class _StatPill extends StatelessWidget {
+class _StatCard extends StatelessWidget {
   final String number;
   final String label;
 
-  const _StatPill({required this.number, required this.label});
+  const _StatCard({required this.number, required this.label});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-      decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(30),
-        border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
-      ),
-      child: Row(
+    return GlassCard(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(number, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: AppColors.textPrimary)),
-          const SizedBox(width: 8),
           Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+          const SizedBox(height: 8),
+          Text(number, style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: AppColors.textPrimary)),
         ],
       ),
     );
