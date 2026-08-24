@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/gradient_text.dart';
 import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/gradient_button.dart';
+import 'package:devzees_edutechai_client/presentation/widgets/journey_prompt_card.dart';
 
 class LearningPage extends StatefulWidget {
   const LearningPage({super.key});
@@ -128,6 +129,52 @@ class _LearningPageState extends State<LearningPage> {
                 fontSize: 20,
               ),
             ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Wrap(
+                alignment: WrapAlignment.center,
+                children: [
+                  Text(
+                    'What do you want to ',
+                    style: GoogleFonts.inter(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                  GradientText(
+                    'learn today?',
+                    style: GoogleFonts.inter(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Decompose any concept into adaptive milestones, interactive Socratic lessons, and academic research.',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                  fontSize: 15,
+                  color: Colors.white.withValues(alpha: 0.7),
+                ),
+              ),
+              const SizedBox(height: 16),
+              JourneyPromptCard(
+                onStartJourney: () {
+                  // TODO: Handle start journey
+                },
+              ),
+            ],
           ),
         ),
       ],
