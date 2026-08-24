@@ -8,7 +8,7 @@ import 'package:devzees_edutechai_client/core/constants/responsive.dart';
 import 'package:go_router/go_router.dart';
 
 class PricingSection extends StatefulWidget {
-  const PricingSection({Key? key}) : super(key: key);
+  const PricingSection({super.key});
 
   @override
   State<PricingSection> createState() => _PricingSectionState();

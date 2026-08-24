@@ -6,14 +6,18 @@ import 'widgets/auth_intro_header.dart';
 import 'widgets/auth_form_card.dart';
 import 'package:devzees_edutechai_client/core/constants/responsive.dart';
 
-class AuthPage extends StatefulWidget {
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/providers/auth_provider.dart';
+import '../../widgets/glass_loader_overlay.dart';
+
+class AuthPage extends ConsumerStatefulWidget {
   const AuthPage({super.key});
 
   @override
-  State<AuthPage> createState() => _AuthPageState();
+  ConsumerState<AuthPage> createState() => _AuthPageState();
 }
 
-class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin {
+class _AuthPageState extends ConsumerState<AuthPage> with SingleTickerProviderStateMixin {
   bool _isLogin = true;
   bool _isFlowchartExpanded = false;
 
@@ -55,11 +59,15 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
   @override
   Widget build(BuildContext context) {
     final isMobile = Responsive.isMobile(context);
+    final authState = ref.watch(authProvider);
 
     return Scaffold(
       backgroundColor: const Color(0xFF0E0918),
-      body: Stack(
-        children: [
+      body: GlassLoaderOverlay(
+        isLoading: authState.isLoading,
+        title: authState.loadingMessage ?? 'Authenticating',
+        child: Stack(
+          children: [
           // Background Glow Orbs
           Positioned(
             top: -100,
@@ -110,6 +118,7 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
           ),
         ],
       ),
+    ),
     );
   }
   

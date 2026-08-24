@@ -1,7 +1,11 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
-class AuthFormCard extends StatelessWidget {
+import '../../../../core/providers/auth_provider.dart';
+
+class AuthFormCard extends ConsumerStatefulWidget {
   final bool isLogin;
   final bool isMobile;
   final VoidCallback onToggleMode;
@@ -14,6 +18,108 @@ class AuthFormCard extends StatelessWidget {
   });
 
   @override
+  ConsumerState<AuthFormCard> createState() => _AuthFormCardState();
+}
+
+class _AuthFormCardState extends ConsumerState<AuthFormCard> {
+  final _emailCtrl = TextEditingController();
+  final _passwordCtrl = TextEditingController();
+  
+  final _firstNameCtrl = TextEditingController();
+  final _lastNameCtrl = TextEditingController();
+  final _mobileCtrl = TextEditingController();
+  final _countryCtrl = TextEditingController();
+
+  @override
+  void dispose() {
+    _emailCtrl.dispose();
+    _passwordCtrl.dispose();
+    _firstNameCtrl.dispose();
+    _lastNameCtrl.dispose();
+    _mobileCtrl.dispose();
+    _countryCtrl.dispose();
+    super.dispose();
+  }
+
+  void _handleLogin() async {
+    final email = _emailCtrl.text.trim();
+    final password = _passwordCtrl.text;
+    
+    if (email.isEmpty || password.isEmpty) {
+      _showSnackBar('Please enter email and password');
+      return;
+    }
+
+    final success = await ref.read(authProvider.notifier).login(email, password);
+    if (success) {
+      if (mounted) {
+        context.go('/learning');
+      }
+    } else {
+      if (mounted) {
+        final error = ref.read(authProvider).error;
+        _showSnackBar(error ?? 'Login failed');
+      }
+    }
+  }
+
+  void _handleSignUp() async {
+    final firstName = _firstNameCtrl.text.trim();
+    final lastName = _lastNameCtrl.text.trim();
+    final email = _emailCtrl.text.trim();
+    final password = _passwordCtrl.text;
+    final mobileNumber = _mobileCtrl.text.trim();
+    final country = _countryCtrl.text.trim();
+
+    if (firstName.isEmpty || lastName.isEmpty || email.isEmpty || password.isEmpty) {
+      _showSnackBar('Please fill all required fields');
+      return;
+    }
+
+    final success = await ref.read(authProvider.notifier).createUser(
+      firstName: firstName,
+      lastName: lastName,
+      email: email,
+      password: password,
+      mobileNumber: mobileNumber.isNotEmpty ? mobileNumber : null,
+      country: country.isNotEmpty ? country : null,
+    );
+
+    if (success) {
+      if (mounted) {
+        _showSnackBar('Account created successfully! Please login.');
+        widget.onToggleMode(); // Switch to login
+      }
+    } else {
+      if (mounted) {
+        final error = ref.read(authProvider).error;
+        _showSnackBar(error ?? 'Registration failed');
+      }
+    }
+  }
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: const TextStyle(
+            color: Color(0xFFF8FAFC),
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        backgroundColor: const Color(0xFF1E1B4B),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+          side: BorderSide(color: const Color(0xFFA855F7).withValues(alpha: 0.5)),
+        ),
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     return _buildGlassCard(
       child: Column(
@@ -22,12 +128,12 @@ class AuthFormCard extends StatelessWidget {
         children: [
           AnimatedSwitcher(
             duration: const Duration(milliseconds: 300),
-            child: isLogin ? _buildSignInHeader(isMobile) : _buildSignUpHeader(isMobile),
+            child: widget.isLogin ? _buildSignInHeader(widget.isMobile) : _buildSignUpHeader(widget.isMobile),
           ),
           const SizedBox(height: 32),
           AnimatedSwitcher(
             duration: const Duration(milliseconds: 300),
-            child: isLogin ? _buildSignInForm() : _buildSignUpForm(isMobile),
+            child: widget.isLogin ? _buildSignInForm() : _buildSignUpForm(widget.isMobile),
           ),
         ],
       ),
@@ -234,15 +340,15 @@ class AuthFormCard extends StatelessWidget {
       key: const ValueKey('signin_form'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _buildTextField("Email Address", "student@example.com", false),
+        _buildTextField("Email Address", "student@example.com", false, _emailCtrl),
         const SizedBox(height: 20),
-        _buildTextField("Password", "        ", true),
+        _buildTextField("Password", "        ", true, _passwordCtrl),
         const SizedBox(height: 32),
-        _buildGradientButton("Sign In & Launch Agents 🚀"),
+        _buildGradientButton("Sign In & Launch Agents 🚀", _handleLogin),
         const SizedBox(height: 24),
         Center(
           child: TextButton(
-            onPressed: onToggleMode,
+            onPressed: widget.onToggleMode,
             child: Text(
               "Don't have an account? Create one",
               style: TextStyle(
@@ -262,42 +368,42 @@ class AuthFormCard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (isMobile) ...[
-          _buildTextField("First Name *", "Jane", false),
+          _buildTextField("First Name *", "Jane", false, _firstNameCtrl),
           const SizedBox(height: 20),
-          _buildTextField("Last Name *", "Doe", false),
+          _buildTextField("Last Name *", "Doe", false, _lastNameCtrl),
         ] else ...[
           Row(
             children: [
-              Expanded(child: _buildTextField("First Name *", "Jane", false)),
+              Expanded(child: _buildTextField("First Name *", "Jane", false, _firstNameCtrl)),
               const SizedBox(width: 20),
-              Expanded(child: _buildTextField("Last Name *", "Doe", false)),
+              Expanded(child: _buildTextField("Last Name *", "Doe", false, _lastNameCtrl)),
             ],
           ),
         ],
         const SizedBox(height: 20),
-        _buildTextField("Email Address *", "jane.doe@example.com", false),
+        _buildTextField("Email Address *", "jane.doe@example.com", false, _emailCtrl),
         const SizedBox(height: 20),
-        _buildTextField("Password * (min 6 characters)", "        ", true),
+        _buildTextField("Password * (min 6 characters)", "        ", true, _passwordCtrl),
         const SizedBox(height: 20),
         if (isMobile) ...[
-          _buildTextField("Mobile Number", "+1 555-0199", false),
+          _buildTextField("Mobile Number", "+1 555-0199", false, _mobileCtrl),
           const SizedBox(height: 20),
-          _buildTextField("Country", "United States", false),
+          _buildTextField("Country", "United States", false, _countryCtrl),
         ] else ...[
           Row(
             children: [
-              Expanded(child: _buildTextField("Mobile Number", "+1 555-0199", false)),
+              Expanded(child: _buildTextField("Mobile Number", "+1 555-0199", false, _mobileCtrl)),
               const SizedBox(width: 20),
-              Expanded(child: _buildTextField("Country", "United States", false)),
+              Expanded(child: _buildTextField("Country", "United States", false, _countryCtrl)),
             ],
           ),
         ],
         const SizedBox(height: 32),
-        _buildGradientButton("Create Account & Spawn Agent Squad 🚀"),
+        _buildGradientButton("Create Account & Spawn Agent Squad 🚀", _handleSignUp),
         const SizedBox(height: 24),
         Center(
           child: TextButton(
-            onPressed: onToggleMode,
+            onPressed: widget.onToggleMode,
             child: Text(
               "Already have an account? Sign In",
               style: TextStyle(
@@ -311,7 +417,7 @@ class AuthFormCard extends StatelessWidget {
     );
   }
 
-  Widget _buildTextField(String label, String hint, bool isObscure) {
+  Widget _buildTextField(String label, String hint, bool isObscure, TextEditingController controller) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -326,6 +432,7 @@ class AuthFormCard extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         TextFormField(
+          controller: controller,
           obscureText: isObscure,
           style: const TextStyle(
             color: Color(0xFFFAFAFA),
@@ -367,7 +474,7 @@ class AuthFormCard extends StatelessWidget {
     );
   }
 
-  Widget _buildGradientButton(String text) {
+  Widget _buildGradientButton(String text, VoidCallback onTap) {
     return Container(
       height: 52,
       decoration: BoxDecoration(
@@ -394,9 +501,7 @@ class AuthFormCard extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(14),
-          onTap: () {
-            // Future: Implement Auth Logic here
-          },
+          onTap: onTap,
           child: Center(
             child: Text(
               text,

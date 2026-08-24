@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
 
 class N8nCanvas extends StatefulWidget {
-  const N8nCanvas({Key? key}) : super(key: key);
+  const N8nCanvas({super.key});
 
   @override
   State<N8nCanvas> createState() => _N8nCanvasState();
@@ -427,7 +427,7 @@ class _N8nCanvasState extends State<N8nCanvas> with SingleTickerProviderStateMix
 }
 
 class _Wire extends StatelessWidget {
-  const _Wire({Key? key}) : super(key: key);
+  const _Wire();
 
   @override
   Widget build(BuildContext context) {

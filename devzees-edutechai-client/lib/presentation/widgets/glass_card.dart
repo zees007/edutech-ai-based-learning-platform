@@ -11,7 +11,7 @@ class GlassCard extends StatefulWidget {
   final double? height;
 
   const GlassCard({
-    Key? key,
+    super.key,
     required this.child,
     this.borderRadius = 24.0, // Matches Streamlit CSS border-radius
     this.padding = const EdgeInsets.all(24.0),
@@ -19,7 +19,7 @@ class GlassCard extends StatefulWidget {
     this.isGlowing = false,
     this.width,
     this.height,
-  }) : super(key: key);
+  });
 
   @override
   State<GlassCard> createState() => _GlassCardState();

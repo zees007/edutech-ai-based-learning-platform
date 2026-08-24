@@ -11,14 +11,14 @@ class GradientButton extends StatefulWidget {
   final double height;
 
   const GradientButton({
-    Key? key,
+    super.key,
     required this.text,
     required this.onPressed,
     this.isLoading = false,
     this.icon,
     this.width,
     this.height = 48.0,
-  }) : super(key: key);
+  });
 
   @override
   State<GradientButton> createState() => _GradientButtonState();

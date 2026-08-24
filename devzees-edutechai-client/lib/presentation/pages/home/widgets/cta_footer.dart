@@ -8,7 +8,7 @@ import 'package:devzees_edutechai_client/core/constants/responsive.dart';
 import 'package:go_router/go_router.dart';
 
 class CtaFooter extends StatelessWidget {
-  const CtaFooter({Key? key}) : super(key: key);
+  const CtaFooter({super.key});
 
   @override
   Widget build(BuildContext context) {

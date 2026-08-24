@@ -6,10 +6,10 @@ class AuthCanvas extends StatefulWidget {
   final ValueChanged<bool> onAuthModeChanged;
 
   const AuthCanvas({
-    Key? key,
+    super.key,
     required this.isLogin,
     required this.onAuthModeChanged,
-  }) : super(key: key);
+  });
 
   @override
   State<AuthCanvas> createState() => _AuthCanvasState();

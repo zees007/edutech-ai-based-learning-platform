@@ -10,7 +10,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 class HomeNavbar extends StatelessWidget {
   final Function(String)? onNavTap;
-  const HomeNavbar({Key? key, this.onNavTap}) : super(key: key);
+  const HomeNavbar({super.key, this.onNavTap});
 
   @override
   Widget build(BuildContext context) {
@@ -174,7 +174,7 @@ class _NavPillState extends State<_NavPill> {
 
 class _MobileMenuButton extends StatefulWidget {
   final Function(String)? onNavTap;
-  const _MobileMenuButton({Key? key, this.onNavTap}) : super(key: key);
+  const _MobileMenuButton({this.onNavTap});
 
   @override
   State<_MobileMenuButton> createState() => _MobileMenuButtonState();
@@ -261,7 +261,7 @@ class _MobileMenuItem extends StatefulWidget {
   final String title;
   final VoidCallback onTap;
 
-  const _MobileMenuItem({Key? key, required this.title, required this.onTap}) : super(key: key);
+  const _MobileMenuItem({required this.title, required this.onTap});
 
   @override
   State<_MobileMenuItem> createState() => _MobileMenuItemState();

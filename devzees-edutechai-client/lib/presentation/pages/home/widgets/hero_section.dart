@@ -6,7 +6,7 @@ import 'package:devzees_edutechai_client/core/constants/responsive.dart';
 import 'package:go_router/go_router.dart';
 
 class HeroSection extends StatelessWidget {
-  const HeroSection({Key? key}) : super(key: key);
+  const HeroSection({super.key});
 
   @override
   Widget build(BuildContext context) {
