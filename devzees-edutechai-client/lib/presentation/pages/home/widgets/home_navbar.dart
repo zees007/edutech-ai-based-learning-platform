@@ -4,12 +4,13 @@ import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/gradient_button.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/gradient_text.dart';
 import 'package:devzees_edutechai_client/core/constants/responsive.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:google_fonts/google_fonts.dart';
 
 class HomeNavbar extends StatelessWidget {
   final Function(String)? onNavTap;
-  const HomeNavbar({Key? key, this.onNavTap}) : super(key: key);
+  const HomeNavbar({super.key, this.onNavTap});
 
   @override
   Widget build(BuildContext context) {
@@ -89,7 +90,9 @@ class HomeNavbar extends StatelessWidget {
             children: [
               if (!Responsive.isMobile(context)) ...[
                 TextButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    context.go('/auth');
+                  },
                   style: TextButton.styleFrom(
                     minimumSize: const Size(0, 36),
                     padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -102,7 +105,9 @@ class HomeNavbar extends StatelessWidget {
               GradientButton(
                 text: 'Get Started',
                 height: 36,
-                onPressed: () {},
+                onPressed: () {
+                  context.go('/auth');
+                },
               ),
               if (Responsive.isMobile(context)) ...[
                 const SizedBox(width: 4),
@@ -169,7 +174,7 @@ class _NavPillState extends State<_NavPill> {
 
 class _MobileMenuButton extends StatefulWidget {
   final Function(String)? onNavTap;
-  const _MobileMenuButton({Key? key, this.onNavTap}) : super(key: key);
+  const _MobileMenuButton({this.onNavTap});
 
   @override
   State<_MobileMenuButton> createState() => _MobileMenuButtonState();
@@ -256,7 +261,7 @@ class _MobileMenuItem extends StatefulWidget {
   final String title;
   final VoidCallback onTap;
 
-  const _MobileMenuItem({Key? key, required this.title, required this.onTap}) : super(key: key);
+  const _MobileMenuItem({required this.title, required this.onTap});
 
   @override
   State<_MobileMenuItem> createState() => _MobileMenuItemState();

@@ -3,9 +3,10 @@ import 'package:devzees_edutechai_client/core/theme/text_styles.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/gradient_button.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/gradient_text.dart';
 import 'package:devzees_edutechai_client/core/constants/responsive.dart';
+import 'package:go_router/go_router.dart';
 
 class HeroSection extends StatelessWidget {
-  const HeroSection({Key? key}) : super(key: key);
+  const HeroSection({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +43,9 @@ class HeroSection extends StatelessWidget {
         GradientButton(
           text: 'Start Learning for Free →',
           width: isMobile ? 260 : 280,
-          onPressed: () {},
+          onPressed: () {
+            context.go('/auth');
+          },
         ),
       ],
     );

@@ -3,7 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:devzees_edutechai_client/core/theme/app_theme.dart';
 import 'package:devzees_edutechai_client/core/router/app_router.dart';
 
-void main() {
+import 'package:devzees_edutechai_client/core/services/api_client.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await ApiClient.instance.initCookieJar();
+
   runApp(
     const ProviderScope(
       child: MyApp(),

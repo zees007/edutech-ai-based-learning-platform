@@ -6,7 +6,7 @@ import 'package:devzees_edutechai_client/presentation/widgets/gradient_text.dart
 import 'package:devzees_edutechai_client/core/constants/responsive.dart';
 
 class AgentsSection extends StatelessWidget {
-  const AgentsSection({Key? key}) : super(key: key);
+  const AgentsSection({super.key});
 
   @override
   Widget build(BuildContext context) {
