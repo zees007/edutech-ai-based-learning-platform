@@ -5,6 +5,7 @@ import 'package:devzees_edutechai_client/presentation/widgets/glass_card.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/gradient_button.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/gradient_text.dart';
 import 'package:devzees_edutechai_client/core/constants/responsive.dart';
+import 'package:go_router/go_router.dart';
 
 class PricingSection extends StatefulWidget {
   const PricingSection({Key? key}) : super(key: key);
@@ -196,14 +197,18 @@ class _PricingCard extends StatelessWidget {
             GradientButton(
               text: buttonText,
               width: double.infinity,
-              onPressed: () {},
+              onPressed: () {
+                context.go('/auth');
+              },
             )
           else
             SizedBox(
               width: double.infinity,
               height: 48,
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                  context.go('/auth');
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.glassBase,
                   side: const BorderSide(color: AppColors.glassBorder),

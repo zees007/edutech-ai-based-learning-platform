@@ -4,6 +4,7 @@ import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/gradient_button.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/gradient_text.dart';
 import 'package:devzees_edutechai_client/core/constants/responsive.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:google_fonts/google_fonts.dart';
 
@@ -89,7 +90,9 @@ class HomeNavbar extends StatelessWidget {
             children: [
               if (!Responsive.isMobile(context)) ...[
                 TextButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    context.go('/auth');
+                  },
                   style: TextButton.styleFrom(
                     minimumSize: const Size(0, 36),
                     padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -102,7 +105,9 @@ class HomeNavbar extends StatelessWidget {
               GradientButton(
                 text: 'Get Started',
                 height: 36,
-                onPressed: () {},
+                onPressed: () {
+                  context.go('/auth');
+                },
               ),
               if (Responsive.isMobile(context)) ...[
                 const SizedBox(width: 4),

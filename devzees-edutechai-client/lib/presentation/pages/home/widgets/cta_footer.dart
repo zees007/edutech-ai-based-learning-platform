@@ -5,6 +5,7 @@ import 'package:devzees_edutechai_client/presentation/widgets/glass_card.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/gradient_button.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/gradient_text.dart';
 import 'package:devzees_edutechai_client/core/constants/responsive.dart';
+import 'package:go_router/go_router.dart';
 
 class CtaFooter extends StatelessWidget {
   const CtaFooter({Key? key}) : super(key: key);
@@ -35,7 +36,9 @@ class CtaFooter extends StatelessWidget {
               GradientButton(
                 text: 'Get Started Free →',
                 width: isMobile ? 260 : 300,
-                onPressed: () {},
+                onPressed: () {
+                  context.go('/auth');
+                },
               ),
             ],
           ),
