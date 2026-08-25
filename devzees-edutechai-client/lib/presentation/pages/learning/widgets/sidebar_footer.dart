@@ -1,7 +1,10 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../core/providers/auth_provider.dart';
 
-class SidebarFooter extends StatefulWidget {
+class SidebarFooter extends ConsumerStatefulWidget {
   final bool expanded;
 
   const SidebarFooter({
@@ -10,10 +13,10 @@ class SidebarFooter extends StatefulWidget {
   });
 
   @override
-  State<SidebarFooter> createState() => _SidebarFooterState();
+  ConsumerState<SidebarFooter> createState() => _SidebarFooterState();
 }
 
-class _SidebarFooterState extends State<SidebarFooter> {
+class _SidebarFooterState extends ConsumerState<SidebarFooter> {
   final GlobalKey _settingsIconKey = GlobalKey();
 
   void _showSettingsPopover(BuildContext context) {
@@ -62,7 +65,18 @@ class _SidebarFooterState extends State<SidebarFooter> {
                     _buildMenuItem(context, 'Billing & Plan', Icons.credit_card, Colors.white70),
                     _buildMenuItem(context, 'Admin Console', Icons.admin_panel_settings, Colors.white70),
                     const Divider(color: Colors.white12, height: 16),
-                    _buildMenuItem(context, 'Sign Out', Icons.logout, Colors.redAccent.withValues(alpha: 0.8)),
+                    _buildMenuItem(
+                      context, 
+                      'Sign Out', 
+                      Icons.logout, 
+                      Colors.redAccent.withValues(alpha: 0.8),
+                      onTap: () async {
+                        await ref.read(authProvider.notifier).logout();
+                        if (context.mounted) {
+                          context.go('/auth');
+                        }
+                      },
+                    ),
                   ],
                 ),
               ),
@@ -146,7 +160,7 @@ class _SidebarFooterState extends State<SidebarFooter> {
     );
   }
 
-  Widget _buildMenuItem(BuildContext context, String label, IconData icon, Color color) {
+  Widget _buildMenuItem(BuildContext context, String label, IconData icon, Color color, {VoidCallback? onTap}) {
     bool isHovered = false;
 
     return StatefulBuilder(
@@ -157,6 +171,7 @@ class _SidebarFooterState extends State<SidebarFooter> {
           child: InkWell(
             onTap: () {
               Navigator.of(context).pop();
+              if (onTap != null) onTap();
             },
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
