@@ -114,13 +114,16 @@ class _LearningPageState extends State<LearningPage> {
                         ],
                       ),
                       const SizedBox(height: 16),
-                      Text(
-                        'An adaptive, intelligent learning studio where specialized AI agents orchestrate personalized roadmaps, intuitive analogies, video deep-dives, and instant mastery checks.',
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.inter(
-                          fontSize: isMobile ? 14 : 16,
-                          color: Colors.white.withValues(alpha: 0.7),
-                          height: 1.6,
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 660),
+                        child: Text(
+                          'An adaptive, intelligent learning studio where specialized AI agents orchestrate personalized roadmaps, intuitive analogies, video deep-dives, and instant mastery checks.',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.inter(
+                            fontSize: isMobile ? 14 : 16,
+                            color: Colors.white.withValues(alpha: 0.7),
+                            height: 1.6,
+                          ),
                         ),
                       ),
                     ],

@@ -236,24 +236,38 @@ class _JourneyPromptCardState extends State<JourneyPromptCard> {
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
           ),
-          child: DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
-              value: value,
-              isExpanded: true,
-              dropdownColor: const Color(0xFF1B1728), // Darker dropdown bg
-              icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white70),
-              style: GoogleFonts.inter(
-                color: Colors.white,
-                fontSize: 14,
-              ),
-              items: items.map((String item) {
-                return DropdownMenuItem<String>(
-                  value: item,
-                  child: Text(item),
-                );
-              }).toList(),
-              onChanged: onChanged,
-            ),
+          child: Builder(
+            builder: (context) {
+              return Theme(
+                data: Theme.of(context).copyWith(
+                  hoverColor: AppColors.primary.withValues(alpha: 0.15),
+                  focusColor: AppColors.primary.withValues(alpha: 0.2),
+                  splashColor: AppColors.primary.withValues(alpha: 0.1),
+                  highlightColor: AppColors.primary.withValues(alpha: 0.1),
+                ),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    value: value,
+                    isExpanded: true,
+                    borderRadius: BorderRadius.circular(16),
+                    dropdownColor: AppColors.secondaryBackground,
+                    icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white70),
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    items: items.map((String item) {
+                      return DropdownMenuItem<String>(
+                        value: item,
+                        child: Text(item),
+                      );
+                    }).toList(),
+                    onChanged: onChanged,
+                  ),
+                ),
+              );
+            }
           ),
         ),
       ],
