@@ -110,13 +110,10 @@ class _LearningHistoryItemState extends ConsumerState<LearningHistoryItem> {
               color: Colors.white.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Text(
-              '#${widget.index + 1}',
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.7),
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-              ),
+            child: Icon(
+              Icons.history,
+              color: Colors.white.withValues(alpha: 0.7),
+              size: 18,
             ),
           ),
         ),

@@ -55,13 +55,35 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
             ],
           ],
           // History List
-          if (widget.expanded && !_isHistoryExpanded)
-            const Spacer()
+          if (widget.expanded)
+            if (!_isHistoryExpanded)
+              const Spacer()
+            else
+              Expanded(
+                child: LearningHistoryList(
+                  scrollController: widget.scrollController,
+                  expanded: widget.expanded,
+                ),
+              )
           else
             Expanded(
-              child: LearningHistoryList(
-                scrollController: widget.scrollController,
-                expanded: widget.expanded,
+              child: Column(
+                children: [
+                  InkWell(
+                    onTap: widget.onToggle,
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.05),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(Icons.history, color: Colors.white.withValues(alpha: 0.7)),
+                    ),
+                  ),
+                  const Spacer(),
+                ],
               ),
             ),
           SidebarFooter(expanded: widget.expanded),

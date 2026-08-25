@@ -220,17 +220,18 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
             ? MainAxisAlignment.start
             : MainAxisAlignment.center,
         children: [
-          CircleAvatar(
-            radius: 18,
-            backgroundColor: const Color(0xFFA855F7).withValues(alpha: 0.2),
-            child: const Text(
-              'Z',
-              style: TextStyle(
-                color: Color(0xFFA855F7),
-                fontWeight: FontWeight.bold,
+          if (widget.expanded)
+            CircleAvatar(
+              radius: 18,
+              backgroundColor: const Color(0xFFA855F7).withValues(alpha: 0.2),
+              child: const Text(
+                'Z',
+                style: TextStyle(
+                  color: Color(0xFFA855F7),
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
-          ),
           if (widget.expanded) ...[
             const SizedBox(width: 12),
             const Expanded(
@@ -255,14 +256,14 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
                 ],
               ),
             ),
-            Container(
-              key: _settingsIconKey,
-              child: IconButton(
-                icon: const Icon(Icons.settings, color: Colors.white54, size: 20),
-                onPressed: () => _showSettingsPopover(context),
-              ),
-            ),
           ],
+          Container(
+            key: _settingsIconKey,
+            child: IconButton(
+              icon: const Icon(Icons.settings, color: Colors.white54, size: 20),
+              onPressed: () => _showSettingsPopover(context),
+            ),
+          ),
         ],
       ),
     );
