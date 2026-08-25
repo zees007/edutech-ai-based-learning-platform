@@ -1,18 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../presentation/widgets/gradient_text.dart';
 import '../../../../presentation/widgets/journey_prompt_card.dart';
+import '../../../../core/providers/learning_provider.dart';
+import 'recent_journey_card.dart';
+import '../../../../core/theme/app_colors.dart';
 
-class LearningMainContent extends StatelessWidget {
+class LearningMainContent extends ConsumerWidget {
   final bool isMobile;
 
-  const LearningMainContent({
-    super.key,
-    required this.isMobile,
-  });
+  const LearningMainContent({super.key, required this.isMobile});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final sessionsState = ref.watch(sessionsProvider);
+    // Get top 3 incomplete sessions (or just top 3 if all are complete)
+    final recentSessions = sessionsState.items
+        .where((s) => !s.isComplete)
+        .take(3)
+        .toList();
+
+    // If no incomplete sessions, just take top 3
+    final displaySessions =
+        recentSessions.isEmpty && sessionsState.items.isNotEmpty
+        ? sessionsState.items.take(3).toList()
+        : recentSessions;
+
     return Column(
       children: [
         Expanded(
@@ -67,19 +81,87 @@ class LearningMainContent extends StatelessWidget {
                     ],
                   ),
                 ),
-                Padding(
-                  padding: EdgeInsets.symmetric(vertical: isMobile ? 24.0 : 48.0),
-                  child: const Center(
-                    child: Text(
-                      'Workspace Content\n(To be implemented)',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.white24,
-                        fontSize: 20,
+
+                if (displaySessions.isNotEmpty)
+                  Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isMobile ? 16.0 : 32.0,
+                      vertical: isMobile ? 16.0 : 24.0,
+                    ),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 900),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Text('⚡ ', style: TextStyle(fontSize: 24)),
+                              Text(
+                                'Continue Your Recent Active Journeys',
+                                style: GoogleFonts.inter(
+                                  fontSize: isMobile ? 18 : 22,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 24),
+                          if (isMobile)
+                            Column(
+                              children: displaySessions
+                                  .map(
+                                    (session) => Padding(
+                                      padding: const EdgeInsets.only(
+                                        bottom: 16.0,
+                                      ),
+                                      child: RecentJourneyCard(
+                                        session: session,
+                                        isMobile: isMobile,
+                                        onContinue: () {
+                                          // TODO: Navigate to session
+                                        },
+                                      ),
+                                    ),
+                                  )
+                                  .toList(),
+                            )
+                          else
+                            Wrap(
+                              alignment: WrapAlignment.center,
+                              spacing: 16.0,
+                              runSpacing: 16.0,
+                              children: displaySessions
+                                  .map(
+                                    (session) => SizedBox(
+                                      width: 280,
+                                      child: RecentJourneyCard(
+                                        session: session,
+                                        isMobile: isMobile,
+                                        onContinue: () {
+                                          // TODO: Navigate to session
+                                        },
+                                      ),
+                                    ),
+                                  )
+                                  .toList(),
+                            ),
+                        ],
                       ),
                     ),
                   ),
-                ),
+
+                if (displaySessions.isEmpty && sessionsState.isLoading)
+                  Padding(
+                    padding: const EdgeInsets.all(48.0),
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),
