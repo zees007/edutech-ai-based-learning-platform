@@ -7,6 +7,7 @@ class GradientButton extends StatefulWidget {
   final VoidCallback onPressed;
   final bool isLoading;
   final IconData? icon;
+  final bool iconFirst;
   final double? width;
   final double height;
 
@@ -16,6 +17,7 @@ class GradientButton extends StatefulWidget {
     required this.onPressed,
     this.isLoading = false,
     this.icon,
+    this.iconFirst = false,
     this.width,
     this.height = 48.0,
   });
@@ -76,18 +78,38 @@ class _GradientButtonState extends State<GradientButton> {
                       : Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
+                            if (widget.icon != null && widget.iconFirst) ...[
+                              Icon(
+                                widget.icon,
+                                color: Colors.white,
+                                size: 16,
+                                shadows: [
+                                  Shadow(
+                                    color: Colors.white.withValues(alpha: 0.5),
+                                    blurRadius: 8,
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(width: 8),
+                            ],
                             Text(
                               widget.text,
                               style: AppTextStyles.button.copyWith(
                                 color: Colors.white,
                               ),
                             ),
-                            if (widget.icon != null) ...[
+                            if (widget.icon != null && !widget.iconFirst) ...[
                               const SizedBox(width: 8),
                               Icon(
                                 widget.icon,
                                 color: Colors.white,
                                 size: 16,
+                                shadows: [
+                                  Shadow(
+                                    color: Colors.white.withValues(alpha: 0.5),
+                                    blurRadius: 8,
+                                  ),
+                                ],
                               ),
                             ],
                           ],

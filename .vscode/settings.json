@@ -1,7 +1,7 @@
 {
-  "python.defaultInterpreterPath": "${workspaceFolder}\\devzees-edutechai-server\\.venv\\Scripts\\python.exe",
+  "python.defaultInterpreterPath": "devzees-edutechai-server/.venv/Scripts/python.exe",
   "python.analysis.extraPaths": [
-    "${workspaceFolder}\\devzees-edutechai-server"
+    "devzees-edutechai-server"
   ],
   "java.compile.nullAnalysis.mode": "automatic"
 }
