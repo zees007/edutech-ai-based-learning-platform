@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 class ApiConstants {
   // Use 10.0.2.2 for Android emulator, 127.0.0.1 for iOS simulator/desktop/web
   static String get baseUrl {
-    if (kIsWeb) return 'http://127.0.0.1:8000/api/v1';
+    if (kIsWeb) return 'http://localhost:8000/api/v1';
     if (Platform.isAndroid) return 'http://10.0.2.2:8000/api/v1';
     return 'http://127.0.0.1:8000/api/v1';
   }
