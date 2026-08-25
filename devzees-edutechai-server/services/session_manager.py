@@ -247,9 +247,9 @@ class SessionManager:
                 completed_count = 0
                 xp = 0
                 if r.state_json:
-                    steps = r.state_json.get("steps", [])
-                    completed_count = sum(1 for s in steps if s.get("status") == "complete")
                     xp = r.state_json.get("xp_earned", 0)
+
+                completed_count = r.current_step_index
 
                 items.append(
                     {

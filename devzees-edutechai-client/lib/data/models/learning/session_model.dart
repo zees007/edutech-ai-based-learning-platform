@@ -12,6 +12,7 @@ abstract class SessionModel with _$SessionModel {
     @JsonKey(name: 'student_level') required String studentLevel,
     @JsonKey(name: 'is_complete') required bool isComplete,
     @JsonKey(name: 'completed_steps') required int stepsCompleted,
+    @JsonKey(name: 'total_steps') int? totalSteps,
     @JsonKey(name: 'xp_earned') required int xpEarned,
     @JsonKey(name: 'created_at') required DateTime createdAt,
     @JsonKey(name: 'updated_at') DateTime? updatedAt,

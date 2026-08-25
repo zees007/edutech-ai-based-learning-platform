@@ -14,6 +14,7 @@ _SessionModel _$SessionModelFromJson(Map<String, dynamic> json) =>
       studentLevel: json['student_level'] as String,
       isComplete: json['is_complete'] as bool,
       stepsCompleted: (json['completed_steps'] as num).toInt(),
+      totalSteps: (json['total_steps'] as num?)?.toInt(),
       xpEarned: (json['xp_earned'] as num).toInt(),
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: json['updated_at'] == null
@@ -29,6 +30,7 @@ Map<String, dynamic> _$SessionModelToJson(_SessionModel instance) =>
       'student_level': instance.studentLevel,
       'is_complete': instance.isComplete,
       'completed_steps': instance.stepsCompleted,
+      'total_steps': instance.totalSteps,
       'xp_earned': instance.xpEarned,
       'created_at': instance.createdAt.toIso8601String(),
       'updated_at': instance.updatedAt?.toIso8601String(),

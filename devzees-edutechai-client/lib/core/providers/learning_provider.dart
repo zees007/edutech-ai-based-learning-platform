@@ -131,6 +131,21 @@ class SessionsNotifier extends Notifier<SessionsState> {
       loadInitial();
     }
   }
+
+  Future<void> deleteSession(String sessionId) async {
+    try {
+      await _service.deleteSession(sessionId);
+      // Remove from list locally to avoid refetching
+      final updatedItems = state.items.where((s) => s.sessionId != sessionId).toList();
+      state = state.copyWith(
+        items: updatedItems,
+        total: state.total > 0 ? state.total - 1 : 0,
+      );
+    } catch (e) {
+      // Could show error in UI or snackbar, here we just ignore or log
+      print("Failed to delete session: $e");
+    }
+  }
 }
 
 final sessionsProvider = NotifierProvider<SessionsNotifier, SessionsState>(() {

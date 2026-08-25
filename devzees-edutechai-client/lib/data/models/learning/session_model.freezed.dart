@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$SessionModel {
 
-@JsonKey(name: 'session_id') String get sessionId; String get topic;@JsonKey(name: 'learning_mode') String get learningMode;@JsonKey(name: 'student_level') String get studentLevel;@JsonKey(name: 'is_complete') bool get isComplete;@JsonKey(name: 'completed_steps') int get stepsCompleted;@JsonKey(name: 'xp_earned') int get xpEarned;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'updated_at') DateTime? get updatedAt;
+@JsonKey(name: 'session_id') String get sessionId; String get topic;@JsonKey(name: 'learning_mode') String get learningMode;@JsonKey(name: 'student_level') String get studentLevel;@JsonKey(name: 'is_complete') bool get isComplete;@JsonKey(name: 'completed_steps') int get stepsCompleted;@JsonKey(name: 'total_steps') int? get totalSteps;@JsonKey(name: 'xp_earned') int get xpEarned;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'updated_at') DateTime? get updatedAt;
 /// Create a copy of SessionModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $SessionModelCopyWith<SessionModel> get copyWith => _$SessionModelCopyWithImpl<S
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SessionModel&&(identical(other.sessionId, sessionId) || other.sessionId == sessionId)&&(identical(other.topic, topic) || other.topic == topic)&&(identical(other.learningMode, learningMode) || other.learningMode == learningMode)&&(identical(other.studentLevel, studentLevel) || other.studentLevel == studentLevel)&&(identical(other.isComplete, isComplete) || other.isComplete == isComplete)&&(identical(other.stepsCompleted, stepsCompleted) || other.stepsCompleted == stepsCompleted)&&(identical(other.xpEarned, xpEarned) || other.xpEarned == xpEarned)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SessionModel&&(identical(other.sessionId, sessionId) || other.sessionId == sessionId)&&(identical(other.topic, topic) || other.topic == topic)&&(identical(other.learningMode, learningMode) || other.learningMode == learningMode)&&(identical(other.studentLevel, studentLevel) || other.studentLevel == studentLevel)&&(identical(other.isComplete, isComplete) || other.isComplete == isComplete)&&(identical(other.stepsCompleted, stepsCompleted) || other.stepsCompleted == stepsCompleted)&&(identical(other.totalSteps, totalSteps) || other.totalSteps == totalSteps)&&(identical(other.xpEarned, xpEarned) || other.xpEarned == xpEarned)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,sessionId,topic,learningMode,studentLevel,isComplete,stepsCompleted,xpEarned,createdAt,updatedAt);
+int get hashCode => Object.hash(runtimeType,sessionId,topic,learningMode,studentLevel,isComplete,stepsCompleted,totalSteps,xpEarned,createdAt,updatedAt);
 
 @override
 String toString() {
-  return 'SessionModel(sessionId: $sessionId, topic: $topic, learningMode: $learningMode, studentLevel: $studentLevel, isComplete: $isComplete, stepsCompleted: $stepsCompleted, xpEarned: $xpEarned, createdAt: $createdAt, updatedAt: $updatedAt)';
+  return 'SessionModel(sessionId: $sessionId, topic: $topic, learningMode: $learningMode, studentLevel: $studentLevel, isComplete: $isComplete, stepsCompleted: $stepsCompleted, totalSteps: $totalSteps, xpEarned: $xpEarned, createdAt: $createdAt, updatedAt: $updatedAt)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $SessionModelCopyWith<$Res>  {
   factory $SessionModelCopyWith(SessionModel value, $Res Function(SessionModel) _then) = _$SessionModelCopyWithImpl;
 @useResult
 $Res call({
-@JsonKey(name: 'session_id') String sessionId, String topic,@JsonKey(name: 'learning_mode') String learningMode,@JsonKey(name: 'student_level') String studentLevel,@JsonKey(name: 'is_complete') bool isComplete,@JsonKey(name: 'completed_steps') int stepsCompleted,@JsonKey(name: 'xp_earned') int xpEarned,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime? updatedAt
+@JsonKey(name: 'session_id') String sessionId, String topic,@JsonKey(name: 'learning_mode') String learningMode,@JsonKey(name: 'student_level') String studentLevel,@JsonKey(name: 'is_complete') bool isComplete,@JsonKey(name: 'completed_steps') int stepsCompleted,@JsonKey(name: 'total_steps') int? totalSteps,@JsonKey(name: 'xp_earned') int xpEarned,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime? updatedAt
 });
 
 
@@ -65,7 +65,7 @@ class _$SessionModelCopyWithImpl<$Res>
 
 /// Create a copy of SessionModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? sessionId = null,Object? topic = null,Object? learningMode = null,Object? studentLevel = null,Object? isComplete = null,Object? stepsCompleted = null,Object? xpEarned = null,Object? createdAt = null,Object? updatedAt = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? sessionId = null,Object? topic = null,Object? learningMode = null,Object? studentLevel = null,Object? isComplete = null,Object? stepsCompleted = null,Object? totalSteps = freezed,Object? xpEarned = null,Object? createdAt = null,Object? updatedAt = freezed,}) {
   return _then(_self.copyWith(
 sessionId: null == sessionId ? _self.sessionId : sessionId // ignore: cast_nullable_to_non_nullable
 as String,topic: null == topic ? _self.topic : topic // ignore: cast_nullable_to_non_nullable
@@ -73,7 +73,8 @@ as String,learningMode: null == learningMode ? _self.learningMode : learningMode
 as String,studentLevel: null == studentLevel ? _self.studentLevel : studentLevel // ignore: cast_nullable_to_non_nullable
 as String,isComplete: null == isComplete ? _self.isComplete : isComplete // ignore: cast_nullable_to_non_nullable
 as bool,stepsCompleted: null == stepsCompleted ? _self.stepsCompleted : stepsCompleted // ignore: cast_nullable_to_non_nullable
-as int,xpEarned: null == xpEarned ? _self.xpEarned : xpEarned // ignore: cast_nullable_to_non_nullable
+as int,totalSteps: freezed == totalSteps ? _self.totalSteps : totalSteps // ignore: cast_nullable_to_non_nullable
+as int?,xpEarned: null == xpEarned ? _self.xpEarned : xpEarned // ignore: cast_nullable_to_non_nullable
 as int,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedAt: freezed == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,
@@ -161,10 +162,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'session_id')  String sessionId,  String topic, @JsonKey(name: 'learning_mode')  String learningMode, @JsonKey(name: 'student_level')  String studentLevel, @JsonKey(name: 'is_complete')  bool isComplete, @JsonKey(name: 'completed_steps')  int stepsCompleted, @JsonKey(name: 'xp_earned')  int xpEarned, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime? updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'session_id')  String sessionId,  String topic, @JsonKey(name: 'learning_mode')  String learningMode, @JsonKey(name: 'student_level')  String studentLevel, @JsonKey(name: 'is_complete')  bool isComplete, @JsonKey(name: 'completed_steps')  int stepsCompleted, @JsonKey(name: 'total_steps')  int? totalSteps, @JsonKey(name: 'xp_earned')  int xpEarned, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime? updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _SessionModel() when $default != null:
-return $default(_that.sessionId,_that.topic,_that.learningMode,_that.studentLevel,_that.isComplete,_that.stepsCompleted,_that.xpEarned,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.sessionId,_that.topic,_that.learningMode,_that.studentLevel,_that.isComplete,_that.stepsCompleted,_that.totalSteps,_that.xpEarned,_that.createdAt,_that.updatedAt);case _:
   return orElse();
 
 }
@@ -182,10 +183,10 @@ return $default(_that.sessionId,_that.topic,_that.learningMode,_that.studentLeve
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'session_id')  String sessionId,  String topic, @JsonKey(name: 'learning_mode')  String learningMode, @JsonKey(name: 'student_level')  String studentLevel, @JsonKey(name: 'is_complete')  bool isComplete, @JsonKey(name: 'completed_steps')  int stepsCompleted, @JsonKey(name: 'xp_earned')  int xpEarned, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime? updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'session_id')  String sessionId,  String topic, @JsonKey(name: 'learning_mode')  String learningMode, @JsonKey(name: 'student_level')  String studentLevel, @JsonKey(name: 'is_complete')  bool isComplete, @JsonKey(name: 'completed_steps')  int stepsCompleted, @JsonKey(name: 'total_steps')  int? totalSteps, @JsonKey(name: 'xp_earned')  int xpEarned, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime? updatedAt)  $default,) {final _that = this;
 switch (_that) {
 case _SessionModel():
-return $default(_that.sessionId,_that.topic,_that.learningMode,_that.studentLevel,_that.isComplete,_that.stepsCompleted,_that.xpEarned,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.sessionId,_that.topic,_that.learningMode,_that.studentLevel,_that.isComplete,_that.stepsCompleted,_that.totalSteps,_that.xpEarned,_that.createdAt,_that.updatedAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -202,10 +203,10 @@ return $default(_that.sessionId,_that.topic,_that.learningMode,_that.studentLeve
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'session_id')  String sessionId,  String topic, @JsonKey(name: 'learning_mode')  String learningMode, @JsonKey(name: 'student_level')  String studentLevel, @JsonKey(name: 'is_complete')  bool isComplete, @JsonKey(name: 'completed_steps')  int stepsCompleted, @JsonKey(name: 'xp_earned')  int xpEarned, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime? updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'session_id')  String sessionId,  String topic, @JsonKey(name: 'learning_mode')  String learningMode, @JsonKey(name: 'student_level')  String studentLevel, @JsonKey(name: 'is_complete')  bool isComplete, @JsonKey(name: 'completed_steps')  int stepsCompleted, @JsonKey(name: 'total_steps')  int? totalSteps, @JsonKey(name: 'xp_earned')  int xpEarned, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime? updatedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _SessionModel() when $default != null:
-return $default(_that.sessionId,_that.topic,_that.learningMode,_that.studentLevel,_that.isComplete,_that.stepsCompleted,_that.xpEarned,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.sessionId,_that.topic,_that.learningMode,_that.studentLevel,_that.isComplete,_that.stepsCompleted,_that.totalSteps,_that.xpEarned,_that.createdAt,_that.updatedAt);case _:
   return null;
 
 }
@@ -217,7 +218,7 @@ return $default(_that.sessionId,_that.topic,_that.learningMode,_that.studentLeve
 @JsonSerializable()
 
 class _SessionModel implements SessionModel {
-  const _SessionModel({@JsonKey(name: 'session_id') required this.sessionId, required this.topic, @JsonKey(name: 'learning_mode') required this.learningMode, @JsonKey(name: 'student_level') required this.studentLevel, @JsonKey(name: 'is_complete') required this.isComplete, @JsonKey(name: 'completed_steps') required this.stepsCompleted, @JsonKey(name: 'xp_earned') required this.xpEarned, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'updated_at') this.updatedAt});
+  const _SessionModel({@JsonKey(name: 'session_id') required this.sessionId, required this.topic, @JsonKey(name: 'learning_mode') required this.learningMode, @JsonKey(name: 'student_level') required this.studentLevel, @JsonKey(name: 'is_complete') required this.isComplete, @JsonKey(name: 'completed_steps') required this.stepsCompleted, @JsonKey(name: 'total_steps') this.totalSteps, @JsonKey(name: 'xp_earned') required this.xpEarned, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'updated_at') this.updatedAt});
   factory _SessionModel.fromJson(Map<String, dynamic> json) => _$SessionModelFromJson(json);
 
 @override@JsonKey(name: 'session_id') final  String sessionId;
@@ -226,6 +227,7 @@ class _SessionModel implements SessionModel {
 @override@JsonKey(name: 'student_level') final  String studentLevel;
 @override@JsonKey(name: 'is_complete') final  bool isComplete;
 @override@JsonKey(name: 'completed_steps') final  int stepsCompleted;
+@override@JsonKey(name: 'total_steps') final  int? totalSteps;
 @override@JsonKey(name: 'xp_earned') final  int xpEarned;
 @override@JsonKey(name: 'created_at') final  DateTime createdAt;
 @override@JsonKey(name: 'updated_at') final  DateTime? updatedAt;
@@ -243,16 +245,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SessionModel&&(identical(other.sessionId, sessionId) || other.sessionId == sessionId)&&(identical(other.topic, topic) || other.topic == topic)&&(identical(other.learningMode, learningMode) || other.learningMode == learningMode)&&(identical(other.studentLevel, studentLevel) || other.studentLevel == studentLevel)&&(identical(other.isComplete, isComplete) || other.isComplete == isComplete)&&(identical(other.stepsCompleted, stepsCompleted) || other.stepsCompleted == stepsCompleted)&&(identical(other.xpEarned, xpEarned) || other.xpEarned == xpEarned)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SessionModel&&(identical(other.sessionId, sessionId) || other.sessionId == sessionId)&&(identical(other.topic, topic) || other.topic == topic)&&(identical(other.learningMode, learningMode) || other.learningMode == learningMode)&&(identical(other.studentLevel, studentLevel) || other.studentLevel == studentLevel)&&(identical(other.isComplete, isComplete) || other.isComplete == isComplete)&&(identical(other.stepsCompleted, stepsCompleted) || other.stepsCompleted == stepsCompleted)&&(identical(other.totalSteps, totalSteps) || other.totalSteps == totalSteps)&&(identical(other.xpEarned, xpEarned) || other.xpEarned == xpEarned)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,sessionId,topic,learningMode,studentLevel,isComplete,stepsCompleted,xpEarned,createdAt,updatedAt);
+int get hashCode => Object.hash(runtimeType,sessionId,topic,learningMode,studentLevel,isComplete,stepsCompleted,totalSteps,xpEarned,createdAt,updatedAt);
 
 @override
 String toString() {
-  return 'SessionModel(sessionId: $sessionId, topic: $topic, learningMode: $learningMode, studentLevel: $studentLevel, isComplete: $isComplete, stepsCompleted: $stepsCompleted, xpEarned: $xpEarned, createdAt: $createdAt, updatedAt: $updatedAt)';
+  return 'SessionModel(sessionId: $sessionId, topic: $topic, learningMode: $learningMode, studentLevel: $studentLevel, isComplete: $isComplete, stepsCompleted: $stepsCompleted, totalSteps: $totalSteps, xpEarned: $xpEarned, createdAt: $createdAt, updatedAt: $updatedAt)';
 }
 
 
@@ -263,7 +265,7 @@ abstract mixin class _$SessionModelCopyWith<$Res> implements $SessionModelCopyWi
   factory _$SessionModelCopyWith(_SessionModel value, $Res Function(_SessionModel) _then) = __$SessionModelCopyWithImpl;
 @override @useResult
 $Res call({
-@JsonKey(name: 'session_id') String sessionId, String topic,@JsonKey(name: 'learning_mode') String learningMode,@JsonKey(name: 'student_level') String studentLevel,@JsonKey(name: 'is_complete') bool isComplete,@JsonKey(name: 'completed_steps') int stepsCompleted,@JsonKey(name: 'xp_earned') int xpEarned,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime? updatedAt
+@JsonKey(name: 'session_id') String sessionId, String topic,@JsonKey(name: 'learning_mode') String learningMode,@JsonKey(name: 'student_level') String studentLevel,@JsonKey(name: 'is_complete') bool isComplete,@JsonKey(name: 'completed_steps') int stepsCompleted,@JsonKey(name: 'total_steps') int? totalSteps,@JsonKey(name: 'xp_earned') int xpEarned,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime? updatedAt
 });
 
 
@@ -280,7 +282,7 @@ class __$SessionModelCopyWithImpl<$Res>
 
 /// Create a copy of SessionModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? sessionId = null,Object? topic = null,Object? learningMode = null,Object? studentLevel = null,Object? isComplete = null,Object? stepsCompleted = null,Object? xpEarned = null,Object? createdAt = null,Object? updatedAt = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? sessionId = null,Object? topic = null,Object? learningMode = null,Object? studentLevel = null,Object? isComplete = null,Object? stepsCompleted = null,Object? totalSteps = freezed,Object? xpEarned = null,Object? createdAt = null,Object? updatedAt = freezed,}) {
   return _then(_SessionModel(
 sessionId: null == sessionId ? _self.sessionId : sessionId // ignore: cast_nullable_to_non_nullable
 as String,topic: null == topic ? _self.topic : topic // ignore: cast_nullable_to_non_nullable
@@ -288,7 +290,8 @@ as String,learningMode: null == learningMode ? _self.learningMode : learningMode
 as String,studentLevel: null == studentLevel ? _self.studentLevel : studentLevel // ignore: cast_nullable_to_non_nullable
 as String,isComplete: null == isComplete ? _self.isComplete : isComplete // ignore: cast_nullable_to_non_nullable
 as bool,stepsCompleted: null == stepsCompleted ? _self.stepsCompleted : stepsCompleted // ignore: cast_nullable_to_non_nullable
-as int,xpEarned: null == xpEarned ? _self.xpEarned : xpEarned // ignore: cast_nullable_to_non_nullable
+as int,totalSteps: freezed == totalSteps ? _self.totalSteps : totalSteps // ignore: cast_nullable_to_non_nullable
+as int?,xpEarned: null == xpEarned ? _self.xpEarned : xpEarned // ignore: cast_nullable_to_non_nullable
 as int,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedAt: freezed == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,

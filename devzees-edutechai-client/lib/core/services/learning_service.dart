@@ -34,4 +34,11 @@ class LearningService {
       throw Exception('Failed to fetch learning sessions: $e');
     }
   }
+  Future<void> deleteSession(String sessionId) async {
+    try {
+      await _dio.delete('/sessions/$sessionId');
+    } catch (e) {
+      throw Exception('Failed to delete learning session: $e');
+    }
+  }
 }
