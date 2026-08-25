@@ -39,7 +39,7 @@ class _LearningPageState extends State<LearningPage> {
           backgroundColor: AppColors.background,
           child: _buildSidebarContent(expanded: true, isMobile: true),
         ),
-        body: GlowBackground(child: _buildMainContent()),
+        body: GlowBackground(child: _buildMainContent(isMobile)),
       );
     }
 
@@ -67,74 +67,91 @@ class _LearningPageState extends State<LearningPage> {
             ),
 
             // Main Content
-            Expanded(child: _buildMainContent()),
+            Expanded(child: _buildMainContent(isMobile)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildMainContent() {
+  Widget _buildMainContent(bool isMobile) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 48.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Wrap(
-                alignment: WrapAlignment.center,
-                children: [
-                  Text(
-                    'EduTechAI ',
-                    style: GoogleFonts.inter(
-                      fontSize: 32,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.white,
-                      letterSpacing: -0.5,
-                    ),
+        Expanded(
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isMobile ? 16.0 : 32.0,
+                    vertical: isMobile ? 24.0 : 48.0,
                   ),
-                  GradientText(
-                    'Learning Workspace',
-                    style: GoogleFonts.inter(
-                      fontSize: 32,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.white,
-                      letterSpacing: -0.5,
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Wrap(
+                        alignment: WrapAlignment.center,
+                        children: [
+                          Text(
+                            'EduTechAI ',
+                            style: GoogleFonts.inter(
+                              fontSize: isMobile ? 24 : 32,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                              letterSpacing: -0.5,
+                            ),
+                          ),
+                          GradientText(
+                            'Learning Workspace',
+                            style: GoogleFonts.inter(
+                              fontSize: isMobile ? 24 : 32,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                              letterSpacing: -0.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'An adaptive, intelligent learning studio where specialized AI agents orchestrate personalized roadmaps, intuitive analogies, video deep-dives, and instant mastery checks.',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.inter(
+                          fontSize: isMobile ? 14 : 16,
+                          color: Colors.white.withValues(alpha: 0.7),
+                          height: 1.6,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'An adaptive, intelligent learning studio where specialized AI agents orchestrate personalized roadmaps, intuitive analogies, video deep-dives, and instant mastery checks.',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
-                  fontSize: 16,
-                  color: Colors.white.withValues(alpha: 0.7),
-                  height: 1.6,
                 ),
-              ),
-            ],
-          ),
-        ),
-        const Expanded(
-          child: Center(
-            child: Text(
-              'Workspace Content\n(To be implemented)',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.white24,
-                fontSize: 20,
-              ),
+                Padding(
+                  padding: EdgeInsets.symmetric(vertical: isMobile ? 24.0 : 48.0),
+                  child: const Center(
+                    child: Text(
+                      'Workspace Content\n(To be implemented)',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white24,
+                        fontSize: 20,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
+        // Pinned Bottom Section
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 16.0),
+          padding: EdgeInsets.symmetric(
+            horizontal: isMobile ? 16.0 : 32.0,
+            vertical: isMobile ? 8.0 : 16.0,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
               Wrap(
                 alignment: WrapAlignment.center,
@@ -142,7 +159,7 @@ class _LearningPageState extends State<LearningPage> {
                   Text(
                     'What do you want to ',
                     style: GoogleFonts.inter(
-                      fontSize: 28,
+                      fontSize: isMobile ? 22 : 28,
                       fontWeight: FontWeight.w800,
                       color: Colors.white,
                       letterSpacing: -0.5,
@@ -151,7 +168,7 @@ class _LearningPageState extends State<LearningPage> {
                   GradientText(
                     'learn today?',
                     style: GoogleFonts.inter(
-                      fontSize: 28,
+                      fontSize: isMobile ? 22 : 28,
                       fontWeight: FontWeight.w800,
                       color: Colors.white,
                       letterSpacing: -0.5,
@@ -159,16 +176,16 @@ class _LearningPageState extends State<LearningPage> {
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: isMobile ? 8 : 12),
               Text(
                 'Decompose any concept into adaptive milestones, interactive Socratic lessons, and academic research.',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.inter(
-                  fontSize: 15,
+                  fontSize: isMobile ? 13 : 15,
                   color: Colors.white.withValues(alpha: 0.7),
                 ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: isMobile ? 8 : 16),
               JourneyPromptCard(
                 onStartJourney: () {
                   // TODO: Handle start journey

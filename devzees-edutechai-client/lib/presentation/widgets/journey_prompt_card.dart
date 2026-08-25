@@ -49,50 +49,58 @@ class _JourneyPromptCardState extends State<JourneyPromptCard> {
         constraints: const BoxConstraints(maxWidth: 840),
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
         child: Stack(
+          clipBehavior: Clip.none,
           alignment: Alignment.topCenter,
           children: [
             // Main Glass Container
-            ClipRRect(
-              borderRadius: BorderRadius.circular(24),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  padding: const EdgeInsets.fromLTRB(35, 28, 35, 22),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [
-                        Color(0xF00F172A), // rgba(15, 23, 42, 0.94)
-                        Color(0xE61A112E), // rgba(26, 17, 46, 0.9)
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    border: Border.all(
-                      color: _isHovered
-                          ? const Color(0xD9A855F7) // rgba(168, 85, 247, 0.85)
-                          : const Color(0x73A855F7), // rgba(168, 85, 247, 0.45)
-                      width: 1.5,
-                    ),
-                    borderRadius: BorderRadius.circular(24),
-                    boxShadow: [
-                      BoxShadow(
-                        color: _isHovered
-                            ? const Color(0x8CA855F7) // 0.55 alpha
-                            : const Color(0x59A855F7), // 0.35 alpha
-                        offset: const Offset(0, 25),
-                        blurRadius: _isHovered ? 75 : 65,
-                        spreadRadius: _isHovered ? -10 : -15,
-                      ),
-                      BoxShadow(
-                        color: _isHovered
-                            ? const Color(0x33A855F7) // 0.2 alpha
-                            : const Color(0x1EA855F7), // 0.12 alpha
-                        blurRadius: _isHovered ? 45 : 35,
-                        blurStyle: BlurStyle.inner,
-                      ),
-                    ],
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: _isHovered
+                        ? const Color(0x8CA855F7) // 0.55 alpha
+                        : const Color(0x59A855F7), // 0.35 alpha
+                    offset: _isHovered ? const Offset(0, 30) : const Offset(0, 25),
+                    blurRadius: _isHovered ? 75 : 65,
+                    spreadRadius: _isHovered ? -10 : -15,
                   ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(24),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    padding: const EdgeInsets.fromLTRB(35, 28, 35, 22),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [
+                          Color(0xF00F172A), // rgba(15, 23, 42, 0.94)
+                          Color(0xE61A112E), // rgba(26, 17, 46, 0.9)
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      border: Border.all(
+                        color: _isHovered
+                            ? const Color(0xD9A855F7) // rgba(168, 85, 247, 0.85)
+                            : const Color(0x73A855F7), // rgba(168, 85, 247, 0.45)
+                        width: 1.5,
+                      ),
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(
+                          color: _isHovered
+                              ? const Color(0x33A855F7) // 0.2 alpha
+                              : const Color(0x1EA855F7), // 0.12 alpha
+                          blurRadius: _isHovered ? 45 : 35,
+                          blurStyle: BlurStyle.inner,
+                        ),
+                      ],
+                    ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     mainAxisSize: MainAxisSize.min,
@@ -109,6 +117,7 @@ class _JourneyPromptCardState extends State<JourneyPromptCard> {
                   ),
                 ),
               ),
+            ),
             ),
             // Top Glowing Neon Bar (The ::before pseudo-element)
             Positioned(
@@ -134,11 +143,11 @@ class _JourneyPromptCardState extends State<JourneyPromptCard> {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.accentPink.withValues(alpha: _isHovered ? 0.8 : 0.6),
+                        color: AppColors.accentPink,
                         blurRadius: _isHovered ? 22 : 15,
                       ),
                       BoxShadow(
-                        color: AppColors.primary.withValues(alpha: _isHovered ? 0.8 : 0.6),
+                        color: AppColors.primary,
                         blurRadius: _isHovered ? 30 : 20,
                       ),
                     ],
