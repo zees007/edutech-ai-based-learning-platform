@@ -36,10 +36,12 @@ class SessionsState {
     bool? isLoading,
     bool? isFetchingMore,
     String? error,
+    bool clearError = false,
     int? total,
     int? page,
     int? size,
     String? lookupText,
+    bool clearLookupText = false,
     String? statusFilter,
     bool? hasReachedMax,
   }) {
@@ -47,11 +49,11 @@ class SessionsState {
       items: items ?? this.items,
       isLoading: isLoading ?? this.isLoading,
       isFetchingMore: isFetchingMore ?? this.isFetchingMore,
-      error: error,
+      error: clearError ? null : (error ?? this.error),
       total: total ?? this.total,
       page: page ?? this.page,
       size: size ?? this.size,
-      lookupText: lookupText ?? this.lookupText,
+      lookupText: clearLookupText ? null : (lookupText ?? this.lookupText),
       statusFilter: statusFilter ?? this.statusFilter,
       hasReachedMax: hasReachedMax ?? this.hasReachedMax,
     );
@@ -68,7 +70,7 @@ class SessionsNotifier extends Notifier<SessionsState> {
   }
 
   Future<void> loadInitial() async {
-    state = state.copyWith(isLoading: true, error: null, page: 0, items: [], hasReachedMax: false);
+    state = state.copyWith(isLoading: true, clearError: true, page: 0, items: [], hasReachedMax: false);
     try {
       final response = await _service.fetchSessions(
         page: 0,
@@ -91,7 +93,7 @@ class SessionsNotifier extends Notifier<SessionsState> {
   Future<void> loadMore() async {
     if (state.isLoading || state.isFetchingMore || state.hasReachedMax) return;
     
-    state = state.copyWith(isFetchingMore: true, error: null);
+    state = state.copyWith(isFetchingMore: true, clearError: true);
     
     try {
       final nextPage = state.page + 1;
@@ -115,7 +117,11 @@ class SessionsNotifier extends Notifier<SessionsState> {
   }
 
   void updateSearch(String query) {
-    state = state.copyWith(lookupText: query.isEmpty ? null : query);
+    if (query.trim().isEmpty) {
+      state = state.copyWith(clearLookupText: true);
+    } else {
+      state = state.copyWith(lookupText: query.trim());
+    }
     loadInitial();
   }
 

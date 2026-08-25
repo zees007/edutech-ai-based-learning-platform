@@ -144,26 +144,29 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: TextField(
+                textAlignVertical: TextAlignVertical.center,
                 onChanged: (value) {
                   ref.read(sessionsProvider.notifier).updateSearch(value);
                 },
-                style: const TextStyle(color: Colors.white, fontSize: 14),
+                style: const TextStyle(color: Colors.white, fontSize: 13),
                 decoration: InputDecoration(
-                  hintText: 'Search...',
+                  isDense: true,
+                  hintText: 'Search topics or levels...',
                   hintStyle: TextStyle(
                     color: Colors.white.withValues(alpha: 0.3),
-                    fontSize: 14,
+                    fontSize: 13,
                   ),
                   prefixIcon: Icon(
                     Icons.search,
                     color: Colors.white.withValues(alpha: 0.5),
                     size: 18,
                   ),
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 10,
+                  prefixIconConstraints: const BoxConstraints(
+                    minWidth: 40,
+                    minHeight: 36,
                   ),
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.zero,
                 ),
               ),
             ),
