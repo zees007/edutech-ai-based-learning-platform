@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../presentation/widgets/gradient_button.dart';
@@ -29,6 +30,7 @@ class LearningSidebar extends ConsumerStatefulWidget {
 
 class _LearningSidebarState extends ConsumerState<LearningSidebar> {
   bool _isHistoryExpanded = true;
+  final GlobalKey _filterIconKey = GlobalKey();
 
   @override
   Widget build(BuildContext context) {
@@ -96,6 +98,8 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
   }
 
   Widget _buildHistoryHeader() {
+    final total = ref.watch(sessionsProvider).total;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: InkWell(
@@ -109,9 +113,9 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
           padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 8.0),
           child: Row(
             children: [
-              const Text(
-                'Learning History',
-                style: TextStyle(
+              Text(
+                'Learning History ($total)',
+                style: const TextStyle(
                   color: Colors.white70,
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
@@ -132,6 +136,8 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
   }
 
   Widget _buildSearchAndFilter() {
+    final statusFilter = ref.watch(sessionsProvider).statusFilter;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
@@ -173,6 +179,7 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
           ),
           const SizedBox(width: 8),
           Container(
+            key: _filterIconKey,
             height: 36,
             width: 36,
             decoration: BoxDecoration(
@@ -186,11 +193,120 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
                 color: Colors.white.withValues(alpha: 0.7),
                 size: 18,
               ),
-              onPressed: () {},
+              onPressed: () {
+                _showFilterDialog(context, statusFilter);
+              },
             ),
           ),
         ],
       ),
+    );
+  }
+  void _showFilterDialog(BuildContext context, String currentFilter) {
+    final RenderBox renderBox = _filterIconKey.currentContext!.findRenderObject() as RenderBox;
+    final size = renderBox.size;
+    final offset = renderBox.localToGlobal(Offset.zero);
+
+    showMenu<String>(
+      context: context,
+      color: Colors.transparent,
+      elevation: 0,
+      position: RelativeRect.fromLTRB(
+        offset.dx,
+        offset.dy + size.height,
+        MediaQuery.of(context).size.width - offset.dx - size.width,
+        0,
+      ),
+      items: [
+        PopupMenuItem<String>(
+          enabled: false,
+          padding: EdgeInsets.zero,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+              child: Container(
+                width: 140,
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1A132C).withValues(alpha: 0.6),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.3),
+                      blurRadius: 24,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildDialogItem(context, 'all', 'All', currentFilter),
+                    _buildDialogItem(context, 'in_progress', 'Active', currentFilter),
+                    _buildDialogItem(context, 'completed', 'Completed', currentFilter),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDialogItem(BuildContext context, String value, String label, String currentFilter) {
+    final isSelected = value == currentFilter;
+    bool isHovered = false;
+
+    return StatefulBuilder(
+      builder: (context, setState) {
+        return MouseRegion(
+          onEnter: (_) => setState(() => isHovered = true),
+          onExit: (_) => setState(() => isHovered = false),
+          child: InkWell(
+            onTap: () {
+              ref.read(sessionsProvider.notifier).updateFilter(value);
+              Navigator.of(context).pop();
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? AppColors.primary.withValues(alpha: 0.15)
+                    : isHovered
+                        ? AppColors.primary.withValues(alpha: 0.1)
+                        : Colors.transparent,
+                boxShadow: isHovered
+                    ? [
+                        BoxShadow(
+                          color: AppColors.primary.withValues(alpha: 0.15),
+                          blurRadius: 12,
+                          spreadRadius: 2,
+                        )
+                      ]
+                    : null,
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      label,
+                      style: TextStyle(
+                        color: isHovered || isSelected ? Colors.white : Colors.white70,
+                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                  if (isSelected)
+                    const Icon(Icons.check, color: AppColors.primary, size: 16),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }
