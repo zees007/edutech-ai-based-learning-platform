@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import '../../data/models/learning/session_model.dart';
+import '../../data/models/learning/session_response.dart';
 import 'api_client.dart';
 
 class LearningService {
@@ -34,6 +35,16 @@ class LearningService {
       throw Exception('Failed to fetch learning sessions: $e');
     }
   }
+
+  Future<SessionResponse> fetchSessionById(String sessionId) async {
+    try {
+      final response = await _dio.get('/sessions/$sessionId');
+      return SessionResponse.fromJson(response.data);
+    } catch (e) {
+      throw Exception('Failed to fetch learning session details: $e');
+    }
+  }
+
   Future<void> deleteSession(String sessionId) async {
     try {
       await _dio.delete('/sessions/$sessionId');

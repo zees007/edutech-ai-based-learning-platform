@@ -4,7 +4,9 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../../presentation/widgets/gradient_text.dart';
 import '../../../../presentation/widgets/journey_prompt_card.dart';
 import '../../../../core/providers/learning_provider.dart';
+import '../../../../core/providers/active_session_provider.dart';
 import 'recent_journey_card.dart';
+import 'active_learning_workspace.dart';
 import '../../../../core/theme/app_colors.dart';
 
 class LearningMainContent extends ConsumerWidget {
@@ -26,6 +28,17 @@ class LearningMainContent extends ConsumerWidget {
         recentSessions.isEmpty && sessionsState.items.isNotEmpty
         ? sessionsState.items.take(3).toList()
         : recentSessions;
+        
+    final activeState = ref.watch(activeSessionProvider);
+    
+    if (activeState.session != null || activeState.isLoading) {
+      if (activeState.isLoading) {
+        return Center(
+          child: CircularProgressIndicator(color: AppColors.primary),
+        );
+      }
+      return const ActiveLearningWorkspace();
+    }
 
     return Column(
       children: [
@@ -121,7 +134,7 @@ class LearningMainContent extends ConsumerWidget {
                                         session: session,
                                         isMobile: isMobile,
                                         onContinue: () {
-                                          // TODO: Navigate to session
+                                          ref.read(activeSessionProvider.notifier).loadSession(session.sessionId);
                                         },
                                       ),
                                     ),
@@ -141,7 +154,7 @@ class LearningMainContent extends ConsumerWidget {
                                         session: session,
                                         isMobile: isMobile,
                                         onContinue: () {
-                                          // TODO: Navigate to session
+                                          ref.read(activeSessionProvider.notifier).loadSession(session.sessionId);
                                         },
                                       ),
                                     ),

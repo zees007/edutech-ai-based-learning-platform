@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../data/models/learning/session_model.dart';
 import '../../../../core/providers/learning_provider.dart';
+import '../../../../core/providers/active_session_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 
 class LearningHistoryItem extends ConsumerStatefulWidget {
@@ -100,7 +101,13 @@ class _LearningHistoryItemState extends ConsumerState<LearningHistoryItem> {
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 8.0),
         child: InkWell(
-          onTap: () {},
+          onTap: () {
+            ref.read(activeSessionProvider.notifier).loadSession(widget.session.sessionId);
+            // Close drawer if on mobile
+            if (Scaffold.maybeOf(context)?.hasDrawer ?? false) {
+              Scaffold.of(context).closeDrawer();
+            }
+          },
           borderRadius: BorderRadius.circular(8),
           child: Container(
             width: 40,
@@ -126,7 +133,13 @@ class _LearningHistoryItemState extends ConsumerState<LearningHistoryItem> {
         onEnter: (_) => setState(() => _isHovered = true),
         onExit: (_) => setState(() => _isHovered = false),
         child: InkWell(
-          onTap: () {},
+          onTap: () {
+            ref.read(activeSessionProvider.notifier).loadSession(widget.session.sessionId);
+            // Close drawer if on mobile
+            if (Scaffold.maybeOf(context)?.hasDrawer ?? false) {
+              Scaffold.of(context).closeDrawer();
+            }
+          },
           borderRadius: BorderRadius.circular(8),
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
