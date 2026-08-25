@@ -132,12 +132,12 @@ ENDPOINT_PRIVILEGE_MAP = {
     "GET /api/v1/subscriptions/users/{user_id}": ET_VIEW_SUBSCRIPTION,
     "PUT /api/v1/subscriptions/users/{user_id}/tier": (ET_UPGRADE_SUBSCRIPTION, ET_DOWNGRADE_SUBSCRIPTION),
     # Learning Endpoints
-    "POST /api/learn": ET_START_LEARNING_SESSION,
-    "GET /api/sessions/{session_id}": ET_INTERACT_LEARNING_SESSION,
-    "POST /api/sessions/{session_id}/step/{step_index}/complete": ET_INTERACT_LEARNING_SESSION,
-    "POST /api/sessions/{session_id}/mode": ET_INTERACT_LEARNING_SESSION,
-    "GET /api/sessions": ET_VIEW_LEARNING_HISTORY,
+    "POST /api/v1/learn": ET_START_LEARNING_SESSION,
+    "GET /api/v1/sessions/{session_id}": ET_INTERACT_LEARNING_SESSION,
+    "POST /api/v1/sessions/{session_id}/step/{step_index}/complete": ET_INTERACT_LEARNING_SESSION,
+    "POST /api/v1/sessions/{session_id}/mode": ET_INTERACT_LEARNING_SESSION,
+    "GET /api/v1/sessions": ET_VIEW_LEARNING_HISTORY,
     # Quiz Endpoints
-    "GET /api/quiz/{session_id}/{step_index}": ET_GENERATE_QUIZ,
-    "POST /api/quiz/submit": ET_SUBMIT_QUIZ,
+    "GET /api/v1/quiz/{session_id}/{step_index}": ET_GENERATE_QUIZ,
+    "POST /api/v1/quiz/submit": ET_SUBMIT_QUIZ,
 }

@@ -91,6 +91,12 @@ class AuthNotifier extends Notifier<AuthState> {
       return false;
     }
   }
+
+  Future<void> logout() async {
+    state = state.copyWith(isLoading: true, loadingMessage: 'Signing out...');
+    await _authService.logout();
+    state = AuthState(); // Reset auth state entirely
+  }
 }
 
 final authProvider = NotifierProvider<AuthNotifier, AuthState>(() {

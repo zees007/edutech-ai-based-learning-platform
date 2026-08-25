@@ -71,4 +71,17 @@ class AuthService {
       throw Exception(e.toString());
     }
   }
+
+  Future<bool> logout() async {
+    try {
+      final response = await _dio.post(ApiConstants.logout);
+      if (response.statusCode == 200 || response.statusCode == 204) {
+        return true;
+      }
+      return false;
+    } catch (e) {
+      // If API logout fails, still return false but don't crash
+      return false;
+    }
+  }
 }
