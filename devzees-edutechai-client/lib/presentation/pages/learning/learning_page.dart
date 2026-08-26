@@ -5,8 +5,8 @@ import 'package:devzees_edutechai_client/core/constants/responsive.dart';
 import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
 import 'package:devzees_edutechai_client/core/providers/learning_provider.dart';
 
-import 'widgets/learning_sidebar.dart';
-import 'widgets/learning_main_content.dart';
+import 'widgets/sidebar/learning_sidebar.dart';
+import 'widgets/main_content/learning_main_content.dart';
 
 class LearningPage extends ConsumerStatefulWidget {
   const LearningPage({super.key});
@@ -26,7 +26,8 @@ class _LearningPageState extends ConsumerState<LearningPage> {
       ref.read(sessionsProvider.notifier).loadInitial();
     });
     _scrollController.addListener(() {
-      if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+      if (_scrollController.position.pixels >=
+          _scrollController.position.maxScrollExtent - 200) {
         ref.read(sessionsProvider.notifier).loadMore();
       }
     });

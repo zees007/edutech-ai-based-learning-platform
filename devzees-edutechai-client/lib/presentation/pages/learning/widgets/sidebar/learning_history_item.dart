@@ -1,10 +1,10 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../data/models/learning/session_model.dart';
-import '../../../../core/providers/learning_provider.dart';
-import '../../../../core/providers/active_session_provider.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../../data/models/learning/session_model.dart';
+import '../../../../../core/providers/learning_provider.dart';
+import '../../../../../core/providers/active_session_provider.dart';
+import '../../../../../core/theme/app_colors.dart';
 
 class LearningHistoryItem extends ConsumerStatefulWidget {
   final SessionModel session;

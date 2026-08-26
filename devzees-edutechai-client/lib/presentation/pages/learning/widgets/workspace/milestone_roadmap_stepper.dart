@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../../data/models/learning/milestone_step.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../../data/models/learning/milestone_step.dart';
+import '../../../../../core/theme/app_colors.dart';
 
 class MilestoneRoadmapStepper extends StatelessWidget {
   final List<MilestoneStep> steps;

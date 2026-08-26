@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../../presentation/widgets/gradient_text.dart';
-import '../../../../presentation/widgets/journey_prompt_card.dart';
-import '../../../../core/providers/learning_provider.dart';
-import '../../../../core/providers/active_session_provider.dart';
+import '../../../../../presentation/widgets/gradient_text.dart';
+import 'journey_prompt_card.dart';
+import '../../../../../core/providers/learning_provider.dart';
+import '../../../../../core/providers/active_session_provider.dart';
 import 'recent_journey_card.dart';
-import 'active_learning_workspace.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../workspace/active_learning_workspace.dart';
+import '../../../../../core/theme/app_colors.dart';
 
 class LearningMainContent extends ConsumerWidget {
   final bool isMobile;

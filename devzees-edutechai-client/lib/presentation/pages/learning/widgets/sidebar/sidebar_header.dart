@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../../presentation/widgets/gradient_text.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../../presentation/widgets/gradient_text.dart';
+import '../../../../../core/theme/app_colors.dart';
 
 class SidebarHeader extends StatelessWidget {
   final bool expanded;

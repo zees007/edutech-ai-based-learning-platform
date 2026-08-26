@@ -1,9 +1,10 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../presentation/widgets/gradient_button.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/providers/learning_provider.dart';
+import '../../../../../presentation/widgets/gradient_button.dart';
+import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/providers/learning_provider.dart';
+import '../../../../../core/providers/active_session_provider.dart';
 import 'sidebar_header.dart';
 import 'sidebar_footer.dart';
 import 'learning_history_list.dart';
@@ -100,11 +101,15 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
               text: 'Start New Journey',
               icon: Icons.edit_square,
               iconFirst: true,
-              onPressed: () {},
+              onPressed: () {
+                ref.read(activeSessionProvider.notifier).clearSession();
+              },
               height: 48,
             )
           : InkWell(
-              onTap: () {},
+              onTap: () {
+                ref.read(activeSessionProvider.notifier).clearSession();
+              },
               borderRadius: BorderRadius.circular(12),
               child: Container(
                 width: 48,
