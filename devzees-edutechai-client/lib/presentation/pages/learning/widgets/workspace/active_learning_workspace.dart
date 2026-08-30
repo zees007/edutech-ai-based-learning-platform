@@ -111,7 +111,10 @@ class ActiveLearningWorkspace extends ConsumerWidget {
                     children: [
                       // Top Title Card
                       _buildJourneyGlassContainer(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: isMobile ? 12 : 20, 
+                          vertical: isMobile ? 12 : 16
+                        ),
                         child: isMobile
                             ? Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -216,17 +219,21 @@ class ActiveLearningWorkspace extends ConsumerWidget {
                               ],
                             );
                           } else {
-                            return Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                card1,
-                                const SizedBox(height: 16),
-                                card2,
-                                const SizedBox(height: 16),
-                                card3,
-                                const SizedBox(height: 16),
-                                card4,
-                              ],
+                            // Mobile Carousel
+                            return SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              clipBehavior: Clip.none,
+                              child: Row(
+                                children: [
+                                  SizedBox(width: 200, child: card1),
+                                  const SizedBox(width: 12),
+                                  SizedBox(width: 200, child: card2),
+                                  const SizedBox(width: 12),
+                                  SizedBox(width: 240, child: card3),
+                                  const SizedBox(width: 12),
+                                  SizedBox(width: 240, child: card4),
+                                ],
+                              ),
                             );
                           }
                         },
@@ -239,16 +246,88 @@ class ActiveLearningWorkspace extends ConsumerWidget {
           ),
         ),
 
-        // Milestone Stepper
+        // Milestone Stepper and Query
         if (session.steps.isNotEmpty)
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
-            child: MilestoneRoadmapStepper(
-              steps: session.steps,
-              activeIndex: activeState.activeStepIndex,
-              onStepTapped: (index) {
-                ref.read(activeSessionProvider.notifier).setActiveStep(index);
-              },
+            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // User Asked Query
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFC084FC).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFFC084FC).withValues(alpha: 0.3)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'YOUR GOAL',
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFFC084FC),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        session.topic,
+                        style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                
+                // Roadmap Title
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFC084FC).withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(
+                        Icons.route_rounded,
+                        color: Color(0xFFC084FC),
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Milestone Learning Roadmap',
+                      style: GoogleFonts.inter(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w900,
+                        color: const Color(0xFFFAFAFA),
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                
+                MilestoneRoadmapStepper(
+                  steps: session.steps,
+                  activeIndex: activeState.activeStepIndex,
+                  onStepTapped: (index) {
+                    ref.read(activeSessionProvider.notifier).setActiveStep(index);
+                  },
+                ),
+                const SizedBox(height: 16),
+                Divider(color: Colors.white.withValues(alpha: 0.1), thickness: 1),
+                const SizedBox(height: 8),
+              ],
             ),
           ),
           
@@ -626,16 +705,6 @@ class _AnimatedGlassContainerState extends State<_AnimatedGlassContainer> {
                 duration: const Duration(milliseconds: 300),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(24),
-                  boxShadow: [
-                    BoxShadow(
-                      color: _isHovered
-                          ? const Color(0x8CA855F7) // 0.55 alpha
-                          : const Color(0x59A855F7), // 0.35 alpha
-                      offset: _isHovered ? const Offset(0, 30) : const Offset(0, 25),
-                      blurRadius: _isHovered ? 75 : 65,
-                      spreadRadius: _isHovered ? -10 : -15,
-                    ),
-                  ],
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(24),
