@@ -47,10 +47,24 @@ class MilestoneRoadmapStepper extends StatelessWidget {
                   Positioned(
                     left: 20,
                     top: 24,
-                    child: LayoutBuilder(
-                      builder: (context, constraints) {
-                        return Container(); 
-                      },
+                    child: Container(
+                      height: 4,
+                      width: (activeIndex * 144).toDouble(), // 144 is the width of an inactive step (120 + 24 margin)
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFF472B6), Color(0xFFC084FC)],
+                          begin: Alignment.centerLeft,
+                          end: Alignment.centerRight,
+                        ),
+                        borderRadius: BorderRadius.circular(2),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFFC084FC).withValues(alpha: 0.4),
+                            blurRadius: 8,
+                            spreadRadius: 0,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
 

@@ -5,6 +5,10 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../../../core/providers/active_session_provider.dart';
 import '../../../../../core/theme/app_colors.dart';
 import 'milestone_roadmap_stepper.dart';
+import 'socratic_tutor_chat.dart';
+import 'recommended_videos.dart';
+import 'academic_papers.dart';
+import 'knowledge_check_quiz.dart';
 
 class ActiveLearningWorkspace extends ConsumerWidget {
   const ActiveLearningWorkspace({super.key});
@@ -18,8 +22,12 @@ class ActiveLearningWorkspace extends ConsumerWidget {
       return const SizedBox.shrink();
     }
 
-    return Column(
-      children: [
+    return NestedScrollView(
+      headerSliverBuilder: (context, innerBoxIsScrolled) {
+        return [
+          SliverToBoxAdapter(
+            child: Column(
+              children: [
         // Gamification Dashboard Section
         Padding(
           padding: const EdgeInsets.fromLTRB(24.0, 32.0, 24.0, 16.0),
@@ -330,33 +338,17 @@ class ActiveLearningWorkspace extends ConsumerWidget {
               ],
             ),
           ),
-          
-        // Main Content Area for Active Step
-        Expanded(
-          child: Container(
-            width: double.infinity,
-            margin: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.03),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+              ],
             ),
-            child: activeState.isLoading 
-              ? const Center(child: CircularProgressIndicator())
-              : session.steps.isNotEmpty
-                ? SingleChildScrollView(
-                    child: _buildStepContent(session.steps[activeState.activeStepIndex]),
-                  )
-                : Center(
-                    child: Text(
-                      'No steps available.',
-                      style: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
-                    ),
-                  ),
           ),
-        ),
-      ],
+        ];
+      },
+      // Main Content Area for Active Step
+      body: _StepContentContainer(
+        activeState: activeState,
+        session: session,
+        buildStepContent: _buildStepContent,
+      ),
     );
   }
 
@@ -412,6 +404,8 @@ class ActiveLearningWorkspace extends ConsumerWidget {
       "progress": progress,
     };
   }
+
+
 
   Widget _buildJourneyGlassContainer({required Widget child, EdgeInsetsGeometry? padding}) {
     return _AnimatedGlassContainer(
@@ -663,8 +657,17 @@ class ActiveLearningWorkspace extends ConsumerWidget {
               height: 1.6,
             ),
           ),
-        ]
-        // More content like videos, quiz, papers can be rendered here
+          const SizedBox(height: 32),
+        ],
+
+        if (step.socraticQuestions != null && step.socraticQuestions!.isNotEmpty) ...[
+          SocraticTutorChat(socraticQuestions: step.socraticQuestions),
+          const SizedBox(height: 32),
+        ],
+        if (step.quiz != null && step.quiz!.isNotEmpty) ...[
+          KnowledgeCheckQuiz(quiz: step.quiz),
+          const SizedBox(height: 32),
+        ],
       ],
     );
   }
@@ -785,6 +788,248 @@ class _AnimatedGlassContainerState extends State<_AnimatedGlassContainer> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _StepContentContainer extends StatefulWidget {
+  final ActiveSessionState activeState;
+  final dynamic session;
+  final Widget Function(dynamic) buildStepContent;
+
+  const _StepContentContainer({
+    required this.activeState,
+    required this.session,
+    required this.buildStepContent,
+  });
+
+  @override
+  State<_StepContentContainer> createState() => _StepContentContainerState();
+}
+
+class _StepContentContainerState extends State<_StepContentContainer> {
+  Widget? _activeOverlay;
+
+
+  void _showOverlay(Widget child) {
+    setState(() {
+      _activeOverlay = child;
+    });
+  }
+
+  void _closeOverlay() {
+    setState(() {
+      _activeOverlay = null;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+      padding: const EdgeInsets.all(24),
+      clipBehavior: Clip.hardEdge,
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.03),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+      ),
+      child: widget.activeState.isLoading 
+        ? const Center(child: CircularProgressIndicator())
+        : widget.session.steps.isNotEmpty
+          ? Stack(
+              children: [
+                SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Space for icons
+                      const SizedBox(height: 64.0),
+                      
+                      // The Expandable Panel inline
+                      AnimatedSize(
+                        duration: const Duration(milliseconds: 400),
+                        curve: Curves.easeOutQuart,
+                        alignment: Alignment.topRight,
+                        child: _activeOverlay != null
+                          ? Container(
+                              margin: const EdgeInsets.only(bottom: 24, top: 8),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF0F172A).withValues(alpha: 0.85), // Glassy without blur
+                                borderRadius: const BorderRadius.only(
+                                  topLeft: Radius.circular(20),
+                                  bottomLeft: Radius.circular(20),
+                                  bottomRight: Radius.circular(20),
+                                  topRight: Radius.circular(4), // Chat bubble tail
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.3),
+                                    blurRadius: 20,
+                                    spreadRadius: -5,
+                                  ),
+                                ],
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: _activeOverlay!,
+                              ),
+                            )
+                          : const SizedBox(height: 0),
+                      ),
+                      
+                      // Main Content
+                      widget.buildStepContent(widget.session.steps[widget.activeState.activeStepIndex]),
+                    ],
+                  ),
+                ),
+                
+                // Floating Icons (Top Right)
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: Row(
+                    children: [
+                      if (widget.session.steps[widget.activeState.activeStepIndex].videos != null && 
+                          widget.session.steps[widget.activeState.activeStepIndex].videos!.isNotEmpty)
+                        _GlassyIconButton(
+                          emoji: '🎬', 
+                          tooltip: 'Recommended YouTube Video Clips & Timestamps', 
+                          onTap: () {
+                             if (_activeOverlay is RecommendedVideos) {
+                               _closeOverlay();
+                             } else {
+                               _showOverlay(RecommendedVideos(videos: widget.session.steps[widget.activeState.activeStepIndex].videos));
+                             }
+                          }
+                        ),
+                      const SizedBox(width: 12),
+                      if (widget.session.steps[widget.activeState.activeStepIndex].papers != null && 
+                          widget.session.steps[widget.activeState.activeStepIndex].papers!.isNotEmpty)
+                        _GlassyIconButton(
+                          emoji: '📚', 
+                          tooltip: 'Academic Research Papers', 
+                          onTap: () {
+                             if (_activeOverlay is AcademicPapers) {
+                               _closeOverlay();
+                             } else {
+                               _showOverlay(AcademicPapers(papers: widget.session.steps[widget.activeState.activeStepIndex].papers));
+                             }
+                          }
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            )
+          : Center(
+              child: Text(
+                'No steps available.',
+                style: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
+              ),
+            ),
+    );
+  }
+}
+
+class _GlassyIconButton extends StatefulWidget {
+  final String emoji;
+  final String tooltip;
+  final VoidCallback onTap;
+
+  const _GlassyIconButton({
+    required this.emoji,
+    required this.tooltip,
+    required this.onTap,
+  });
+
+  @override
+  State<_GlassyIconButton> createState() => _GlassyIconButtonState();
+}
+
+class _GlassyIconButtonState extends State<_GlassyIconButton> with SingleTickerProviderStateMixin {
+  bool _isHovered = false;
+  bool _isPressed = false;
+  late AnimationController _floatController;
+  late Animation<double> _floatAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _floatController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2000),
+    )..repeat(reverse: true);
+    
+    _floatAnimation = Tween<double>(begin: -5.0, end: 5.0).animate(
+      CurvedAnimation(parent: _floatController, curve: Curves.easeInOutSine),
+    );
+  }
+
+  @override
+  void dispose() {
+    _floatController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: widget.tooltip,
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.7),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+      ),
+      textStyle: GoogleFonts.inter(color: Colors.white, fontSize: 12),
+      child: MouseRegion(
+        onEnter: (_) => setState(() => _isHovered = true),
+        onExit: (_) => setState(() => _isHovered = false),
+        child: GestureDetector(
+          onTapDown: (_) => setState(() => _isPressed = true),
+          onTapUp: (_) {
+            setState(() => _isPressed = false);
+            widget.onTap();
+          },
+          onTapCancel: () => setState(() => _isPressed = false),
+          child: AnimatedBuilder(
+            animation: _floatAnimation,
+            builder: (context, child) {
+              return Transform.translate(
+                offset: Offset(0, _floatAnimation.value),
+                child: child,
+              );
+            },
+            child: AnimatedScale(
+              scale: _isPressed ? 0.85 : (_isHovered ? 1.05 : 1.0),
+              duration: const Duration(milliseconds: 150),
+              curve: Curves.easeOutBack,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                width: 48,
+                height: 48,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: _isHovered ? Colors.white.withValues(alpha: 0.1) : Colors.white.withValues(alpha: 0.05),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: _isHovered ? AppColors.primary.withValues(alpha: 0.6) : AppColors.primary.withValues(alpha: 0.3), 
+                    width: 1.5,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: _isHovered ? 0.4 : 0.2),
+                      blurRadius: _isHovered ? 16 : 10,
+                    ),
+                  ],
+                ),
+                child: Text(widget.emoji, style: const TextStyle(fontSize: 20)),
+              ),
+            ),
+          ),
         ),
       ),
     );
