@@ -340,9 +340,26 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
       key: const ValueKey('signin_form'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _buildTextField("Email Address", "student@example.com", false, _emailCtrl),
+        _buildTextField(
+          "Email Address",
+          "student@example.com",
+          false,
+          _emailCtrl,
+          keyboardType: TextInputType.emailAddress,
+          textInputAction: TextInputAction.next,
+          autofillHints: const [AutofillHints.email],
+          onFieldSubmitted: (_) => _handleLogin(),
+        ),
         const SizedBox(height: 20),
-        _buildTextField("Password", "        ", true, _passwordCtrl),
+        _buildTextField(
+          "Password",
+          "        ",
+          true,
+          _passwordCtrl,
+          textInputAction: TextInputAction.done,
+          autofillHints: const [AutofillHints.password],
+          onFieldSubmitted: (_) => _handleLogin(),
+        ),
         const SizedBox(height: 32),
         _buildGradientButton("Sign In & Launch Agents 🚀", _handleLogin),
         const SizedBox(height: 24),
@@ -368,33 +385,117 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (isMobile) ...[
-          _buildTextField("First Name *", "Jane", false, _firstNameCtrl),
+          _buildTextField(
+            "First Name *",
+            "Jane",
+            false,
+            _firstNameCtrl,
+            textInputAction: TextInputAction.next,
+            autofillHints: const [AutofillHints.givenName],
+          ),
           const SizedBox(height: 20),
-          _buildTextField("Last Name *", "Doe", false, _lastNameCtrl),
+          _buildTextField(
+            "Last Name *",
+            "Doe",
+            false,
+            _lastNameCtrl,
+            textInputAction: TextInputAction.next,
+            autofillHints: const [AutofillHints.familyName],
+          ),
         ] else ...[
           Row(
             children: [
-              Expanded(child: _buildTextField("First Name *", "Jane", false, _firstNameCtrl)),
+              Expanded(
+                child: _buildTextField(
+                  "First Name *",
+                  "Jane",
+                  false,
+                  _firstNameCtrl,
+                  textInputAction: TextInputAction.next,
+                  autofillHints: const [AutofillHints.givenName],
+                ),
+              ),
               const SizedBox(width: 20),
-              Expanded(child: _buildTextField("Last Name *", "Doe", false, _lastNameCtrl)),
+              Expanded(
+                child: _buildTextField(
+                  "Last Name *",
+                  "Doe",
+                  false,
+                  _lastNameCtrl,
+                  textInputAction: TextInputAction.next,
+                  autofillHints: const [AutofillHints.familyName],
+                ),
+              ),
             ],
           ),
         ],
         const SizedBox(height: 20),
-        _buildTextField("Email Address *", "jane.doe@example.com", false, _emailCtrl),
+        _buildTextField(
+          "Email Address *",
+          "jane.doe@example.com",
+          false,
+          _emailCtrl,
+          keyboardType: TextInputType.emailAddress,
+          textInputAction: TextInputAction.next,
+          autofillHints: const [AutofillHints.email],
+        ),
         const SizedBox(height: 20),
-        _buildTextField("Password * (min 6 characters)", "        ", true, _passwordCtrl),
+        _buildTextField(
+          "Password * (min 6 characters)",
+          "        ",
+          true,
+          _passwordCtrl,
+          textInputAction: TextInputAction.next,
+          autofillHints: const [AutofillHints.newPassword],
+          onFieldSubmitted: (_) => _handleSignUp(),
+        ),
         const SizedBox(height: 20),
         if (isMobile) ...[
-          _buildTextField("Mobile Number", "+1 555-0199", false, _mobileCtrl),
+          _buildTextField(
+            "Mobile Number",
+            "+1 555-0199",
+            false,
+            _mobileCtrl,
+            keyboardType: TextInputType.phone,
+            textInputAction: TextInputAction.next,
+            autofillHints: const [AutofillHints.telephoneNumber],
+          ),
           const SizedBox(height: 20),
-          _buildTextField("Country", "United States", false, _countryCtrl),
+          _buildTextField(
+            "Country",
+            "United States",
+            false,
+            _countryCtrl,
+            textInputAction: TextInputAction.done,
+            autofillHints: const [AutofillHints.countryName],
+            onFieldSubmitted: (_) => _handleSignUp(),
+          ),
         ] else ...[
           Row(
             children: [
-              Expanded(child: _buildTextField("Mobile Number", "+1 555-0199", false, _mobileCtrl)),
+              Expanded(
+                child: _buildTextField(
+                  "Mobile Number",
+                  "+1 555-0199",
+                  false,
+                  _mobileCtrl,
+                  keyboardType: TextInputType.phone,
+                  textInputAction: TextInputAction.next,
+                  autofillHints: const [AutofillHints.telephoneNumber],
+                ),
+              ),
               const SizedBox(width: 20),
-              Expanded(child: _buildTextField("Country", "United States", false, _countryCtrl)),
+              Expanded(
+                child: _buildTextField(
+                  "Country",
+                  "United States",
+                  false,
+                  _countryCtrl,
+                  textInputAction: TextInputAction.done,
+                  autofillHints: const [AutofillHints.countryName],
+                  onFieldSubmitted: (_) => _handleSignUp(),
+                ),
+              ),
             ],
           ),
         ],
@@ -417,7 +518,16 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
     );
   }
 
-  Widget _buildTextField(String label, String hint, bool isObscure, TextEditingController controller) {
+  Widget _buildTextField(
+    String label,
+    String hint,
+    bool isObscure,
+    TextEditingController controller, {
+    TextInputAction? textInputAction,
+    ValueChanged<String>? onFieldSubmitted,
+    TextInputType? keyboardType,
+    Iterable<String>? autofillHints,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -434,6 +544,10 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
         TextFormField(
           controller: controller,
           obscureText: isObscure,
+          textInputAction: textInputAction,
+          onFieldSubmitted: onFieldSubmitted,
+          keyboardType: keyboardType,
+          autofillHints: autofillHints,
           style: const TextStyle(
             color: Color(0xFFFAFAFA),
             fontSize: 15,

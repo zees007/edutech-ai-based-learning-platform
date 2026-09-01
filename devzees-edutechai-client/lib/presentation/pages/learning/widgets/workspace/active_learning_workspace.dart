@@ -827,100 +827,197 @@ class _StepContentContainerState extends State<_StepContentContainer> {
 
   @override
   Widget build(BuildContext context) {
+    final currentStep = widget.session.steps[widget.activeState.activeStepIndex];
+    final hasVideos = currentStep.videos != null && currentStep.videos!.isNotEmpty;
+    final hasPapers = currentStep.papers != null && currentStep.papers!.isNotEmpty;
+
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-      padding: const EdgeInsets.all(24),
       clipBehavior: Clip.hardEdge,
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.03),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+        gradient: LinearGradient(
+          colors: [
+            Colors.white.withValues(alpha: 0.04),
+            Colors.white.withValues(alpha: 0.015),
+            const Color(0xFF1A112E).withValues(alpha: 0.3),
+          ],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.07),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF8B5CF6).withValues(alpha: 0.04),
+            blurRadius: 40,
+            spreadRadius: -10,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: widget.activeState.isLoading 
-        ? const Center(child: CircularProgressIndicator())
+        ? const Padding(
+            padding: EdgeInsets.all(48),
+            child: Center(child: CircularProgressIndicator()),
+          )
         : widget.session.steps.isNotEmpty
-          ? Stack(
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Space for icons
-                      const SizedBox(height: 64.0),
-                      
-                      // The Expandable Panel inline
-                      AnimatedSize(
-                        duration: const Duration(milliseconds: 400),
-                        curve: Curves.easeOutQuart,
-                        alignment: Alignment.topRight,
-                        child: _activeOverlay != null
-                          ? Container(
-                              margin: const EdgeInsets.only(bottom: 24, top: 8),
+                // ─── Premium Floating Toolbar ───
+                if (hasVideos || hasPapers)
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          const Color(0xFF0F172A).withValues(alpha: 0.7),
+                          const Color(0xFF1A112E).withValues(alpha: 0.5),
+                        ],
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
+                      ),
+                      border: Border(
+                        bottom: BorderSide(
+                          color: Colors.white.withValues(alpha: 0.06),
+                          width: 1,
+                        ),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        // Left label
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 6,
+                              height: 6,
                               decoration: BoxDecoration(
-                                color: const Color(0xFF0F172A).withValues(alpha: 0.85), // Glassy without blur
-                                borderRadius: const BorderRadius.only(
-                                  topLeft: Radius.circular(20),
-                                  bottomLeft: Radius.circular(20),
-                                  bottomRight: Radius.circular(20),
-                                  topRight: Radius.circular(4), // Chat bubble tail
-                                ),
+                                color: const Color(0xFF34D399),
+                                shape: BoxShape.circle,
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.3),
-                                    blurRadius: 20,
-                                    spreadRadius: -5,
+                                    color: const Color(0xFF34D399).withValues(alpha: 0.5),
+                                    blurRadius: 6,
                                   ),
                                 ],
                               ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(16),
-                                child: _activeOverlay!,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'RESOURCES',
+                              style: GoogleFonts.inter(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white.withValues(alpha: 0.4),
+                                letterSpacing: 1.5,
                               ),
-                            )
-                          : const SizedBox(height: 0),
-                      ),
-                      
-                      // Main Content
-                      widget.buildStepContent(widget.session.steps[widget.activeState.activeStepIndex]),
-                    ],
+                            ),
+                          ],
+                        ),
+                        const Spacer(),
+                        // Action Buttons
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (hasVideos)
+                              _PremiumActionButton(
+                                icon: Icons.play_circle_outline_rounded,
+                                label: 'Videos',
+                                accentColor: const Color(0xFFFF6B6B),
+                                secondaryColor: const Color(0xFFFFAB76),
+                                isActive: _activeOverlay is RecommendedVideos,
+                                onTap: () {
+                                  if (_activeOverlay is RecommendedVideos) {
+                                    _closeOverlay();
+                                  } else {
+                                    _showOverlay(RecommendedVideos(videos: currentStep.videos));
+                                  }
+                                },
+                              ),
+                            if (hasVideos && hasPapers) const SizedBox(width: 10),
+                            if (hasPapers)
+                              _PremiumActionButton(
+                                icon: Icons.science_outlined,
+                                label: 'Papers',
+                                accentColor: const Color(0xFF60A5FA),
+                                secondaryColor: const Color(0xFF818CF8),
+                                isActive: _activeOverlay is AcademicPapers,
+                                onTap: () {
+                                  if (_activeOverlay is AcademicPapers) {
+                                    _closeOverlay();
+                                  } else {
+                                    _showOverlay(
+                                      AcademicPapers(
+                                        papers: currentStep.papers,
+                                        initialTopic: '${widget.session.topic}: ${currentStep.title}',
+                                      ),
+                                    );
+                                  }
+                                },
+                              ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                
-                // Floating Icons (Top Right)
-                Positioned(
-                  top: 0,
-                  right: 0,
-                  child: Row(
-                    children: [
-                      if (widget.session.steps[widget.activeState.activeStepIndex].videos != null && 
-                          widget.session.steps[widget.activeState.activeStepIndex].videos!.isNotEmpty)
-                        _GlassyIconButton(
-                          emoji: '🎬', 
-                          tooltip: 'Recommended YouTube Video Clips & Timestamps', 
-                          onTap: () {
-                             if (_activeOverlay is RecommendedVideos) {
-                               _closeOverlay();
-                             } else {
-                               _showOverlay(RecommendedVideos(videos: widget.session.steps[widget.activeState.activeStepIndex].videos));
-                             }
-                          }
+
+                // ─── Scrollable Content (Overlay + Step Content) ───
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // ─── Expandable Overlay Panel ───
+                        AnimatedSize(
+                          duration: const Duration(milliseconds: 400),
+                          curve: Curves.easeOutQuart,
+                          alignment: Alignment.topCenter,
+                          child: _activeOverlay != null
+                            ? Container(
+                                width: double.infinity,
+                                margin: const EdgeInsets.only(bottom: 24),
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      const Color(0xFF0F172A).withValues(alpha: 0.95),
+                                      const Color(0xFF1A112E).withValues(alpha: 0.9),
+                                    ],
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomCenter,
+                                  ),
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: Colors.white.withValues(alpha: 0.08),
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(alpha: 0.25),
+                                      blurRadius: 24,
+                                      spreadRadius: -8,
+                                      offset: const Offset(0, 8),
+                                    ),
+                                  ],
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(20),
+                                  child: _activeOverlay!,
+                                ),
+                              )
+                            : const SizedBox(height: 0),
                         ),
-                      const SizedBox(width: 12),
-                      if (widget.session.steps[widget.activeState.activeStepIndex].papers != null && 
-                          widget.session.steps[widget.activeState.activeStepIndex].papers!.isNotEmpty)
-                        _GlassyIconButton(
-                          emoji: '📚', 
-                          tooltip: 'Academic Research Papers', 
-                          onTap: () {
-                             if (_activeOverlay is AcademicPapers) {
-                               _closeOverlay();
-                             } else {
-                               _showOverlay(AcademicPapers(papers: widget.session.steps[widget.activeState.activeStepIndex].papers));
-                             }
-                          }
-                        ),
-                    ],
+
+                        // ─── Main Step Content ───
+                        widget.buildStepContent(widget.session.steps[widget.activeState.activeStepIndex]),
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -935,101 +1032,154 @@ class _StepContentContainerState extends State<_StepContentContainer> {
   }
 }
 
-class _GlassyIconButton extends StatefulWidget {
-  final String emoji;
-  final String tooltip;
+/// Premium pill-shaped action button with gradient border, icon + label,
+/// neon glow, and active-state indicator.
+class _PremiumActionButton extends StatefulWidget {
+  final IconData icon;
+  final String label;
+  final Color accentColor;
+  final Color secondaryColor;
+  final bool isActive;
   final VoidCallback onTap;
 
-  const _GlassyIconButton({
-    required this.emoji,
-    required this.tooltip,
+  const _PremiumActionButton({
+    required this.icon,
+    required this.label,
+    required this.accentColor,
+    required this.secondaryColor,
+    required this.isActive,
     required this.onTap,
   });
 
   @override
-  State<_GlassyIconButton> createState() => _GlassyIconButtonState();
+  State<_PremiumActionButton> createState() => _PremiumActionButtonState();
 }
 
-class _GlassyIconButtonState extends State<_GlassyIconButton> with SingleTickerProviderStateMixin {
+class _PremiumActionButtonState extends State<_PremiumActionButton>
+    with SingleTickerProviderStateMixin {
   bool _isHovered = false;
-  bool _isPressed = false;
-  late AnimationController _floatController;
-  late Animation<double> _floatAnimation;
+  late AnimationController _pulseController;
+  late Animation<double> _pulseAnimation;
 
   @override
   void initState() {
     super.initState();
-    _floatController = AnimationController(
+    _pulseController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 2000),
+      duration: const Duration(milliseconds: 1800),
     )..repeat(reverse: true);
-    
-    _floatAnimation = Tween<double>(begin: -5.0, end: 5.0).animate(
-      CurvedAnimation(parent: _floatController, curve: Curves.easeInOutSine),
+    _pulseAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOutSine),
     );
   }
 
   @override
   void dispose() {
-    _floatController.dispose();
+    _pulseController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Tooltip(
-      message: widget.tooltip,
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.7),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-      ),
-      textStyle: GoogleFonts.inter(color: Colors.white, fontSize: 12),
-      child: MouseRegion(
-        onEnter: (_) => setState(() => _isHovered = true),
-        onExit: (_) => setState(() => _isHovered = false),
-        child: GestureDetector(
-          onTapDown: (_) => setState(() => _isPressed = true),
-          onTapUp: (_) {
-            setState(() => _isPressed = false);
-            widget.onTap();
-          },
-          onTapCancel: () => setState(() => _isPressed = false),
-          child: AnimatedBuilder(
-            animation: _floatAnimation,
-            builder: (context, child) {
-              return Transform.translate(
-                offset: Offset(0, _floatAnimation.value),
-                child: child,
-              );
-            },
-            child: AnimatedScale(
-              scale: _isPressed ? 0.85 : (_isHovered ? 1.05 : 1.0),
-              duration: const Duration(milliseconds: 150),
-              curve: Curves.easeOutBack,
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                width: 48,
-                height: 48,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: _isHovered ? Colors.white.withValues(alpha: 0.1) : Colors.white.withValues(alpha: 0.05),
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: _isHovered ? AppColors.primary.withValues(alpha: 0.6) : AppColors.primary.withValues(alpha: 0.3), 
-                    width: 1.5,
+    final bool showGlow = _isHovered || widget.isActive;
+
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedBuilder(
+          animation: _pulseAnimation,
+          builder: (context, child) {
+            final double glowSpread = widget.isActive
+                ? 0.6 + (_pulseAnimation.value * 0.25)
+                : (_isHovered ? 0.35 : 0.0);
+
+            return AnimatedContainer(
+              duration: const Duration(milliseconds: 220),
+              curve: Curves.easeOutCubic,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: widget.isActive
+                      ? [
+                          widget.accentColor.withValues(alpha: 0.2),
+                          widget.secondaryColor.withValues(alpha: 0.12),
+                        ]
+                      : [
+                          Colors.white.withValues(alpha: _isHovered ? 0.08 : 0.04),
+                          Colors.white.withValues(alpha: _isHovered ? 0.04 : 0.02),
+                        ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: widget.isActive
+                      ? widget.accentColor.withValues(alpha: 0.6)
+                      : (_isHovered
+                          ? widget.accentColor.withValues(alpha: 0.4)
+                          : Colors.white.withValues(alpha: 0.1)),
+                  width: 1,
+                ),
+                boxShadow: showGlow
+                    ? [
+                        BoxShadow(
+                          color: widget.accentColor.withValues(alpha: glowSpread * 0.5),
+                          blurRadius: 16,
+                          spreadRadius: -2,
+                        ),
+                      ]
+                    : [],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    widget.icon,
+                    size: 16,
+                    color: widget.isActive
+                        ? widget.accentColor
+                        : (_isHovered
+                            ? widget.accentColor.withValues(alpha: 0.9)
+                            : Colors.white.withValues(alpha: 0.6)),
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.primary.withValues(alpha: _isHovered ? 0.4 : 0.2),
-                      blurRadius: _isHovered ? 16 : 10,
+                  const SizedBox(width: 7),
+                  Text(
+                    widget.label,
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: widget.isActive
+                          ? Colors.white
+                          : (_isHovered
+                              ? Colors.white.withValues(alpha: 0.9)
+                              : Colors.white.withValues(alpha: 0.55)),
+                      letterSpacing: 0.2,
+                    ),
+                  ),
+                  if (widget.isActive) ...[
+                    const SizedBox(width: 6),
+                    Container(
+                      width: 5,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: widget.accentColor,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: widget.accentColor.withValues(alpha: 0.6),
+                            blurRadius: 6,
+                          ),
+                        ],
+                      ),
                     ),
                   ],
-                ),
-                child: Text(widget.emoji, style: const TextStyle(fontSize: 20)),
+                ],
               ),
-            ),
-          ),
+            );
+          },
         ),
       ),
     );

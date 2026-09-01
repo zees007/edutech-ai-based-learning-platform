@@ -121,9 +121,9 @@ class _VideoCardState extends State<_VideoCard> {
 
   @override
   Widget build(BuildContext context) {
-    final title = widget.video is Map ? widget.video['title'] ?? 'Video ${widget.index + 1}' : 'Video ${widget.index + 1}';
-    final duration = widget.video is Map ? widget.video['duration'] ?? '3:45' : '3:45';
-    final videoId = widget.video is Map ? widget.video['video_id'] : null;
+    final title = widget.video is Map ? (widget.video['title']?.toString() ?? 'Video ${widget.index + 1}') : 'Video ${widget.index + 1}';
+    final duration = widget.video is Map ? (widget.video['duration']?.toString() ?? '3:45') : '3:45';
+    final videoId = widget.video is Map ? widget.video['video_id']?.toString() : null;
     
     final tsRaw = widget.video is Map ? (widget.video['timestamp_seconds'] ?? widget.video['start_time']) : null;
     final int ts = tsRaw != null ? int.tryParse(tsRaw.toString()) ?? 0 : 0;
@@ -132,7 +132,7 @@ class _VideoCardState extends State<_VideoCard> {
     final int secs = ts % 60;
     final String timeStr = '${mins.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
     
-    final String explanationRaw = widget.video is Map ? (widget.video['timestamp_explanation'] ?? widget.video['relevance_snippet'] ?? '') : '';
+    final String explanationRaw = widget.video is Map ? (widget.video['timestamp_explanation']?.toString() ?? widget.video['relevance_snippet']?.toString() ?? '') : '';
     final String explanationText = explanationRaw.isNotEmpty ? explanationRaw : 'Topic explanation segment';
 
     return MouseRegion(
