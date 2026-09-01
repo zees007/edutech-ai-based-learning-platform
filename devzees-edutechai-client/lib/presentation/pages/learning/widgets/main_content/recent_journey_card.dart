@@ -1,8 +1,8 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../../data/models/learning/session_model.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../../data/models/learning/session_model.dart';
+import '../../../../../core/theme/app_colors.dart';
 
 class RecentJourneyCard extends StatefulWidget {
   final SessionModel session;

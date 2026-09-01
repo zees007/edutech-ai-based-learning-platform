@@ -1,5 +1,5 @@
 {
-  "python.defaultInterpreterPath": "devzees-edutechai-server/.venv/Scripts/python.exe",
+  "python.defaultInterpreterPath": "${workspaceFolder}\\devzees-edutechai-server\\.venv\\Scripts\\python.exe",
   "python.analysis.extraPaths": [
     "devzees-edutechai-server"
   ],
