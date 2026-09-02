@@ -159,158 +159,13 @@ class _SocraticTutorChatState extends State<SocraticTutorChat>
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(24),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-        child: Container(
-          constraints: const BoxConstraints(maxHeight: 700),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1E293B).withValues(alpha: 0.55),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: AppColors.accentPink.withValues(alpha: 0.25),
-              width: 1.5,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.accentPink.withValues(alpha: 0.08),
-                blurRadius: 40,
-                spreadRadius: 0,
-              ),
-            ],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildHeader(),
-              Flexible(child: _buildChatArea()),
-              _buildSuggestedQuestions(),
-              _buildInputBar(),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  // ─── Header ────────────────────────────────────────────────────
-
-  Widget _buildHeader() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            const Color(0xFFC084FC).withValues(alpha: 0.08),
-            Colors.transparent,
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        border: Border(
-          bottom: BorderSide(
-            color: Colors.white.withValues(alpha: 0.06),
-          ),
-        ),
-      ),
-      child: Row(
-        children: [
-          // Avatar with gradient glow
-          Container(
-            width: 42,
-            height: 42,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: const LinearGradient(
-                colors: [AppColors.accentPink, AppColors.primary],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.accentPink.withValues(alpha: 0.45),
-                  blurRadius: 12,
-                  spreadRadius: 1,
-                ),
-                BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.3),
-                  blurRadius: 20,
-                  spreadRadius: 0,
-                ),
-              ],
-            ),
-            child: const Center(
-              child: Text('🧩', style: TextStyle(fontSize: 20)),
-            ),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Socratic Tutor',
-                  style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: -0.3,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Row(
-                  children: [
-                    Container(
-                      width: 7,
-                      height: 7,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: const Color(0xFF10B981),
-                        boxShadow: [
-                          BoxShadow(
-                            color:
-                                const Color(0xFF10B981).withValues(alpha: 0.6),
-                            blurRadius: 6,
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      'Online',
-                      style: GoogleFonts.inter(
-                        color: const Color(0xFF10B981),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          // Step badge
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: AppColors.primary.withValues(alpha: 0.3),
-              ),
-            ),
-            child: Text(
-              '💬 Chat',
-              style: GoogleFonts.inter(
-                color: AppColors.primary,
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _buildChatArea(),
+        _buildSuggestedQuestions(),
+        _buildInputBar(),
+      ],
     );
   }
 
@@ -319,6 +174,7 @@ class _SocraticTutorChatState extends State<SocraticTutorChat>
   Widget _buildChatArea() {
     return ListView.builder(
       controller: _scrollController,
+      physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       shrinkWrap: true,
       itemCount: _messages.length + (_isTyping ? 1 : 0),
@@ -364,12 +220,10 @@ class _SocraticTutorChatState extends State<SocraticTutorChat>
                   margin: const EdgeInsets.only(top: 4),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    gradient: const LinearGradient(
-                      colors: [AppColors.accentPink, AppColors.primary],
-                    ),
+                    color: const Color.fromRGBO(14, 17, 23, 1),
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.accentPink.withValues(alpha: 0.3),
+                        color: AppColors.accentPink.withValues(alpha: 0.2),
                         blurRadius: 8,
                       ),
                     ],
@@ -388,31 +242,48 @@ class _SocraticTutorChatState extends State<SocraticTutorChat>
                   ),
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
+                    gradient: isTutor
+                        ? const LinearGradient(
+                            colors: [
+                              Color(0xBF1E293B), // rgba(30, 41, 59, 0.75)
+                              Color(0xD90F172A), // rgba(15, 23, 42, 0.85)
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          )
+                        : null,
                     color: isTutor
-                        ? const Color(0xFFC084FC).withValues(alpha: 0.10)
+                        ? null
                         : const Color(0xFF3B82F6).withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(isTutor ? 4 : 20),
-                      topRight: Radius.circular(isTutor ? 20 : 4),
-                      bottomLeft: const Radius.circular(20),
-                      bottomRight: const Radius.circular(20),
-                    ),
+                    borderRadius: isTutor
+                        ? BorderRadius.circular(16)
+                        : const BorderRadius.only(
+                            topLeft: Radius.circular(20),
+                            topRight: Radius.circular(4),
+                            bottomLeft: Radius.circular(20),
+                            bottomRight: Radius.circular(20),
+                          ),
                     border: Border.all(
                       color: isTutor
-                          ? const Color(0xFFC084FC).withValues(alpha: 0.22)
+                          ? const Color(0x59A855F7) // rgba(168, 85, 247, 0.35)
                           : const Color(0xFF3B82F6).withValues(alpha: 0.22),
                       width: 1,
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: (isTutor
-                                ? const Color(0xFFC084FC)
-                                : const Color(0xFF3B82F6))
-                            .withValues(alpha: 0.06),
-                        blurRadius: 16,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
+                    boxShadow: isTutor
+                        ? [
+                            const BoxShadow(
+                              color: Color(0x4D000000), // rgba(0, 0, 0, 0.3)
+                              blurRadius: 20,
+                              offset: Offset(0, 6),
+                            ),
+                          ]
+                        : [
+                            BoxShadow(
+                              color: const Color(0xFF3B82F6).withValues(alpha: 0.06),
+                              blurRadius: 16,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
                   ),
                   child: isTutor
                       ? _buildMarkdownContent(msg.text)

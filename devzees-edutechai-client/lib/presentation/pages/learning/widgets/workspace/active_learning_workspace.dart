@@ -621,24 +621,6 @@ class ActiveLearningWorkspace extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          step.title,
-          style: GoogleFonts.inter(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
-        const SizedBox(height: 12),
-        Text(
-          step.description,
-          style: GoogleFonts.inter(
-            fontSize: 15,
-            color: Colors.white.withValues(alpha: 0.8),
-            height: 1.5,
-          ),
-        ),
-        const SizedBox(height: 24),
         if (step.tutorExplanation != null || (step.socraticQuestions != null && step.socraticQuestions!.isNotEmpty)) ...[
           SocraticTutorChat(
             tutorExplanation: step.tutorExplanation,
@@ -819,26 +801,29 @@ class _StepContentContainerState extends State<_StepContentContainer> {
       margin: const EdgeInsets.fromLTRB(24, 0, 24, 24),
       clipBehavior: Clip.hardEdge,
       decoration: BoxDecoration(
-        gradient: LinearGradient(
+        gradient: const LinearGradient(
           colors: [
-            Colors.white.withValues(alpha: 0.04),
-            Colors.white.withValues(alpha: 0.015),
-            const Color(0xFF1A112E).withValues(alpha: 0.3),
+            Color(0xB31E293B), // rgba(30, 41, 59, 0.7)
+            Color(0xCC0F172A), // rgba(15, 23, 42, 0.8)
           ],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.07),
+          color: const Color(0x66A855F7), // rgba(168, 85, 247, 0.4)
           width: 1,
         ),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
-            color: const Color(0xFF8B5CF6).withValues(alpha: 0.04),
-            blurRadius: 40,
-            spreadRadius: -10,
-            offset: const Offset(0, 8),
+            color: Color(0x59000000), // rgba(0, 0, 0, 0.35)
+            blurRadius: 30,
+            offset: Offset(0, 10),
+          ),
+          BoxShadow(
+            color: Color(0x14A855F7), // rgba(168, 85, 247, 0.08) inset
+            blurRadius: 20,
+            spreadRadius: 0,
           ),
         ],
       ),
@@ -852,64 +837,73 @@ class _StepContentContainerState extends State<_StepContentContainer> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // ─── Premium Floating Toolbar ───
-                if (hasVideos || hasPapers)
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          const Color(0xFF0F172A).withValues(alpha: 0.7),
-                          const Color(0xFF1A112E).withValues(alpha: 0.5),
-                        ],
-                        begin: Alignment.centerLeft,
-                        end: Alignment.centerRight,
-                      ),
-                      border: Border(
-                        bottom: BorderSide(
-                          color: Colors.white.withValues(alpha: 0.06),
-                          width: 1,
-                        ),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                  decoration: BoxDecoration(
+                    color: const Color(0xCC140D21), // rgba(20, 13, 33, 0.8)
+                    border: Border(
+                      bottom: BorderSide(
+                        color: const Color(0x40A855F7), // rgba(168, 85, 247, 0.25)
+                        width: 1,
                       ),
                     ),
-                    child: Row(
-                      children: [
-                        // Left label
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              width: 6,
-                              height: 6,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF34D399),
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: const Color(0xFF34D399).withValues(alpha: 0.5),
-                                    blurRadius: 6,
-                                  ),
-                                ],
-                              ),
+                  ),
+                  child: Row(
+                    children: [
+                      // Left label
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: const Color.fromRGBO(14, 17, 23, 1),
+                              borderRadius: BorderRadius.circular(6),
                             ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'RESOURCES',
-                              style: GoogleFonts.inter(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.white.withValues(alpha: 0.4),
-                                letterSpacing: 1.5,
-                              ),
+                            child: const Text('🧩', style: TextStyle(fontSize: 14)),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Socratic Tutor',
+                            style: GoogleFonts.inter(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFFFAFAFA),
                             ),
-                          ],
-                        ),
-                        const Spacer(),
-                        // Action Buttons
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            if (hasVideos)
+                          ),
+                          const SizedBox(width: 12),
+                          Container(
+                            width: 6,
+                            height: 6,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF10B981),
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFF10B981).withValues(alpha: 0.6),
+                                  blurRadius: 6,
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Online',
+                            style: GoogleFonts.inter(
+                              color: const Color(0xFF10B981),
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const Spacer(),
+                      // Action Buttons
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (hasVideos)
                               _PremiumActionButton(
                                 icon: Icons.play_circle_outline_rounded,
                                 label: 'Videos',
