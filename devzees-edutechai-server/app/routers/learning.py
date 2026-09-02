@@ -26,9 +26,11 @@ from app.privileges_config import (
     ET_VIEW_LEARNING_HISTORY,
     ET_ACCESS_ADVANCED_MODES,
     ET_REGENERATE_STEP,
+    ET_ACCESS_ACADEMIC_SEARCH,
 )
 from models.db_models import User
 from models.schemas import (
+    AcademicPaper,
     LearningMode,
     LearningRequest,
     ModeChangeRequest,
@@ -360,3 +362,26 @@ async def delete_user_session(
     _sessions.pop(session_id, None)
 
     return {"message": f"Session '{session_id}' deleted successfully"}
+
+
+@router.get(
+    "/academic/search",
+    response_model=list[AcademicPaper],
+    dependencies=[Depends(require_privilege(ET_ACCESS_ACADEMIC_SEARCH))],
+)
+async def search_academic_papers(
+    query: str = Query(..., min_length=1, description="Topic or query keywords for scholarly research"),
+    max_results: int = Query(5, ge=1, le=10, description="Maximum number of papers to return"),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Search across OpenAlex, Semantic Scholar, and arXiv in parallel.
+    Returns deduplicated, relevance-ranked papers with AI TLDR summaries & open-access links.
+    Protected by ET_ACCESS_ACADEMIC_SEARCH privilege.
+    """
+    from services.academic_client import AcademicClient
+
+    client = AcademicClient()
+    papers = await client.search_all(query=query, max_results=max_results)
+    return papers
+

@@ -82,21 +82,33 @@ ROLE AND PRIVILEGES MATRIX
 ----------------------------------------------------------------------
 | Privilege Code                   | Free | Pro | Ultra | Admin |
 |----------------------------------|------|-----|-------|-------|
-| ET_START_LEARNING_SESSION        | Yes  | Yes | Yes   | -     |
-| ET_INTERACT_LEARNING_SESSION     | Yes  | Yes | Yes   | -     |
-| ET_VIEW_LEARNING_HISTORY         | Yes  | Yes | Yes   | -     |
-| ET_GENERATE_QUIZ                 | Yes  | Yes | Yes   | -     |
-| ET_SUBMIT_QUIZ                   | Yes  | Yes | Yes   | -     |
-| ET_VIEW_SUBSCRIPTION             | Yes  | Yes | Yes   | -     |
-| ET_UPGRADE_SUBSCRIPTION          | Yes  | Yes | Yes   | -     |
-| ET_ACCESS_YOUTUBE_BASIC          | Yes  | Yes | Yes   | -     |
-| ET_DOWNGRADE_SUBSCRIPTION        | -    | Yes | Yes   | -     |
-| ET_ACCESS_ADVANCED_MODES         | -    | Yes | Yes   | -     |
-| ET_ACCESS_YOUTUBE_ADVANCED       | -    | Yes | Yes   | -     |
-| ET_ACCESS_ACADEMIC_SEARCH        | -    | Yes | Yes   | -     |
-| ET_REGENERATE_STEP               | -    | Yes | Yes   | -     |
-| ET_EXPORT_MARKDOWN               | -    | Yes | Yes   | -     |
-| ET_ACCESS_FULL_TEXT_RESEARCH     | -    | -   | Yes   | -     |
-| ET_UNLIMITED_FOLLOW_UPS          | -    | -   | Yes   | -     |
-| ET_EXPORT_PDF                    | -    | -   | Yes   | -     |
+| ET_START_LEARNING_SESSION        | Yes  | Yes | Yes   | All   |
+| ET_INTERACT_LEARNING_SESSION     | Yes  | Yes | Yes   | All   |
+| ET_VIEW_LEARNING_HISTORY         | Yes  | Yes | Yes   | All   |
+| ET_GENERATE_QUIZ                 | Yes  | Yes | Yes   | All   |
+| ET_SUBMIT_QUIZ                   | Yes  | Yes | Yes   | All   |
+| ET_VIEW_SUBSCRIPTION             | Yes  | Yes | Yes   | All   |
+| ET_UPGRADE_SUBSCRIPTION          | Yes  | Yes | Yes   | All   |
+| ET_ACCESS_YOUTUBE_BASIC          | Yes  | Yes | Yes   | All   |
+| ET_DOWNGRADE_SUBSCRIPTION        | -    | Yes | Yes   | All   |
+| ET_ACCESS_ADVANCED_MODES         | -    | Yes | Yes   | All   |
+| ET_ACCESS_YOUTUBE_ADVANCED       | -    | Yes | Yes   | All   |
+| ET_ACCESS_ACADEMIC_SEARCH        | -    | Yes | Yes   | All   |
+| ET_REGENERATE_STEP               | -    | Yes | Yes   | All   |
+| ET_EXPORT_MARKDOWN               | -    | Yes | Yes   | All   |
+| ET_ACCESS_FULL_TEXT_RESEARCH     | -    | -   | Yes   | All   |
+| ET_UNLIMITED_FOLLOW_UPS          | -    | -   | Yes   | All   |
+| ET_EXPORT_PDF                    | -    | -   | Yes   | All   |
 | ET_ALL (SuperAdmin Bypass)       | -    | -   | -     | Yes   |
+
+
+----------------------------------------------------------------------
+STANDALONE MIGRATION SCRIPT FOR ET_ACCESS_ACADEMIC_SEARCH
+(Use this to patch existing databases without dropping tables)
+----------------------------------------------------------------------
+
+-- 1. Insert the privilege into privileges table
+INSERT INTO privileges (name, code)
+VALUES ('Access Academic Search', 'ET_ACCESS_ACADEMIC_SEARCH')
+ON CONFLICT (code) DO NOTHING;
+

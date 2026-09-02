@@ -639,29 +639,12 @@ class ActiveLearningWorkspace extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 24),
-        if (step.tutorExplanation != null) ...[
-          Text(
-            'Tutor Explanation',
-            style: GoogleFonts.inter(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: AppColors.primary,
-            ),
+        if (step.tutorExplanation != null || (step.socraticQuestions != null && step.socraticQuestions!.isNotEmpty)) ...[
+          SocraticTutorChat(
+            tutorExplanation: step.tutorExplanation,
+            socraticQuestions: step.socraticQuestions,
+            stepTitle: step.title,
           ),
-          const SizedBox(height: 12),
-          Text(
-            step.tutorExplanation!,
-            style: GoogleFonts.inter(
-              fontSize: 15,
-              color: Colors.white.withValues(alpha: 0.9),
-              height: 1.6,
-            ),
-          ),
-          const SizedBox(height: 32),
-        ],
-
-        if (step.socraticQuestions != null && step.socraticQuestions!.isNotEmpty) ...[
-          SocraticTutorChat(socraticQuestions: step.socraticQuestions),
           const SizedBox(height: 32),
         ],
         if (step.quiz != null && step.quiz!.isNotEmpty) ...[
