@@ -338,11 +338,17 @@ class SocraticTutorAgent(BaseAgent):
                             questions.append(question)
                 break
 
-        # Fallback: generate generic questions if none found
+        # Ensure exactly two questions: cap at 2 and pad with fallback if fewer
+        fallback_questions = [
+            "What part of this explanation was most surprising to you?",
+            "Can you think of a real-world example of this concept?",
+        ]
+
         if not questions:
-            questions = [
-                "What part of this explanation was most surprising to you?",
-                "Can you think of a real-world example of this concept?",
-            ]
+            questions = fallback_questions
+        elif len(questions) == 1:
+            questions = [questions[0], fallback_questions[1]]
+        else:
+            questions = questions[:2]
 
         return explanation, questions

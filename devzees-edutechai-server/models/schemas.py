@@ -185,6 +185,7 @@ class AcademicPaper(BaseModel):
     source: str = Field(description="Which API found this paper.", examples=["openalex", "semantic_scholar", "arxiv"])
     relevance_score: float = Field(default=0.0, ge=0.0, le=1.0)
     doi: str = ""
+    url: str = ""
 
 
 class QuizQuestion(BaseModel):

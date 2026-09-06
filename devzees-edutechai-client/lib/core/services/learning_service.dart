@@ -52,4 +52,16 @@ class LearningService {
       throw Exception('Failed to delete learning session: $e');
     }
   }
+
+  Future<String> sendFollowUpQuestion(String sessionId, int stepIndex, String question) async {
+    try {
+      final response = await _dio.post(
+        '/sessions/$sessionId/step/$stepIndex/followup',
+        data: {'question': question},
+      );
+      return response.data['answer'] as String;
+    } catch (e) {
+      throw Exception('Failed to send follow-up question: $e');
+    }
+  }
 }

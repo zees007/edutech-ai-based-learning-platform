@@ -71,10 +71,19 @@ class AcademicClient:
 
     async def _search_openalex(self, query: str, max_results: int) -> list[AcademicPaper]:
         """Search OpenAlex API."""
-        clean_query = query.replace("?", "").replace("*", "")
+        clean_query = query.strip()
+        
+        # If user passed a conversational question, strip trailing question mark/punctuation
+        if clean_query.endswith("?") or clean_query.endswith("!"):
+            clean_query = clean_query.rstrip("?!").strip()
+
+        # OpenAlex requires 'search.exact' when wildcards (* or ?) are used
+        has_wildcard = "*" in clean_query or "?" in clean_query
+        search_key = "search.exact" if has_wildcard else "search"
+
         url = "https://api.openalex.org/works"
         params: dict[str, Any] = {
-            "search": clean_query,
+            search_key: clean_query,
             "per_page": max_results,
             "sort": "relevance_score:desc",
             "select": "id,title,authorships,publication_year,cited_by_count,doi,open_access,abstract_inverted_index",
@@ -101,6 +110,8 @@ class AcademicClient:
             # Get PDF URL
             oa = work.get("open_access", {})
             pdf_url = oa.get("oa_url", "") or ""
+            doi_val = work.get("doi", "") or ""
+            paper_url = doi_val or work.get("id", "") or ""
 
             papers.append(AcademicPaper(
                 title=work.get("title", "Untitled"),
@@ -110,7 +121,8 @@ class AcademicClient:
                 pdf_url=pdf_url,
                 source="openalex",
                 relevance_score=0.7,
-                doi=work.get("doi", "") or "",
+                doi=doi_val,
+                url=paper_url,
             ))
 
         return papers
@@ -121,7 +133,7 @@ class AcademicClient:
         params = {
             "query": query,
             "limit": max_results,
-            "fields": "title,authors,year,abstract,tldr,openAccessPdf,citationCount,externalIds",
+            "fields": "title,authors,year,abstract,tldr,openAccessPdf,citationCount,externalIds,url",
         }
 
         headers = {}
@@ -143,6 +155,8 @@ class AcademicClient:
 
             ext_ids = paper.get("externalIds", {}) or {}
             doi = ext_ids.get("DOI", "") or ""
+            paper_id = paper.get("paperId", "")
+            paper_url = paper.get("url", "") or (f"https://www.semanticscholar.org/paper/{paper_id}" if paper_id else "")
 
             papers.append(AcademicPaper(
                 title=paper.get("title", "Untitled"),
@@ -154,6 +168,7 @@ class AcademicClient:
                 source="semantic_scholar",
                 relevance_score=0.8,
                 doi=doi,
+                url=paper_url,
             ))
 
         return papers
@@ -198,7 +213,7 @@ class AcademicClient:
                     pdf_url = link.get("href", "")
                     break
 
-            # Get arXiv ID
+            # Get arXiv ID / Abstract page
             arxiv_id = entry.findtext("atom:id", "", ns)
 
             papers.append(AcademicPaper(
@@ -210,6 +225,7 @@ class AcademicClient:
                 source="arxiv",
                 relevance_score=0.6,
                 doi="",
+                url=arxiv_id,
             ))
 
         return papers

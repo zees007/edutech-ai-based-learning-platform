@@ -17,7 +17,9 @@ import logging
 
 from fastapi import APIRouter, Depends, Query
 
+from pydantic import BaseModel
 from agents.orchestrator import OrchestratorAgent
+from agents.socratic_tutor import SocraticTutorAgent
 from app.dependencies import get_current_user, require_privilege, has_privilege
 from app.exceptions import BadRequestException, NotFoundException, ForbiddenException
 from app.privileges_config import (
@@ -26,9 +28,11 @@ from app.privileges_config import (
     ET_VIEW_LEARNING_HISTORY,
     ET_ACCESS_ADVANCED_MODES,
     ET_REGENERATE_STEP,
+    ET_ACCESS_ACADEMIC_SEARCH,
 )
 from models.db_models import User
 from models.schemas import (
+    AcademicPaper,
     LearningMode,
     LearningRequest,
     ModeChangeRequest,
@@ -37,6 +41,9 @@ from models.schemas import (
 from models.shared_memory import SharedMemory
 from models.user_schemas import SearchDTO
 from services.session_manager import SessionManager
+
+class FollowUpRequest(BaseModel):
+    question: str
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -223,6 +230,58 @@ async def complete_step(
         "progress_percentage": memory.progress_percentage,
     }
 
+
+@router.post(
+    "/sessions/{session_id}/step/{step_index}/followup",
+    dependencies=[Depends(require_privilege(ET_INTERACT_LEARNING_SESSION))],
+)
+async def answer_followup(
+    session_id: str, 
+    step_index: int,
+    request: FollowUpRequest,
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Answer a follow up question from the student on a specific step.
+    """
+    memory = await get_session_or_404(session_id)
+
+    if step_index < 0 or step_index >= len(memory.steps):
+        raise BadRequestException(
+            error_code="INVALID_STEP_INDEX",
+            errors=f"Step index {step_index} out of range [0, {len(memory.steps) - 1}]",
+        )
+
+    tutor = SocraticTutorAgent()
+    step = memory.steps[step_index]
+    step_result = memory.get_step_result(step_index)
+    
+    memory.add_conversation_turn("student", request.question)
+
+    chat_history_dicts = [
+        {"role": "user" if t.role == "student" else "assistant", "text": t.content}
+        for t in memory.conversation_history
+    ]
+
+    answer = await tutor.answer_followup(
+        question=request.question,
+        step_title=step.title,
+        step_description=step.description,
+        explanation=step_result.explanation or "",
+        topic=memory.topic,
+        student_level=memory.student_level,
+        chat_history=chat_history_dicts,
+    )
+    
+    memory.add_conversation_turn("tutor", answer)
+    
+    try:
+        await session_manager.update_session(memory)
+    except Exception as e:
+        logger.warning(f"Failed to persist session after follow-up: {e}")
+
+    return {"answer": answer}
+
 @router.post(
     "/sessions/{session_id}/step/{step_index}/regenerate",
     dependencies=[Depends(require_privilege(ET_REGENERATE_STEP))],
@@ -360,3 +419,26 @@ async def delete_user_session(
     _sessions.pop(session_id, None)
 
     return {"message": f"Session '{session_id}' deleted successfully"}
+
+
+@router.get(
+    "/academic/search",
+    response_model=list[AcademicPaper],
+    dependencies=[Depends(require_privilege(ET_ACCESS_ACADEMIC_SEARCH))],
+)
+async def search_academic_papers(
+    query: str = Query(..., min_length=1, description="Topic or query keywords for scholarly research"),
+    max_results: int = Query(5, ge=1, le=10, description="Maximum number of papers to return"),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Search across OpenAlex, Semantic Scholar, and arXiv in parallel.
+    Returns deduplicated, relevance-ranked papers with AI TLDR summaries & open-access links.
+    Protected by ET_ACCESS_ACADEMIC_SEARCH privilege.
+    """
+    from services.academic_client import AcademicClient
+
+    client = AcademicClient()
+    papers = await client.search_all(query=query, max_results=max_results)
+    return papers
+
