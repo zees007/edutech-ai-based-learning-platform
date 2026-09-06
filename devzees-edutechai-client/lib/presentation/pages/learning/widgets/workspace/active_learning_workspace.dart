@@ -353,7 +353,7 @@ class ActiveLearningWorkspace extends ConsumerWidget {
       body: _StepContentContainer(
         activeState: activeState,
         session: session,
-        buildStepContent: _buildStepContent,
+        buildStepContent: (step) => _buildStepContent(step, ref),
       ),
     );
   }
@@ -623,7 +623,7 @@ class ActiveLearningWorkspace extends ConsumerWidget {
     );
   }
 
-  Widget _buildStepContent(dynamic step) {
+  Widget _buildStepContent(dynamic step, WidgetRef ref) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -641,6 +641,9 @@ class ActiveLearningWorkspace extends ConsumerWidget {
           KnowledgeCheckQuiz(
             key: ValueKey('quiz_step_${step.index}'),
             quiz: step.quiz,
+            onNextStep: () {
+              ref.read(activeSessionProvider.notifier).setActiveStep(step.index + 1);
+            },
           ),
           const SizedBox(height: 32),
         ],
