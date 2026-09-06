@@ -22,6 +22,12 @@ class ActiveLearningWorkspace extends ConsumerWidget {
       return const SizedBox.shrink();
     }
 
+    final int totalSteps = session.steps.isNotEmpty ? session.steps.length : 1;
+    final int maxUnlockedIndex = (session.currentStepIndex > session.stepsCompleted
+            ? session.currentStepIndex
+            : session.stepsCompleted)
+        .clamp(0, session.steps.isNotEmpty ? session.steps.length - 1 : 0);
+
     return NestedScrollView(
       headerSliverBuilder: (context, innerBoxIsScrolled) {
         return [
@@ -40,7 +46,6 @@ class ActiveLearningWorkspace extends ConsumerWidget {
                   final isTablet = constraints.maxWidth >= 600 && constraints.maxWidth < 1000;
                   final isMobile = constraints.maxWidth < 600;
                   final levelData = _calculateLevel(session.xpEarned);
-                  final int totalSteps = session.steps.isNotEmpty ? session.steps.length : 1;
                   final double topicPct = session.stepsCompleted / totalSteps;
 
                   final topTitleContent = Row(
@@ -328,6 +333,7 @@ class ActiveLearningWorkspace extends ConsumerWidget {
                 MilestoneRoadmapStepper(
                   steps: session.steps,
                   activeIndex: activeState.activeStepIndex,
+                  maxUnlockedIndex: maxUnlockedIndex,
                   onStepTapped: (index) {
                     ref.read(activeSessionProvider.notifier).setActiveStep(index);
                   },
@@ -623,6 +629,8 @@ class ActiveLearningWorkspace extends ConsumerWidget {
       children: [
         if (step.tutorExplanation != null || (step.socraticQuestions != null && step.socraticQuestions!.isNotEmpty)) ...[
           SocraticTutorChat(
+            key: ValueKey('socratic_step_${step.index}'),
+            stepIndex: step.index,
             tutorExplanation: step.tutorExplanation,
             socraticQuestions: step.socraticQuestions,
             stepTitle: step.title,
@@ -630,7 +638,10 @@ class ActiveLearningWorkspace extends ConsumerWidget {
           const SizedBox(height: 32),
         ],
         if (step.quiz != null && step.quiz!.isNotEmpty) ...[
-          KnowledgeCheckQuiz(quiz: step.quiz),
+          KnowledgeCheckQuiz(
+            key: ValueKey('quiz_step_${step.index}'),
+            quiz: step.quiz,
+          ),
           const SizedBox(height: 32),
         ],
       ],
@@ -759,7 +770,7 @@ class _AnimatedGlassContainerState extends State<_AnimatedGlassContainer> {
   }
 }
 
-class _StepContentContainer extends StatefulWidget {
+class _StepContentContainer extends ConsumerStatefulWidget {
   final ActiveSessionState activeState;
   final dynamic session;
   final Widget Function(dynamic) buildStepContent;
@@ -771,12 +782,11 @@ class _StepContentContainer extends StatefulWidget {
   });
 
   @override
-  State<_StepContentContainer> createState() => _StepContentContainerState();
+  ConsumerState<_StepContentContainer> createState() => _StepContentContainerState();
 }
 
-class _StepContentContainerState extends State<_StepContentContainer> {
+class _StepContentContainerState extends ConsumerState<_StepContentContainer> {
   Widget? _activeOverlay;
-
 
   void _showOverlay(Widget child) {
     setState(() {
@@ -792,7 +802,14 @@ class _StepContentContainerState extends State<_StepContentContainer> {
 
   @override
   Widget build(BuildContext context) {
-    final currentStep = widget.session.steps[widget.activeState.activeStepIndex];
+    final currentIndex = widget.activeState.activeStepIndex;
+    final totalSteps = widget.session.steps.length;
+    final maxUnlockedIndex = (widget.session.currentStepIndex > widget.session.stepsCompleted
+            ? widget.session.currentStepIndex
+            : widget.session.stepsCompleted)
+        .clamp(0, totalSteps > 0 ? totalSteps - 1 : 0);
+
+    final currentStep = widget.session.steps[currentIndex];
     final hasVideos = currentStep.videos != null && currentStep.videos!.isNotEmpty;
     final hasPapers = currentStep.papers != null && currentStep.papers!.isNotEmpty;
 
@@ -810,10 +827,6 @@ class _StepContentContainerState extends State<_StepContentContainer> {
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: const Color(0x66A855F7), // rgba(168, 85, 247, 0.4)
-          width: 1,
-        ),
         boxShadow: const [
           BoxShadow(
             color: Color(0x59000000), // rgba(0, 0, 0, 0.35)
@@ -840,18 +853,12 @@ class _StepContentContainerState extends State<_StepContentContainer> {
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                  decoration: BoxDecoration(
-                    color: const Color(0xCC140D21), // rgba(20, 13, 33, 0.8)
-                    border: Border(
-                      bottom: BorderSide(
-                        color: const Color(0x40A855F7), // rgba(168, 85, 247, 0.25)
-                        width: 1,
-                      ),
-                    ),
+                  decoration: const BoxDecoration(
+                    color: Color(0xCC140D21), // rgba(20, 13, 33, 0.8)
                   ),
                   child: Row(
                     children: [
-                      // Left label
+                      // Left label & Step Navigation
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -896,6 +903,12 @@ class _StepContentContainerState extends State<_StepContentContainer> {
                               fontWeight: FontWeight.w600,
                             ),
                           ),
+                          const SizedBox(width: 16),
+                          _buildStepToolbarNav(
+                            currentIndex: currentIndex,
+                            maxUnlockedIndex: maxUnlockedIndex,
+                            totalSteps: totalSteps,
+                          ),
                         ],
                       ),
                       const Spacer(),
@@ -904,48 +917,48 @@ class _StepContentContainerState extends State<_StepContentContainer> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           if (hasVideos)
-                              _PremiumActionButton(
-                                icon: Icons.play_circle_outline_rounded,
-                                label: 'Videos',
-                                accentColor: const Color(0xFFFF6B6B),
-                                secondaryColor: const Color(0xFFFFAB76),
-                                isActive: _activeOverlay is RecommendedVideos,
-                                onTap: () {
-                                  if (_activeOverlay is RecommendedVideos) {
-                                    _closeOverlay();
-                                  } else {
-                                    _showOverlay(RecommendedVideos(videos: currentStep.videos));
-                                  }
-                                },
-                              ),
-                            if (hasVideos && hasPapers) const SizedBox(width: 10),
-                            if (hasPapers)
-                              _PremiumActionButton(
-                                icon: Icons.science_outlined,
-                                label: 'Papers',
-                                accentColor: const Color(0xFF60A5FA),
-                                secondaryColor: const Color(0xFF818CF8),
-                                isActive: _activeOverlay is AcademicPapers,
-                                onTap: () {
-                                  if (_activeOverlay is AcademicPapers) {
-                                    _closeOverlay();
-                                  } else {
-                                    _showOverlay(
-                                      AcademicPapers(
-                                        papers: currentStep.papers,
-                                        initialTopic: '${widget.session.topic}: ${currentStep.title}',
-                                      ),
-                                    );
-                                  }
-                                },
-                              ),
-                          ],
-                        ),
-                      ],
-                    ),
+                            _PremiumActionButton(
+                              icon: Icons.play_circle_outline_rounded,
+                              label: 'Videos',
+                              accentColor: const Color(0xFFFF6B6B),
+                              secondaryColor: const Color(0xFFFFAB76),
+                              isActive: _activeOverlay is RecommendedVideos,
+                              onTap: () {
+                                if (_activeOverlay is RecommendedVideos) {
+                                  _closeOverlay();
+                                } else {
+                                  _showOverlay(RecommendedVideos(videos: currentStep.videos));
+                                }
+                              },
+                            ),
+                          if (hasVideos && hasPapers) const SizedBox(width: 10),
+                          if (hasPapers)
+                            _PremiumActionButton(
+                              icon: Icons.science_outlined,
+                              label: 'Papers',
+                              accentColor: const Color(0xFF60A5FA),
+                              secondaryColor: const Color(0xFF818CF8),
+                              isActive: _activeOverlay is AcademicPapers,
+                              onTap: () {
+                                if (_activeOverlay is AcademicPapers) {
+                                  _closeOverlay();
+                                } else {
+                                  _showOverlay(
+                                    AcademicPapers(
+                                      papers: currentStep.papers,
+                                      initialTopic: '${widget.session.topic}: ${currentStep.title}',
+                                    ),
+                                  );
+                                }
+                              },
+                            ),
+                        ],
+                      ),
+                    ],
                   ),
+                ),
 
-                // ─── Scrollable Content (Overlay + Step Content) ───
+                // ─── Scrollable Content (Overlay + Step Content + Bottom Nav) ───
                 Expanded(
                   child: SingleChildScrollView(
                     padding: const EdgeInsets.all(24),
@@ -992,7 +1005,7 @@ class _StepContentContainerState extends State<_StepContentContainer> {
                         ),
 
                         // ─── Main Step Content ───
-                        widget.buildStepContent(widget.session.steps[widget.activeState.activeStepIndex]),
+                        widget.buildStepContent(widget.session.steps[currentIndex]),
                       ],
                     ),
                   ),
@@ -1005,6 +1018,128 @@ class _StepContentContainerState extends State<_StepContentContainer> {
                 style: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
               ),
             ),
+    );
+  }
+
+  Widget _buildStepToolbarNav({
+    required int currentIndex,
+    required int maxUnlockedIndex,
+    required int totalSteps,
+  }) {
+    final canGoBack = currentIndex > 0;
+    final canGoForward = currentIndex < maxUnlockedIndex;
+    final isReviewing = currentIndex < maxUnlockedIndex;
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Previous Step quick button
+        if (canGoBack)
+          Tooltip(
+            message: 'Go back to previous step ($currentIndex)',
+            child: InkWell(
+              onTap: () {
+                ref.read(activeSessionProvider.notifier).setActiveStep(currentIndex - 1);
+              },
+              borderRadius: BorderRadius.circular(8),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.07),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.arrow_back_ios_new_rounded, size: 11, color: Colors.white),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Prev',
+                      style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.white),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        if (canGoBack) const SizedBox(width: 8),
+        // Step pill
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          decoration: BoxDecoration(
+            color: isReviewing
+                ? const Color(0xFF06B6D4).withValues(alpha: 0.15)
+                : AppColors.primary.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: isReviewing
+                  ? const Color(0xFF06B6D4).withValues(alpha: 0.45)
+                  : AppColors.primary.withValues(alpha: 0.45),
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Step ${currentIndex + 1} of $totalSteps',
+                style: GoogleFonts.inter(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w700,
+                  color: isReviewing ? const Color(0xFF22D3EE) : const Color(0xFFC084FC),
+                ),
+              ),
+              if (isReviewing) ...[
+                const SizedBox(width: 6),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF06B6D4).withValues(alpha: 0.25),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    'Review Mode',
+                    style: GoogleFonts.inter(fontSize: 9, fontWeight: FontWeight.w800, color: Colors.white),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+        if (canGoForward) const SizedBox(width: 8),
+        // Next Step quick button
+        if (canGoForward)
+          Tooltip(
+            message: 'Go forward to Step ${currentIndex + 2}',
+            child: InkWell(
+              onTap: () {
+                ref.read(activeSessionProvider.notifier).setActiveStep(currentIndex + 1);
+              },
+              borderRadius: BorderRadius.circular(8),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0x33A855F7), Color(0x333B82F6)],
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: const Color(0xFFA855F7).withValues(alpha: 0.4)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Next',
+                      style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.white),
+                    ),
+                    const SizedBox(width: 4),
+                    const Icon(Icons.arrow_forward_ios_rounded, size: 11, color: Colors.white),
+                  ],
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 }

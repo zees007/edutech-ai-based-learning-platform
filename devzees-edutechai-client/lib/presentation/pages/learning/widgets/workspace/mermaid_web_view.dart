@@ -1,13 +1,18 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:js_interop';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import '../../../../../../core/theme/app_colors.dart';
+
+/// JS eval binding — runs JavaScript in the MAIN page context (not iframe).
+/// Available cross-platform via dart:js_interop; only called when kIsWeb.
+@JS('eval')
+external JSAny? _jsEval(JSString code);
 
 class MermaidWebView extends StatefulWidget {
   final String code;
@@ -24,9 +29,6 @@ class _MermaidWebViewState extends State<MermaidWebView> {
   bool _isLoading = true;
   double _webViewHeight = 280;
   bool _isIframeHovered = false;
-  bool _isToolbarHovered = false;
-
-  bool get _isHovered => _isIframeHovered || _isToolbarHovered;
 
   @override
   void initState() {
@@ -83,7 +85,8 @@ class _MermaidWebViewState extends State<MermaidWebView> {
     final safeCode = jsonEncode(widget.code);
 
     // We use a dark theme configuration for Mermaid to match the app
-    final html = '''
+    final html =
+        '''
 <!DOCTYPE html>
 <html>
 <head>
@@ -95,20 +98,35 @@ class _MermaidWebViewState extends State<MermaidWebView> {
       padding: 0;
       width: 100%;
       height: 100%;
-      overflow: hidden;
+      overflow: auto;
       background-color: transparent;
     }
     body {
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      display: block;
       color: #F8FAFC;
     }
     #graphDiv {
-      width: 100%;
-      display: flex;
-      justify-content: center;
-      overflow: hidden;
+      display: inline-block;
+      min-width: 100%;
+      text-align: center;
+    }
+    
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.1); 
+      border-radius: 5px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.5); 
+      border-radius: 5px;
+      
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 0, 0, 0.7); 
     }
     .error-msg {
       color: #EF4444;
@@ -150,16 +168,23 @@ class _MermaidWebViewState extends State<MermaidWebView> {
       securityLevel: 'loose'
     });
 
+    // Helper: always get fresh SVG from the DOM
+    function getSvgString() {
+      const el = document.querySelector('.mermaid svg');
+      return el ? el.outerHTML : '';
+    }
+
     // Extract SVG after render and send to Flutter
     setTimeout(() => {
       try {
-        const svgElement = document.querySelector('.mermaid svg');
-        if (svgElement) {
-          window.renderedSvgString = svgElement.outerHTML;
+        const svg = getSvgString();
+        if (svg) {
+          window.renderedSvgString = svg;
           if (window.SvgChannel) {
-            window.SvgChannel.postMessage(svgElement.outerHTML);
+            window.SvgChannel.postMessage(svg);
           }
-          if (window.HeightChannel) {
+          const svgElement = document.querySelector('.mermaid svg');
+          if (svgElement && window.HeightChannel) {
             const rect = svgElement.getBoundingClientRect();
             // Add some padding to prevent cut-off
             window.HeightChannel.postMessage(Math.ceil(rect.height + 40).toString());
@@ -176,117 +201,176 @@ class _MermaidWebViewState extends State<MermaidWebView> {
     return html;
   }
 
-  Future<void> _downloadSvg() async {
-    String? finalSvg = _renderedSvg;
+  void _showToast(String message, IconData icon, [bool isError = false]) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    
+    final bottomMargin = kIsWeb ? screenHeight - 120 : 24.0;
+    final leftMargin = kIsWeb ? screenWidth - 320 : 24.0;
+    const rightMargin = 24.0;
 
-    // Fallback: If channel didn't work (like on Web), try fetching directly
-    if (finalSvg == null || finalSvg.isEmpty) {
-      try {
-        final result = await _controller.runJavaScriptReturningResult(
-          "window.renderedSvgString || ''"
-        );
-        final raw = result.toString();
-        if (raw.isNotEmpty && raw != "''") {
-          // runJavaScriptReturningResult returns a JSON-encoded string, so we decode it
-          if (raw.startsWith('"') && raw.endsWith('"')) {
-            finalSvg = jsonDecode(raw) as String;
-          } else {
-            finalSvg = raw;
-          }
-        }
-      } catch (e) {
-        debugPrint("Failed to fetch SVG via JS: \$e");
-      }
-    }
-
-    if (finalSvg == null || finalSvg.isEmpty) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('SVG not ready yet.', style: GoogleFonts.inter())),
-        );
-      }
-      return;
-    }
-
-    try {
-      if (kIsWeb) {
-        // On Web, iframe sandbox blocks JS downloads. Use url_launcher data URI.
-        final bytes = utf8.encode(finalSvg);
-        final base64String = base64Encode(bytes);
-        final uri = Uri.parse("data:image/svg+xml;base64,$base64String");
-        
-        if (await canLaunchUrl(uri)) {
-          await launchUrl(uri);
-        } else {
-          throw Exception("Could not launch SVG data URI");
-        }
-        
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Download started', style: GoogleFonts.inter(fontSize: 13)),
-              backgroundColor: const Color(0xFF1E293B),
-              behavior: SnackBarBehavior.floating,
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(icon, color: isError ? AppColors.accentPink : AppColors.accentCyan, size: 20),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                message,
+                style: GoogleFonts.inter(fontSize: 13, color: AppColors.textPrimary),
+              ),
             ),
-          );
+          ],
+        ),
+        backgroundColor: AppColors.secondaryBackground,
+        behavior: SnackBarBehavior.floating,
+        margin: EdgeInsets.only(
+          bottom: bottomMargin > 0 ? bottomMargin : 24.0,
+          left: leftMargin > 0 ? leftMargin : 24.0,
+          right: rightMargin,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+          side: const BorderSide(color: AppColors.glassBorder),
+        ),
+        duration: const Duration(seconds: 3),
+        elevation: 0,
+      ),
+    );
+  }
+
+  /// Extracts the SVG string from the WebView, trying multiple strategies.
+  Future<String> _extractSvgFromWebView() async {
+    // Strategy 1: Use the cached SVG from the SvgChannel
+    if (_renderedSvg != null && _renderedSvg!.trim().isNotEmpty) {
+      debugPrint('SVG source: SvgChannel cache');
+      return _renderedSvg!;
+    }
+
+    // Strategy 2: Re-read directly from the DOM via JS
+    debugPrint('SVG source: Falling back to JS extraction...');
+    final result = await _controller.runJavaScriptReturningResult(
+      '''(function() {
+        var el = document.querySelector('.mermaid svg');
+        if (el) return el.outerHTML;
+        var container = document.getElementById('graphDiv');
+        if (container) return container.innerHTML;
+        return '';
+      })()''',
+    );
+
+    final raw = result.toString();
+    debugPrint('JS extraction raw length: ${raw.length}, starts: ${raw.substring(0, raw.length.clamp(0, 50))}');
+
+    // The WebView wraps string results in quotes — unwrap them
+    if (raw.startsWith('"') && raw.endsWith('"')) {
+      try {
+        final decoded = jsonDecode(raw) as String;
+        if (decoded.isNotEmpty) return decoded;
+      } catch (_) {}
+    }
+
+    // Some platforms return without quotes
+    if (raw.isNotEmpty && raw != "''" && raw != 'null') {
+      return raw;
+    }
+
+    throw Exception('SVG content is empty — the diagram may not have rendered yet.');
+  }
+
+  Future<void> _downloadSvg() async {
+    try {
+      _showToast('Downloading SVG diagram...', Icons.downloading_rounded);
+
+      if (kIsWeb) {
+        // On Flutter Web, the WebView is a sandboxed iframe — all direct download
+        // attempts from inside the iframe are blocked by Chrome/Safari.
+        // Solution: Trigger the download in the TOP-LEVEL page context (outside the iframe)
+        // using the mermaid library loaded in index.html (with dynamic script fallback).
+        final safeCode = jsonEncode(widget.code);
+        _jsEval('''
+          (function() {
+            var code = $safeCode;
+            if (window.downloadMermaidDiagram) {
+              window.downloadMermaidDiagram(code, 'svg');
+            } else {
+              function doExport() {
+                var renderId = 'mermaid_dl_' + Math.random().toString(36).substring(2, 9);
+                window.mermaid.render(renderId, code).then(function(res) {
+                  var el = document.getElementById(renderId);
+                  if (el) el.remove();
+                  var blob = new Blob([res.svg], { type: 'image/svg+xml;charset=utf-8' });
+                  var url = URL.createObjectURL(blob);
+                  var a = document.createElement('a');
+                  a.href = url;
+                  a.download = 'mermaid_diagram_' + Date.now() + '.svg';
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                  setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+                }).catch(function(e) {
+                  console.error("Fallback render error:", e);
+                });
+              }
+              if (window.mermaid) {
+                doExport();
+              } else {
+                var s = document.createElement('script');
+                s.src = 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js';
+                s.onload = function() {
+                  window.mermaid.initialize({ startOnLoad: false, theme: 'dark' });
+                  doExport();
+                };
+                document.head.appendChild(s);
+              }
+            }
+          })();
+        '''.toJS);
+
+        if (mounted) {
+          _showToast('SVG diagram download started!', Icons.check_circle_rounded);
         }
-        return;
-      }
-
-      // Mobile / Desktop implementation
-      Directory? dir;
-      if (Platform.isAndroid) {
-        dir = await getExternalStorageDirectory();
-      } else if (Platform.isIOS) {
-        dir = await getApplicationDocumentsDirectory();
       } else {
-        dir = await getDownloadsDirectory();
-      }
+        // On mobile/desktop: extract SVG from native WebView, then write to device storage
+        final svgContent = await _extractSvgFromWebView();
 
-      if (dir == null) throw Exception("Could not access storage directory.");
+        Directory? dir;
+        if (Platform.isAndroid) {
+          dir = await getExternalStorageDirectory();
+        } else if (Platform.isIOS) {
+          dir = await getApplicationDocumentsDirectory();
+        } else {
+          dir = await getDownloadsDirectory();
+        }
+        dir ??= await getApplicationDocumentsDirectory();
 
-      final file = File('\${dir.path}/mermaid_diagram_\${DateTime.now().millisecondsSinceEpoch}.svg');
-      await file.writeAsString(finalSvg);
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Saved to \${file.path}', style: GoogleFonts.inter(fontSize: 13)),
-            backgroundColor: const Color(0xFF1E293B),
-            behavior: SnackBarBehavior.floating,
-            duration: const Duration(seconds: 4),
-          ),
+        final file = File(
+          '${dir.path}/mermaid_diagram_${DateTime.now().millisecondsSinceEpoch}.svg',
         );
+        await file.writeAsString(svgContent);
+        debugPrint('SVG saved to: ${file.path}');
+
+        if (mounted) {
+          _showToast('SVG saved to device storage!', Icons.check_circle_rounded);
+        }
       }
-    } catch (e) {
+    } catch (e, stack) {
+      debugPrint("Download SVG Error: $e\n$stack");
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to save SVG: \$e', style: GoogleFonts.inter(fontSize: 13, color: Colors.redAccent)),
-            backgroundColor: const Color(0xFF1E293B),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+        _showToast('Download failed: $e', Icons.error_outline_rounded, true);
       }
     }
   }
 
   void _copyCode() {
     Clipboard.setData(ClipboardData(text: widget.code));
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Mermaid code copied to clipboard!',
-          style: GoogleFonts.inter(fontSize: 13),
-        ),
-        backgroundColor: const Color(0xFF1E293B),
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 2),
-      ),
-    );
+    _showToast('Mermaid code copied to clipboard!', Icons.copy_all_rounded);
   }
 
   void _openFullscreen() {
+    _showToast('Opening diagram in zoom view...', Icons.fullscreen_rounded);
     Navigator.of(context).push(
       MaterialPageRoute(
         fullscreenDialog: true,
@@ -298,12 +382,57 @@ class _MermaidWebViewState extends State<MermaidWebView> {
     );
   }
 
+  bool _isCardHovered = false;
+  bool get _isHovered => _isCardHovered || _isIframeHovered;
+
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isCardHovered = true),
+      onExit: (_) => setState(() => _isCardHovered = false),
+      child: Container(
         margin: const EdgeInsets.symmetric(vertical: 8),
-        child: Stack(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // Toolbar at the top (with hover visibility effect like Streamlit)
+            AnimatedOpacity(
+              opacity: (!kIsWeb || _isHovered) ? 1.0 : 0.5,
+              duration: const Duration(milliseconds: 200),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                alignment: Alignment.centerRight,
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _HoverIconButton(
+                      icon: Icons.download_rounded,
+                      tooltip: 'Download SVG',
+                      onTap: _downloadSvg,
+                      isLoading: _isLoading,
+                    ),
+                    const SizedBox(width: 4),
+                    _HoverIconButton(
+                      icon: Icons.copy_rounded,
+                      tooltip: 'Copy Mermaid Code',
+                      onTap: _copyCode,
+                    ),
+                    const SizedBox(width: 4),
+                    _HoverIconButton(
+                      icon: Icons.fullscreen_rounded,
+                      tooltip: 'Fullscreen / Zoom',
+                      onTap: _openFullscreen,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
             // WebView Container
             AnimatedContainer(
               duration: const Duration(milliseconds: 300),
@@ -320,100 +449,78 @@ class _MermaidWebViewState extends State<MermaidWebView> {
                 ],
               ),
             ),
-            
-            // Hover Toolbar
-            Positioned(
-              top: 12,
-              right: 12,
-              child: MouseRegion(
-                onEnter: (_) => setState(() => _isToolbarHovered = true),
-                onExit: (_) => setState(() => _isToolbarHovered = false),
-                child: AnimatedOpacity(
-                  duration: const Duration(milliseconds: 200),
-                  opacity: _isHovered ? 1.0 : 0.0,
-                  child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF140D21).withValues(alpha: 0.85),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.1),
-                      width: 1,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.3),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      _HoverIconButton(
-                        icon: Icons.download_rounded,
-                        onTap: _downloadSvg,
-                        isLoading: _isLoading,
-                      ),
-                      const SizedBox(width: 4),
-                      _HoverIconButton(
-                        icon: Icons.copy_rounded,
-                        onTap: _copyCode,
-                      ),
-                      const SizedBox(width: 4),
-                      _HoverIconButton(
-                        icon: Icons.fullscreen_rounded,
-                        onTap: _openFullscreen,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              ),
-            ),
           ],
         ),
-      );
+      ),
+    );
   }
 }
 
-class _HoverIconButton extends StatelessWidget {
+class _HoverIconButton extends StatefulWidget {
   final IconData icon;
   final VoidCallback onTap;
   final bool isLoading;
+  final String? tooltip;
 
   const _HoverIconButton({
     required this.icon,
     required this.onTap,
     this.isLoading = false,
+    this.tooltip,
   });
 
   @override
+  State<_HoverIconButton> createState() => _HoverIconButtonState();
+}
+
+class _HoverIconButtonState extends State<_HoverIconButton> {
+  bool _isHovered = false;
+
+  @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: isLoading ? null : onTap,
-        borderRadius: BorderRadius.circular(8),
-        hoverColor: Colors.white.withValues(alpha: 0.1),
-        splashColor: Colors.white.withValues(alpha: 0.2),
-        child: Container(
+    Widget button = GestureDetector(
+      onTap: widget.isLoading ? null : widget.onTap,
+      behavior: HitTestBehavior.opaque,
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        onEnter: (_) => setState(() => _isHovered = true),
+        onExit: (_) => setState(() => _isHovered = false),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.all(8),
-          child: isLoading
+          decoration: BoxDecoration(
+            color: _isHovered ? AppColors.glassHover : Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: _isHovered ? AppColors.glassBorder : Colors.transparent,
+            ),
+          ),
+          child: widget.isLoading
               ? const SizedBox(
                   width: 16,
                   height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white54),
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white54,
+                  ),
                 )
               : Icon(
-                  icon,
-                  color: Colors.white.withValues(alpha: 0.8),
+                  widget.icon,
+                  color: _isHovered ? Colors.white : Colors.white.withValues(alpha: 0.75),
                   size: 18,
                 ),
         ),
       ),
     );
+
+    if (widget.tooltip != null) {
+      return Tooltip(
+        message: widget.tooltip!,
+        waitDuration: const Duration(milliseconds: 400),
+        child: button,
+      );
+    }
+    return button;
   }
 }
 
@@ -424,10 +531,7 @@ class _MermaidFullscreenView extends StatefulWidget {
   final String code;
   final String htmlContent;
 
-  const _MermaidFullscreenView({
-    required this.code,
-    required this.htmlContent,
-  });
+  const _MermaidFullscreenView({required this.code, required this.htmlContent});
 
   @override
   State<_MermaidFullscreenView> createState() => _MermaidFullscreenViewState();
@@ -470,16 +574,49 @@ class _MermaidFullscreenViewState extends State<_MermaidFullscreenView> {
             tooltip: 'Copy Code',
             onPressed: () {
               Clipboard.setData(ClipboardData(text: widget.code));
+              
+              final screenWidth = MediaQuery.of(context).size.width;
+              final screenHeight = MediaQuery.of(context).size.height;
+              
+              final bottomMargin = kIsWeb ? screenHeight - 120 : 24.0;
+              final leftMargin = kIsWeb ? screenWidth - 320 : 24.0;
+              const rightMargin = 24.0;
+
+              ScaffoldMessenger.of(context).clearSnackBars();
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Copied to clipboard!')),
+                SnackBar(
+                  content: Row(
+                    children: [
+                      const Icon(Icons.copy_all_rounded, color: AppColors.accentCyan, size: 20),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Copied to clipboard!',
+                          style: GoogleFonts.inter(fontSize: 13, color: AppColors.textPrimary),
+                        ),
+                      ),
+                    ],
+                  ),
+                  backgroundColor: AppColors.secondaryBackground,
+                  behavior: SnackBarBehavior.floating,
+                  margin: EdgeInsets.only(
+                    bottom: bottomMargin > 0 ? bottomMargin : 24.0,
+                    left: leftMargin > 0 ? leftMargin : 24.0,
+                    right: rightMargin,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    side: const BorderSide(color: AppColors.glassBorder),
+                  ),
+                  duration: const Duration(seconds: 3),
+                  elevation: 0,
+                ),
               );
             },
           ),
         ],
       ),
-      body: SafeArea(
-        child: WebViewWidget(controller: _controller),
-      ),
+      body: SafeArea(child: WebViewWidget(controller: _controller)),
     );
   }
 }

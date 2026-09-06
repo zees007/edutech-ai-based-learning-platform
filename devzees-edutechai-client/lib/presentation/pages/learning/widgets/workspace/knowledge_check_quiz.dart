@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../../../../core/theme/app_colors.dart';
 
 class KnowledgeCheckQuiz extends StatefulWidget {
   final List<dynamic>? quiz;
@@ -30,9 +29,9 @@ class _KnowledgeCheckQuizState extends State<KnowledgeCheckQuiz> {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: const Color(0xFFF43F5E).withOpacity(0.05),
+        color: const Color(0xFFF43F5E).withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFF43F5E).withOpacity(0.3)),
+        border: Border.all(color: const Color(0xFFF43F5E).withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -76,10 +75,10 @@ class _KnowledgeCheckQuizState extends State<KnowledgeCheckQuiz> {
                 margin: const EdgeInsets.only(bottom: 12),
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 decoration: BoxDecoration(
-                  color: isSelected ? const Color(0xFFF43F5E).withOpacity(0.15) : Colors.white.withOpacity(0.05),
+                  color: isSelected ? const Color(0xFFF43F5E).withValues(alpha: 0.15) : Colors.white.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: isSelected ? const Color(0xFFF43F5E) : Colors.white.withOpacity(0.1),
+                    color: isSelected ? const Color(0xFFF43F5E) : Colors.white.withValues(alpha: 0.1),
                     width: isSelected ? 2 : 1,
                   ),
                 ),
@@ -105,7 +104,7 @@ class _KnowledgeCheckQuizState extends State<KnowledgeCheckQuiz> {
                       child: Text(
                         options[index],
                         style: GoogleFonts.inter(
-                          color: isSelected ? Colors.white : Colors.white.withOpacity(0.8),
+                          color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.8),
                           fontSize: 14,
                           fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                         ),
@@ -129,7 +128,7 @@ class _KnowledgeCheckQuizState extends State<KnowledgeCheckQuiz> {
                     },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFF43F5E),
-                disabledBackgroundColor: Colors.white.withOpacity(0.1),
+                disabledBackgroundColor: Colors.white.withValues(alpha: 0.1),
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),

@@ -1,10 +1,12 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../../../core/theme/app_colors.dart';
+import '../../../../../../core/providers/active_session_provider.dart';
+import '../../../../../../core/providers/learning_provider.dart';
 import 'mermaid_web_view.dart';
 
 // ═══════════════════════════════════════════════════════════════════
@@ -17,53 +19,86 @@ import 'mermaid_web_view.dart';
 // 4. Chat input bar → text field + gradient send button
 // ═══════════════════════════════════════════════════════════════════
 
-class SocraticTutorChat extends StatefulWidget {
+class SocraticTutorChat extends ConsumerStatefulWidget {
   final String? tutorExplanation;
   final List<dynamic>? socraticQuestions;
   final String stepTitle;
+  final int? stepIndex;
 
   const SocraticTutorChat({
     super.key,
     this.tutorExplanation,
     this.socraticQuestions,
     this.stepTitle = '',
+    this.stepIndex,
   });
 
   @override
-  State<SocraticTutorChat> createState() => _SocraticTutorChatState();
+  ConsumerState<SocraticTutorChat> createState() => _SocraticTutorChatState();
 }
 
-class _SocraticTutorChatState extends State<SocraticTutorChat>
+class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
     with TickerProviderStateMixin {
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final List<_ChatMessage> _messages = [];
   bool _isTyping = false;
   final FocusNode _inputFocusNode = FocusNode();
+  bool _isInputFocused = false;
 
   @override
   void initState() {
     super.initState();
+    _inputFocusNode.addListener(_onFocusChange);
     _initializeMessages();
+  }
+
+  void _onFocusChange() {
+    if (_isInputFocused != _inputFocusNode.hasFocus) {
+      setState(() {
+        _isInputFocused = _inputFocusNode.hasFocus;
+      });
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant SocraticTutorChat oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.stepTitle != widget.stepTitle ||
+        oldWidget.tutorExplanation != widget.tutorExplanation ||
+        oldWidget.stepIndex != widget.stepIndex) {
+      for (final msg in _messages) {
+        msg.animController.dispose();
+      }
+      _messages.clear();
+      _controller.clear();
+      _isTyping = false;
+      _initializeMessages();
+      setState(() {});
+    }
   }
 
   void _initializeMessages() {
     // 1. Render tutorExplanation as the first tutor bubble (matching Streamlit)
     if (widget.tutorExplanation != null &&
         widget.tutorExplanation!.trim().isNotEmpty) {
-      _messages.add(_ChatMessage(
-        sender: _Sender.tutor,
-        text: widget.tutorExplanation!,
-        animController: _createAnimController(),
-      ));
+      _messages.add(
+        _ChatMessage(
+          sender: _Sender.tutor,
+          text: widget.tutorExplanation!,
+          animController: _createAnimController(),
+        ),
+      );
     } else {
       // Fallback if explanation hasn't arrived yet
-      _messages.add(_ChatMessage(
-        sender: _Sender.tutor,
-        text:
-            '🧩 *Socratic Tutor Agent is preparing the explanation for **${widget.stepTitle}**...*',
-        animController: _createAnimController(),
-      ));
+      _messages.add(
+        _ChatMessage(
+          sender: _Sender.tutor,
+          text:
+              '🧩 *Socratic Tutor Agent is preparing the explanation for **${widget.stepTitle}**...*',
+          animController: _createAnimController(),
+        ),
+      );
     }
 
     // Start entrance animations
@@ -91,61 +126,109 @@ class _SocraticTutorChatState extends State<SocraticTutorChat>
     });
   }
 
-  void _sendMessage([String? prefilledText]) {
+  void _sendMessage([String? prefilledText]) async {
     final text = prefilledText ?? _controller.text.trim();
     if (text.isEmpty) return;
 
     final userAnim = _createAnimController();
     setState(() {
-      _messages.add(_ChatMessage(
-        sender: _Sender.user,
-        text: text,
-        animController: userAnim,
-      ));
+      _messages.add(
+        _ChatMessage(
+          sender: _Sender.user,
+          text: text,
+          animController: userAnim,
+        ),
+      );
       _controller.clear();
       _isTyping = true;
     });
     userAnim.forward();
     _scrollToBottom();
 
-    // Simulate tutor response (will be replaced with API call later)
-    Future.delayed(const Duration(milliseconds: 1200), () {
+    final activeState = ref.read(activeSessionProvider);
+    final sessionId = activeState.session?.sessionId;
+    final stepIndex = widget.stepIndex ?? activeState.activeStepIndex;
+    final learningService = ref.read(learningServiceProvider);
+
+    if (sessionId == null) {
+      setState(() {
+        _isTyping = false;
+      });
+      return;
+    }
+
+    try {
+      final answer = await learningService.sendFollowUpQuestion(
+        sessionId,
+        stepIndex,
+        text,
+      );
       if (!mounted) return;
+
       final tutorAnim = _createAnimController();
       setState(() {
         _isTyping = false;
-        _messages.add(_ChatMessage(
-          sender: _Sender.tutor,
-          text:
-              'That\'s a great question! Let me think about that in the context of **${widget.stepTitle}**.\n\n'
-              'Consider this — why do you think this particular aspect matters? '
-              'Try connecting it to something you already know. What patterns do you see? 🤔',
-          animController: tutorAnim,
-        ));
+        _messages.add(
+          _ChatMessage(
+            sender: _Sender.tutor,
+            text: answer,
+            animController: tutorAnim,
+          ),
+        );
       });
       tutorAnim.forward();
       _scrollToBottom();
-    });
+    } catch (e) {
+      if (!mounted) return;
+      final errorAnim = _createAnimController();
+      setState(() {
+        _isTyping = false;
+        _messages.add(
+          _ChatMessage(
+            sender: _Sender.tutor,
+            text:
+                "⚠️ I encountered an issue connecting to the socratic agent. Please try asking again.",
+            animController: errorAnim,
+          ),
+        );
+      });
+      errorAnim.forward();
+      _scrollToBottom();
+    }
   }
 
   List<String> get _suggestedQuestions {
-    if (widget.socraticQuestions == null || widget.socraticQuestions!.isEmpty) {
-      return [
-        'Can you explain this with a real-world analogy?',
-        'Why is this step important for the topic?',
-      ];
+    final fallbackQuestions = [
+      'Can you explain this with a real-world analogy?',
+      'Why is this step important for ${widget.stepTitle.isNotEmpty ? widget.stepTitle : "the topic"}?',
+    ];
+
+    final rawList = widget.socraticQuestions;
+    if (rawList == null || rawList.isEmpty) {
+      return fallbackQuestions;
     }
-    return widget.socraticQuestions!
-        .take(2)
+
+    final parsed = rawList
         .map((q) {
           if (q is Map) return q['question']?.toString() ?? q.toString();
-          return q.toString();
+          return q.toString().trim();
         })
+        .where((q) => q.isNotEmpty)
+        .take(2)
         .toList();
+
+    if (parsed.isEmpty) {
+      return fallbackQuestions;
+    } else if (parsed.length == 1) {
+      return [parsed.first, fallbackQuestions[1]];
+    }
+
+    return parsed;
   }
 
   @override
   void dispose() {
+    _inputFocusNode.removeListener(_onFocusChange);
     _controller.dispose();
     _scrollController.dispose();
     _inputFocusNode.dispose();
@@ -198,19 +281,23 @@ class _SocraticTutorChatState extends State<SocraticTutorChat>
         curve: Curves.easeOut,
       ),
       child: SlideTransition(
-        position: Tween<Offset>(
-          begin: Offset(isTutor ? -0.15 : 0.15, 0),
-          end: Offset.zero,
-        ).animate(CurvedAnimation(
-          parent: msg.animController,
-          curve: Curves.easeOutCubic,
-        )),
+        position:
+            Tween<Offset>(
+              begin: Offset(isTutor ? -0.15 : 0.15, 0),
+              end: Offset.zero,
+            ).animate(
+              CurvedAnimation(
+                parent: msg.animController,
+                curve: Curves.easeOutCubic,
+              ),
+            ),
         child: Padding(
           padding: const EdgeInsets.only(bottom: 16),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment:
-                isTutor ? MainAxisAlignment.start : MainAxisAlignment.end,
+            mainAxisAlignment: isTutor
+                ? MainAxisAlignment.start
+                : MainAxisAlignment.end,
             children: [
               if (isTutor) ...[
                 // Tutor avatar
@@ -240,7 +327,10 @@ class _SocraticTutorChatState extends State<SocraticTutorChat>
                   constraints: BoxConstraints(
                     maxWidth: MediaQuery.of(context).size.width * 0.72,
                   ),
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 16,
+                  ),
                   decoration: BoxDecoration(
                     gradient: isTutor
                         ? const LinearGradient(
@@ -263,12 +353,7 @@ class _SocraticTutorChatState extends State<SocraticTutorChat>
                             bottomLeft: Radius.circular(20),
                             bottomRight: Radius.circular(20),
                           ),
-                    border: Border.all(
-                      color: isTutor
-                          ? const Color(0x59A855F7) // rgba(168, 85, 247, 0.35)
-                          : const Color(0xFF3B82F6).withValues(alpha: 0.22),
-                      width: 1,
-                    ),
+
                     boxShadow: isTutor
                         ? [
                             const BoxShadow(
@@ -279,7 +364,9 @@ class _SocraticTutorChatState extends State<SocraticTutorChat>
                           ]
                         : [
                             BoxShadow(
-                              color: const Color(0xFF3B82F6).withValues(alpha: 0.06),
+                              color: const Color(
+                                0xFF3B82F6,
+                              ).withValues(alpha: 0.06),
                               blurRadius: 16,
                               offset: const Offset(0, 4),
                             ),
@@ -331,9 +418,7 @@ class _SocraticTutorChatState extends State<SocraticTutorChat>
         if (href != null) launchUrl(Uri.parse(href));
       },
       styleSheet: _buildMarkdownStyleSheet(),
-      builders: {
-        'code': _MermaidCodeBlockBuilder(),
-      },
+      builders: {'code': _MermaidCodeBlockBuilder()},
     );
   }
 
@@ -390,15 +475,14 @@ class _SocraticTutorChatState extends State<SocraticTutorChat>
       ),
 
       // Lists
-      listBullet: baseTextStyle.copyWith(
-        color: AppColors.primary,
-      ),
+      listBullet: baseTextStyle.copyWith(color: AppColors.primary),
       listBulletPadding: const EdgeInsets.only(right: 8),
       listIndent: 20,
 
       // Inline code
       code: GoogleFonts.firaCode(
-        color: const Color(0xFFFBBF24),
+        color: const Color(0xFF4ADE80), // Vibrant green
+
         fontSize: 13,
         backgroundColor: Colors.white.withValues(alpha: 0.08),
       ),
@@ -407,9 +491,6 @@ class _SocraticTutorChatState extends State<SocraticTutorChat>
       codeblockDecoration: BoxDecoration(
         color: const Color(0xFF0F172A).withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.08),
-        ),
       ),
       codeblockPadding: const EdgeInsets.all(14),
 
@@ -426,8 +507,7 @@ class _SocraticTutorChatState extends State<SocraticTutorChat>
           ),
         ),
       ),
-      blockquotePadding:
-          const EdgeInsets.only(left: 14, top: 6, bottom: 6),
+      blockquotePadding: const EdgeInsets.only(left: 14, top: 6, bottom: 6),
 
       // Table
       tableHead: GoogleFonts.inter(
@@ -452,10 +532,7 @@ class _SocraticTutorChatState extends State<SocraticTutorChat>
       // Horizontal rule
       horizontalRuleDecoration: BoxDecoration(
         border: Border(
-          top: BorderSide(
-            color: Colors.white.withValues(alpha: 0.1),
-            width: 1,
-          ),
+          top: BorderSide(color: Colors.white.withValues(alpha: 0.1), width: 1),
         ),
       ),
     );
@@ -552,13 +629,10 @@ class _SocraticTutorChatState extends State<SocraticTutorChat>
             padding: const EdgeInsets.only(bottom: 10),
             child: Row(
               children: [
-                Text(
-                  '💡',
-                  style: GoogleFonts.inter(fontSize: 13),
-                ),
+                Text('💡', style: GoogleFonts.inter(fontSize: 13)),
                 const SizedBox(width: 6),
                 Text(
-                  'Suggested Questions',
+                  'Suggested follow up questions',
                   style: GoogleFonts.inter(
                     color: Colors.white.withValues(alpha: 0.5),
                     fontSize: 12,
@@ -570,14 +644,16 @@ class _SocraticTutorChatState extends State<SocraticTutorChat>
             ),
           ),
           // Question chips
-          ...questions.map((q) => Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: _SuggestedQuestionChip(
-                  question: q,
-                  onTap: () => _sendMessage(q),
-                  disabled: _isTyping,
-                ),
-              )),
+          ...questions.map(
+            (q) => Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: _SuggestedQuestionChip(
+                question: q,
+                onTap: () => _sendMessage(q),
+                disabled: _isTyping,
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -586,120 +662,148 @@ class _SocraticTutorChatState extends State<SocraticTutorChat>
   // ─── Input Bar ─────────────────────────────────────────────────
 
   Widget _buildInputBar() {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(12, 8, 12, 14),
-      decoration: BoxDecoration(
-        border: Border(
-          top: BorderSide(
-            color: Colors.white.withValues(alpha: 0.06),
-          ),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOutCubic,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        decoration: BoxDecoration(
+          color: _isInputFocused
+              ? const Color(0xFF1E1435).withValues(alpha: 0.9)
+              : Colors.white.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(16),
         ),
-        gradient: LinearGradient(
-          colors: [
-            const Color(0xFF0F172A).withValues(alpha: 0.4),
-            Colors.transparent,
-          ],
-          begin: Alignment.bottomCenter,
-          end: Alignment.topCenter,
-        ),
-      ),
-      child: Row(
-        children: [
-          // Input field
-          Expanded(
-            child: Container(
+        child: Row(
+          children: [
+            // AI sparkle badge icon
+            Container(
+              padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.05),
-                borderRadius: BorderRadius.circular(28),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.1),
+                gradient: const LinearGradient(
+                  colors: [
+                    Color(0x33F472B6), // Pink alpha
+                    Color(0x33C084FC), // Violet alpha
+                  ],
                 ),
+                borderRadius: BorderRadius.circular(10),
               ),
+              child: const Icon(
+                Icons.auto_awesome_rounded,
+                color: Color(0xFFC084FC),
+                size: 16,
+              ),
+            ),
+            const SizedBox(width: 12),
+            // Input TextField
+            Expanded(
               child: TextField(
                 controller: _controller,
                 focusNode: _inputFocusNode,
                 style: GoogleFonts.inter(
                   color: Colors.white,
                   fontSize: 14,
+                  fontWeight: FontWeight.w400,
                 ),
+                cursorColor: AppColors.primary,
                 maxLines: 1,
                 textInputAction: TextInputAction.send,
                 decoration: InputDecoration(
-                  hintText: 'Ask Socratic Tutor...',
+                  hintText: 'Ask Socratic Tutor a follow-up question...',
                   hintStyle: GoogleFonts.inter(
-                    color: Colors.white.withValues(alpha: 0.35),
-                    fontSize: 14,
+                    color: Colors.white.withValues(alpha: 0.38),
+                    fontSize: 13.5,
                   ),
                   border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 14,
-                  ),
-                  prefixIcon: Padding(
-                    padding: const EdgeInsets.only(left: 14, right: 4),
-                    child: Icon(
-                      Icons.chat_bubble_outline_rounded,
-                      color: Colors.white.withValues(alpha: 0.25),
-                      size: 18,
-                    ),
-                  ),
-                  prefixIconConstraints: const BoxConstraints(
-                    minWidth: 36,
-                    minHeight: 0,
-                  ),
+                  isDense: true,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 10),
                 ),
                 onSubmitted: (_) => _sendMessage(),
                 enabled: !_isTyping,
               ),
             ),
-          ),
-          const SizedBox(width: 10),
-          // Send button
-          GestureDetector(
-            onTap: _isTyping ? null : () => _sendMessage(),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                gradient: _isTyping
-                    ? LinearGradient(
-                        colors: [
-                          Colors.grey.withValues(alpha: 0.3),
-                          Colors.grey.withValues(alpha: 0.2),
-                        ],
-                      )
-                    : const LinearGradient(
-                        colors: [AppColors.accentPink, AppColors.primary],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                shape: BoxShape.circle,
-                boxShadow: _isTyping
-                    ? []
-                    : [
-                        BoxShadow(
-                          color: AppColors.accentPink.withValues(alpha: 0.4),
-                          blurRadius: 12,
-                          spreadRadius: 0,
-                        ),
-                        BoxShadow(
-                          color: AppColors.primary.withValues(alpha: 0.25),
-                          blurRadius: 20,
-                          spreadRadius: 0,
-                        ),
-                      ],
-              ),
-              child: Icon(
-                Icons.send_rounded,
-                color: _isTyping
-                    ? Colors.white.withValues(alpha: 0.3)
-                    : Colors.white,
-                size: 20,
-              ),
+            const SizedBox(width: 8),
+            // Send Action Button
+            _SendActionButton(
+              isTyping: _isTyping,
+              onTap: () => _sendMessage(),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SendActionButton extends StatefulWidget {
+  final bool isTyping;
+  final VoidCallback onTap;
+
+  const _SendActionButton({
+    required this.isTyping,
+    required this.onTap,
+  });
+
+  @override
+  State<_SendActionButton> createState() => _SendActionButtonState();
+}
+
+class _SendActionButtonState extends State<_SendActionButton> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      cursor: widget.isTyping
+          ? SystemMouseCursors.basic
+          : SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: GestureDetector(
+        onTap: widget.isTyping ? null : widget.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          width: 38,
+          height: 38,
+          decoration: BoxDecoration(
+            gradient: widget.isTyping
+                ? LinearGradient(
+                    colors: [
+                      Colors.white.withValues(alpha: 0.08),
+                      Colors.white.withValues(alpha: 0.04),
+                    ],
+                  )
+                : AppColors.primaryGradient,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: widget.isTyping
+                ? []
+                : [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: _isHovered ? 0.6 : 0.35),
+                      blurRadius: _isHovered ? 14 : 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
           ),
-        ],
+          child: Center(
+            child: widget.isTyping
+                ? SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        Colors.white.withValues(alpha: 0.6),
+                      ),
+                    ),
+                  )
+                : const Icon(
+                    Icons.arrow_upward_rounded,
+                    color: Colors.white,
+                    size: 19,
+                  ),
+          ),
+        ),
       ),
     );
   }
@@ -753,8 +857,9 @@ class _TypingDotsState extends State<_TypingDots>
                   height: 8,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: const Color(0xFFC084FC)
-                        .withValues(alpha: 0.4 + 0.5 * bounce),
+                    color: const Color(
+                      0xFFC084FC,
+                    ).withValues(alpha: 0.4 + 0.5 * bounce),
                   ),
                 ),
               ),
@@ -805,15 +910,21 @@ class _SuggestedQuestionChipState extends State<_SuggestedQuestionChip> {
             borderRadius: BorderRadius.circular(14),
             gradient: LinearGradient(
               colors: [
-                AppColors.accentPink.withValues(alpha: _isHovered ? 0.12 : 0.06),
+                AppColors.accentPink.withValues(
+                  alpha: _isHovered ? 0.12 : 0.06,
+                ),
                 AppColors.primary.withValues(alpha: _isHovered ? 0.12 : 0.06),
-                AppColors.accentBlue.withValues(alpha: _isHovered ? 0.12 : 0.06),
+                AppColors.accentBlue.withValues(
+                  alpha: _isHovered ? 0.12 : 0.06,
+                ),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             border: Border.all(
-              color: AppColors.primary.withValues(alpha: _isHovered ? 0.45 : 0.25),
+              color: AppColors.primary.withValues(
+                alpha: _isHovered ? 0.45 : 0.25,
+              ),
               width: 1,
             ),
           ),
@@ -821,10 +932,7 @@ class _SuggestedQuestionChipState extends State<_SuggestedQuestionChip> {
             opacity: opacity,
             child: Row(
               children: [
-                Text(
-                  '💬',
-                  style: GoogleFonts.inter(fontSize: 14),
-                ),
+                Text('💬', style: GoogleFonts.inter(fontSize: 14)),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
@@ -887,7 +995,6 @@ class _MermaidCodeBlockBuilder extends MarkdownElementBuilder {
     return null;
   }
 }
-
 
 // ═══════════════════════════════════════════════════════════════════
 // Chat Message Data Model

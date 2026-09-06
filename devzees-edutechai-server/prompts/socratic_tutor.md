@@ -56,5 +56,6 @@ Write your explanation in clean, natural Markdown. Follow this structure:
 [Include Mermaid diagram here ONLY if mode is visual or deep_dive]
 
 **Socratic Questions:**
+Generate EXACTLY two thought-provoking follow-up questions for this step (no more, no less):
 1. [Guiding inquiry question 1 pushing critical thinking]
 2. [Guiding inquiry question 2 connecting to real-world application]

@@ -41,6 +41,77 @@
     For more details:
     * https://docs.flutter.dev/platform-integration/web/initialization
   -->
+  <!-- Mermaid.js for top-level diagram rendering and export -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script>
+    window.downloadMermaidDiagram = function(mermaidCode, format) {
+      format = format || 'svg';
+      if (!window.mermaid) {
+        console.error("Mermaid library is not loaded.");
+        return;
+      }
+      try {
+        window.mermaid.initialize({
+          startOnLoad: false,
+          theme: 'dark',
+          themeVariables: {
+            primaryColor: '#1E293B',
+            primaryTextColor: '#F8FAFC',
+            primaryBorderColor: '#3B82F6',
+            lineColor: '#94A3B8',
+            secondaryColor: '#0F172A',
+            tertiaryColor: '#C084FC'
+          }
+        });
+      } catch (e) {}
+
+      var renderId = 'mermaid_dl_' + Math.random().toString(36).substring(2, 9);
+      window.mermaid.render(renderId, mermaidCode).then(function(res) {
+        var svgString = res.svg;
+        var tempEl = document.getElementById(renderId);
+        if (tempEl) tempEl.remove();
+
+        if (format === 'png') {
+          // Render SVG to Canvas and download as PNG
+          var img = new Image();
+          var svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+          var url = URL.createObjectURL(svgBlob);
+          img.onload = function() {
+            var canvas = document.createElement('canvas');
+            canvas.width = (img.naturalWidth || 1200) * 2;
+            canvas.height = (img.naturalHeight || 800) * 2;
+            var ctx = canvas.getContext('2d');
+            ctx.scale(2, 2);
+            ctx.fillStyle = '#0F172A';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0);
+            URL.revokeObjectURL(url);
+
+            var a = document.createElement('a');
+            a.download = 'mermaid_diagram_' + Date.now() + '.png';
+            a.href = canvas.toDataURL('image/png');
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+          };
+          img.src = url;
+        } else {
+          // Direct SVG download
+          var blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+          var url = URL.createObjectURL(blob);
+          var a = document.createElement('a');
+          a.href = url;
+          a.download = 'mermaid_diagram_' + Date.now() + '.svg';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+        }
+      }).catch(function(err) {
+        console.error("Failed to render mermaid diagram for download:", err);
+      });
+    };
+  </script>
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

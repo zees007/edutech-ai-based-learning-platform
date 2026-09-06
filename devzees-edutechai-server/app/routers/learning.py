@@ -17,7 +17,9 @@ import logging
 
 from fastapi import APIRouter, Depends, Query
 
+from pydantic import BaseModel
 from agents.orchestrator import OrchestratorAgent
+from agents.socratic_tutor import SocraticTutorAgent
 from app.dependencies import get_current_user, require_privilege, has_privilege
 from app.exceptions import BadRequestException, NotFoundException, ForbiddenException
 from app.privileges_config import (
@@ -39,6 +41,9 @@ from models.schemas import (
 from models.shared_memory import SharedMemory
 from models.user_schemas import SearchDTO
 from services.session_manager import SessionManager
+
+class FollowUpRequest(BaseModel):
+    question: str
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -224,6 +229,58 @@ async def complete_step(
         "is_session_complete": memory.is_complete,
         "progress_percentage": memory.progress_percentage,
     }
+
+
+@router.post(
+    "/sessions/{session_id}/step/{step_index}/followup",
+    dependencies=[Depends(require_privilege(ET_INTERACT_LEARNING_SESSION))],
+)
+async def answer_followup(
+    session_id: str, 
+    step_index: int,
+    request: FollowUpRequest,
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Answer a follow up question from the student on a specific step.
+    """
+    memory = await get_session_or_404(session_id)
+
+    if step_index < 0 or step_index >= len(memory.steps):
+        raise BadRequestException(
+            error_code="INVALID_STEP_INDEX",
+            errors=f"Step index {step_index} out of range [0, {len(memory.steps) - 1}]",
+        )
+
+    tutor = SocraticTutorAgent()
+    step = memory.steps[step_index]
+    step_result = memory.get_step_result(step_index)
+    
+    memory.add_conversation_turn("student", request.question)
+
+    chat_history_dicts = [
+        {"role": "user" if t.role == "student" else "assistant", "text": t.content}
+        for t in memory.conversation_history
+    ]
+
+    answer = await tutor.answer_followup(
+        question=request.question,
+        step_title=step.title,
+        step_description=step.description,
+        explanation=step_result.explanation or "",
+        topic=memory.topic,
+        student_level=memory.student_level,
+        chat_history=chat_history_dicts,
+    )
+    
+    memory.add_conversation_turn("tutor", answer)
+    
+    try:
+        await session_manager.update_session(memory)
+    except Exception as e:
+        logger.warning(f"Failed to persist session after follow-up: {e}")
+
+    return {"answer": answer}
 
 @router.post(
     "/sessions/{session_id}/step/{step_index}/regenerate",
