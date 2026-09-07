@@ -641,6 +641,7 @@ class ActiveLearningWorkspace extends ConsumerWidget {
           KnowledgeCheckQuiz(
             key: ValueKey('quiz_step_${step.index}'),
             quiz: step.quiz,
+            stepIndex: step.index,
             onNextStep: () {
               ref.read(activeSessionProvider.notifier).setActiveStep(step.index + 1);
             },

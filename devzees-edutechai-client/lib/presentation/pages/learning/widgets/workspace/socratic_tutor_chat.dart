@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -6,7 +7,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../../../core/theme/app_colors.dart';
 import '../../../../../../core/providers/active_session_provider.dart';
-import '../../../../../../core/providers/learning_provider.dart';
 import 'mermaid_web_view.dart';
 
 // ═══════════════════════════════════════════════════════════════════
@@ -45,12 +45,66 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
   bool _isTyping = false;
   final FocusNode _inputFocusNode = FocusNode();
   bool _isInputFocused = false;
+  StreamSubscription? _wsSubscription;
 
   @override
   void initState() {
     super.initState();
     _inputFocusNode.addListener(_onFocusChange);
     _initializeMessages();
+    
+    // Listen to websocket chunks
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final wsService = ref.read(learningWebSocketServiceProvider);
+      _wsSubscription = wsService.events.listen(_onWebSocketEvent);
+    });
+  }
+
+  void _onWebSocketEvent(Map<String, dynamic> event) {
+    if (!mounted) return;
+    
+    if (event['event_type'] == 'explanation_chunk') {
+      final chunk = event['chunk'] as String? ?? '';
+      final isFinal = event['is_final'] as bool? ?? false;
+      
+      setState(() {
+        if (_isTyping && _messages.isNotEmpty && _messages.last.sender == _Sender.tutor) {
+          // Append to existing streaming bubble
+          _messages.last.text += chunk;
+        } else {
+          // Create new streaming bubble
+          _isTyping = true;
+          final tutorAnim = _createAnimController();
+          _messages.add(
+            _ChatMessage(
+              sender: _Sender.tutor,
+              text: chunk,
+              animController: tutorAnim,
+            ),
+          );
+          tutorAnim.forward();
+        }
+        
+        if (isFinal) {
+          _isTyping = false;
+        }
+      });
+      _scrollToBottom();
+    } else if (event['event_type'] == 'error') {
+      setState(() {
+        _isTyping = false;
+        final errorAnim = _createAnimController();
+        _messages.add(
+          _ChatMessage(
+            sender: _Sender.tutor,
+            text: "⚠️ WebSocket Error: ${event['message']}",
+            animController: errorAnim,
+          ),
+        );
+        errorAnim.forward();
+      });
+      _scrollToBottom();
+    }
   }
 
   void _onFocusChange() {
@@ -147,8 +201,6 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
 
     final activeState = ref.read(activeSessionProvider);
     final sessionId = activeState.session?.sessionId;
-    final stepIndex = widget.stepIndex ?? activeState.activeStepIndex;
-    final learningService = ref.read(learningServiceProvider);
 
     if (sessionId == null) {
       setState(() {
@@ -158,26 +210,7 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
     }
 
     try {
-      final answer = await learningService.sendFollowUpQuestion(
-        sessionId,
-        stepIndex,
-        text,
-      );
-      if (!mounted) return;
-
-      final tutorAnim = _createAnimController();
-      setState(() {
-        _isTyping = false;
-        _messages.add(
-          _ChatMessage(
-            sender: _Sender.tutor,
-            text: answer,
-            animController: tutorAnim,
-          ),
-        );
-      });
-      tutorAnim.forward();
-      _scrollToBottom();
+      ref.read(activeSessionProvider.notifier).sendFollowUpChat(text);
     } catch (e) {
       if (!mounted) return;
       final errorAnim = _createAnimController();
@@ -228,6 +261,7 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
 
   @override
   void dispose() {
+    _wsSubscription?.cancel();
     _inputFocusNode.removeListener(_onFocusChange);
     _controller.dispose();
     _scrollController.dispose();
@@ -1004,7 +1038,7 @@ enum _Sender { tutor, user }
 
 class _ChatMessage {
   final _Sender sender;
-  final String text;
+  String text;
   final AnimationController animController;
 
   _ChatMessage({

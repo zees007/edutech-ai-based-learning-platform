@@ -5,7 +5,7 @@ import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/gradient_button.dart';
 
 class JourneyPromptCard extends StatefulWidget {
-  final VoidCallback onStartJourney;
+  final void Function(String topic, String mode, String level) onStartJourney;
 
   const JourneyPromptCard({
     super.key,
@@ -287,7 +287,15 @@ class _JourneyPromptCardState extends State<JourneyPromptCard> {
               const SizedBox(height: 12),
               GradientButton(
                 text: '✨ Start Journey',
-                onPressed: widget.onStartJourney,
+                onPressed: () {
+                  if (_promptController.text.trim().isNotEmpty) {
+                    widget.onStartJourney(
+                      _promptController.text.trim(),
+                      _selectedMode,
+                      _selectedLevel,
+                    );
+                  }
+                },
                 height: 52,
               ),
             ],
@@ -306,7 +314,15 @@ class _JourneyPromptCardState extends State<JourneyPromptCard> {
               flex: 2,
               child: GradientButton(
                 text: '✨ Start Journey',
-                onPressed: widget.onStartJourney,
+                onPressed: () {
+                  if (_promptController.text.trim().isNotEmpty) {
+                    widget.onStartJourney(
+                      _promptController.text.trim(),
+                      _selectedMode,
+                      _selectedLevel,
+                    );
+                  }
+                },
                 height: 54, // Matches text field height approx
               ),
             ),

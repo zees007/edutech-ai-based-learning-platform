@@ -1,21 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../../../../core/providers/active_session_provider.dart';
 
-class KnowledgeCheckQuiz extends StatefulWidget {
+class KnowledgeCheckQuiz extends ConsumerStatefulWidget {
   final List<dynamic>? quiz;
   final VoidCallback? onNextStep;
+  final int stepIndex;
 
-  const KnowledgeCheckQuiz({super.key, this.quiz, this.onNextStep});
+  const KnowledgeCheckQuiz({super.key, this.quiz, this.onNextStep, required this.stepIndex});
 
   @override
-  State<KnowledgeCheckQuiz> createState() => _KnowledgeCheckQuizState();
+  ConsumerState<KnowledgeCheckQuiz> createState() => _KnowledgeCheckQuizState();
 }
 
-class _KnowledgeCheckQuizState extends State<KnowledgeCheckQuiz> {
+class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
   final Map<int, int> _selectedAnswers = {};
   final Map<int, String> _textAnswers = {};
   final Map<int, TextEditingController> _controllers = {};
   bool _submitted = false;
+  bool _isSubmitting = false;
 
   @override
   void dispose() {
@@ -454,7 +458,7 @@ class _KnowledgeCheckQuizState extends State<KnowledgeCheckQuiz> {
             Align(
               alignment: Alignment.centerRight,
               child: ElevatedButton(
-                onPressed: () {
+                onPressed: _isSubmitting ? null : () async {
                   if (!_isAllAnswered(quizList)) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
@@ -466,8 +470,35 @@ class _KnowledgeCheckQuizState extends State<KnowledgeCheckQuiz> {
                     );
                   } else {
                     setState(() {
-                      _submitted = true;
+                      _isSubmitting = true;
                     });
+                    
+                    // Format answers map for API: Map<int, String>
+                    final Map<int, String> formattedAnswers = {};
+                    for (int i = 0; i < quizList.length; i++) {
+                      final qData = quizList[i] is Map ? (quizList[i] as Map<String, dynamic>) : <String, dynamic>{};
+                      if (_isFillInTheBlank(qData)) {
+                        formattedAnswers[i] = _textAnswers[i] ?? '';
+                      } else {
+                        final options = (qData['options'] as List?)?.map((e) => e.toString()).toList() ?? [];
+                        final selectedIndex = _selectedAnswers[i];
+                        if (selectedIndex != null && selectedIndex < options.length) {
+                          formattedAnswers[i] = options[selectedIndex];
+                        }
+                      }
+                    }
+                    
+                    await ref.read(activeSessionProvider.notifier).submitStepQuiz(
+                      widget.stepIndex,
+                      formattedAnswers,
+                    );
+                    
+                    if (mounted) {
+                      setState(() {
+                        _submitted = true;
+                        _isSubmitting = false;
+                      });
+                    }
                   }
                 },
                 style: ElevatedButton.styleFrom(
@@ -475,13 +506,18 @@ class _KnowledgeCheckQuizState extends State<KnowledgeCheckQuiz> {
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
-                child: Text(
-                  'Submit Quiz',
-                  style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
+                child: _isSubmitting 
+                  ? const SizedBox(
+                      width: 20, height: 20, 
+                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
+                    )
+                  : Text(
+                      'Submit Quiz',
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
               ),
             ),
           ],

@@ -253,8 +253,16 @@ class LearningMainContent extends ConsumerWidget {
                         ),
                         SizedBox(height: isMobile ? 8 : 16),
                         JourneyPromptCard(
-                          onStartJourney: () {
-                            // TODO: Handle start journey
+                          onStartJourney: (topic, mode, level) {
+                            ref.read(activeSessionProvider.notifier).startNewSession(
+                              topic: topic,
+                              mode: mode,
+                              level: level,
+                            ).catchError((error) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Failed to start journey: $error')),
+                              );
+                            });
                           },
                         ),
                       ],
