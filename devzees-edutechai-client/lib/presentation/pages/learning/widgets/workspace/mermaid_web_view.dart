@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:js_interop';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -8,11 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import '../../../../../../core/theme/app_colors.dart';
-
-/// JS eval binding — runs JavaScript in the MAIN page context (not iframe).
-/// Available cross-platform via dart:js_interop; only called when kIsWeb.
-@JS('eval')
-external JSAny? _jsEval(JSString code);
+import 'mermaid_js_interop_stub.dart' if (dart.library.js_interop) 'mermaid_js_interop_web.dart';
 
 class MermaidWebView extends StatefulWidget {
   final String code;
@@ -290,7 +285,7 @@ class _MermaidWebViewState extends State<MermaidWebView> {
         // Solution: Trigger the download in the TOP-LEVEL page context (outside the iframe)
         // using the mermaid library loaded in index.html (with dynamic script fallback).
         final safeCode = jsonEncode(widget.code);
-        _jsEval('''
+        evalJs('''
           (function() {
             var code = $safeCode;
             if (window.downloadMermaidDiagram) {
@@ -327,7 +322,7 @@ class _MermaidWebViewState extends State<MermaidWebView> {
               }
             }
           })();
-        '''.toJS);
+        ''');
 
         if (mounted) {
           _showToast('SVG diagram download started!', Icons.check_circle_rounded);

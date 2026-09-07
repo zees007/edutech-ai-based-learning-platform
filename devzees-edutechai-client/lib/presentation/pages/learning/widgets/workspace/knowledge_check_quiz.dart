@@ -60,7 +60,7 @@ class _KnowledgeCheckQuizState extends State<KnowledgeCheckQuiz> {
       final selectedKey = selectedFull.split(':').first.split(')').first.split('.').first.trim().toUpperCase();
 
       if (selectedKey == correctUpper) return true;
-      if (selectedFull.toUpperCase().contains(correctUpper)) return true;
+      if (correctUpper.length > 1 && selectedFull.toUpperCase().contains(correctUpper)) return true;
       return false;
     }
   }
@@ -251,7 +251,8 @@ class _KnowledgeCheckQuizState extends State<KnowledgeCheckQuiz> {
                       if (_submitted) {
                         bool isThisOptionCorrect = false;
                         final optKey = options[optIndex].split(':').first.split(')').first.split('.').first.trim().toUpperCase();
-                        if (optKey == correctAnswerRaw.trim().toUpperCase() || options[optIndex].toUpperCase().contains(correctAnswerRaw.trim().toUpperCase())) {
+                        final correctUpper = correctAnswerRaw.trim().toUpperCase();
+                        if (optKey == correctUpper || (correctUpper.length > 1 && options[optIndex].toUpperCase().contains(correctUpper))) {
                           isThisOptionCorrect = true;
                         }
 

@@ -52,6 +52,7 @@ Respond with a JSON object in this exact structure:
 - Generate exactly 3 questions (1 multiple_choice, 1 true_false, 1 fill_in_blank).
 - Questions must be answerable from the explanation content alone — don't test on external knowledge.
 - For multiple choice, the correct answer must exactly match one of the options.
+- **CRITICAL: Randomize the position of the correct answer (A, B, C, or D) for multiple-choice questions so it isn't always the same letter.**
 - For fill_in_blank, leave the `options` array empty.
 - Explanations should be educational, not just "Because it's correct."
 - Adapt difficulty to the student level.
