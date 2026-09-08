@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import '../constants/api_constants.dart';
 
@@ -17,8 +18,8 @@ class LearningWebSocketService {
       disconnect();
     }
     
-    // Replace http/https with ws/wss from ApiConstants.baseUrl
-    String wsBaseUrl = ApiConstants.baseUrl.replaceAll('http', 'ws');
+    // Replace http/https with ws/wss and remove the API prefix for WebSockets
+    String wsBaseUrl = ApiConstants.baseUrl.replaceAll('http', 'ws').replaceAll('/api/v1', '');
     final uri = Uri.parse('$wsBaseUrl/ws/learn/$sessionId');
     
     _channel = WebSocketChannel.connect(uri);
@@ -29,15 +30,15 @@ class LearningWebSocketService {
           final decoded = jsonDecode(message as String) as Map<String, dynamic>;
           _eventController.add(decoded);
         } catch (e) {
-          print('Error decoding websocket message: $e');
+          debugPrint('Error decoding websocket message: $e');
         }
       },
       onError: (error) {
-        print('WebSocket error: $error');
+        debugPrint('WebSocket error: $error');
         _eventController.add({'event_type': 'error', 'message': error.toString()});
       },
       onDone: () {
-        print('WebSocket connection closed.');
+        debugPrint('WebSocket connection closed.');
       },
     );
   }

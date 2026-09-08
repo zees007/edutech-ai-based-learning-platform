@@ -73,6 +73,30 @@ async def get_session_or_404(session_id: str) -> SharedMemory:
 get_session = get_session_or_404
 
 
+def _build_session_response(memory: SharedMemory) -> SessionResponse:
+    """Helper to merge step results into the milestone steps for API responses."""
+    for idx, step in enumerate(memory.steps):
+        result = memory.step_results.get(idx)
+        if result:
+            step.tutor_explanation = result.explanation or step.tutor_explanation
+            step.socratic_questions = result.socratic_questions or step.socratic_questions
+            step.videos = result.youtube_clips or step.videos
+            step.papers = result.academic_papers or step.papers
+            step.quiz = result.quiz.questions if result.quiz else step.quiz
+
+    return SessionResponse(
+        session_id=memory.session_id,
+        topic=memory.topic,
+        learning_mode=memory.learning_mode,
+        student_level=memory.student_level,
+        created_at=memory.created_at,
+        steps=memory.steps,
+        current_step_index=memory.current_step_index,
+        xp_earned=memory.xp_earned,
+        steps_completed=memory.steps_completed,
+    )
+
+
 @router.post(
     "/learn",
     response_model=SessionResponse,
@@ -132,17 +156,7 @@ async def start_learning_session(
 
     logger.info(f"Session {memory.session_id} created with {len(memory.steps)} steps")
 
-    return SessionResponse(
-        session_id=memory.session_id,
-        topic=memory.topic,
-        learning_mode=memory.learning_mode,
-        student_level=memory.student_level,
-        created_at=memory.created_at,
-        steps=memory.steps,
-        current_step_index=memory.current_step_index,
-        xp_earned=memory.xp_earned,
-        steps_completed=memory.steps_completed,
-    )
+    return _build_session_response(memory)
 
 
 @router.get(
@@ -153,17 +167,7 @@ async def start_learning_session(
 async def get_session_state(session_id: str):
     """Retrieve the current state of a learning session."""
     memory = await get_session_or_404(session_id)
-    return SessionResponse(
-        session_id=memory.session_id,
-        topic=memory.topic,
-        learning_mode=memory.learning_mode,
-        student_level=memory.student_level,
-        created_at=memory.created_at,
-        steps=memory.steps,
-        current_step_index=memory.current_step_index,
-        xp_earned=memory.xp_earned,
-        steps_completed=memory.steps_completed,
-    )
+    return _build_session_response(memory)
 
 
 @router.post(

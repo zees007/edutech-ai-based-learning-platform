@@ -63,6 +63,12 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
   void _onWebSocketEvent(Map<String, dynamic> event) {
     if (!mounted) return;
     
+    // Performance fix: Ignore chunks when we're loading the full UI to avoid unnecessary 
+    // widget tree rebuilding behind the loading screen.
+    if (ref.read(activeSessionProvider).isLoading) {
+      return;
+    }
+    
     if (event['event_type'] == 'explanation_chunk') {
       final chunk = event['chunk'] as String? ?? '';
       final isFinal = event['is_final'] as bool? ?? false;

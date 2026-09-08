@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/learning/session_response.dart';
 import '../../data/models/learning/quiz_result.dart';
@@ -45,6 +46,17 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
   late final LearningService _service;
   late final LearningWebSocketService _wsService;
 
+  // ─── Performance & Render Timing Stopwatches ────────────────────────
+  final Stopwatch _stepTotalStopwatch = Stopwatch();
+  final Stopwatch _backendStopwatch = Stopwatch();
+  final Stopwatch _apiFetchStopwatch = Stopwatch();
+  final Stopwatch _uiRenderStopwatch = Stopwatch();
+
+  int _lastBackendMs = 0;
+  int _lastApiFetchMs = 0;
+  int _currentTrackingStepIndex = 0;
+  bool _isStepGenerationActive = false;
+
   @override
   ActiveSessionState build() {
     _service = ref.watch(learningServiceProvider);
@@ -57,19 +69,49 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
   }
 
   void _onWebSocketEvent(Map<String, dynamic> event) {
-    // Handle incoming events like explanation_chunk, quiz, etc.
     final type = event['event_type'];
-    if (type == 'explanation_chunk' || type == 'quiz' || type == 'step_complete') {
-      // In a real app, we would deeply merge this into the session steps.
-      // For now, we will trigger a refresh to load the latest state from backend
-      // or selectively apply the updates to state.session.
-      // To prevent infinite loops with polling, we only update specific parts.
-      // E.g., appending chunks to chat history.
-      print('WebSocket Event: $type');
-      if (type == 'step_complete' && state.session != null) {
-        // Option 1: Refresh full session
-        loadSession(state.session!.sessionId);
+    final session = state.session;
+    if (session == null) return;
+
+    if (type == 'plan') {
+      debugPrint('📋 [Client WS] Received "plan" event.');
+      if (state.activeStepIndex < session.steps.length) {
+        final step = session.steps[state.activeStepIndex];
+        if (step.tutorExplanation == null) {
+          _currentTrackingStepIndex = state.activeStepIndex;
+          if (!_stepTotalStopwatch.isRunning) {
+            _stepTotalStopwatch.reset();
+            _stepTotalStopwatch.start();
+          }
+          _backendStopwatch.reset();
+          _backendStopwatch.start();
+          _isStepGenerationActive = true;
+
+          debugPrint('🚀 [Client] Triggering backend agents for Step $_currentTrackingStepIndex (loader displayed)...');
+          state = state.copyWith(isLoading: true);
+          _wsService.sendStartStep(state.activeStepIndex);
+        }
       }
+      return;
+    }
+
+    if (type == 'status') {
+      final statusMsg = event['status'] ?? '';
+      debugPrint('⏳ [Client WS] Agent Progress: $statusMsg (+${_backendStopwatch.elapsedMilliseconds}ms)');
+      return;
+    }
+
+    // Render the UI only when all agents finish their job
+    if (type == 'step_complete') {
+      _backendStopwatch.stop();
+      _lastBackendMs = _backendStopwatch.elapsedMilliseconds;
+      debugPrint('✅ [Client WS] "step_complete" received for Step $_currentTrackingStepIndex in ${_lastBackendMs}ms (${(_lastBackendMs / 1000).toStringAsFixed(2)}s). Fetching full session data...');
+      loadSession(session.sessionId, fromStepComplete: true);
+      return;
+    }
+
+    if (type == 'error') {
+      debugPrint('❌ [Client WS] Error event received: ${event['message']}');
     }
   }
 
@@ -78,22 +120,33 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     required String mode,
     required String level,
   }) async {
+    debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    debugPrint('🚀 [Client] Starting new journey for "$topic" ($mode, $level)...');
+    _stepTotalStopwatch.reset();
+    _stepTotalStopwatch.start();
+    _isStepGenerationActive = true;
+    _currentTrackingStepIndex = 0;
+
     state = state.copyWith(isLoading: true, clearError: true);
     try {
+      final journeyApiWatch = Stopwatch()..start();
       final response = await _service.startJourney(topic: topic, mode: mode, level: level);
+      journeyApiWatch.stop();
+      debugPrint('📋 [Client API] Orchestrator milestone plan created in ${journeyApiWatch.elapsedMilliseconds}ms (${(journeyApiWatch.elapsedMilliseconds / 1000).toStringAsFixed(2)}s). Total steps: ${response.steps.length}');
+
       state = state.copyWith(
         session: response,
         activeStepIndex: 0,
-        isLoading: false,
+        isLoading: true, // Keep loader visible while step 0 agents run
       );
       
-      // Connect to WebSocket and start the first step
+      // Connect to WebSocket and start the first step automatically via plan event
       _wsService.connect(response.sessionId);
-      _wsService.sendStartStep(0);
-      
     } catch (e) {
+      _isStepGenerationActive = false;
+      _stepTotalStopwatch.stop();
       state = state.copyWith(isLoading: false, error: e.toString());
-      throw e;
+      rethrow;
     }
   }
 
@@ -103,17 +156,29 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     
     state = state.copyWith(isLoading: true, clearError: true);
     try {
+      final quizWatch = Stopwatch()..start();
       final result = await _service.submitQuiz(session.sessionId, stepIndex, answers);
+      quizWatch.stop();
+      debugPrint('📝 [Client API] Quiz evaluated in ${quizWatch.elapsedMilliseconds}ms. Awarded XP: ${result.xpEarned}');
       
       // Update session XP locally
       final updatedSession = session.copyWith(
         xpEarned: session.xpEarned + result.xpEarned,
       );
       
+      _uiRenderStopwatch.reset();
+      _uiRenderStopwatch.start();
+
       state = state.copyWith(
         session: updatedSession,
         isLoading: false,
       );
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _uiRenderStopwatch.stop();
+        debugPrint('🎨 [Client UI] Quiz results rendered to screen in ${_uiRenderStopwatch.elapsedMilliseconds}ms');
+      });
+
       return result;
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
@@ -149,10 +214,15 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     _wsService.sendChat(content);
   }
 
-  Future<void> loadSession(String sessionId) async {
+  Future<void> loadSession(String sessionId, {bool fromStepComplete = false}) async {
+    _apiFetchStopwatch.reset();
+    _apiFetchStopwatch.start();
+
     state = state.copyWith(isLoading: true, clearError: true);
     try {
       final response = await _service.fetchSessionById(sessionId);
+      _apiFetchStopwatch.stop();
+      _lastApiFetchMs = _apiFetchStopwatch.elapsedMilliseconds;
       
       int stepIndex = response.currentStepIndex;
       // Safety check: ensure index is within bounds
@@ -160,23 +230,91 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
         stepIndex = 0;
       }
 
+      debugPrint('📥 [Client API] Session payload retrieved in ${_lastApiFetchMs}ms. Initiating UI render for Step $stepIndex...');
+
+      _uiRenderStopwatch.reset();
+      _uiRenderStopwatch.start();
+
+      final targetStepIndex = stepIndex;
+      final wasStepGeneration = _isStepGenerationActive || fromStepComplete;
+
       state = state.copyWith(
         session: response,
         activeStepIndex: stepIndex,
         isLoading: false,
       );
+
+      // Measure time until the frame is laid out and painted on screen
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _uiRenderStopwatch.stop();
+        final renderMs = _uiRenderStopwatch.elapsedMilliseconds;
+
+        if (wasStepGeneration && _stepTotalStopwatch.isRunning) {
+          _stepTotalStopwatch.stop();
+          final totalMs = _stepTotalStopwatch.elapsedMilliseconds;
+          debugPrint('''
+╔════════════════════════════════════════════════════════════════════
+║ 🎨 [Client UI Render Performance] Step $targetStepIndex
+╟────────────────────────────────────────────────────────────────────
+║  • Backend Agents Pipeline (WS):   ${_lastBackendMs.toString().padLeft(6)} ms (${(_lastBackendMs / 1000).toStringAsFixed(2)}s)
+║  • Session Data Fetch (HTTP API):   ${_lastApiFetchMs.toString().padLeft(6)} ms (${(_lastApiFetchMs / 1000).toStringAsFixed(2)}s)
+║  • Flutter UI Build & Frame Paint:  ${renderMs.toString().padLeft(6)} ms (${(renderMs / 1000).toStringAsFixed(2)}s)
+╟────────────────────────────────────────────────────────────────────
+║  ⚡ TOTAL TIME TO RENDER STEP UI:    ${totalMs.toString().padLeft(6)} ms (${(totalMs / 1000).toStringAsFixed(2)}s)
+╚════════════════════════════════════════════════════════════════════''');
+          _isStepGenerationActive = false;
+        } else {
+          debugPrint('''
+╔════════════════════════════════════════════════════════════════════
+║ 🎨 [Client UI Render Performance] Session Loaded
+╟────────────────────────────────────────────────────────────────────
+║  • Session Data Fetch (HTTP API):   ${_lastApiFetchMs.toString().padLeft(6)} ms
+║  • Flutter UI Build & Frame Paint:  ${renderMs.toString().padLeft(6)} ms
+╟────────────────────────────────────────────────────────────────────
+║  ⚡ TOTAL TIME TO RENDER UI:         ${(_lastApiFetchMs + renderMs).toString().padLeft(6)} ms
+╚════════════════════════════════════════════════════════════════════''');
+        }
+      });
       
-      if (!_wsService.isConnected) {
+      // Only connect to WebSocket if it's a new session load, to avoid double "plan" events
+      // when refreshing the session data after step_complete.
+      if (!fromStepComplete) {
         _wsService.connect(sessionId);
       }
     } catch (e) {
+      _uiRenderStopwatch.stop();
+      _stepTotalStopwatch.stop();
+      _isStepGenerationActive = false;
       state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
   void setActiveStep(int index) {
     if (state.session != null && index >= 0 && index < state.session!.steps.length) {
-      state = state.copyWith(activeStepIndex: index);
+      final step = state.session!.steps[index];
+      if (step.tutorExplanation == null) {
+        debugPrint('🚀 [Client] Switching to ungenerated Step $index. Requesting backend generation...');
+        _currentTrackingStepIndex = index;
+        _stepTotalStopwatch.reset();
+        _stepTotalStopwatch.start();
+        _backendStopwatch.reset();
+        _backendStopwatch.start();
+        _isStepGenerationActive = true;
+
+        state = state.copyWith(activeStepIndex: index, isLoading: true);
+        _wsService.sendStartStep(index);
+      } else {
+        debugPrint('🔄 [Client] Switching to cached Step $index...');
+        _uiRenderStopwatch.reset();
+        _uiRenderStopwatch.start();
+
+        state = state.copyWith(activeStepIndex: index);
+
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _uiRenderStopwatch.stop();
+          debugPrint('🎨 [Client UI] Step $index UI rendered to screen in ${_uiRenderStopwatch.elapsedMilliseconds}ms (frame layout & paint)');
+        });
+      }
     }
   }
 
