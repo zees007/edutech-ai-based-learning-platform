@@ -8,6 +8,7 @@ import '../../../../../core/providers/active_session_provider.dart';
 import 'recent_journey_card.dart';
 import '../workspace/active_learning_workspace.dart';
 import '../../../../../core/theme/app_colors.dart';
+import 'neural_inference_loader.dart';
 
 class LearningMainContent extends ConsumerWidget {
   final bool isMobile;
@@ -33,8 +34,21 @@ class LearningMainContent extends ConsumerWidget {
     
     if (activeState.session != null || activeState.isLoading) {
       if (activeState.isLoading) {
-        return Center(
-          child: CircularProgressIndicator(color: AppColors.primary),
+        String title = "Initializing AI Compute Cluster";
+        String subtitle = "Orchestrating agents and provisioning neural resources...";
+        
+        if (activeState.session != null) {
+          final stepIndex = activeState.activeStepIndex;
+          if (stepIndex >= 0 && stepIndex < activeState.session!.steps.length) {
+            final step = activeState.session!.steps[stepIndex];
+            title = "Synthesizing Step ${stepIndex + 1}: ${step.title}";
+            subtitle = "🤖 Multi-Agents (Socratic, YouTube, Academic, Quiz) generating step content concurrently...";
+          }
+        }
+        
+        return NeuralInferenceLoader(
+          title: title,
+          subtitle: subtitle,
         );
       }
       return const ActiveLearningWorkspace();
