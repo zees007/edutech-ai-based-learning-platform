@@ -37,6 +37,7 @@ from models.schemas import (
     LearningRequest,
     ModeChangeRequest,
     SessionResponse,
+    StepStatus,
 )
 from models.shared_memory import SharedMemory
 from models.user_schemas import SearchDTO
@@ -83,6 +84,13 @@ def _build_session_response(memory: SharedMemory) -> SessionResponse:
             step.videos = result.youtube_clips or step.videos
             step.papers = result.academic_papers or step.papers
             step.quiz = result.quiz.questions if result.quiz else step.quiz
+            if result.status and result.status != StepStatus.PENDING:
+                step.status = result.status
+
+        if idx < memory.steps_completed:
+            step.status = StepStatus.COMPLETE
+        elif idx == memory.current_step_index and step.status != StepStatus.COMPLETE:
+            step.status = StepStatus.IN_PROGRESS
 
         step.conversation_history = [
             turn for turn in memory.conversation_history

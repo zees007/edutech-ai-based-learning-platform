@@ -913,6 +913,9 @@ class _StepContentContainerState extends ConsumerState<_StepContentContainer> {
                             currentIndex: currentIndex,
                             maxUnlockedIndex: maxUnlockedIndex,
                             totalSteps: totalSteps,
+                            isPrerequisite: currentStep.isPrerequisite,
+                            prerequisiteNote: currentStep.prerequisite,
+                            status: currentStep.status,
                           ),
                         ],
                       ),
@@ -1030,6 +1033,9 @@ class _StepContentContainerState extends ConsumerState<_StepContentContainer> {
     required int currentIndex,
     required int maxUnlockedIndex,
     required int totalSteps,
+    bool isPrerequisite = false,
+    String? prerequisiteNote,
+    String status = 'pending',
   }) {
     final canGoBack = currentIndex > 0;
     final canGoForward = currentIndex < maxUnlockedIndex;
@@ -1111,6 +1117,50 @@ class _StepContentContainerState extends ConsumerState<_StepContentContainer> {
             ],
           ),
         ),
+        const SizedBox(width: 8),
+        _buildStepStatusPill(status),
+        if (isPrerequisite) ...[
+          const SizedBox(width: 8),
+          Tooltip(
+            message: prerequisiteNote != null && prerequisiteNote.trim().isNotEmpty
+                ? 'Prerequisite concept: $prerequisiteNote'
+                : 'Foundational prerequisite milestone step',
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(8),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFF59E0B).withValues(alpha: 0.35),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.school_rounded, size: 12, color: Colors.white),
+                  const SizedBox(width: 5),
+                  Text(
+                    'Prerequisite',
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                      letterSpacing: 0.3,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
         if (canGoForward) const SizedBox(width: 8),
         // Next Step quick button
         if (canGoForward)
@@ -1301,4 +1351,64 @@ class _PremiumActionButtonState extends State<_PremiumActionButton>
       ),
     );
   }
+}
+
+Widget _buildStepStatusPill(String rawStatus, {bool compact = false}) {
+  final status = rawStatus.toLowerCase();
+  final isComplete = status == 'complete';
+  final isInProgress = status == 'in_progress';
+
+  Color textColor;
+  Color bgColor;
+  Color borderColor;
+  IconData icon;
+  String label;
+
+  if (isComplete) {
+    textColor = const Color(0xFF10B981);
+    bgColor = const Color(0xFF10B981).withValues(alpha: 0.15);
+    borderColor = const Color(0xFF10B981).withValues(alpha: 0.45);
+    icon = Icons.check_circle_rounded;
+    label = 'Completed';
+  } else if (isInProgress) {
+    textColor = const Color(0xFFC084FC);
+    bgColor = const Color(0xFFC084FC).withValues(alpha: 0.15);
+    borderColor = const Color(0xFFC084FC).withValues(alpha: 0.45);
+    icon = Icons.bolt_rounded;
+    label = 'In Progress';
+  } else {
+    textColor = const Color(0xFF94A3B8);
+    bgColor = Colors.white.withValues(alpha: 0.06);
+    borderColor = Colors.white.withValues(alpha: 0.15);
+    icon = Icons.schedule_rounded;
+    label = 'Pending';
+  }
+
+  return Container(
+    padding: EdgeInsets.symmetric(
+      horizontal: compact ? 7 : 9,
+      vertical: compact ? 3 : 5,
+    ),
+    decoration: BoxDecoration(
+      color: bgColor,
+      borderRadius: BorderRadius.circular(compact ? 6 : 8),
+      border: Border.all(color: borderColor, width: 0.9),
+    ),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: compact ? 11 : 12, color: textColor),
+        const SizedBox(width: 4),
+        Text(
+          label,
+          style: GoogleFonts.inter(
+            fontSize: compact ? 10 : 11,
+            fontWeight: FontWeight.w700,
+            color: textColor,
+            letterSpacing: 0.2,
+          ),
+        ),
+      ],
+    ),
+  );
 }

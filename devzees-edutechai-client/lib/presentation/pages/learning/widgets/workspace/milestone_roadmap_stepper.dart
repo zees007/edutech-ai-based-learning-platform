@@ -89,12 +89,12 @@ class MilestoneRoadmapStepper extends StatelessWidget {
                         onTap: isLocked ? null : () => onStepTapped(index),
                         child: Tooltip(
                           message: isLocked
-                              ? '🔒 Step ${index + 1}: Complete previous step to unlock\n${step.title}'
+                              ? '🔒 Step ${index + 1}${step.isPrerequisite ? " • Prerequisite" : ""}: Complete previous step to unlock\n${step.title}'
                               : (isActive
-                                  ? '⭐ Currently Viewing (Step ${index + 1})\n${step.title}\n${step.description}'
+                                  ? '⭐ Currently Viewing (Step ${index + 1}${step.isPrerequisite ? " • Prerequisite" : ""})\n${step.title}\n${step.description}'
                                   : (isCompleted
-                                      ? '✅ Completed (Step ${index + 1}) — Click to review\n${step.title}'
-                                      : '⚡ Step ${index + 1}\n${step.title}\n${step.description}')),
+                                      ? '✅ Completed (Step ${index + 1}${step.isPrerequisite ? " • Prerequisite" : ""}) — Click to review\n${step.title}'
+                                      : '⚡ Step ${index + 1}${step.isPrerequisite ? " • Prerequisite" : ""}\n${step.title}\n${step.description}')),
                           textStyle: GoogleFonts.inter(color: Colors.white, fontSize: 13, height: 1.4),
                           decoration: BoxDecoration(
                             color: const Color(0xFF1E293B),
@@ -176,15 +176,39 @@ class MilestoneRoadmapStepper extends StatelessWidget {
                                         ),
                                         const SizedBox(width: 8),
                                         Expanded(
-                                          child: Text(
-                                            'Step ${index + 1}',
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: GoogleFonts.inter(
-                                              color: isActive || isCompleted || isUnlocked ? Colors.white : Colors.white.withValues(alpha: 0.5),
-                                              fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
-                                              fontSize: 13,
-                                            ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Flexible(
+                                                child: Text(
+                                                  'Step ${index + 1}',
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
+                                                  style: GoogleFonts.inter(
+                                                    color: isActive || isCompleted || isUnlocked ? Colors.white : Colors.white.withValues(alpha: 0.5),
+                                                    fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
+                                                    fontSize: 13,
+                                                  ),
+                                                ),
+                                              ),
+                                              if (step.isPrerequisite) ...[
+                                                const SizedBox(width: 4),
+                                                Container(
+                                                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                                                  decoration: BoxDecoration(
+                                                    gradient: const LinearGradient(
+                                                      colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
+                                                    ),
+                                                    borderRadius: BorderRadius.circular(4),
+                                                  ),
+                                                  child: const Icon(
+                                                    Icons.school_rounded,
+                                                    size: 9,
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
+                                              ],
+                                            ],
                                           ),
                                         ),
                                       ],
