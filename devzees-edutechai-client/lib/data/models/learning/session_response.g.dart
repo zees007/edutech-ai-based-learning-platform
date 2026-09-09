@@ -21,6 +21,7 @@ _SessionResponse _$SessionResponseFromJson(Map<String, dynamic> json) =>
       currentStepIndex: (json['current_step_index'] as num?)?.toInt() ?? 0,
       xpEarned: (json['xp_earned'] as num?)?.toInt() ?? 0,
       stepsCompleted: (json['steps_completed'] as num?)?.toInt() ?? 0,
+      conversationHistory: json['conversation_history'] as List<dynamic>?,
     );
 
 Map<String, dynamic> _$SessionResponseToJson(_SessionResponse instance) =>
@@ -34,4 +35,5 @@ Map<String, dynamic> _$SessionResponseToJson(_SessionResponse instance) =>
       'current_step_index': instance.currentStepIndex,
       'xp_earned': instance.xpEarned,
       'steps_completed': instance.stepsCompleted,
+      'conversation_history': instance.conversationHistory,
     };

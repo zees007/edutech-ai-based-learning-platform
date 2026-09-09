@@ -247,6 +247,11 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
   }
 
   void sendFollowUpChat(String content) {
+    final session = state.session;
+    if (session != null && !_wsService.isConnected) {
+      debugPrint('Reconnecting WebSocket for session ${session.sessionId}...');
+      _wsService.connect(session.sessionId);
+    }
     _wsService.sendChat(content);
   }
 

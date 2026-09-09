@@ -87,6 +87,12 @@ async def learning_websocket(websocket: WebSocket, session_id: str):
         # Get or create session
         memory = _sessions.get(session_id)
         if memory is None:
+            from services.session_manager import SessionManager
+            memory = await SessionManager().get_session(session_id)
+            if memory:
+                _sessions[session_id] = memory
+
+        if memory is None:
             await websocket.send_json({
                 "event_type": "error",
                 "message": f"Session '{session_id}' not found. Create one first via POST /api/learn.",
@@ -131,8 +137,7 @@ async def learning_websocket(websocket: WebSocket, session_id: str):
                     # Handle follow-up student questions
                     student_message = message.get("content", "")
                     if student_message:
-                        memory.add_conversation_turn("student", student_message)
-                        await _handle_chat(session_id, memory)
+                        await _handle_chat(session_id, memory, student_message)
 
                 else:
                     await websocket.send_json({
@@ -280,7 +285,7 @@ async def _process_step(
     logger.info(f"Step {step_index} fully processed for session {session_id}")
 
 
-async def _handle_chat(session_id: str, memory: SharedMemory):
+async def _handle_chat(session_id: str, memory: SharedMemory, question: str):
     """Handle a follow-up question from the student during a step."""
     ws = manager.active_connections.get(session_id)
     if not ws:
@@ -297,18 +302,21 @@ async def _handle_chat(session_id: str, memory: SharedMemory):
     from app.dependencies import has_privilege
     from app.privileges_config import ET_UNLIMITED_FOLLOW_UPS
     
-    async with get_db_session() as db:
-        res = await db.execute(
-            select(User).options(selectinload(User.roles).selectinload(Role.privileges))
-            .where(User.id == memory.user_id)
-        )
-        user = res.scalar_one_or_none()
-        
     is_unlimited = False
     user_roles = []
-    if user:
-        is_unlimited = has_privilege(user, ET_UNLIMITED_FOLLOW_UPS)
-        user_roles = [r.name for r in user.roles if not r.retired]
+    if memory.user_id:
+        try:
+            async with get_db_session() as db:
+                res = await db.execute(
+                    select(User).options(selectinload(User.roles).selectinload(Role.privileges))
+                    .where(User.id == memory.user_id)
+                )
+                user = res.scalar_one_or_none()
+            if user:
+                is_unlimited = has_privilege(user, ET_UNLIMITED_FOLLOW_UPS)
+                user_roles = [r.name for r in user.roles if not r.retired]
+        except Exception as e:
+            logger.warning(f"Failed to check user privileges for chat: {e}")
         
     from config import get_settings
     settings = get_settings()
@@ -325,15 +333,13 @@ async def _handle_chat(session_id: str, memory: SharedMemory):
         return
             
     step_result.follow_up_count += 1
-
+    memory.add_conversation_turn("student", question, step_index=step_index)
 
     tutor = SocraticTutorAgent()
     synthesizer = SynthesizerAgent()
 
-    step_index = memory.current_step_index
-
     try:
-        async for chunk in tutor.stream_explanation(memory, step_index):
+        async for chunk in tutor.stream_followup(question, memory, step_index):
             event = synthesizer.create_explanation_chunk_event(
                 memory, step_index, chunk, is_final=False
             )
@@ -351,3 +357,9 @@ async def _handle_chat(session_id: str, memory: SharedMemory):
 
     except Exception as e:
         logger.error(f"Chat response failed: {e}")
+        error_event = ErrorEvent(
+            session_id=session_id,
+            message=f"Tutor chat failed: {e}",
+            agent="SocraticTutor",
+        )
+        await manager.send_event(session_id, error_event)

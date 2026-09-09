@@ -84,6 +84,11 @@ def _build_session_response(memory: SharedMemory) -> SessionResponse:
             step.papers = result.academic_papers or step.papers
             step.quiz = result.quiz.questions if result.quiz else step.quiz
 
+        step.conversation_history = [
+            turn for turn in memory.conversation_history
+            if turn.step_index == idx
+        ]
+
     return SessionResponse(
         session_id=memory.session_id,
         topic=memory.topic,
@@ -94,6 +99,7 @@ def _build_session_response(memory: SharedMemory) -> SessionResponse:
         current_step_index=memory.current_step_index,
         xp_earned=memory.xp_earned,
         steps_completed=memory.steps_completed,
+        conversation_history=memory.conversation_history,
     )
 
 
@@ -260,7 +266,7 @@ async def answer_followup(
     step = memory.steps[step_index]
     step_result = memory.get_step_result(step_index)
     
-    memory.add_conversation_turn("student", request.question)
+    memory.add_conversation_turn("student", request.question, step_index=step_index)
 
     chat_history_dicts = [
         {"role": "user" if t.role == "student" else "assistant", "text": t.content}
@@ -277,7 +283,7 @@ async def answer_followup(
         chat_history=chat_history_dicts,
     )
     
-    memory.add_conversation_turn("tutor", answer)
+    memory.add_conversation_turn("tutor", answer, step_index=step_index)
     
     try:
         await session_manager.update_session(memory)

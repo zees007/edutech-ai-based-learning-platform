@@ -633,6 +633,7 @@ class ActiveLearningWorkspace extends ConsumerWidget {
             stepIndex: step.index,
             tutorExplanation: step.tutorExplanation,
             socraticQuestions: step.socraticQuestions,
+            conversationHistory: step.conversationHistory,
             stepTitle: step.title,
           ),
           const SizedBox(height: 32),

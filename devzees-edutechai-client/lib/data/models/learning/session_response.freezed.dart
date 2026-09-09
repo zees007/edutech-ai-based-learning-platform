@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$SessionResponse {
 
-@JsonKey(name: 'session_id') String get sessionId; String get topic;@JsonKey(name: 'learning_mode') String get learningMode;@JsonKey(name: 'student_level') String get studentLevel;@JsonKey(name: 'created_at') DateTime get createdAt; List<MilestoneStep> get steps;@JsonKey(name: 'current_step_index') int get currentStepIndex;@JsonKey(name: 'xp_earned') int get xpEarned;@JsonKey(name: 'steps_completed') int get stepsCompleted;
+@JsonKey(name: 'session_id') String get sessionId; String get topic;@JsonKey(name: 'learning_mode') String get learningMode;@JsonKey(name: 'student_level') String get studentLevel;@JsonKey(name: 'created_at') DateTime get createdAt; List<MilestoneStep> get steps;@JsonKey(name: 'current_step_index') int get currentStepIndex;@JsonKey(name: 'xp_earned') int get xpEarned;@JsonKey(name: 'steps_completed') int get stepsCompleted;@JsonKey(name: 'conversation_history') List<dynamic>? get conversationHistory;
 /// Create a copy of SessionResponse
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $SessionResponseCopyWith<SessionResponse> get copyWith => _$SessionResponseCopyW
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SessionResponse&&(identical(other.sessionId, sessionId) || other.sessionId == sessionId)&&(identical(other.topic, topic) || other.topic == topic)&&(identical(other.learningMode, learningMode) || other.learningMode == learningMode)&&(identical(other.studentLevel, studentLevel) || other.studentLevel == studentLevel)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&const DeepCollectionEquality().equals(other.steps, steps)&&(identical(other.currentStepIndex, currentStepIndex) || other.currentStepIndex == currentStepIndex)&&(identical(other.xpEarned, xpEarned) || other.xpEarned == xpEarned)&&(identical(other.stepsCompleted, stepsCompleted) || other.stepsCompleted == stepsCompleted));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SessionResponse&&(identical(other.sessionId, sessionId) || other.sessionId == sessionId)&&(identical(other.topic, topic) || other.topic == topic)&&(identical(other.learningMode, learningMode) || other.learningMode == learningMode)&&(identical(other.studentLevel, studentLevel) || other.studentLevel == studentLevel)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&const DeepCollectionEquality().equals(other.steps, steps)&&(identical(other.currentStepIndex, currentStepIndex) || other.currentStepIndex == currentStepIndex)&&(identical(other.xpEarned, xpEarned) || other.xpEarned == xpEarned)&&(identical(other.stepsCompleted, stepsCompleted) || other.stepsCompleted == stepsCompleted)&&const DeepCollectionEquality().equals(other.conversationHistory, conversationHistory));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,sessionId,topic,learningMode,studentLevel,createdAt,const DeepCollectionEquality().hash(steps),currentStepIndex,xpEarned,stepsCompleted);
+int get hashCode => Object.hash(runtimeType,sessionId,topic,learningMode,studentLevel,createdAt,const DeepCollectionEquality().hash(steps),currentStepIndex,xpEarned,stepsCompleted,const DeepCollectionEquality().hash(conversationHistory));
 
 @override
 String toString() {
-  return 'SessionResponse(sessionId: $sessionId, topic: $topic, learningMode: $learningMode, studentLevel: $studentLevel, createdAt: $createdAt, steps: $steps, currentStepIndex: $currentStepIndex, xpEarned: $xpEarned, stepsCompleted: $stepsCompleted)';
+  return 'SessionResponse(sessionId: $sessionId, topic: $topic, learningMode: $learningMode, studentLevel: $studentLevel, createdAt: $createdAt, steps: $steps, currentStepIndex: $currentStepIndex, xpEarned: $xpEarned, stepsCompleted: $stepsCompleted, conversationHistory: $conversationHistory)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $SessionResponseCopyWith<$Res>  {
   factory $SessionResponseCopyWith(SessionResponse value, $Res Function(SessionResponse) _then) = _$SessionResponseCopyWithImpl;
 @useResult
 $Res call({
-@JsonKey(name: 'session_id') String sessionId, String topic,@JsonKey(name: 'learning_mode') String learningMode,@JsonKey(name: 'student_level') String studentLevel,@JsonKey(name: 'created_at') DateTime createdAt, List<MilestoneStep> steps,@JsonKey(name: 'current_step_index') int currentStepIndex,@JsonKey(name: 'xp_earned') int xpEarned,@JsonKey(name: 'steps_completed') int stepsCompleted
+@JsonKey(name: 'session_id') String sessionId, String topic,@JsonKey(name: 'learning_mode') String learningMode,@JsonKey(name: 'student_level') String studentLevel,@JsonKey(name: 'created_at') DateTime createdAt, List<MilestoneStep> steps,@JsonKey(name: 'current_step_index') int currentStepIndex,@JsonKey(name: 'xp_earned') int xpEarned,@JsonKey(name: 'steps_completed') int stepsCompleted,@JsonKey(name: 'conversation_history') List<dynamic>? conversationHistory
 });
 
 
@@ -65,7 +65,7 @@ class _$SessionResponseCopyWithImpl<$Res>
 
 /// Create a copy of SessionResponse
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? sessionId = null,Object? topic = null,Object? learningMode = null,Object? studentLevel = null,Object? createdAt = null,Object? steps = null,Object? currentStepIndex = null,Object? xpEarned = null,Object? stepsCompleted = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? sessionId = null,Object? topic = null,Object? learningMode = null,Object? studentLevel = null,Object? createdAt = null,Object? steps = null,Object? currentStepIndex = null,Object? xpEarned = null,Object? stepsCompleted = null,Object? conversationHistory = freezed,}) {
   return _then(_self.copyWith(
 sessionId: null == sessionId ? _self.sessionId : sessionId // ignore: cast_nullable_to_non_nullable
 as String,topic: null == topic ? _self.topic : topic // ignore: cast_nullable_to_non_nullable
@@ -76,7 +76,8 @@ as DateTime,steps: null == steps ? _self.steps : steps // ignore: cast_nullable_
 as List<MilestoneStep>,currentStepIndex: null == currentStepIndex ? _self.currentStepIndex : currentStepIndex // ignore: cast_nullable_to_non_nullable
 as int,xpEarned: null == xpEarned ? _self.xpEarned : xpEarned // ignore: cast_nullable_to_non_nullable
 as int,stepsCompleted: null == stepsCompleted ? _self.stepsCompleted : stepsCompleted // ignore: cast_nullable_to_non_nullable
-as int,
+as int,conversationHistory: freezed == conversationHistory ? _self.conversationHistory : conversationHistory // ignore: cast_nullable_to_non_nullable
+as List<dynamic>?,
   ));
 }
 
@@ -161,10 +162,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'session_id')  String sessionId,  String topic, @JsonKey(name: 'learning_mode')  String learningMode, @JsonKey(name: 'student_level')  String studentLevel, @JsonKey(name: 'created_at')  DateTime createdAt,  List<MilestoneStep> steps, @JsonKey(name: 'current_step_index')  int currentStepIndex, @JsonKey(name: 'xp_earned')  int xpEarned, @JsonKey(name: 'steps_completed')  int stepsCompleted)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'session_id')  String sessionId,  String topic, @JsonKey(name: 'learning_mode')  String learningMode, @JsonKey(name: 'student_level')  String studentLevel, @JsonKey(name: 'created_at')  DateTime createdAt,  List<MilestoneStep> steps, @JsonKey(name: 'current_step_index')  int currentStepIndex, @JsonKey(name: 'xp_earned')  int xpEarned, @JsonKey(name: 'steps_completed')  int stepsCompleted, @JsonKey(name: 'conversation_history')  List<dynamic>? conversationHistory)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _SessionResponse() when $default != null:
-return $default(_that.sessionId,_that.topic,_that.learningMode,_that.studentLevel,_that.createdAt,_that.steps,_that.currentStepIndex,_that.xpEarned,_that.stepsCompleted);case _:
+return $default(_that.sessionId,_that.topic,_that.learningMode,_that.studentLevel,_that.createdAt,_that.steps,_that.currentStepIndex,_that.xpEarned,_that.stepsCompleted,_that.conversationHistory);case _:
   return orElse();
 
 }
@@ -182,10 +183,10 @@ return $default(_that.sessionId,_that.topic,_that.learningMode,_that.studentLeve
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'session_id')  String sessionId,  String topic, @JsonKey(name: 'learning_mode')  String learningMode, @JsonKey(name: 'student_level')  String studentLevel, @JsonKey(name: 'created_at')  DateTime createdAt,  List<MilestoneStep> steps, @JsonKey(name: 'current_step_index')  int currentStepIndex, @JsonKey(name: 'xp_earned')  int xpEarned, @JsonKey(name: 'steps_completed')  int stepsCompleted)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'session_id')  String sessionId,  String topic, @JsonKey(name: 'learning_mode')  String learningMode, @JsonKey(name: 'student_level')  String studentLevel, @JsonKey(name: 'created_at')  DateTime createdAt,  List<MilestoneStep> steps, @JsonKey(name: 'current_step_index')  int currentStepIndex, @JsonKey(name: 'xp_earned')  int xpEarned, @JsonKey(name: 'steps_completed')  int stepsCompleted, @JsonKey(name: 'conversation_history')  List<dynamic>? conversationHistory)  $default,) {final _that = this;
 switch (_that) {
 case _SessionResponse():
-return $default(_that.sessionId,_that.topic,_that.learningMode,_that.studentLevel,_that.createdAt,_that.steps,_that.currentStepIndex,_that.xpEarned,_that.stepsCompleted);case _:
+return $default(_that.sessionId,_that.topic,_that.learningMode,_that.studentLevel,_that.createdAt,_that.steps,_that.currentStepIndex,_that.xpEarned,_that.stepsCompleted,_that.conversationHistory);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -202,10 +203,10 @@ return $default(_that.sessionId,_that.topic,_that.learningMode,_that.studentLeve
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'session_id')  String sessionId,  String topic, @JsonKey(name: 'learning_mode')  String learningMode, @JsonKey(name: 'student_level')  String studentLevel, @JsonKey(name: 'created_at')  DateTime createdAt,  List<MilestoneStep> steps, @JsonKey(name: 'current_step_index')  int currentStepIndex, @JsonKey(name: 'xp_earned')  int xpEarned, @JsonKey(name: 'steps_completed')  int stepsCompleted)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'session_id')  String sessionId,  String topic, @JsonKey(name: 'learning_mode')  String learningMode, @JsonKey(name: 'student_level')  String studentLevel, @JsonKey(name: 'created_at')  DateTime createdAt,  List<MilestoneStep> steps, @JsonKey(name: 'current_step_index')  int currentStepIndex, @JsonKey(name: 'xp_earned')  int xpEarned, @JsonKey(name: 'steps_completed')  int stepsCompleted, @JsonKey(name: 'conversation_history')  List<dynamic>? conversationHistory)?  $default,) {final _that = this;
 switch (_that) {
 case _SessionResponse() when $default != null:
-return $default(_that.sessionId,_that.topic,_that.learningMode,_that.studentLevel,_that.createdAt,_that.steps,_that.currentStepIndex,_that.xpEarned,_that.stepsCompleted);case _:
+return $default(_that.sessionId,_that.topic,_that.learningMode,_that.studentLevel,_that.createdAt,_that.steps,_that.currentStepIndex,_that.xpEarned,_that.stepsCompleted,_that.conversationHistory);case _:
   return null;
 
 }
@@ -217,7 +218,7 @@ return $default(_that.sessionId,_that.topic,_that.learningMode,_that.studentLeve
 @JsonSerializable()
 
 class _SessionResponse implements SessionResponse {
-  const _SessionResponse({@JsonKey(name: 'session_id') required this.sessionId, required this.topic, @JsonKey(name: 'learning_mode') required this.learningMode, @JsonKey(name: 'student_level') required this.studentLevel, @JsonKey(name: 'created_at') required this.createdAt, final  List<MilestoneStep> steps = const [], @JsonKey(name: 'current_step_index') this.currentStepIndex = 0, @JsonKey(name: 'xp_earned') this.xpEarned = 0, @JsonKey(name: 'steps_completed') this.stepsCompleted = 0}): _steps = steps;
+  const _SessionResponse({@JsonKey(name: 'session_id') required this.sessionId, required this.topic, @JsonKey(name: 'learning_mode') required this.learningMode, @JsonKey(name: 'student_level') required this.studentLevel, @JsonKey(name: 'created_at') required this.createdAt, final  List<MilestoneStep> steps = const [], @JsonKey(name: 'current_step_index') this.currentStepIndex = 0, @JsonKey(name: 'xp_earned') this.xpEarned = 0, @JsonKey(name: 'steps_completed') this.stepsCompleted = 0, @JsonKey(name: 'conversation_history') final  List<dynamic>? conversationHistory}): _steps = steps,_conversationHistory = conversationHistory;
   factory _SessionResponse.fromJson(Map<String, dynamic> json) => _$SessionResponseFromJson(json);
 
 @override@JsonKey(name: 'session_id') final  String sessionId;
@@ -235,6 +236,15 @@ class _SessionResponse implements SessionResponse {
 @override@JsonKey(name: 'current_step_index') final  int currentStepIndex;
 @override@JsonKey(name: 'xp_earned') final  int xpEarned;
 @override@JsonKey(name: 'steps_completed') final  int stepsCompleted;
+ final  List<dynamic>? _conversationHistory;
+@override@JsonKey(name: 'conversation_history') List<dynamic>? get conversationHistory {
+  final value = _conversationHistory;
+  if (value == null) return null;
+  if (_conversationHistory is EqualUnmodifiableListView) return _conversationHistory;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(value);
+}
+
 
 /// Create a copy of SessionResponse
 /// with the given fields replaced by the non-null parameter values.
@@ -249,16 +259,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SessionResponse&&(identical(other.sessionId, sessionId) || other.sessionId == sessionId)&&(identical(other.topic, topic) || other.topic == topic)&&(identical(other.learningMode, learningMode) || other.learningMode == learningMode)&&(identical(other.studentLevel, studentLevel) || other.studentLevel == studentLevel)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&const DeepCollectionEquality().equals(other._steps, _steps)&&(identical(other.currentStepIndex, currentStepIndex) || other.currentStepIndex == currentStepIndex)&&(identical(other.xpEarned, xpEarned) || other.xpEarned == xpEarned)&&(identical(other.stepsCompleted, stepsCompleted) || other.stepsCompleted == stepsCompleted));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SessionResponse&&(identical(other.sessionId, sessionId) || other.sessionId == sessionId)&&(identical(other.topic, topic) || other.topic == topic)&&(identical(other.learningMode, learningMode) || other.learningMode == learningMode)&&(identical(other.studentLevel, studentLevel) || other.studentLevel == studentLevel)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&const DeepCollectionEquality().equals(other._steps, _steps)&&(identical(other.currentStepIndex, currentStepIndex) || other.currentStepIndex == currentStepIndex)&&(identical(other.xpEarned, xpEarned) || other.xpEarned == xpEarned)&&(identical(other.stepsCompleted, stepsCompleted) || other.stepsCompleted == stepsCompleted)&&const DeepCollectionEquality().equals(other._conversationHistory, _conversationHistory));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,sessionId,topic,learningMode,studentLevel,createdAt,const DeepCollectionEquality().hash(_steps),currentStepIndex,xpEarned,stepsCompleted);
+int get hashCode => Object.hash(runtimeType,sessionId,topic,learningMode,studentLevel,createdAt,const DeepCollectionEquality().hash(_steps),currentStepIndex,xpEarned,stepsCompleted,const DeepCollectionEquality().hash(_conversationHistory));
 
 @override
 String toString() {
-  return 'SessionResponse(sessionId: $sessionId, topic: $topic, learningMode: $learningMode, studentLevel: $studentLevel, createdAt: $createdAt, steps: $steps, currentStepIndex: $currentStepIndex, xpEarned: $xpEarned, stepsCompleted: $stepsCompleted)';
+  return 'SessionResponse(sessionId: $sessionId, topic: $topic, learningMode: $learningMode, studentLevel: $studentLevel, createdAt: $createdAt, steps: $steps, currentStepIndex: $currentStepIndex, xpEarned: $xpEarned, stepsCompleted: $stepsCompleted, conversationHistory: $conversationHistory)';
 }
 
 
@@ -269,7 +279,7 @@ abstract mixin class _$SessionResponseCopyWith<$Res> implements $SessionResponse
   factory _$SessionResponseCopyWith(_SessionResponse value, $Res Function(_SessionResponse) _then) = __$SessionResponseCopyWithImpl;
 @override @useResult
 $Res call({
-@JsonKey(name: 'session_id') String sessionId, String topic,@JsonKey(name: 'learning_mode') String learningMode,@JsonKey(name: 'student_level') String studentLevel,@JsonKey(name: 'created_at') DateTime createdAt, List<MilestoneStep> steps,@JsonKey(name: 'current_step_index') int currentStepIndex,@JsonKey(name: 'xp_earned') int xpEarned,@JsonKey(name: 'steps_completed') int stepsCompleted
+@JsonKey(name: 'session_id') String sessionId, String topic,@JsonKey(name: 'learning_mode') String learningMode,@JsonKey(name: 'student_level') String studentLevel,@JsonKey(name: 'created_at') DateTime createdAt, List<MilestoneStep> steps,@JsonKey(name: 'current_step_index') int currentStepIndex,@JsonKey(name: 'xp_earned') int xpEarned,@JsonKey(name: 'steps_completed') int stepsCompleted,@JsonKey(name: 'conversation_history') List<dynamic>? conversationHistory
 });
 
 
@@ -286,7 +296,7 @@ class __$SessionResponseCopyWithImpl<$Res>
 
 /// Create a copy of SessionResponse
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? sessionId = null,Object? topic = null,Object? learningMode = null,Object? studentLevel = null,Object? createdAt = null,Object? steps = null,Object? currentStepIndex = null,Object? xpEarned = null,Object? stepsCompleted = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? sessionId = null,Object? topic = null,Object? learningMode = null,Object? studentLevel = null,Object? createdAt = null,Object? steps = null,Object? currentStepIndex = null,Object? xpEarned = null,Object? stepsCompleted = null,Object? conversationHistory = freezed,}) {
   return _then(_SessionResponse(
 sessionId: null == sessionId ? _self.sessionId : sessionId // ignore: cast_nullable_to_non_nullable
 as String,topic: null == topic ? _self.topic : topic // ignore: cast_nullable_to_non_nullable
@@ -297,7 +307,8 @@ as DateTime,steps: null == steps ? _self._steps : steps // ignore: cast_nullable
 as List<MilestoneStep>,currentStepIndex: null == currentStepIndex ? _self.currentStepIndex : currentStepIndex // ignore: cast_nullable_to_non_nullable
 as int,xpEarned: null == xpEarned ? _self.xpEarned : xpEarned // ignore: cast_nullable_to_non_nullable
 as int,stepsCompleted: null == stepsCompleted ? _self.stepsCompleted : stepsCompleted // ignore: cast_nullable_to_non_nullable
-as int,
+as int,conversationHistory: freezed == conversationHistory ? _self._conversationHistory : conversationHistory // ignore: cast_nullable_to_non_nullable
+as List<dynamic>?,
   ));
 }
 

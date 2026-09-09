@@ -22,6 +22,7 @@ import 'mermaid_web_view.dart';
 class SocraticTutorChat extends ConsumerStatefulWidget {
   final String? tutorExplanation;
   final List<dynamic>? socraticQuestions;
+  final List<dynamic>? conversationHistory;
   final String stepTitle;
   final int? stepIndex;
 
@@ -29,6 +30,7 @@ class SocraticTutorChat extends ConsumerStatefulWidget {
     super.key,
     this.tutorExplanation,
     this.socraticQuestions,
+    this.conversationHistory,
     this.stepTitle = '',
     this.stepIndex,
   });
@@ -43,6 +45,7 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
   final ScrollController _scrollController = ScrollController();
   final List<_ChatMessage> _messages = [];
   bool _isTyping = false;
+  bool _isStreaming = false;
   final FocusNode _inputFocusNode = FocusNode();
   bool _isInputFocused = false;
   StreamSubscription? _wsSubscription;
@@ -70,16 +73,17 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
     }
     
     if (event['event_type'] == 'explanation_chunk') {
-      final chunk = event['chunk'] as String? ?? '';
+      final chunk = (event['content'] ?? event['chunk']) as String? ?? '';
       final isFinal = event['is_final'] as bool? ?? false;
       
       setState(() {
-        if (_isTyping && _messages.isNotEmpty && _messages.last.sender == _Sender.tutor) {
+        if (_isStreaming && _messages.isNotEmpty && _messages.last.sender == _Sender.tutor) {
           // Append to existing streaming bubble
           _messages.last.text += chunk;
-        } else {
-          // Create new streaming bubble
-          _isTyping = true;
+        } else if (chunk.isNotEmpty) {
+          // First chunk received: turn off typing indicator and start streaming in the tutor bubble
+          _isTyping = false;
+          _isStreaming = true;
           final tutorAnim = _createAnimController();
           _messages.add(
             _ChatMessage(
@@ -93,12 +97,17 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
         
         if (isFinal) {
           _isTyping = false;
+          _isStreaming = false;
+          if (_messages.isNotEmpty && _messages.last.sender == _Sender.tutor) {
+            _messages.last.text = _sanitizeExplanation(_messages.last.text);
+          }
         }
       });
       _scrollToBottom();
     } else if (event['event_type'] == 'error') {
       setState(() {
         _isTyping = false;
+        _isStreaming = false;
         final errorAnim = _createAnimController();
         _messages.add(
           _ChatMessage(
@@ -124,28 +133,46 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
   @override
   void didUpdateWidget(covariant SocraticTutorChat oldWidget) {
     super.didUpdateWidget(oldWidget);
+    final historyChanged = oldWidget.conversationHistory != widget.conversationHistory &&
+        (widget.conversationHistory?.length ?? 0) > (oldWidget.conversationHistory?.length ?? 0);
     if (oldWidget.stepTitle != widget.stepTitle ||
         oldWidget.tutorExplanation != widget.tutorExplanation ||
-        oldWidget.stepIndex != widget.stepIndex) {
+        oldWidget.stepIndex != widget.stepIndex ||
+        (historyChanged && !_isStreaming && !_isTyping)) {
       for (final msg in _messages) {
         msg.animController.dispose();
       }
       _messages.clear();
       _controller.clear();
       _isTyping = false;
+      _isStreaming = false;
       _initializeMessages();
       setState(() {});
     }
+  }
+
+  String _sanitizeExplanation(String text) {
+    // Remove any trailing Socratic Questions section from the chat bubble
+    final socraticPattern = RegExp(
+      r'(?:\r?\n|\A)\s*(?:#{1,4}\s*)?\*{0,2}(?:socratic\s+questions?|guiding\s+questions?|suggested\s+questions?)\*{0,2}:?[\s\S]*$',
+      caseSensitive: false,
+    );
+    final match = socraticPattern.firstMatch(text);
+    if (match != null) {
+      return text.substring(0, match.start).trim();
+    }
+    return text.trim();
   }
 
   void _initializeMessages() {
     // 1. Render tutorExplanation as the first tutor bubble (matching Streamlit)
     if (widget.tutorExplanation != null &&
         widget.tutorExplanation!.trim().isNotEmpty) {
+      final sanitized = _sanitizeExplanation(widget.tutorExplanation!);
       _messages.add(
         _ChatMessage(
           sender: _Sender.tutor,
-          text: widget.tutorExplanation!,
+          text: sanitized,
           animController: _createAnimController(),
         ),
       );
@@ -159,6 +186,42 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
           animController: _createAnimController(),
         ),
       );
+    }
+
+    // 2. Replay all follow-up conversation turns from conversationHistory
+    if (widget.conversationHistory != null && widget.conversationHistory!.isNotEmpty) {
+      final initialSanitized = widget.tutorExplanation != null ? _sanitizeExplanation(widget.tutorExplanation!) : '';
+      for (final rawTurn in widget.conversationHistory!) {
+        if (rawTurn is! Map) continue;
+        final turn = Map<String, dynamic>.from(rawTurn);
+        final role = (turn['role'] as String? ?? '').toLowerCase();
+        final content = (turn['content'] as String? ?? '').trim();
+        if (content.isEmpty) continue;
+
+        if (role == 'student' || role == 'user') {
+          _messages.add(
+            _ChatMessage(
+              sender: _Sender.user,
+              text: content,
+              animController: _createAnimController(),
+            ),
+          );
+        } else if (role == 'tutor' || role == 'assistant') {
+          final sanitizedContent = _sanitizeExplanation(content);
+          // Avoid duplicating the initial explanation if it was logged as a turn in conversation_history
+          if (initialSanitized.isNotEmpty &&
+              (sanitizedContent == initialSanitized || content == widget.tutorExplanation)) {
+            continue;
+          }
+          _messages.add(
+            _ChatMessage(
+              sender: _Sender.tutor,
+              text: sanitizedContent,
+              animController: _createAnimController(),
+            ),
+          );
+        }
+      }
     }
 
     // Start entrance animations
@@ -201,6 +264,7 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
       );
       _controller.clear();
       _isTyping = true;
+      _isStreaming = false;
     });
     userAnim.forward();
     _scrollToBottom();
@@ -211,6 +275,7 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
     if (sessionId == null) {
       setState(() {
         _isTyping = false;
+        _isStreaming = false;
       });
       return;
     }
@@ -222,6 +287,7 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
       final errorAnim = _createAnimController();
       setState(() {
         _isTyping = false;
+        _isStreaming = false;
         _messages.add(
           _ChatMessage(
             sender: _Sender.tutor,
@@ -243,26 +309,70 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
     ];
 
     final rawList = widget.socraticQuestions;
-    if (rawList == null || rawList.isEmpty) {
-      return fallbackQuestions;
+    if (rawList != null && rawList.isNotEmpty) {
+      final parsed = rawList
+          .map((q) {
+            if (q is Map) return q['question']?.toString() ?? q.toString();
+            return q.toString().trim();
+          })
+          .where((q) => q.isNotEmpty)
+          .take(2)
+          .toList();
+
+      if (parsed.length >= 2) {
+        return parsed;
+      } else if (parsed.length == 1) {
+        return [parsed.first, fallbackQuestions[1]];
+      }
     }
 
-    final parsed = rawList
-        .map((q) {
-          if (q is Map) return q['question']?.toString() ?? q.toString();
-          return q.toString().trim();
-        })
-        .where((q) => q.isNotEmpty)
-        .take(2)
-        .toList();
-
-    if (parsed.isEmpty) {
-      return fallbackQuestions;
-    } else if (parsed.length == 1) {
-      return [parsed.first, fallbackQuestions[1]];
+    // Secondary recovery: if socraticQuestions wasn't provided separately,
+    // extract them from tutorExplanation if present
+    final extracted = _extractQuestionsFromText(widget.tutorExplanation);
+    if (extracted.isNotEmpty) {
+      if (extracted.length >= 2) return extracted.take(2).toList();
+      return [extracted.first, fallbackQuestions[1]];
     }
 
-    return parsed;
+    return fallbackQuestions;
+  }
+
+  List<String> _extractQuestionsFromText(String? text) {
+    if (text == null || text.isEmpty) return [];
+    final pattern = RegExp(
+      r'(?:#{1,4}\s*)?\*{0,2}(?:socratic\s+questions?|guiding\s+questions?)\*{0,2}:?\s*([\s\S]*)',
+      caseSensitive: false,
+    );
+    final match = pattern.firstMatch(text);
+    if (match == null) return [];
+
+    final questionsBlock = match.group(1) ?? '';
+    final lines = questionsBlock.split(RegExp(r'\r?\n'));
+    final questions = <String>[];
+    for (final line in lines) {
+      final trimmed = line.trim();
+      final qMatch = RegExp(r'^(?:\d+[\.\)]|[-*•])\s+(.+)$').firstMatch(trimmed);
+      if (qMatch != null) {
+        final q = qMatch.group(1)?.trim() ?? '';
+        if (q.isNotEmpty && !q.toLowerCase().startsWith('generate')) {
+          questions.add(_cleanQuotes(q));
+        }
+      } else if (trimmed.endsWith('?') && trimmed.length > 10 && !trimmed.toLowerCase().startsWith('generate')) {
+        questions.add(_cleanQuotes(trimmed));
+      }
+    }
+    return questions;
+  }
+
+  String _cleanQuotes(String s) {
+    var res = s.trim();
+    if ((res.startsWith('"') && res.endsWith('"')) ||
+        (res.startsWith("'") && res.endsWith("'"))) {
+      if (res.length >= 2) {
+        return res.substring(1, res.length - 1).trim();
+      }
+    }
+    return res;
   }
 
   @override
@@ -340,25 +450,7 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
                 : MainAxisAlignment.end,
             children: [
               if (isTutor) ...[
-                // Tutor avatar
-                Container(
-                  width: 32,
-                  height: 32,
-                  margin: const EdgeInsets.only(top: 4),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: const Color.fromRGBO(14, 17, 23, 1),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.accentPink.withValues(alpha: 0.2),
-                        blurRadius: 8,
-                      ),
-                    ],
-                  ),
-                  child: const Center(
-                    child: Text('🧩', style: TextStyle(fontSize: 14)),
-                  ),
-                ),
+                _buildTutorAvatar(),
                 const SizedBox(width: 10),
               ],
               // Bubble
@@ -589,6 +681,31 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
     );
   }
 
+  Widget _buildTutorAvatar() {
+    return Container(
+      width: 32,
+      height: 32,
+      margin: const EdgeInsets.only(top: 4),
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: const Color.fromRGBO(14, 17, 23, 1),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.accentPink.withValues(alpha: 0.2),
+            blurRadius: 8,
+          ),
+        ],
+        border: Border.all(
+          color: AppColors.primary.withValues(alpha: 0.25),
+          width: 1,
+        ),
+      ),
+      child: const Center(
+        child: Text('🧩', style: TextStyle(fontSize: 14)),
+      ),
+    );
+  }
+
   // ─── Typing Indicator ──────────────────────────────────────────
 
   Widget _buildTypingIndicator() {
@@ -597,40 +714,27 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 32,
-            height: 32,
-            margin: const EdgeInsets.only(top: 4),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: const LinearGradient(
-                colors: [AppColors.accentPink, AppColors.primary],
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.accentPink.withValues(alpha: 0.3),
-                  blurRadius: 8,
-                ),
-              ],
-            ),
-            child: const Center(
-              child: Text('🧩', style: TextStyle(fontSize: 14)),
-            ),
-          ),
+          _buildTutorAvatar(),
           const SizedBox(width: 10),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             decoration: BoxDecoration(
-              color: const Color(0xFFC084FC).withValues(alpha: 0.10),
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(4),
-                topRight: Radius.circular(20),
-                bottomLeft: Radius.circular(20),
-                bottomRight: Radius.circular(20),
+              gradient: const LinearGradient(
+                colors: [
+                  Color(0xBF1E293B), // rgba(30, 41, 59, 0.75)
+                  Color(0xD90F172A), // rgba(15, 23, 42, 0.85)
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-              border: Border.all(
-                color: const Color(0xFFC084FC).withValues(alpha: 0.22),
-              ),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x4D000000), // rgba(0, 0, 0, 0.3)
+                  blurRadius: 20,
+                  offset: Offset(0, 6),
+                ),
+              ],
             ),
             child: _TypingDots(),
           ),

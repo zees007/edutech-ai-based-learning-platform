@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$MilestoneStep {
 
- int get index; String get title; String get description;@JsonKey(name: 'is_prerequisite') bool get isPrerequisite; String? get prerequisite; String get status;@JsonKey(name: 'estimated_minutes') int get estimatedMinutes;@JsonKey(name: 'tutor_explanation') String? get tutorExplanation;@JsonKey(name: 'socratic_questions') List<dynamic>? get socraticQuestions; List<dynamic>? get quiz;@JsonKey(name: 'quiz_score') double? get quizScore;@JsonKey(name: 'user_answers') Map<String, dynamic>? get userAnswers;@JsonKey(name: 'user_full_answers') Map<String, dynamic>? get userFullAnswers; List<dynamic>? get videos; List<dynamic>? get papers;
+ int get index; String get title; String get description;@JsonKey(name: 'is_prerequisite') bool get isPrerequisite; String? get prerequisite; String get status;@JsonKey(name: 'estimated_minutes') int get estimatedMinutes;@JsonKey(name: 'tutor_explanation') String? get tutorExplanation;@JsonKey(name: 'socratic_questions') List<dynamic>? get socraticQuestions;@JsonKey(name: 'conversation_history') List<dynamic>? get conversationHistory; List<dynamic>? get quiz;@JsonKey(name: 'quiz_score') double? get quizScore;@JsonKey(name: 'user_answers') Map<String, dynamic>? get userAnswers;@JsonKey(name: 'user_full_answers') Map<String, dynamic>? get userFullAnswers; List<dynamic>? get videos; List<dynamic>? get papers;
 /// Create a copy of MilestoneStep
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $MilestoneStepCopyWith<MilestoneStep> get copyWith => _$MilestoneStepCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is MilestoneStep&&(identical(other.index, index) || other.index == index)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.isPrerequisite, isPrerequisite) || other.isPrerequisite == isPrerequisite)&&(identical(other.prerequisite, prerequisite) || other.prerequisite == prerequisite)&&(identical(other.status, status) || other.status == status)&&(identical(other.estimatedMinutes, estimatedMinutes) || other.estimatedMinutes == estimatedMinutes)&&(identical(other.tutorExplanation, tutorExplanation) || other.tutorExplanation == tutorExplanation)&&const DeepCollectionEquality().equals(other.socraticQuestions, socraticQuestions)&&const DeepCollectionEquality().equals(other.quiz, quiz)&&(identical(other.quizScore, quizScore) || other.quizScore == quizScore)&&const DeepCollectionEquality().equals(other.userAnswers, userAnswers)&&const DeepCollectionEquality().equals(other.userFullAnswers, userFullAnswers)&&const DeepCollectionEquality().equals(other.videos, videos)&&const DeepCollectionEquality().equals(other.papers, papers));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is MilestoneStep&&(identical(other.index, index) || other.index == index)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.isPrerequisite, isPrerequisite) || other.isPrerequisite == isPrerequisite)&&(identical(other.prerequisite, prerequisite) || other.prerequisite == prerequisite)&&(identical(other.status, status) || other.status == status)&&(identical(other.estimatedMinutes, estimatedMinutes) || other.estimatedMinutes == estimatedMinutes)&&(identical(other.tutorExplanation, tutorExplanation) || other.tutorExplanation == tutorExplanation)&&const DeepCollectionEquality().equals(other.socraticQuestions, socraticQuestions)&&const DeepCollectionEquality().equals(other.conversationHistory, conversationHistory)&&const DeepCollectionEquality().equals(other.quiz, quiz)&&(identical(other.quizScore, quizScore) || other.quizScore == quizScore)&&const DeepCollectionEquality().equals(other.userAnswers, userAnswers)&&const DeepCollectionEquality().equals(other.userFullAnswers, userFullAnswers)&&const DeepCollectionEquality().equals(other.videos, videos)&&const DeepCollectionEquality().equals(other.papers, papers));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,index,title,description,isPrerequisite,prerequisite,status,estimatedMinutes,tutorExplanation,const DeepCollectionEquality().hash(socraticQuestions),const DeepCollectionEquality().hash(quiz),quizScore,const DeepCollectionEquality().hash(userAnswers),const DeepCollectionEquality().hash(userFullAnswers),const DeepCollectionEquality().hash(videos),const DeepCollectionEquality().hash(papers));
+int get hashCode => Object.hash(runtimeType,index,title,description,isPrerequisite,prerequisite,status,estimatedMinutes,tutorExplanation,const DeepCollectionEquality().hash(socraticQuestions),const DeepCollectionEquality().hash(conversationHistory),const DeepCollectionEquality().hash(quiz),quizScore,const DeepCollectionEquality().hash(userAnswers),const DeepCollectionEquality().hash(userFullAnswers),const DeepCollectionEquality().hash(videos),const DeepCollectionEquality().hash(papers));
 
 @override
 String toString() {
-  return 'MilestoneStep(index: $index, title: $title, description: $description, isPrerequisite: $isPrerequisite, prerequisite: $prerequisite, status: $status, estimatedMinutes: $estimatedMinutes, tutorExplanation: $tutorExplanation, socraticQuestions: $socraticQuestions, quiz: $quiz, quizScore: $quizScore, userAnswers: $userAnswers, userFullAnswers: $userFullAnswers, videos: $videos, papers: $papers)';
+  return 'MilestoneStep(index: $index, title: $title, description: $description, isPrerequisite: $isPrerequisite, prerequisite: $prerequisite, status: $status, estimatedMinutes: $estimatedMinutes, tutorExplanation: $tutorExplanation, socraticQuestions: $socraticQuestions, conversationHistory: $conversationHistory, quiz: $quiz, quizScore: $quizScore, userAnswers: $userAnswers, userFullAnswers: $userFullAnswers, videos: $videos, papers: $papers)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $MilestoneStepCopyWith<$Res>  {
   factory $MilestoneStepCopyWith(MilestoneStep value, $Res Function(MilestoneStep) _then) = _$MilestoneStepCopyWithImpl;
 @useResult
 $Res call({
- int index, String title, String description,@JsonKey(name: 'is_prerequisite') bool isPrerequisite, String? prerequisite, String status,@JsonKey(name: 'estimated_minutes') int estimatedMinutes,@JsonKey(name: 'tutor_explanation') String? tutorExplanation,@JsonKey(name: 'socratic_questions') List<dynamic>? socraticQuestions, List<dynamic>? quiz,@JsonKey(name: 'quiz_score') double? quizScore,@JsonKey(name: 'user_answers') Map<String, dynamic>? userAnswers,@JsonKey(name: 'user_full_answers') Map<String, dynamic>? userFullAnswers, List<dynamic>? videos, List<dynamic>? papers
+ int index, String title, String description,@JsonKey(name: 'is_prerequisite') bool isPrerequisite, String? prerequisite, String status,@JsonKey(name: 'estimated_minutes') int estimatedMinutes,@JsonKey(name: 'tutor_explanation') String? tutorExplanation,@JsonKey(name: 'socratic_questions') List<dynamic>? socraticQuestions,@JsonKey(name: 'conversation_history') List<dynamic>? conversationHistory, List<dynamic>? quiz,@JsonKey(name: 'quiz_score') double? quizScore,@JsonKey(name: 'user_answers') Map<String, dynamic>? userAnswers,@JsonKey(name: 'user_full_answers') Map<String, dynamic>? userFullAnswers, List<dynamic>? videos, List<dynamic>? papers
 });
 
 
@@ -65,7 +65,7 @@ class _$MilestoneStepCopyWithImpl<$Res>
 
 /// Create a copy of MilestoneStep
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? index = null,Object? title = null,Object? description = null,Object? isPrerequisite = null,Object? prerequisite = freezed,Object? status = null,Object? estimatedMinutes = null,Object? tutorExplanation = freezed,Object? socraticQuestions = freezed,Object? quiz = freezed,Object? quizScore = freezed,Object? userAnswers = freezed,Object? userFullAnswers = freezed,Object? videos = freezed,Object? papers = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? index = null,Object? title = null,Object? description = null,Object? isPrerequisite = null,Object? prerequisite = freezed,Object? status = null,Object? estimatedMinutes = null,Object? tutorExplanation = freezed,Object? socraticQuestions = freezed,Object? conversationHistory = freezed,Object? quiz = freezed,Object? quizScore = freezed,Object? userAnswers = freezed,Object? userFullAnswers = freezed,Object? videos = freezed,Object? papers = freezed,}) {
   return _then(_self.copyWith(
 index: null == index ? _self.index : index // ignore: cast_nullable_to_non_nullable
 as int,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
@@ -76,6 +76,7 @@ as String?,status: null == status ? _self.status : status // ignore: cast_nullab
 as String,estimatedMinutes: null == estimatedMinutes ? _self.estimatedMinutes : estimatedMinutes // ignore: cast_nullable_to_non_nullable
 as int,tutorExplanation: freezed == tutorExplanation ? _self.tutorExplanation : tutorExplanation // ignore: cast_nullable_to_non_nullable
 as String?,socraticQuestions: freezed == socraticQuestions ? _self.socraticQuestions : socraticQuestions // ignore: cast_nullable_to_non_nullable
+as List<dynamic>?,conversationHistory: freezed == conversationHistory ? _self.conversationHistory : conversationHistory // ignore: cast_nullable_to_non_nullable
 as List<dynamic>?,quiz: freezed == quiz ? _self.quiz : quiz // ignore: cast_nullable_to_non_nullable
 as List<dynamic>?,quizScore: freezed == quizScore ? _self.quizScore : quizScore // ignore: cast_nullable_to_non_nullable
 as double?,userAnswers: freezed == userAnswers ? _self.userAnswers : userAnswers // ignore: cast_nullable_to_non_nullable
@@ -167,10 +168,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int index,  String title,  String description, @JsonKey(name: 'is_prerequisite')  bool isPrerequisite,  String? prerequisite,  String status, @JsonKey(name: 'estimated_minutes')  int estimatedMinutes, @JsonKey(name: 'tutor_explanation')  String? tutorExplanation, @JsonKey(name: 'socratic_questions')  List<dynamic>? socraticQuestions,  List<dynamic>? quiz, @JsonKey(name: 'quiz_score')  double? quizScore, @JsonKey(name: 'user_answers')  Map<String, dynamic>? userAnswers, @JsonKey(name: 'user_full_answers')  Map<String, dynamic>? userFullAnswers,  List<dynamic>? videos,  List<dynamic>? papers)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int index,  String title,  String description, @JsonKey(name: 'is_prerequisite')  bool isPrerequisite,  String? prerequisite,  String status, @JsonKey(name: 'estimated_minutes')  int estimatedMinutes, @JsonKey(name: 'tutor_explanation')  String? tutorExplanation, @JsonKey(name: 'socratic_questions')  List<dynamic>? socraticQuestions, @JsonKey(name: 'conversation_history')  List<dynamic>? conversationHistory,  List<dynamic>? quiz, @JsonKey(name: 'quiz_score')  double? quizScore, @JsonKey(name: 'user_answers')  Map<String, dynamic>? userAnswers, @JsonKey(name: 'user_full_answers')  Map<String, dynamic>? userFullAnswers,  List<dynamic>? videos,  List<dynamic>? papers)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _MilestoneStep() when $default != null:
-return $default(_that.index,_that.title,_that.description,_that.isPrerequisite,_that.prerequisite,_that.status,_that.estimatedMinutes,_that.tutorExplanation,_that.socraticQuestions,_that.quiz,_that.quizScore,_that.userAnswers,_that.userFullAnswers,_that.videos,_that.papers);case _:
+return $default(_that.index,_that.title,_that.description,_that.isPrerequisite,_that.prerequisite,_that.status,_that.estimatedMinutes,_that.tutorExplanation,_that.socraticQuestions,_that.conversationHistory,_that.quiz,_that.quizScore,_that.userAnswers,_that.userFullAnswers,_that.videos,_that.papers);case _:
   return orElse();
 
 }
@@ -188,10 +189,10 @@ return $default(_that.index,_that.title,_that.description,_that.isPrerequisite,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int index,  String title,  String description, @JsonKey(name: 'is_prerequisite')  bool isPrerequisite,  String? prerequisite,  String status, @JsonKey(name: 'estimated_minutes')  int estimatedMinutes, @JsonKey(name: 'tutor_explanation')  String? tutorExplanation, @JsonKey(name: 'socratic_questions')  List<dynamic>? socraticQuestions,  List<dynamic>? quiz, @JsonKey(name: 'quiz_score')  double? quizScore, @JsonKey(name: 'user_answers')  Map<String, dynamic>? userAnswers, @JsonKey(name: 'user_full_answers')  Map<String, dynamic>? userFullAnswers,  List<dynamic>? videos,  List<dynamic>? papers)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int index,  String title,  String description, @JsonKey(name: 'is_prerequisite')  bool isPrerequisite,  String? prerequisite,  String status, @JsonKey(name: 'estimated_minutes')  int estimatedMinutes, @JsonKey(name: 'tutor_explanation')  String? tutorExplanation, @JsonKey(name: 'socratic_questions')  List<dynamic>? socraticQuestions, @JsonKey(name: 'conversation_history')  List<dynamic>? conversationHistory,  List<dynamic>? quiz, @JsonKey(name: 'quiz_score')  double? quizScore, @JsonKey(name: 'user_answers')  Map<String, dynamic>? userAnswers, @JsonKey(name: 'user_full_answers')  Map<String, dynamic>? userFullAnswers,  List<dynamic>? videos,  List<dynamic>? papers)  $default,) {final _that = this;
 switch (_that) {
 case _MilestoneStep():
-return $default(_that.index,_that.title,_that.description,_that.isPrerequisite,_that.prerequisite,_that.status,_that.estimatedMinutes,_that.tutorExplanation,_that.socraticQuestions,_that.quiz,_that.quizScore,_that.userAnswers,_that.userFullAnswers,_that.videos,_that.papers);case _:
+return $default(_that.index,_that.title,_that.description,_that.isPrerequisite,_that.prerequisite,_that.status,_that.estimatedMinutes,_that.tutorExplanation,_that.socraticQuestions,_that.conversationHistory,_that.quiz,_that.quizScore,_that.userAnswers,_that.userFullAnswers,_that.videos,_that.papers);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -208,10 +209,10 @@ return $default(_that.index,_that.title,_that.description,_that.isPrerequisite,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int index,  String title,  String description, @JsonKey(name: 'is_prerequisite')  bool isPrerequisite,  String? prerequisite,  String status, @JsonKey(name: 'estimated_minutes')  int estimatedMinutes, @JsonKey(name: 'tutor_explanation')  String? tutorExplanation, @JsonKey(name: 'socratic_questions')  List<dynamic>? socraticQuestions,  List<dynamic>? quiz, @JsonKey(name: 'quiz_score')  double? quizScore, @JsonKey(name: 'user_answers')  Map<String, dynamic>? userAnswers, @JsonKey(name: 'user_full_answers')  Map<String, dynamic>? userFullAnswers,  List<dynamic>? videos,  List<dynamic>? papers)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int index,  String title,  String description, @JsonKey(name: 'is_prerequisite')  bool isPrerequisite,  String? prerequisite,  String status, @JsonKey(name: 'estimated_minutes')  int estimatedMinutes, @JsonKey(name: 'tutor_explanation')  String? tutorExplanation, @JsonKey(name: 'socratic_questions')  List<dynamic>? socraticQuestions, @JsonKey(name: 'conversation_history')  List<dynamic>? conversationHistory,  List<dynamic>? quiz, @JsonKey(name: 'quiz_score')  double? quizScore, @JsonKey(name: 'user_answers')  Map<String, dynamic>? userAnswers, @JsonKey(name: 'user_full_answers')  Map<String, dynamic>? userFullAnswers,  List<dynamic>? videos,  List<dynamic>? papers)?  $default,) {final _that = this;
 switch (_that) {
 case _MilestoneStep() when $default != null:
-return $default(_that.index,_that.title,_that.description,_that.isPrerequisite,_that.prerequisite,_that.status,_that.estimatedMinutes,_that.tutorExplanation,_that.socraticQuestions,_that.quiz,_that.quizScore,_that.userAnswers,_that.userFullAnswers,_that.videos,_that.papers);case _:
+return $default(_that.index,_that.title,_that.description,_that.isPrerequisite,_that.prerequisite,_that.status,_that.estimatedMinutes,_that.tutorExplanation,_that.socraticQuestions,_that.conversationHistory,_that.quiz,_that.quizScore,_that.userAnswers,_that.userFullAnswers,_that.videos,_that.papers);case _:
   return null;
 
 }
@@ -223,7 +224,7 @@ return $default(_that.index,_that.title,_that.description,_that.isPrerequisite,_
 @JsonSerializable()
 
 class _MilestoneStep implements MilestoneStep {
-  const _MilestoneStep({required this.index, required this.title, required this.description, @JsonKey(name: 'is_prerequisite') this.isPrerequisite = false, this.prerequisite, this.status = 'pending', @JsonKey(name: 'estimated_minutes') this.estimatedMinutes = 5, @JsonKey(name: 'tutor_explanation') this.tutorExplanation, @JsonKey(name: 'socratic_questions') final  List<dynamic>? socraticQuestions, final  List<dynamic>? quiz, @JsonKey(name: 'quiz_score') this.quizScore, @JsonKey(name: 'user_answers') final  Map<String, dynamic>? userAnswers, @JsonKey(name: 'user_full_answers') final  Map<String, dynamic>? userFullAnswers, final  List<dynamic>? videos, final  List<dynamic>? papers}): _socraticQuestions = socraticQuestions,_quiz = quiz,_userAnswers = userAnswers,_userFullAnswers = userFullAnswers,_videos = videos,_papers = papers;
+  const _MilestoneStep({required this.index, required this.title, required this.description, @JsonKey(name: 'is_prerequisite') this.isPrerequisite = false, this.prerequisite, this.status = 'pending', @JsonKey(name: 'estimated_minutes') this.estimatedMinutes = 5, @JsonKey(name: 'tutor_explanation') this.tutorExplanation, @JsonKey(name: 'socratic_questions') final  List<dynamic>? socraticQuestions, @JsonKey(name: 'conversation_history') final  List<dynamic>? conversationHistory, final  List<dynamic>? quiz, @JsonKey(name: 'quiz_score') this.quizScore, @JsonKey(name: 'user_answers') final  Map<String, dynamic>? userAnswers, @JsonKey(name: 'user_full_answers') final  Map<String, dynamic>? userFullAnswers, final  List<dynamic>? videos, final  List<dynamic>? papers}): _socraticQuestions = socraticQuestions,_conversationHistory = conversationHistory,_quiz = quiz,_userAnswers = userAnswers,_userFullAnswers = userFullAnswers,_videos = videos,_papers = papers;
   factory _MilestoneStep.fromJson(Map<String, dynamic> json) => _$MilestoneStepFromJson(json);
 
 @override final  int index;
@@ -239,6 +240,15 @@ class _MilestoneStep implements MilestoneStep {
   final value = _socraticQuestions;
   if (value == null) return null;
   if (_socraticQuestions is EqualUnmodifiableListView) return _socraticQuestions;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(value);
+}
+
+ final  List<dynamic>? _conversationHistory;
+@override@JsonKey(name: 'conversation_history') List<dynamic>? get conversationHistory {
+  final value = _conversationHistory;
+  if (value == null) return null;
+  if (_conversationHistory is EqualUnmodifiableListView) return _conversationHistory;
   // ignore: implicit_dynamic_type
   return EqualUnmodifiableListView(value);
 }
@@ -303,16 +313,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _MilestoneStep&&(identical(other.index, index) || other.index == index)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.isPrerequisite, isPrerequisite) || other.isPrerequisite == isPrerequisite)&&(identical(other.prerequisite, prerequisite) || other.prerequisite == prerequisite)&&(identical(other.status, status) || other.status == status)&&(identical(other.estimatedMinutes, estimatedMinutes) || other.estimatedMinutes == estimatedMinutes)&&(identical(other.tutorExplanation, tutorExplanation) || other.tutorExplanation == tutorExplanation)&&const DeepCollectionEquality().equals(other._socraticQuestions, _socraticQuestions)&&const DeepCollectionEquality().equals(other._quiz, _quiz)&&(identical(other.quizScore, quizScore) || other.quizScore == quizScore)&&const DeepCollectionEquality().equals(other._userAnswers, _userAnswers)&&const DeepCollectionEquality().equals(other._userFullAnswers, _userFullAnswers)&&const DeepCollectionEquality().equals(other._videos, _videos)&&const DeepCollectionEquality().equals(other._papers, _papers));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _MilestoneStep&&(identical(other.index, index) || other.index == index)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.isPrerequisite, isPrerequisite) || other.isPrerequisite == isPrerequisite)&&(identical(other.prerequisite, prerequisite) || other.prerequisite == prerequisite)&&(identical(other.status, status) || other.status == status)&&(identical(other.estimatedMinutes, estimatedMinutes) || other.estimatedMinutes == estimatedMinutes)&&(identical(other.tutorExplanation, tutorExplanation) || other.tutorExplanation == tutorExplanation)&&const DeepCollectionEquality().equals(other._socraticQuestions, _socraticQuestions)&&const DeepCollectionEquality().equals(other._conversationHistory, _conversationHistory)&&const DeepCollectionEquality().equals(other._quiz, _quiz)&&(identical(other.quizScore, quizScore) || other.quizScore == quizScore)&&const DeepCollectionEquality().equals(other._userAnswers, _userAnswers)&&const DeepCollectionEquality().equals(other._userFullAnswers, _userFullAnswers)&&const DeepCollectionEquality().equals(other._videos, _videos)&&const DeepCollectionEquality().equals(other._papers, _papers));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,index,title,description,isPrerequisite,prerequisite,status,estimatedMinutes,tutorExplanation,const DeepCollectionEquality().hash(_socraticQuestions),const DeepCollectionEquality().hash(_quiz),quizScore,const DeepCollectionEquality().hash(_userAnswers),const DeepCollectionEquality().hash(_userFullAnswers),const DeepCollectionEquality().hash(_videos),const DeepCollectionEquality().hash(_papers));
+int get hashCode => Object.hash(runtimeType,index,title,description,isPrerequisite,prerequisite,status,estimatedMinutes,tutorExplanation,const DeepCollectionEquality().hash(_socraticQuestions),const DeepCollectionEquality().hash(_conversationHistory),const DeepCollectionEquality().hash(_quiz),quizScore,const DeepCollectionEquality().hash(_userAnswers),const DeepCollectionEquality().hash(_userFullAnswers),const DeepCollectionEquality().hash(_videos),const DeepCollectionEquality().hash(_papers));
 
 @override
 String toString() {
-  return 'MilestoneStep(index: $index, title: $title, description: $description, isPrerequisite: $isPrerequisite, prerequisite: $prerequisite, status: $status, estimatedMinutes: $estimatedMinutes, tutorExplanation: $tutorExplanation, socraticQuestions: $socraticQuestions, quiz: $quiz, quizScore: $quizScore, userAnswers: $userAnswers, userFullAnswers: $userFullAnswers, videos: $videos, papers: $papers)';
+  return 'MilestoneStep(index: $index, title: $title, description: $description, isPrerequisite: $isPrerequisite, prerequisite: $prerequisite, status: $status, estimatedMinutes: $estimatedMinutes, tutorExplanation: $tutorExplanation, socraticQuestions: $socraticQuestions, conversationHistory: $conversationHistory, quiz: $quiz, quizScore: $quizScore, userAnswers: $userAnswers, userFullAnswers: $userFullAnswers, videos: $videos, papers: $papers)';
 }
 
 
@@ -323,7 +333,7 @@ abstract mixin class _$MilestoneStepCopyWith<$Res> implements $MilestoneStepCopy
   factory _$MilestoneStepCopyWith(_MilestoneStep value, $Res Function(_MilestoneStep) _then) = __$MilestoneStepCopyWithImpl;
 @override @useResult
 $Res call({
- int index, String title, String description,@JsonKey(name: 'is_prerequisite') bool isPrerequisite, String? prerequisite, String status,@JsonKey(name: 'estimated_minutes') int estimatedMinutes,@JsonKey(name: 'tutor_explanation') String? tutorExplanation,@JsonKey(name: 'socratic_questions') List<dynamic>? socraticQuestions, List<dynamic>? quiz,@JsonKey(name: 'quiz_score') double? quizScore,@JsonKey(name: 'user_answers') Map<String, dynamic>? userAnswers,@JsonKey(name: 'user_full_answers') Map<String, dynamic>? userFullAnswers, List<dynamic>? videos, List<dynamic>? papers
+ int index, String title, String description,@JsonKey(name: 'is_prerequisite') bool isPrerequisite, String? prerequisite, String status,@JsonKey(name: 'estimated_minutes') int estimatedMinutes,@JsonKey(name: 'tutor_explanation') String? tutorExplanation,@JsonKey(name: 'socratic_questions') List<dynamic>? socraticQuestions,@JsonKey(name: 'conversation_history') List<dynamic>? conversationHistory, List<dynamic>? quiz,@JsonKey(name: 'quiz_score') double? quizScore,@JsonKey(name: 'user_answers') Map<String, dynamic>? userAnswers,@JsonKey(name: 'user_full_answers') Map<String, dynamic>? userFullAnswers, List<dynamic>? videos, List<dynamic>? papers
 });
 
 
@@ -340,7 +350,7 @@ class __$MilestoneStepCopyWithImpl<$Res>
 
 /// Create a copy of MilestoneStep
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? index = null,Object? title = null,Object? description = null,Object? isPrerequisite = null,Object? prerequisite = freezed,Object? status = null,Object? estimatedMinutes = null,Object? tutorExplanation = freezed,Object? socraticQuestions = freezed,Object? quiz = freezed,Object? quizScore = freezed,Object? userAnswers = freezed,Object? userFullAnswers = freezed,Object? videos = freezed,Object? papers = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? index = null,Object? title = null,Object? description = null,Object? isPrerequisite = null,Object? prerequisite = freezed,Object? status = null,Object? estimatedMinutes = null,Object? tutorExplanation = freezed,Object? socraticQuestions = freezed,Object? conversationHistory = freezed,Object? quiz = freezed,Object? quizScore = freezed,Object? userAnswers = freezed,Object? userFullAnswers = freezed,Object? videos = freezed,Object? papers = freezed,}) {
   return _then(_MilestoneStep(
 index: null == index ? _self.index : index // ignore: cast_nullable_to_non_nullable
 as int,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
@@ -351,6 +361,7 @@ as String?,status: null == status ? _self.status : status // ignore: cast_nullab
 as String,estimatedMinutes: null == estimatedMinutes ? _self.estimatedMinutes : estimatedMinutes // ignore: cast_nullable_to_non_nullable
 as int,tutorExplanation: freezed == tutorExplanation ? _self.tutorExplanation : tutorExplanation // ignore: cast_nullable_to_non_nullable
 as String?,socraticQuestions: freezed == socraticQuestions ? _self._socraticQuestions : socraticQuestions // ignore: cast_nullable_to_non_nullable
+as List<dynamic>?,conversationHistory: freezed == conversationHistory ? _self._conversationHistory : conversationHistory // ignore: cast_nullable_to_non_nullable
 as List<dynamic>?,quiz: freezed == quiz ? _self._quiz : quiz // ignore: cast_nullable_to_non_nullable
 as List<dynamic>?,quizScore: freezed == quizScore ? _self.quizScore : quizScore // ignore: cast_nullable_to_non_nullable
 as double?,userAnswers: freezed == userAnswers ? _self._userAnswers : userAnswers // ignore: cast_nullable_to_non_nullable

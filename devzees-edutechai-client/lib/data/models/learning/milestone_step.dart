@@ -17,6 +17,7 @@ abstract class MilestoneStep with _$MilestoneStep {
     // Dynamic payload fields
     @JsonKey(name: 'tutor_explanation') String? tutorExplanation,
     @JsonKey(name: 'socratic_questions') List<dynamic>? socraticQuestions,
+    @JsonKey(name: 'conversation_history') List<dynamic>? conversationHistory,
     List<dynamic>? quiz,
     @JsonKey(name: 'quiz_score') double? quizScore,
     @JsonKey(name: 'user_answers') Map<String, dynamic>? userAnswers,
