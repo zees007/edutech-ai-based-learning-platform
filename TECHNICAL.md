@@ -42,6 +42,10 @@ This document provides comprehensive technical documentation for the EduTechAI a
     - [AI Key Insight Extraction & Fallback Hierarchy](#ai-key-insight-extraction--fallback-hierarchy)
     - [Client Presentation & Micro-Interactions](#client-presentation--micro-interactions)
     - [Backend REST API & Privilege Gating](#backend-rest-api--privilege-gating)
+11. [Flutter Client Architecture & WebSocket Streaming](#11-flutter-client-architecture--websocket-streaming)
+    - [State Management & Provider Architecture](#state-management--provider-architecture)
+    - [WebSocket Event Lifecycle](#websocket-event-lifecycle)
+    - [UI Performance & Rendering Optimizations](#ui-performance--rendering-optimizations)
 
 ---
 
@@ -625,5 +629,57 @@ GET /api/v1/academic/search?query={topic}&max_results={limit}
 - **Security Dependency:** `require_privilege(ET_ACCESS_ACADEMIC_SEARCH)`
 - **Response Schema:** `list[AcademicPaper]`
 - **Execution:** Invokes `AcademicClient.search_all()` to query OpenAlex, Semantic Scholar, and arXiv concurrently with server-side deduplication and relevance scoring.
+
+---
+
+## 11. Flutter Client Architecture & WebSocket Streaming
+
+The Flutter client replaces the original Streamlit interface with a fully reactive, high-performance mobile/desktop frontend. It introduces a complex state management architecture to handle real-time streaming AI generation, resilient WebSocket connections, and complex UI rendering.
+
+### State Management & Provider Architecture
+
+The client utilizes **Riverpod** for robust, reactive state management. The core component is the `ActiveSessionNotifier` (`lib/core/providers/active_session_provider.dart`), which manages the entire lifecycle of a learning session:
+
+- **State Container (`ActiveSessionState`)**: Holds the full `SessionResponse` payload, the currently active step index, UI loading states, and error contexts.
+- **REST API + WebSocket Hybrid Model**:
+  - Initial session creation (`startNewSession()`) uses REST to trigger the Orchestrator agent to generate the milestone plan.
+  - Upon receiving the `SessionResponse`, the client establishes a WebSocket connection (`LearningWebSocketService`) linked to the `sessionId`.
+  - Step execution is triggered via the WebSocket using `sendStartStep()`.
+  - When the final `step_complete` event is received via WebSocket, the client makes a single REST HTTP GET (`loadSession()`) to fetch the fully completed, structured payload from the database to guarantee state consistency.
+
+### WebSocket Event Lifecycle
+
+Unlike Streamlit's blocking batch execution, the Flutter client processes real-time streamed chunks to provide immediate user feedback.
+
+```
+Client (Riverpod)                   WebSocket Server                      Agents
+       │                                  │                                  │
+       ├── connect(sessionId) ───────────►│                                  │
+       │                                  ├── "plan" event ─────────────────►│
+       │◄── "plan" event ─────────────────┤                                  │
+       │                                  │                                  │
+       ├── sendStartStep(index) ─────────►│                                  │
+       │                                  ├── Start Step Execution ─────────►│
+       │                                  │                                  │
+       │◄── "explanation_chunk" ──────────┼── stream_explanation() ◄─────────┤ (Socratic Tutor)
+       │◄── "youtube_clip" ───────────────┼── gather() ◄─────────────────────┤ (YouTube Curator)
+       │◄── "academic_paper" ─────────────┼── gather() ◄─────────────────────┤ (Academic Researcher)
+       │◄── "quiz" ───────────────────────┼── execute() ◄────────────────────┤ (Quiz Agent)
+       │◄── "socratic_questions" ─────────┼── create_event() ◄───────────────┤ (Synthesizer)
+       │◄── "step_complete" ──────────────┼── create_event() ◄───────────────┤ (Synthesizer)
+       │                                  │                                  │
+       ├── HTTP GET /api/sessions/{id} ──►│                                  │
+       │◄── Full Session Payload ─────────┤                                  │
+       │                                  │                                  │
+```
+
+### UI Performance & Rendering Optimizations
+
+The client employs several advanced rendering optimizations to ensure 60FPS fluid interactions while managing hundreds of incoming WebSocket events:
+
+1. **Lazy Reconnection Avoidance**: `loadSession(sessionId, fromStepComplete: true)` prevents redundant WebSocket disconnections/reconnections when simply refreshing data after a completed step. This avoids triggering duplicate `plan` events and redundant backend pipeline executions.
+2. **Event Guarding (`isLoading` Barrier)**: The `SocraticTutorChat` widget actively listens to the WebSocket stream, but ignores high-frequency `explanation_chunk` events if the global provider is in an `isLoading` state (e.g., Step 0 initialization). This prevents hundreds of wasteful `setState()` triggers and `AnimationController` allocations behind the loading screen.
+3. **Optimized Concurrent Backend Execution**: The WebSocket backend executes the `QuizAgent` in parallel with the `YouTubeCuratorAgent` and `AcademicResearcherAgent` (via `asyncio.gather`), significantly reducing total execution time while maintaining the token-by-token streaming experience of the `SocraticTutorAgent`.
+
 
 

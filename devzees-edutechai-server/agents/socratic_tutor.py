@@ -132,6 +132,64 @@ class SocraticTutorAgent(BaseAgent):
             self.logger.error(f"Failed to answer follow-up question: {e}")
             return f"That's a great question about {step_title}! How do you think it connects to {topic}?"
 
+    async def stream_followup(
+        self,
+        question: str,
+        memory: SharedMemory,
+        step_index: int | None = None,
+    ) -> AsyncGenerator[str, None]:
+        """
+        Stream an answer to the student's follow-up question for real-time UI chat bubbles.
+        """
+        if step_index is None:
+            step_index = memory.current_step_index
+
+        step = memory.steps[step_index] if step_index < len(memory.steps) else None
+        step_title = step.title if step else memory.topic
+        step_description = step.description if step else ""
+        step_result = memory.get_step_result(step_index)
+        explanation = step_result.explanation or ""
+
+        system_prompt = (
+            f"You are the Socratic Tutor Agent teaching a {memory.student_level} level student about '{memory.topic}'.\n"
+            f"Current Step: '{step_title}' — {step_description}\n"
+            f"Previous Explanation given: {explanation[:1500]}\n\n"
+            f"Rule: Answer the student's question clearly with a supportive, engaging Socratic tone using analogies. "
+            f"End with a short guiding question to check their understanding."
+        )
+
+        messages = [{"role": "system", "content": system_prompt}]
+
+        for turn in memory.conversation_history[-6:]:
+            messages.append({
+                "role": "user" if turn.role == "student" else "assistant",
+                "content": turn.content,
+            })
+
+        # Ensure the current question is at the end of messages
+        if not messages or messages[-1].get("content") != question:
+            messages.append({"role": "user", "content": question})
+
+        model = self.settings.get_model_for_agent("socratic_tutor")
+        full_answer = ""
+
+        try:
+            async for chunk in self.llm.chat_stream(
+                model=model,
+                messages=messages,
+                temperature=0.7,
+                max_tokens=1024,
+            ):
+                full_answer += chunk
+                yield chunk
+        except Exception as e:
+            self.logger.error(f"Follow-up streaming failed: {e}")
+            yield f"\n\n(Follow-up interrupted: {e})"
+
+        # Record tutor response in conversation history
+        if full_answer:
+            memory.add_conversation_turn("tutor", full_answer, step_index=step_index)
+
     async def execute(self, memory: SharedMemory, step_index: int | None = None) -> None:
         """
         Generate the Socratic explanation for a given step and write it to SharedMemory.
@@ -215,7 +273,7 @@ class SocraticTutorAgent(BaseAgent):
         step_result.socratic_questions = questions
 
         # Add to conversation history
-        memory.add_conversation_turn("tutor", explanation)
+        memory.add_conversation_turn("tutor", explanation, step_index=step_index)
 
         self.logger.info(
             f"Step {step_index} explained ({len(explanation)} chars, "
@@ -279,6 +337,12 @@ class SocraticTutorAgent(BaseAgent):
         model = self.settings.get_model_for_agent("socratic_tutor")
         full_response = ""
 
+        # Delimiter pattern to detect start of Socratic questions section during streaming
+        delimiter_pattern = re.compile(
+            r"(?i)(?:\r?\n|\A)\s*(?:#{1,4}\s*)?\*{0,2}(?:socratic\s+questions?|guiding\s+questions?)\*{0,2}:?"
+        )
+        stream_halted = False
+
         try:
             async for chunk in self.llm.chat_stream(
                 model=model,
@@ -287,7 +351,13 @@ class SocraticTutorAgent(BaseAgent):
                 max_tokens=2048,
             ):
                 full_response += chunk
-                yield chunk
+                if not stream_halted:
+                    match = delimiter_pattern.search(full_response)
+                    if match:
+                        stream_halted = True
+                        # Do not yield the delimiter or anything after it to the explanation bubble
+                    else:
+                        yield chunk
         except Exception as e:
             self.logger.error(f"Streaming failed: {e}")
             yield f"\n\n(Streaming interrupted: {e})"
@@ -297,46 +367,66 @@ class SocraticTutorAgent(BaseAgent):
         step_result = memory.get_step_result(step_index)
         step_result.explanation = explanation
         step_result.socratic_questions = questions
-        memory.add_conversation_turn("tutor", explanation)
+        memory.add_conversation_turn("tutor", explanation, step_index=step_index)
 
     def _parse_response(self, response: str) -> tuple[str, list[str]]:
         """
         Split the tutor's response into explanation and Socratic questions.
 
         The prompt instructs the tutor to use "**Socratic Questions:**" as a delimiter.
+        Uses robust regex to catch variations in markdown headers or formatting.
         """
         # Strip any <think>...</think> reasoning blocks
         cleaned_response = re.sub(r"<think>.*?</think>", "", response, flags=re.DOTALL).strip()
         if not cleaned_response:
             cleaned_response = response
 
-        # Look for the Socratic Questions section
-        delimiter_variants = [
-            "**Socratic Questions:**",
-            "**Socratic Questions**:",
-            "Socratic Questions:",
-            "**Questions:**",
-            "**Guiding Questions:**",
-        ]
+        # Robust regex pattern matching any heading/delimiter variation of Socratic questions:
+        # e.g.: **Socratic Questions:**, ### Socratic Questions:, ## **Socratic Questions**,
+        # **Guiding Questions:**, Socratic Questions:, etc.
+        delimiter_regex = re.compile(
+            r"(?i)(?:\r?\n|\A)\s*(?:#{1,4}\s*)?\*{0,2}(?:socratic\s+questions?|guiding\s+questions?)\*{0,2}:?\s*(?:\r?\n|\Z)",
+        )
 
         explanation = cleaned_response
+        questions_text = ""
         questions = []
 
-        for delimiter in delimiter_variants:
-            if delimiter in cleaned_response:
-                parts = cleaned_response.split(delimiter, 1)
-                explanation = parts[0].strip()
-                questions_text = parts[1].strip()
+        match = delimiter_regex.search(cleaned_response)
+        if match:
+            explanation = cleaned_response[:match.start()].strip()
+            questions_text = cleaned_response[match.end():].strip()
+        else:
+            # Fallback check for exact string variants
+            delimiter_variants = [
+                "**Socratic Questions:**",
+                "**Socratic Questions**:",
+                "Socratic Questions:",
+                "**Questions:**",
+                "**Guiding Questions:**",
+            ]
+            for delimiter in delimiter_variants:
+                if delimiter in cleaned_response:
+                    parts = cleaned_response.split(delimiter, 1)
+                    explanation = parts[0].strip()
+                    questions_text = parts[1].strip()
+                    break
 
-                # Parse numbered questions
-                for line in questions_text.split("\n"):
-                    line = line.strip()
-                    if line and (line[0].isdigit() or line.startswith("-")):
-                        # Remove numbering (1., 2., -, *)
-                        question = line.lstrip("0123456789.-*) ").strip()
-                        if question:
-                            questions.append(question)
-                break
+        if questions_text:
+            # Parse numbered or bulleted questions
+            for line in questions_text.split("\n"):
+                line = line.strip()
+                if not line:
+                    continue
+                # Match numbered (1., 1), bullet (- , * , •)
+                m = re.match(r"^(?:\d+[\.\)]|[-*•])\s*(.+)$", line)
+                if m:
+                    q = m.group(1).strip().strip('"\'*')
+                    if q:
+                        questions.append(q)
+                elif line.endswith("?") and len(line) > 10 and not line.lower().startswith("generate"):
+                    # Standalone unbulleted question line
+                    questions.append(line.strip('"\'*'))
 
         # Ensure exactly two questions: cap at 2 and pad with fallback if fewer
         fallback_questions = [

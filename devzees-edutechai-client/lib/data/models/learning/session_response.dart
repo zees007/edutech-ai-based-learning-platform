@@ -16,6 +16,7 @@ abstract class SessionResponse with _$SessionResponse {
     @JsonKey(name: 'current_step_index') @Default(0) int currentStepIndex,
     @JsonKey(name: 'xp_earned') @Default(0) int xpEarned,
     @JsonKey(name: 'steps_completed') @Default(0) int stepsCompleted,
+    @JsonKey(name: 'conversation_history') List<dynamic>? conversationHistory,
   }) = _SessionResponse;
 
   factory SessionResponse.fromJson(Map<String, dynamic> json) => _$SessionResponseFromJson(json);

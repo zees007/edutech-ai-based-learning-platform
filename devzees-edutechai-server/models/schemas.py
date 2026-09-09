@@ -121,6 +121,10 @@ class MilestoneStep(BaseModel):
         default_factory=list,
         description="Suggested Socratic follow-up questions.",
     )
+    conversation_history: list[ConversationTurn] = Field(
+        default_factory=list,
+        description="Follow-up conversations for this step.",
+    )
     videos: list[Any] = Field(
         default_factory=list,
         description="Curated YouTube video clips for this step.",
@@ -261,6 +265,7 @@ class ConversationTurn(BaseModel):
     role: Literal["student", "tutor"]
     content: str
     timestamp: datetime = Field(default_factory=datetime.utcnow)
+    step_index: int | None = None
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -382,6 +387,7 @@ class SessionResponse(BaseModel):
     current_step_index: int = 0
     xp_earned: int = 0
     steps_completed: int = 0
+    conversation_history: list[ConversationTurn] = Field(default_factory=list)
 
 
 class HealthResponse(BaseModel):

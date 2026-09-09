@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../../presentation/widgets/gradient_text.dart';
+import '../../../../../presentation/widgets/app_gradient_spinner.dart';
 import 'journey_prompt_card.dart';
 import '../../../../../core/providers/learning_provider.dart';
 import '../../../../../core/providers/active_session_provider.dart';
 import 'recent_journey_card.dart';
 import '../workspace/active_learning_workspace.dart';
 import '../../../../../core/theme/app_colors.dart';
+import 'neural_inference_loader.dart';
 
 class LearningMainContent extends ConsumerWidget {
   final bool isMobile;
@@ -33,8 +35,32 @@ class LearningMainContent extends ConsumerWidget {
     
     if (activeState.session != null || activeState.isLoading) {
       if (activeState.isLoading) {
-        return Center(
-          child: CircularProgressIndicator(color: AppColors.primary),
+        // When switching session from learning history, display the theme gradient spinner only
+        if (!activeState.isSynthesizing) {
+          return const Center(
+            child: AppGradientSpinner(
+              size: 56,
+              strokeWidth: 3.5,
+              showSparkle: true,
+            ),
+          );
+        }
+
+        String title = "Initializing AI Compute Cluster";
+        String subtitle = "Orchestrating agents and provisioning neural resources...";
+        
+        if (activeState.session != null) {
+          final stepIndex = activeState.activeStepIndex;
+          if (stepIndex >= 0 && stepIndex < activeState.session!.steps.length) {
+            final step = activeState.session!.steps[stepIndex];
+            title = "Synthesizing Step ${stepIndex + 1}: ${step.title}";
+            subtitle = "🤖 Multi-Agents (Socratic, YouTube, Academic, Quiz) generating step content concurrently...";
+          }
+        }
+        
+        return NeuralInferenceLoader(
+          title: title,
+          subtitle: subtitle,
         );
       }
       return const ActiveLearningWorkspace();
@@ -253,8 +279,18 @@ class LearningMainContent extends ConsumerWidget {
                         ),
                         SizedBox(height: isMobile ? 8 : 16),
                         JourneyPromptCard(
-                          onStartJourney: () {
-                            // TODO: Handle start journey
+                          onStartJourney: (topic, mode, level) {
+                            ref.read(activeSessionProvider.notifier).startNewSession(
+                              topic: topic,
+                              mode: mode,
+                              level: level,
+                            ).catchError((error) {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Failed to start journey: $error')),
+                                );
+                              }
+                            });
                           },
                         ),
                       ],

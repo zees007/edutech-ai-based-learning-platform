@@ -124,10 +124,10 @@ class SharedMemory(BaseModel):
             if self.current_step_index == step_index:
                 self.current_step_index += 1
 
-    def add_conversation_turn(self, role: str, content: str) -> None:
+    def add_conversation_turn(self, role: str, content: str, step_index: int | None = None) -> None:
         """Add a turn to the conversation history."""
         self.conversation_history.append(
-            ConversationTurn(role=role, content=content)  # type: ignore[arg-type]
+            ConversationTurn(role=role, content=content, step_index=step_index)  # type: ignore[arg-type]
         )
 
     def get_context_for_step(self, step_index: int) -> dict:

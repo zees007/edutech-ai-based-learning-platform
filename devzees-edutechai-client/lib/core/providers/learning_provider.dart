@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/learning/session_model.dart';
 import '../services/learning_service.dart';
@@ -143,8 +144,41 @@ class SessionsNotifier extends Notifier<SessionsState> {
       );
     } catch (e) {
       // Could show error in UI or snackbar, here we just ignore or log
-      print("Failed to delete session: $e");
+      debugPrint("Failed to delete session: $e");
     }
+  }
+
+  /// Prepend a newly started journey session to the history list immediately.
+  void prependSession(SessionModel newSession) {
+    final existingFiltered = state.items.where((s) => s.sessionId != newSession.sessionId).toList();
+    state = state.copyWith(
+      items: [newSession, ...existingFiltered],
+      total: state.total + 1,
+    );
+  }
+
+  /// Update the progress (completed steps, XP, completion state) for an active session in history.
+  void updateSessionProgress({
+    required String sessionId,
+    required int stepsCompleted,
+    required int xpEarned,
+    bool? isComplete,
+  }) {
+    final index = state.items.indexWhere((s) => s.sessionId == sessionId);
+    if (index == -1) return;
+
+    final existing = state.items[index];
+    final updated = existing.copyWith(
+      stepsCompleted: stepsCompleted,
+      xpEarned: xpEarned,
+      isComplete: isComplete ?? (existing.totalSteps != null && stepsCompleted >= existing.totalSteps!),
+      updatedAt: DateTime.now(),
+    );
+
+    final updatedItems = List<SessionModel>.from(state.items);
+    updatedItems[index] = updated;
+
+    state = state.copyWith(items: updatedItems);
   }
 }
 

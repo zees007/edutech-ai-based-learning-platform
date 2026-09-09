@@ -24,6 +24,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import time
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
@@ -38,6 +39,7 @@ router = APIRouter()
 
 # Import the session store from learning router
 from app.routers.learning import _sessions
+from services.session_manager import SessionManager
 
 
 class ConnectionManager:
@@ -85,6 +87,12 @@ async def learning_websocket(websocket: WebSocket, session_id: str):
         # Get or create session
         memory = _sessions.get(session_id)
         if memory is None:
+            from services.session_manager import SessionManager
+            memory = await SessionManager().get_session(session_id)
+            if memory:
+                _sessions[session_id] = memory
+
+        if memory is None:
             await websocket.send_json({
                 "event_type": "error",
                 "message": f"Session '{session_id}' not found. Create one first via POST /api/learn.",
@@ -129,8 +137,7 @@ async def learning_websocket(websocket: WebSocket, session_id: str):
                     # Handle follow-up student questions
                     student_message = message.get("content", "")
                     if student_message:
-                        memory.add_conversation_turn("student", student_message)
-                        await _handle_chat(session_id, memory)
+                        await _handle_chat(session_id, memory, student_message)
 
                 else:
                     await websocket.send_json({
@@ -178,8 +185,35 @@ async def _process_step(
         return
 
     logger.info(f"Processing step {step_index} for session {session_id}")
+    step_start_time = time.time()
 
-    # ─── 1. Stream Socratic Tutor explanation ────────────────
+    async def _timed_execute(agent, memory, step_index, name):
+        t0 = time.time()
+        try:
+            res = await agent.execute(memory, step_index)
+            logger.info(f"[{name}] finished in {time.time() - t0:.2f}s")
+            return res
+        except Exception as e:
+            logger.error(f"[{name}] failed in {time.time() - t0:.2f}s: {e}")
+            raise e
+
+    # ─── 1. Start parallel background tasks (YouTube + Academic Researcher) ─
+    try:
+        from agents.youtube_curator import YouTubeCuratorAgent
+        youtube_agent = YouTubeCuratorAgent()
+        youtube_task = asyncio.create_task(_timed_execute(youtube_agent, memory, step_index, "YouTubeCuratorAgent"))
+    except ImportError:
+        youtube_task = None
+
+    try:
+        from agents.academic_researcher import AcademicResearcherAgent
+        academic_agent = AcademicResearcherAgent()
+        academic_task = asyncio.create_task(_timed_execute(academic_agent, memory, step_index, "AcademicResearcherAgent"))
+    except ImportError:
+        academic_task = None
+
+    # ─── 2. Stream Socratic Tutor explanation ────────────────
+    tutor_start = time.time()
     tutor = SocraticTutorAgent()
     try:
         async for chunk in tutor.stream_explanation(memory, step_index):
@@ -193,6 +227,7 @@ async def _process_step(
             memory, step_index, "", is_final=True
         )
         await manager.send_event(session_id, final_event)
+        logger.info(f"[SocraticTutorAgent] finished streaming in {time.time() - tutor_start:.2f}s")
     except Exception as e:
         logger.error(f"Tutor streaming failed: {e}")
         error_event = ErrorEvent(
@@ -202,25 +237,17 @@ async def _process_step(
         )
         await manager.send_event(session_id, error_event)
 
-    # ─── 2. Run YouTube Curator + Academic Researcher (parallel) ─
-    # These will be implemented in Phase 3 & 4
-    # For now, we'll try to import and run them if available
+    # ─── 3. Start Quiz Agent (needs explanation from tutor) ──
+    quiz_task = None
     try:
-        from agents.youtube_curator import YouTubeCuratorAgent
-        youtube_agent = YouTubeCuratorAgent()
-        youtube_task = asyncio.create_task(youtube_agent.execute(memory, step_index))
+        from agents.quiz_agent import QuizAgent
+        quiz_agent = QuizAgent()
+        quiz_task = asyncio.create_task(_timed_execute(quiz_agent, memory, step_index, "QuizAgent"))
     except ImportError:
-        youtube_task = None
-
-    try:
-        from agents.academic_researcher import AcademicResearcherAgent
-        academic_agent = AcademicResearcherAgent()
-        academic_task = asyncio.create_task(academic_agent.execute(memory, step_index))
-    except ImportError:
-        academic_task = None
+        pass  # Quiz agent not yet implemented
 
     # Wait for parallel agents to complete
-    tasks = [t for t in [youtube_task, academic_task] if t is not None]
+    tasks = [t for t in [youtube_task, academic_task, quiz_task] if t is not None]
     if tasks:
         results = await asyncio.gather(*tasks, return_exceptions=True)
         for r in results:
@@ -233,16 +260,6 @@ async def _process_step(
 
     for event in synthesizer.create_academic_paper_events(memory, step_index):
         await manager.send_event(session_id, event)
-
-    # ─── 3. Quiz Agent (needs explanation from tutor) ────────
-    try:
-        from agents.quiz_agent import QuizAgent
-        quiz_agent = QuizAgent()
-        await quiz_agent.execute(memory, step_index)
-    except ImportError:
-        pass  # Quiz agent not yet implemented
-    except Exception as e:
-        logger.warning(f"Quiz agent error (non-fatal): {e}")
 
     quiz_event = synthesizer.create_quiz_event(memory, step_index)
     if quiz_event:
@@ -257,10 +274,18 @@ async def _process_step(
     step_complete = synthesizer.create_step_complete_event(memory, step_index)
     await manager.send_event(session_id, step_complete)
 
+    total_time = time.time() - step_start_time
+    logger.info(f"[SynthesizerAgent] Total time taken to render step {step_index}: {total_time:.2f}s")
+
+    try:
+        await SessionManager().update_session(memory)
+    except Exception as e:
+        logger.error(f"Failed to persist step {step_index} for session {session_id}: {e}")
+
     logger.info(f"Step {step_index} fully processed for session {session_id}")
 
 
-async def _handle_chat(session_id: str, memory: SharedMemory):
+async def _handle_chat(session_id: str, memory: SharedMemory, question: str):
     """Handle a follow-up question from the student during a step."""
     ws = manager.active_connections.get(session_id)
     if not ws:
@@ -277,18 +302,21 @@ async def _handle_chat(session_id: str, memory: SharedMemory):
     from app.dependencies import has_privilege
     from app.privileges_config import ET_UNLIMITED_FOLLOW_UPS
     
-    async with get_db_session() as db:
-        res = await db.execute(
-            select(User).options(selectinload(User.roles).selectinload(Role.privileges))
-            .where(User.id == memory.user_id)
-        )
-        user = res.scalar_one_or_none()
-        
     is_unlimited = False
     user_roles = []
-    if user:
-        is_unlimited = has_privilege(user, ET_UNLIMITED_FOLLOW_UPS)
-        user_roles = [r.name for r in user.roles if not r.retired]
+    if memory.user_id:
+        try:
+            async with get_db_session() as db:
+                res = await db.execute(
+                    select(User).options(selectinload(User.roles).selectinload(Role.privileges))
+                    .where(User.id == memory.user_id)
+                )
+                user = res.scalar_one_or_none()
+            if user:
+                is_unlimited = has_privilege(user, ET_UNLIMITED_FOLLOW_UPS)
+                user_roles = [r.name for r in user.roles if not r.retired]
+        except Exception as e:
+            logger.warning(f"Failed to check user privileges for chat: {e}")
         
     from config import get_settings
     settings = get_settings()
@@ -305,15 +333,13 @@ async def _handle_chat(session_id: str, memory: SharedMemory):
         return
             
     step_result.follow_up_count += 1
-
+    memory.add_conversation_turn("student", question, step_index=step_index)
 
     tutor = SocraticTutorAgent()
     synthesizer = SynthesizerAgent()
 
-    step_index = memory.current_step_index
-
     try:
-        async for chunk in tutor.stream_explanation(memory, step_index):
+        async for chunk in tutor.stream_followup(question, memory, step_index):
             event = synthesizer.create_explanation_chunk_event(
                 memory, step_index, chunk, is_final=False
             )
@@ -323,5 +349,17 @@ async def _handle_chat(session_id: str, memory: SharedMemory):
             memory, step_index, "", is_final=True
         )
         await manager.send_event(session_id, final_event)
+        
+        try:
+            await SessionManager().update_session(memory)
+        except Exception as e:
+            logger.error(f"Failed to persist chat response for session {session_id}: {e}")
+
     except Exception as e:
         logger.error(f"Chat response failed: {e}")
+        error_event = ErrorEvent(
+            session_id=session_id,
+            message=f"Tutor chat failed: {e}",
+            agent="SocraticTutor",
+        )
+        await manager.send_event(session_id, error_event)
