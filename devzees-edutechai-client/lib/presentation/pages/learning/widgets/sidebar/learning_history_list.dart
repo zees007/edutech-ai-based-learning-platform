@@ -66,32 +66,59 @@ class LearningHistoryList extends ConsumerWidget {
       );
     }
 
-    return ListView.builder(
-      controller: scrollController,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      itemCount: state.items.length + (state.isFetchingMore ? 1 : 0),
-      itemBuilder: (context, index) {
-        if (index == state.items.length) {
-          return const Padding(
-            padding: EdgeInsets.all(8.0),
-            child: Center(
-              child: SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: AppColors.primary,
+    return ScrollbarTheme(
+      data: ScrollbarThemeData(
+        thumbColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.dragged)) {
+            return AppColors.primary;
+          }
+          if (states.contains(WidgetState.hovered)) {
+            return AppColors.primary.withValues(alpha: 0.85);
+          }
+          return AppColors.primary.withValues(alpha: 0.4);
+        }),
+        trackColor: WidgetStateProperty.all(Colors.transparent),
+        trackBorderColor: WidgetStateProperty.all(Colors.transparent),
+        radius: const Radius.circular(8),
+        thickness: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.hovered) || states.contains(WidgetState.dragged)) {
+            return 6.0;
+          }
+          return 4.0;
+        }),
+        crossAxisMargin: 2.0,
+        mainAxisMargin: 4.0,
+      ),
+      child: Scrollbar(
+        controller: scrollController,
+        child: ListView.builder(
+          controller: scrollController,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          itemCount: state.items.length + (state.isFetchingMore ? 1 : 0),
+          itemBuilder: (context, index) {
+            if (index == state.items.length) {
+              return const Padding(
+                padding: EdgeInsets.all(8.0),
+                child: Center(
+                  child: SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: AppColors.primary,
+                    ),
+                  ),
                 ),
-              ),
-            ),
-          );
-        }
-        return LearningHistoryItem(
-          session: state.items[index],
-          index: index,
-          expanded: expanded,
-        );
-      },
+              );
+            }
+            return LearningHistoryItem(
+              session: state.items[index],
+              index: index,
+              expanded: expanded,
+            );
+          },
+        ),
+      ),
     );
   }
 }
