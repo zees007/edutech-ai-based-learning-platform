@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../data/models/learning/session_model.dart';
 import '../../data/models/learning/session_response.dart';
 import '../../data/models/learning/quiz_result.dart';
 import 'learning_provider.dart';
@@ -16,12 +17,14 @@ class ActiveSessionState {
   final SessionResponse? session;
   final int activeStepIndex;
   final bool isLoading;
+  final bool isSynthesizing;
   final String? error;
 
   ActiveSessionState({
     this.session,
     this.activeStepIndex = 0,
     this.isLoading = false,
+    this.isSynthesizing = false,
     this.error,
   });
 
@@ -30,6 +33,7 @@ class ActiveSessionState {
     bool clearSession = false,
     int? activeStepIndex,
     bool? isLoading,
+    bool? isSynthesizing,
     String? error,
     bool clearError = false,
   }) {
@@ -37,6 +41,7 @@ class ActiveSessionState {
       session: clearSession ? null : (session ?? this.session),
       activeStepIndex: activeStepIndex ?? this.activeStepIndex,
       isLoading: isLoading ?? this.isLoading,
+      isSynthesizing: isSynthesizing ?? this.isSynthesizing,
       error: clearError ? null : (error ?? this.error),
     );
   }
@@ -88,7 +93,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
           _isStepGenerationActive = true;
 
           debugPrint('🚀 [Client] Triggering backend agents for Step $_currentTrackingStepIndex (loader displayed)...');
-          state = state.copyWith(isLoading: true);
+          state = state.copyWith(isLoading: true, isSynthesizing: true);
           _wsService.sendStartStep(state.activeStepIndex);
         }
       }
@@ -127,7 +132,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     _isStepGenerationActive = true;
     _currentTrackingStepIndex = 0;
 
-    state = state.copyWith(isLoading: true, clearError: true);
+    state = state.copyWith(isLoading: true, isSynthesizing: true, clearError: true);
     try {
       final journeyApiWatch = Stopwatch()..start();
       final response = await _service.startJourney(topic: topic, mode: mode, level: level);
@@ -137,15 +142,31 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       state = state.copyWith(
         session: response,
         activeStepIndex: 0,
-        isLoading: true, // Keep loader visible while step 0 agents run
+        isLoading: true,
+        isSynthesizing: true, // Keep neural loader visible while step 0 agents run
       );
       
+      // Prepend to sessionsProvider immediately so history sidebar & recent journeys update in real time
+      ref.read(sessionsProvider.notifier).prependSession(
+        SessionModel(
+          sessionId: response.sessionId,
+          topic: response.topic,
+          learningMode: response.learningMode,
+          studentLevel: response.studentLevel,
+          isComplete: false,
+          stepsCompleted: response.stepsCompleted,
+          totalSteps: response.steps.length,
+          xpEarned: response.xpEarned,
+          createdAt: response.createdAt,
+        ),
+      );
+
       // Connect to WebSocket and start the first step automatically via plan event
       _wsService.connect(response.sessionId);
     } catch (e) {
       _isStepGenerationActive = false;
       _stepTotalStopwatch.stop();
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, isSynthesizing: false, error: e.toString());
       rethrow;
     }
   }
@@ -172,6 +193,13 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       state = state.copyWith(
         session: updatedSession,
         isLoading: false,
+      );
+
+      // Sync progress with learning history list
+      ref.read(sessionsProvider.notifier).updateSessionProgress(
+        sessionId: session.sessionId,
+        stepsCompleted: updatedSession.stepsCompleted,
+        xpEarned: updatedSession.xpEarned,
       );
 
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -205,6 +233,14 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
         session: updatedSession,
         isLoading: false,
       );
+
+      // Sync progress with learning history list
+      ref.read(sessionsProvider.notifier).updateSessionProgress(
+        sessionId: session.sessionId,
+        stepsCompleted: updatedSession.stepsCompleted,
+        xpEarned: updatedSession.xpEarned,
+        isComplete: updatedSession.stepsCompleted >= updatedSession.steps.length,
+      );
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
     }
@@ -218,7 +254,11 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     _apiFetchStopwatch.reset();
     _apiFetchStopwatch.start();
 
-    state = state.copyWith(isLoading: true, clearError: true);
+    state = state.copyWith(
+      isLoading: true,
+      isSynthesizing: fromStepComplete,
+      clearError: true,
+    );
     try {
       final response = await _service.fetchSessionById(sessionId);
       _apiFetchStopwatch.stop();
@@ -242,6 +282,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
         session: response,
         activeStepIndex: stepIndex,
         isLoading: false,
+        isSynthesizing: false,
       );
 
       // Measure time until the frame is laid out and painted on screen
@@ -285,7 +326,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       _uiRenderStopwatch.stop();
       _stepTotalStopwatch.stop();
       _isStepGenerationActive = false;
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, isSynthesizing: false, error: e.toString());
     }
   }
 
@@ -301,7 +342,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
         _backendStopwatch.start();
         _isStepGenerationActive = true;
 
-        state = state.copyWith(activeStepIndex: index, isLoading: true);
+        state = state.copyWith(activeStepIndex: index, isLoading: true, isSynthesizing: true);
         _wsService.sendStartStep(index);
       } else {
         debugPrint('🔄 [Client] Switching to cached Step $index...');
@@ -320,7 +361,12 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
 
   void clearSession() {
     _wsService.disconnect();
-    state = state.copyWith(clearSession: true, activeStepIndex: 0);
+    state = state.copyWith(
+      clearSession: true,
+      activeStepIndex: 0,
+      isLoading: false,
+      isSynthesizing: false,
+    );
   }
 }
 

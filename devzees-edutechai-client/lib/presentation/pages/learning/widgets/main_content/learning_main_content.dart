@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../../presentation/widgets/gradient_text.dart';
+import '../../../../../presentation/widgets/app_gradient_spinner.dart';
 import 'journey_prompt_card.dart';
 import '../../../../../core/providers/learning_provider.dart';
 import '../../../../../core/providers/active_session_provider.dart';
@@ -34,6 +35,17 @@ class LearningMainContent extends ConsumerWidget {
     
     if (activeState.session != null || activeState.isLoading) {
       if (activeState.isLoading) {
+        // When switching session from learning history, display the theme gradient spinner only
+        if (!activeState.isSynthesizing) {
+          return const Center(
+            child: AppGradientSpinner(
+              size: 56,
+              strokeWidth: 3.5,
+              showSparkle: true,
+            ),
+          );
+        }
+
         String title = "Initializing AI Compute Cluster";
         String subtitle = "Orchestrating agents and provisioning neural resources...";
         
@@ -273,9 +285,11 @@ class LearningMainContent extends ConsumerWidget {
                               mode: mode,
                               level: level,
                             ).catchError((error) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Failed to start journey: $error')),
-                              );
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Failed to start journey: $error')),
+                                );
+                              }
                             });
                           },
                         ),
