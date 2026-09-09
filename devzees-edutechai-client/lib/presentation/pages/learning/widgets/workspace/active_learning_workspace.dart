@@ -792,6 +792,13 @@ class _StepContentContainer extends ConsumerStatefulWidget {
 
 class _StepContentContainerState extends ConsumerState<_StepContentContainer> {
   Widget? _activeOverlay;
+  final ScrollController _contentScrollController = ScrollController();
+
+  @override
+  void dispose() {
+    _contentScrollController.dispose();
+    super.dispose();
+  }
 
   void _showOverlay(Widget child) {
     setState(() {
@@ -968,53 +975,81 @@ class _StepContentContainerState extends ConsumerState<_StepContentContainer> {
 
                 // ─── Scrollable Content (Overlay + Step Content + Bottom Nav) ───
                 Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // ─── Expandable Overlay Panel ───
-                        AnimatedSize(
-                          duration: const Duration(milliseconds: 400),
-                          curve: Curves.easeOutQuart,
-                          alignment: Alignment.topCenter,
-                          child: _activeOverlay != null
-                            ? Container(
-                                width: double.infinity,
-                                margin: const EdgeInsets.only(bottom: 24),
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      const Color(0xFF0F172A).withValues(alpha: 0.95),
-                                      const Color(0xFF1A112E).withValues(alpha: 0.9),
-                                    ],
-                                    begin: Alignment.topCenter,
-                                    end: Alignment.bottomCenter,
-                                  ),
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
-                                    color: Colors.white.withValues(alpha: 0.08),
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withValues(alpha: 0.25),
-                                      blurRadius: 24,
-                                      spreadRadius: -8,
-                                      offset: const Offset(0, 8),
+                  child: ScrollbarTheme(
+                    data: ScrollbarThemeData(
+                      thumbColor: WidgetStateProperty.resolveWith((states) {
+                        if (states.contains(WidgetState.dragged)) {
+                          return const Color(0xFF64748B); // Slate-500
+                        }
+                        if (states.contains(WidgetState.hovered)) {
+                          return const Color(0xFF475569).withValues(alpha: 0.9); // Slate-600
+                        }
+                        return const Color(0xFF334155).withValues(alpha: 0.65); // Slate-700, matches #1E293B / #0F172A card bg
+                      }),
+                      trackColor: WidgetStateProperty.all(Colors.transparent),
+                      trackBorderColor: WidgetStateProperty.all(Colors.transparent),
+                      radius: const Radius.circular(8),
+                      thickness: WidgetStateProperty.resolveWith((states) {
+                        if (states.contains(WidgetState.hovered) || states.contains(WidgetState.dragged)) {
+                          return 6.0;
+                        }
+                        return 4.0;
+                      }),
+                      crossAxisMargin: 2.0,
+                      mainAxisMargin: 4.0,
+                    ),
+                    child: Scrollbar(
+                      controller: _contentScrollController,
+                      child: SingleChildScrollView(
+                        controller: _contentScrollController,
+                        padding: const EdgeInsets.all(24),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // ─── Expandable Overlay Panel ───
+                            AnimatedSize(
+                              duration: const Duration(milliseconds: 400),
+                              curve: Curves.easeOutQuart,
+                              alignment: Alignment.topCenter,
+                              child: _activeOverlay != null
+                                ? Container(
+                                    width: double.infinity,
+                                    margin: const EdgeInsets.only(bottom: 24),
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          const Color(0xFF0F172A).withValues(alpha: 0.95),
+                                          const Color(0xFF1A112E).withValues(alpha: 0.9),
+                                        ],
+                                        begin: Alignment.topCenter,
+                                        end: Alignment.bottomCenter,
+                                      ),
+                                      borderRadius: BorderRadius.circular(16),
+                                      border: Border.all(
+                                        color: Colors.white.withValues(alpha: 0.08),
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withValues(alpha: 0.25),
+                                          blurRadius: 24,
+                                          spreadRadius: -8,
+                                          offset: const Offset(0, 8),
+                                        ),
+                                      ],
                                     ),
-                                  ],
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(20),
-                                  child: _activeOverlay!,
-                                ),
-                              )
-                            : const SizedBox(height: 0),
-                        ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(20),
+                                      child: _activeOverlay!,
+                                    ),
+                                  )
+                                : const SizedBox(height: 0),
+                            ),
 
-                        // ─── Main Step Content ───
-                        widget.buildStepContent(widget.session.steps[currentIndex]),
-                      ],
+                            // ─── Main Step Content ───
+                            widget.buildStepContent(widget.session.steps[currentIndex]),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                 ),

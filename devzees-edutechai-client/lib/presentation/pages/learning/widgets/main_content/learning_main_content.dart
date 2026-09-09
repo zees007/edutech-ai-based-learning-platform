@@ -7,8 +7,8 @@ import 'journey_prompt_card.dart';
 import '../../../../../core/providers/learning_provider.dart';
 import '../../../../../core/providers/active_session_provider.dart';
 import 'recent_journey_card.dart';
+import 'recent_journey_skeleton.dart';
 import '../workspace/active_learning_workspace.dart';
-import '../../../../../core/theme/app_colors.dart';
 import 'neural_inference_loader.dart';
 
 class LearningMainContent extends ConsumerWidget {
@@ -142,86 +142,146 @@ class LearningMainContent extends ConsumerWidget {
                         ),
                       ),
 
-                      if (displaySessions.isNotEmpty)
-                        Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: isMobile ? 16.0 : 32.0,
-                            vertical: isMobile ? 16.0 : 24.0,
-                          ),
-                          child: ConstrainedBox(
-                            constraints: const BoxConstraints(maxWidth: 900),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    const Text('⚡ ', style: TextStyle(fontSize: 24)),
-                                    Text(
-                                      'Continue Your Recent Active Journeys',
-                                      style: GoogleFonts.inter(
-                                        fontSize: isMobile ? 18 : 22,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 300),
+                        child: sessionsState.isLoading
+                            ? Padding(
+                                key: const ValueKey('recent_journeys_loading'),
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: isMobile ? 16.0 : 32.0,
+                                  vertical: isMobile ? 16.0 : 24.0,
+                                ),
+                                child: ConstrainedBox(
+                                  constraints: const BoxConstraints(maxWidth: 900),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: [
+                                      Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          const Text('⚡ ', style: TextStyle(fontSize: 24)),
+                                          Text(
+                                            'Continue Your Recent Active Journeys',
+                                            style: GoogleFonts.inter(
+                                              fontSize: isMobile ? 18 : 22,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 24),
+                                      if (isMobile)
+                                        const Column(
+                                          children: [
+                                            Padding(
+                                              padding: EdgeInsets.only(bottom: 16.0),
+                                              child: RecentJourneySkeletonCard(isMobile: true),
+                                            ),
+                                            Padding(
+                                              padding: EdgeInsets.only(bottom: 16.0),
+                                              child: RecentJourneySkeletonCard(isMobile: true),
+                                            ),
+                                          ],
+                                        )
+                                      else
+                                        const Wrap(
+                                          alignment: WrapAlignment.center,
+                                          spacing: 16.0,
+                                          runSpacing: 16.0,
+                                          children: [
+                                            SizedBox(
+                                              width: 280,
+                                              child: RecentJourneySkeletonCard(isMobile: false),
+                                            ),
+                                            SizedBox(
+                                              width: 280,
+                                              child: RecentJourneySkeletonCard(isMobile: false),
+                                            ),
+                                            SizedBox(
+                                              width: 280,
+                                              child: RecentJourneySkeletonCard(isMobile: false),
+                                            ),
+                                          ],
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              )
+                            : (displaySessions.isNotEmpty
+                                ? Padding(
+                                    key: const ValueKey('recent_journeys_loaded'),
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: isMobile ? 16.0 : 32.0,
+                                      vertical: isMobile ? 16.0 : 24.0,
+                                    ),
+                                    child: ConstrainedBox(
+                                      constraints: const BoxConstraints(maxWidth: 900),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.center,
+                                        children: [
+                                          Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              const Text('⚡ ', style: TextStyle(fontSize: 24)),
+                                              Text(
+                                                'Continue Your Recent Active Journeys',
+                                                style: GoogleFonts.inter(
+                                                  fontSize: isMobile ? 18 : 22,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 24),
+                                          if (isMobile)
+                                            Column(
+                                              children: displaySessions
+                                                  .map(
+                                                    (session) => Padding(
+                                                      padding: const EdgeInsets.only(
+                                                        bottom: 16.0,
+                                                      ),
+                                                      child: RecentJourneyCard(
+                                                        session: session,
+                                                        isMobile: isMobile,
+                                                        onContinue: () {
+                                                          ref.read(activeSessionProvider.notifier).loadSession(session.sessionId);
+                                                        },
+                                                      ),
+                                                    ),
+                                                  )
+                                                  .toList(),
+                                            )
+                                          else
+                                            Wrap(
+                                              alignment: WrapAlignment.center,
+                                              spacing: 16.0,
+                                              runSpacing: 16.0,
+                                              children: displaySessions
+                                                  .map(
+                                                    (session) => SizedBox(
+                                                      width: 280,
+                                                      child: RecentJourneyCard(
+                                                        session: session,
+                                                        isMobile: isMobile,
+                                                        onContinue: () {
+                                                          ref.read(activeSessionProvider.notifier).loadSession(session.sessionId);
+                                                        },
+                                                      ),
+                                                    ),
+                                                  )
+                                                  .toList(),
+                                            ),
+                                        ],
                                       ),
                                     ),
-                                  ],
-                                ),
-                                const SizedBox(height: 24),
-                                if (isMobile)
-                                  Column(
-                                    children: displaySessions
-                                        .map(
-                                          (session) => Padding(
-                                            padding: const EdgeInsets.only(
-                                              bottom: 16.0,
-                                            ),
-                                            child: RecentJourneyCard(
-                                              session: session,
-                                              isMobile: isMobile,
-                                              onContinue: () {
-                                                ref.read(activeSessionProvider.notifier).loadSession(session.sessionId);
-                                              },
-                                            ),
-                                          ),
-                                        )
-                                        .toList(),
                                   )
-                                else
-                                  Wrap(
-                                    alignment: WrapAlignment.center,
-                                    spacing: 16.0,
-                                    runSpacing: 16.0,
-                                    children: displaySessions
-                                        .map(
-                                          (session) => SizedBox(
-                                            width: 280,
-                                            child: RecentJourneyCard(
-                                              session: session,
-                                              isMobile: isMobile,
-                                              onContinue: () {
-                                                ref.read(activeSessionProvider.notifier).loadSession(session.sessionId);
-                                              },
-                                            ),
-                                          ),
-                                        )
-                                        .toList(),
-                                  ),
-                              ],
-                            ),
-                          ),
-                        ),
-
-                      if (displaySessions.isEmpty && sessionsState.isLoading)
-                        Padding(
-                          padding: const EdgeInsets.all(48.0),
-                          child: Center(
-                            child: CircularProgressIndicator(
-                              color: AppColors.primary,
-                            ),
-                          ),
-                        ),
+                                : const SizedBox.shrink(key: ValueKey('recent_journeys_empty'))),
+                      ),
                     ],
                   ),
 
