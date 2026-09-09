@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../../data/models/learning/session_model.dart';
 import '../../../../../core/theme/app_colors.dart';
+import '../../../../widgets/gradient_circular_progress.dart';
 
 class RecentJourneyCard extends StatefulWidget {
   final SessionModel session;
@@ -73,19 +74,11 @@ class _RecentJourneyCardState extends State<RecentJourneyCard> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Gradient Progress Ring
-                    SizedBox(
-                      width: 28,
-                      height: 28,
-                      child: ShaderMask(
-                        shaderCallback: (bounds) => AppColors.primaryGradient.createShader(bounds),
-                        child: CircularProgressIndicator(
-                          value: progress > 0 ? progress : 0.01,
-                          strokeWidth: 3.0,
-                          backgroundColor: Colors.white.withValues(alpha: 0.1),
-                          valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
-                        ),
-                      ),
+                    // Uniform Theme Gradient Progress Ring
+                    GradientCircularProgress(
+                      progress: progress,
+                      size: 28,
+                      strokeWidth: 3.0,
                     ),
                     const SizedBox(width: 12),
                     
