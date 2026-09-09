@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../core/providers/learning_provider.dart';
 import '../../../../../core/theme/app_colors.dart';
+import '../../../../widgets/shimmer_loading.dart';
 import 'learning_history_item.dart';
+import 'learning_history_skeleton.dart';
 
 class LearningHistoryList extends ConsumerWidget {
   final ScrollController scrollController;
@@ -19,8 +21,19 @@ class LearningHistoryList extends ConsumerWidget {
     final state = ref.watch(sessionsProvider);
 
     if (state.isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(color: AppColors.primary),
+      return ShimmerLoading(
+        child: ListView(
+          controller: scrollController,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          physics: const NeverScrollableScrollPhysics(),
+          children: [
+            LearningHistorySkeletonItem(expanded: expanded, titleWidth: 120),
+            LearningHistorySkeletonItem(expanded: expanded, titleWidth: 95),
+            LearningHistorySkeletonItem(expanded: expanded, titleWidth: 140),
+            LearningHistorySkeletonItem(expanded: expanded, titleWidth: 110),
+            LearningHistorySkeletonItem(expanded: expanded, titleWidth: 85),
+          ],
+        ),
       );
     }
 
