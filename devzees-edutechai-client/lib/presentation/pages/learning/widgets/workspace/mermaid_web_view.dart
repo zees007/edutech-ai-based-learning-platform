@@ -106,22 +106,22 @@ class _MermaidWebViewState extends State<MermaidWebView> {
       text-align: center;
     }
     
-    /* Custom Scrollbar */
+    /* Custom Scrollbar matching card background (#1E293B / #0F172A) */
     ::-webkit-scrollbar {
-      width: 10px;
-      height: 10px;
+      width: 6px;
+      height: 6px;
     }
     ::-webkit-scrollbar-track {
-      background: rgba(0, 0, 0, 0.1); 
-      border-radius: 5px;
+      background: rgba(15, 23, 42, 0.4); 
+      border-radius: 6px;
     }
     ::-webkit-scrollbar-thumb {
-      background: rgba(0, 0, 0, 0.5); 
-      border-radius: 5px;
-      
+      background: rgba(51, 65, 85, 0.65); 
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
     }
     ::-webkit-scrollbar-thumb:hover {
-      background: rgba(0, 0, 0, 0.7); 
+      background: rgba(71, 85, 105, 0.9); 
     }
     .error-msg {
       color: #EF4444;
