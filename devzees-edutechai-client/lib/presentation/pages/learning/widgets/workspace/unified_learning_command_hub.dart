@@ -383,24 +383,15 @@ class _UnifiedLearningCommandHubState extends State<UnifiedLearningCommandHub> {
                 ],
               ),
               const SizedBox(height: 3),
-              Tooltip(
-                message: session.topic,
-                textStyle: GoogleFonts.inter(color: Colors.white, fontSize: 13, height: 1.3),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1E293B),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
-                ),
-                child: Text(
-                  session.topic,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.inter(
-                    fontSize: isMobile ? 13 : 15,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFFFAFAFA),
-                    letterSpacing: 0.1,
-                  ),
+              Text(
+                session.topic,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.inter(
+                  fontSize: isMobile ? 13 : 15,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFFFAFAFA),
+                  letterSpacing: 0.1,
                 ),
               ),
             ],
