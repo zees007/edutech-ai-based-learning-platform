@@ -1,5 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import '../../core/theme/app_colors.dart';
+import '../../core/theme/text_styles.dart';
 
 class GlassLoaderOverlay extends StatelessWidget {
   final bool isLoading;
@@ -34,7 +36,7 @@ class GlassLoaderOverlay extends StatelessWidget {
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
                 child: Container(
-                  color: const Color(0xFF0F172A).withValues(alpha: 0.6),
+                  color: AppColors.surfaceDark.withValues(alpha: 0.6),
                   child: Center(
                     child: _buildGlassLoaderBox(),
                   ),
@@ -53,25 +55,18 @@ class GlassLoaderOverlay extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: const Color(0xFFA855F7).withValues(alpha: 0.45),
+          color: AppColors.purple.withValues(alpha: 0.45),
           width: 1.5,
         ),
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color.fromRGBO(15, 23, 42, 0.95),
-            Color.fromRGBO(26, 17, 46, 0.90),
-          ],
-        ),
+        gradient: AppColors.cardGradientOpaque,
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFA855F7).withValues(alpha: 0.3),
+            color: AppColors.purple.withValues(alpha: 0.3),
             blurRadius: 40,
             spreadRadius: -10,
           ),
           BoxShadow(
-            color: const Color(0xFFEC4899).withValues(alpha: 0.2),
+            color: AppColors.accentPink.withValues(alpha: 0.2),
             blurRadius: 30,
             spreadRadius: -5,
           ),
@@ -90,11 +85,11 @@ class GlassLoaderOverlay extends StatelessWidget {
                 // Inner icon
                 const CircularProgressIndicator(
                   strokeWidth: 4,
-                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFA855F7)),
+                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.purple),
                 ),
                 Icon(
                   Icons.auto_awesome,
-                  color: const Color(0xFFE9D5FF).withValues(alpha: 0.8),
+                  color: AppColors.lavender.withValues(alpha: 0.8),
                   size: 24,
                 ),
               ],
@@ -104,11 +99,9 @@ class GlassLoaderOverlay extends StatelessWidget {
           // Title
           Text(
             title,
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w800,
-              color: Colors.white,
+            style: AppTextStyles.h4.copyWith(
               letterSpacing: 0.5,
+              fontWeight: FontWeight.w800,
             ),
             textAlign: TextAlign.center,
           ),
@@ -116,9 +109,8 @@ class GlassLoaderOverlay extends StatelessWidget {
           // Subtitle
           Text(
             subtitle,
-            style: TextStyle(
-              fontSize: 14,
-              color: const Color(0xFFE9D5FF).withValues(alpha: 0.7),
+            style: AppTextStyles.body2.copyWith(
+              color: AppColors.lavender.withValues(alpha: 0.7),
             ),
             textAlign: TextAlign.center,
           ),

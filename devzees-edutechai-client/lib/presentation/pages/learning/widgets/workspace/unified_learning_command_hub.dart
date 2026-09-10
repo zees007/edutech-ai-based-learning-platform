@@ -1,7 +1,8 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../../../data/models/learning/session_response.dart';
+import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/theme/text_styles.dart';
 import 'milestone_roadmap_stepper.dart';
 
 /// A consolidated, ultra-premium Glassmorphic Command & Mastery Hub.
@@ -105,18 +106,18 @@ class _UnifiedLearningCommandHubState extends State<UnifiedLearningCommandHub> {
               borderRadius: BorderRadius.circular(18),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFFC084FC).withValues(alpha: _isHovered ? 0.16 : 0.08),
+                  color: AppColors.purpleLight.withValues(alpha: _isHovered ? 0.16 : 0.08),
                   blurRadius: _isHovered ? 28 : 20,
                   spreadRadius: 0,
                   offset: const Offset(0, 4),
                 ),
-                const BoxShadow(
-                  color: Color(0x59000000), // rgba(0, 0, 0, 0.35)
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.35),
                   blurRadius: 30,
-                  offset: Offset(0, 10),
+                  offset: const Offset(0, 10),
                 ),
-                const BoxShadow(
-                  color: Color(0x14A855F7), // rgba(168, 85, 247, 0.08) inset
+                BoxShadow(
+                  color: AppColors.purple.withValues(alpha: 0.08),
                   blurRadius: 20,
                   spreadRadius: 0,
                 ),
@@ -128,16 +129,9 @@ class _UnifiedLearningCommandHubState extends State<UnifiedLearningCommandHub> {
                 filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
                 child: Container(
                   clipBehavior: Clip.antiAlias,
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Color(0xB31E293B), // rgba(30, 41, 59, 0.7)
-                        Color(0xCC0F172A), // rgba(15, 23, 42, 0.8)
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.all(Radius.circular(18)),
+                  decoration: BoxDecoration(
+                    gradient: AppColors.commandHubGradient,
+                    borderRadius: const BorderRadius.all(Radius.circular(18)),
                   ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -150,8 +144,8 @@ class _UnifiedLearningCommandHubState extends State<UnifiedLearningCommandHub> {
                           horizontal: isMobile ? 14 : 20,
                           vertical: isMobile ? 12 : 14,
                         ),
-                        decoration: const BoxDecoration(
-                          color: Color(0xCC140D21), // rgba(20, 13, 33, 0.8) solid header matching Socratic tutor
+                        decoration: BoxDecoration(
+                          color: AppColors.surfaceSolidHeader,
                         ),
                         child: isDesktop
                             ? _buildDesktopTier1(
@@ -323,20 +317,20 @@ class _UnifiedLearningCommandHubState extends State<UnifiedLearningCommandHub> {
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                const Color(0xFFA855F7).withValues(alpha: 0.25),
-                const Color(0xFF6366F1).withValues(alpha: 0.15),
+                AppColors.purple.withValues(alpha: 0.25),
+                AppColors.indigo.withValues(alpha: 0.15),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
-              color: const Color(0xFFA855F7).withValues(alpha: 0.40),
+              color: AppColors.purple.withValues(alpha: 0.40),
               width: 1.0,
             ),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFFA855F7).withValues(alpha: 0.22),
+                color: AppColors.purple.withValues(alpha: 0.22),
                 blurRadius: 10,
                 offset: const Offset(0, 2),
               ),
@@ -344,7 +338,7 @@ class _UnifiedLearningCommandHubState extends State<UnifiedLearningCommandHub> {
           ),
           child: Icon(
             Icons.track_changes_rounded,
-            color: const Color(0xFFE9D5FF),
+            color: AppColors.lavender,
             size: isMobile ? 18 : 20,
           ),
         ),
@@ -359,10 +353,9 @@ class _UnifiedLearningCommandHubState extends State<UnifiedLearningCommandHub> {
                 children: [
                   Text(
                     'YOUR GOAL',
-                    style: GoogleFonts.inter(
-                      fontSize: 10,
+                    style: AppTextStyles.badge.copyWith(
+                      color: AppColors.purpleLight,
                       fontWeight: FontWeight.w900,
-                      color: const Color(0xFFC084FC),
                       letterSpacing: 0.6,
                     ),
                   ),
@@ -370,14 +363,14 @@ class _UnifiedLearningCommandHubState extends State<UnifiedLearningCommandHub> {
                   // Micro Mode Chip
                   _buildMicroChip(
                     label: _formatMode(session.learningMode),
-                    color: const Color(0xFFC084FC),
+                    color: AppColors.purpleLight,
                     icon: Icons.psychology_rounded,
                   ),
                   const SizedBox(width: 6),
                   // Micro Audience Chip
                   _buildMicroChip(
                     label: _formatLevel(session.studentLevel),
-                    color: const Color(0xFF38BDF8),
+                    color: AppColors.cyanLight,
                     icon: Icons.school_rounded,
                   ),
                 ],
@@ -387,10 +380,9 @@ class _UnifiedLearningCommandHubState extends State<UnifiedLearningCommandHub> {
                 session.topic,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.inter(
+                style: AppTextStyles.h3.copyWith(
                   fontSize: isMobile ? 13 : 15,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFFFAFAFA),
+                  color: AppColors.textPrimary,
                   letterSpacing: 0.1,
                 ),
               ),
@@ -406,9 +398,9 @@ class _UnifiedLearningCommandHubState extends State<UnifiedLearningCommandHub> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       decoration: BoxDecoration(
-        color: const Color(0xFFC084FC).withValues(alpha: 0.08),
+        color: AppColors.purpleLight.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFC084FC).withValues(alpha: 0.25)),
+        border: Border.all(color: AppColors.purpleLight.withValues(alpha: 0.25)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -416,7 +408,7 @@ class _UnifiedLearningCommandHubState extends State<UnifiedLearningCommandHub> {
           Container(
             padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
-              color: const Color(0xFFC084FC).withValues(alpha: 0.2),
+              color: AppColors.purpleLight.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(6),
             ),
             child: const Text('🏆', style: TextStyle(fontSize: 12)),
@@ -428,18 +420,16 @@ class _UnifiedLearningCommandHubState extends State<UnifiedLearningCommandHub> {
             children: [
               Text(
                 'Lvl ${levelData['level']}',
-                style: GoogleFonts.inter(
-                  fontSize: 12,
+                style: AppTextStyles.label.copyWith(
                   fontWeight: FontWeight.w800,
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                 ),
               ),
               Text(
                 (levelData['title'] as String),
-                style: GoogleFonts.inter(
-                  fontSize: 10,
+                style: AppTextStyles.badge.copyWith(
                   fontWeight: FontWeight.w600,
-                  color: const Color(0xFFC084FC),
+                  color: AppColors.purpleLight,
                 ),
               ),
             ],
@@ -454,9 +444,9 @@ class _UnifiedLearningCommandHubState extends State<UnifiedLearningCommandHub> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       decoration: BoxDecoration(
-        color: const Color(0xFF38BDF8).withValues(alpha: 0.08),
+        color: AppColors.cyanLight.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.25)),
+        border: Border.all(color: AppColors.cyanLight.withValues(alpha: 0.25)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -464,7 +454,7 @@ class _UnifiedLearningCommandHubState extends State<UnifiedLearningCommandHub> {
           Container(
             padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
-              color: const Color(0xFF38BDF8).withValues(alpha: 0.2),
+              color: AppColors.cyanLight.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(6),
             ),
             child: const Text('⭐', style: TextStyle(fontSize: 12)),
@@ -476,10 +466,9 @@ class _UnifiedLearningCommandHubState extends State<UnifiedLearningCommandHub> {
             children: [
               Text(
                 '$xpEarned XP',
-                style: GoogleFonts.inter(
-                  fontSize: 12,
+                style: AppTextStyles.label.copyWith(
                   fontWeight: FontWeight.w800,
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                 ),
               ),
               Row(
@@ -489,10 +478,9 @@ class _UnifiedLearningCommandHubState extends State<UnifiedLearningCommandHub> {
                   const SizedBox(width: 2),
                   Text(
                     'Streak: 0',
-                    style: GoogleFonts.inter(
-                      fontSize: 10,
+                    style: AppTextStyles.badge.copyWith(
                       fontWeight: FontWeight.w600,
-                      color: const Color(0xFF38BDF8),
+                      color: AppColors.cyanLight,
                     ),
                   ),
                 ],
@@ -509,9 +497,9 @@ class _UnifiedLearningCommandHubState extends State<UnifiedLearningCommandHub> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.03),
+        color: AppColors.glassSurface.withValues(alpha: 0.03),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFF472B6).withValues(alpha: 0.25)),
+        border: Border.all(color: AppColors.fuchsia.withValues(alpha: 0.25)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -522,19 +510,16 @@ class _UnifiedLearningCommandHubState extends State<UnifiedLearningCommandHub> {
             children: [
               Text(
                 'Lvl ${levelData['level']} → ${(levelData['level'] as int) + 1}',
-                style: GoogleFonts.inter(
-                  fontSize: 10,
+                style: AppTextStyles.caption.copyWith(
                   fontWeight: FontWeight.w700,
-                  color: const Color(0xFF94A3B8),
+                  color: AppColors.slate400,
                 ),
               ),
               const SizedBox(width: 6),
               Text(
                 '${(lvlPct * 100).toStringAsFixed(0)}%',
-                style: GoogleFonts.inter(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w800,
-                  color: const Color(0xFFF472B6),
+                style: AppTextStyles.captionBold.copyWith(
+                  color: AppColors.fuchsia,
                 ),
               ),
             ],
@@ -547,7 +532,7 @@ class _UnifiedLearningCommandHubState extends State<UnifiedLearningCommandHub> {
                 width: 52,
                 height: 5,
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.08),
+                  color: AppColors.glassSurface.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(3),
                 ),
                 child: FractionallySizedBox(
@@ -555,13 +540,11 @@ class _UnifiedLearningCommandHubState extends State<UnifiedLearningCommandHub> {
                   widthFactor: lvlPct,
                   child: Container(
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFFF472B6), Color(0xFFC084FC)],
-                      ),
+                      gradient: AppColors.pinkPurpleGradient,
                       borderRadius: BorderRadius.circular(3),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFFF472B6).withValues(alpha: 0.5),
+                          color: AppColors.fuchsia.withValues(alpha: 0.5),
                           blurRadius: 4,
                         ),
                       ],
@@ -572,10 +555,9 @@ class _UnifiedLearningCommandHubState extends State<UnifiedLearningCommandHub> {
               const SizedBox(width: 6),
               Text(
                 '${levelData['xp_in_level']}/${levelData['xp_needed_for_next']}',
-                style: GoogleFonts.inter(
-                  fontSize: 9,
+                style: AppTextStyles.badge.copyWith(
                   fontWeight: FontWeight.w600,
-                  color: Colors.white.withValues(alpha: 0.6),
+                  color: AppColors.textMuted,
                 ),
               ),
             ],
@@ -590,9 +572,9 @@ class _UnifiedLearningCommandHubState extends State<UnifiedLearningCommandHub> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.03),
+        color: AppColors.glassSurface.withValues(alpha: 0.03),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF34D399).withValues(alpha: 0.25)),
+        border: Border.all(color: AppColors.greenMint.withValues(alpha: 0.25)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -603,19 +585,16 @@ class _UnifiedLearningCommandHubState extends State<UnifiedLearningCommandHub> {
             children: [
               Text(
                 'Roadmap',
-                style: GoogleFonts.inter(
-                  fontSize: 10,
+                style: AppTextStyles.caption.copyWith(
                   fontWeight: FontWeight.w700,
-                  color: const Color(0xFF94A3B8),
+                  color: AppColors.slate400,
                 ),
               ),
               const SizedBox(width: 6),
               Text(
                 '${(topicPct * 100).toStringAsFixed(0)}%',
-                style: GoogleFonts.inter(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w800,
-                  color: const Color(0xFF34D399),
+                style: AppTextStyles.captionBold.copyWith(
+                  color: AppColors.greenMint,
                 ),
               ),
             ],
@@ -628,7 +607,7 @@ class _UnifiedLearningCommandHubState extends State<UnifiedLearningCommandHub> {
                 width: 52,
                 height: 5,
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.08),
+                  color: AppColors.glassSurface.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(3),
                 ),
                 child: FractionallySizedBox(
@@ -636,13 +615,11 @@ class _UnifiedLearningCommandHubState extends State<UnifiedLearningCommandHub> {
                   widthFactor: topicPct,
                   child: Container(
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF10B981), Color(0xFF34D399)],
-                      ),
+                      gradient: AppColors.emeraldGradient,
                       borderRadius: BorderRadius.circular(3),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF34D399).withValues(alpha: 0.5),
+                          color: AppColors.greenMint.withValues(alpha: 0.5),
                           blurRadius: 4,
                         ),
                       ],
@@ -653,10 +630,9 @@ class _UnifiedLearningCommandHubState extends State<UnifiedLearningCommandHub> {
               const SizedBox(width: 6),
               Text(
                 '$completedSteps/$totalSteps',
-                style: GoogleFonts.inter(
-                  fontSize: 9,
+                style: AppTextStyles.badge.copyWith(
                   fontWeight: FontWeight.w600,
-                  color: Colors.white.withValues(alpha: 0.6),
+                  color: AppColors.textMuted,
                 ),
               ),
             ],
@@ -673,22 +649,21 @@ class _UnifiedLearningCommandHubState extends State<UnifiedLearningCommandHub> {
         Container(
           padding: const EdgeInsets.all(4),
           decoration: BoxDecoration(
-            color: const Color(0xFFC084FC).withValues(alpha: 0.15),
+            color: AppColors.purpleLight.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(6),
           ),
-          child: const Icon(
+          child: Icon(
             Icons.alt_route_rounded,
-            color: Color(0xFFC084FC),
+            color: AppColors.purpleLight,
             size: 14,
           ),
         ),
         const SizedBox(width: 8),
         Text(
           'Milestone Learning Roadmap',
-          style: GoogleFonts.inter(
-            fontSize: 13,
+          style: AppTextStyles.subtitle2.copyWith(
             fontWeight: FontWeight.w800,
-            color: const Color(0xFFFAFAFA),
+            color: AppColors.textPrimary,
             letterSpacing: 0.2,
           ),
         ),
@@ -696,16 +671,15 @@ class _UnifiedLearningCommandHubState extends State<UnifiedLearningCommandHub> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
           decoration: BoxDecoration(
-            color: const Color(0xFFC084FC).withValues(alpha: 0.12),
+            color: AppColors.purpleLight.withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: const Color(0xFFC084FC).withValues(alpha: 0.3)),
+            border: Border.all(color: AppColors.purpleLight.withValues(alpha: 0.3)),
           ),
           child: Text(
             'Step ${widget.activeIndex + 1} of $totalSteps',
-            style: GoogleFonts.inter(
-              fontSize: 10,
+            style: AppTextStyles.badge.copyWith(
               fontWeight: FontWeight.w700,
-              color: const Color(0xFFE9D5FF),
+              color: AppColors.lavender,
             ),
           ),
         ),
@@ -713,22 +687,6 @@ class _UnifiedLearningCommandHubState extends State<UnifiedLearningCommandHub> {
     );
   }
 
-  // ─── SUBTLE HAIRLINE GLOW DIVIDER ───────────────────────────────────────────
-  Widget _buildHairlineDivider() {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      height: 1,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Colors.white.withValues(alpha: 0.0),
-            const Color(0xFFA855F7).withValues(alpha: 0.35),
-            Colors.white.withValues(alpha: 0.0),
-          ],
-        ),
-      ),
-    );
-  }
 
   // ─── MICRO CHIP HELPER ──────────────────────────────────────────────────────
   Widget _buildMicroChip({
@@ -750,10 +708,9 @@ class _UnifiedLearningCommandHubState extends State<UnifiedLearningCommandHub> {
           const SizedBox(width: 3.5),
           Text(
             label,
-            style: GoogleFonts.inter(
-              fontSize: 9,
+            style: AppTextStyles.badge.copyWith(
               fontWeight: FontWeight.w700,
-              color: Colors.white,
+              color: AppColors.textPrimary,
               letterSpacing: 0.3,
             ),
           ),

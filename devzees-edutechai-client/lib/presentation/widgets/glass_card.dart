@@ -1,5 +1,6 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import '../../core/theme/app_colors.dart';
 
 class GlassCard extends StatefulWidget {
   final Widget child;
@@ -44,20 +45,20 @@ class _GlassCardState extends State<GlassCard> {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(widget.borderRadius),
             border: Border.all(
-              color: const Color(0xFFA855F7).withValues(alpha: _isHovered ? 0.85 : 0.45),
+              color: AppColors.purple.withValues(alpha: _isHovered ? 0.85 : 0.45),
               width: 1.5,
             ),
             boxShadow: [
               // Outer drop shadow (matches Streamlit CSS 0 25px 65px -15px)
               BoxShadow(
-                color: const Color(0xFFA855F7).withValues(alpha: _isHovered ? 0.55 : 0.35),
+                color: AppColors.purple.withValues(alpha: _isHovered ? 0.55 : 0.35),
                 blurRadius: _isHovered ? 75 : 65,
                 spreadRadius: _isHovered ? -10 : -15,
                 offset: Offset(0, _isHovered ? 30 : 25),
               ),
               // Inner shadow (matches Streamlit CSS inset 0 0 35px)
               BoxShadow(
-                color: const Color(0xFFA855F7).withValues(alpha: _isHovered ? 0.20 : 0.12),
+                color: AppColors.purple.withValues(alpha: _isHovered ? 0.20 : 0.12),
                 blurRadius: _isHovered ? 45 : 35,
                 spreadRadius: 0,
                 blurStyle: BlurStyle.inner,
@@ -73,15 +74,8 @@ class _GlassCardState extends State<GlassCard> {
                   // Background Gradient
                   Positioned.fill(
                     child: Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            const Color(0xFF0F172A).withValues(alpha: 0.94),
-                            const Color(0xFF1A112E).withValues(alpha: 0.90),
-                          ],
-                        ),
+                      decoration: const BoxDecoration(
+                        gradient: AppColors.cardGradientOpaque,
                       ),
                     ),
                   ),
@@ -101,20 +95,20 @@ class _GlassCardState extends State<GlassCard> {
                             gradient: const LinearGradient(
                               colors: [
                                 Colors.transparent,
-                                Color(0xFFEC4899),
-                                Color(0xFFA855F7),
-                                Color(0xFF3B82F6),
+                                AppColors.accentPink,
+                                AppColors.purple,
+                                AppColors.accentBlue,
                                 Colors.transparent,
                               ],
                               stops: [0.0, 0.25, 0.5, 0.75, 1.0],
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: const Color(0xFFEC4899),
+                                color: AppColors.accentPink,
                                 blurRadius: _isHovered ? 22 : 15,
                               ),
                               BoxShadow(
-                                color: const Color(0xFFA855F7),
+                                color: AppColors.purple,
                                 blurRadius: _isHovered ? 30 : 20,
                               ),
                             ],

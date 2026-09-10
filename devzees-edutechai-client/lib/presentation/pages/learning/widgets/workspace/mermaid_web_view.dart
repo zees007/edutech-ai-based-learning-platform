@@ -3,11 +3,11 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import '../../../../../../core/theme/app_colors.dart';
+import '../../../../../../core/theme/text_styles.dart';
 import 'mermaid_js_interop_stub.dart' if (dart.library.js_interop) 'mermaid_js_interop_web.dart';
 
 class MermaidWebView extends StatefulWidget {
@@ -215,7 +215,7 @@ class _MermaidWebViewState extends State<MermaidWebView> {
             Expanded(
               child: Text(
                 message,
-                style: GoogleFonts.inter(fontSize: 13, color: AppColors.textPrimary),
+                style: AppTextStyles.caption.copyWith(color: AppColors.textPrimary),
               ),
             ),
           ],
@@ -405,7 +405,7 @@ class _MermaidWebViewState extends State<MermaidWebView> {
                 alignment: Alignment.centerRight,
                 decoration: BoxDecoration(
                   border: Border(
-                    bottom: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+                    bottom: BorderSide(color: AppColors.glassBorderSubtle),
                   ),
                 ),
                 child: Row(
@@ -502,12 +502,12 @@ class _HoverIconButtonState extends State<_HoverIconButton> {
                   height: 16,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    color: Colors.white54,
+                    color: AppColors.textSecondary,
                   ),
                 )
               : Icon(
                   widget.icon,
-                  color: _isHovered ? Colors.white : Colors.white.withValues(alpha: 0.75),
+                  color: _isHovered ? AppColors.textPrimary : AppColors.textSecondary,
                   size: 18,
                 ),
         ),
@@ -546,26 +546,25 @@ class _MermaidFullscreenViewState extends State<_MermaidFullscreenView> {
     super.initState();
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(const Color(0xFF0F172A)) // Dark background
+      ..setBackgroundColor(AppColors.surfaceDark) // Dark background
       ..loadHtmlString(widget.htmlContent);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F172A),
+      backgroundColor: AppColors.surfaceDark,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1E293B),
+        backgroundColor: AppColors.surfaceMid,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.close_rounded, color: Colors.white),
+          icon: const Icon(Icons.close_rounded, color: AppColors.textPrimary),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
           'Diagram Viewer',
-          style: GoogleFonts.inter(
-            color: Colors.white,
-            fontSize: 16,
+          style: AppTextStyles.subtitle2.copyWith(
+            color: AppColors.textPrimary,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -593,7 +592,7 @@ class _MermaidFullscreenViewState extends State<_MermaidFullscreenView> {
                       Expanded(
                         child: Text(
                           'Copied to clipboard!',
-                          style: GoogleFonts.inter(fontSize: 13, color: AppColors.textPrimary),
+                          style: AppTextStyles.caption.copyWith(color: AppColors.textPrimary),
                         ),
                       ),
                     ],

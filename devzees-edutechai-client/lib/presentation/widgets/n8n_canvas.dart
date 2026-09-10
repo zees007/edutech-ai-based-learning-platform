@@ -42,7 +42,7 @@ class _N8nCanvasState extends State<N8nCanvas> with SingleTickerProviderStateMix
         )!;
         
         final outerShadow = BoxShadow(
-          color: const Color(0xFF7C3AED).withValues(alpha: 0.3 + (0.2 * t)),
+          color: AppColors.purpleDeep.withValues(alpha: 0.3 + (0.2 * t)),
           blurRadius: 60 + (10 * t),
           spreadRadius: -15 + (5 * t),
           offset: const Offset(0, 20),
@@ -57,7 +57,7 @@ class _N8nCanvasState extends State<N8nCanvas> with SingleTickerProviderStateMix
         return Container(
           width: double.infinity,
           decoration: BoxDecoration(
-            color: const Color(0xFF0B0813),
+            color: AppColors.canvasBackground,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(color: borderColor, width: 1.5),
             boxShadow: [outerShadow, innerShadow],
@@ -124,7 +124,7 @@ class _N8nCanvasState extends State<N8nCanvas> with SingleTickerProviderStateMix
             child: const Text(
               '⚡ EDUTECH AI — AUTONOMOUS MULTI-AGENT FLOW',
               style: TextStyle(
-                color: Color(0xFFE9D5FF),
+                color: AppColors.lavender,
                 fontSize: 12,
                 fontWeight: FontWeight.w800,
                 letterSpacing: 1.5,
@@ -170,7 +170,7 @@ class _N8nCanvasState extends State<N8nCanvas> with SingleTickerProviderStateMix
     return Container(
       padding: const EdgeInsets.only(left: 10, right: 18, top: 12, bottom: 12),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E293B).withValues(alpha: 0.7),
+        color: AppColors.surfaceMid.withValues(alpha: 0.7),
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(40),
           bottomLeft: Radius.circular(40),
@@ -221,7 +221,7 @@ class _N8nCanvasState extends State<N8nCanvas> with SingleTickerProviderStateMix
           width: 220,
           padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 18),
           decoration: BoxDecoration(
-            color: const Color(0xFF1E293B).withValues(alpha: 0.75),
+            color: AppColors.surfaceMid.withValues(alpha: 0.75),
             borderRadius: BorderRadius.circular(14),
             border: Border.all(color: AppColors.primary.withValues(alpha: 0.5), width: 1.5),
             boxShadow: [
@@ -302,7 +302,7 @@ class _N8nCanvasState extends State<N8nCanvas> with SingleTickerProviderStateMix
           width: 52,
           height: 52,
           decoration: BoxDecoration(
-            color: const Color(0xFF1E293B).withValues(alpha: 0.85),
+            color: AppColors.surfaceMid.withValues(alpha: 0.85),
             shape: BoxShape.circle,
             border: Border.all(color: AppColors.primary.withValues(alpha: 0.4), width: 1.5),
             boxShadow: [
@@ -322,7 +322,7 @@ class _N8nCanvasState extends State<N8nCanvas> with SingleTickerProviderStateMix
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E293B).withValues(alpha: 0.75),
+        color: AppColors.surfaceMid.withValues(alpha: 0.75),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: AppColors.accentGreen.withValues(alpha: 0.5), width: 1.5),
         boxShadow: [
@@ -383,7 +383,7 @@ class _N8nCanvasState extends State<N8nCanvas> with SingleTickerProviderStateMix
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
       decoration: BoxDecoration(
-        color: const Color(0xFF0B0813),
+        color: AppColors.canvasBackground,
         borderRadius: BorderRadius.circular(4),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
@@ -395,7 +395,7 @@ class _N8nCanvasState extends State<N8nCanvas> with SingleTickerProviderStateMix
     return Container(
       padding: const EdgeInsets.only(left: 6, right: 18, top: 12, bottom: 12),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E293B).withValues(alpha: 0.7),
+        color: AppColors.surfaceMid.withValues(alpha: 0.7),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: color.withValues(alpha: 0.3), width: 1.5),
       ),
@@ -453,10 +453,10 @@ class _Wire extends StatelessWidget {
       width: 10,
       height: 10,
       decoration: BoxDecoration(
-        color: const Color(0xFFA78BFA),
+        color: AppColors.purpleLight,
         shape: BoxShape.circle,
-        border: Border.all(color: const Color(0xFF0F172A), width: 2),
-        boxShadow: const [BoxShadow(color: Color(0xFFA78BFA), blurRadius: 8)],
+        border: Border.all(color: AppColors.surfaceDark, width: 2),
+        boxShadow: const [BoxShadow(color: AppColors.purpleLight, blurRadius: 8)],
       ),
     );
   }

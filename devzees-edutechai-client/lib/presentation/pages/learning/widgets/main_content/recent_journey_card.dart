@@ -1,8 +1,8 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../../../data/models/learning/session_model.dart';
 import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/theme/text_styles.dart';
 import '../../../../widgets/gradient_circular_progress.dart';
 
 class RecentJourneyCard extends StatefulWidget {
@@ -62,7 +62,7 @@ class _RecentJourneyCardState extends State<RecentJourneyCard> {
                 decoration: BoxDecoration(
                   color: _isHovered 
                       ? AppColors.primary.withValues(alpha: 0.15) 
-                      : Colors.white.withValues(alpha: 0.03),
+                      : AppColors.glassBase,
                   border: Border.all(
                     color: _isHovered 
                         ? AppColors.primary 
@@ -92,23 +92,19 @@ class _RecentJourneyCardState extends State<RecentJourneyCard> {
                             widget.session.topic,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.inter(
-                              color: Colors.white,
-                              fontSize: 14,
+                            style: AppTextStyles.label.copyWith(
                               fontWeight: _isHovered ? FontWeight.w600 : FontWeight.w500,
                             ),
                           ),
                           const SizedBox(height: 2),
                           Row(
                             children: [
-                              const Icon(Icons.star, color: Colors.amber, size: 10),
+                              const Icon(Icons.star, color: AppColors.accentAmber, size: 10),
                               const SizedBox(width: 4),
                               Text(
                                 '${widget.session.xpEarned} XP',
-                                style: GoogleFonts.inter(
-                                  color: Colors.amber.withValues(alpha: 0.9),
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
+                                style: AppTextStyles.badge.copyWith(
+                                  color: AppColors.accentAmber,
                                 ),
                               ),
                               const SizedBox(width: 8),
@@ -116,16 +112,15 @@ class _RecentJourneyCardState extends State<RecentJourneyCard> {
                                 width: 4,
                                 height: 4,
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.3),
+                                  color: AppColors.textMuted.withValues(alpha: 0.4),
                                   shape: BoxShape.circle,
                                 ),
                               ),
                               const SizedBox(width: 8),
                               Text(
                                 '${widget.session.stepsCompleted}/${widget.session.totalSteps ?? widget.session.stepsCompleted} Steps',
-                                style: GoogleFonts.inter(
-                                  color: Colors.white.withValues(alpha: 0.7),
-                                  fontSize: 11,
+                                style: AppTextStyles.caption.copyWith(
+                                  color: AppColors.textSecondary,
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
@@ -144,7 +139,7 @@ class _RecentJourneyCardState extends State<RecentJourneyCard> {
                       child: Icon(
                         Icons.arrow_forward_ios_rounded,
                         size: 14,
-                        color: _isHovered ? AppColors.primary : Colors.white.withValues(alpha: 0.3),
+                        color: _isHovered ? AppColors.primary : AppColors.textMuted.withValues(alpha: 0.4),
                       ),
                     ),
                   ],

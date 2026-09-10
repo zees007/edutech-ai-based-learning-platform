@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
+import 'package:devzees_edutechai_client/core/theme/text_styles.dart';
 
 import 'widgets/auth_canvas.dart';
 import 'widgets/auth_top_navbar.dart';
@@ -62,7 +64,7 @@ class _AuthPageState extends ConsumerState<AuthPage> with SingleTickerProviderSt
     final authState = ref.watch(authProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0E0918),
+      backgroundColor: AppColors.background,
       body: GlassLoaderOverlay(
         isLoading: authState.isLoading,
         title: authState.loadingMessage ?? 'Authenticating',
@@ -72,17 +74,17 @@ class _AuthPageState extends ConsumerState<AuthPage> with SingleTickerProviderSt
           Positioned(
             top: -100,
             left: -100,
-            child: _buildGlowOrb(const Color(0xFF8B5CF6).withValues(alpha: 0.12), isMobile ? 250 : 400),
+            child: _buildGlowOrb(AppColors.primary.withValues(alpha: 0.12), isMobile ? 250 : 400),
           ),
           Positioned(
             bottom: -50,
             right: -100,
-            child: _buildGlowOrb(const Color(0xFFEC4899).withValues(alpha: 0.08), isMobile ? 200 : 350),
+            child: _buildGlowOrb(AppColors.accentPink.withValues(alpha: 0.08), isMobile ? 200 : 350),
           ),
           Positioned(
             bottom: -150,
             left: MediaQuery.of(context).size.width * 0.3,
-            child: _buildGlowOrb(const Color(0xFF3B82F6).withValues(alpha: 0.06), isMobile ? 150 : 300),
+            child: _buildGlowOrb(AppColors.accentBlue.withValues(alpha: 0.06), isMobile ? 150 : 300),
           ),
 
           // Main Content Area
@@ -187,17 +189,17 @@ class _AuthPageState extends ConsumerState<AuthPage> with SingleTickerProviderSt
             },
             icon: Icon(
               _isFlowchartExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-              color: Colors.white70,
+              color: AppColors.textSecondary,
             ),
             label: Text(
               _isFlowchartExpanded ? "Hide Access Flowchart" : "View Access Flowchart",
-              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+              style: AppTextStyles.subtitle2.copyWith(color: AppColors.textPrimary, fontWeight: FontWeight.w600),
             ),
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-              side: BorderSide(color: const Color(0xFFA855F7).withValues(alpha: 0.5)),
+              side: BorderSide(color: AppColors.accentPurple.withValues(alpha: 0.5)),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-              backgroundColor: const Color(0xFFA855F7).withValues(alpha: 0.1),
+              backgroundColor: AppColors.accentPurple.withValues(alpha: 0.1),
             ),
           ),
         ),

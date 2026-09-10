@@ -243,6 +243,10 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
       context: context,
       color: Colors.transparent,
       elevation: 0,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(16)),
+        side: BorderSide.none,
+      ),
       position: RelativeRect.fromLTRB(
         offset.dx,
         offset.dy + size.height,
@@ -261,7 +265,7 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
                 width: 140,
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1A132C).withValues(alpha: 0.6),
+                  color: AppColors.popoverBackground.withValues(alpha: 0.6),
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(

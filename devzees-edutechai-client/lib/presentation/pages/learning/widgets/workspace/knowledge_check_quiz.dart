@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../../../../core/providers/active_session_provider.dart';
+import '../../../../../../core/theme/app_colors.dart';
+import '../../../../../../core/theme/text_styles.dart';
 
 class KnowledgeCheckQuiz extends ConsumerStatefulWidget {
   final List<dynamic>? quiz;
@@ -106,9 +107,9 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: const Color(0xFFF43F5E).withValues(alpha: 0.05),
+        color: AppColors.rose.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFF43F5E).withValues(alpha: 0.3)),
+        border: Border.all(color: AppColors.rose.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -119,10 +120,7 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
               const SizedBox(width: 12),
               Text(
                 'Milestone Knowledge Check',
-                style: GoogleFonts.inter(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                  color: Colors.white,
+                style: AppTextStyles.h2.copyWith(
                   letterSpacing: 0.2,
                 ),
               ),
@@ -152,10 +150,7 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
                       Expanded(
                         child: Text(
                           'Q${index + 1}: $question',
-                          style: GoogleFonts.inter(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
+                          style: AppTextStyles.subtitle1.copyWith(
                             height: 1.5,
                           ),
                         ),
@@ -165,14 +160,14 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
                           margin: const EdgeInsets.only(left: 8),
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF43F5E).withValues(alpha: 0.15),
+                            color: AppColors.rose.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: const Color(0xFFF43F5E).withValues(alpha: 0.3)),
+                            border: Border.all(color: AppColors.rose.withValues(alpha: 0.3)),
                           ),
                           child: Text(
                             'Fill in Blank',
-                            style: GoogleFonts.inter(
-                              color: const Color(0xFFFDA4AF),
+                            style: AppTextStyles.badge.copyWith(
+                              color: AppColors.roseLight,
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
                             ),
@@ -188,13 +183,13 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
                       margin: const EdgeInsets.only(bottom: 12),
                       decoration: BoxDecoration(
                         color: _submitted
-                            ? (isCorrect ? Colors.green.withValues(alpha: 0.1) : Colors.redAccent.withValues(alpha: 0.1))
-                            : Colors.white.withValues(alpha: 0.05),
+                            ? (isCorrect ? AppColors.accentGreen.withValues(alpha: 0.1) : AppColors.accentRose.withValues(alpha: 0.1))
+                            : AppColors.glassSurface.withValues(alpha: 0.05),
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
                           color: _submitted
-                              ? (isCorrect ? Colors.green : Colors.redAccent)
-                              : const Color(0xFFF43F5E).withValues(alpha: 0.35),
+                              ? (isCorrect ? AppColors.accentGreen : AppColors.accentRose)
+                              : AppColors.rose.withValues(alpha: 0.35),
                           width: _submitted ? 2 : 1,
                         ),
                       ),
@@ -202,30 +197,25 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
                       child: TextField(
                         controller: _getController(index),
                         enabled: !_submitted,
-                        style: GoogleFonts.inter(
-                          color: Colors.white,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w500,
-                        ),
-                        cursorColor: const Color(0xFFF43F5E),
+                        style: AppTextStyles.bodyPrimary,
+                        cursorColor: AppColors.rose,
                         decoration: InputDecoration(
                           border: InputBorder.none,
                           hintText: 'Type your answer for the blank here...',
-                          hintStyle: GoogleFonts.inter(
-                            color: Colors.white38,
-                            fontSize: 14,
+                          hintStyle: AppTextStyles.bodyPrimary.copyWith(
+                            color: AppColors.textMuted,
                           ),
                           icon: Icon(
                             Icons.edit_note_rounded,
                             color: _submitted
-                                ? (isCorrect ? Colors.green : Colors.redAccent)
-                                : const Color(0xFFF43F5E).withValues(alpha: 0.8),
+                                ? (isCorrect ? AppColors.accentGreen : AppColors.accentRose)
+                                : AppColors.rose.withValues(alpha: 0.8),
                             size: 22,
                           ),
                           suffixIcon: _submitted
                               ? Icon(
                                   isCorrect ? Icons.check_circle_rounded : Icons.cancel_rounded,
-                                  color: isCorrect ? Colors.green : Colors.redAccent,
+                                  color: isCorrect ? AppColors.accentGreen : AppColors.accentRose,
                                   size: 22,
                                 )
                               : null,
@@ -241,15 +231,15 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
                     // Multiple-choice options list
                     ...List.generate(options.length, (optIndex) {
                       final isSelected = _selectedAnswers[index] == optIndex;
-                      Color borderColor = Colors.white.withValues(alpha: 0.1);
-                      Color bgColor = Colors.white.withValues(alpha: 0.05);
-                      Color iconColor = Colors.white54;
+                      Color borderColor = AppColors.glassBorder;
+                      Color bgColor = AppColors.glassSurface.withValues(alpha: 0.05);
+                      Color iconColor = AppColors.textMuted;
                       IconData? icon;
 
                       if (isSelected) {
-                        borderColor = const Color(0xFFF43F5E);
-                        bgColor = const Color(0xFFF43F5E).withValues(alpha: 0.15);
-                        iconColor = const Color(0xFFF43F5E);
+                        borderColor = AppColors.rose;
+                        bgColor = AppColors.rose.withValues(alpha: 0.15);
+                        iconColor = AppColors.rose;
                         icon = Icons.check;
                       }
 
@@ -262,14 +252,14 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
                         }
 
                         if (isThisOptionCorrect) {
-                          borderColor = Colors.green;
-                          bgColor = Colors.green.withValues(alpha: 0.15);
-                          iconColor = Colors.green;
+                          borderColor = AppColors.accentGreen;
+                          bgColor = AppColors.accentGreen.withValues(alpha: 0.15);
+                          iconColor = AppColors.accentGreen;
                           icon = Icons.check_circle;
                         } else if (isSelected && !isThisOptionCorrect) {
-                          borderColor = Colors.redAccent;
-                          bgColor = Colors.redAccent.withValues(alpha: 0.15);
-                          iconColor = Colors.redAccent;
+                          borderColor = AppColors.accentRose;
+                          bgColor = AppColors.accentRose.withValues(alpha: 0.15);
+                          iconColor = AppColors.accentRose;
                           icon = Icons.cancel;
                         }
                       }
@@ -289,7 +279,7 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
                               color: borderColor,
-                              width: isSelected || (_submitted && (borderColor == Colors.green || borderColor == Colors.redAccent)) ? 2 : 1,
+                              width: isSelected || (_submitted && (borderColor == AppColors.accentGreen || borderColor == AppColors.accentRose)) ? 2 : 1,
                             ),
                           ),
                           child: Row(
@@ -303,20 +293,19 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
                                     color: iconColor,
                                     width: 2,
                                   ),
-                                  color: (isSelected || (_submitted && (borderColor == Colors.green || borderColor == Colors.redAccent))) ? iconColor : Colors.transparent,
+                                  color: (isSelected || (_submitted && (borderColor == AppColors.accentGreen || borderColor == AppColors.accentRose))) ? iconColor : Colors.transparent,
                                 ),
                                 child: icon != null && (isSelected || _submitted)
-                                    ? Icon(icon, size: 16, color: Colors.white)
+                                    ? Icon(icon, size: 16, color: AppColors.textPrimary)
                                     : null,
                               ),
                               const SizedBox(width: 16),
                               Expanded(
                                 child: Text(
                                   options[optIndex],
-                                  style: GoogleFonts.inter(
-                                    color: isSelected || (_submitted && borderColor == Colors.green) ? Colors.white : Colors.white.withValues(alpha: 0.8),
-                                    fontSize: 14,
-                                    fontWeight: isSelected || (_submitted && borderColor == Colors.green) ? FontWeight.w600 : FontWeight.w400,
+                                  style: AppTextStyles.bodyPrimary.copyWith(
+                                    color: isSelected || (_submitted && borderColor == AppColors.accentGreen) ? AppColors.textPrimary : AppColors.textSecondary,
+                                    fontWeight: isSelected || (_submitted && borderColor == AppColors.accentGreen) ? FontWeight.w600 : FontWeight.w400,
                                   ),
                                 ),
                               ),
@@ -332,16 +321,16 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: isCorrect ? Colors.green.withValues(alpha: 0.1) : Colors.redAccent.withValues(alpha: 0.1),
+                        color: isCorrect ? AppColors.accentGreen.withValues(alpha: 0.1) : AppColors.accentRose.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: isCorrect ? Colors.green.withValues(alpha: 0.3) : Colors.redAccent.withValues(alpha: 0.3)),
+                        border: Border.all(color: isCorrect ? AppColors.accentGreen.withValues(alpha: 0.3) : AppColors.accentRose.withValues(alpha: 0.3)),
                       ),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Icon(
                             isCorrect ? Icons.check_circle_outline : Icons.error_outline,
-                            color: isCorrect ? Colors.green : Colors.redAccent,
+                            color: isCorrect ? AppColors.accentGreen : AppColors.accentRose,
                             size: 20,
                           ),
                           const SizedBox(width: 12),
@@ -351,20 +340,17 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
                               children: [
                                 Text(
                                   isCorrect ? 'Correct!' : 'Incorrect',
-                                  style: GoogleFonts.inter(
-                                    color: isCorrect ? Colors.green : Colors.redAccent,
+                                  style: AppTextStyles.label.copyWith(
+                                    color: isCorrect ? AppColors.accentGreen : AppColors.accentRose,
                                     fontWeight: FontWeight.bold,
-                                    fontSize: 14,
                                   ),
                                 ),
                                 if (!isCorrect && correctAnswerRaw.isNotEmpty) ...[
                                   const SizedBox(height: 4),
                                   Text(
                                     'Correct Answer: $correctAnswerRaw',
-                                    style: GoogleFonts.inter(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 13,
+                                    style: AppTextStyles.captionBold.copyWith(
+                                      color: AppColors.textPrimary,
                                     ),
                                   ),
                                 ],
@@ -372,9 +358,8 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
                                   const SizedBox(height: 8),
                                   Text(
                                     explanation,
-                                    style: GoogleFonts.inter(
-                                      color: Colors.white.withValues(alpha: 0.85),
-                                      fontSize: 13,
+                                    style: AppTextStyles.caption.copyWith(
+                                      color: AppColors.textPrimary.withValues(alpha: 0.85),
                                       height: 1.4,
                                     ),
                                   ),
@@ -387,7 +372,7 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
                     ),
                   ],
                   if (index < quizList.length - 1)
-                    Divider(color: Colors.white.withValues(alpha: 0.1), height: 32),
+                    Divider(color: AppColors.glassBorder, height: 32),
                 ],
               ),
             );
@@ -399,14 +384,14 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    const Color(0xFFF43F5E).withValues(alpha: 0.2),
-                    const Color(0xFFF43F5E).withValues(alpha: 0.05),
+                    AppColors.rose.withValues(alpha: 0.2),
+                    AppColors.rose.withValues(alpha: 0.05),
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFF43F5E).withValues(alpha: 0.4)),
+                border: Border.all(color: AppColors.rose.withValues(alpha: 0.4)),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -416,20 +401,15 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
                     children: [
                       Text(
                         'Quiz Results',
-                        style: GoogleFonts.inter(
-                          color: Colors.white70,
-                          fontSize: 14,
+                        style: AppTextStyles.caption.copyWith(
+                          color: AppColors.textSecondary,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         'Score: ${((correctCount / quizList.length) * 100).toStringAsFixed(0)}% ($correctCount/${quizList.length} Correct)',
-                        style: GoogleFonts.inter(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: AppTextStyles.h3,
                       ),
                     ],
                   ),
@@ -447,11 +427,11 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
                         }
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFF43F5E),
+                        backgroundColor: AppColors.rose,
                         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         elevation: 4,
-                        shadowColor: const Color(0xFFF43F5E).withValues(alpha: 0.5),
+                        shadowColor: AppColors.rose.withValues(alpha: 0.5),
                       ),
                       child: _isAdvancing 
                         ? const SizedBox(
@@ -465,7 +445,7 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
                               const SizedBox(width: 8),
                               Text(
                                 'Next Step',
-                                style: GoogleFonts.inter(
+                                style: AppTextStyles.label.copyWith(
                                   color: Colors.white,
                                   fontWeight: FontWeight.w700,
                                 ),
@@ -485,7 +465,7 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: const Text('Please answer all questions before submitting.'),
-                        backgroundColor: Colors.redAccent,
+                        backgroundColor: AppColors.accentRose,
                         behavior: SnackBarBehavior.floating,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       ),
@@ -524,7 +504,7 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
                   }
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFF43F5E),
+                  backgroundColor: AppColors.rose,
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
@@ -535,7 +515,7 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
                     )
                   : Text(
                       'Submit Quiz',
-                      style: GoogleFonts.inter(
+                      style: AppTextStyles.label.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.w700,
                       ),

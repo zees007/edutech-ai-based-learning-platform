@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 import '../../../../../../core/theme/app_colors.dart';
+import '../../../../../../core/theme/text_styles.dart';
 
 class RecommendedVideos extends StatelessWidget {
   final List<dynamic>? videos;
@@ -25,10 +25,7 @@ class RecommendedVideos extends StatelessWidget {
             Expanded(
               child: Text(
                 'Recommended YouTube Video Clips & Timestamps',
-                style: GoogleFonts.inter(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                  color: Colors.white,
+                style: AppTextStyles.h2.copyWith(
                   letterSpacing: 0.2,
                 ),
               ),
@@ -146,10 +143,10 @@ class _VideoCardState extends State<_VideoCard> {
           margin: const EdgeInsets.only(right: 16, bottom: 12, top: 8),
           transform: Matrix4.translationValues(0, _isHovered ? -5 : 0, 0),
           decoration: BoxDecoration(
-            color: _isHovered ? Colors.white.withValues(alpha: 0.08) : Colors.white.withValues(alpha: 0.03),
+            color: _isHovered ? AppColors.glassSurface.withValues(alpha: 0.08) : AppColors.glassSurface.withValues(alpha: 0.03),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: _isHovered ? AppColors.primary.withValues(alpha: 0.5) : Colors.white.withValues(alpha: 0.05),
+              color: _isHovered ? AppColors.primary.withValues(alpha: 0.5) : AppColors.glassBorder,
             ),
             boxShadow: [],
           ),
@@ -166,8 +163,8 @@ class _VideoCardState extends State<_VideoCard> {
                     color: Colors.black,
                     gradient: !_isPlaying ? LinearGradient(
                       colors: [
-                        const Color(0xFF38BDF8).withValues(alpha: _isHovered ? 0.6 : 0.3),
-                        const Color(0xFFC084FC).withValues(alpha: _isHovered ? 0.6 : 0.3),
+                        AppColors.cyanLight.withValues(alpha: _isHovered ? 0.6 : 0.3),
+                        AppColors.purpleLight.withValues(alpha: _isHovered ? 0.6 : 0.3),
                       ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
@@ -216,7 +213,7 @@ class _VideoCardState extends State<_VideoCard> {
                                 ),
                                 child: Text(
                                   duration,
-                                  style: GoogleFonts.inter(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                                  style: AppTextStyles.badge,
                                 ),
                               ),
                             ),
@@ -232,26 +229,20 @@ class _VideoCardState extends State<_VideoCard> {
                       children: [
                         Text(
                           title,
-                          style: GoogleFonts.inter(
-                            color: Colors.white,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style: AppTextStyles.subtitle2,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 6),
                         Row(
                           children: [
-                            Icon(Icons.person_outline_rounded, size: 14, color: Colors.white.withValues(alpha: 0.5)),
+                            Icon(Icons.person_outline_rounded, size: 14, color: AppColors.textMuted),
                             const SizedBox(width: 4),
                             Expanded(
                               child: Text(
                                 widget.video is Map ? (widget.video['channel'] ?? 'YouTube') : 'YouTube',
-                                style: GoogleFonts.inter(
-                                  color: Colors.white.withValues(alpha: 0.5),
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w500,
+                                style: AppTextStyles.caption.copyWith(
+                                  color: AppColors.textMuted,
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -274,9 +265,8 @@ class _VideoCardState extends State<_VideoCard> {
                               Expanded(
                                 child: Text(
                                   explanationText,
-                                  style: GoogleFonts.inter(
-                                    color: Colors.white.withValues(alpha: 0.7),
-                                    fontSize: 11,
+                                  style: AppTextStyles.caption.copyWith(
+                                    color: AppColors.textSecondary,
                                     fontStyle: FontStyle.italic,
                                   ),
                                   maxLines: 2,
@@ -307,10 +297,9 @@ class _VideoCardState extends State<_VideoCard> {
       ),
       child: Text(
         time,
-        style: GoogleFonts.inter(
+        style: AppTextStyles.badge.copyWith(
           color: color,
           fontSize: 11,
-          fontWeight: FontWeight.w700,
         ),
       ),
     );
@@ -334,7 +323,7 @@ class _SpeedControlState extends State<_SpeedControl> {
     return PopupMenuButton<double>(
       initialValue: _currentSpeed,
       tooltip: 'Playback Speed',
-      color: const Color(0xFF2D2D2D),
+      color: AppColors.surfaceMid,
       elevation: 8,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       onSelected: (speed) {
@@ -354,9 +343,9 @@ class _SpeedControlState extends State<_SpeedControl> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.1),
+          color: AppColors.glassSurface.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(6),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+          border: Border.all(color: AppColors.glassBorder),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -365,11 +354,7 @@ class _SpeedControlState extends State<_SpeedControl> {
             const SizedBox(width: 4),
             Text(
               _currentSpeed == 1.0 ? '1x' : '${_currentSpeed}x',
-              style: GoogleFonts.inter(
-                color: Colors.white,
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-              ),
+              style: AppTextStyles.badge,
             ),
           ],
         ),
@@ -386,9 +371,8 @@ class _SpeedControlState extends State<_SpeedControl> {
         children: [
           Text(
             text,
-            style: GoogleFonts.inter(
+            style: AppTextStyles.label.copyWith(
               color: Colors.white,
-              fontSize: 12,
               fontWeight: _currentSpeed == value ? FontWeight.bold : FontWeight.normal,
             ),
           ),

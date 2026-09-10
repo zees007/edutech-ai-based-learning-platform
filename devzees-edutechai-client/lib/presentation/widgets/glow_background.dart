@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/theme/app_colors.dart';
 
 class GlowBackground extends StatelessWidget {
   final Widget child;
@@ -20,7 +21,7 @@ class GlowBackground extends StatelessWidget {
               shape: BoxShape.circle,
               gradient: RadialGradient(
                 colors: [
-                  const Color(0xFF8B5CF6).withValues(alpha: 0.12),
+                  AppColors.primary.withValues(alpha: 0.12),
                   Colors.transparent,
                 ],
                 stops: const [0.0, 0.7],
@@ -39,7 +40,7 @@ class GlowBackground extends StatelessWidget {
               shape: BoxShape.circle,
               gradient: RadialGradient(
                 colors: [
-                  const Color(0xFFEC4899).withValues(alpha: 0.08),
+                  AppColors.accentPink.withValues(alpha: 0.08),
                   Colors.transparent,
                 ],
                 stops: const [0.0, 0.7],
@@ -58,7 +59,7 @@ class GlowBackground extends StatelessWidget {
               shape: BoxShape.circle,
               gradient: RadialGradient(
                 colors: [
-                  const Color(0xFF3B82F6).withValues(alpha: 0.06),
+                  AppColors.accentBlue.withValues(alpha: 0.06),
                   Colors.transparent,
                 ],
                 stops: const [0.0, 0.7],

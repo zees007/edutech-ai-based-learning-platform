@@ -63,7 +63,7 @@ class _LearningPageState extends ConsumerState<LearningPage> {
           elevation: 0,
           leading: Builder(
             builder: (context) => IconButton(
-              icon: const Icon(Icons.menu, color: Colors.white70),
+              icon: const Icon(Icons.menu, color: AppColors.textSecondary),
               onPressed: () => Scaffold.of(context).openDrawer(),
             ),
           ),
@@ -91,10 +91,10 @@ class _LearningPageState extends ConsumerState<LearningPage> {
             Container(
               width: isExpanded ? 280 : 80,
               decoration: BoxDecoration(
-                color: const Color(0xFF130D21),
+                color: AppColors.sidebarBackground,
                 border: Border(
                   right: BorderSide(
-                    color: Colors.white.withValues(alpha: 0.05),
+                    color: AppColors.glassBorder,
                     width: 1,
                   ),
                 ),

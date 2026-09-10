@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../widgets/shimmer_loading.dart';
+import '../../../../../core/theme/app_colors.dart';
 
 class LearningHistorySkeletonItem extends StatelessWidget {
   final bool expanded;
@@ -21,13 +22,13 @@ class LearningHistorySkeletonItem extends StatelessWidget {
           height: 40,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.03),
+            color: AppColors.glassSurface.withValues(alpha: 0.03),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: const ShimmerBox(
+          child: ShimmerBox(
             width: 18,
             height: 18,
-            color: Color(0xFF2E2248),
+            color: AppColors.shimmerBoxDark,
           ),
         ),
       );
@@ -39,19 +40,19 @@ class LearningHistorySkeletonItem extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(8),
-          color: Colors.white.withValues(alpha: 0.02),
+          color: AppColors.glassSurface.withValues(alpha: 0.02),
           border: Border.all(
-            color: Colors.white.withValues(alpha: 0.05),
+            color: AppColors.glassBorder,
           ),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             // Icon Placeholder
-            const ShimmerBox(
+            ShimmerBox(
               width: 16,
               height: 16,
-              color: Color(0xFF2E2248),
+              color: AppColors.shimmerBoxDark,
             ),
             const SizedBox(width: 12),
 
@@ -64,7 +65,7 @@ class LearningHistorySkeletonItem extends StatelessWidget {
                   ShimmerBox(
                     width: titleWidth,
                     height: 12,
-                    color: const Color(0xFF332750),
+                    color: AppColors.shimmerBoxMid,
                   ),
                   const SizedBox(height: 6),
                   Row(
@@ -73,14 +74,14 @@ class LearningHistorySkeletonItem extends StatelessWidget {
                         width: 58,
                         height: 14,
                         borderRadius: BorderRadius.circular(10),
-                        color: const Color(0xFF261D3D),
+                        color: AppColors.shimmerBoxDark,
                       ),
                       const SizedBox(width: 8),
                       ShimmerBox(
                         width: 44,
                         height: 14,
                         borderRadius: BorderRadius.circular(10),
-                        color: const Color(0xFF261D3D),
+                        color: AppColors.shimmerBoxDark,
                       ),
                     ],
                   ),

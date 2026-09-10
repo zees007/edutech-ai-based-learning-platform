@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/providers/auth_provider.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/text_styles.dart';
 
 class AuthFormCard extends ConsumerStatefulWidget {
   final bool isLogin;
@@ -103,17 +105,17 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
       SnackBar(
         content: Text(
           message,
-          style: const TextStyle(
-            color: Color(0xFFF8FAFC),
+          style: AppTextStyles.subtitle2.copyWith(
+            color: AppColors.textPrimary,
             fontSize: 14,
             fontWeight: FontWeight.w500,
           ),
         ),
-        backgroundColor: const Color(0xFF1E1B4B),
+        backgroundColor: AppColors.surfaceIndigo,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
-          side: BorderSide(color: const Color(0xFFA855F7).withValues(alpha: 0.5)),
+          side: BorderSide(color: AppColors.accentPurple.withValues(alpha: 0.5)),
         ),
       ),
     );
@@ -148,22 +150,15 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
         child: Container(
           width: double.infinity,
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Color.fromRGBO(15, 23, 42, 0.94),
-                Color.fromRGBO(26, 17, 46, 0.90),
-              ],
-            ),
+            gradient: AppColors.cardGradientOpaque,
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
-              color: const Color(0xFFA855F7).withValues(alpha: 0.45),
+              color: AppColors.accentPurple.withValues(alpha: 0.45),
               width: 1.5,
             ),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFFA855F7).withValues(alpha: 0.35),
+                color: AppColors.accentPurple.withValues(alpha: 0.35),
                 blurRadius: 65,
                 spreadRadius: -15,
                 offset: const Offset(0, 25),
@@ -181,19 +176,19 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
                 child: Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(3),
-                    gradient: const LinearGradient(
+                    gradient: LinearGradient(
                       colors: [
                         Colors.transparent,
-                        Color(0xFFEC4899),
-                        Color(0xFFA855F7),
-                        Color(0xFF3B82F6),
+                        AppColors.accentPink,
+                        AppColors.accentPurple,
+                        AppColors.accentBlue,
                         Colors.transparent,
                       ],
-                      stops: [0.0, 0.25, 0.5, 0.75, 1.0],
+                      stops: const [0.0, 0.25, 0.5, 0.75, 1.0],
                     ),
-                    boxShadow: const [
-                      BoxShadow(color: Color(0xFFEC4899), blurRadius: 15),
-                      BoxShadow(color: Color(0xFFA855F7), blurRadius: 20),
+                    boxShadow: [
+                      BoxShadow(color: AppColors.accentPink, blurRadius: 15),
+                      BoxShadow(color: AppColors.accentPurple, blurRadius: 20),
                     ],
                   ),
                 ),
@@ -220,26 +215,22 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
           children: [
             Text(
               "Sign In to ",
-              style: TextStyle(
+              style: AppTextStyles.h2.copyWith(
                 fontSize: isMobile ? 26 : 32,
                 fontWeight: FontWeight.w900,
-                color: Colors.white,
+                color: AppColors.textPrimary,
                 letterSpacing: -0.5,
               ),
               textAlign: TextAlign.center,
             ),
             ShaderMask(
-              shaderCallback: (bounds) => const LinearGradient(
-                colors: [Color(0xFFEC4899), Color(0xFFA855F7), Color(0xFF3B82F6)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ).createShader(bounds),
+              shaderCallback: (bounds) => AppColors.pinkPurpleGradient.createShader(bounds),
               child: Text(
                 "AI Workspace",
-                style: TextStyle(
+                style: AppTextStyles.h2.copyWith(
                   fontSize: isMobile ? 26 : 32,
                   fontWeight: FontWeight.w900,
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                   letterSpacing: -0.5,
                 ),
                 textAlign: TextAlign.center,
@@ -250,9 +241,9 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
         const SizedBox(height: 12),
         Text(
           "Enter your credentials to resume your personalized curriculum session.",
-          style: TextStyle(
+          style: AppTextStyles.bodyPrimary.copyWith(
             fontSize: isMobile ? 14 : 16,
-            color: const Color(0xFFE9D5FF).withValues(alpha: 0.75),
+            color: AppColors.lavender.withValues(alpha: 0.75),
             height: 1.5,
           ),
           textAlign: TextAlign.center,
@@ -272,26 +263,22 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
           children: [
             Text(
               "Create Your ",
-              style: TextStyle(
+              style: AppTextStyles.h2.copyWith(
                 fontSize: isMobile ? 26 : 32,
                 fontWeight: FontWeight.w900,
-                color: Colors.white,
+                color: AppColors.textPrimary,
                 letterSpacing: -0.5,
               ),
               textAlign: TextAlign.center,
             ),
             ShaderMask(
-              shaderCallback: (bounds) => const LinearGradient(
-                colors: [Color(0xFFEC4899), Color(0xFFA855F7), Color(0xFF3B82F6)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ).createShader(bounds),
+              shaderCallback: (bounds) => AppColors.pinkPurpleGradient.createShader(bounds),
               child: Text(
                 "Learning Account",
-                style: TextStyle(
+                style: AppTextStyles.h2.copyWith(
                   fontSize: isMobile ? 26 : 32,
                   fontWeight: FontWeight.w900,
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                   letterSpacing: -0.5,
                 ),
                 textAlign: TextAlign.center,
@@ -302,9 +289,9 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
         const SizedBox(height: 12),
         Text(
           "Instantiate your personal autonomous AI agent squad in seconds.",
-          style: TextStyle(
+          style: AppTextStyles.bodyPrimary.copyWith(
             fontSize: isMobile ? 14 : 16,
-            color: const Color(0xFFE9D5FF).withValues(alpha: 0.75),
+            color: AppColors.lavender.withValues(alpha: 0.75),
             height: 1.5,
           ),
           textAlign: TextAlign.center,
@@ -317,16 +304,16 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       decoration: BoxDecoration(
-          color: const Color(0xFFA855F7).withValues(alpha: 0.15),
+          color: AppColors.accentPurple.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: const Color(0xFFA855F7).withValues(alpha: 0.4)),
+          border: Border.all(color: AppColors.accentPurple.withValues(alpha: 0.4)),
           boxShadow: [
-            BoxShadow(color: const Color(0xFFA855F7).withValues(alpha: 0.3), blurRadius: 16),
+            BoxShadow(color: AppColors.accentPurple.withValues(alpha: 0.3), blurRadius: 16),
           ]),
       child: Text(
         text,
-        style: const TextStyle(
-          color: Color(0xFFE9D5FF),
+        style: AppTextStyles.badge.copyWith(
+          color: AppColors.lavender,
           fontSize: 12,
           fontWeight: FontWeight.w800,
           letterSpacing: 1.5,
@@ -368,8 +355,8 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
             onPressed: widget.onToggleMode,
             child: Text(
               "Don't have an account? Create one",
-              style: TextStyle(
-                color: const Color(0xFFE9D5FF).withValues(alpha: 0.9),
+              style: AppTextStyles.subtitle2.copyWith(
+                color: AppColors.lavender.withValues(alpha: 0.9),
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -507,8 +494,8 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
             onPressed: widget.onToggleMode,
             child: Text(
               "Already have an account? Sign In",
-              style: TextStyle(
-                color: const Color(0xFFE9D5FF).withValues(alpha: 0.9),
+              style: AppTextStyles.subtitle2.copyWith(
+                color: AppColors.lavender.withValues(alpha: 0.9),
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -533,8 +520,8 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
       children: [
         Text(
           label,
-          style: TextStyle(
-            color: const Color(0xFFE9D5FF).withValues(alpha: 0.92),
+          style: AppTextStyles.label.copyWith(
+            color: AppColors.lavender.withValues(alpha: 0.92),
             fontSize: 14,
             fontWeight: FontWeight.w700,
             letterSpacing: 0.3,
@@ -548,37 +535,37 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
           onFieldSubmitted: onFieldSubmitted,
           keyboardType: keyboardType,
           autofillHints: autofillHints,
-          style: const TextStyle(
-            color: Color(0xFFFAFAFA),
+          style: AppTextStyles.bodyPrimary.copyWith(
+            color: AppColors.textPrimary,
             fontSize: 15,
             fontWeight: FontWeight.w500,
           ),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: TextStyle(
-              color: const Color(0xFFE9D5FF).withValues(alpha: 0.38),
+            hintStyle: AppTextStyles.bodyPrimary.copyWith(
+              color: AppColors.lavender.withValues(alpha: 0.38),
             ),
             filled: true,
-            fillColor: const Color.fromRGBO(15, 23, 42, 0.75),
+            fillColor: AppColors.surfaceDark.withValues(alpha: 0.75),
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
               borderSide: BorderSide(
-                color: const Color(0xFFA855F7).withValues(alpha: 0.35),
+                color: AppColors.accentPurple.withValues(alpha: 0.35),
                 width: 1.5,
               ),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
               borderSide: BorderSide(
-                color: const Color(0xFFA855F7).withValues(alpha: 0.35),
+                color: AppColors.accentPurple.withValues(alpha: 0.35),
                 width: 1.5,
               ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
               borderSide: BorderSide(
-                color: const Color(0xFFA855F7).withValues(alpha: 0.95),
+                color: AppColors.accentPurple.withValues(alpha: 0.95),
                 width: 1.5,
               ),
             ),
@@ -593,19 +580,15 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
       height: 52,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(14),
-        gradient: const LinearGradient(
-          colors: [Color(0xFFEC4899), Color(0xFFA855F7), Color(0xFF3B82F6)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        gradient: AppColors.pinkPurpleGradient,
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFA855F7).withValues(alpha: 0.4),
+            color: AppColors.accentPurple.withValues(alpha: 0.4),
             offset: const Offset(0, 8),
             blurRadius: 25,
           ),
           BoxShadow(
-            color: const Color(0xFFEC4899).withValues(alpha: 0.25),
+            color: AppColors.accentPink.withValues(alpha: 0.25),
             offset: const Offset(0, 0),
             blurRadius: 20,
           ),
@@ -619,8 +602,8 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
           child: Center(
             child: Text(
               text,
-              style: const TextStyle(
-                color: Colors.white,
+              style: AppTextStyles.button.copyWith(
+                color: AppColors.textPrimary,
                 fontSize: 16,
                 fontWeight: FontWeight.w800,
                 letterSpacing: 0.3,

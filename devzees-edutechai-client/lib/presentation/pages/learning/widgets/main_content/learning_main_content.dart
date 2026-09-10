@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/theme/text_styles.dart';
 import '../../../../../presentation/widgets/gradient_text.dart';
 import '../../../../../presentation/widgets/app_gradient_spinner.dart';
 import 'journey_prompt_card.dart';
@@ -67,18 +68,8 @@ class LearningMainContent extends ConsumerWidget {
     }
 
     return Container(
-      decoration: BoxDecoration(
-        // Subtle radial gradient that adds depth without being distracting
-        gradient: const RadialGradient(
-          center: Alignment(0.0, -0.3),
-          radius: 1.2,
-          colors: [
-            Color(0xFF1A112E), // Warm purple-tinted center
-            Color(0xFF110C1D), // Mid tone
-            Color(0xFF0E0918), // Match app background at edges
-          ],
-          stops: [0.0, 0.5, 1.0],
-        ),
+      decoration: const BoxDecoration(
+        gradient: AppColors.workspaceBackgroundRadial,
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
@@ -107,19 +98,13 @@ class LearningMainContent extends ConsumerWidget {
                               children: [
                                 Text(
                                   'EduTechAI ',
-                                  style: GoogleFonts.inter(
-                                    fontSize: isMobile ? 24 : 32,
-                                    fontWeight: FontWeight.w800,
-                                    color: Colors.white,
+                                  style: (isMobile ? AppTextStyles.h3 : AppTextStyles.h2).copyWith(
                                     letterSpacing: -0.5,
                                   ),
                                 ),
                                 GradientText(
                                   'Learning Workspace',
-                                  style: GoogleFonts.inter(
-                                    fontSize: isMobile ? 24 : 32,
-                                    fontWeight: FontWeight.w800,
-                                    color: Colors.white,
+                                  style: (isMobile ? AppTextStyles.h3 : AppTextStyles.h2).copyWith(
                                     letterSpacing: -0.5,
                                   ),
                                 ),
@@ -131,9 +116,8 @@ class LearningMainContent extends ConsumerWidget {
                               child: Text(
                                 'An adaptive, intelligent learning studio where specialized AI agents orchestrate personalized roadmaps, intuitive analogies, video deep-dives, and instant mastery checks.',
                                 textAlign: TextAlign.center,
-                                style: GoogleFonts.inter(
-                                  fontSize: isMobile ? 14 : 16,
-                                  color: Colors.white.withValues(alpha: 0.7),
+                                style: (isMobile ? AppTextStyles.body2 : AppTextStyles.body1).copyWith(
+                                  color: AppColors.textSecondary,
                                   height: 1.6,
                                 ),
                               ),
@@ -161,14 +145,12 @@ class LearningMainContent extends ConsumerWidget {
                                         mainAxisAlignment: MainAxisAlignment.center,
                                         children: [
                                           const Text('⚡ ', style: TextStyle(fontSize: 24)),
-                                          Text(
-                                            'Continue Your Recent Active Journeys',
-                                            style: GoogleFonts.inter(
-                                              fontSize: isMobile ? 18 : 22,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.white,
-                                            ),
-                                          ),
+                                           Text(
+                                             'Continue Your Recent Active Journeys',
+                                             style: (isMobile ? AppTextStyles.subtitle1 : AppTextStyles.h3).copyWith(
+                                               color: AppColors.textPrimary,
+                                             ),
+                                           ),
                                         ],
                                       ),
                                       const SizedBox(height: 24),
@@ -226,14 +208,12 @@ class LearningMainContent extends ConsumerWidget {
                                             mainAxisAlignment: MainAxisAlignment.center,
                                             children: [
                                               const Text('⚡ ', style: TextStyle(fontSize: 24)),
-                                              Text(
-                                                'Continue Your Recent Active Journeys',
-                                                style: GoogleFonts.inter(
-                                                  fontSize: isMobile ? 18 : 22,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.white,
-                                                ),
-                                              ),
+                                               Text(
+                                                 'Continue Your Recent Active Journeys',
+                                                 style: (isMobile ? AppTextStyles.subtitle1 : AppTextStyles.h3).copyWith(
+                                                   color: AppColors.textPrimary,
+                                                 ),
+                                               ),
                                             ],
                                           ),
                                           const SizedBox(height: 24),
@@ -295,7 +275,7 @@ class LearningMainContent extends ConsumerWidget {
                       gradient: LinearGradient(
                         colors: [
                           Colors.transparent,
-                          const Color(0xFF0E0918).withValues(alpha: 0.6),
+                          AppColors.background.withValues(alpha: 0.6),
                         ],
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
@@ -310,19 +290,13 @@ class LearningMainContent extends ConsumerWidget {
                           children: [
                             Text(
                               'What do you want to ',
-                              style: GoogleFonts.inter(
-                                fontSize: isMobile ? 22 : 28,
-                                fontWeight: FontWeight.w800,
-                                color: Colors.white,
+                              style: (isMobile ? AppTextStyles.h4 : AppTextStyles.h3).copyWith(
                                 letterSpacing: -0.5,
                               ),
                             ),
                             GradientText(
                               'learn today?',
-                              style: GoogleFonts.inter(
-                                fontSize: isMobile ? 22 : 28,
-                                fontWeight: FontWeight.w800,
-                                color: Colors.white,
+                              style: (isMobile ? AppTextStyles.h4 : AppTextStyles.h3).copyWith(
                                 letterSpacing: -0.5,
                               ),
                             ),
@@ -332,9 +306,8 @@ class LearningMainContent extends ConsumerWidget {
                         Text(
                           'Decompose any concept into adaptive milestones, interactive Socratic lessons, and academic research.',
                           textAlign: TextAlign.center,
-                          style: GoogleFonts.inter(
-                            fontSize: isMobile ? 13 : 15,
-                            color: Colors.white.withValues(alpha: 0.7),
+                          style: (isMobile ? AppTextStyles.caption : AppTextStyles.body2).copyWith(
+                            color: AppColors.textSecondary,
                           ),
                         ),
                         SizedBox(height: isMobile ? 8 : 16),
