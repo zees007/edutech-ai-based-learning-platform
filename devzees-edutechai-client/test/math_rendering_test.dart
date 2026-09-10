@@ -64,14 +64,25 @@ List<MathBlockItem> parseContentWithMath(String rawText) {
 
 String sanitizeMathTex(String rawTex) {
   var clean = rawTex.trim();
-  // Remove unnecessary \! (negative thin space) that AI tutors often generate
+  // 1. Remove unnecessary \! (negative thin space)
   clean = clean.replaceAll(r'\!', '');
-  // Normalize unescaped newline delimiters: ', \ ' or ', \' -> ' \\ '
-  clean = clean.replaceAll(RegExp(r',\s*\\\s*'), r' \\ ');
-  // Split multiple equations per line '& ... & ...' or ', &' into separate rows '\\'
-  // to avoid multi-column EqnArray width calculation assertions in Flutter
+  
+  // 2. Replace comma followed by backslash(es) with LaTeX newline \\
+  clean = clean.replaceAll(RegExp(r',\s*\\+'), r' \\ ');
+  
+  // 3. Replace comma followed by ampersand (multi-column equation separator) with \\
   clean = clean.replaceAll(RegExp(r',\s*&\s*'), r' \\ ');
-  return clean;
+  
+  // 4. Normalize any sequence of 2+ backslashes with optional whitespace/backslashes (e.g. \\\ or \\ \ or \\\\) to \\
+  clean = clean.replaceAll(RegExp(r'\\{2,}(?:\s*\\+)*'), r'\\');
+
+  // 5. Remove any trailing \\ or \ right before \end{...}
+  clean = clean.replaceAll(RegExp(r'\\+\s*(?=\\end\{)'), '\n');
+
+  // 6. Remove any stray trailing backslash before newline or end of string
+  clean = clean.replaceAll(RegExp(r'(?<!\\)\\\s*(?=\r?\n|$)'), '');
+
+  return clean.trim();
 }
 
 Widget buildMathCard(String tex) {
@@ -81,19 +92,8 @@ Widget buildMathCard(String tex) {
     margin: const EdgeInsets.symmetric(vertical: 8),
     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
     decoration: BoxDecoration(
-      color: const Color(0xFF130D21),
-      borderRadius: BorderRadius.circular(14),
-      border: Border.all(
-        color: const Color(0xFFA855F7).withValues(alpha: 0.35),
-        width: 1,
-      ),
-      boxShadow: [
-        BoxShadow(
-          color: const Color(0xFFA855F7).withValues(alpha: 0.08),
-          blurRadius: 12,
-          offset: const Offset(0, 4),
-        ),
-      ],
+      color: const Color(0xFF0F172A).withValues(alpha: 0.8),
+      borderRadius: BorderRadius.circular(12),
     ),
     child: SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -107,8 +107,8 @@ Widget buildMathCard(String tex) {
         ),
         onErrorFallback: (err) => Text(
           cleanTex,
-          style: const TextStyle(
-            color: Color(0xFFE9D5FF),
+          style: TextStyle(
+            color: Colors.white.withValues(alpha: 0.85),
             fontFamily: 'monospace',
             fontSize: 13,
           ),
@@ -260,5 +260,43 @@ All together!
     );
     await tester.pump();
     expect(find.byType(Math), findsNWidgets(3));
+  });
+
+  testWidgets('handles complex multiline LLM equations with extra backslashes and delimiters', (WidgetTester tester) async {
+    final rawStrings = [
+      // Exact screenshot string with \\\ followed by \n
+      r'''\begin{aligned}
+\nabla\cdot\mathbf{E} &= \frac{\rho}{\varepsilon_0} \\ \nabla\cdot\mathbf{B} &= 0 \\\
+\nabla\times\mathbf{E} &= -\frac{\partial\mathbf{B}}{\partial t} \\ \nabla\times\mathbf{B} &= \mu_0\mathbf{J}+\mu_0\varepsilon_0\frac{\partial\mathbf{E}}{\partial t}.
+\end{aligned}''',
+      // Raw string from AI prompt with [ \begin{aligned} ... ] and , \ and , &
+      r'''[ \begin{aligned} \nabla!\cdot!\mathbf{E} &= \frac{\rho}{\varepsilon_0}, & \nabla!\cdot!\mathbf{B} &= 0, \ \nabla\times!\mathbf{E} &= -\frac{\partial\mathbf{B}}{\partial t}, & \nabla\times!\mathbf{B} &= \mu_0\mathbf{J}+\mu_0\varepsilon_0\frac{\partial\mathbf{E}}{\partial t}. \end{aligned} ]''',
+      // Multiple equations per row with trailing slashes before \end
+      r'''\begin{aligned}
+a &= b \\ c &= d \\ \
+e &= f \\\\ g &= h \\\
+\end{aligned}''',
+    ];
+
+    for (int i = 0; i < rawStrings.length; i++) {
+      final sanitized = sanitizeMathTex(rawStrings[i]);
+      String? caughtError;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Math.tex(
+              sanitized,
+              mathStyle: MathStyle.display,
+              onErrorFallback: (err) {
+                caughtError = err.message;
+                return Text('ERROR: ${err.message}');
+              },
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+      expect(caughtError, isNull, reason: 'Failed on rawString $i: $caughtError');
+    }
   });
 }
