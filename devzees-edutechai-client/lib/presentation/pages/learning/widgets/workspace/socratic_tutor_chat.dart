@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_math_fork/flutter_math.dart';
 import '../../../../../../core/theme/app_colors.dart';
 import '../../../../../../core/providers/active_session_provider.dart';
 import 'mermaid_web_view.dart';
@@ -543,14 +544,37 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
   // ─── Markdown Rendering (tutor bubbles) ────────────────────────
 
   Widget _buildMarkdownContent(String text) {
-    return MarkdownBody(
-      data: text,
-      selectable: true,
-      onTapLink: (text, href, title) {
-        if (href != null) launchUrl(Uri.parse(href));
-      },
-      styleSheet: _buildMarkdownStyleSheet(),
-      builders: {'code': _MermaidCodeBlockBuilder()},
+    final blocks = _parseContentWithMath(text);
+    
+    if (blocks.length == 1 && !blocks.first.isMath) {
+      return MarkdownBody(
+        data: text,
+        selectable: true,
+        onTapLink: (text, href, title) {
+          if (href != null) launchUrl(Uri.parse(href));
+        },
+        styleSheet: _buildMarkdownStyleSheet(),
+        builders: {'code': _MermaidCodeBlockBuilder()},
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: blocks.map((block) {
+        if (block.isMath) {
+          return _buildMathCard(block.content);
+        } else {
+          return MarkdownBody(
+            data: block.content,
+            selectable: true,
+            onTapLink: (text, href, title) {
+              if (href != null) launchUrl(Uri.parse(href));
+            },
+            styleSheet: _buildMarkdownStyleSheet(),
+            builders: {'code': _MermaidCodeBlockBuilder()},
+          );
+        }
+      }).toList(),
     );
   }
 
@@ -1156,4 +1180,123 @@ class _ChatMessage {
     required this.text,
     required this.animController,
   });
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Math Rendering Utilities
+// ═══════════════════════════════════════════════════════════════════
+
+class _MathBlockItem {
+  final bool isMath;
+  final String content;
+  final bool isDisplay;
+
+  _MathBlockItem({
+    required this.isMath,
+    required this.content,
+    this.isDisplay = true,
+  });
+}
+
+List<_MathBlockItem> _parseContentWithMath(String rawText) {
+  final items = <_MathBlockItem>[];
+
+  // Regex to match display math:
+  // 1. [ \begin{...} ... \end{...} ] or \[ \begin{...} ... \end{...} \]
+  // 2. $$ ... $$
+  // 3. \[ ... \]
+  // 4. ```math ... ``` or ```latex ... ```
+  final blockMathRegex = RegExp(
+    r'(?:(?:\\\[|\[)\s*(\\begin\{(?:aligned|matrix|bmatrix|pmatrix|vmatrix|cases|gather|equation)\b[\s\S]+?\\end\{(?:aligned|matrix|bmatrix|pmatrix|vmatrix|cases|gather|equation)\})\s*(?:\\\]|\]))'
+    r'|'
+    r'(?:\$\$([\s\S]+?)\$\$)'
+    r'|'
+    r'(?:\\\[([\s\S]+?)\\\])'
+    r'|'
+    r'(?:```(?:math|latex)\s*([\s\S]+?)```)',
+    multiLine: true,
+  );
+
+  int lastIndex = 0;
+
+  for (final match in blockMathRegex.allMatches(rawText)) {
+    if (match.start > lastIndex) {
+      final markdownPart = rawText.substring(lastIndex, match.start).trim();
+      if (markdownPart.isNotEmpty) {
+        items.add(_MathBlockItem(isMath: false, content: markdownPart));
+      }
+    }
+
+    final mathTex = (match.group(1) ?? match.group(2) ?? match.group(3) ?? match.group(4) ?? '').trim();
+    if (mathTex.isNotEmpty) {
+      items.add(_MathBlockItem(isMath: true, content: mathTex, isDisplay: true));
+    }
+
+    lastIndex = match.end;
+  }
+
+  if (lastIndex < rawText.length) {
+    final remaining = rawText.substring(lastIndex).trim();
+    if (remaining.isNotEmpty) {
+      items.add(_MathBlockItem(isMath: false, content: remaining));
+    }
+  }
+
+  return items;
+}
+
+String _sanitizeMathTex(String rawTex) {
+  var clean = rawTex.trim();
+  // Remove unnecessary \! (negative thin space) that AI tutors often generate
+  clean = clean.replaceAll(r'\!', '');
+  // Normalize unescaped newline delimiters: ', \ ' or ', \' -> ' \\ '
+  clean = clean.replaceAll(RegExp(r',\s*\\\s*'), r' \\ ');
+  // Split multiple equations per line '& ... & ...' or ', &' into separate rows '\\'
+  // to avoid multi-column EqnArray width calculation assertions in Flutter
+  clean = clean.replaceAll(RegExp(r',\s*&\s*'), r' \\ ');
+  return clean;
+}
+
+Widget _buildMathCard(String tex) {
+  final cleanTex = _sanitizeMathTex(tex);
+  return Container(
+    width: double.infinity,
+    margin: const EdgeInsets.symmetric(vertical: 8),
+    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+    decoration: BoxDecoration(
+      color: const Color(0xFF130D21),
+      borderRadius: BorderRadius.circular(14),
+      border: Border.all(
+        color: const Color(0xFFA855F7).withValues(alpha: 0.35),
+        width: 1,
+      ),
+      boxShadow: [
+        BoxShadow(
+          color: const Color(0xFFA855F7).withValues(alpha: 0.08),
+          blurRadius: 12,
+          offset: const Offset(0, 4),
+        ),
+      ],
+    ),
+    child: SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      physics: const BouncingScrollPhysics(),
+      child: Math.tex(
+        cleanTex,
+        mathStyle: MathStyle.display,
+        textStyle: const TextStyle(
+          color: Colors.white,
+          fontSize: 15,
+        ),
+        onErrorFallback: (err) => Text(
+          cleanTex,
+          style: const TextStyle(
+            color: Color(0xFFE9D5FF),
+            fontFamily: 'monospace',
+            fontSize: 13,
+          ),
+        ),
+      ),
+    ),
+  );
 }
