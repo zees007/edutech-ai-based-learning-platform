@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import '../../../../../../core/theme/app_colors.dart';
 import 'mermaid_js_interop_stub.dart' if (dart.library.js_interop) 'mermaid_js_interop_web.dart';
@@ -277,9 +278,9 @@ class _MermaidWebViewState extends State<MermaidWebView> {
 
   Future<void> _downloadSvg() async {
     try {
-      _showToast('Downloading SVG diagram...', Icons.downloading_rounded);
-
       if (kIsWeb) {
+        _showToast('Downloading SVG diagram...', Icons.downloading_rounded);
+
         // On Flutter Web, the WebView is a sandboxed iframe — all direct download
         // attempts from inside the iframe are blocked by Chrome/Safari.
         // Solution: Trigger the download in the TOP-LEVEL page context (outside the iframe)
@@ -328,33 +329,38 @@ class _MermaidWebViewState extends State<MermaidWebView> {
           _showToast('SVG diagram download started!', Icons.check_circle_rounded);
         }
       } else {
-        // On mobile/desktop: extract SVG from native WebView, then write to device storage
+        // Get bounding box for iPad/tablets popup anchor synchronously before async gaps
+        final box = context.findRenderObject() as RenderBox?;
+        final origin = box != null && box.hasSize
+            ? box.localToGlobal(Offset.zero) & box.size
+            : null;
+
+        _showToast('Preparing diagram...', Icons.downloading_rounded);
+
+        // On mobile/desktop: extract SVG from native WebView, then open system share sheet
         final svgContent = await _extractSvgFromWebView();
 
-        Directory? dir;
-        if (Platform.isAndroid) {
-          dir = await getExternalStorageDirectory();
-        } else if (Platform.isIOS) {
-          dir = await getApplicationDocumentsDirectory();
-        } else {
-          dir = await getDownloadsDirectory();
-        }
-        dir ??= await getApplicationDocumentsDirectory();
-
-        final file = File(
-          '${dir.path}/mermaid_diagram_${DateTime.now().millisecondsSinceEpoch}.svg',
-        );
+        final tempDir = await getTemporaryDirectory();
+        final fileName =
+            'mermaid_diagram_${DateTime.now().millisecondsSinceEpoch}.svg';
+        final file = File('${tempDir.path}/$fileName');
         await file.writeAsString(svgContent);
-        debugPrint('SVG saved to: ${file.path}');
+        debugPrint('SVG saved for sharing at: ${file.path}');
+
+        await Share.shareXFiles(
+          [XFile(file.path, mimeType: 'image/svg+xml', name: fileName)],
+          text: 'Mermaid Diagram',
+          sharePositionOrigin: origin,
+        );
 
         if (mounted) {
-          _showToast('SVG saved to device storage!', Icons.check_circle_rounded);
+          _showToast('Share options opened!', Icons.share_rounded);
         }
       }
     } catch (e, stack) {
       debugPrint("Download SVG Error: $e\n$stack");
       if (mounted) {
-        _showToast('Download failed: $e', Icons.error_outline_rounded, true);
+        _showToast('Action failed: $e', Icons.error_outline_rounded, true);
       }
     }
   }
@@ -406,8 +412,8 @@ class _MermaidWebViewState extends State<MermaidWebView> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     _HoverIconButton(
-                      icon: Icons.download_rounded,
-                      tooltip: 'Download SVG',
+                      icon: kIsWeb ? Icons.download_rounded : Icons.share_rounded,
+                      tooltip: kIsWeb ? 'Download SVG' : 'Save / Share SVG',
                       onTap: _downloadSvg,
                       isLoading: _isLoading,
                     ),
