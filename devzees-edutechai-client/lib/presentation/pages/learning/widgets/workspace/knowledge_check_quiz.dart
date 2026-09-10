@@ -5,7 +5,7 @@ import '../../../../../../core/providers/active_session_provider.dart';
 
 class KnowledgeCheckQuiz extends ConsumerStatefulWidget {
   final List<dynamic>? quiz;
-  final VoidCallback? onNextStep;
+  final Future<void> Function()? onNextStep;
   final int stepIndex;
 
   const KnowledgeCheckQuiz({super.key, this.quiz, this.onNextStep, required this.stepIndex});
@@ -20,6 +20,7 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
   final Map<int, TextEditingController> _controllers = {};
   bool _submitted = false;
   bool _isSubmitting = false;
+  bool _isAdvancing = false;
 
   @override
   void dispose() {
@@ -433,16 +434,18 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
                     ],
                   ),
                   if (widget.onNextStep != null)
-                    ElevatedButton.icon(
-                      onPressed: widget.onNextStep,
-                      icon: const Icon(Icons.arrow_forward_rounded, size: 18, color: Colors.white),
-                      label: Text(
-                        'Next Step',
-                        style: GoogleFonts.inter(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
+                    ElevatedButton(
+                      onPressed: _isAdvancing ? null : () async {
+                        setState(() {
+                          _isAdvancing = true;
+                        });
+                        await widget.onNextStep!();
+                        if (mounted) {
+                          setState(() {
+                            _isAdvancing = false;
+                          });
+                        }
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFF43F5E),
                         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -450,6 +453,25 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
                         elevation: 4,
                         shadowColor: const Color(0xFFF43F5E).withValues(alpha: 0.5),
                       ),
+                      child: _isAdvancing 
+                        ? const SizedBox(
+                            width: 18, height: 18, 
+                            child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
+                          )
+                        : Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.arrow_forward_rounded, size: 18, color: Colors.white),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Next Step',
+                                style: GoogleFonts.inter(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
                     ),
                 ],
               ),

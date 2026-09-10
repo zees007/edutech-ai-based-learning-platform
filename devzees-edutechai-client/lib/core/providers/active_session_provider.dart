@@ -217,7 +217,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     final session = state.session;
     if (session == null) return;
     
-    state = state.copyWith(isLoading: true, clearError: true);
+    state = state.copyWith(clearError: true);
     try {
       final data = await _service.completeStep(session.sessionId, stepIndex);
       
@@ -230,7 +230,6 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       
       state = state.copyWith(
         session: updatedSession,
-        isLoading: false,
       );
 
       // Sync progress with learning history list
@@ -241,7 +240,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
         isComplete: updatedSession.stepsCompleted >= updatedSession.steps.length,
       );
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(error: e.toString());
     }
   }
 
