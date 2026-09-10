@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../../data/models/learning/milestone_step.dart';
-import '../../../../../core/theme/app_colors.dart';
 
+/// An ultra-premium, modern Chevron Pipeline Stepper.
+/// Displays milestone roadmap steps as an interlocking, continuous chevron ribbon
+/// inspired by enterprise workflow breadcrumb designs.
 class MilestoneRoadmapStepper extends StatelessWidget {
   final List<MilestoneStep> steps;
   final int activeIndex;
@@ -17,230 +19,513 @@ class MilestoneRoadmapStepper extends StatelessWidget {
     required this.onStepTapped,
   });
 
+  static const double _arrowWidth = 14.0;
+  static const double _stepperHeight = 52.0;
+  static const double _minItemWidth = 145.0;
+
   @override
   Widget build(BuildContext context) {
-    final maxUnlocked = maxUnlockedIndex.clamp(0, steps.isNotEmpty ? steps.length - 1 : 0);
+    if (steps.isEmpty) {
+      return const SizedBox.shrink();
+    }
 
-    return SizedBox(
-      height: 100, // Reduced height
-      child: Center(
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: SizedBox(
-            height: 100,
-            child: Stack(
-              alignment: Alignment.topCenter,
-              children: [
-                // Background Track
-                Positioned(
-                  left: 20,
-                  right: 20,
-                  top: 24, // 4(sizedbox) + 22(half height 44) - 2(half line) = 24
+    final maxUnlocked = maxUnlockedIndex.clamp(0, steps.length - 1);
+    final int count = steps.length;
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final double availableWidth = constraints.maxWidth;
+        // Total formula: totalWidth = N * itemWidth - (N - 1) * arrowWidth
+        // => itemWidth = (totalWidth + (N - 1) * arrowWidth) / N
+        final double calculatedItemWidth = count > 1
+            ? (availableWidth + (count - 1) * _arrowWidth) / count
+            : availableWidth;
+
+        final bool fitsInAvailableWidth = calculatedItemWidth >= _minItemWidth;
+        final double effectiveItemWidth =
+            fitsInAvailableWidth ? calculatedItemWidth : 165.0;
+        final double totalContentWidth = count > 1
+            ? (count * effectiveItemWidth - (count - 1) * _arrowWidth)
+            : effectiveItemWidth;
+
+        Widget content = SizedBox(
+          width: totalContentWidth,
+          height: _stepperHeight,
+          child: Stack(
+            children: List.generate(count, (index) {
+              final step = steps[index];
+              final bool isActive = index == activeIndex;
+              final bool isCompleted =
+                  step.status == 'complete' || index < maxUnlocked;
+              final bool isUnlocked = index <= maxUnlocked ||
+                  isCompleted ||
+                  step.status == 'in_progress';
+              final bool isLocked = !isUnlocked;
+              final bool isFirst = index == 0;
+              final bool isLast = index == count - 1;
+
+              final double leftPos =
+                  index * (effectiveItemWidth - _arrowWidth);
+
+              return Positioned(
+                left: leftPos,
+                top: 0,
+                bottom: 0,
+                width: effectiveItemWidth,
+                child: _ChevronStepItem(
+                  index: index,
+                  step: step,
+                  isActive: isActive,
+                  isCompleted: isCompleted,
+                  isUnlocked: isUnlocked,
+                  isLocked: isLocked,
+                  isFirst: isFirst,
+                  isLast: isLast,
+                  arrowWidth: _arrowWidth,
+                  onTap: isLocked ? null : () => onStepTapped(index),
+                ),
+              );
+            }),
+          ),
+        );
+
+        return Container(
+          height: _stepperHeight,
+          decoration: BoxDecoration(
+            color: const Color(0xFF0C0817),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.12),
+              width: 1.0,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.25),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: fitsInAvailableWidth
+              ? content
+              : SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: content,
+                ),
+        );
+      },
+    );
+  }
+}
+
+/// An individual interactive chevron segment
+class _ChevronStepItem extends StatefulWidget {
+  final int index;
+  final MilestoneStep step;
+  final bool isActive;
+  final bool isCompleted;
+  final bool isUnlocked;
+  final bool isLocked;
+  final bool isFirst;
+  final bool isLast;
+  final double arrowWidth;
+  final VoidCallback? onTap;
+
+  const _ChevronStepItem({
+    required this.index,
+    required this.step,
+    required this.isActive,
+    required this.isCompleted,
+    required this.isUnlocked,
+    required this.isLocked,
+    required this.isFirst,
+    required this.isLast,
+    required this.arrowWidth,
+    required this.onTap,
+  });
+
+  @override
+  State<_ChevronStepItem> createState() => _ChevronStepItemState();
+}
+
+class _ChevronStepItemState extends State<_ChevronStepItem> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isActive = widget.isActive;
+    final bool isCompleted = widget.isCompleted;
+    final bool isLocked = widget.isLocked;
+    final bool isFirst = widget.isFirst;
+    final bool isLast = widget.isLast;
+    final double arrowWidth = widget.arrowWidth;
+
+    // Tooltip message
+    final String tooltipMsg = isLocked
+        ? '🔒 Step ${widget.index + 1}${widget.step.isPrerequisite ? " • Prerequisite" : ""}: Complete previous step to unlock\n${widget.step.title}'
+        : (isActive
+            ? '⭐ Active (Step ${widget.index + 1}${widget.step.isPrerequisite ? " • Prerequisite" : ""})\n${widget.step.title}\n${widget.step.description}'
+            : (isCompleted
+                ? '✅ Completed (Step ${widget.index + 1}${widget.step.isPrerequisite ? " • Prerequisite" : ""}) — Tap to review\n${widget.step.title}'
+                : '⚡ Step ${widget.index + 1}${widget.step.isPrerequisite ? " • Prerequisite" : ""}\n${widget.step.title}\n${widget.step.description}'));
+
+    // Status icon
+    final Widget statusIcon = Icon(
+      isCompleted
+          ? Icons.check_circle_rounded
+          : (isActive
+              ? Icons.explore_rounded
+              : (isLocked ? Icons.lock_rounded : Icons.bolt_rounded)),
+      size: 13,
+      color: isActive
+          ? Colors.white
+          : (isCompleted
+              ? Colors.white
+              : (isLocked
+                  ? Colors.white.withValues(alpha: 0.35)
+                  : const Color(0xFFC084FC))),
+    );
+
+    // Primary Text Color
+    final Color stepColor = isActive
+        ? Colors.white
+        : (isCompleted
+            ? const Color(0xFFD1FAE5)
+            : (isLocked
+                ? Colors.white.withValues(alpha: 0.4)
+                : const Color(0xFFC084FC)));
+
+    final Color titleColor = isActive
+        ? Colors.white
+        : (isCompleted
+            ? Colors.white
+            : (isLocked
+                ? Colors.white.withValues(alpha: 0.35)
+                : const Color(0xFFE2E8F0)));
+
+    // Background decoration
+    Decoration backgroundDecoration;
+    if (isActive) {
+      backgroundDecoration = BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [
+            Color(0xFF2563EB), // Rich Royal Blue (matching user's design)
+            Color(0xFF6366F1), // Indigo
+            Color(0xFF7C3AED), // Violet
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF3B82F6).withValues(alpha: 0.45),
+            blurRadius: 12,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      );
+    } else if (isCompleted) {
+      // Vibrant Glassy Green (solid emerald base that does not let dark background bleed through)
+      backgroundDecoration = BoxDecoration(
+        gradient: LinearGradient(
+          colors: _isHovered
+              ? const [
+                  Color(0xFF059669), // Emerald 600
+                  Color(0xFF10B981), // Emerald 500
+                  Color(0xFF34D399), // Mint Emerald 400
+                ]
+              : const [
+                  Color(0xFF047857), // Deep Emerald 700
+                  Color(0xFF059669), // Rich Emerald 600
+                  Color(0xFF10B981), // Vibrant Emerald 500
+                ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF10B981).withValues(alpha: _isHovered ? 0.45 : 0.28),
+            blurRadius: 10,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      );
+    } else if (!isLocked) {
+      backgroundDecoration = BoxDecoration(
+        color: _isHovered
+            ? const Color(0xFF1E293B).withValues(alpha: 0.85)
+            : const Color(0xFF1E293B).withValues(alpha: 0.50),
+      );
+    } else {
+      backgroundDecoration = BoxDecoration(
+        color: _isHovered
+            ? const Color(0xFF0F172A).withValues(alpha: 0.6)
+            : Colors.transparent,
+      );
+    }
+
+    // Divider color at the right arrow tip
+    final Color dividerColor = isActive
+        ? const Color(0xFF93C5FD).withValues(alpha: 0.8)
+        : (isCompleted
+            ? const Color(0xFFA7F3D0).withValues(alpha: 0.75)
+            : Colors.white.withValues(alpha: 0.15));
+
+    // Operational status label & badge styling
+    final String statusLabel;
+    final Color statusBadgeBg;
+    final Color statusBadgeBorder;
+    final Color statusBadgeText;
+
+    if (isCompleted) {
+      statusLabel = 'COMPLETED';
+      statusBadgeBg = Colors.white.withValues(alpha: 0.20);
+      statusBadgeBorder = Colors.white.withValues(alpha: 0.40);
+      statusBadgeText = Colors.white;
+    } else if (isActive || widget.step.status == 'in_progress') {
+      statusLabel = 'IN PROGRESS';
+      statusBadgeBg = Colors.white.withValues(alpha: 0.22);
+      statusBadgeBorder = Colors.white.withValues(alpha: 0.45);
+      statusBadgeText = Colors.white;
+    } else if (isLocked) {
+      statusLabel = 'LOCKED';
+      statusBadgeBg = Colors.white.withValues(alpha: 0.06);
+      statusBadgeBorder = Colors.white.withValues(alpha: 0.15);
+      statusBadgeText = Colors.white.withValues(alpha: 0.45);
+    } else {
+      statusLabel = 'PENDING';
+      statusBadgeBg = const Color(0xFFC084FC).withValues(alpha: 0.15);
+      statusBadgeBorder = const Color(0xFFC084FC).withValues(alpha: 0.35);
+      statusBadgeText = const Color(0xFFE9D5FF);
+    }
+
+    final clipper = _ChevronClipper(
+      isFirst: isFirst,
+      isLast: isLast,
+      arrowWidth: arrowWidth,
+    );
+
+    return Tooltip(
+      message: tooltipMsg,
+      textStyle: GoogleFonts.inter(color: Colors.white, fontSize: 12, height: 1.35),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E293B),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      child: MouseRegion(
+        cursor: isLocked ? SystemMouseCursors.forbidden : SystemMouseCursors.click,
+        onEnter: (_) => setState(() => _isHovered = true),
+        onExit: (_) => setState(() => _isHovered = false),
+        child: GestureDetector(
+          onTap: widget.onTap,
+          child: Stack(
+            children: [
+              // 1. Clipped Background Fill
+              Positioned.fill(
+                child: ClipPath(
+                  clipper: clipper,
                   child: Container(
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(2),
+                    decoration: backgroundDecoration,
+                  ),
+                ),
+              ),
+
+              // 2. Chevron Divider Line (on right edge if not last)
+              if (!isLast)
+                Positioned.fill(
+                  child: CustomPaint(
+                    painter: _ChevronDividerPainter(
+                      dividerColor: dividerColor,
+                      arrowWidth: arrowWidth,
+                      strokeWidth: isActive ? 2.0 : 1.2,
                     ),
                   ),
                 ),
-                
-                // Foreground Progress Track (extends to furthest unlocked step)
-                if (maxUnlocked > 0)
-                  Positioned(
-                    left: 20,
-                    top: 24,
-                    child: Container(
-                      height: 4,
-                      width: (maxUnlocked * 144).toDouble(), // 144 is the width of an inactive step (120 + 24 margin)
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFFF472B6), Color(0xFFC084FC)],
-                          begin: Alignment.centerLeft,
-                          end: Alignment.centerRight,
-                        ),
-                        borderRadius: BorderRadius.circular(2),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFFC084FC).withValues(alpha: 0.4),
-                            blurRadius: 8,
-                            spreadRadius: 0,
-                          ),
-                        ],
-                      ),
-                    ),
+
+              // 3. Step Content (Padded to clear the arrow indent & tip)
+              Positioned.fill(
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    left: isFirst ? 14.0 : (arrowWidth + 8.0),
+                    right: isLast ? 14.0 : (arrowWidth + 8.0),
+                    top: 5.0,
+                    bottom: 5.0,
                   ),
-
-                // Steps list
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: steps.asMap().entries.map((entry) {
-                    final index = entry.key;
-                    final step = entry.value;
-                    final isActive = index == activeIndex;
-                    final isCompleted = step.status == 'complete' || index < maxUnlocked;
-                    final isUnlocked = index <= maxUnlocked || isCompleted || step.status == 'in_progress';
-                    final isLocked = !isUnlocked;
-
-                    return MouseRegion(
-                      cursor: isLocked ? SystemMouseCursors.forbidden : SystemMouseCursors.click,
-                      child: GestureDetector(
-                        onTap: isLocked ? null : () => onStepTapped(index),
-                        child: Tooltip(
-                          message: isLocked
-                              ? '🔒 Step ${index + 1}${step.isPrerequisite ? " • Prerequisite" : ""}: Complete previous step to unlock\n${step.title}'
-                              : (isActive
-                                  ? '⭐ Currently Viewing (Step ${index + 1}${step.isPrerequisite ? " • Prerequisite" : ""})\n${step.title}\n${step.description}'
-                                  : (isCompleted
-                                      ? '✅ Completed (Step ${index + 1}${step.isPrerequisite ? " • Prerequisite" : ""}) — Click to review\n${step.title}'
-                                      : '⚡ Step ${index + 1}${step.isPrerequisite ? " • Prerequisite" : ""}\n${step.title}\n${step.description}')),
-                          textStyle: GoogleFonts.inter(color: Colors.white, fontSize: 13, height: 1.4),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF1E293B),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.3),
-                                blurRadius: 10,
-                                offset: const Offset(0, 4),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Top Row: Status Icon + Step Label + Prereq Tag + Status Badge
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            statusIcon,
+                            const SizedBox(width: 5),
+                            Text(
+                              'STEP ${widget.index + 1}',
+                              style: GoogleFonts.inter(
+                                fontSize: 9.5,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 0.5,
+                                color: stepColor,
+                              ),
+                            ),
+                            if (widget.step.isPrerequisite) ...[
+                              const SizedBox(width: 4),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 4, vertical: 1),
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
+                                  ),
+                                  borderRadius: BorderRadius.circular(3),
+                                ),
+                                child: const Text(
+                                  'PREREQ',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 7.5,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
                               ),
                             ],
-                          ),
-                          padding: const EdgeInsets.all(12),
-                          child: Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 12), // Tighter spacing
-                            width: isActive ? 160 : 120, // Keep width constrained for text wrapping
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: [
-                                const SizedBox(height: 4), // Reduced spacing
-                                Container(
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF0F172A), // Solid background to block the line
-                                    borderRadius: BorderRadius.circular(22),
-                                  ),
-                                  child: AnimatedContainer(
-                                    duration: const Duration(milliseconds: 300),
-                                    width: isActive ? 160 : 120,
-                                    height: 44,
-                                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                                    decoration: BoxDecoration(
-                                      color: isActive 
-                                        ? AppColors.primary.withValues(alpha: 0.22) 
-                                        : isCompleted 
-                                          ? Colors.greenAccent.withValues(alpha: 0.1)
-                                          : isUnlocked
-                                            ? const Color(0xFFC084FC).withValues(alpha: 0.1)
-                                            : Colors.white.withValues(alpha: 0.05),
-                                      borderRadius: BorderRadius.circular(22),
-                                      border: Border.all(
-                                        color: isActive 
-                                          ? AppColors.primary 
-                                          : isCompleted 
-                                            ? Colors.greenAccent.withValues(alpha: 0.5)
-                                            : isUnlocked
-                                              ? const Color(0xFFC084FC).withValues(alpha: 0.4)
-                                              : Colors.white.withValues(alpha: 0.1),
-                                        width: isActive ? 2 : 1,
-                                      ),
-                                      boxShadow: [
-                                        if (isActive)
-                                          BoxShadow(
-                                            color: AppColors.primary.withValues(alpha: 0.45),
-                                            blurRadius: 14,
-                                            spreadRadius: 1,
-                                          ),
-                                      ],
-                                    ),
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Icon(
-                                          isActive
-                                            ? (isCompleted ? Icons.check_circle_rounded : Icons.play_circle_fill_rounded)
-                                            : (isCompleted 
-                                                ? Icons.check_circle_rounded 
-                                                : isLocked 
-                                                  ? Icons.lock_rounded 
-                                                  : Icons.bolt_rounded),
-                                          color: isActive 
-                                            ? AppColors.primary 
-                                            : isCompleted 
-                                              ? Colors.greenAccent 
-                                              : isUnlocked
-                                                ? const Color(0xFFC084FC)
-                                                : Colors.white.withValues(alpha: 0.4),
-                                          size: 18,
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Expanded(
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Flexible(
-                                                child: Text(
-                                                  'Step ${index + 1}',
-                                                  maxLines: 1,
-                                                  overflow: TextOverflow.ellipsis,
-                                                  style: GoogleFonts.inter(
-                                                    color: isActive || isCompleted || isUnlocked ? Colors.white : Colors.white.withValues(alpha: 0.5),
-                                                    fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
-                                                    fontSize: 13,
-                                                  ),
-                                                ),
-                                              ),
-                                              if (step.isPrerequisite) ...[
-                                                const SizedBox(width: 4),
-                                                Container(
-                                                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                                                  decoration: BoxDecoration(
-                                                    gradient: const LinearGradient(
-                                                      colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
-                                                    ),
-                                                    borderRadius: BorderRadius.circular(4),
-                                                  ),
-                                                  child: const Icon(
-                                                    Icons.school_rounded,
-                                                    size: 9,
-                                                    color: Colors.white,
-                                                  ),
-                                                ),
-                                              ],
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
+                            const SizedBox(width: 4),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 4.5, vertical: 1),
+                              decoration: BoxDecoration(
+                                color: statusBadgeBg,
+                                borderRadius: BorderRadius.circular(3),
+                                border: Border.all(
+                                    color: statusBadgeBorder, width: 0.6),
+                              ),
+                              child: Text(
+                                statusLabel,
+                                style: GoogleFonts.inter(
+                                  fontSize: 7.5,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 0.3,
+                                  color: statusBadgeText,
                                 ),
-                                const SizedBox(height: 8), // Reduced space between button and text
-                                Text(
-                                  step.title,
-                                  textAlign: TextAlign.center,
-                                  maxLines: 3, // Enable text wrap
-                                  overflow: TextOverflow.ellipsis,
-                                  style: GoogleFonts.inter(
-                                    color: isActive ? Colors.white : Colors.white.withValues(alpha: 0.6),
-                                    fontSize: 11,
-                                    fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
-                                    height: 1.2,
-                                  ),
-                                ),
-                              ],
+                              ),
                             ),
-                          ),
+                          ],
                         ),
                       ),
-                    );
-                  }).toList(),
+                      const SizedBox(height: 2),
+                      // Bottom: Title
+                      Text(
+                        widget.step.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.inter(
+                          fontSize: 11.5,
+                          fontWeight: isActive ? FontWeight.w700 : FontWeight.w600,
+                          color: titleColor,
+                          letterSpacing: 0.1,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
+}
+
+/// Custom clipper that cuts out the chevron shape with interlocking left indent and right arrow tip.
+class _ChevronClipper extends CustomClipper<Path> {
+  final bool isFirst;
+  final bool isLast;
+  final double arrowWidth;
+
+  const _ChevronClipper({
+    required this.isFirst,
+    required this.isLast,
+    required this.arrowWidth,
+  });
+
+  @override
+  Path getClip(Size size) {
+    final path = Path();
+    final double w = size.width;
+    final double h = size.height;
+    final double d = arrowWidth;
+
+    // Start at Top-Left
+    if (isFirst) {
+      path.moveTo(0, 0);
+      path.lineTo(0, h);
+    } else {
+      // Indent going to the right
+      path.moveTo(0, 0);
+      path.lineTo(d, h / 2);
+      path.lineTo(0, h);
+    }
+
+    // Bottom-Right
+    if (isLast) {
+      path.lineTo(w, h);
+      path.lineTo(w, 0);
+    } else {
+      // Arrow pointing to the right
+      path.lineTo(w - d, h);
+      path.lineTo(w, h / 2);
+      path.lineTo(w - d, 0);
+    }
+
+    path.close();
+    return path;
+  }
+
+  @override
+  bool shouldReclip(covariant _ChevronClipper oldClipper) => true;
+}
+
+/// Paints a crisp chevron divider stroke along the right edge
+class _ChevronDividerPainter extends CustomPainter {
+  final Color dividerColor;
+  final double arrowWidth;
+  final double strokeWidth;
+
+  const _ChevronDividerPainter({
+    required this.dividerColor,
+    required this.arrowWidth,
+    this.strokeWidth = 1.2,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = dividerColor
+      ..strokeWidth = strokeWidth
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.miter;
+
+    final path = Path();
+    path.moveTo(size.width - arrowWidth, 0);
+    path.lineTo(size.width, size.height / 2);
+    path.lineTo(size.width - arrowWidth, size.height);
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _ChevronDividerPainter oldDelegate) =>
+      oldDelegate.dividerColor != dividerColor ||
+      oldDelegate.arrowWidth != arrowWidth ||
+      oldDelegate.strokeWidth != strokeWidth;
 }

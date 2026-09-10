@@ -46,7 +46,9 @@ class _LearningPageState extends ConsumerState<LearningPage> {
   }
 
   void _closeDrawer() {
-    Navigator.of(context).pop();
+    if (Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+    }
   }
 
   @override

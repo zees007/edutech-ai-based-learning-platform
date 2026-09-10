@@ -77,7 +77,12 @@ class LearningService {
         data: {
           'topic': topic,
           'learning_mode': mode.toLowerCase().split(' ')[0], // e.g. "Visual 🎬" -> "visual"
-          'student_level': level.toLowerCase().replaceAll(' ', '_').replaceAll('🏫', '').replaceAll('🎒', '').replaceAll('🏛️', '').replaceAll('🎓', '').replaceAll('💡', '').trim(),
+          'student_level': level
+              .replaceAll(RegExp(r'[\u{1F300}-\u{1F9FF}]', unicode: true), '')
+              .replaceAll(RegExp(r'[^\w\s-]'), '')
+              .trim()
+              .toLowerCase()
+              .replaceAll(RegExp(r'\s+'), '_'),
         },
       );
       return SessionResponse.fromJson(response.data);

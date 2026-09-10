@@ -48,54 +48,63 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 650;
 
-    return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
-      child: Center(
-        child: Container(
-          constraints: const BoxConstraints(maxWidth: 850),
-          width: double.infinity,
-          margin: EdgeInsets.symmetric(
-            horizontal: isMobile ? 8 : 16,
-            vertical: isMobile ? 12 : 24,
-          ),
-          padding: EdgeInsets.all(isMobile ? 16 : 24),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1C1A30).withValues(alpha: 0.85), // Purple/blue glass background
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: const Color(0xFFA855F7).withValues(alpha: 0.65), // Illuminated neon border
-              width: 1.5,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: constraints.maxHeight,
             ),
-            boxShadow: [
-              // Deep background drop shadow
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.55),
-                blurRadius: 36,
-                offset: const Offset(0, 18),
+            child: Center(
+              child: Container(
+                constraints: const BoxConstraints(maxWidth: 850),
+                width: double.infinity,
+                margin: EdgeInsets.symmetric(
+                  horizontal: isMobile ? 12 : 16,
+                  vertical: isMobile ? 16 : 24,
+                ),
+                padding: EdgeInsets.all(isMobile ? 18 : 24),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1C1A30).withValues(alpha: 0.85), // Purple/blue glass background
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: const Color(0xFFA855F7).withValues(alpha: 0.65), // Illuminated neon border
+                    width: 1.5,
+                  ),
+                  boxShadow: [
+                    // Deep background drop shadow
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.55),
+                      blurRadius: 36,
+                      offset: const Offset(0, 18),
+                    ),
+                    // Vibrant neon border rim glow
+                    BoxShadow(
+                      color: const Color(0xFFA855F7).withValues(alpha: 0.38),
+                      blurRadius: 18,
+                      spreadRadius: 2,
+                    ),
+                    // Broad ambient violet glow
+                    BoxShadow(
+                      color: const Color(0xFF8B5CF6).withValues(alpha: 0.25),
+                      blurRadius: 45,
+                      spreadRadius: 6,
+                    ),
+                    // Deep neon atmospheric halo
+                    BoxShadow(
+                      color: const Color(0xFF6366F1).withValues(alpha: 0.15),
+                      blurRadius: 80,
+                      spreadRadius: 12,
+                    ),
+                  ],
+                ),
+                child: isMobile ? _buildMobileContent() : _buildDesktopContent(),
               ),
-              // Vibrant neon border rim glow
-              BoxShadow(
-                color: const Color(0xFFA855F7).withValues(alpha: 0.38),
-                blurRadius: 18,
-                spreadRadius: 2,
-              ),
-              // Broad ambient violet glow
-              BoxShadow(
-                color: const Color(0xFF8B5CF6).withValues(alpha: 0.25),
-                blurRadius: 45,
-                spreadRadius: 6,
-              ),
-              // Deep neon atmospheric halo
-              BoxShadow(
-                color: const Color(0xFF6366F1).withValues(alpha: 0.15),
-                blurRadius: 80,
-                spreadRadius: 12,
-              ),
-            ],
+            ),
           ),
-          child: isMobile ? _buildMobileContent() : _buildDesktopContent(),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -109,22 +118,29 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const GradientSpinner(size: 11),
-                const SizedBox(width: 6),
-                Text(
-                  'AI COMPUTE CLUSTER',
-                  style: GoogleFonts.inter(
-                    fontSize: 9.5,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 1.2,
-                    color: const Color(0xFF9CA3AF),
+            Flexible(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const GradientSpinner(size: 11),
+                  const SizedBox(width: 6),
+                  Flexible(
+                    child: Text(
+                      'AI COMPUTE CLUSTER',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.inter(
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1.0,
+                        color: const Color(0xFF9CA3AF),
+                      ),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
+            const SizedBox(width: 6),
             _buildLiveInferenceBadge(isMobile: true),
           ],
         ),
@@ -159,59 +175,69 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
             color: const Color(0xFF9CA3AF),
           ),
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 20),
 
         // Centered Glowing Neural Core
-        Center(
-          child: SizedBox(
-            width: 54,
-            height: 54,
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                // Pulsing ambient halo
-                AnimatedBuilder(
-                  animation: _pulseController,
-                  builder: (context, child) {
-                    return Container(
-                      width: 48 + 6 * _pulseController.value,
-                      height: 48 + 6 * _pulseController.value,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFFA855F7).withValues(
-                              alpha: 0.25 + 0.15 * _pulseController.value,
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          child: Center(
+            child: SizedBox(
+              width: 64,
+              height: 64,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  // Pulsing ambient halo
+                  AnimatedBuilder(
+                    animation: _pulseController,
+                    builder: (context, child) {
+                      return Container(
+                        width: 52 + 8 * _pulseController.value,
+                        height: 52 + 8 * _pulseController.value,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFA855F7).withValues(
+                                alpha: 0.35 + 0.20 * _pulseController.value,
+                              ),
+                              blurRadius: 22,
+                              spreadRadius: 3,
                             ),
-                            blurRadius: 16,
-                            spreadRadius: 2,
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-                // Rotating Gradient Spinner Ring
-                const GradientSpinner(size: 46),
-                // Inner AI Core Icon
-                Container(
-                  width: 30,
-                  height: 30,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Color(0xFF151426),
+                            BoxShadow(
+                              color: const Color(0xFFEC4899).withValues(
+                                alpha: 0.20 + 0.15 * _pulseController.value,
+                              ),
+                              blurRadius: 32,
+                              spreadRadius: 1,
+                            ),
+                          ],
+                        ),
+                      );
+                    },
                   ),
-                  child: const Icon(
-                    Icons.hub_outlined,
-                    size: 15,
-                    color: Color(0xFFEC4899),
+                  // Rotating Gradient Spinner Ring
+                  const GradientSpinner(size: 52),
+                  // Inner AI Core Icon
+                  Container(
+                    width: 34,
+                    height: 34,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Color(0xFF151426),
+                    ),
+                    child: const Icon(
+                      Icons.hub_outlined,
+                      size: 18,
+                      color: Color(0xFFEC4899),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 20),
 
         // Progress Bar
         LayoutBuilder(
@@ -464,12 +490,12 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
         LayoutBuilder(
           builder: (context, constraints) {
             final double canvasWidth = constraints.maxWidth;
-            const double canvasHeight = 150.0;
+            const double canvasHeight = 190.0;
 
             return Container(
               width: double.infinity,
-              height: canvasHeight + 40,
-              padding: const EdgeInsets.symmetric(vertical: 20),
+              height: canvasHeight + 36,
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 22),
               decoration: BoxDecoration(
                 color: const Color(0xFF151426),
                 borderRadius: BorderRadius.circular(16),
@@ -822,28 +848,28 @@ class NeuralNetworkPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // Map of node coordinates (matching SVG viewBox 0 0 800 150)
+    // Map of node coordinates (matching base coordinates 800 x 190)
     // Scale X and Y to fit available size
     final scaleX = size.width / 800;
-    final scaleY = size.height / 150;
+    final scaleY = size.height / 190;
     
     Offset getPt(double x, double y) {
       return Offset(x * scaleX, y * scaleY);
     }
 
-    // Nodes
-    final topic = getPt(80, 35);
-    final contextNode = getPt(80, 115);
+    // Nodes with comfortable vertical clearance (Y range: 32 -> 140)
+    final topic = getPt(80, 48);
+    final contextNode = getPt(80, 136);
     
-    final orchestrator = getPt(280, 25);
-    final roadmap = getPt(280, 75);
-    final vectorRag = getPt(280, 125);
+    final orchestrator = getPt(280, 32);
+    final roadmap = getPt(280, 92);
+    final vectorRag = getPt(280, 140);
     
-    final socratic = getPt(520, 25);
-    final youtube = getPt(520, 75);
-    final academic = getPt(520, 125);
+    final socratic = getPt(520, 32);
+    final youtube = getPt(520, 92);
+    final academic = getPt(520, 140);
     
-    final workspace = getPt(720, 75);
+    final workspace = getPt(720, 92);
 
     // Draw lines
     final paintLine = Paint()..style = PaintingStyle.stroke..strokeWidth = 2;
@@ -896,17 +922,33 @@ class NeuralNetworkPainter extends CustomPainter {
     pulsePaint.color = const Color(0xFF3B82F6);
     canvas.drawCircle(lerp(youtube, workspace, (animationValue + 0.6) % 1.0), 4, pulsePaint);
 
-    // Draw Nodes
-    void drawNode(Offset pt, double r, Color strokeColor, String emoji, String label, double strokeW) {
+    // Draw Nodes with luminous aura
+    void drawNode(
+      Offset pt, 
+      double r, 
+      Color strokeColor, 
+      String emoji, 
+      String label, 
+      double strokeW, 
+      {bool isCore = false}
+    ) {
+      // Ambient glow ring behind node
+      final glowPaint = Paint()
+        ..style = PaintingStyle.stroke
+        ..color = strokeColor.withValues(alpha: isCore ? 0.45 : 0.22)
+        ..strokeWidth = isCore ? 4 + 2 * animationValue : 3
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);
+      canvas.drawCircle(pt, r + (isCore ? 3 + 2 * animationValue : 2), glowPaint);
+
       final fillPaint = Paint()..style = PaintingStyle.fill..color = const Color(0xFF0F172A);
       final borderPaint = Paint()..style = PaintingStyle.stroke..color = strokeColor..strokeWidth = strokeW;
       
       canvas.drawCircle(pt, r, fillPaint);
       canvas.drawCircle(pt, r, borderPaint);
 
-      // We'll use TextPainter for emoji and text
+      // Emoji in center of node
       final emojiPainter = TextPainter(
-        text: TextSpan(text: emoji, style: const TextStyle(fontSize: 12)),
+        text: TextSpan(text: emoji, style: TextStyle(fontSize: isCore ? 14 : 12)),
         textDirection: TextDirection.ltr,
       )..layout();
       
@@ -915,6 +957,7 @@ class NeuralNetworkPainter extends CustomPainter {
         Offset(pt.dx - emojiPainter.width / 2, pt.dy - emojiPainter.height / 2)
       );
 
+      // Label below node with guaranteed bottom margin
       final labelPainter = TextPainter(
         text: TextSpan(
           text: label, 
@@ -936,7 +979,7 @@ class NeuralNetworkPainter extends CustomPainter {
     drawNode(topic, 16, const Color(0xFFEC4899), '🎯', 'Topic', 3);
     drawNode(contextNode, 16, const Color(0xFFF43F5E), '👤', 'Context', 3);
     
-    drawNode(orchestrator, 17, const Color(0xFFA855F7), '🧠', 'Orchestrator', 3);
+    drawNode(orchestrator, 18, const Color(0xFFA855F7), '🧠', 'Orchestrator', 3, isCore: true);
     drawNode(roadmap, 15, const Color(0xFF8B5CF6), '⚡', 'Roadmap', 3);
     drawNode(vectorRag, 15, const Color(0xFF7C3AED), '📊', 'Vector RAG', 3);
 
@@ -944,7 +987,7 @@ class NeuralNetworkPainter extends CustomPainter {
     drawNode(youtube, 16, const Color(0xFF06B6D4), '📺', 'YouTube', 3);
     drawNode(academic, 16, const Color(0xFF10B981), '📚', 'Academic', 3);
 
-    drawNode(workspace, 22, const Color(0xFFEC4899), '🎓', 'Workspace', 4);
+    drawNode(workspace, 22, const Color(0xFFEC4899), '🎓', 'Workspace', 4, isCore: true);
   }
 
   @override
