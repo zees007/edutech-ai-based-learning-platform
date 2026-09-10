@@ -93,6 +93,15 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
     );
   }
 
+  void _handleStartNewJourney() {
+    ref.read(activeSessionProvider.notifier).clearSession();
+    if (widget.isMobile) {
+      widget.onClose();
+    } else if (Scaffold.maybeOf(context)?.hasDrawer ?? false) {
+      Scaffold.of(context).closeDrawer();
+    }
+  }
+
   Widget _buildNewJourneyButton({required bool expanded}) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -101,15 +110,11 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
               text: 'Start New Journey',
               icon: Icons.edit_square,
               iconFirst: true,
-              onPressed: () {
-                ref.read(activeSessionProvider.notifier).clearSession();
-              },
+              onPressed: _handleStartNewJourney,
               height: 48,
             )
           : InkWell(
-              onTap: () {
-                ref.read(activeSessionProvider.notifier).clearSession();
-              },
+              onTap: _handleStartNewJourney,
               borderRadius: BorderRadius.circular(12),
               child: Container(
                 width: 48,

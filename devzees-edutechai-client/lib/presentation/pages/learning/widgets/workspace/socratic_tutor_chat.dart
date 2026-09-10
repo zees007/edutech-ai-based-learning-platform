@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_math_fork/flutter_math.dart';
 import '../../../../../../core/theme/app_colors.dart';
 import '../../../../../../core/providers/active_session_provider.dart';
 import 'mermaid_web_view.dart';
@@ -55,7 +56,7 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
     super.initState();
     _inputFocusNode.addListener(_onFocusChange);
     _initializeMessages();
-    
+
     // Listen to websocket chunks
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final wsService = ref.read(learningWebSocketServiceProvider);
@@ -65,19 +66,21 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
 
   void _onWebSocketEvent(Map<String, dynamic> event) {
     if (!mounted) return;
-    
-    // Performance fix: Ignore chunks when we're loading the full UI to avoid unnecessary 
+
+    // Performance fix: Ignore chunks when we're loading the full UI to avoid unnecessary
     // widget tree rebuilding behind the loading screen.
     if (ref.read(activeSessionProvider).isLoading) {
       return;
     }
-    
+
     if (event['event_type'] == 'explanation_chunk') {
       final chunk = (event['content'] ?? event['chunk']) as String? ?? '';
       final isFinal = event['is_final'] as bool? ?? false;
-      
+
       setState(() {
-        if (_isStreaming && _messages.isNotEmpty && _messages.last.sender == _Sender.tutor) {
+        if (_isStreaming &&
+            _messages.isNotEmpty &&
+            _messages.last.sender == _Sender.tutor) {
           // Append to existing streaming bubble
           _messages.last.text += chunk;
         } else if (chunk.isNotEmpty) {
@@ -94,7 +97,7 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
           );
           tutorAnim.forward();
         }
-        
+
         if (isFinal) {
           _isTyping = false;
           _isStreaming = false;
@@ -133,8 +136,10 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
   @override
   void didUpdateWidget(covariant SocraticTutorChat oldWidget) {
     super.didUpdateWidget(oldWidget);
-    final historyChanged = oldWidget.conversationHistory != widget.conversationHistory &&
-        (widget.conversationHistory?.length ?? 0) > (oldWidget.conversationHistory?.length ?? 0);
+    final historyChanged =
+        oldWidget.conversationHistory != widget.conversationHistory &&
+        (widget.conversationHistory?.length ?? 0) >
+            (oldWidget.conversationHistory?.length ?? 0);
     if (oldWidget.stepTitle != widget.stepTitle ||
         oldWidget.tutorExplanation != widget.tutorExplanation ||
         oldWidget.stepIndex != widget.stepIndex ||
@@ -189,8 +194,11 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
     }
 
     // 2. Replay all follow-up conversation turns from conversationHistory
-    if (widget.conversationHistory != null && widget.conversationHistory!.isNotEmpty) {
-      final initialSanitized = widget.tutorExplanation != null ? _sanitizeExplanation(widget.tutorExplanation!) : '';
+    if (widget.conversationHistory != null &&
+        widget.conversationHistory!.isNotEmpty) {
+      final initialSanitized = widget.tutorExplanation != null
+          ? _sanitizeExplanation(widget.tutorExplanation!)
+          : '';
       for (final rawTurn in widget.conversationHistory!) {
         if (rawTurn is! Map) continue;
         final turn = Map<String, dynamic>.from(rawTurn);
@@ -210,7 +218,8 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
           final sanitizedContent = _sanitizeExplanation(content);
           // Avoid duplicating the initial explanation if it was logged as a turn in conversation_history
           if (initialSanitized.isNotEmpty &&
-              (sanitizedContent == initialSanitized || content == widget.tutorExplanation)) {
+              (sanitizedContent == initialSanitized ||
+                  content == widget.tutorExplanation)) {
             continue;
           }
           _messages.add(
@@ -351,13 +360,17 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
     final questions = <String>[];
     for (final line in lines) {
       final trimmed = line.trim();
-      final qMatch = RegExp(r'^(?:\d+[\.\)]|[-*•])\s+(.+)$').firstMatch(trimmed);
+      final qMatch = RegExp(
+        r'^(?:\d+[\.\)]|[-*•])\s+(.+)$',
+      ).firstMatch(trimmed);
       if (qMatch != null) {
         final q = qMatch.group(1)?.trim() ?? '';
         if (q.isNotEmpty && !q.toLowerCase().startsWith('generate')) {
           questions.add(_cleanQuotes(q));
         }
-      } else if (trimmed.endsWith('?') && trimmed.length > 10 && !trimmed.toLowerCase().startsWith('generate')) {
+      } else if (trimmed.endsWith('?') &&
+          trimmed.length > 10 &&
+          !trimmed.toLowerCase().startsWith('generate')) {
         questions.add(_cleanQuotes(trimmed));
       }
     }
@@ -449,10 +462,7 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
                 ? MainAxisAlignment.start
                 : MainAxisAlignment.end,
             children: [
-              if (isTutor) ...[
-                _buildTutorAvatar(),
-                const SizedBox(width: 10),
-              ],
+              if (isTutor) ...[_buildTutorAvatar(), const SizedBox(width: 10)],
               // Bubble
               Flexible(
                 child: Container(
@@ -543,14 +553,16 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
   // ─── Markdown Rendering (tutor bubbles) ────────────────────────
 
   Widget _buildMarkdownContent(String text) {
+    final preprocessedText = _preprocessMathToMarkdown(text);
+
     return MarkdownBody(
-      data: text,
+      data: preprocessedText,
       selectable: true,
       onTapLink: (text, href, title) {
         if (href != null) launchUrl(Uri.parse(href));
       },
       styleSheet: _buildMarkdownStyleSheet(),
-      builders: {'code': _MermaidCodeBlockBuilder()},
+      builders: {'code': _CustomCodeBlockBuilder()},
     );
   }
 
@@ -700,9 +712,7 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
           width: 1,
         ),
       ),
-      child: const Center(
-        child: Text('🧩', style: TextStyle(fontSize: 14)),
-      ),
+      child: const Center(child: Text('🧩', style: TextStyle(fontSize: 14))),
     );
   }
 
@@ -868,10 +878,7 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
             ),
             const SizedBox(width: 8),
             // Send Action Button
-            _SendActionButton(
-              isTyping: _isTyping,
-              onTap: () => _sendMessage(),
-            ),
+            _SendActionButton(isTyping: _isTyping, onTap: () => _sendMessage()),
           ],
         ),
       ),
@@ -883,10 +890,7 @@ class _SendActionButton extends StatefulWidget {
   final bool isTyping;
   final VoidCallback onTap;
 
-  const _SendActionButton({
-    required this.isTyping,
-    required this.onTap,
-  });
+  const _SendActionButton({required this.isTyping, required this.onTap});
 
   @override
   State<_SendActionButton> createState() => _SendActionButtonState();
@@ -923,7 +927,9 @@ class _SendActionButtonState extends State<_SendActionButton> {
                 ? []
                 : [
                     BoxShadow(
-                      color: AppColors.primary.withValues(alpha: _isHovered ? 0.6 : 0.35),
+                      color: AppColors.primary.withValues(
+                        alpha: _isHovered ? 0.6 : 0.35,
+                      ),
                       blurRadius: _isHovered ? 14 : 8,
                       offset: const Offset(0, 2),
                     ),
@@ -1107,21 +1113,43 @@ class _SuggestedQuestionChipState extends State<_SuggestedQuestionChip> {
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// Mermaid Code Block Builder — Custom flutter_markdown builder
-//
-// Intercepts ```mermaid``` fenced code blocks and renders them as
-// a styled diagram card instead of plain monospace code.
+// Custom Code Block Builder — Intercepts mermaid and math blocks
 // ═══════════════════════════════════════════════════════════════════
 
-class _MermaidCodeBlockBuilder extends MarkdownElementBuilder {
+class _CustomCodeBlockBuilder extends MarkdownElementBuilder {
   @override
   Widget? visitElementAfter(element, preferredStyle) {
     final textContent = element.textContent;
 
-    // Check if this is a mermaid code block
-    // flutter_markdown passes fenced code blocks through the 'code' builder
-    // For mermaid blocks, we render a custom diagram card
-    if (textContent.trimLeft().startsWith('graph ') ||
+    // 1. Inline Math
+    if (textContent.startsWith('math:')) {
+      final mathTex = textContent.substring(5).trim();
+      return Math.tex(
+        _sanitizeMathTex(mathTex),
+        mathStyle: MathStyle.text,
+        textStyle: preferredStyle?.copyWith(color: Colors.white, fontSize: 14),
+        onErrorFallback: (err) => Text(
+          mathTex,
+          style: preferredStyle?.copyWith(color: const Color(0xFFE9D5FF)),
+        ),
+      );
+    }
+
+    // 2. Block Math
+    bool isLatexBlock =
+        element.attributes['class']?.contains('language-latex') == true ||
+        element.attributes['class']?.contains('language-math') == true;
+
+    if (isLatexBlock) {
+      return _buildMathCard(textContent);
+    }
+
+    // 3. Mermaid Diagrams (guaranteed untouched and prioritized for any mermaid code block)
+    bool isMermaidBlock =
+        element.attributes['class']?.contains('language-mermaid') == true;
+
+    if (isMermaidBlock ||
+        textContent.trimLeft().startsWith('graph ') ||
         textContent.trimLeft().startsWith('graph\n') ||
         textContent.trimLeft().startsWith('flowchart ') ||
         textContent.trimLeft().startsWith('sequenceDiagram') ||
@@ -1131,11 +1159,11 @@ class _MermaidCodeBlockBuilder extends MarkdownElementBuilder {
         textContent.trimLeft().startsWith('gantt') ||
         textContent.trimLeft().startsWith('pie') ||
         textContent.trimLeft().startsWith('mindmap') ||
-        textContent.contains('-->') && textContent.contains('[')) {
+        ((textContent.contains('-->') || textContent.contains('---')) &&
+            textContent.contains('['))) {
       return MermaidWebView(code: textContent);
     }
 
-    // Regular code blocks handled by default styling
     return null;
   }
 }
@@ -1156,4 +1184,119 @@ class _ChatMessage {
     required this.text,
     required this.animController,
   });
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Math Rendering Utilities
+// ═══════════════════════════════════════════════════════════════════
+
+String _preprocessMathToMarkdown(String text) {
+  // Protect all existing fenced code blocks (e.g. ```mermaid ... ``` or ```python ... ```)
+  // so math preprocessing never touches diagram syntax or code samples.
+  final codeBlocks = <String>[];
+  var processed = text.replaceAllMapped(RegExp(r'```[\s\S]*?```'), (m) {
+    codeBlocks.add(m.group(0)!);
+    return '@@CODEBLOCK_${codeBlocks.length - 1}@@';
+  });
+
+  // 1. Block math: \begin{...} ... \end{...} with optional enclosing [ ... ] or \[ ... \]
+  processed = processed.replaceAllMapped(
+    RegExp(
+      r'(?:\\\[|\[)?\s*(\\begin\{(?:aligned|matrix|bmatrix|pmatrix|vmatrix|cases|gather|equation)\b[\s\S]+?\\end\{(?:aligned|matrix|bmatrix|pmatrix|vmatrix|cases|gather|equation)\})\s*(?:\\\]|\])?',
+      multiLine: true,
+    ),
+    (match) => '\n```latex\n${match.group(1)}\n```\n',
+  );
+
+  // 2. Block math: \[ ... \]
+  processed = processed.replaceAllMapped(
+    RegExp(r'\\\[([\s\S]+?)\\\]'),
+    (match) => '\n```latex\n${match.group(1)}\n```\n',
+  );
+
+  // 3. Block math: $$ ... $$
+  processed = processed.replaceAllMapped(
+    RegExp(r'\$\$([\s\S]+?)\$\$'),
+    (match) => '\n```latex\n${match.group(1)}\n```\n',
+  );
+
+  // 4. Inline math: \( ... \)
+  processed = processed.replaceAllMapped(
+    RegExp(r'\\\(([\s\S]+?)\\\)'),
+    (match) => '`math:${match.group(1)}`',
+  );
+
+  // 5. Inline math with single $
+  processed = processed.replaceAllMapped(
+    RegExp(r'(?<!\$)\$(?!\$)([\s\S]+?)(?<!\$)\$(?!\$)'),
+    (match) => '`math:${match.group(1)}`',
+  );
+
+  // 6. Common LLM fallback for inline math: ( \mathbf{...} ) or ( L=T-V ) etc., allowing following punctuation
+  processed = processed.replaceAllMapped(
+    RegExp(
+      r'(?<!\S)\(\s*(\\[a-zA-Z]+[\s\S]*?|[a-zA-Z0-9_]+=[a-zA-Z0-9_+-]+)\s*\)(?=[,\.;:!?]|\s|$)',
+    ),
+    (match) => '`math:${match.group(1)}`',
+  );
+
+  // Restore protected code blocks untouched
+  for (int i = 0; i < codeBlocks.length; i++) {
+    processed = processed.replaceAll('@@CODEBLOCK_$i@@', codeBlocks[i]);
+  }
+
+  return processed;
+}
+
+String _sanitizeMathTex(String rawTex) {
+  var clean = rawTex.trim();
+  // 1. Remove unnecessary \! (negative thin space)
+  clean = clean.replaceAll(r'\!', '');
+
+  // 2. Replace comma followed by backslash(es) with LaTeX newline \\
+  clean = clean.replaceAll(RegExp(r',\s*\\+'), r' \\ ');
+
+  // 3. Replace comma followed by ampersand (multi-column equation separator) with \\
+  clean = clean.replaceAll(RegExp(r',\s*&\s*'), r' \\ ');
+
+  // 4. Normalize any sequence of 2+ backslashes with optional whitespace/backslashes (e.g. \\\ or \\ \ or \\\\) to \\
+  clean = clean.replaceAll(RegExp(r'\\{2,}(?:\s*\\+)*'), r'\\');
+
+  // 5. Remove any trailing \\ or \ right before \end{...}
+  clean = clean.replaceAll(RegExp(r'\\+\s*(?=\\end\{)'), '\n');
+
+  // 6. Remove any stray trailing backslash before newline or end of string
+  clean = clean.replaceAll(RegExp(r'(?<!\\)\\\s*(?=\r?\n|$)'), '');
+
+  return clean.trim();
+}
+
+Widget _buildMathCard(String tex) {
+  final cleanTex = _sanitizeMathTex(tex);
+  return Container(
+    width: double.infinity,
+    margin: const EdgeInsets.symmetric(vertical: 8),
+    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+    decoration: BoxDecoration(
+      color: const Color(0xFF0F172A).withValues(alpha: 0.8),
+      borderRadius: BorderRadius.circular(12),
+    ),
+    child: SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      physics: const BouncingScrollPhysics(),
+      child: Math.tex(
+        cleanTex,
+        mathStyle: MathStyle.display,
+        textStyle: const TextStyle(color: Colors.white, fontSize: 15),
+        onErrorFallback: (err) => Text(
+          cleanTex,
+          style: TextStyle(
+            color: Colors.white.withValues(alpha: 0.85),
+            fontFamily: 'monospace',
+            fontSize: 13,
+          ),
+        ),
+      ),
+    ),
+  );
 }
