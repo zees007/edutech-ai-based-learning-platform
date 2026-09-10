@@ -125,6 +125,8 @@ class SharedMemory(BaseModel):
     streak_count: int
 ```
 
+> **Note on Gamification Architecture:** Currently, progression data (`GamificationRecord`) is bound directly to a `session_id`. This means XP, Leveling, and Streaks are isolated per-topic journey. A single user with 3 active topics will level them up independently with separate streak counters. A future roadmap enhancement will migrate these isolated records to a unified global User Profile.
+
 ### Agent Read / Write Matrix
 
 | Agent | Reads from `SharedMemory` | Writes to `SharedMemory` | Execution Trigger |

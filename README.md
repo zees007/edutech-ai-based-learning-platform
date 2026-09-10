@@ -365,6 +365,33 @@ The system has **10 levels** with escalating XP thresholds:
 | 9 | Enlightened Mind | 4,000 |
 | 10 | Grand Sage | 5,500 |
 
+### How Streaks & XP are Calculated
+
+Currently, the Gamification architecture tracks XP and Streaks **per session** (i.e., per topic journey). This means each topic you start acts as an isolated "save file" with its own XP and level progression.
+
+* **Streak Calculation:** If you complete at least one step or quiz in a session during a 24-hour window, your streak for that specific session increases by 1 the next day. A broken streak resets to 0. Every consecutive day yields a +10% multiplier on base Step Completion XP (capped at 100%).
+
+#### 🌟 Example Scenario: Alice's Journey
+
+**Scenario:** Alice creates a session with **6 steps**, where each step has a **3-question quiz**.
+
+**Scenario A: Rushing in 1 Day**
+If Alice completes everything on day 1 (0-day streak bonus):
+- **Steps:** 6 steps × 50 Base XP = 300 XP
+- **Quizzes:** 6 quizzes × 90 XP (assuming 100% accuracy: 60 Base + 30 Bonus) = 540 XP
+- **Session Complete Bonus:** 100 XP
+- **Total:** **940 XP** (She reaches **Level 4: Deep Thinker**)
+
+**Scenario B: Pacing over 3 Days**
+If Alice completes 2 steps per day consecutively:
+- **Day 1 (0% bonus):** 2 steps = 100 XP
+- **Day 2 (10% bonus):** 2 steps = 110 XP
+- **Day 3 (20% bonus):** 2 steps = 120 XP
+- **Total Step XP:** 330 XP *(30 Extra XP earned just from the streak!)*
+- **Total (with quizzes & bonus):** **970 XP**
+
+*Note: If Alice creates 3 separate sessions and works on them concurrently, she will level them up independently. A future roadmap enhancement will migrate these isolated session records into a unified global User Profile.*
+
 The **Progress Header** in the UI displays:
 - Current level and title
 - Total XP earned

@@ -643,7 +643,8 @@ class ActiveLearningWorkspace extends ConsumerWidget {
             key: ValueKey('quiz_step_${step.index}'),
             quiz: step.quiz,
             stepIndex: step.index,
-            onNextStep: () {
+            onNextStep: () async {
+              await ref.read(activeSessionProvider.notifier).markStepComplete(step.index);
               ref.read(activeSessionProvider.notifier).setActiveStep(step.index + 1);
             },
           ),
