@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/text_styles.dart';
 
 /// A sleek, high-fidelity spinner with the EduTech AI app theme gradient
 /// and centered glowing sparkle icon.
@@ -126,16 +126,16 @@ class _AppGradientSpinnerState extends State<AppGradientSpinner>
                   height: iconContainerSize,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: const Color(0xFF151426).withValues(alpha: 0.9),
+                    color: AppColors.surfaceDeep.withValues(alpha: 0.9),
                     border: Border.all(
-                      color: const Color(0xFFA855F7).withValues(
+                      color: AppColors.purple.withValues(
                         alpha: 0.35 + 0.2 * _pulseController.value,
                       ),
                       width: 1,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFFA855F7).withValues(
+                        color: AppColors.purple.withValues(
                           alpha: 0.25 * _pulseController.value,
                         ),
                         blurRadius: 10,
@@ -145,7 +145,7 @@ class _AppGradientSpinnerState extends State<AppGradientSpinner>
                   child: Center(
                     child: ShaderMask(
                       shaderCallback: (bounds) => const LinearGradient(
-                        colors: [Color(0xFFEC4899), Color(0xFFA855F7), Color(0xFF60A5FA)],
+                        colors: [AppColors.accentPink, AppColors.purple, AppColors.blueLight],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ).createShader(bounds),
@@ -172,11 +172,10 @@ class _AppGradientSpinnerState extends State<AppGradientSpinner>
             const SizedBox(height: 16),
             Text(
               widget.label!,
-              style: GoogleFonts.inter(
-                fontSize: 12,
+              style: AppTextStyles.caption.copyWith(
                 fontWeight: FontWeight.w500,
                 letterSpacing: 0.4,
-                color: const Color(0xFF9CA3AF),
+                color: AppColors.textMuted,
               ),
             ),
           ],

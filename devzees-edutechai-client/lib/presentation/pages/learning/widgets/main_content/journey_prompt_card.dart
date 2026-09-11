@@ -1,8 +1,8 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
-import 'package:devzees_edutechai_client/presentation/widgets/gradient_button.dart';
+import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/theme/text_styles.dart';
+import '../../../../widgets/gradient_button.dart';
 
 class JourneyPromptCard extends StatefulWidget {
   final void Function(String topic, String mode, String level) onStartJourney;
@@ -59,9 +59,9 @@ class _JourneyPromptCardState extends State<JourneyPromptCard> {
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                    color: _isHovered
-                        ? const Color(0x8CA855F7) // 0.55 alpha
-                        : const Color(0x59A855F7), // 0.35 alpha
+                    color: AppColors.purple.withValues(
+                      alpha: _isHovered ? 0.55 : 0.35,
+                    ),
                     offset: _isHovered ? const Offset(0, 30) : const Offset(0, 25),
                     blurRadius: _isHovered ? 75 : 65,
                     spreadRadius: _isHovered ? -10 : -15,
@@ -76,48 +76,41 @@ class _JourneyPromptCardState extends State<JourneyPromptCard> {
                     duration: const Duration(milliseconds: 300),
                     padding: const EdgeInsets.fromLTRB(35, 28, 35, 22),
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [
-                          Color(0xF00F172A), // rgba(15, 23, 42, 0.94)
-                          Color(0xE61A112E), // rgba(26, 17, 46, 0.9)
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
+                      gradient: AppColors.cardGradientOpaque,
                       border: Border.all(
-                        color: _isHovered
-                            ? const Color(0xD9A855F7) // rgba(168, 85, 247, 0.85)
-                            : const Color(0x73A855F7), // rgba(168, 85, 247, 0.45)
+                        color: AppColors.purple.withValues(
+                          alpha: _isHovered ? 0.85 : 0.45,
+                        ),
                         width: 1.5,
                       ),
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
-                          color: _isHovered
-                              ? const Color(0x33A855F7) // 0.2 alpha
-                              : const Color(0x1EA855F7), // 0.12 alpha
+                          color: AppColors.purple.withValues(
+                            alpha: _isHovered ? 0.20 : 0.12,
+                          ),
                           blurRadius: _isHovered ? 45 : 35,
                           blurStyle: BlurStyle.inner,
                         ),
                       ],
                     ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Row 1: Dropdowns
-                      _buildDropdownRow(),
-                      const SizedBox(height: 16),
-                      // Row 2: Chat Input and Button
-                      _buildInputRow(),
-                      const SizedBox(height: 16),
-                      // Row 3: Suggested Topics
-                      _buildSuggestedTopics(),
-                    ],
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Row 1: Dropdowns
+                        _buildDropdownRow(),
+                        const SizedBox(height: 16),
+                        // Row 2: Chat Input and Button
+                        _buildInputRow(),
+                        const SizedBox(height: 16),
+                        // Row 3: Suggested Topics
+                        _buildSuggestedTopics(),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
             ),
             // Top Glowing Neon Bar (The ::before pseudo-element)
             Positioned(
@@ -135,7 +128,7 @@ class _JourneyPromptCardState extends State<JourneyPromptCard> {
                       colors: [
                         Colors.transparent,
                         AppColors.accentPink,
-                        AppColors.primary,
+                        AppColors.purple,
                         AppColors.accentBlue,
                         Colors.transparent,
                       ],
@@ -147,7 +140,7 @@ class _JourneyPromptCardState extends State<JourneyPromptCard> {
                         blurRadius: _isHovered ? 22 : 15,
                       ),
                       BoxShadow(
-                        color: AppColors.primary,
+                        color: AppColors.purple,
                         blurRadius: _isHovered ? 30 : 20,
                       ),
                     ],
@@ -165,7 +158,7 @@ class _JourneyPromptCardState extends State<JourneyPromptCard> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final isMobile = constraints.maxWidth < 600;
-        
+
         if (isMobile) {
           return Column(
             children: [
@@ -222,19 +215,15 @@ class _JourneyPromptCardState extends State<JourneyPromptCard> {
       children: [
         Text(
           label,
-          style: GoogleFonts.inter(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-          ),
+          style: AppTextStyles.label,
         ),
         const SizedBox(height: 8),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.05),
+            color: AppColors.glassBase,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+            border: Border.all(color: AppColors.glassBorder),
           ),
           child: Builder(
             builder: (context) {
@@ -251,12 +240,8 @@ class _JourneyPromptCardState extends State<JourneyPromptCard> {
                     isExpanded: true,
                     borderRadius: BorderRadius.circular(16),
                     dropdownColor: AppColors.secondaryBackground,
-                    icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white70),
-                    style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
+                    icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.textSecondary),
+                    style: AppTextStyles.bodyPrimary,
                     items: items.map((String item) {
                       return DropdownMenuItem<String>(
                         value: item,
@@ -267,7 +252,7 @@ class _JourneyPromptCardState extends State<JourneyPromptCard> {
                   ),
                 ),
               );
-            }
+            },
           ),
         ),
       ],
@@ -335,24 +320,23 @@ class _JourneyPromptCardState extends State<JourneyPromptCard> {
   Widget _buildTextField() {
     return TextFormField(
       controller: _promptController,
-      style: GoogleFonts.inter(color: Colors.white, fontSize: 15),
+      style: AppTextStyles.bodyPrimary.copyWith(fontSize: 15),
       maxLines: 1,
       decoration: InputDecoration(
         hintText: 'Ask EduTechAI anything... (e.g., I want to learn Python programming from zero)',
-        hintStyle: GoogleFonts.inter(
-          color: Colors.white.withValues(alpha: 0.4),
-          fontSize: 14,
+        hintStyle: AppTextStyles.body2.copyWith(
+          color: AppColors.textMuted,
         ),
         filled: true,
-        fillColor: Colors.white.withValues(alpha: 0.05),
+        fillColor: AppColors.glassBase,
         contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+          borderSide: const BorderSide(color: AppColors.glassBorder),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+          borderSide: const BorderSide(color: AppColors.glassBorder),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
@@ -367,7 +351,7 @@ class _JourneyPromptCardState extends State<JourneyPromptCard> {
       alignment: Alignment.centerLeft,
       child: InkWell(
         onTap: () {
-          // TODO: Implement popover or bottom sheet
+          // Future popover or bottom sheet
         },
         borderRadius: BorderRadius.circular(8),
         child: Padding(
@@ -377,22 +361,20 @@ class _JourneyPromptCardState extends State<JourneyPromptCard> {
             children: [
               const Icon(
                 Icons.lightbulb_outline,
-                color: Color(0xFFE9D5FF),
+                color: AppColors.lavender,
                 size: 16,
               ),
               const SizedBox(width: 8),
               Text(
                 'Browse Suggested Topics',
-                style: GoogleFonts.inter(
-                  color: const Color(0xFFE9D5FF),
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
+                style: AppTextStyles.captionBold.copyWith(
+                  color: AppColors.lavender,
                 ),
               ),
               const SizedBox(width: 4),
               const Icon(
                 Icons.keyboard_arrow_down,
-                color: Color(0xFFE9D5FF),
+                color: AppColors.lavender,
                 size: 16,
               ),
             ],

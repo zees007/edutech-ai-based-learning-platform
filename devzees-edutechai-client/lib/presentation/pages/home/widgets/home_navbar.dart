@@ -1,12 +1,11 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
+import 'package:devzees_edutechai_client/core/theme/text_styles.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/gradient_button.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/gradient_text.dart';
 import 'package:devzees_edutechai_client/core/constants/responsive.dart';
 import 'package:go_router/go_router.dart';
-
-import 'package:google_fonts/google_fonts.dart';
 
 class HomeNavbar extends StatelessWidget {
   final Function(String)? onNavTap;
@@ -17,12 +16,12 @@ class HomeNavbar extends StatelessWidget {
     return Container(
       constraints: const BoxConstraints(minHeight: 52),
       decoration: BoxDecoration(
-        color: const Color(0xD90F172A), // rgba(15, 23, 42, 0.85)
+        color: AppColors.surfaceDark.withValues(alpha: 0.85),
         borderRadius: BorderRadius.circular(50),
-        border: Border.all(color: const Color(0x73A855F7)), // rgba(168, 85, 247, 0.45)
-        boxShadow: const [
-          BoxShadow(color: Color(0x40A855F7), blurRadius: 30), // 0 0 30px rgba(168, 85, 247, 0.25)
-          BoxShadow(color: Color(0x80000000), blurRadius: 30, offset: Offset(0, 10)), // 0 10px 30px rgba(0, 0, 0, 0.5)
+        border: Border.all(color: AppColors.accentPurple.withValues(alpha: 0.45)),
+        boxShadow: [
+          BoxShadow(color: AppColors.accentPurple.withValues(alpha: 0.25), blurRadius: 30),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.5), blurRadius: 30, offset: const Offset(0, 10)),
         ],
       ),
       child: ClipRRect(
@@ -33,7 +32,7 @@ class HomeNavbar extends StatelessWidget {
             // Approximating inset shadow with an inner border
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(50),
-              border: Border.all(color: const Color(0x26A855F7), width: 1.5), // inset 0 0 20px rgba(168, 85, 247, 0.15)
+              border: Border.all(color: AppColors.accentPurple.withValues(alpha: 0.15), width: 1.5),
             ),
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
             child: Row(
@@ -44,11 +43,11 @@ class HomeNavbar extends StatelessWidget {
                   children: [
                     Text(
                       '⚡ ',
-                      style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.w900),
+                      style: AppTextStyles.h3.copyWith(fontSize: 20, fontWeight: FontWeight.w900),
                     ),
                     GradientText(
                       'EduTech',
-                      style: GoogleFonts.inter(
+                      style: AppTextStyles.h2.copyWith(
                         fontSize: 22,
                         fontWeight: FontWeight.w900,
                         letterSpacing: -0.5,
@@ -64,8 +63,8 @@ class HomeNavbar extends StatelessWidget {
                       ),
                       child: Text(
                         'AI',
-                        style: GoogleFonts.inter(
-                          color: const Color(0xFFC084FC),
+                        style: AppTextStyles.labelSmall.copyWith(
+                          color: AppColors.lavender,
                           fontSize: 10,
                           fontWeight: FontWeight.w800,
                         ),
@@ -96,9 +95,9 @@ class HomeNavbar extends StatelessWidget {
                   style: TextButton.styleFrom(
                     minimumSize: const Size(0, 36),
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+                    textStyle: AppTextStyles.button.copyWith(fontSize: 14, fontWeight: FontWeight.w700),
                   ),
-                  child: const Text('Sign In', style: TextStyle(color: Colors.white)),
+                  child: Text('Sign In', style: TextStyle(color: AppColors.textPrimary)),
                 ),
                 const SizedBox(width: 8),
               ],
@@ -160,8 +159,8 @@ class _NavPillState extends State<_NavPill> {
           ),
           child: Text(
             widget.title,
-            style: TextStyle(
-              color: _isHovered ? Colors.white : Colors.white.withValues(alpha: 0.7),
+            style: AppTextStyles.subtitle2.copyWith(
+              color: _isHovered ? AppColors.textPrimary : AppColors.textSecondary,
               fontSize: 15,
               fontWeight: FontWeight.w600,
             ),
@@ -206,7 +205,7 @@ class _MobileMenuButtonState extends State<_MobileMenuButton> {
             setState(() => _isOpen = false);
             widget.onNavTap?.call(value);
           },
-          icon: const Icon(Icons.menu, color: Colors.white),
+          icon: const Icon(Icons.menu, color: AppColors.textPrimary),
           color: Colors.transparent,
           elevation: 0,
           offset: const Offset(0, 56),
@@ -289,8 +288,8 @@ class _MobileMenuItemState extends State<_MobileMenuItem> {
           ),
           child: Text(
             widget.title,
-            style: TextStyle(
-              color: _isActive ? Colors.white : Colors.white.withValues(alpha: 0.8),
+            style: AppTextStyles.subtitle2.copyWith(
+              color: _isActive ? AppColors.textPrimary : AppColors.textSecondary,
               fontSize: 15,
               fontWeight: FontWeight.w600,
             ),

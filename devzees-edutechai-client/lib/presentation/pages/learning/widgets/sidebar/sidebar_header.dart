@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../../../presentation/widgets/gradient_text.dart';
 import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/theme/text_styles.dart';
 
 class SidebarHeader extends StatelessWidget {
   final bool expanded;
@@ -31,15 +31,13 @@ class SidebarHeader extends StatelessWidget {
               children: [
                 Text(
                   '⚡ ',
-                  style: GoogleFonts.inter(
-                    fontSize: 20,
+                  style: AppTextStyles.h4.copyWith(
                     fontWeight: FontWeight.w900,
                   ),
                 ),
                 GradientText(
                   'EduTech',
-                  style: GoogleFonts.inter(
-                    fontSize: 22,
+                  style: AppTextStyles.h3.copyWith(
                     fontWeight: FontWeight.w900,
                     letterSpacing: -0.5,
                   ),
@@ -59,11 +57,7 @@ class SidebarHeader extends StatelessWidget {
                   ),
                   child: Text(
                     'AI',
-                    style: GoogleFonts.inter(
-                      color: const Color(0xFFC084FC),
-                      fontSize: 10,
-                      fontWeight: FontWeight.w800,
-                    ),
+                    style: AppTextStyles.labelSmall,
                   ),
                 ),
               ],
@@ -73,13 +67,13 @@ class SidebarHeader extends StatelessWidget {
               onPressed: onToggle,
               icon: Icon(
                 expanded ? Icons.menu_open : Icons.menu,
-                color: Colors.white70,
+                color: AppColors.textSecondary,
               ),
             )
           else
             IconButton(
               onPressed: onClose,
-              icon: const Icon(Icons.menu_open, color: Colors.white70),
+              icon: const Icon(Icons.menu_open, color: AppColors.textSecondary),
             ),
         ],
       ),

@@ -21,7 +21,7 @@ class RecentJourneySkeletonCard extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.03),
+              color: AppColors.glassBase,
               border: Border.all(
                 color: AppColors.primary.withValues(alpha: 0.3),
                 width: 1.5,
@@ -36,7 +36,7 @@ class RecentJourneySkeletonCard extends StatelessWidget {
                   width: 28,
                   height: 28,
                   shape: BoxShape.circle,
-                  color: Color(0xFF2E2248),
+                  color: AppColors.shimmerBoxDark,
                 ),
                 const SizedBox(width: 12),
 
@@ -50,7 +50,7 @@ class RecentJourneySkeletonCard extends StatelessWidget {
                       const ShimmerBox(
                         width: 130,
                         height: 13,
-                        color: Color(0xFF332750),
+                        color: AppColors.shimmerBoxLight,
                       ),
                       const SizedBox(height: 6),
                       // Badges line (XP & steps)
@@ -59,14 +59,14 @@ class RecentJourneySkeletonCard extends StatelessWidget {
                           const ShimmerBox(
                             width: 38,
                             height: 10,
-                            color: Color(0xFF281D40),
+                            color: AppColors.shimmerBoxMid,
                           ),
                           const SizedBox(width: 8),
                           Container(
                             width: 3,
                             height: 3,
                             decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.2),
+                              color: AppColors.glassBorder,
                               shape: BoxShape.circle,
                             ),
                           ),
@@ -74,7 +74,7 @@ class RecentJourneySkeletonCard extends StatelessWidget {
                           const ShimmerBox(
                             width: 56,
                             height: 10,
-                            color: Color(0xFF281D40),
+                            color: AppColors.shimmerBoxMid,
                           ),
                         ],
                       ),
@@ -88,8 +88,8 @@ class RecentJourneySkeletonCard extends StatelessWidget {
                 Container(
                   width: 14,
                   height: 14,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.08),
+                  decoration: const BoxDecoration(
+                    color: AppColors.glassHover,
                     shape: BoxShape.circle,
                   ),
                 ),

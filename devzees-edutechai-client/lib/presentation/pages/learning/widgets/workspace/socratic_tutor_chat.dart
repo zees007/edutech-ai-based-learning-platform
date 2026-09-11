@@ -475,10 +475,10 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
                   ),
                   decoration: BoxDecoration(
                     gradient: isTutor
-                        ? const LinearGradient(
+                        ? LinearGradient(
                             colors: [
-                              Color(0xBF1E293B), // rgba(30, 41, 59, 0.75)
-                              Color(0xD90F172A), // rgba(15, 23, 42, 0.85)
+                              AppColors.surfaceMid.withValues(alpha: 0.75),
+                              AppColors.surfaceDark.withValues(alpha: 0.85),
                             ],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
@@ -486,7 +486,7 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
                         : null,
                     color: isTutor
                         ? null
-                        : const Color(0xFF3B82F6).withValues(alpha: 0.12),
+                        : AppColors.accentBlue.withValues(alpha: 0.12),
                     borderRadius: isTutor
                         ? BorderRadius.circular(16)
                         : const BorderRadius.only(
@@ -498,10 +498,10 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
 
                     boxShadow: isTutor
                         ? [
-                            const BoxShadow(
-                              color: Color(0x4D000000), // rgba(0, 0, 0, 0.3)
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.3),
                               blurRadius: 20,
-                              offset: Offset(0, 6),
+                              offset: const Offset(0, 6),
                             ),
                           ]
                         : [
@@ -587,7 +587,7 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
       ),
       h1Padding: const EdgeInsets.only(bottom: 12, top: 4),
       h2: GoogleFonts.inter(
-        color: const Color(0xFFC084FC),
+        color: AppColors.lavender,
         fontSize: 17,
         fontWeight: FontWeight.w700,
         height: 1.3,
@@ -625,7 +625,7 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
 
       // Inline code
       code: GoogleFonts.firaCode(
-        color: const Color(0xFF4ADE80), // Vibrant green
+        color: AppColors.greenMint, // Vibrant green
 
         fontSize: 13,
         backgroundColor: Colors.white.withValues(alpha: 0.08),
@@ -633,7 +633,7 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
 
       // Code blocks
       codeblockDecoration: BoxDecoration(
-        color: const Color(0xFF0F172A).withValues(alpha: 0.8),
+        color: AppColors.surfaceDark.withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(12),
       ),
       codeblockPadding: const EdgeInsets.all(14),
@@ -729,20 +729,20 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
+              gradient: LinearGradient(
                 colors: [
-                  Color(0xBF1E293B), // rgba(30, 41, 59, 0.75)
-                  Color(0xD90F172A), // rgba(15, 23, 42, 0.85)
+                  AppColors.surfaceMid.withValues(alpha: 0.75),
+                  AppColors.surfaceDark.withValues(alpha: 0.85),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(16),
-              boxShadow: const [
+              boxShadow: [
                 BoxShadow(
-                  color: Color(0x4D000000), // rgba(0, 0, 0, 0.3)
+                  color: Colors.black.withValues(alpha: 0.3),
                   blurRadius: 20,
-                  offset: Offset(0, 6),
+                  offset: const Offset(0, 6),
                 ),
               ],
             ),
@@ -824,7 +824,7 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
         decoration: BoxDecoration(
           color: _isInputFocused
-              ? const Color(0xFF1E1435).withValues(alpha: 0.9)
+              ? AppColors.surfaceDeep.withValues(alpha: 0.9)
               : Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(16),
         ),
@@ -834,17 +834,17 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
+                gradient: LinearGradient(
                   colors: [
-                    Color(0x33F472B6), // Pink alpha
-                    Color(0x33C084FC), // Violet alpha
+                    AppColors.roseLight.withValues(alpha: 0.2),
+                    AppColors.lavender.withValues(alpha: 0.2),
                   ],
                 ),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: const Icon(
                 Icons.auto_awesome_rounded,
-                color: Color(0xFFC084FC),
+                color: AppColors.lavender,
                 size: 16,
               ),
             ),
@@ -1130,7 +1130,7 @@ class _CustomCodeBlockBuilder extends MarkdownElementBuilder {
         textStyle: preferredStyle?.copyWith(color: Colors.white, fontSize: 14),
         onErrorFallback: (err) => Text(
           mathTex,
-          style: preferredStyle?.copyWith(color: const Color(0xFFE9D5FF)),
+          style: preferredStyle?.copyWith(color: AppColors.lavender),
         ),
       );
     }
@@ -1278,7 +1278,7 @@ Widget _buildMathCard(String tex) {
     margin: const EdgeInsets.symmetric(vertical: 8),
     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
     decoration: BoxDecoration(
-      color: const Color(0xFF0F172A).withValues(alpha: 0.8),
+      color: AppColors.surfaceDark.withValues(alpha: 0.8),
       borderRadius: BorderRadius.circular(12),
     ),
     child: SingleChildScrollView(

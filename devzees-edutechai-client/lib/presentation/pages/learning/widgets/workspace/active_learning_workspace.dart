@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../../../core/providers/active_session_provider.dart';
 import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/theme/text_styles.dart';
 import 'socratic_tutor_chat.dart';
 import 'recommended_videos.dart';
 import 'academic_papers.dart';
@@ -21,7 +21,6 @@ class ActiveLearningWorkspace extends ConsumerWidget {
       return const SizedBox.shrink();
     }
 
-    final int totalSteps = session.steps.isNotEmpty ? session.steps.length : 1;
     final int maxUnlockedIndex = (session.currentStepIndex > session.stepsCompleted
             ? session.currentStepIndex
             : session.stepsCompleted)
@@ -141,23 +140,16 @@ class _StepContentContainerState extends ConsumerState<_StepContentContainer> {
       margin: const EdgeInsets.fromLTRB(24, 0, 24, 24),
       clipBehavior: Clip.hardEdge,
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [
-            Color(0xB31E293B), // rgba(30, 41, 59, 0.7)
-            Color(0xCC0F172A), // rgba(15, 23, 42, 0.8)
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        gradient: AppColors.commandHubGradient,
         borderRadius: BorderRadius.circular(18),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
-            color: Color(0x59000000), // rgba(0, 0, 0, 0.35)
+            color: Colors.black.withValues(alpha: 0.35),
             blurRadius: 30,
-            offset: Offset(0, 10),
+            offset: const Offset(0, 10),
           ),
           BoxShadow(
-            color: Color(0x14A855F7), // rgba(168, 85, 247, 0.08) inset
+            color: AppColors.purple.withValues(alpha: 0.08),
             blurRadius: 20,
             spreadRadius: 0,
           ),
@@ -176,8 +168,8 @@ class _StepContentContainerState extends ConsumerState<_StepContentContainer> {
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                  decoration: const BoxDecoration(
-                    color: Color(0xCC140D21), // rgba(20, 13, 33, 0.8)
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceSolidHeader,
                   ),
                   child: Row(
                     children: [
@@ -188,7 +180,7 @@ class _StepContentContainerState extends ConsumerState<_StepContentContainer> {
                           Container(
                             padding: const EdgeInsets.all(6),
                             decoration: BoxDecoration(
-                              color: const Color.fromRGBO(14, 17, 23, 1),
+                              color: AppColors.surfaceDeep,
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: const Text('🧩', style: TextStyle(fontSize: 14)),
@@ -196,22 +188,18 @@ class _StepContentContainerState extends ConsumerState<_StepContentContainer> {
                           const SizedBox(width: 8),
                           Text(
                             'Socratic Tutor',
-                            style: GoogleFonts.inter(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w700,
-                              color: const Color(0xFFFAFAFA),
-                            ),
+                            style: AppTextStyles.subtitle2,
                           ),
                           const SizedBox(width: 12),
                           Container(
                             width: 6,
                             height: 6,
                             decoration: BoxDecoration(
-                              color: const Color(0xFF10B981),
+                              color: AppColors.accentGreen,
                               shape: BoxShape.circle,
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xFF10B981).withValues(alpha: 0.6),
+                                  color: AppColors.accentGreen.withValues(alpha: 0.6),
                                   blurRadius: 6,
                                 ),
                               ],
@@ -220,10 +208,8 @@ class _StepContentContainerState extends ConsumerState<_StepContentContainer> {
                           const SizedBox(width: 6),
                           Text(
                             'Online',
-                            style: GoogleFonts.inter(
-                              color: const Color(0xFF10B981),
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
+                            style: AppTextStyles.captionBold.copyWith(
+                              color: AppColors.accentGreen,
                             ),
                           ),
                           const SizedBox(width: 16),
@@ -246,8 +232,8 @@ class _StepContentContainerState extends ConsumerState<_StepContentContainer> {
                             _PremiumActionButton(
                               icon: Icons.play_circle_outline_rounded,
                               label: 'Videos',
-                              accentColor: const Color(0xFFFF6B6B),
-                              secondaryColor: const Color(0xFFFFAB76),
+                              accentColor: AppColors.accentRose,
+                              secondaryColor: AppColors.accentAmber,
                               isActive: _activeOverlay is RecommendedVideos,
                               onTap: () {
                                 if (_activeOverlay is RecommendedVideos) {
@@ -262,8 +248,8 @@ class _StepContentContainerState extends ConsumerState<_StepContentContainer> {
                             _PremiumActionButton(
                               icon: Icons.science_outlined,
                               label: 'Papers',
-                              accentColor: const Color(0xFF60A5FA),
-                              secondaryColor: const Color(0xFF818CF8),
+                              accentColor: AppColors.blueLight,
+                              secondaryColor: AppColors.indigo,
                               isActive: _activeOverlay is AcademicPapers,
                               onTap: () {
                                 if (_activeOverlay is AcademicPapers) {
@@ -290,12 +276,12 @@ class _StepContentContainerState extends ConsumerState<_StepContentContainer> {
                     data: ScrollbarThemeData(
                       thumbColor: WidgetStateProperty.resolveWith((states) {
                         if (states.contains(WidgetState.dragged)) {
-                          return const Color(0xFF64748B); // Slate-500
+                          return AppColors.slate500;
                         }
                         if (states.contains(WidgetState.hovered)) {
-                          return const Color(0xFF475569).withValues(alpha: 0.9); // Slate-600
+                          return AppColors.slate600.withValues(alpha: 0.9);
                         }
-                        return const Color(0xFF334155).withValues(alpha: 0.65); // Slate-700, matches #1E293B / #0F172A card bg
+                        return AppColors.slate700.withValues(alpha: 0.65);
                       }),
                       trackColor: WidgetStateProperty.all(Colors.transparent),
                       trackBorderColor: WidgetStateProperty.all(Colors.transparent),
@@ -327,17 +313,10 @@ class _StepContentContainerState extends ConsumerState<_StepContentContainer> {
                                     width: double.infinity,
                                     margin: const EdgeInsets.only(bottom: 24),
                                     decoration: BoxDecoration(
-                                      gradient: LinearGradient(
-                                        colors: [
-                                          const Color(0xFF0F172A).withValues(alpha: 0.95),
-                                          const Color(0xFF1A112E).withValues(alpha: 0.9),
-                                        ],
-                                        begin: Alignment.topCenter,
-                                        end: Alignment.bottomCenter,
-                                      ),
+                                      gradient: AppColors.cardGradient,
                                       borderRadius: BorderRadius.circular(16),
                                       border: Border.all(
-                                        color: Colors.white.withValues(alpha: 0.08),
+                                        color: AppColors.glassBorder,
                                       ),
                                       boxShadow: [
                                         BoxShadow(
@@ -369,7 +348,7 @@ class _StepContentContainerState extends ConsumerState<_StepContentContainer> {
           : Center(
               child: Text(
                 'No steps available.',
-                style: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
+                style: AppTextStyles.bodyPrimary.copyWith(color: AppColors.textMuted),
               ),
             ),
     );
@@ -402,9 +381,9 @@ class _StepContentContainerState extends ConsumerState<_StepContentContainer> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.07),
+                  color: AppColors.glassSurface.withValues(alpha: 0.07),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+                  border: Border.all(color: AppColors.glassBorder),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -413,7 +392,7 @@ class _StepContentContainerState extends ConsumerState<_StepContentContainer> {
                     const SizedBox(width: 4),
                     Text(
                       'Prev',
-                      style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.white),
+                      style: AppTextStyles.badge.copyWith(fontSize: 11, color: Colors.white),
                     ),
                   ],
                 ),
@@ -426,12 +405,12 @@ class _StepContentContainerState extends ConsumerState<_StepContentContainer> {
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
           decoration: BoxDecoration(
             color: isReviewing
-                ? const Color(0xFF06B6D4).withValues(alpha: 0.15)
+                ? AppColors.cyanLight.withValues(alpha: 0.15)
                 : AppColors.primary.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
               color: isReviewing
-                  ? const Color(0xFF06B6D4).withValues(alpha: 0.45)
+                  ? AppColors.cyanLight.withValues(alpha: 0.45)
                   : AppColors.primary.withValues(alpha: 0.45),
             ),
           ),
@@ -440,10 +419,10 @@ class _StepContentContainerState extends ConsumerState<_StepContentContainer> {
             children: [
               Text(
                 'Step ${currentIndex + 1} of $totalSteps',
-                style: GoogleFonts.inter(
+                style: AppTextStyles.badge.copyWith(
                   fontSize: 11.5,
                   fontWeight: FontWeight.w700,
-                  color: isReviewing ? const Color(0xFF22D3EE) : const Color(0xFFC084FC),
+                  color: isReviewing ? AppColors.cyanLight : AppColors.purpleLight,
                 ),
               ),
               if (isReviewing) ...[
@@ -451,12 +430,12 @@ class _StepContentContainerState extends ConsumerState<_StepContentContainer> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF06B6D4).withValues(alpha: 0.25),
+                    color: AppColors.cyanLight.withValues(alpha: 0.25),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(
                     'Review Mode',
-                    style: GoogleFonts.inter(fontSize: 9, fontWeight: FontWeight.w800, color: Colors.white),
+                    style: AppTextStyles.badge.copyWith(fontSize: 9, color: Colors.white),
                   ),
                 ),
               ],
@@ -474,15 +453,11 @@ class _StepContentContainerState extends ConsumerState<_StepContentContainer> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
+                gradient: AppColors.amberGradient,
                 borderRadius: BorderRadius.circular(8),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFFF59E0B).withValues(alpha: 0.35),
+                    color: AppColors.accentAmber.withValues(alpha: 0.35),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -495,9 +470,8 @@ class _StepContentContainerState extends ConsumerState<_StepContentContainer> {
                   const SizedBox(width: 5),
                   Text(
                     'Prerequisite',
-                    style: GoogleFonts.inter(
+                    style: AppTextStyles.badge.copyWith(
                       fontSize: 11,
-                      fontWeight: FontWeight.w700,
                       color: Colors.white,
                       letterSpacing: 0.3,
                     ),
@@ -520,18 +494,16 @@ class _StepContentContainerState extends ConsumerState<_StepContentContainer> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0x33A855F7), Color(0x333B82F6)],
-                  ),
+                  gradient: AppColors.royalBlueIndigoGradient,
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: const Color(0xFFA855F7).withValues(alpha: 0.4)),
+                  border: Border.all(color: AppColors.purpleLight.withValues(alpha: 0.4)),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       'Next',
-                      style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.white),
+                      style: AppTextStyles.badge.copyWith(fontSize: 11, color: Colors.white),
                     ),
                     const SizedBox(width: 4),
                     const Icon(Icons.arrow_forward_ios_rounded, size: 11, color: Colors.white),
@@ -661,7 +633,7 @@ class _PremiumActionButtonState extends State<_PremiumActionButton>
                   const SizedBox(width: 7),
                   Text(
                     widget.label,
-                    style: GoogleFonts.inter(
+                    style: AppTextStyles.badge.copyWith(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: widget.isActive
@@ -711,21 +683,21 @@ Widget _buildStepStatusPill(String rawStatus, {bool compact = false}) {
   String label;
 
   if (isComplete) {
-    textColor = const Color(0xFF10B981);
-    bgColor = const Color(0xFF10B981).withValues(alpha: 0.15);
-    borderColor = const Color(0xFF10B981).withValues(alpha: 0.45);
+    textColor = AppColors.accentGreen;
+    bgColor = AppColors.accentGreen.withValues(alpha: 0.15);
+    borderColor = AppColors.accentGreen.withValues(alpha: 0.45);
     icon = Icons.check_circle_rounded;
     label = 'Completed';
   } else if (isInProgress) {
-    textColor = const Color(0xFFC084FC);
-    bgColor = const Color(0xFFC084FC).withValues(alpha: 0.15);
-    borderColor = const Color(0xFFC084FC).withValues(alpha: 0.45);
+    textColor = AppColors.purpleLight;
+    bgColor = AppColors.purpleLight.withValues(alpha: 0.15);
+    borderColor = AppColors.purpleLight.withValues(alpha: 0.45);
     icon = Icons.bolt_rounded;
     label = 'In Progress';
   } else {
-    textColor = const Color(0xFF94A3B8);
-    bgColor = Colors.white.withValues(alpha: 0.06);
-    borderColor = Colors.white.withValues(alpha: 0.15);
+    textColor = AppColors.slate400;
+    bgColor = AppColors.glassSurface.withValues(alpha: 0.06);
+    borderColor = AppColors.glassBorder;
     icon = Icons.schedule_rounded;
     label = 'Pending';
   }
@@ -747,9 +719,8 @@ Widget _buildStepStatusPill(String rawStatus, {bool compact = false}) {
         const SizedBox(width: 4),
         Text(
           label,
-          style: GoogleFonts.inter(
+          style: AppTextStyles.badge.copyWith(
             fontSize: compact ? 10 : 11,
-            fontWeight: FontWeight.w700,
             color: textColor,
             letterSpacing: 0.2,
           ),

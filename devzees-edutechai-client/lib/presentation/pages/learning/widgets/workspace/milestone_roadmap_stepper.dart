@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../../../data/models/learning/milestone_step.dart';
+import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/theme/text_styles.dart';
 
 /// An ultra-premium, modern Chevron Pipeline Stepper.
 /// Displays milestone roadmap steps as an interlocking, continuous chevron ribbon
@@ -92,10 +93,10 @@ class MilestoneRoadmapStepper extends StatelessWidget {
         return Container(
           height: _stepperHeight,
           decoration: BoxDecoration(
-            color: const Color(0xFF0C0817),
+            color: AppColors.surfaceDeep,
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
-              color: Colors.white.withValues(alpha: 0.12),
+              color: AppColors.glassBorder,
               width: 1.0,
             ),
             boxShadow: [
@@ -184,17 +185,17 @@ class _ChevronStepItemState extends State<_ChevronStepItem> {
               ? Colors.white
               : (isLocked
                   ? Colors.white.withValues(alpha: 0.35)
-                  : const Color(0xFFC084FC))),
+                  : AppColors.purpleLight)),
     );
 
     // Primary Text Color
     final Color stepColor = isActive
         ? Colors.white
         : (isCompleted
-            ? const Color(0xFFD1FAE5)
+            ? AppColors.greenMint
             : (isLocked
                 ? Colors.white.withValues(alpha: 0.4)
-                : const Color(0xFFC084FC)));
+                : AppColors.purpleLight));
 
     final Color titleColor = isActive
         ? Colors.white
@@ -202,24 +203,16 @@ class _ChevronStepItemState extends State<_ChevronStepItem> {
             ? Colors.white
             : (isLocked
                 ? Colors.white.withValues(alpha: 0.35)
-                : const Color(0xFFE2E8F0)));
+                : AppColors.slate200));
 
     // Background decoration
     Decoration backgroundDecoration;
     if (isActive) {
       backgroundDecoration = BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [
-            Color(0xFF2563EB), // Rich Royal Blue (matching user's design)
-            Color(0xFF6366F1), // Indigo
-            Color(0xFF7C3AED), // Violet
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        gradient: AppColors.royalBlueIndigoGradient,
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF3B82F6).withValues(alpha: 0.45),
+            color: AppColors.accentBlue.withValues(alpha: 0.45),
             blurRadius: 12,
             offset: const Offset(0, 1),
           ),
@@ -228,24 +221,10 @@ class _ChevronStepItemState extends State<_ChevronStepItem> {
     } else if (isCompleted) {
       // Vibrant Glassy Green (solid emerald base that does not let dark background bleed through)
       backgroundDecoration = BoxDecoration(
-        gradient: LinearGradient(
-          colors: _isHovered
-              ? const [
-                  Color(0xFF059669), // Emerald 600
-                  Color(0xFF10B981), // Emerald 500
-                  Color(0xFF34D399), // Mint Emerald 400
-                ]
-              : const [
-                  Color(0xFF047857), // Deep Emerald 700
-                  Color(0xFF059669), // Rich Emerald 600
-                  Color(0xFF10B981), // Vibrant Emerald 500
-                ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        gradient: AppColors.emeraldGradient,
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF10B981).withValues(alpha: _isHovered ? 0.45 : 0.28),
+            color: AppColors.accentGreen.withValues(alpha: _isHovered ? 0.45 : 0.28),
             blurRadius: 10,
             offset: const Offset(0, 1),
           ),
@@ -254,22 +233,22 @@ class _ChevronStepItemState extends State<_ChevronStepItem> {
     } else if (!isLocked) {
       backgroundDecoration = BoxDecoration(
         color: _isHovered
-            ? const Color(0xFF1E293B).withValues(alpha: 0.85)
-            : const Color(0xFF1E293B).withValues(alpha: 0.50),
+            ? AppColors.surfaceMid.withValues(alpha: 0.85)
+            : AppColors.surfaceMid.withValues(alpha: 0.50),
       );
     } else {
       backgroundDecoration = BoxDecoration(
         color: _isHovered
-            ? const Color(0xFF0F172A).withValues(alpha: 0.6)
+            ? AppColors.surfaceDark.withValues(alpha: 0.6)
             : Colors.transparent,
       );
     }
 
     // Divider color at the right arrow tip
     final Color dividerColor = isActive
-        ? const Color(0xFF93C5FD).withValues(alpha: 0.8)
+        ? AppColors.blueSoft.withValues(alpha: 0.8)
         : (isCompleted
-            ? const Color(0xFFA7F3D0).withValues(alpha: 0.75)
+            ? AppColors.greenMint.withValues(alpha: 0.75)
             : Colors.white.withValues(alpha: 0.15));
 
     // Operational status label & badge styling
@@ -295,9 +274,9 @@ class _ChevronStepItemState extends State<_ChevronStepItem> {
       statusBadgeText = Colors.white.withValues(alpha: 0.45);
     } else {
       statusLabel = 'PENDING';
-      statusBadgeBg = const Color(0xFFC084FC).withValues(alpha: 0.15);
-      statusBadgeBorder = const Color(0xFFC084FC).withValues(alpha: 0.35);
-      statusBadgeText = const Color(0xFFE9D5FF);
+      statusBadgeBg = AppColors.purpleLight.withValues(alpha: 0.15);
+      statusBadgeBorder = AppColors.purpleLight.withValues(alpha: 0.35);
+      statusBadgeText = AppColors.lavender;
     }
 
     final clipper = _ChevronClipper(
@@ -308,11 +287,11 @@ class _ChevronStepItemState extends State<_ChevronStepItem> {
 
     return Tooltip(
       message: tooltipMsg,
-      textStyle: GoogleFonts.inter(color: Colors.white, fontSize: 12, height: 1.35),
+      textStyle: AppTextStyles.caption.copyWith(color: Colors.white, height: 1.35),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E293B),
+        color: AppColors.surfaceMid,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+        border: Border.all(color: AppColors.glassBorder),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       child: MouseRegion(
@@ -369,7 +348,7 @@ class _ChevronStepItemState extends State<_ChevronStepItem> {
                             const SizedBox(width: 5),
                             Text(
                               'STEP ${widget.index + 1}',
-                              style: GoogleFonts.inter(
+                              style: AppTextStyles.badge.copyWith(
                                 fontSize: 9.5,
                                 fontWeight: FontWeight.w800,
                                 letterSpacing: 0.5,
@@ -382,14 +361,12 @@ class _ChevronStepItemState extends State<_ChevronStepItem> {
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 4, vertical: 1),
                                 decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
-                                  ),
+                                  gradient: AppColors.amberGradient,
                                   borderRadius: BorderRadius.circular(3),
                                 ),
-                                child: const Text(
+                                child: Text(
                                   'PREREQ',
-                                  style: TextStyle(
+                                  style: AppTextStyles.badge.copyWith(
                                     color: Colors.white,
                                     fontSize: 7.5,
                                     fontWeight: FontWeight.w900,
@@ -409,7 +386,7 @@ class _ChevronStepItemState extends State<_ChevronStepItem> {
                               ),
                               child: Text(
                                 statusLabel,
-                                style: GoogleFonts.inter(
+                                style: AppTextStyles.badge.copyWith(
                                   fontSize: 7.5,
                                   fontWeight: FontWeight.w800,
                                   letterSpacing: 0.3,
@@ -426,7 +403,7 @@ class _ChevronStepItemState extends State<_ChevronStepItem> {
                         widget.step.title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.inter(
+                        style: AppTextStyles.label.copyWith(
                           fontSize: 11.5,
                           fontWeight: isActive ? FontWeight.w700 : FontWeight.w600,
                           color: titleColor,

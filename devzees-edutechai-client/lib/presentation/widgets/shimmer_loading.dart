@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/theme/app_colors.dart';
 
 /// Provides a synchronized animated gradient shimmer effect for skeletons.
 class ShimmerLoading extends StatefulWidget {
@@ -46,8 +47,8 @@ class _ShimmerLoadingState extends State<ShimmerLoading>
       return widget.child;
     }
 
-    final base = widget.baseColor ?? const Color(0xFF1E1633);
-    final highlight = widget.highlightColor ?? const Color(0xFF38275C);
+    final base = widget.baseColor ?? AppColors.shimmerBase;
+    final highlight = widget.highlightColor ?? AppColors.shimmerHighlight;
 
     return AnimatedBuilder(
       animation: _controller,
@@ -115,7 +116,7 @@ class ShimmerBox extends StatelessWidget {
       width: width,
       height: height,
       decoration: BoxDecoration(
-        color: color ?? const Color(0xFF261D3D),
+        color: color ?? AppColors.shimmerBox,
         shape: shape,
         borderRadius: shape == BoxShape.circle
             ? null

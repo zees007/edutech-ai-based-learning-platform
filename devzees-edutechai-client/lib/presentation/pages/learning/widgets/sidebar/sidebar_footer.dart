@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../../core/providers/auth_provider.dart';
+import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/theme/text_styles.dart';
 
 class SidebarFooter extends ConsumerStatefulWidget {
   final bool expanded;
@@ -28,6 +30,10 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
       context: context,
       color: Colors.transparent,
       elevation: 0,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(16)),
+        side: BorderSide.none,
+      ),
       position: RelativeRect.fromLTRB(
         offset.dx,
         offset.dy - 280,
@@ -46,7 +52,7 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
                 width: 220,
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1A132C).withValues(alpha: 0.8),
+                  color: AppColors.popoverBackground.withValues(alpha: 0.8),
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
@@ -60,16 +66,16 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     _buildUserInfo(),
-                    const Divider(color: Colors.white12, height: 16),
-                    _buildMenuItem(context, 'Upgrade to PRO', Icons.bolt, const Color(0xFFA855F7)),
-                    _buildMenuItem(context, 'Billing & Plan', Icons.credit_card, Colors.white70),
-                    _buildMenuItem(context, 'Admin Console', Icons.admin_panel_settings, Colors.white70),
-                    const Divider(color: Colors.white12, height: 16),
+                    Divider(color: AppColors.glassBorder, height: 16),
+                    _buildMenuItem(context, 'Upgrade to PRO', Icons.bolt, AppColors.purple),
+                    _buildMenuItem(context, 'Billing & Plan', Icons.credit_card, AppColors.textSecondary),
+                    _buildMenuItem(context, 'Admin Console', Icons.admin_panel_settings, AppColors.textSecondary),
+                    Divider(color: AppColors.glassBorder, height: 16),
                     _buildMenuItem(
                       context, 
                       'Sign Out', 
                       Icons.logout, 
-                      Colors.redAccent.withValues(alpha: 0.8),
+                      AppColors.rose.withValues(alpha: 0.8),
                       onTap: () async {
                         await ref.read(authProvider.notifier).logout();
                         if (context.mounted) {
@@ -94,13 +100,12 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
         children: [
           CircleAvatar(
             radius: 18,
-            backgroundColor: const Color(0xFFA855F7).withValues(alpha: 0.2),
-            child: const Text(
+            backgroundColor: AppColors.purple.withValues(alpha: 0.2),
+            child: Text(
               'Z',
-              style: TextStyle(
-                color: Color(0xFFA855F7),
+              style: AppTextStyles.label.copyWith(
+                color: AppColors.purple,
                 fontWeight: FontWeight.bold,
-                fontSize: 14,
               ),
             ),
           ),
@@ -110,13 +115,9 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
+                Text(
                   'Zeeshan',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: AppTextStyles.subtitle2,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -124,8 +125,8 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF10B981).withValues(alpha: 0.1),
-                    border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.3)),
+                    color: AppColors.accentGreen.withValues(alpha: 0.1),
+                    border: Border.all(color: AppColors.accentGreen.withValues(alpha: 0.3)),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Row(
@@ -134,19 +135,16 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
                       Container(
                         width: 6,
                         height: 6,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF10B981),
+                        decoration: BoxDecoration(
+                          color: AppColors.accentGreen,
                           shape: BoxShape.circle,
                         ),
                       ),
                       const SizedBox(width: 4),
-                      const Text(
+                      Text(
                         'FREE MEMBER',
-                        style: TextStyle(
-                          color: Color(0xFF10B981),
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 0.5,
+                        style: AppTextStyles.badge.copyWith(
+                          color: AppColors.accentGreen,
                         ),
                       ),
                     ],
@@ -177,7 +175,7 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               decoration: BoxDecoration(
                 color: isHovered
-                    ? Colors.white.withValues(alpha: 0.05)
+                    ? AppColors.glassSurface.withValues(alpha: 0.05)
                     : Colors.transparent,
               ),
               child: Row(
@@ -187,11 +185,9 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
                   Expanded(
                     child: Text(
                       label,
-                      style: TextStyle(
-                        color: isHovered ? Colors.white : Colors.white70,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                      ),
+                      style: isHovered
+                          ? AppTextStyles.label.copyWith(color: AppColors.textPrimary)
+                          : AppTextStyles.label.copyWith(color: AppColors.textSecondary),
                     ),
                   ),
                 ],
@@ -210,7 +206,7 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
       decoration: BoxDecoration(
         border: Border(
           top: BorderSide(
-            color: Colors.white.withValues(alpha: 0.05),
+            color: AppColors.glassBorder,
             width: 1,
           ),
         ),
@@ -223,35 +219,31 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
           if (widget.expanded)
             CircleAvatar(
               radius: 18,
-              backgroundColor: const Color(0xFFA855F7).withValues(alpha: 0.2),
-              child: const Text(
+              backgroundColor: AppColors.purple.withValues(alpha: 0.2),
+              child: Text(
                 'Z',
-                style: TextStyle(
-                  color: Color(0xFFA855F7),
+                style: AppTextStyles.label.copyWith(
+                  color: AppColors.purple,
                   fontWeight: FontWeight.bold,
                 ),
               ),
             ),
           if (widget.expanded) ...[
             const SizedBox(width: 12),
-            const Expanded(
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
                     'Zeeshan',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: AppTextStyles.subtitle2,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   Text(
                     'Free Plan',
-                    style: TextStyle(color: Colors.white54, fontSize: 12),
+                    style: AppTextStyles.caption.copyWith(color: AppColors.textMuted),
                   ),
                 ],
               ),
@@ -260,7 +252,7 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
           Container(
             key: _settingsIconKey,
             child: IconButton(
-              icon: const Icon(Icons.settings, color: Colors.white54, size: 20),
+              icon: Icon(Icons.settings, color: AppColors.textMuted, size: 20),
               onPressed: () => _showSettingsPopover(context),
             ),
           ),

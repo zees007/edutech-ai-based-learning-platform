@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
+import 'package:devzees_edutechai_client/core/theme/text_styles.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/gradient_text.dart';
 
 class AuthTopNavbar extends StatelessWidget {
@@ -24,11 +24,14 @@ class AuthTopNavbar extends StatelessWidget {
             children: [
               Text(
                 '⚡ ',
-                style: GoogleFonts.inter(fontSize: isMobile ? 18 : 20, fontWeight: FontWeight.w900),
+                style: AppTextStyles.h3.copyWith(
+                  fontSize: isMobile ? 18 : 20,
+                  fontWeight: FontWeight.w900,
+                ),
               ),
               GradientText(
                 'EduTech',
-                style: GoogleFonts.inter(
+                style: AppTextStyles.h2.copyWith(
                   fontSize: isMobile ? 20 : 22,
                   fontWeight: FontWeight.w900,
                   letterSpacing: -0.5,
@@ -44,8 +47,8 @@ class AuthTopNavbar extends StatelessWidget {
                 ),
                 child: Text(
                   'AI',
-                  style: GoogleFonts.inter(
-                    color: const Color(0xFFC084FC),
+                  style: AppTextStyles.labelSmall.copyWith(
+                    color: AppColors.lavender,
                     fontSize: 10,
                     fontWeight: FontWeight.w800,
                   ),
@@ -56,17 +59,17 @@ class AuthTopNavbar extends StatelessWidget {
           // Back to Home Button
           OutlinedButton.icon(
             onPressed: () => context.go('/'),
-            icon: const Icon(Icons.arrow_back, size: 18, color: Colors.white70),
+            icon: const Icon(Icons.arrow_back, size: 18, color: AppColors.textSecondary),
             label: Text(
               isMobile ? 'Back' : 'Back to Home',
-              style: const TextStyle(color: Colors.white70),
+              style: const TextStyle(color: AppColors.textSecondary),
             ),
             style: OutlinedButton.styleFrom(
               padding: EdgeInsets.symmetric(
                 horizontal: isMobile ? 12 : 16,
                 vertical: isMobile ? 8 : 12,
               ),
-              side: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
+              side: const BorderSide(color: AppColors.glassBorder),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
             ),
           ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
+import 'package:devzees_edutechai_client/core/theme/text_styles.dart';
 
 class AuthCanvas extends StatefulWidget {
   final bool isLogin;
@@ -51,12 +52,12 @@ class _AuthCanvasState extends State<AuthCanvas> with SingleTickerProviderStateM
         return Container(
           width: double.infinity,
           decoration: BoxDecoration(
-            color: const Color(0xFF0B0813),
+            color: AppColors.canvasBackground,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(color: borderColor, width: 1.5),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF7C3AED).withValues(alpha: 0.15 + (0.1 * t)),
+                color: AppColors.primary.withValues(alpha: 0.15 + (0.1 * t)),
                 blurRadius: 40 + (10 * t),
                 spreadRadius: -10,
               ),
@@ -74,7 +75,7 @@ class _AuthCanvasState extends State<AuthCanvas> with SingleTickerProviderStateM
                         center: const FractionalOffset(0.2, 0.3),
                         radius: 0.8,
                         colors: [
-                          const Color(0xFFA855F7).withValues(alpha: 0.12),
+                          AppColors.accentPurple.withValues(alpha: 0.12),
                           Colors.transparent,
                         ],
                         stops: const [0.0, 0.8],
@@ -89,7 +90,7 @@ class _AuthCanvasState extends State<AuthCanvas> with SingleTickerProviderStateM
                         center: const FractionalOffset(0.8, 0.7),
                         radius: 0.8,
                         colors: [
-                          const Color(0xFF3B82F6).withValues(alpha: 0.12),
+                          AppColors.accentBlue.withValues(alpha: 0.12),
                           Colors.transparent,
                         ],
                         stops: const [0.0, 0.8],
@@ -109,14 +110,14 @@ class _AuthCanvasState extends State<AuthCanvas> with SingleTickerProviderStateM
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFA855F7).withValues(alpha: 0.1),
-                          border: Border.all(color: const Color(0xFFA855F7).withValues(alpha: 0.3)),
+                          color: AppColors.accentPurple.withValues(alpha: 0.1),
+                          border: Border.all(color: AppColors.accentPurple.withValues(alpha: 0.3)),
                           borderRadius: BorderRadius.circular(30),
                         ),
-                        child: const Text(
+                        child: Text(
                           '⚡ EduTech AI — Providing Access Flowchart',
-                          style: TextStyle(
-                            color: Color(0xFFE9D5FF),
+                          style: AppTextStyles.badge.copyWith(
+                            color: AppColors.lavender,
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
                             letterSpacing: 0.5,
@@ -131,7 +132,7 @@ class _AuthCanvasState extends State<AuthCanvas> with SingleTickerProviderStateM
                         tag: 'STEP 01 • INTAKE',
                         title: 'User Arrival',
                         subtitle: 'Initiates secure session request',
-                        baseColor: const Color(0xFF3B82F6), // Blue
+                        baseColor: AppColors.accentBlue,
                         isGradientText: true,
                       ),
                       _buildArrow(),
@@ -142,7 +143,7 @@ class _AuthCanvasState extends State<AuthCanvas> with SingleTickerProviderStateM
                         tag: 'STEP 02 • AI EVALUATION',
                         title: 'AI Identity Guard',
                         subtitle: 'Inspects credentials & privileges',
-                        baseColor: const Color(0xFFA855F7), // Purple
+                        baseColor: AppColors.accentPurple,
                         isGradientText: true,
                       ),
                       _buildArrow(),
@@ -153,7 +154,7 @@ class _AuthCanvasState extends State<AuthCanvas> with SingleTickerProviderStateM
                         tag: 'STEP 03 • ROUTING GATEWAY',
                         title: 'Account Verification',
                         subtitle: 'Determines authentication pathway',
-                        baseColor: const Color(0xFFEC4899), // Pink
+                        baseColor: AppColors.accentPink,
                         isGradientText: true,
                       ),
                       
@@ -164,13 +165,13 @@ class _AuthCanvasState extends State<AuthCanvas> with SingleTickerProviderStateM
                           Expanded(
                             child: _buildBranch(
                               label: 'YES • EXISTING USER (✓)',
-                              color: const Color(0xFF34D399), // Green
+                              color: AppColors.accentGreen,
                             ),
                           ),
                           Expanded(
                             child: _buildBranch(
                               label: 'NO • NEW STUDENT (✨)',
-                              color: const Color(0xFFF472B6), // Pink
+                              color: AppColors.roseLight,
                             ),
                           ),
                         ],
@@ -187,7 +188,7 @@ class _AuthCanvasState extends State<AuthCanvas> with SingleTickerProviderStateM
                               title: 'Sign In',
                               subtitle: 'Existing Account Access',
                               isActive: widget.isLogin,
-                              baseColor: const Color(0xFF34D399),
+                              baseColor: AppColors.accentGreen,
                               isGradientText: true,
                               onTap: () => widget.onAuthModeChanged(true),
                             ),
@@ -200,7 +201,7 @@ class _AuthCanvasState extends State<AuthCanvas> with SingleTickerProviderStateM
                               title: 'Create Account',
                               subtitle: 'Instant Free Setup',
                               isActive: !widget.isLogin,
-                              baseColor: const Color(0xFFF472B6),
+                              baseColor: AppColors.roseLight,
                               isGradientText: true,
                               onTap: () => widget.onAuthModeChanged(false),
                             ),
@@ -217,7 +218,7 @@ class _AuthCanvasState extends State<AuthCanvas> with SingleTickerProviderStateM
                         tag: 'STEP 05 • DISPATCH & UNLOCK',
                         title: 'Spawn AI Agent Squad',
                         subtitle: 'Instant Autonomous Workspace Access',
-                        baseColor: const Color(0xFF06B6D4), // Cyan
+                        baseColor: AppColors.accentCyan,
                         isGradientText: true,
                       ),
                     ],
@@ -243,7 +244,7 @@ class _AuthCanvasState extends State<AuthCanvas> with SingleTickerProviderStateM
       width: 250, // Reduced from 280
       padding: const EdgeInsets.all(12), // Reduced from 16
       decoration: BoxDecoration(
-        color: const Color(0xFF151025).withValues(alpha: 0.8),
+        color: AppColors.surfaceMid.withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: baseColor.withValues(alpha: 0.3)),
         boxShadow: [
@@ -282,9 +283,9 @@ class _AuthCanvasState extends State<AuthCanvas> with SingleTickerProviderStateM
                   ),
                   child: Text(
                     tag,
-                    style: TextStyle(
+                    style: AppTextStyles.labelSmall.copyWith(
                       color: baseColor.withValues(alpha: 0.9),
-                      fontSize: 8, // Reduced from 9
+                      fontSize: 8,
                       fontWeight: FontWeight.w800,
                       letterSpacing: 0.5,
                     ),
@@ -293,14 +294,12 @@ class _AuthCanvasState extends State<AuthCanvas> with SingleTickerProviderStateM
                 const SizedBox(height: 4),
                 if (isGradientText)
                   ShaderMask(
-                    shaderCallback: (bounds) => const LinearGradient(
-                      colors: [Color(0xFFEC4899), Color(0xFFA855F7), Color(0xFF3B82F6)],
-                    ).createShader(bounds),
+                    shaderCallback: (bounds) => AppColors.pinkPurpleGradient.createShader(bounds),
                     child: Text(
                       title,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 13, // Reduced from 14
+                      style: AppTextStyles.subtitle2.copyWith(
+                        color: AppColors.textPrimary,
+                        fontSize: 13,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
@@ -308,18 +307,18 @@ class _AuthCanvasState extends State<AuthCanvas> with SingleTickerProviderStateM
                 else
                   Text(
                     title,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 13, // Reduced from 14
+                    style: AppTextStyles.subtitle2.copyWith(
+                      color: AppColors.textPrimary,
+                      fontSize: 13,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
                 const SizedBox(height: 2),
                 Text(
                   subtitle,
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.5),
-                    fontSize: 10, // Reduced from 11
+                  style: AppTextStyles.caption.copyWith(
+                    color: AppColors.textSecondary,
+                    fontSize: 10,
                   ),
                 ),
               ],
@@ -351,7 +350,7 @@ class _AuthCanvasState extends State<AuthCanvas> with SingleTickerProviderStateM
       children: [
         Text(
           label,
-          style: TextStyle(
+          style: AppTextStyles.labelSmall.copyWith(
             color: color,
             fontSize: 10,
             fontWeight: FontWeight.w700,
@@ -386,7 +385,7 @@ class _AuthCanvasState extends State<AuthCanvas> with SingleTickerProviderStateM
         child: Container(
           padding: const EdgeInsets.all(12), // Reduced from 16
           decoration: BoxDecoration(
-            color: isActive ? baseColor.withValues(alpha: 0.15) : const Color(0xFF151025).withValues(alpha: 0.8),
+            color: isActive ? baseColor.withValues(alpha: 0.15) : AppColors.surfaceMid.withValues(alpha: 0.8),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: isActive ? baseColor.withValues(alpha: 0.6) : baseColor.withValues(alpha: 0.3),
@@ -436,9 +435,9 @@ class _AuthCanvasState extends State<AuthCanvas> with SingleTickerProviderStateM
                       ),
                       child: Text(
                         tag,
-                        style: TextStyle(
+                        style: AppTextStyles.labelSmall.copyWith(
                           color: isActive ? baseColor : baseColor.withValues(alpha: 0.9),
-                          fontSize: 8, // Reduced from 9
+                          fontSize: 8,
                           fontWeight: FontWeight.w800,
                           letterSpacing: 0.5,
                         ),
@@ -447,14 +446,12 @@ class _AuthCanvasState extends State<AuthCanvas> with SingleTickerProviderStateM
                     const SizedBox(height: 4),
                     if (isGradientText)
                       ShaderMask(
-                        shaderCallback: (bounds) => const LinearGradient(
-                          colors: [Color(0xFFEC4899), Color(0xFFA855F7), Color(0xFF3B82F6)],
-                        ).createShader(bounds),
+                        shaderCallback: (bounds) => AppColors.pinkPurpleGradient.createShader(bounds),
                         child: Text(
                           title,
-                          style: TextStyle(
-                            color: isActive ? Colors.white : Colors.white70,
-                            fontSize: 13, // Reduced from 14
+                          style: AppTextStyles.subtitle2.copyWith(
+                            color: isActive ? AppColors.textPrimary : AppColors.textSecondary,
+                            fontSize: 13,
                             fontWeight: FontWeight.w800,
                           ),
                         ),
@@ -462,18 +459,18 @@ class _AuthCanvasState extends State<AuthCanvas> with SingleTickerProviderStateM
                     else
                       Text(
                         title,
-                        style: TextStyle(
-                          color: isActive ? Colors.white : Colors.white70,
-                          fontSize: 13, // Reduced from 14
+                        style: AppTextStyles.subtitle2.copyWith(
+                          color: isActive ? AppColors.textPrimary : AppColors.textSecondary,
+                          fontSize: 13,
                           fontWeight: FontWeight.w800,
                         ),
                       ),
                     const SizedBox(height: 2),
                     Text(
                       subtitle,
-                      style: TextStyle(
-                        color: isActive ? Colors.white70 : Colors.white.withValues(alpha: 0.5),
-                        fontSize: 10, // Reduced from 11
+                      style: AppTextStyles.caption.copyWith(
+                        color: isActive ? AppColors.textPrimary.withValues(alpha: 0.7) : AppColors.textSecondary,
+                        fontSize: 10,
                       ),
                     ),
                   ],
@@ -498,7 +495,7 @@ class _AuthCanvasState extends State<AuthCanvas> with SingleTickerProviderStateM
               size: const Size(double.infinity, 30),
               painter: _MergeArrowPainter(),
             ),
-            const Icon(Icons.keyboard_arrow_down, color: Color(0xFF06B6D4), size: 16),
+            const Icon(Icons.keyboard_arrow_down, color: AppColors.accentCyan, size: 16),
           ],
         ),
       ),
@@ -510,17 +507,17 @@ class _MergeArrowPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint1 = Paint()
-      ..color = const Color(0xFF34D399).withValues(alpha: 0.6)
+      ..color = AppColors.accentGreen.withValues(alpha: 0.6)
       ..strokeWidth = 2
       ..style = PaintingStyle.stroke;
 
     final paint2 = Paint()
-      ..color = const Color(0xFFF472B6).withValues(alpha: 0.6)
+      ..color = AppColors.roseLight.withValues(alpha: 0.6)
       ..strokeWidth = 2
       ..style = PaintingStyle.stroke;
 
     final paintMerge = Paint()
-      ..color = const Color(0xFF06B6D4).withValues(alpha: 0.6)
+      ..color = AppColors.accentCyan.withValues(alpha: 0.6)
       ..strokeWidth = 2
       ..style = PaintingStyle.stroke;
 

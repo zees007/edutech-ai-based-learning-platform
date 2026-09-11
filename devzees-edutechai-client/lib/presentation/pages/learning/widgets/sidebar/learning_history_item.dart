@@ -5,6 +5,7 @@ import '../../../../../data/models/learning/session_model.dart';
 import '../../../../../core/providers/learning_provider.dart';
 import '../../../../../core/providers/active_session_provider.dart';
 import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/theme/text_styles.dart';
 
 class LearningHistoryItem extends ConsumerStatefulWidget {
   final SessionModel session;
@@ -35,6 +36,10 @@ class _LearningHistoryItemState extends ConsumerState<LearningHistoryItem> {
       context: context,
       color: Colors.transparent,
       elevation: 0,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(12)),
+        side: BorderSide.none,
+      ),
       position: RelativeRect.fromLTRB(
         offset.dx,
         offset.dy + size.height,
@@ -53,7 +58,7 @@ class _LearningHistoryItemState extends ConsumerState<LearningHistoryItem> {
                 width: 140,
                 padding: const EdgeInsets.symmetric(vertical: 4),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1A132C).withValues(alpha: 0.8),
+                  color: AppColors.popoverBackground.withValues(alpha: 0.8),
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
@@ -73,13 +78,13 @@ class _LearningHistoryItemState extends ConsumerState<LearningHistoryItem> {
                       },
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                        child: const Row(
+                        child: Row(
                           children: [
-                            Icon(Icons.delete_outline, color: Colors.redAccent, size: 18),
-                            SizedBox(width: 12),
+                            Icon(Icons.delete_outline, color: AppColors.rose, size: 18),
+                            const SizedBox(width: 12),
                             Text(
                               'Delete',
-                              style: TextStyle(color: Colors.redAccent, fontSize: 13, fontWeight: FontWeight.w500),
+                              style: AppTextStyles.label.copyWith(color: AppColors.rose),
                             ),
                           ],
                         ),
@@ -114,12 +119,12 @@ class _LearningHistoryItemState extends ConsumerState<LearningHistoryItem> {
             height: 40,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.05),
+              color: AppColors.glassSurface.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
               Icons.history,
-              color: Colors.white.withValues(alpha: 0.7),
+              color: AppColors.textSecondary,
               size: 18,
             ),
           ),
@@ -155,7 +160,7 @@ class _LearningHistoryItemState extends ConsumerState<LearningHistoryItem> {
               children: [
                 Icon(
                   Icons.chat_bubble_outline,
-                  color: _isHovered ? AppColors.primary.withValues(alpha: 0.8) : Colors.white.withValues(alpha: 0.4),
+                  color: _isHovered ? AppColors.primary.withValues(alpha: 0.8) : AppColors.textMuted.withValues(alpha: 0.6),
                   size: 16,
                 ),
                 const SizedBox(width: 12),
@@ -165,9 +170,8 @@ class _LearningHistoryItemState extends ConsumerState<LearningHistoryItem> {
                     children: [
                       Text(
                         widget.session.topic,
-                        style: TextStyle(
-                          color: _isHovered ? Colors.white : Colors.white70,
-                          fontSize: 13,
+                        style: AppTextStyles.label.copyWith(
+                          color: _isHovered ? AppColors.textPrimary : AppColors.textSecondary,
                           fontWeight: _isHovered ? FontWeight.w600 : FontWeight.normal,
                         ),
                         maxLines: 1,
@@ -179,9 +183,9 @@ class _LearningHistoryItemState extends ConsumerState<LearningHistoryItem> {
                           _buildBadge(
                               Icons.check_circle_outline,
                               '${widget.session.stepsCompleted}/${widget.session.totalSteps ?? widget.session.stepsCompleted} Steps',
-                              Colors.greenAccent),
+                              AppColors.accentGreen),
                           const SizedBox(width: 8),
-                          _buildBadge(Icons.star_outline, '${widget.session.xpEarned} XP', Colors.orangeAccent),
+                          _buildBadge(Icons.star_outline, '${widget.session.xpEarned} XP', AppColors.accentAmber),
                         ],
                       ),
                     ],
@@ -196,7 +200,7 @@ class _LearningHistoryItemState extends ConsumerState<LearningHistoryItem> {
                       padding: const EdgeInsets.all(4.0),
                       child: Icon(
                         Icons.more_vert, 
-                        color: _isHovered ? Colors.white70 : Colors.white.withValues(alpha: 0.2), 
+                        color: _isHovered ? AppColors.textSecondary : AppColors.textMuted.withValues(alpha: 0.4), 
                         size: 16,
                       ),
                     ),
@@ -224,10 +228,9 @@ class _LearningHistoryItemState extends ConsumerState<LearningHistoryItem> {
           const SizedBox(width: 4),
           Text(
             text,
-            style: TextStyle(
+            style: AppTextStyles.badge.copyWith(
               color: color,
               fontSize: 9,
-              fontWeight: FontWeight.bold,
             ),
           ),
         ],

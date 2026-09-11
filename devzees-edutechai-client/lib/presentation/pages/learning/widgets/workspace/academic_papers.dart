@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../../core/services/academic_service.dart';
+import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/theme/text_styles.dart';
 
 class AcademicPapers extends ConsumerStatefulWidget {
   final List<dynamic>? papers;
@@ -84,12 +85,12 @@ class _AcademicPapersState extends ConsumerState<AcademicPapers> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: const Color(0xFF60A5FA).withValues(alpha: 0.15),
+                color: AppColors.blueLight.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.science_rounded,
-                color: Color(0xFF60A5FA),
+                color: AppColors.blueLight,
                 size: 20,
               ),
             ),
@@ -97,10 +98,7 @@ class _AcademicPapersState extends ConsumerState<AcademicPapers> {
             Expanded(
               child: Text(
                 'Academic Research & Landmark Preprints',
-                style: GoogleFonts.inter(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w800,
-                  color: Colors.white,
+                style: AppTextStyles.h3.copyWith(
                   letterSpacing: 0.2,
                 ),
               ),
@@ -113,25 +111,24 @@ class _AcademicPapersState extends ConsumerState<AcademicPapers> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.04),
+            color: AppColors.glassSurface.withValues(alpha: 0.04),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: Colors.white.withValues(alpha: 0.1),
+              color: AppColors.glassBorder,
             ),
           ),
           child: Row(
             children: [
-              const Icon(Icons.search_rounded, size: 18, color: Color(0xFF93C5FD)),
+              Icon(Icons.search_rounded, size: 18, color: AppColors.blueSoft),
               const SizedBox(width: 10),
               Expanded(
                 child: TextField(
                   controller: _searchController,
-                  style: GoogleFonts.inter(color: Colors.white, fontSize: 13),
+                  style: AppTextStyles.bodyPrimary,
                   decoration: InputDecoration(
                     hintText: 'Search scholarly papers, arXiv, Semantic Scholar...',
-                    hintStyle: GoogleFonts.inter(
-                      color: Colors.white.withValues(alpha: 0.4),
-                      fontSize: 13,
+                    hintStyle: AppTextStyles.bodyPrimary.copyWith(
+                      color: AppColors.textMuted,
                     ),
                     border: InputBorder.none,
                     isDense: true,
@@ -142,7 +139,7 @@ class _AcademicPapersState extends ConsumerState<AcademicPapers> {
               ),
               if (_searchController.text.isNotEmpty)
                 IconButton(
-                  icon: const Icon(Icons.clear, size: 16, color: Colors.white54),
+                  icon: Icon(Icons.clear, size: 16, color: AppColors.textMuted),
                   onPressed: () {
                     _searchController.clear();
                     setState(() {
@@ -158,17 +155,16 @@ class _AcademicPapersState extends ConsumerState<AcademicPapers> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
+                    color: AppColors.accentBlue.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
-                      color: const Color(0xFF60A5FA).withValues(alpha: 0.4),
+                      color: AppColors.blueLight.withValues(alpha: 0.4),
                     ),
                   ),
                   child: Text(
                     'Search',
-                    style: GoogleFonts.inter(
-                      color: const Color(0xFF93C5FD),
-                      fontSize: 12,
+                    style: AppTextStyles.label.copyWith(
+                      color: AppColors.blueSoft,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -181,19 +177,19 @@ class _AcademicPapersState extends ConsumerState<AcademicPapers> {
 
         // Body Content
         if (_isLoading)
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 36),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 36),
             child: Center(
               child: Column(
                 children: [
                   CircularProgressIndicator(
                     strokeWidth: 2.5,
-                    color: Color(0xFF60A5FA),
+                    color: AppColors.blueLight,
                   ),
-                  SizedBox(height: 14),
+                  const SizedBox(height: 14),
                   Text(
                     'Searching Semantic Scholar & OpenAlex...',
-                    style: TextStyle(color: Colors.white70, fontSize: 13),
+                    style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
                   ),
                 ],
               ),
@@ -203,17 +199,14 @@ class _AcademicPapersState extends ConsumerState<AcademicPapers> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.03),
+              color: AppColors.glassSurface.withValues(alpha: 0.03),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+              border: Border.all(color: AppColors.glassBorder),
             ),
             child: Center(
               child: Text(
                 _errorMessage!,
-                style: GoogleFonts.inter(
-                  color: Colors.white.withValues(alpha: 0.6),
-                  fontSize: 13,
-                ),
+                style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
               ),
             ),
           )
@@ -221,17 +214,14 @@ class _AcademicPapersState extends ConsumerState<AcademicPapers> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.03),
+              color: AppColors.glassSurface.withValues(alpha: 0.03),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+              border: Border.all(color: AppColors.glassBorder),
             ),
             child: Center(
               child: Text(
                 'No papers currently indexed. Type a topic above to search.',
-                style: GoogleFonts.inter(
-                  color: Colors.white.withValues(alpha: 0.6),
-                  fontSize: 13,
-                ),
+                style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
               ),
             ),
           )
@@ -378,19 +368,19 @@ class _PaperCardState extends State<_PaperCard> {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: _isHovered
-              ? Colors.white.withValues(alpha: 0.05)
-              : Colors.white.withValues(alpha: 0.02),
+              ? AppColors.glassSurface.withValues(alpha: 0.05)
+              : AppColors.glassSurface.withValues(alpha: 0.02),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: _isHovered
-                ? const Color(0xFF60A5FA).withValues(alpha: 0.5)
-                : const Color(0xFF60A5FA).withValues(alpha: 0.2),
+                ? AppColors.blueLight.withValues(alpha: 0.5)
+                : AppColors.blueLight.withValues(alpha: 0.2),
             width: 1,
           ),
           boxShadow: _isHovered
               ? [
                   BoxShadow(
-                    color: const Color(0xFF60A5FA).withValues(alpha: 0.12),
+                    color: AppColors.blueLight.withValues(alpha: 0.12),
                     blurRadius: 16,
                     offset: const Offset(0, 4),
                   ),
@@ -405,20 +395,20 @@ class _PaperCardState extends State<_PaperCard> {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    const Color(0xFF60A5FA).withValues(alpha: 0.2),
-                    const Color(0xFF3B82F6).withValues(alpha: 0.1),
+                    AppColors.blueLight.withValues(alpha: 0.2),
+                    AppColors.accentBlue.withValues(alpha: 0.1),
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: const Color(0xFF60A5FA).withValues(alpha: 0.3),
+                  color: AppColors.blueLight.withValues(alpha: 0.3),
                 ),
               ),
               child: Icon(
                 hasDirectPdf ? Icons.picture_as_pdf_rounded : Icons.menu_book_rounded,
-                color: const Color(0xFF60A5FA),
+                color: AppColors.blueLight,
                 size: 24,
               ),
             ),
@@ -429,19 +419,16 @@ class _PaperCardState extends State<_PaperCard> {
                 children: [
                   Text(
                     title,
-                    style: GoogleFonts.inter(
-                      color: Colors.white,
+                    style: AppTextStyles.h3.copyWith(
                       fontSize: 15,
-                      fontWeight: FontWeight.bold,
                       height: 1.3,
                     ),
                   ),
                   const SizedBox(height: 5),
                   Text(
                     authors,
-                    style: GoogleFonts.inter(
-                      color: Colors.white.withValues(alpha: 0.65),
-                      fontSize: 12,
+                    style: AppTextStyles.caption.copyWith(
+                      color: AppColors.textSecondary,
                       fontStyle: FontStyle.italic,
                     ),
                     maxLines: 2,
@@ -451,10 +438,10 @@ class _PaperCardState extends State<_PaperCard> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF60A5FA).withValues(alpha: 0.08),
+                      color: AppColors.blueLight.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(
-                        color: const Color(0xFF60A5FA).withValues(alpha: 0.2),
+                        color: AppColors.blueLight.withValues(alpha: 0.2),
                       ),
                     ),
                     child: Column(
@@ -472,17 +459,15 @@ class _PaperCardState extends State<_PaperCard> {
                                   children: [
                                     TextSpan(
                                       text: 'AI Key Insight: ',
-                                      style: GoogleFonts.inter(
-                                        color: const Color(0xFF93C5FD),
-                                        fontSize: 12,
+                                      style: AppTextStyles.badge.copyWith(
+                                        color: AppColors.blueSoft,
                                         fontWeight: FontWeight.w700,
                                       ),
                                     ),
                                     TextSpan(
                                       text: summary,
-                                      style: GoogleFonts.inter(
-                                        color: Colors.white.withValues(alpha: 0.85),
-                                        fontSize: 12,
+                                      style: AppTextStyles.caption.copyWith(
+                                        color: AppColors.textPrimary.withValues(alpha: 0.85),
                                         height: 1.4,
                                       ),
                                     ),
@@ -499,10 +484,8 @@ class _PaperCardState extends State<_PaperCard> {
                               onTap: () => setState(() => _isInsightExpanded = !_isInsightExpanded),
                               child: Text(
                                 _isInsightExpanded ? 'Show less' : 'Read more...',
-                                style: GoogleFonts.inter(
-                                  color: const Color(0xFF60A5FA),
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
+                                style: AppTextStyles.badge.copyWith(
+                                  color: AppColors.blueLight,
                                   decoration: TextDecoration.underline,
                                 ),
                               ),
@@ -519,18 +502,16 @@ class _PaperCardState extends State<_PaperCard> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF60A5FA).withValues(alpha: 0.15),
+                          color: AppColors.blueLight.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(6),
                           border: Border.all(
-                            color: const Color(0xFF60A5FA).withValues(alpha: 0.3),
+                            color: AppColors.blueLight.withValues(alpha: 0.3),
                           ),
                         ),
                         child: Text(
                           source,
-                          style: GoogleFonts.inter(
-                            color: const Color(0xFF93C5FD),
-                            fontSize: 10,
-                            fontWeight: FontWeight.w700,
+                          style: AppTextStyles.badge.copyWith(
+                            color: AppColors.blueSoft,
                             letterSpacing: 0.5,
                           ),
                         ),
@@ -538,18 +519,16 @@ class _PaperCardState extends State<_PaperCard> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.06),
+                          color: AppColors.glassSurface.withValues(alpha: 0.06),
                           borderRadius: BorderRadius.circular(6),
                           border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.1),
+                            color: AppColors.glassBorder,
                           ),
                         ),
                         child: Text(
                           'Year: $year',
-                          style: GoogleFonts.inter(
-                            color: Colors.white70,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600,
+                          style: AppTextStyles.badge.copyWith(
+                            color: AppColors.textSecondary,
                           ),
                         ),
                       ),
@@ -567,15 +546,15 @@ class _PaperCardState extends State<_PaperCard> {
                 child: Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.06),
+                    color: AppColors.glassSurface.withValues(alpha: 0.06),
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
-                      color: const Color(0xFF60A5FA).withValues(alpha: 0.3),
+                      color: AppColors.blueLight.withValues(alpha: 0.3),
                     ),
                   ),
                   child: Icon(
                     actionIcon,
-                    color: const Color(0xFF93C5FD),
+                    color: AppColors.blueSoft,
                     size: 18,
                   ),
                 ),
