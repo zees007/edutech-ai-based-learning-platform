@@ -325,7 +325,7 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
             return q.toString().trim();
           })
           .where((q) => q.isNotEmpty)
-          .take(2)
+          .take(3)
           .toList();
 
       if (parsed.length >= 2) {
@@ -339,7 +339,7 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
     // extract them from tutorExplanation if present
     final extracted = _extractQuestionsFromText(widget.tutorExplanation);
     if (extracted.isNotEmpty) {
-      if (extracted.length >= 2) return extracted.take(2).toList();
+      if (extracted.length >= 2) return extracted.take(3).toList();
       return [extracted.first, fallbackQuestions[1]];
     }
 
@@ -406,10 +406,8 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
   @override
   Widget build(BuildContext context) {
     return Column(
-      mainAxisSize: MainAxisSize.min,
       children: [
-        _buildChatArea(),
-        _buildSuggestedQuestions(),
+        Expanded(child: _buildChatArea()),
         _buildInputBar(),
       ],
     );
@@ -418,19 +416,28 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
   // ─── Chat Area ─────────────────────────────────────────────────
 
   Widget _buildChatArea() {
+    final questions = _suggestedQuestions;
+    final showQuestions = questions.isNotEmpty && !_isTyping;
+    final totalCount =
+        _messages.length + (_isTyping ? 1 : 0) + (showQuestions ? 1 : 0);
+
     return ListView.builder(
       controller: _scrollController,
-      physics: const NeverScrollableScrollPhysics(),
+      physics: const ClampingScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-      shrinkWrap: true,
-      itemCount: _messages.length + (_isTyping ? 1 : 0),
+      itemCount: totalCount,
       itemBuilder: (context, index) {
-        // Typing indicator at the end
-        if (index == _messages.length && _isTyping) {
+        if (index < _messages.length) {
+          final msg = _messages[index];
+          return _buildChatBubble(msg);
+        }
+
+        final extraIndex = index - _messages.length;
+        if (_isTyping && extraIndex == 0) {
           return _buildTypingIndicator();
         }
-        final msg = _messages[index];
-        return _buildChatBubble(msg);
+
+        return _buildSuggestedQuestions();
       },
     );
   }
@@ -759,8 +766,8 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
     final questions = _suggestedQuestions;
     if (questions.isEmpty) return const SizedBox.shrink();
 
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+    return Padding(
+      padding: const EdgeInsets.only(top: 8, bottom: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1093,7 +1100,7 @@ class _SuggestedQuestionChipState extends State<_SuggestedQuestionChip> {
                       fontWeight: FontWeight.w500,
                       height: 1.35,
                     ),
-                    maxLines: 2,
+                    maxLines: 3,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),

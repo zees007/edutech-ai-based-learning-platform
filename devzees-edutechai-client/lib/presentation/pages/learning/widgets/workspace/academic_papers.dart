@@ -83,22 +83,22 @@ class _AcademicPapersState extends ConsumerState<AcademicPapers> {
         Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
                 color: AppColors.blueLight.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(
                 Icons.science_rounded,
                 color: AppColors.blueLight,
-                size: 20,
+                size: 16,
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 10),
             Expanded(
               child: Text(
                 'Academic Research & Landmark Preprints',
-                style: AppTextStyles.h3.copyWith(
+                style: AppTextStyles.subtitle2.copyWith(
                   letterSpacing: 0.2,
                 ),
               ),

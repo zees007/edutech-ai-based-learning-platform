@@ -244,6 +244,18 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     }
   }
 
+  /// Check if the quiz for a given step has been completed.
+  bool isQuizCompletedForStep(int stepIndex) {
+    final session = state.session;
+    if (session == null) return true; // No session = no gating
+    if (stepIndex < 0 || stepIndex >= session.steps.length) return true;
+    final step = session.steps[stepIndex];
+    // No quiz means no gating
+    if (step.quiz == null || step.quiz!.isEmpty) return true;
+    // Quiz is completed if score or answers exist
+    return step.quizScore != null || step.userAnswers != null;
+  }
+
   void sendFollowUpChat(String content) {
     final session = state.session;
     if (session != null && !_wsService.isConnected) {

@@ -20,12 +20,12 @@ class RecommendedVideos extends StatelessWidget {
       children: [
         Row(
           children: [
-            const Text('🎬', style: TextStyle(fontSize: 24)),
-            const SizedBox(width: 12),
+            const Text('🎬', style: TextStyle(fontSize: 20)),
+            const SizedBox(width: 10),
             Expanded(
               child: Text(
-                'Recommended YouTube Video Clips & Timestamps',
-                style: AppTextStyles.h2.copyWith(
+                'Recommended Video Clips & Timestamps',
+                style: AppTextStyles.h3.copyWith(
                   letterSpacing: 0.2,
                 ),
               ),
@@ -33,17 +33,17 @@ class RecommendedVideos extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 16),
-        SizedBox(
-          height: 300, // Increased to accommodate channel, relevance, and long titles without overflow
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: videos!.length,
-            clipBehavior: Clip.none, // Allow shadows to draw outside
-            itemBuilder: (context, index) {
-              final video = videos![index];
-              return _VideoCard(video: video, index: index);
-            },
-          ),
+        Wrap(
+          spacing: 14,
+          runSpacing: 14,
+          children: List.generate(videos!.length, (index) {
+            final video = videos![index];
+            return SizedBox(
+              width: 280,
+              height: 300,
+              child: _VideoCard(video: video, index: index),
+            );
+          }),
         ),
       ],
     );
