@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../core/providers/active_session_provider.dart';
@@ -115,6 +116,9 @@ class _SplitLearningWorkspaceState
         activeState: widget.activeState,
         currentStep: currentStep,
         stepIndex: widget.currentStepIndex,
+        totalSteps: widget.totalSteps,
+        maxUnlockedIndex: widget.maxUnlockedIndex,
+        onStepChange: widget.onStepChange,
       );
     }
 
@@ -811,12 +815,18 @@ class _MobileTabbedWorkspace extends ConsumerStatefulWidget {
   final ActiveSessionState activeState;
   final dynamic currentStep;
   final int stepIndex;
+  final int totalSteps;
+  final int maxUnlockedIndex;
+  final ValueChanged<int> onStepChange;
 
   const _MobileTabbedWorkspace({
     required this.session,
     required this.activeState,
     required this.currentStep,
     required this.stepIndex,
+    required this.totalSteps,
+    required this.maxUnlockedIndex,
+    required this.onStepChange,
   });
 
   @override
@@ -829,12 +839,29 @@ class _MobileTabbedWorkspaceState
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   int _activeTabIndex = 0;
+  bool _quizSubmitted = false;
+
+  bool _isQuizCompleted(dynamic step) {
+    if (step == null) return false;
+    if (step.quizScore != null) return true;
+    if (step.userAnswers != null && step.userAnswers is Map) {
+      final map = step.userAnswers as Map;
+      if (map.isNotEmpty &&
+          map.values.any((v) => v != null && v.toString().trim().isNotEmpty)) {
+        return true;
+      }
+    }
+    return false;
+  }
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
     _tabController.addListener(_onTabControllerChanged);
+    if (_isQuizCompleted(widget.currentStep)) {
+      _quizSubmitted = true;
+    }
   }
 
   void _onTabControllerChanged() {
@@ -856,10 +883,16 @@ class _MobileTabbedWorkspaceState
   void didUpdateWidget(covariant _MobileTabbedWorkspace oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.stepIndex != widget.stepIndex) {
+      _quizSubmitted = false;
+      if (_isQuizCompleted(widget.currentStep)) {
+        _quizSubmitted = true;
+      }
       _tabController.animateTo(0);
       setState(() {
         _activeTabIndex = 0;
       });
+    } else if (!_quizSubmitted && _isQuizCompleted(widget.currentStep)) {
+      _quizSubmitted = true;
     }
   }
 
@@ -870,20 +903,525 @@ class _MobileTabbedWorkspaceState
     super.dispose();
   }
 
+  Future<void> _handleNextStep(BuildContext context, bool isQuizDone) async {
+    if (!isQuizDone) {
+      _showQuizRequiredModal(context);
+      return;
+    }
+
+    await ref
+        .read(activeSessionProvider.notifier)
+        .markStepComplete(widget.currentStep.index);
+    ref
+        .read(activeSessionProvider.notifier)
+        .setActiveStep(widget.currentStep.index + 1);
+  }
+
+  void _showQuizRequiredModal(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      barrierDismissible: true,
+      barrierColor: Colors.black.withValues(alpha: 0.65),
+      builder: (dialogContext) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 420),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+                child: Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        AppColors.surfaceDark.withValues(alpha: 0.96),
+                        AppColors.surfaceDeep.withValues(alpha: 0.94),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: AppColors.primary.withValues(alpha: 0.35),
+                      width: 1.2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.55),
+                        blurRadius: 32,
+                        offset: const Offset(0, 12),
+                      ),
+                      BoxShadow(
+                        color: AppColors.primary.withValues(alpha: 0.15),
+                        blurRadius: 24,
+                        spreadRadius: 2,
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Header Row: Themed Icon badge + Close Button
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  AppColors.primary.withValues(alpha: 0.25),
+                                  AppColors.accentRose.withValues(alpha: 0.15),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: AppColors.primary.withValues(alpha: 0.4),
+                              ),
+                            ),
+                            child: const Icon(
+                              Icons.quiz_rounded,
+                              size: 22,
+                              color: AppColors.purpleLight,
+                            ),
+                          ),
+                          MouseRegion(
+                            cursor: SystemMouseCursors.click,
+                            child: GestureDetector(
+                              onTap: () => Navigator.of(dialogContext).pop(),
+                              child: Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.06),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: AppColors.glassBorder),
+                                ),
+                                child: const Icon(
+                                  Icons.close_rounded,
+                                  size: 18,
+                                  color: AppColors.textMuted,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 18),
+
+                      // Title
+                      Text(
+                        'Knowledge Check Required',
+                        style: AppTextStyles.h4.copyWith(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.2,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+
+                      // Description
+                      Text(
+                        'Please complete the Knowledge Check quiz first to move to the next step of learning. Testing your knowledge ensures you have mastered these concepts.',
+                        style: AppTextStyles.body2.copyWith(
+                          fontSize: 13,
+                          color: AppColors.textSecondary,
+                          height: 1.45,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Hint / Info Box
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: AppColors.primary.withValues(alpha: 0.2),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.lightbulb_outline_rounded,
+                              size: 16,
+                              color: AppColors.accentAmber,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Interactive questions are waiting in the Quiz tab.',
+                                style: AppTextStyles.caption.copyWith(
+                                  color: AppColors.lavender,
+                                  fontSize: 11.5,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 22),
+
+                      // Action Buttons
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          TextButton(
+                            onPressed: () => Navigator.of(dialogContext).pop(),
+                            style: TextButton.styleFrom(
+                              foregroundColor: AppColors.textMuted,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 10,
+                              ),
+                            ),
+                            child: Text(
+                              'Cancel',
+                              style: AppTextStyles.button.copyWith(
+                                fontSize: 12.5,
+                                color: AppColors.textMuted,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          MouseRegion(
+                            cursor: SystemMouseCursors.click,
+                            child: GestureDetector(
+                              onTap: () {
+                                Navigator.of(dialogContext).pop();
+                                _onSelectTab(3); // Tab 3 is Quiz on mobile
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 18,
+                                  vertical: 9,
+                                ),
+                                decoration: BoxDecoration(
+                                  gradient: AppColors.primaryGradient,
+                                  borderRadius: BorderRadius.circular(9),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: AppColors.primary.withValues(alpha: 0.35),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(
+                                      Icons.play_arrow_rounded,
+                                      size: 16,
+                                      color: Colors.white,
+                                    ),
+                                    const SizedBox(width: 5),
+                                    Text(
+                                      'Take Quiz',
+                                      style: AppTextStyles.badge.copyWith(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildMobileStepHeader() {
+    final step = widget.currentStep;
+    final canGoBack = widget.stepIndex > 0;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceSolidHeader,
+        border: Border(
+          bottom: BorderSide(
+            color: AppColors.glassBorder,
+            width: 0.8,
+          ),
+        ),
+      ),
+      child: Row(
+        children: [
+          if (canGoBack) ...[
+            GestureDetector(
+              onTap: () => widget.onStepChange(widget.stepIndex - 1),
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: AppColors.glassBase,
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(color: AppColors.glassBorder),
+                ),
+                child: const Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  size: 12,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+          ],
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(
+                color: AppColors.primary.withValues(alpha: 0.4),
+              ),
+            ),
+            child: Text(
+              'Step ${widget.stepIndex + 1}/${widget.totalSteps}',
+              style: AppTextStyles.badge.copyWith(
+                fontSize: 10.5,
+                fontWeight: FontWeight.w700,
+                color: AppColors.purpleLight,
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              step.title?.toString() ?? 'Learning Step',
+              style: AppTextStyles.subtitle2.copyWith(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w600,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMobileGatingBar(BuildContext context, bool isQuizDone) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppColors.accentGreen.withValues(alpha: 0.20),
+            AppColors.emerald.withValues(alpha: 0.10),
+          ],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+        ),
+        border: Border(
+          top: BorderSide(
+            color: AppColors.accentGreen.withValues(alpha: 0.4),
+            width: 1,
+          ),
+        ),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Row(
+          children: [
+            Expanded(
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => _handleNextStep(context, isQuizDone),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: AppColors.accentGreen.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Icon(
+                        isQuizDone
+                            ? Icons.check_circle_rounded
+                            : Icons.quiz_rounded,
+                        size: 14,
+                        color: AppColors.accentGreen,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        isQuizDone
+                            ? 'Quiz complete! Tap to advance →'
+                            : 'Complete quiz to unlock next step',
+                        style: AppTextStyles.captionBold.copyWith(
+                          color: AppColors.accentGreen,
+                          fontSize: 11.5,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            GestureDetector(
+              onTap: () => _handleNextStep(context, isQuizDone),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [AppColors.accentGreen, AppColors.greenDeep],
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.accentGreen.withValues(alpha: 0.35),
+                      blurRadius: 8,
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Next Step',
+                      style: AppTextStyles.badge.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 11,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    const Icon(
+                      Icons.arrow_forward_rounded,
+                      size: 12,
+                      color: Colors.white,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMobileNoQuizAdvanceBar(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceSolidHeader,
+        border: Border(
+          top: BorderSide(
+            color: AppColors.glassBorder,
+            width: 1,
+          ),
+        ),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: AppColors.accentCyan.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: const Icon(
+                Icons.auto_awesome_rounded,
+                size: 14,
+                color: AppColors.accentCyan,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Ready to continue learning',
+                style: AppTextStyles.caption.copyWith(
+                  color: AppColors.textSecondary,
+                  fontSize: 11.5,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const SizedBox(width: 8),
+            GestureDetector(
+              onTap: () => _handleNextStep(context, true),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
+                decoration: BoxDecoration(
+                  gradient: AppColors.primaryGradient,
+                  borderRadius: BorderRadius.circular(8),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.3),
+                      blurRadius: 8,
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Next Step',
+                      style: AppTextStyles.badge.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 11,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    const Icon(
+                      Icons.arrow_forward_rounded,
+                      size: 12,
+                      color: Colors.white,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final step = widget.currentStep;
     final hasVideos = step.videos != null && step.videos!.isNotEmpty;
     final hasPapers = step.papers != null && step.papers!.isNotEmpty;
     final hasQuiz = step.quiz != null && step.quiz!.isNotEmpty;
-    final isQuizDone = step.quizScore != null ||
-        (step.userAnswers != null &&
-            step.userAnswers!.isNotEmpty &&
-            step.userAnswers!.values.any(
-                (v) => v != null && v.toString().trim().isNotEmpty));
+    final isQuizDone = _quizSubmitted || _isQuizCompleted(step);
+    final isLastStep = widget.stepIndex >= (widget.totalSteps - 1);
 
     return Column(
       children: [
+        // Mobile Step Orientation Header
+        _buildMobileStepHeader(),
+
         // Premium Segmented Tab Bar Header (Mobile)
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
@@ -1000,6 +1538,12 @@ class _MobileTabbedWorkspaceState
             ],
           ),
         ),
+
+        // Pinned Bottom Advance / Gating Bar
+        if (hasQuiz)
+          _buildMobileGatingBar(context, isQuizDone)
+        else if (!isLastStep)
+          _buildMobileNoQuizAdvanceBar(context),
       ],
     );
   }
@@ -1059,15 +1603,12 @@ class _MobileTabbedWorkspaceState
     return LearningResourcesPanel.buildQuizContent(
       quiz: step.quiz,
       stepIndex: widget.stepIndex,
-      onNextStep: () async {
-        await ref
-            .read(activeSessionProvider.notifier)
-            .markStepComplete(step.index);
-        ref
-            .read(activeSessionProvider.notifier)
-            .setActiveStep(step.index + 1);
+      onNextStep: () => _handleNextStep(context, true),
+      onQuizSubmitted: () {
+        setState(() {
+          _quizSubmitted = true;
+        });
       },
-      onQuizSubmitted: () {},
     );
   }
 

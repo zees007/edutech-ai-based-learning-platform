@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../core/theme/app_colors.dart';
@@ -318,48 +319,243 @@ class _LearningResourcesPanelState
 
   void _handleNextStep(BuildContext context, bool isQuizDone) async {
     if (!isQuizDone) {
-      // 1. Switch to the Quiz tab so the user can easily take it
-      _tabController.animateTo(2);
-
-      // 2. Show floating warning message with quick action
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              const Icon(Icons.quiz_outlined, color: Colors.white, size: 18),
-              const SizedBox(width: 10),
-              const Expanded(
-                child: Text(
-                  'Please complete the Knowledge Check quiz first to move to the next step of learning.',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          backgroundColor: AppColors.accentRose,
-          behavior: SnackBarBehavior.floating,
-          duration: const Duration(seconds: 4),
-          margin: const EdgeInsets.all(16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          action: SnackBarAction(
-            label: 'Take Quiz',
-            textColor: Colors.white,
-            onPressed: () {
-              _tabController.animateTo(2);
-            },
-          ),
-        ),
-      );
+      _showQuizRequiredModal(context);
       return;
     }
 
     // Quiz completed: advance to next step
     await widget.onNextStep();
+  }
+
+  void _showQuizRequiredModal(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      barrierDismissible: true,
+      barrierColor: Colors.black.withValues(alpha: 0.65),
+      builder: (dialogContext) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 420),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+                child: Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        AppColors.surfaceDark.withValues(alpha: 0.96),
+                        AppColors.surfaceDeep.withValues(alpha: 0.94),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: AppColors.primary.withValues(alpha: 0.35),
+                      width: 1.2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.55),
+                        blurRadius: 32,
+                        offset: const Offset(0, 12),
+                      ),
+                      BoxShadow(
+                        color: AppColors.primary.withValues(alpha: 0.15),
+                        blurRadius: 24,
+                        spreadRadius: 2,
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Header Row: Themed Icon badge + Close Button
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  AppColors.primary.withValues(alpha: 0.25),
+                                  AppColors.accentRose.withValues(alpha: 0.15),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: AppColors.primary.withValues(alpha: 0.4),
+                              ),
+                            ),
+                            child: const Icon(
+                              Icons.quiz_rounded,
+                              size: 22,
+                              color: AppColors.purpleLight,
+                            ),
+                          ),
+                          MouseRegion(
+                            cursor: SystemMouseCursors.click,
+                            child: GestureDetector(
+                              onTap: () => Navigator.of(dialogContext).pop(),
+                              child: Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.06),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: AppColors.glassBorder),
+                                ),
+                                child: const Icon(
+                                  Icons.close_rounded,
+                                  size: 18,
+                                  color: AppColors.textMuted,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 18),
+
+                      // Title
+                      Text(
+                        'Knowledge Check Required',
+                        style: AppTextStyles.h4.copyWith(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.2,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+
+                      // Description
+                      Text(
+                        'Please complete the Knowledge Check quiz first to move to the next step of learning. Testing your knowledge ensures you have mastered these concepts.',
+                        style: AppTextStyles.body2.copyWith(
+                          fontSize: 13,
+                          color: AppColors.textSecondary,
+                          height: 1.45,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Hint / Info Box
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: AppColors.primary.withValues(alpha: 0.2),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.lightbulb_outline_rounded,
+                              size: 16,
+                              color: AppColors.accentAmber,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Interactive questions are waiting in the Quiz tab.',
+                                style: AppTextStyles.caption.copyWith(
+                                  color: AppColors.lavender,
+                                  fontSize: 11.5,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 22),
+
+                      // Action Buttons
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          TextButton(
+                            onPressed: () => Navigator.of(dialogContext).pop(),
+                            style: TextButton.styleFrom(
+                              foregroundColor: AppColors.textMuted,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 10,
+                              ),
+                            ),
+                            child: Text(
+                              'Cancel',
+                              style: AppTextStyles.button.copyWith(
+                                fontSize: 12.5,
+                                color: AppColors.textMuted,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          MouseRegion(
+                            cursor: SystemMouseCursors.click,
+                            child: GestureDetector(
+                              onTap: () {
+                                Navigator.of(dialogContext).pop();
+                                _onSelectTab(2);
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 18,
+                                  vertical: 9,
+                                ),
+                                decoration: BoxDecoration(
+                                  gradient: AppColors.primaryGradient,
+                                  borderRadius: BorderRadius.circular(9),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: AppColors.primary.withValues(alpha: 0.35),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(
+                                      Icons.play_arrow_rounded,
+                                      size: 16,
+                                      color: Colors.white,
+                                    ),
+                                    const SizedBox(width: 5),
+                                    Text(
+                                      'Take Quiz',
+                                      style: AppTextStyles.badge.copyWith(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 
   Widget _buildGatingBar(BuildContext context, bool isQuizDone) {
