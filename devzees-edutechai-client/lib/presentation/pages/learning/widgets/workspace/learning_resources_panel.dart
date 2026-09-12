@@ -934,6 +934,7 @@ class _ResourceTabItemState extends State<_ResourceTabItem> {
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 if (widget.leadingWidget != null)
                   widget.leadingWidget!
@@ -958,24 +959,39 @@ class _ResourceTabItemState extends State<_ResourceTabItem> {
                 if (widget.badgeCount > 0) ...[
                   const SizedBox(width: 6),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                    constraints: const BoxConstraints(
+                      minWidth: 18,
+                      minHeight: 18,
+                    ),
+                    width: widget.badgeCount > 9 ? null : 18,
+                    height: 18,
+                    padding: widget.badgeCount > 9
+                        ? const EdgeInsets.symmetric(horizontal: 5)
+                        : EdgeInsets.zero,
+                    alignment: Alignment.center,
                     decoration: BoxDecoration(
                       color: widget.badgeColor ?? AppColors.primary,
-                      borderRadius: BorderRadius.circular(10),
+                      shape: widget.badgeCount > 9 ? BoxShape.rectangle : BoxShape.circle,
+                      borderRadius: widget.badgeCount > 9
+                          ? BorderRadius.circular(9)
+                          : null,
                       boxShadow: [
                         BoxShadow(
-                          color: (widget.badgeColor ?? AppColors.primary).withValues(alpha: 0.3),
+                          color: (widget.badgeColor ?? AppColors.primary).withValues(alpha: 0.35),
                           blurRadius: 4,
                         ),
                       ],
                     ),
-                    child: Text(
-                      '${widget.badgeCount}',
-                      style: const TextStyle(
-                        fontSize: 9.5,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                        height: 1.1,
+                    child: Center(
+                      child: Text(
+                        '${widget.badgeCount}',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                          height: 1.0,
+                        ),
                       ),
                     ),
                   ),
