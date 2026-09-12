@@ -8,8 +8,9 @@ class KnowledgeCheckQuiz extends ConsumerStatefulWidget {
   final List<dynamic>? quiz;
   final Future<void> Function()? onNextStep;
   final int stepIndex;
+  final VoidCallback? onQuizSubmitted;
 
-  const KnowledgeCheckQuiz({super.key, this.quiz, this.onNextStep, required this.stepIndex});
+  const KnowledgeCheckQuiz({super.key, this.quiz, this.onNextStep, required this.stepIndex, this.onQuizSubmitted});
 
   @override
   ConsumerState<KnowledgeCheckQuiz> createState() => _KnowledgeCheckQuizState();
@@ -500,6 +501,7 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
                         _submitted = true;
                         _isSubmitting = false;
                       });
+                      widget.onQuizSubmitted?.call();
                     }
                   }
                 },

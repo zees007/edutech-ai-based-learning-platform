@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/learning/session_model.dart';
 import '../../data/models/learning/session_response.dart';
+import '../../data/models/learning/milestone_step.dart';
 import '../../data/models/learning/quiz_result.dart';
 import 'learning_provider.dart';
 import '../services/learning_service.dart';
@@ -182,9 +183,19 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       quizWatch.stop();
       debugPrint('📝 [Client API] Quiz evaluated in ${quizWatch.elapsedMilliseconds}ms. Awarded XP: ${result.xpEarned}');
       
-      // Update session XP locally
+      // Update session XP and step quiz score/answers locally
+      final updatedSteps = List<MilestoneStep>.from(session.steps);
+      if (stepIndex >= 0 && stepIndex < updatedSteps.length) {
+        final currentStep = updatedSteps[stepIndex];
+        updatedSteps[stepIndex] = currentStep.copyWith(
+          quizScore: result.score,
+          userAnswers: answers.map((k, v) => MapEntry(k.toString(), v)),
+        );
+      }
+
       final updatedSession = session.copyWith(
         xpEarned: session.xpEarned + result.xpEarned,
+        steps: updatedSteps,
       );
       
       _uiRenderStopwatch.reset();
@@ -223,9 +234,18 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       
       // Update XP locally
       final awardedXp = data['xp_earned'] as int? ?? 0;
+      final updatedSteps = List<MilestoneStep>.from(session.steps);
+      if (stepIndex >= 0 && stepIndex < updatedSteps.length) {
+        final currentStep = updatedSteps[stepIndex];
+        updatedSteps[stepIndex] = currentStep.copyWith(
+          status: 'complete',
+        );
+      }
+
       final updatedSession = session.copyWith(
         xpEarned: session.xpEarned + awardedXp,
         stepsCompleted: session.stepsCompleted + 1,
+        steps: updatedSteps,
       );
       
       state = state.copyWith(
@@ -242,6 +262,22 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     } catch (e) {
       state = state.copyWith(error: e.toString());
     }
+  }
+
+  /// Check if the quiz for a given step has been completed.
+  bool isQuizCompletedForStep(int stepIndex) {
+    final session = state.session;
+    if (session == null) return true; // No session = no gating
+    if (stepIndex < 0 || stepIndex >= session.steps.length) return true;
+    final step = session.steps[stepIndex];
+    // No quiz means no gating
+    if (step.quiz == null || step.quiz!.isEmpty) return true;
+    // Quiz is completed if score or non-empty answers exist
+    return step.quizScore != null ||
+        (step.userAnswers != null &&
+            step.userAnswers!.isNotEmpty &&
+            step.userAnswers!.values.any(
+                (v) => v != null && v.toString().trim().isNotEmpty));
   }
 
   void sendFollowUpChat(String content) {

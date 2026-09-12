@@ -20,12 +20,12 @@ class RecommendedVideos extends StatelessWidget {
       children: [
         Row(
           children: [
-            const Text('🎬', style: TextStyle(fontSize: 24)),
-            const SizedBox(width: 12),
+            const Text('🎬', style: TextStyle(fontSize: 20)),
+            const SizedBox(width: 10),
             Expanded(
               child: Text(
-                'Recommended YouTube Video Clips & Timestamps',
-                style: AppTextStyles.h2.copyWith(
+                'Recommended Video Clips & Timestamps',
+                style: AppTextStyles.h3.copyWith(
                   letterSpacing: 0.2,
                 ),
               ),
@@ -33,17 +33,15 @@ class RecommendedVideos extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 16),
-        SizedBox(
-          height: 300, // Increased to accommodate channel, relevance, and long titles without overflow
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: videos!.length,
-            clipBehavior: Clip.none, // Allow shadows to draw outside
-            itemBuilder: (context, index) {
-              final video = videos![index];
-              return _VideoCard(video: video, index: index);
-            },
-          ),
+        ListView.separated(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: videos!.length,
+          separatorBuilder: (context, index) => const SizedBox(height: 16),
+          itemBuilder: (context, index) {
+            final video = videos![index];
+            return _VideoCard(video: video, index: index);
+          },
         ),
       ],
     );
@@ -83,15 +81,14 @@ class _VideoCardState extends State<_VideoCard> {
     _controller = YoutubePlayerController.fromVideoId(
       videoId: videoId,
       autoPlay: true,
-      params: YoutubePlayerParams(
+      params: const YoutubePlayerParams(
         showControls: true,
         showFullscreenButton: true,
       ),
     );
 
     if (ts != null) {
-       // Just let it load, seeking immediately might fail if not ready, but we try anyway.
-       // Actually startAt is often passed differently but autoPlay is reliable.
+       // AutoPlay is enabled
     }
 
     setState(() {
@@ -139,125 +136,134 @@ class _VideoCardState extends State<_VideoCard> {
         onTap: _isPlaying ? null : _playVideo,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 250),
-          width: 280,
-          margin: const EdgeInsets.only(right: 16, bottom: 12, top: 8),
-          transform: Matrix4.translationValues(0, _isHovered ? -5 : 0, 0),
+          width: double.infinity,
+          margin: EdgeInsets.zero,
+          transform: Matrix4.translationValues(0, _isHovered ? -3 : 0, 0),
           decoration: BoxDecoration(
             color: _isHovered ? AppColors.glassSurface.withValues(alpha: 0.08) : AppColors.glassSurface.withValues(alpha: 0.03),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: _isHovered ? AppColors.primary.withValues(alpha: 0.5) : AppColors.glassBorder,
             ),
-            boxShadow: [],
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Thumbnail or Player
-                Container(
-                  height: 150,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: Colors.black,
-                    gradient: !_isPlaying ? LinearGradient(
-                      colors: [
-                        AppColors.cyanLight.withValues(alpha: _isHovered ? 0.6 : 0.3),
-                        AppColors.purpleLight.withValues(alpha: _isHovered ? 0.6 : 0.3),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ) : null,
+                // Thumbnail or Player (16:9 aspect ratio fills container width proportionally)
+                AspectRatio(
+                  aspectRatio: 16 / 9,
+                  child: Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.black,
+                      gradient: !_isPlaying ? LinearGradient(
+                        colors: [
+                          AppColors.cyanLight.withValues(alpha: _isHovered ? 0.6 : 0.3),
+                          AppColors.purpleLight.withValues(alpha: _isHovered ? 0.6 : 0.3),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ) : null,
+                    ),
+                    child: _isPlaying && _controller != null
+                        ? YoutubePlayer(controller: _controller!)
+                        : Stack(
+                            alignment: Alignment.center,
+                            fit: StackFit.expand,
+                            children: [
+                              if (videoId != null && videoId.toString().isNotEmpty)
+                                Image.network(
+                                  'https://img.youtube.com/vi/$videoId/maxresdefault.jpg',
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Image.network(
+                                      'https://img.youtube.com/vi/$videoId/hqdefault.jpg',
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (c, e, s) => const SizedBox(),
+                                    );
+                                  },
+                                ),
+                              // Overlay Dark Tint
+                              Container(color: Colors.black.withValues(alpha: _isHovered ? 0.1 : 0.3)),
+                              // Play Icon
+                              Center(
+                                child: AnimatedScale(
+                                  scale: _isHovered ? 1.15 : 1.0,
+                                  duration: const Duration(milliseconds: 250),
+                                  child: Icon(
+                                    Icons.play_circle_fill_rounded, 
+                                    color: Colors.white.withValues(alpha: _isHovered ? 1.0 : 0.9), 
+                                    size: 56,
+                                  ),
+                                ),
+                              ),
+                              Positioned(
+                                bottom: 10,
+                                right: 10,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withValues(alpha: 0.8),
+                                    borderRadius: BorderRadius.circular(5),
+                                  ),
+                                  child: Text(
+                                    duration,
+                                    style: AppTextStyles.badge,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                   ),
-                  child: _isPlaying && _controller != null
-                      ? YoutubePlayer(controller: _controller!)
-                      : Stack(
-                          alignment: Alignment.center,
-                          fit: StackFit.expand,
-                          children: [
-                            if (videoId != null && videoId.toString().isNotEmpty)
-                              Image.network(
-                                'https://img.youtube.com/vi/$videoId/maxresdefault.jpg',
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Image.network(
-                                    'https://img.youtube.com/vi/$videoId/hqdefault.jpg',
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (c, e, s) => const SizedBox(),
-                                  );
-                                },
-                              ),
-                            // Overlay Dark Tint
-                            Container(color: Colors.black.withValues(alpha: _isHovered ? 0.1 : 0.3)),
-                            // Play Icon
-                            Center(
-                              child: AnimatedScale(
-                                scale: _isHovered ? 1.2 : 1.0,
-                                duration: const Duration(milliseconds: 250),
-                                child: Icon(
-                                  Icons.play_circle_fill_rounded, 
-                                  color: Colors.white.withValues(alpha: _isHovered ? 1.0 : 0.9), 
-                                  size: 52
-                                ),
-                              ),
-                            ),
-                            Positioned(
-                              bottom: 8,
-                              right: 8,
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: Colors.black.withValues(alpha: 0.8),
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Text(
-                                  duration,
-                                  style: AppTextStyles.badge,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
                 ),
                 // Info
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          title,
-                          style: AppTextStyles.subtitle2,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
+                Padding(
+                  padding: const EdgeInsets.all(14.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: AppTextStyles.subtitle1.copyWith(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
                         ),
-                        const SizedBox(height: 6),
-                        Row(
-                          children: [
-                            Icon(Icons.person_outline_rounded, size: 14, color: AppColors.textMuted),
-                            const SizedBox(width: 4),
-                            Expanded(
-                              child: Text(
-                                widget.video is Map ? (widget.video['channel'] ?? 'YouTube') : 'YouTube',
-                                style: AppTextStyles.caption.copyWith(
-                                  color: AppColors.textMuted,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Icon(Icons.person_outline_rounded, size: 14, color: AppColors.textMuted),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              widget.video is Map ? (widget.video['channel'] ?? 'YouTube') : 'YouTube',
+                              style: AppTextStyles.caption.copyWith(
+                                color: AppColors.textMuted,
                               ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            if (_isPlaying && _controller != null) ...[
-                              const SizedBox(width: 8),
-                              _SpeedControl(controller: _controller!),
-                            ],
+                          ),
+                          if (_isPlaying && _controller != null) ...[
                             const SizedBox(width: 8),
+                            _SpeedControl(controller: _controller!),
                           ],
-                        ),
-                        const Spacer(),
-                        if (ts > 0 || explanationRaw.isNotEmpty)
-                          Row(
+                        ],
+                      ),
+                      if (ts > 0 || explanationRaw.isNotEmpty) ...[
+                        const SizedBox(height: 10),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: AppColors.glassBase,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: AppColors.glassBorder),
+                          ),
+                          child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               _buildTag(timeStr, AppColors.accentPink),
@@ -275,8 +281,9 @@ class _VideoCardState extends State<_VideoCard> {
                               ),
                             ],
                           ),
+                        ),
                       ],
-                    ),
+                    ],
                   ),
                 ),
               ],
