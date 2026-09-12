@@ -43,6 +43,7 @@ class LearningResourcesPanel extends ConsumerStatefulWidget {
     required int stepIndex,
     required Future<void> Function() onNextStep,
     required VoidCallback onQuizSubmitted,
+    dynamic step,
   }) {
     if (quiz == null || quiz.isEmpty) {
       return Center(
@@ -52,11 +53,11 @@ class LearningResourcesPanel extends ConsumerStatefulWidget {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.rose.withValues(alpha: 0.1),
+                color: AppColors.accentAmber.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(Icons.quiz_outlined,
-                  size: 32, color: AppColors.rose.withValues(alpha: 0.5)),
+                  size: 32, color: AppColors.accentAmber.withValues(alpha: 0.5)),
             ),
             const SizedBox(height: 12),
             Text(
@@ -76,6 +77,7 @@ class LearningResourcesPanel extends ConsumerStatefulWidget {
         stepIndex: stepIndex,
         onNextStep: onNextStep,
         onQuizSubmitted: onQuizSubmitted,
+        step: step,
       ),
     );
   }
@@ -302,7 +304,7 @@ class _LearningResourcesPanelState
       return _buildEmptyState(
         icon: Icons.quiz_outlined,
         label: 'No quiz available for this step',
-        color: AppColors.rose,
+        color: AppColors.accentAmber,
       );
     }
     return SingleChildScrollView(
@@ -313,6 +315,7 @@ class _LearningResourcesPanelState
         stepIndex: widget.stepIndex,
         onNextStep: widget.onNextStep,
         onQuizSubmitted: _onQuizSubmitted,
+        step: step,
       ),
     );
   }
