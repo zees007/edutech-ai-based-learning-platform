@@ -30,10 +30,22 @@ class _AcademicPapersState extends ConsumerState<AcademicPapers> {
     super.initState();
     if (widget.papers != null && widget.papers!.isNotEmpty) {
       _displayedPapers = List.from(widget.papers!);
-    } else if (widget.initialTopic != null && widget.initialTopic!.trim().isNotEmpty) {
-      _searchController.text = widget.initialTopic!.trim();
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _searchLive(widget.initialTopic!.trim());
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant AcademicPapers oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.papers != widget.papers) {
+      setState(() {
+        if (widget.papers != null && widget.papers!.isNotEmpty) {
+          _displayedPapers = List.from(widget.papers!);
+        } else {
+          _displayedPapers = [];
+        }
+        _searchController.clear();
+        _errorMessage = null;
+        _isLoading = false;
       });
     }
   }
@@ -212,16 +224,46 @@ class _AcademicPapersState extends ConsumerState<AcademicPapers> {
           )
         else if (_displayedPapers.isEmpty)
           Container(
-            padding: const EdgeInsets.all(16),
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 20),
             decoration: BoxDecoration(
               color: AppColors.glassSurface.withValues(alpha: 0.03),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(14),
               border: Border.all(color: AppColors.glassBorder),
             ),
             child: Center(
-              child: Text(
-                'No papers currently indexed. Type a topic above to search.',
-                style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppColors.blueLight.withValues(alpha: 0.08),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.menu_book_rounded,
+                      size: 28,
+                      color: AppColors.blueLight.withValues(alpha: 0.7),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'No academic papers available for this step',
+                    style: AppTextStyles.subtitle2.copyWith(
+                      color: AppColors.textPrimary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Type a keyword or topic above to find relevant papers on arXiv & Semantic Scholar.',
+                    style: AppTextStyles.caption.copyWith(
+                      color: AppColors.textMuted,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
               ),
             ),
           )

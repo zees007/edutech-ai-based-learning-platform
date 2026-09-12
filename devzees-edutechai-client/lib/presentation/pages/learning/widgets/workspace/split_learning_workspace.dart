@@ -828,15 +828,44 @@ class _MobileTabbedWorkspaceState
     extends ConsumerState<_MobileTabbedWorkspace>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  int _activeTabIndex = 0;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
+    _tabController.addListener(_onTabControllerChanged);
+  }
+
+  void _onTabControllerChanged() {
+    if (_activeTabIndex != _tabController.index) {
+      setState(() {
+        _activeTabIndex = _tabController.index;
+      });
+    }
+  }
+
+  void _onSelectTab(int index) {
+    _tabController.animateTo(index);
+    setState(() {
+      _activeTabIndex = index;
+    });
+  }
+
+  @override
+  void didUpdateWidget(covariant _MobileTabbedWorkspace oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.stepIndex != widget.stepIndex) {
+      _tabController.animateTo(0);
+      setState(() {
+        _activeTabIndex = 0;
+      });
+    }
   }
 
   @override
   void dispose() {
+    _tabController.removeListener(_onTabControllerChanged);
     _tabController.dispose();
     super.dispose();
   }
@@ -855,60 +884,104 @@ class _MobileTabbedWorkspaceState
 
     return Column(
       children: [
-        // Tab bar
+        // Premium Segmented Tab Bar Header (Mobile)
         Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
           decoration: BoxDecoration(
-            color: AppColors.surfaceSolidHeader,
+            color: AppColors.surfaceSolidHeader.withValues(alpha: 0.65),
             border: Border(
-              bottom: BorderSide(color: AppColors.glassBorder, width: 0.5),
+              bottom: BorderSide(color: AppColors.glassBorder, width: 0.8),
             ),
           ),
-          child: TabBar(
-            controller: _tabController,
-            isScrollable: false,
-            indicatorColor: AppColors.primary,
-            indicatorWeight: 2.5,
-            labelColor: AppColors.textPrimary,
-            unselectedLabelColor: AppColors.textMuted,
-            labelStyle: AppTextStyles.captionBold.copyWith(fontSize: 11),
-            unselectedLabelStyle: AppTextStyles.caption.copyWith(fontSize: 11),
-            tabs: [
-              const Tab(
-                icon: Icon(Icons.smart_toy_rounded, size: 18),
-                text: 'Tutor',
+          child: Container(
+            padding: const EdgeInsets.all(3),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceDark.withValues(alpha: 0.55),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: AppColors.glassBorderSubtle,
+                width: 0.8,
               ),
-              Tab(
-                icon: Badge(
-                  isLabelVisible: hasVideos,
-                  smallSize: 6,
-                  backgroundColor: AppColors.accentRose,
-                  child: const Icon(Icons.play_circle_outline_rounded, size: 18),
+            ),
+            child: Row(
+              children: [
+                _MobileWorkspaceTabItem(
+                  index: 0,
+                  isActive: _activeTabIndex == 0,
+                  label: 'Tutor',
+                  icon: Icons.smart_toy_rounded,
+                  accentColor: AppColors.primary,
+                  onTap: () => _onSelectTab(0),
                 ),
-                text: 'Videos',
-              ),
-              Tab(
-                icon: Badge(
-                  isLabelVisible: hasPapers,
-                  smallSize: 6,
-                  backgroundColor: AppColors.blueLight,
-                  child: const Icon(Icons.science_outlined, size: 18),
+                const SizedBox(width: 3),
+                _MobileWorkspaceTabItem(
+                  index: 1,
+                  isActive: _activeTabIndex == 1,
+                  label: 'Videos',
+                  icon: Icons.play_circle_outline_rounded,
+                  accentColor: AppColors.accentRose,
+                  hasBadge: hasVideos,
+                  badgeColor: AppColors.accentRose,
+                  onTap: () => _onSelectTab(1),
                 ),
-                text: 'Papers',
-              ),
-              Tab(
-                icon: hasQuiz
-                    ? (isQuizDone
-                        ? const Icon(Icons.check_circle_rounded,
-                            size: 18, color: AppColors.accentGreen)
-                        : Badge(
-                            smallSize: 6,
-                            backgroundColor: AppColors.accentAmber,
-                            child: const Icon(Icons.quiz_outlined, size: 18),
-                          ))
-                    : const Icon(Icons.quiz_outlined, size: 18),
-                text: 'Quiz',
-              ),
-            ],
+                const SizedBox(width: 3),
+                _MobileWorkspaceTabItem(
+                  index: 2,
+                  isActive: _activeTabIndex == 2,
+                  label: 'Papers',
+                  icon: Icons.science_outlined,
+                  accentColor: AppColors.blueLight,
+                  hasBadge: hasPapers,
+                  badgeColor: AppColors.blueLight,
+                  onTap: () => _onSelectTab(2),
+                ),
+                const SizedBox(width: 3),
+                _MobileWorkspaceTabItem(
+                  index: 3,
+                  isActive: _activeTabIndex == 3,
+                  label: 'Quiz',
+                  icon: Icons.quiz_outlined,
+                  accentColor: isQuizDone ? AppColors.accentGreen : AppColors.accentAmber,
+                  leadingWidget: hasQuiz
+                      ? (isQuizDone
+                          ? Container(
+                              width: 15,
+                              height: 15,
+                              decoration: BoxDecoration(
+                                color: AppColors.accentGreen,
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppColors.accentGreen.withValues(alpha: 0.4),
+                                    blurRadius: 6,
+                                  ),
+                                ],
+                              ),
+                              child: const Icon(
+                                Icons.check_rounded,
+                                size: 10,
+                                color: Colors.white,
+                              ),
+                            )
+                          : Container(
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                color: AppColors.accentAmber,
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppColors.accentAmber.withValues(alpha: 0.5),
+                                    blurRadius: 4,
+                                  ),
+                                ],
+                              ),
+                            ))
+                      : null,
+                  onTap: () => _onSelectTab(3),
+                ),
+              ],
+            ),
           ),
         ),
         // Tab content
@@ -967,18 +1040,10 @@ class _MobileTabbedWorkspaceState
   }
 
   Widget _buildPapersTab(dynamic step) {
-    if (step.papers == null || step.papers!.isEmpty) {
-      return _buildEmptyState(
-        icon: Icons.science_outlined,
-        label: 'No papers available for this step',
-        color: AppColors.blueLight,
-      );
-    }
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: LearningResourcesPanel.buildPapersContent(
         step.papers,
-        '${widget.session.topic}: ${step.title}',
       ),
     );
   }
@@ -1029,6 +1094,161 @@ class _MobileTabbedWorkspaceState
             style: AppTextStyles.caption.copyWith(color: AppColors.textMuted),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Interactive segmented tab item for mobile workspace tabs.
+class _MobileWorkspaceTabItem extends StatefulWidget {
+  final int index;
+  final bool isActive;
+  final String label;
+  final IconData icon;
+  final Color accentColor;
+  final bool hasBadge;
+  final Color? badgeColor;
+  final Widget? leadingWidget;
+  final VoidCallback onTap;
+
+  const _MobileWorkspaceTabItem({
+    required this.index,
+    required this.isActive,
+    required this.label,
+    required this.icon,
+    required this.accentColor,
+    this.hasBadge = false,
+    this.badgeColor,
+    this.leadingWidget,
+    required this.onTap,
+  });
+
+  @override
+  State<_MobileWorkspaceTabItem> createState() =>
+      _MobileWorkspaceTabItemState();
+}
+
+class _MobileWorkspaceTabItemState extends State<_MobileWorkspaceTabItem> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final isActive = widget.isActive;
+    final isHovered = _isHovered;
+
+    final Color textColor = isActive
+        ? AppColors.textPrimary
+        : (isHovered ? AppColors.textSlate : AppColors.textMuted);
+
+    final Color iconColor = isActive
+        ? widget.accentColor
+        : (isHovered
+            ? widget.accentColor.withValues(alpha: 0.85)
+            : AppColors.textMuted);
+
+    return Expanded(
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        onEnter: (_) => setState(() => _isHovered = true),
+        onExit: (_) => setState(() => _isHovered = false),
+        child: GestureDetector(
+          onTap: widget.onTap,
+          behavior: HitTestBehavior.opaque,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOutCubic,
+            height: 38,
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              gradient: isActive
+                  ? LinearGradient(
+                      colors: [
+                        AppColors.primary
+                            .withValues(alpha: isHovered ? 0.28 : 0.22),
+                        AppColors.purpleDeep
+                            .withValues(alpha: isHovered ? 0.20 : 0.14),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    )
+                  : null,
+              color: isActive
+                  ? null
+                  : (isHovered
+                      ? AppColors.primary.withValues(alpha: 0.09)
+                      : Colors.transparent),
+              border: Border.all(
+                color: isActive
+                    ? AppColors.primary
+                        .withValues(alpha: isHovered ? 0.70 : 0.50)
+                    : (isHovered
+                        ? AppColors.primary.withValues(alpha: 0.28)
+                        : Colors.transparent),
+                width: 1,
+              ),
+              boxShadow: isActive
+                  ? [
+                      BoxShadow(
+                        color: AppColors.primary
+                            .withValues(alpha: isHovered ? 0.28 : 0.18),
+                        blurRadius: isHovered ? 12 : 8,
+                        offset: const Offset(0, 1),
+                      ),
+                    ]
+                  : (isHovered
+                      ? [
+                          BoxShadow(
+                            color: AppColors.primary.withValues(alpha: 0.08),
+                            blurRadius: 8,
+                          ),
+                        ]
+                      : null),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (widget.leadingWidget != null)
+                  widget.leadingWidget!
+                else
+                  Icon(widget.icon, size: 16, color: iconColor),
+                const SizedBox(width: 5),
+                Flexible(
+                  child: Text(
+                    widget.label,
+                    style: AppTextStyles.captionBold.copyWith(
+                      fontSize: 11.5,
+                      color: textColor,
+                      fontWeight: isActive
+                          ? FontWeight.w700
+                          : (isHovered ? FontWeight.w600 : FontWeight.w500),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                if (widget.hasBadge) ...[
+                  const SizedBox(width: 4),
+                  Container(
+                    width: 6,
+                    height: 6,
+                    decoration: BoxDecoration(
+                      color: widget.badgeColor ?? AppColors.primary,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: (widget.badgeColor ?? AppColors.primary)
+                              .withValues(alpha: 0.5),
+                          blurRadius: 3,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

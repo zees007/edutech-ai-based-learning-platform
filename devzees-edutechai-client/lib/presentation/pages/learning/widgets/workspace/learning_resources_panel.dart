@@ -33,11 +33,8 @@ class LearningResourcesPanel extends ConsumerStatefulWidget {
     return RecommendedVideos(videos: videos);
   }
 
-  static Widget buildPapersContent(List<dynamic>? papers, String topic) {
-    if (papers == null || papers.isEmpty) {
-      return AcademicPapers(papers: papers, initialTopic: topic);
-    }
-    return AcademicPapers(papers: papers, initialTopic: topic);
+  static Widget buildPapersContent(List<dynamic>? papers, [String? topic]) {
+    return AcademicPapers(papers: papers);
   }
 
   static Widget buildQuizContent({
@@ -87,6 +84,7 @@ class _LearningResourcesPanelState
     extends ConsumerState<LearningResourcesPanel>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  int _activeTabIndex = 0;
   bool _quizSubmitted = false;
 
   bool _isQuizCompleted(dynamic step) {
@@ -106,12 +104,28 @@ class _LearningResourcesPanelState
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    _tabController.addListener(_onTabControllerChanged);
 
     // Check if quiz is already completed
     final step = widget.currentStep;
     if (_isQuizCompleted(step)) {
       _quizSubmitted = true;
     }
+  }
+
+  void _onTabControllerChanged() {
+    if (_activeTabIndex != _tabController.index) {
+      setState(() {
+        _activeTabIndex = _tabController.index;
+      });
+    }
+  }
+
+  void _onSelectTab(int index) {
+    _tabController.animateTo(index);
+    setState(() {
+      _activeTabIndex = index;
+    });
   }
 
   @override
@@ -125,6 +139,9 @@ class _LearningResourcesPanelState
       }
       // Reset to first tab on step change
       _tabController.animateTo(0);
+      setState(() {
+        _activeTabIndex = 0;
+      });
     } else if (!_quizSubmitted && _isQuizCompleted(widget.currentStep)) {
       _quizSubmitted = true;
     }
@@ -132,6 +149,7 @@ class _LearningResourcesPanelState
 
   @override
   void dispose() {
+    _tabController.removeListener(_onTabControllerChanged);
     _tabController.dispose();
     super.dispose();
   }
@@ -152,45 +170,82 @@ class _LearningResourcesPanelState
 
     return Column(
       children: [
-        // Tab bar
+        // Premium Segmented Tab Bar Header
         Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-            color: AppColors.surfaceDark.withValues(alpha: 0.5),
+            color: AppColors.surfaceSolidHeader.withValues(alpha: 0.65),
             border: Border(
-              bottom:
-                  BorderSide(color: AppColors.glassBorder, width: 0.5),
+              bottom: BorderSide(color: AppColors.glassBorder, width: 0.8),
             ),
           ),
-          child: TabBar(
-            controller: _tabController,
-            isScrollable: false,
-            indicatorColor: AppColors.primary,
-            indicatorWeight: 2.5,
-            indicatorSize: TabBarIndicatorSize.label,
-            dividerColor: Colors.transparent,
-            labelColor: AppColors.textPrimary,
-            unselectedLabelColor: AppColors.textMuted,
-            labelStyle: AppTextStyles.captionBold.copyWith(fontSize: 12),
-            unselectedLabelStyle:
-                AppTextStyles.caption.copyWith(fontSize: 12),
-            tabs: [
-              _buildTab(
-                icon: Icons.play_circle_outline_rounded,
-                label: 'Videos',
-                badgeColor: hasVideos ? AppColors.accentRose : null,
-                count: hasVideos ? step.videos!.length : 0,
+          child: Container(
+            padding: const EdgeInsets.all(3),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceDark.withValues(alpha: 0.55),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: AppColors.glassBorderSubtle,
+                width: 0.8,
               ),
-              _buildTab(
-                icon: Icons.science_outlined,
-                label: 'Papers',
-                badgeColor: hasPapers ? AppColors.blueLight : null,
-                count: hasPapers ? step.papers!.length : 0,
-              ),
-              _buildQuizTab(
-                hasQuiz: hasQuiz,
-                isQuizDone: isQuizDone,
-              ),
-            ],
+            ),
+            child: Row(
+              children: [
+                _ResourceTabItem(
+                  index: 0,
+                  isActive: _activeTabIndex == 0,
+                  label: 'Videos',
+                  icon: Icons.play_circle_outline_rounded,
+                  accentColor: AppColors.accentRose,
+                  badgeCount: hasVideos ? step.videos!.length : 0,
+                  badgeColor: AppColors.accentRose,
+                  onTap: () => _onSelectTab(0),
+                ),
+                const SizedBox(width: 4),
+                _ResourceTabItem(
+                  index: 1,
+                  isActive: _activeTabIndex == 1,
+                  label: 'Papers',
+                  icon: Icons.science_outlined,
+                  accentColor: AppColors.blueLight,
+                  badgeCount: hasPapers ? step.papers!.length : 0,
+                  badgeColor: AppColors.accentBlue,
+                  onTap: () => _onSelectTab(1),
+                ),
+                const SizedBox(width: 4),
+                _ResourceTabItem(
+                  index: 2,
+                  isActive: _activeTabIndex == 2,
+                  label: 'Quiz',
+                  icon: Icons.quiz_outlined,
+                  accentColor: isQuizDone ? AppColors.accentGreen : AppColors.accentAmber,
+                  leadingWidget: hasQuiz && isQuizDone
+                      ? Container(
+                          width: 17,
+                          height: 17,
+                          decoration: BoxDecoration(
+                            color: AppColors.accentGreen,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.accentGreen.withValues(alpha: 0.4),
+                                blurRadius: 6,
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                            Icons.check_rounded,
+                            size: 11,
+                            color: Colors.white,
+                          ),
+                        )
+                      : (hasQuiz && !isQuizDone
+                          ? _PulsingDot(color: AppColors.accentAmber)
+                          : null),
+                  onTap: () => _onSelectTab(2),
+                ),
+              ],
+            ),
           ),
         ),
 
@@ -218,73 +273,6 @@ class _LearningResourcesPanelState
     );
   }
 
-  Widget _buildTab({
-    required IconData icon,
-    required String label,
-    Color? badgeColor,
-    int count = 0,
-  }) {
-    return Tab(
-      height: 42,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Badge(
-            isLabelVisible: badgeColor != null && count > 0,
-            label: Text(
-              '$count',
-              style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w700),
-            ),
-            backgroundColor: badgeColor ?? Colors.transparent,
-            child: Icon(icon, size: 16),
-          ),
-          const SizedBox(width: 6),
-          Text(label),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildQuizTab({
-    required bool hasQuiz,
-    required bool isQuizDone,
-  }) {
-    return Tab(
-      height: 42,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (hasQuiz && isQuizDone)
-            Container(
-              width: 18,
-              height: 18,
-              decoration: BoxDecoration(
-                color: AppColors.accentGreen,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.accentGreen.withValues(alpha: 0.5),
-                    blurRadius: 6,
-                  ),
-                ],
-              ),
-              child: const Icon(
-                Icons.check_rounded,
-                size: 12,
-                color: Colors.white,
-              ),
-            )
-          else if (hasQuiz && !isQuizDone)
-            _PulsingDot(color: AppColors.accentAmber)
-          else
-            const Icon(Icons.quiz_outlined, size: 16),
-          const SizedBox(width: 6),
-          const Text('Quiz'),
-        ],
-      ),
-    );
-  }
-
   Widget _buildVideosTab(dynamic step) {
     if (step.videos == null || step.videos!.isEmpty) {
       return _buildEmptyState(
@@ -304,7 +292,6 @@ class _LearningResourcesPanelState
       padding: const EdgeInsets.all(20),
       child: AcademicPapers(
         papers: step.papers,
-        initialTopic: '${widget.session.topic}: ${step.title}',
       ),
     );
   }
@@ -650,6 +637,158 @@ class _PulsingDotState extends State<_PulsingDot>
           ),
         );
       },
+    );
+  }
+}
+
+/// Interactive segmented tab item with premium tactile hover and active glows.
+class _ResourceTabItem extends StatefulWidget {
+  final int index;
+  final bool isActive;
+  final String label;
+  final IconData icon;
+  final Color accentColor;
+  final Widget? leadingWidget;
+  final int badgeCount;
+  final Color? badgeColor;
+  final VoidCallback onTap;
+
+  const _ResourceTabItem({
+    required this.index,
+    required this.isActive,
+    required this.label,
+    required this.icon,
+    required this.accentColor,
+    this.leadingWidget,
+    this.badgeCount = 0,
+    this.badgeColor,
+    required this.onTap,
+  });
+
+  @override
+  State<_ResourceTabItem> createState() => _ResourceTabItemState();
+}
+
+class _ResourceTabItemState extends State<_ResourceTabItem> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final isActive = widget.isActive;
+    final isHovered = _isHovered;
+
+    final Color textColor = isActive
+        ? AppColors.textPrimary
+        : (isHovered ? AppColors.textSlate : AppColors.textMuted);
+
+    final Color iconColor = isActive
+        ? widget.accentColor
+        : (isHovered ? widget.accentColor.withValues(alpha: 0.9) : AppColors.textMuted);
+
+    return Expanded(
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        onEnter: (_) => setState(() => _isHovered = true),
+        onExit: (_) => setState(() => _isHovered = false),
+        child: GestureDetector(
+          onTap: widget.onTap,
+          behavior: HitTestBehavior.opaque,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOutCubic,
+            height: 38,
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              gradient: isActive
+                  ? LinearGradient(
+                      colors: [
+                        AppColors.primary.withValues(alpha: isHovered ? 0.28 : 0.22),
+                        AppColors.purpleDeep.withValues(alpha: isHovered ? 0.20 : 0.14),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    )
+                  : null,
+              color: isActive
+                  ? null
+                  : (isHovered ? AppColors.primary.withValues(alpha: 0.09) : Colors.transparent),
+              border: Border.all(
+                color: isActive
+                    ? AppColors.primary.withValues(alpha: isHovered ? 0.70 : 0.50)
+                    : (isHovered ? AppColors.primary.withValues(alpha: 0.28) : Colors.transparent),
+                width: 1,
+              ),
+              boxShadow: isActive
+                  ? [
+                      BoxShadow(
+                        color: AppColors.primary.withValues(alpha: isHovered ? 0.28 : 0.18),
+                        blurRadius: isHovered ? 12 : 8,
+                        offset: const Offset(0, 1),
+                      ),
+                    ]
+                  : (isHovered
+                      ? [
+                          BoxShadow(
+                            color: AppColors.primary.withValues(alpha: 0.08),
+                            blurRadius: 8,
+                          ),
+                        ]
+                      : null),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (widget.leadingWidget != null)
+                  widget.leadingWidget!
+                else
+                  Icon(widget.icon, size: 16, color: iconColor),
+                const SizedBox(width: 7),
+                Flexible(
+                  child: Text(
+                    widget.label,
+                    style: AppTextStyles.captionBold.copyWith(
+                      fontSize: 12,
+                      color: textColor,
+                      fontWeight: isActive
+                          ? FontWeight.w700
+                          : (isHovered ? FontWeight.w600 : FontWeight.w500),
+                      letterSpacing: 0.2,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                if (widget.badgeCount > 0) ...[
+                  const SizedBox(width: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                    decoration: BoxDecoration(
+                      color: widget.badgeColor ?? AppColors.primary,
+                      borderRadius: BorderRadius.circular(10),
+                      boxShadow: [
+                        BoxShadow(
+                          color: (widget.badgeColor ?? AppColors.primary).withValues(alpha: 0.3),
+                          blurRadius: 4,
+                        ),
+                      ],
+                    ),
+                    child: Text(
+                      '${widget.badgeCount}',
+                      style: const TextStyle(
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                        height: 1.1,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
