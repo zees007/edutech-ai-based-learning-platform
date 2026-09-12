@@ -9,6 +9,7 @@ import 'package:flutter_math_fork/flutter_math.dart';
 import '../../../../../../core/theme/app_colors.dart';
 import '../../../../../../core/providers/active_session_provider.dart';
 import 'mermaid_web_view.dart';
+import '../../../../widgets/animated_tutor_icon.dart';
 
 // ═══════════════════════════════════════════════════════════════════
 // Socratic Tutor Chat — Premium Chat Bubble UI
@@ -421,9 +422,33 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
     final totalCount =
         _messages.length + (_isTyping ? 1 : 0) + (showQuestions ? 1 : 0);
 
-    return Scrollbar(
-      controller: _scrollController,
-      child: ListView.builder(
+    return ScrollbarTheme(
+      data: ScrollbarThemeData(
+        thumbColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.dragged) ||
+              states.contains(WidgetState.hovered)) {
+            return const Color(0xFF475569).withValues(alpha: 0.90);
+          }
+          return const Color(0xFF334155).withValues(alpha: 0.65);
+        }),
+        trackColor: WidgetStateProperty.all(
+          AppColors.surfaceDark.withValues(alpha: 0.40),
+        ),
+        trackBorderColor: WidgetStateProperty.all(Colors.transparent),
+        radius: const Radius.circular(6),
+        thickness: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.hovered) ||
+              states.contains(WidgetState.dragged)) {
+            return 6.0;
+          }
+          return 5.0;
+        }),
+        crossAxisMargin: 2.0,
+        mainAxisMargin: 4.0,
+      ),
+      child: Scrollbar(
+        controller: _scrollController,
+        child: ListView.builder(
         controller: _scrollController,
         physics: const ClampingScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
@@ -442,8 +467,9 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
           return _buildSuggestedQuestions();
         },
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildChatBubble(_ChatMessage msg) {
     final isTutor = msg.sender == _Sender.tutor;
@@ -538,18 +564,24 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
                   margin: const EdgeInsets.only(top: 4),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    gradient: const LinearGradient(
-                      colors: [AppColors.accentBlue, AppColors.accentCyan],
+                    color: AppColors.surfaceDeep,
+                    border: Border.all(
+                      color: AppColors.accentBlue.withValues(alpha: 0.55),
+                      width: 1.2,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.accentBlue.withValues(alpha: 0.3),
+                        color: AppColors.accentBlue.withValues(alpha: 0.28),
                         blurRadius: 8,
                       ),
                     ],
                   ),
                   child: const Center(
-                    child: Text('🧑‍🎓', style: TextStyle(fontSize: 14)),
+                    child: Icon(
+                      Icons.person_rounded,
+                      size: 16,
+                      color: AppColors.blueLight,
+                    ),
                   ),
                 ),
               ],
@@ -588,28 +620,47 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
       p: baseTextStyle,
       pPadding: const EdgeInsets.only(bottom: 8),
 
-      // Headers
+      // Headers (All Cyan)
       h1: GoogleFonts.inter(
-        color: Colors.white,
+        color: AppColors.accentCyan,
         fontSize: 20,
         fontWeight: FontWeight.w700,
         height: 1.3,
       ),
       h1Padding: const EdgeInsets.only(bottom: 12, top: 4),
       h2: GoogleFonts.inter(
-        color: AppColors.lavender,
+        color: AppColors.accentCyan,
         fontSize: 17,
         fontWeight: FontWeight.w700,
         height: 1.3,
       ),
       h2Padding: const EdgeInsets.only(bottom: 10, top: 8),
       h3: GoogleFonts.inter(
-        color: AppColors.primary,
+        color: AppColors.accentCyan,
         fontSize: 15,
         fontWeight: FontWeight.w600,
         height: 1.3,
       ),
       h3Padding: const EdgeInsets.only(bottom: 8, top: 6),
+      h4: GoogleFonts.inter(
+        color: AppColors.accentCyan,
+        fontSize: 14,
+        fontWeight: FontWeight.w600,
+        height: 1.3,
+      ),
+      h4Padding: const EdgeInsets.only(bottom: 6, top: 4),
+      h5: GoogleFonts.inter(
+        color: AppColors.accentCyan,
+        fontSize: 13,
+        fontWeight: FontWeight.w600,
+        height: 1.3,
+      ),
+      h6: GoogleFonts.inter(
+        color: AppColors.accentCyan,
+        fontSize: 12,
+        fontWeight: FontWeight.w600,
+        height: 1.3,
+      ),
 
       // Bold & emphasis
       strong: GoogleFonts.inter(
@@ -629,7 +680,7 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
       ),
 
       // Lists
-      listBullet: baseTextStyle.copyWith(color: AppColors.primary),
+      listBullet: baseTextStyle.copyWith(color: AppColors.accentCyan),
       listBulletPadding: const EdgeInsets.only(right: 8),
       listIndent: 20,
 
@@ -650,13 +701,13 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
 
       // Blockquote
       blockquote: baseTextStyle.copyWith(
-        color: Colors.white.withValues(alpha: 0.7),
+        color: AppColors.textSlate.withValues(alpha: 0.85),
         fontStyle: FontStyle.italic,
       ),
       blockquoteDecoration: BoxDecoration(
         border: Border(
           left: BorderSide(
-            color: AppColors.primary.withValues(alpha: 0.5),
+            color: AppColors.accentCyan.withValues(alpha: 0.5),
             width: 3,
           ),
         ),
@@ -704,43 +755,9 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
   }
 
   Widget _buildTutorAvatar() {
-    return Container(
-      width: 32,
-      height: 32,
-      margin: const EdgeInsets.only(top: 4),
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: const LinearGradient(
-          colors: [
-            Color(0xFF161B26),
-            Color(0xFF0D111A),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.accentCyan.withValues(alpha: 0.35),
-            blurRadius: 10,
-            spreadRadius: 0.5,
-          ),
-          BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.25),
-            blurRadius: 6,
-          ),
-        ],
-        border: Border.all(
-          color: AppColors.accentCyan.withValues(alpha: 0.65),
-          width: 1.2,
-        ),
-      ),
-      child: const Center(
-        child: Icon(
-          Icons.smart_toy_rounded,
-          size: 16,
-          color: AppColors.accentCyan,
-        ),
-      ),
+    return const Padding(
+      padding: EdgeInsets.only(top: 4),
+      child: AnimatedTutorIcon(size: 32),
     );
   }
 
@@ -862,18 +879,34 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    AppColors.roseLight.withValues(alpha: 0.2),
-                    AppColors.lavender.withValues(alpha: 0.2),
-                  ],
-                ),
+                color: AppColors.surfaceDeep.withValues(alpha: 0.9),
                 borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: AppColors.purple.withValues(alpha: 0.35),
+                  width: 1,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.purple.withValues(alpha: 0.25),
+                    blurRadius: 8,
+                  ),
+                ],
               ),
-              child: const Icon(
-                Icons.auto_awesome_rounded,
-                color: AppColors.lavender,
-                size: 16,
+              child: ShaderMask(
+                shaderCallback: (bounds) => const LinearGradient(
+                  colors: [
+                    AppColors.accentPink,
+                    AppColors.purple,
+                    AppColors.blueLight,
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ).createShader(bounds),
+                child: const Icon(
+                  Icons.auto_awesome_rounded,
+                  color: Colors.white,
+                  size: 16,
+                ),
               ),
             ),
             const SizedBox(width: 12),

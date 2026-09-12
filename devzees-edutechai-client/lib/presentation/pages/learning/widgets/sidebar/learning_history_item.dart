@@ -102,6 +102,9 @@ class _LearningHistoryItemState extends ConsumerState<LearningHistoryItem> {
 
   @override
   Widget build(BuildContext context) {
+    final activeSessionId = ref.watch(activeSessionProvider).session?.sessionId;
+    final bool isActive = activeSessionId != null && activeSessionId == widget.session.sessionId;
+
     if (!widget.expanded) {
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -119,12 +122,28 @@ class _LearningHistoryItemState extends ConsumerState<LearningHistoryItem> {
             height: 40,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: AppColors.glassSurface.withValues(alpha: 0.05),
+              color: isActive
+                  ? AppColors.primary.withValues(alpha: 0.20)
+                  : AppColors.glassSurface.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: isActive
+                    ? AppColors.primary.withValues(alpha: 0.45)
+                    : Colors.transparent,
+                width: 1,
+              ),
+              boxShadow: isActive
+                  ? [
+                      BoxShadow(
+                        color: AppColors.primary.withValues(alpha: 0.25),
+                        blurRadius: 8,
+                      ),
+                    ]
+                  : null,
             ),
             child: Icon(
               Icons.history,
-              color: AppColors.textSecondary,
+              color: isActive ? AppColors.primary : AppColors.textSecondary,
               size: 18,
             ),
           ),
@@ -150,17 +169,32 @@ class _LearningHistoryItemState extends ConsumerState<LearningHistoryItem> {
             padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
-              color: _isHovered ? AppColors.primary.withValues(alpha: 0.05) : Colors.transparent,
+              color: isActive
+                  ? AppColors.primary.withValues(alpha: 0.14)
+                  : (_isHovered ? AppColors.primary.withValues(alpha: 0.05) : Colors.transparent),
               border: Border.all(
-                color: _isHovered ? AppColors.primary.withValues(alpha: 0.1) : Colors.transparent,
+                color: isActive
+                    ? AppColors.primary.withValues(alpha: 0.38)
+                    : (_isHovered ? AppColors.primary.withValues(alpha: 0.1) : Colors.transparent),
               ),
+              boxShadow: isActive
+                  ? [
+                      BoxShadow(
+                        color: AppColors.primary.withValues(alpha: 0.15),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
+                      ),
+                    ]
+                  : null,
             ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Icon(
-                  Icons.chat_bubble_outline,
-                  color: _isHovered ? AppColors.primary.withValues(alpha: 0.8) : AppColors.textMuted.withValues(alpha: 0.6),
+                  isActive ? Icons.chat_bubble : Icons.chat_bubble_outline,
+                  color: isActive
+                      ? AppColors.primary
+                      : (_isHovered ? AppColors.primary.withValues(alpha: 0.8) : AppColors.textMuted.withValues(alpha: 0.6)),
                   size: 16,
                 ),
                 const SizedBox(width: 12),
@@ -171,8 +205,8 @@ class _LearningHistoryItemState extends ConsumerState<LearningHistoryItem> {
                       Text(
                         widget.session.topic,
                         style: AppTextStyles.label.copyWith(
-                          color: _isHovered ? AppColors.textPrimary : AppColors.textSecondary,
-                          fontWeight: _isHovered ? FontWeight.w600 : FontWeight.normal,
+                          color: (isActive || _isHovered) ? AppColors.textPrimary : AppColors.textSecondary,
+                          fontWeight: (isActive || _isHovered) ? FontWeight.w600 : FontWeight.normal,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -200,7 +234,7 @@ class _LearningHistoryItemState extends ConsumerState<LearningHistoryItem> {
                       padding: const EdgeInsets.all(4.0),
                       child: Icon(
                         Icons.more_vert, 
-                        color: _isHovered ? AppColors.textSecondary : AppColors.textMuted.withValues(alpha: 0.4), 
+                        color: (isActive || _isHovered) ? AppColors.textSecondary : AppColors.textMuted.withValues(alpha: 0.4), 
                         size: 16,
                       ),
                     ),

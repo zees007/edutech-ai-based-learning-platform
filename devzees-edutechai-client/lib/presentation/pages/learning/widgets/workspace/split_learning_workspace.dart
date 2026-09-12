@@ -6,6 +6,7 @@ import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/text_styles.dart';
 import 'socratic_tutor_chat.dart';
 import 'learning_resources_panel.dart';
+import '../../../../widgets/animated_tutor_icon.dart';
 
 /// A dual-panel layout that splits the learning workspace into:
 ///   • Left Panel (55%): Socratic Tutor Chat
@@ -435,35 +436,7 @@ class _TutorPanelHeaderState extends State<_TutorPanelHeader> {
       child: Row(
         children: [
           // ─── Tutor icon + "Socratic Tutor" + Online dot ───
-          Container(
-            padding: const EdgeInsets.all(5),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  AppColors.primary.withValues(alpha: 0.25),
-                  AppColors.accentCyan.withValues(alpha: 0.25),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(6),
-              border: Border.all(
-                color: AppColors.accentCyan.withValues(alpha: 0.45),
-                width: 1,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.accentCyan.withValues(alpha: 0.25),
-                  blurRadius: 8,
-                ),
-              ],
-            ),
-            child: const Icon(
-              Icons.smart_toy_rounded,
-              size: 14,
-              color: AppColors.accentCyan,
-            ),
-          ),
+          const AnimatedTutorIcon(size: 24),
           const SizedBox(width: 8),
           Text(
             'Socratic Tutor',
@@ -619,14 +592,23 @@ class _TutorPanelHeaderState extends State<_TutorPanelHeader> {
                   padding: const EdgeInsets.all(5),
                   decoration: BoxDecoration(
                     color: _isMaxHovered
-                        ? AppColors.glassSurface.withValues(alpha: 0.12)
-                        : Colors.transparent,
+                        ? AppColors.primary.withValues(alpha: 0.16)
+                        : AppColors.primary.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(6),
                     border: Border.all(
                       color: _isMaxHovered
-                          ? AppColors.glassBorder
-                          : Colors.transparent,
+                          ? AppColors.primary.withValues(alpha: 0.50)
+                          : AppColors.primary.withValues(alpha: 0.25),
+                      width: 1,
                     ),
+                    boxShadow: _isMaxHovered
+                        ? [
+                            BoxShadow(
+                              color: AppColors.primary.withValues(alpha: 0.30),
+                              blurRadius: 8,
+                            ),
+                          ]
+                        : null,
                   ),
                   child: Icon(
                     widget.isFullscreen
@@ -634,8 +616,8 @@ class _TutorPanelHeaderState extends State<_TutorPanelHeader> {
                         : Icons.open_in_full_rounded,
                     size: 13,
                     color: _isMaxHovered
-                        ? AppColors.textPrimary
-                        : AppColors.textMuted,
+                        ? AppColors.purpleLight
+                        : AppColors.primary,
                   ),
                 ),
               ),
@@ -708,14 +690,23 @@ class _ResourcesPanelHeaderState extends State<_ResourcesPanelHeader> {
                   padding: const EdgeInsets.all(5),
                   decoration: BoxDecoration(
                     color: _isMaxHovered
-                        ? AppColors.glassSurface.withValues(alpha: 0.12)
-                        : Colors.transparent,
+                        ? AppColors.primary.withValues(alpha: 0.16)
+                        : AppColors.primary.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(6),
                     border: Border.all(
                       color: _isMaxHovered
-                          ? AppColors.glassBorder
-                          : Colors.transparent,
+                          ? AppColors.primary.withValues(alpha: 0.50)
+                          : AppColors.primary.withValues(alpha: 0.25),
+                      width: 1,
                     ),
+                    boxShadow: _isMaxHovered
+                        ? [
+                            BoxShadow(
+                              color: AppColors.primary.withValues(alpha: 0.30),
+                              blurRadius: 8,
+                            ),
+                          ]
+                        : null,
                   ),
                   child: Icon(
                     widget.isFullscreen
@@ -723,8 +714,8 @@ class _ResourcesPanelHeaderState extends State<_ResourcesPanelHeader> {
                         : Icons.open_in_full_rounded,
                     size: 13,
                     color: _isMaxHovered
-                        ? AppColors.textPrimary
-                        : AppColors.textMuted,
+                        ? AppColors.purpleLight
+                        : AppColors.primary,
                   ),
                 ),
               ),

@@ -241,7 +241,7 @@ class _LearningResourcesPanelState
                           ),
                         )
                       : (hasQuiz && !isQuizDone
-                          ? _PulsingDot(color: AppColors.accentAmber)
+                          ? _PulsingDot(color: AppColors.accentGreen)
                           : null),
                   onTap: () => _onSelectTab(2),
                 ),
