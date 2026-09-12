@@ -47,59 +47,108 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
   void didUpdateWidget(covariant KnowledgeCheckQuiz oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.stepIndex != widget.stepIndex || oldWidget.step != widget.step) {
-      _initFromStep();
+      _initFromStep(forceReset: oldWidget.stepIndex != widget.stepIndex);
     }
   }
 
-  void _initFromStep() {
-    final step = widget.step ?? _findStepFromSession();
-    if (step != null) {
-      final bool hasScore = step.quizScore != null;
-      final bool hasAnswers = step.userAnswers != null &&
-          step.userAnswers is Map &&
-          (step.userAnswers as Map).isNotEmpty;
+  void _initFromStep({bool forceReset = false}) {
+    if (forceReset) {
+      _submitted = false;
+      _selectedAnswers.clear();
+      _textAnswers.clear();
+      _quizResult = null;
+    }
 
-      if (hasScore || hasAnswers) {
-        _submitted = true;
-        if (step.userAnswers is Map) {
-          final answers = step.userAnswers as Map;
-          final quizList = widget.quiz ?? [];
-          for (int i = 0; i < quizList.length; i++) {
-            final qData = quizList[i] is Map
-                ? (quizList[i] as Map<String, dynamic>)
-                : <String, dynamic>{};
-            final rawAns = answers[i.toString()] ?? answers[i];
-            if (rawAns != null) {
-              final ansStr = rawAns.toString().trim();
-              if (_isFillInTheBlank(qData)) {
-                _textAnswers[i] = ansStr;
-                _getController(i).text = ansStr;
-              } else {
-                final options = (qData['options'] as List?)
-                        ?.map((e) => e.toString())
-                        .toList() ??
-                    [];
-                int matchIndex = options.indexWhere((opt) => opt.trim() == ansStr);
-                if (matchIndex == -1) {
-                  matchIndex = options.indexWhere((opt) {
-                    final key = opt
-                        .split(':')
-                        .first
-                        .split(')')
-                        .first
-                        .split('.')
-                        .first
-                        .trim()
-                        .toUpperCase();
-                    return key == ansStr.toUpperCase() ||
-                        opt.toUpperCase().contains(ansStr.toUpperCase());
-                  });
-                }
-                if (matchIndex != -1) {
-                  _selectedAnswers[i] = matchIndex;
-                }
-              }
+    dynamic step = widget.step;
+    final sessionStep = _findStepFromSession();
+    if (sessionStep != null) {
+      if (step == null ||
+          (step.quizScore == null && sessionStep.quizScore != null) ||
+          ((step.userAnswers == null || (step.userAnswers as Map).isEmpty) &&
+              sessionStep.userAnswers != null &&
+              (sessionStep.userAnswers as Map).isNotEmpty)) {
+        step = sessionStep;
+      }
+    }
+    if (step == null) return;
+
+    final bool hasScore = step.quizScore != null;
+    final bool hasUserAnswers = step.userAnswers != null &&
+        step.userAnswers is Map &&
+        (step.userAnswers as Map).isNotEmpty;
+    final bool hasUserFullAnswers = step.userFullAnswers != null &&
+        step.userFullAnswers is Map &&
+        (step.userFullAnswers as Map).isNotEmpty;
+
+    if (!hasScore && !hasUserAnswers && !hasUserFullAnswers) {
+      if (_submitted) {
+        setState(() {
+          _submitted = false;
+          _selectedAnswers.clear();
+          _textAnswers.clear();
+          _quizResult = null;
+        });
+      }
+      return;
+    }
+
+    _submitted = true;
+
+    // Clear stale answers before populating this step's answers.
+    _selectedAnswers.clear();
+    _textAnswers.clear();
+
+    final Map answers = hasUserFullAnswers
+        ? (step.userFullAnswers as Map)
+        : (hasUserAnswers ? (step.userAnswers as Map) : {});
+
+    final quizList = (widget.quiz != null && widget.quiz!.isNotEmpty)
+        ? widget.quiz!
+        : ((step.quiz is List) ? (step.quiz as List) : <dynamic>[]);
+
+    for (int i = 0; i < quizList.length; i++) {
+      final qData = quizList[i] is Map
+          ? (quizList[i] as Map<String, dynamic>)
+          : <String, dynamic>{};
+      // Support both integer keys and string keys (e.g. 0 and "0")
+      final rawAns = answers[i.toString()] ?? answers[i];
+      if (rawAns != null) {
+        final ansStr = rawAns.toString().trim();
+        if (_isFillInTheBlank(qData)) {
+          _textAnswers[i] = ansStr;
+          _getController(i).text = ansStr;
+        } else {
+          final options = (qData['options'] as List?)
+                  ?.map((e) => (e is Map ? (e['text'] ?? e['option'] ?? e.toString()) : e).toString())
+                  .toList() ??
+              [];
+          // Try exact full-string match first
+          int matchIndex = options.indexWhere((opt) => opt.trim() == ansStr);
+          // Fallback: match by option key letter (A, B, C, D) or containment
+          if (matchIndex == -1) {
+            matchIndex = options.indexWhere((opt) {
+              final key = opt
+                  .split(':')
+                  .first
+                  .split(')')
+                  .first
+                  .split('.')
+                  .first
+                  .trim()
+                  .toUpperCase();
+              return key == ansStr.toUpperCase() ||
+                  opt.toUpperCase().contains(ansStr.toUpperCase());
+            });
+          }
+          // Fallback: try matching by option index (e.g. answer stored as "0", "1")
+          if (matchIndex == -1) {
+            final parsedIndex = int.tryParse(ansStr);
+            if (parsedIndex != null && parsedIndex >= 0 && parsedIndex < options.length) {
+              matchIndex = parsedIndex;
             }
+          }
+          if (matchIndex != -1) {
+            _selectedAnswers[i] = matchIndex;
           }
         }
       }
@@ -198,8 +247,10 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
       if (selectedOptionIndex == null) {
         return false;
       }
-      final options =
-          (qData['options'] as List?)?.map((e) => e.toString()).toList() ?? [];
+      final options = (qData['options'] as List?)
+              ?.map((e) => (e is Map ? (e['text'] ?? e['option'] ?? e.toString()) : e).toString())
+              .toList() ??
+          [];
       if (selectedOptionIndex < 0 || selectedOptionIndex >= options.length) {
         return false;
       }
@@ -216,6 +267,17 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
           .toUpperCase();
 
       if (selectedKey == correctUpper) {
+        return true;
+      }
+      final correctKey = correctUpper
+          .split(':')
+          .first
+          .split(')')
+          .first
+          .split('.')
+          .first
+          .trim();
+      if (correctKey.isNotEmpty && correctKey == selectedKey) {
         return true;
       }
       if (correctUpper.length > 1 &&
@@ -310,11 +372,44 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.quiz == null || widget.quiz!.isEmpty) {
+    dynamic step = widget.step;
+    final sessionStep = _findStepFromSession();
+    if (sessionStep != null) {
+      if (step == null ||
+          (step.quizScore == null && sessionStep.quizScore != null) ||
+          ((step.userAnswers == null || (step.userAnswers as Map).isEmpty) &&
+              sessionStep.userAnswers != null &&
+              (sessionStep.userAnswers as Map).isNotEmpty)) {
+        step = sessionStep;
+      }
+    }
+
+    final quizList = (widget.quiz != null && widget.quiz!.isNotEmpty)
+        ? widget.quiz!
+        : ((step?.quiz is List) ? (step!.quiz as List) : <dynamic>[]);
+
+    if (quizList.isEmpty) {
       return const SizedBox.shrink();
     }
 
-    final quizList = widget.quiz!;
+    // Auto-sync submission status if step has quiz score or answers but _submitted is false
+    final bool stepHasQuiz = step != null &&
+        (step.quizScore != null ||
+            (step.userAnswers != null &&
+                step.userAnswers is Map &&
+                (step.userAnswers as Map).isNotEmpty) ||
+            (step.userFullAnswers != null &&
+                step.userFullAnswers is Map &&
+                (step.userFullAnswers as Map).isNotEmpty));
+    if (!_submitted && stepHasQuiz) {
+      _submitted = true;
+      if (_selectedAnswers.isEmpty && _textAnswers.isEmpty) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) _initFromStep();
+        });
+      }
+    }
+
     final totalQuestions = quizList.length;
     final answeredCount = _getAnsweredCount(quizList);
     final isAllAnswered = answeredCount >= totalQuestions;
@@ -331,7 +426,14 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
       }
     }
 
-    final double scoreRatio = totalQuestions > 0 ? (correctCount / totalQuestions) : 0.0;
+    // Safety fallback: if submitted and server has a quizScore, but client-side matching yielded 0
+    if (_submitted && correctCount == 0 && step?.quizScore != null && step!.quizScore! > 0) {
+      correctCount = (step.quizScore! * totalQuestions).round();
+    }
+
+    final double scoreRatio = totalQuestions > 0
+        ? (step?.quizScore ?? (correctCount / totalQuestions))
+        : 0.0;
     final int scorePct = (scoreRatio * 100).round();
 
     return Column(
@@ -885,8 +987,13 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
 
   Widget _buildResultsSummaryCard(
       List<dynamic> quizList, int correctCount, int scorePct) {
-    final int xpEarned = _quizResult?.xpEarned ??
-        ((correctCount / quizList.length) * 50).round();
+    // According to Gamification specification:
+    // - 20 XP per correct question
+    // - +30 XP bonus strictly for 100% accuracy
+    final int baseQuizXp = correctCount * 20;
+    final int bonusXp = (correctCount == quizList.length && quizList.isNotEmpty) ? 30 : 0;
+    final int fallbackXp = baseQuizXp + bonusXp;
+    final int xpEarned = _quizResult?.xpEarned ?? fallbackXp;
 
     final bool isPassed = scorePct >= 70;
 
@@ -1204,7 +1311,16 @@ class _OptionTileState extends State<_OptionTile> {
     if (widget.isSubmitted) {
       final correctUpper = widget.correctAnswerRaw.trim().toUpperCase();
       final optUpper = widget.rawOption.trim().toUpperCase();
+      final correctKey = correctUpper
+          .split(':')
+          .first
+          .split(')')
+          .first
+          .split('.')
+          .first
+          .trim();
       if (letter == correctUpper ||
+          (correctKey.isNotEmpty && letter == correctKey) ||
           (correctUpper.length > 1 && optUpper.contains(correctUpper))) {
         isThisOptionCorrect = true;
       }

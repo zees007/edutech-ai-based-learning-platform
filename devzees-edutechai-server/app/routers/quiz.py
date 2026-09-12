@@ -10,10 +10,12 @@ import logging
 
 from fastapi import APIRouter, Depends
 
-from app.dependencies import require_privilege
+from app.dependencies import get_current_user, require_privilege
 from app.exceptions import BadRequestException, NotFoundException
 from app.privileges_config import ET_GENERATE_QUIZ, ET_SUBMIT_QUIZ
+from models.db_models import User
 from models.schemas import QuestionFeedback, QuizResult, QuizSubmission
+from services.gamification import calculate_quiz_xp, update_streak
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -30,7 +32,10 @@ session_manager = SessionManager()
     response_model=QuizResult,
     dependencies=[Depends(require_privilege(ET_SUBMIT_QUIZ))],
 )
-async def submit_quiz(submission: QuizSubmission):
+async def submit_quiz(
+    submission: QuizSubmission,
+    current_user: User = Depends(get_current_user),
+):
     """
     Submit quiz answers and get grading results with XP.
 
@@ -70,14 +75,37 @@ async def submit_quiz(submission: QuizSubmission):
     total = len(quiz.questions)
     score = correct_count / total if total > 0 else 0.0
 
-    # Calculate XP
-    base_xp = 20  # Per question
-    accuracy_bonus = int(score * 30)  # Bonus for high accuracy
-    xp_earned = (correct_count * base_xp) + accuracy_bonus
+    # Calculate role multiplier (Ultra=2.0x, Pro=1.5x, Free=1.0x)
+    user_roles = [r.name for r in current_user.roles if not r.retired] if current_user and hasattr(current_user, "roles") else []
+    multiplier = 1.0
+    if "Ultra" in user_roles or "Admin" in user_roles:
+        multiplier = 2.0
+    elif "Pro" in user_roles:
+        multiplier = 1.5
 
-    # Update memory
+    # Calculate XP according to specification (20 XP per correct question, +30 XP strictly for 100% accuracy)
+    xp_earned = calculate_quiz_xp(
+        correct_count=correct_count,
+        total_questions=total,
+        multiplier=multiplier,
+    )
+
+    # Update memory XP, quiz scores, and streak
     memory.quiz_scores[submission.step_index] = score
     memory.xp_earned += xp_earned
+    memory.streak_count = update_streak(
+        memory.created_at,
+        getattr(memory, "streak_count", 0),
+    )
+
+    # Persist quiz score & user answers directly onto the MilestoneStep so that
+    # when the session is re-serialized to state_json (and later re-fetched by
+    # the client), the step carries its quiz results and the user's selections.
+    if 0 <= submission.step_index < len(memory.steps):
+        step_obj = memory.steps[submission.step_index]
+        step_obj.quiz_score = score
+        step_obj.user_answers = submission.answers
+        step_obj.user_full_answers = submission.answers
 
     # Persist session & step progress to Supabase DB
     try:

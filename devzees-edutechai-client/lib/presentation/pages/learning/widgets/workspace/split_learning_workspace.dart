@@ -1591,9 +1591,11 @@ class _MobileTabbedWorkspaceState
         color: AppColors.rose,
       );
     }
+    final int stepIdx = (step.index is int) ? step.index as int : widget.stepIndex;
     return LearningResourcesPanel.buildQuizContent(
       quiz: step.quiz,
-      stepIndex: widget.stepIndex,
+      stepIndex: stepIdx,
+      step: step,
       onNextStep: () => _handleNextStep(context, true),
       onQuizSubmitted: () {
         setState(() {
