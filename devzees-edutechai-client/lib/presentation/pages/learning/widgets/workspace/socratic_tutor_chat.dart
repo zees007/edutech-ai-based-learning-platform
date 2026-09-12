@@ -421,24 +421,27 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
     final totalCount =
         _messages.length + (_isTyping ? 1 : 0) + (showQuestions ? 1 : 0);
 
-    return ListView.builder(
+    return Scrollbar(
       controller: _scrollController,
-      physics: const ClampingScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-      itemCount: totalCount,
-      itemBuilder: (context, index) {
-        if (index < _messages.length) {
-          final msg = _messages[index];
-          return _buildChatBubble(msg);
-        }
+      child: ListView.builder(
+        controller: _scrollController,
+        physics: const ClampingScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+        itemCount: totalCount,
+        itemBuilder: (context, index) {
+          if (index < _messages.length) {
+            final msg = _messages[index];
+            return _buildChatBubble(msg);
+          }
 
-        final extraIndex = index - _messages.length;
-        if (_isTyping && extraIndex == 0) {
-          return _buildTypingIndicator();
-        }
+          final extraIndex = index - _messages.length;
+          if (_isTyping && extraIndex == 0) {
+            return _buildTypingIndicator();
+          }
 
-        return _buildSuggestedQuestions();
-      },
+          return _buildSuggestedQuestions();
+        },
+      ),
     );
   }
 
@@ -707,19 +710,37 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
       margin: const EdgeInsets.only(top: 4),
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: const Color.fromRGBO(14, 17, 23, 1),
+        gradient: const LinearGradient(
+          colors: [
+            Color(0xFF161B26),
+            Color(0xFF0D111A),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.accentPink.withValues(alpha: 0.2),
-            blurRadius: 8,
+            color: AppColors.accentCyan.withValues(alpha: 0.35),
+            blurRadius: 10,
+            spreadRadius: 0.5,
+          ),
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.25),
+            blurRadius: 6,
           ),
         ],
         border: Border.all(
-          color: AppColors.primary.withValues(alpha: 0.25),
-          width: 1,
+          color: AppColors.accentCyan.withValues(alpha: 0.65),
+          width: 1.2,
         ),
       ),
-      child: const Center(child: Text('🧩', style: TextStyle(fontSize: 14))),
+      child: const Center(
+        child: Icon(
+          Icons.smart_toy_rounded,
+          size: 16,
+          color: AppColors.accentCyan,
+        ),
+      ),
     );
   }
 

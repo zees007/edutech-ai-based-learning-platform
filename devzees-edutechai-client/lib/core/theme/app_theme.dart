@@ -21,6 +21,29 @@ class AppTheme {
         onSurface: AppColors.textPrimary,
       ),
       fontFamily: AppTextStyles.fontFamily,
+      scrollbarTheme: ScrollbarThemeData(
+        thumbColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.dragged)) {
+            return AppColors.primary;
+          }
+          if (states.contains(WidgetState.hovered)) {
+            return AppColors.primary.withValues(alpha: 0.85);
+          }
+          return AppColors.primary.withValues(alpha: 0.4);
+        }),
+        trackColor: WidgetStateProperty.all(Colors.transparent),
+        trackBorderColor: WidgetStateProperty.all(Colors.transparent),
+        radius: const Radius.circular(8),
+        thickness: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.hovered) ||
+              states.contains(WidgetState.dragged)) {
+            return 5.0;
+          }
+          return 3.5;
+        }),
+        crossAxisMargin: 2.0,
+        mainAxisMargin: 4.0,
+      ),
       textTheme: TextTheme(
         displayLarge: AppTextStyles.h1,
         displayMedium: AppTextStyles.h2,

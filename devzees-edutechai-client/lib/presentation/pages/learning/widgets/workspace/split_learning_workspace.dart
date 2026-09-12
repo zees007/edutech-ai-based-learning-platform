@@ -11,19 +11,28 @@ import 'learning_resources_panel.dart';
 ///   • Right Panel (45%): Tabbed Resources (Videos, Papers, Quiz)
 ///
 /// Features:
-///   - Draggable divider to resize panels
-///   - Maximize/restore button on each panel header
+///   - Draggable divider to resize panels (thin 1px themed line)
+///   - Maximize/restore button → expands panel to true fullscreen overlay
 ///   - Mobile: collapses to 4-tab layout (Tutor, Videos, Papers, Quiz)
+///   - Left panel header includes step nav, status, prerequisite info
 class SplitLearningWorkspace extends ConsumerStatefulWidget {
   final dynamic session;
   final ActiveSessionState activeState;
   final int currentStepIndex;
+  final int totalSteps;
+  final int maxUnlockedIndex;
+  final bool isQuizGated;
+  final ValueChanged<int> onStepChange;
 
   const SplitLearningWorkspace({
     super.key,
     required this.session,
     required this.activeState,
     required this.currentStepIndex,
+    required this.totalSteps,
+    required this.maxUnlockedIndex,
+    required this.isQuizGated,
+    required this.onStepChange,
   });
 
   @override
@@ -32,46 +41,66 @@ class SplitLearningWorkspace extends ConsumerStatefulWidget {
 }
 
 class _SplitLearningWorkspaceState
-    extends ConsumerState<SplitLearningWorkspace> with TickerProviderStateMixin {
+    extends ConsumerState<SplitLearningWorkspace> {
   // Panel split ratio (left panel fraction)
   double _splitRatio = 0.55;
 
-  // Which panel is maximized (null = none)
-  _MaximizedPanel? _maximizedPanel;
-
-  // Animation controller for maximize transitions
-  late AnimationController _maximizeAnim;
-  late Animation<double> _maximizeCurve;
-
-  @override
-  void initState() {
-    super.initState();
-    _maximizeAnim = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 300),
-    );
-    _maximizeCurve = CurvedAnimation(
-      parent: _maximizeAnim,
-      curve: Curves.easeOutCubic,
-    );
-  }
+  // Fullscreen overlay
+  OverlayEntry? _fullscreenOverlay;
+  _MaximizedPanel? _fullscreenPanel;
 
   @override
   void dispose() {
-    _maximizeAnim.dispose();
+    _removeFullscreenOverlay();
     super.dispose();
   }
 
-  void _toggleMaximize(_MaximizedPanel panel) {
-    setState(() {
-      if (_maximizedPanel == panel) {
-        _maximizedPanel = null;
-        _maximizeAnim.reverse();
-      } else {
-        _maximizedPanel = panel;
-        _maximizeAnim.forward();
-      }
-    });
+  void _removeFullscreenOverlay() {
+    _fullscreenOverlay?.remove();
+    _fullscreenOverlay = null;
+    _fullscreenPanel = null;
+  }
+
+  void _toggleFullscreen(_MaximizedPanel panel) {
+    if (_fullscreenPanel == panel) {
+      // Restore
+      _removeFullscreenOverlay();
+      setState(() {});
+      return;
+    }
+
+    _removeFullscreenOverlay();
+
+    final currentStep = widget.session.steps[widget.currentStepIndex];
+
+    _fullscreenPanel = panel;
+    _fullscreenOverlay = OverlayEntry(
+      builder: (context) => _FullscreenPanelOverlay(
+        panel: panel,
+        currentStep: currentStep,
+        session: widget.session,
+        stepIndex: widget.currentStepIndex,
+        totalSteps: widget.totalSteps,
+        maxUnlockedIndex: widget.maxUnlockedIndex,
+        isQuizGated: widget.isQuizGated,
+        onStepChange: widget.onStepChange,
+        onClose: () {
+          _removeFullscreenOverlay();
+          setState(() {});
+        },
+        onNextStep: () async {
+          await ref
+              .read(activeSessionProvider.notifier)
+              .markStepComplete(currentStep.index);
+          ref
+              .read(activeSessionProvider.notifier)
+              .setActiveStep(currentStep.index + 1);
+        },
+      ),
+    );
+
+    Overlay.of(context).insert(_fullscreenOverlay!);
+    setState(() {});
   }
 
   @override
@@ -98,32 +127,10 @@ class _SplitLearningWorkspaceState
         final totalWidth = constraints.maxWidth;
         final totalHeight = constraints.maxHeight;
 
-        // When maximized, one panel takes full space
-        if (_maximizedPanel != null) {
-          return AnimatedBuilder(
-            animation: _maximizeCurve,
-            builder: (context, _) {
-              return _maximizedPanel == _MaximizedPanel.left
-                  ? _buildPanel(
-                      width: totalWidth,
-                      height: totalHeight,
-                      isLeft: true,
-                      currentStep: currentStep,
-                      isMaximized: true,
-                    )
-                  : _buildPanel(
-                      width: totalWidth,
-                      height: totalHeight,
-                      isLeft: false,
-                      currentStep: currentStep,
-                      isMaximized: true,
-                    );
-            },
-          );
-        }
-
-        final leftWidth = totalWidth * _splitRatio;
-        final rightWidth = totalWidth - leftWidth - 6; // 6px for divider
+        const dividerWidth = 9.0;
+        final availableWidth = totalWidth - dividerWidth;
+        final leftWidth = (availableWidth * _splitRatio).clamp(250.0, availableWidth - 250.0);
+        final rightWidth = availableWidth - leftWidth;
 
         return Row(
           children: [
@@ -132,7 +139,6 @@ class _SplitLearningWorkspaceState
               height: totalHeight,
               isLeft: true,
               currentStep: currentStep,
-              isMaximized: false,
             ),
             _buildDraggableDivider(totalWidth),
             _buildPanel(
@@ -140,7 +146,6 @@ class _SplitLearningWorkspaceState
               height: totalHeight,
               isLeft: false,
               currentStep: currentStep,
-              isMaximized: false,
             ),
           ],
         );
@@ -148,12 +153,20 @@ class _SplitLearningWorkspaceState
     );
   }
 
+  Future<void> _handleNextStep(dynamic currentStep) async {
+    await ref
+        .read(activeSessionProvider.notifier)
+        .markStepComplete(currentStep.index);
+    ref
+        .read(activeSessionProvider.notifier)
+        .setActiveStep(currentStep.index + 1);
+  }
+
   Widget _buildPanel({
     required double width,
     required double height,
     required bool isLeft,
     required dynamic currentStep,
-    required bool isMaximized,
   }) {
     final panelType =
         isLeft ? _MaximizedPanel.left : _MaximizedPanel.right;
@@ -164,15 +177,22 @@ class _SplitLearningWorkspaceState
       child: Column(
         children: [
           // Panel header
-          _PanelHeader(
-            title: isLeft ? 'Socratic Tutor' : 'Learning Resources',
-            icon: isLeft
-                ? Icons.psychology_rounded
-                : Icons.library_books_rounded,
-            accentColor: isLeft ? AppColors.primary : AppColors.accentCyan,
-            isMaximized: isMaximized,
-            onToggleMaximize: () => _toggleMaximize(panelType),
-          ),
+          isLeft
+              ? _TutorPanelHeader(
+                  currentIndex: widget.currentStepIndex,
+                  totalSteps: widget.totalSteps,
+                  maxUnlockedIndex: widget.maxUnlockedIndex,
+                  isPrerequisite: currentStep.isPrerequisite,
+                  prerequisiteNote: currentStep.prerequisite,
+                  status: currentStep.status,
+                  isQuizGated: widget.isQuizGated,
+                  onStepChange: widget.onStepChange,
+                  onNextStep: () => _handleNextStep(currentStep),
+                  onToggleFullscreen: () => _toggleFullscreen(panelType),
+                )
+              : _ResourcesPanelHeader(
+                  onToggleFullscreen: () => _toggleFullscreen(panelType),
+                ),
           // Panel content
           Expanded(
             child: isLeft
@@ -188,9 +208,6 @@ class _SplitLearningWorkspaceState
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surfaceDark.withValues(alpha: 0.3),
-        border: Border(
-          top: BorderSide(color: AppColors.glassBorder, width: 0.5),
-        ),
       ),
       child: (currentStep.tutorExplanation != null ||
               (currentStep.socraticQuestions != null &&
@@ -218,9 +235,6 @@ class _SplitLearningWorkspaceState
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surfaceDark.withValues(alpha: 0.3),
-        border: Border(
-          top: BorderSide(color: AppColors.glassBorder, width: 0.5),
-        ),
       ),
       child: LearningResourcesPanel(
         key: ValueKey('resources_step_${currentStep.index}'),
@@ -249,19 +263,14 @@ class _SplitLearningWorkspaceState
             _splitRatio = _splitRatio.clamp(0.30, 0.70);
           });
         },
+        // Invisible hit area wider than visual line for easy dragging
         child: Container(
-          width: 6,
-          decoration: BoxDecoration(
-            color: AppColors.glassBorder.withValues(alpha: 0.3),
-          ),
+          width: 9,
+          color: Colors.transparent,
           child: Center(
             child: Container(
-              width: 3,
-              height: 40,
-              decoration: BoxDecoration(
-                color: AppColors.glassBorder,
-                borderRadius: BorderRadius.circular(2),
-              ),
+              width: 1,
+              color: AppColors.glassBorder,
             ),
           ),
         ),
@@ -272,56 +281,189 @@ class _SplitLearningWorkspaceState
 
 enum _MaximizedPanel { left, right }
 
-/// Premium panel header with title, accent dot, and maximize/restore button.
-class _PanelHeader extends StatefulWidget {
-  final String title;
-  final IconData icon;
-  final Color accentColor;
-  final bool isMaximized;
-  final VoidCallback onToggleMaximize;
+// ═══════════════════════════════════════════════════════════════════
+// Fullscreen Overlay — occupies the entire screen
+// ═══════════════════════════════════════════════════════════════════
 
-  const _PanelHeader({
-    required this.title,
-    required this.icon,
-    required this.accentColor,
-    required this.isMaximized,
-    required this.onToggleMaximize,
+class _FullscreenPanelOverlay extends ConsumerWidget {
+  final _MaximizedPanel panel;
+  final dynamic currentStep;
+  final dynamic session;
+  final int stepIndex;
+  final int totalSteps;
+  final int maxUnlockedIndex;
+  final bool isQuizGated;
+  final ValueChanged<int> onStepChange;
+  final VoidCallback onClose;
+  final Future<void> Function() onNextStep;
+
+  const _FullscreenPanelOverlay({
+    required this.panel,
+    required this.currentStep,
+    required this.session,
+    required this.stepIndex,
+    required this.totalSteps,
+    required this.maxUnlockedIndex,
+    required this.isQuizGated,
+    required this.onStepChange,
+    required this.onClose,
+    required this.onNextStep,
   });
 
   @override
-  State<_PanelHeader> createState() => _PanelHeaderState();
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Material(
+      color: AppColors.background,
+      child: Column(
+        children: [
+          // Header
+          panel == _MaximizedPanel.left
+              ? _TutorPanelHeader(
+                  currentIndex: stepIndex,
+                  totalSteps: totalSteps,
+                  maxUnlockedIndex: maxUnlockedIndex,
+                  isPrerequisite: currentStep.isPrerequisite,
+                  prerequisiteNote: currentStep.prerequisite,
+                  status: currentStep.status,
+                  isQuizGated: isQuizGated,
+                  onStepChange: onStepChange,
+                  onNextStep: onNextStep,
+                  isFullscreen: true,
+                  onToggleFullscreen: onClose,
+                )
+              : _ResourcesPanelHeader(
+                  isFullscreen: true,
+                  onToggleFullscreen: onClose,
+                ),
+          // Content
+          Expanded(
+            child: panel == _MaximizedPanel.left
+                ? _buildFullscreenChat()
+                : _buildFullscreenResources(ref),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFullscreenChat() {
+    return (currentStep.tutorExplanation != null ||
+            (currentStep.socraticQuestions != null &&
+                currentStep.socraticQuestions!.isNotEmpty))
+        ? SocraticTutorChat(
+            key: ValueKey('fullscreen_socratic_${currentStep.index}'),
+            stepIndex: currentStep.index,
+            tutorExplanation: currentStep.tutorExplanation,
+            socraticQuestions: currentStep.socraticQuestions,
+            conversationHistory: currentStep.conversationHistory,
+            stepTitle: currentStep.title,
+          )
+        : Center(
+            child: Text(
+              'Socratic Tutor is preparing...',
+              style: AppTextStyles.bodyPrimary.copyWith(
+                color: AppColors.textMuted,
+              ),
+            ),
+          );
+  }
+
+  Widget _buildFullscreenResources(WidgetRef ref) {
+    return LearningResourcesPanel(
+      key: ValueKey('fullscreen_resources_${currentStep.index}'),
+      currentStep: currentStep,
+      session: session,
+      stepIndex: stepIndex,
+      onNextStep: onNextStep,
+    );
+  }
 }
 
-class _PanelHeaderState extends State<_PanelHeader> {
+// ═══════════════════════════════════════════════════════════════════
+// Tutor Panel Header — Socratic Tutor • Online + Step Nav + Status
+// ═══════════════════════════════════════════════════════════════════
+
+class _TutorPanelHeader extends StatefulWidget {
+  final int currentIndex;
+  final int totalSteps;
+  final int maxUnlockedIndex;
+  final bool isPrerequisite;
+  final String? prerequisiteNote;
+  final String status;
+  final bool isQuizGated;
+  final ValueChanged<int> onStepChange;
+  final Future<void> Function()? onNextStep;
+  final bool isFullscreen;
+  final VoidCallback onToggleFullscreen;
+
+  const _TutorPanelHeader({
+    required this.currentIndex,
+    required this.totalSteps,
+    required this.maxUnlockedIndex,
+    this.isPrerequisite = false,
+    this.prerequisiteNote,
+    this.status = 'pending',
+    required this.isQuizGated,
+    required this.onStepChange,
+    this.onNextStep,
+    this.isFullscreen = false,
+    required this.onToggleFullscreen,
+  });
+
+  @override
+  State<_TutorPanelHeader> createState() => _TutorPanelHeaderState();
+}
+
+class _TutorPanelHeaderState extends State<_TutorPanelHeader> {
   bool _isMaxHovered = false;
 
   @override
   Widget build(BuildContext context) {
+    final isReviewing = widget.currentIndex < widget.maxUnlockedIndex;
+    final canGoBack = widget.currentIndex > 0;
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      decoration: BoxDecoration(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: const BoxDecoration(
         color: AppColors.surfaceSolidHeader,
       ),
       child: Row(
         children: [
+          // ─── Tutor icon + "Socratic Tutor" + Online dot ───
           Container(
             padding: const EdgeInsets.all(5),
             decoration: BoxDecoration(
-              color: widget.accentColor.withValues(alpha: 0.15),
+              gradient: LinearGradient(
+                colors: [
+                  AppColors.primary.withValues(alpha: 0.25),
+                  AppColors.accentCyan.withValues(alpha: 0.25),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
               borderRadius: BorderRadius.circular(6),
+              border: Border.all(
+                color: AppColors.accentCyan.withValues(alpha: 0.45),
+                width: 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.accentCyan.withValues(alpha: 0.25),
+                  blurRadius: 8,
+                ),
+              ],
             ),
-            child: Icon(
-              widget.icon,
+            child: const Icon(
+              Icons.smart_toy_rounded,
               size: 14,
-              color: widget.accentColor,
+              color: AppColors.accentCyan,
             ),
           ),
           const SizedBox(width: 8),
           Text(
-            widget.title,
-            style: AppTextStyles.subtitle2.copyWith(
-              fontSize: 13,
-            ),
+            'Socratic Tutor',
+            style: AppTextStyles.subtitle2.copyWith(fontSize: 13),
           ),
           const SizedBox(width: 8),
           Container(
@@ -338,19 +480,139 @@ class _PanelHeaderState extends State<_PanelHeader> {
               ],
             ),
           ),
-          const Spacer(),
-          // Maximize / Restore button
+          const SizedBox(width: 4),
+          Text(
+            'Online',
+            style: AppTextStyles.captionBold.copyWith(
+              color: AppColors.accentGreen,
+              fontSize: 10,
+            ),
+          ),
+          const SizedBox(width: 12),
+
+          // ─── Step Nav: Prev + Step pill + Status + Prerequisite + Next ───
+          Expanded(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Previous Step
+                  if (canGoBack) ...[
+                    _StepNavButton(
+                      icon: Icons.arrow_back_ios_new_rounded,
+                      label: 'Prev',
+                      tooltip: 'Go back to previous step (${widget.currentIndex})',
+                      onTap: () => widget.onStepChange(widget.currentIndex - 1),
+                      useGradient: true,
+                    ),
+                    const SizedBox(width: 6),
+                  ],
+                  // Step pill
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: isReviewing
+                          ? AppColors.cyanLight.withValues(alpha: 0.15)
+                          : AppColors.primary.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(
+                        color: isReviewing
+                            ? AppColors.cyanLight.withValues(alpha: 0.45)
+                            : AppColors.primary.withValues(alpha: 0.45),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'Step ${widget.currentIndex + 1}/${widget.totalSteps}',
+                          style: AppTextStyles.badge.copyWith(
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w700,
+                            color: isReviewing ? AppColors.cyanLight : AppColors.purpleLight,
+                          ),
+                        ),
+                        if (isReviewing) ...[
+                          const SizedBox(width: 5),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                            decoration: BoxDecoration(
+                              color: AppColors.cyanLight.withValues(alpha: 0.25),
+                              borderRadius: BorderRadius.circular(3),
+                            ),
+                            child: Text(
+                              'Review',
+                              style: AppTextStyles.badge.copyWith(fontSize: 8, color: Colors.white),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  // Prerequisite badge
+                  if (widget.isPrerequisite) ...[
+                    const SizedBox(width: 6),
+                    Tooltip(
+                      message: widget.prerequisiteNote != null &&
+                              widget.prerequisiteNote!.trim().isNotEmpty
+                          ? 'Prerequisite: ${widget.prerequisiteNote}'
+                          : 'Foundational prerequisite step',
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+                        decoration: BoxDecoration(
+                          gradient: AppColors.amberGradient,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.school_rounded, size: 10, color: Colors.white),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Prereq',
+                              style: AppTextStyles.badge.copyWith(
+                                fontSize: 9.5,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                  // Next Step button (only displayed when reviewing previous completed steps; hidden when in process step)
+                  if (isReviewing &&
+                      widget.status.toLowerCase() != 'in_progress' &&
+                      widget.currentIndex < widget.maxUnlockedIndex) ...[
+                    const SizedBox(width: 6),
+                    _StepNavButton(
+                      icon: Icons.arrow_forward_ios_rounded,
+                      label: 'Next',
+                      tooltip: 'Go to Step ${widget.currentIndex + 2}',
+                      onTap: () => widget.onStepChange(widget.currentIndex + 1),
+                      iconAfterLabel: true,
+                      useGradient: true,
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+
+          const SizedBox(width: 8),
+          // ─── Maximize / Restore button ───
           MouseRegion(
             cursor: SystemMouseCursors.click,
             onEnter: (_) => setState(() => _isMaxHovered = true),
             onExit: (_) => setState(() => _isMaxHovered = false),
             child: GestureDetector(
-              onTap: widget.onToggleMaximize,
+              onTap: widget.onToggleFullscreen,
               child: Tooltip(
-                message: widget.isMaximized ? 'Restore Panel' : 'Maximize Panel',
+                message: widget.isFullscreen ? 'Exit Fullscreen' : 'Fullscreen',
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.all(6),
+                  padding: const EdgeInsets.all(5),
                   decoration: BoxDecoration(
                     color: _isMaxHovered
                         ? AppColors.glassSurface.withValues(alpha: 0.12)
@@ -363,10 +625,10 @@ class _PanelHeaderState extends State<_PanelHeader> {
                     ),
                   ),
                   child: Icon(
-                    widget.isMaximized
+                    widget.isFullscreen
                         ? Icons.close_fullscreen_rounded
                         : Icons.open_in_full_rounded,
-                    size: 14,
+                    size: 13,
                     color: _isMaxHovered
                         ? AppColors.textPrimary
                         : AppColors.textMuted,
@@ -381,7 +643,169 @@ class _PanelHeaderState extends State<_PanelHeader> {
   }
 }
 
-/// Mobile layout: 4 tabs — Tutor, Videos, Papers, Quiz.
+// ═══════════════════════════════════════════════════════════════════
+// Resources Panel Header — Minimal: icon + title + fullscreen
+// ═══════════════════════════════════════════════════════════════════
+
+class _ResourcesPanelHeader extends StatefulWidget {
+  final bool isFullscreen;
+  final VoidCallback onToggleFullscreen;
+
+  const _ResourcesPanelHeader({
+    this.isFullscreen = false,
+    required this.onToggleFullscreen,
+  });
+
+  @override
+  State<_ResourcesPanelHeader> createState() => _ResourcesPanelHeaderState();
+}
+
+class _ResourcesPanelHeaderState extends State<_ResourcesPanelHeader> {
+  bool _isMaxHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: const BoxDecoration(
+        color: AppColors.surfaceSolidHeader,
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(5),
+            decoration: BoxDecoration(
+              color: AppColors.accentCyan.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: const Icon(
+              Icons.library_books_rounded,
+              size: 14,
+              color: AppColors.accentCyan,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            'Learning Resources',
+            style: AppTextStyles.subtitle2.copyWith(fontSize: 13),
+          ),
+          const Spacer(),
+          // Maximize / Restore button
+          MouseRegion(
+            cursor: SystemMouseCursors.click,
+            onEnter: (_) => setState(() => _isMaxHovered = true),
+            onExit: (_) => setState(() => _isMaxHovered = false),
+            child: GestureDetector(
+              onTap: widget.onToggleFullscreen,
+              child: Tooltip(
+                message: widget.isFullscreen ? 'Exit Fullscreen' : 'Fullscreen',
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding: const EdgeInsets.all(5),
+                  decoration: BoxDecoration(
+                    color: _isMaxHovered
+                        ? AppColors.glassSurface.withValues(alpha: 0.12)
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(
+                      color: _isMaxHovered
+                          ? AppColors.glassBorder
+                          : Colors.transparent,
+                    ),
+                  ),
+                  child: Icon(
+                    widget.isFullscreen
+                        ? Icons.close_fullscreen_rounded
+                        : Icons.open_in_full_rounded,
+                    size: 13,
+                    color: _isMaxHovered
+                        ? AppColors.textPrimary
+                        : AppColors.textMuted,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Compact Step Nav Button — Prev / Next in the header
+// ═══════════════════════════════════════════════════════════════════
+
+class _StepNavButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String tooltip;
+  final VoidCallback? onTap;
+  final bool iconAfterLabel;
+  final bool useGradient;
+
+  const _StepNavButton({
+    required this.icon,
+    required this.label,
+    required this.tooltip,
+    this.onTap,
+    this.iconAfterLabel = false,
+    this.useGradient = true,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: tooltip,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(6),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+          decoration: BoxDecoration(
+            gradient: useGradient ? AppColors.royalBlueIndigoGradient : null,
+            color: useGradient
+                ? null
+                : AppColors.glassSurface.withValues(alpha: 0.07),
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(
+              color: useGradient
+                  ? AppColors.purpleLight.withValues(alpha: 0.4)
+                  : AppColors.glassBorder,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (!iconAfterLabel) ...[
+                Icon(icon, size: 10, color: Colors.white),
+                const SizedBox(width: 3),
+              ],
+              Text(
+                label,
+                style: AppTextStyles.badge.copyWith(
+                  fontSize: 10,
+                  color: Colors.white,
+                ),
+              ),
+              if (iconAfterLabel) ...[
+                const SizedBox(width: 3),
+                Icon(icon, size: 10, color: Colors.white),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════════════
+// Mobile layout: 4 tabs — Tutor, Videos, Papers, Quiz
+// ═══════════════════════════════════════════════════════════════════
+
 class _MobileTabbedWorkspace extends ConsumerStatefulWidget {
   final dynamic session;
   final ActiveSessionState activeState;
@@ -423,7 +847,11 @@ class _MobileTabbedWorkspaceState
     final hasVideos = step.videos != null && step.videos!.isNotEmpty;
     final hasPapers = step.papers != null && step.papers!.isNotEmpty;
     final hasQuiz = step.quiz != null && step.quiz!.isNotEmpty;
-    final isQuizDone = step.quizScore != null || step.userAnswers != null;
+    final isQuizDone = step.quizScore != null ||
+        (step.userAnswers != null &&
+            step.userAnswers!.isNotEmpty &&
+            step.userAnswers!.values.any(
+                (v) => v != null && v.toString().trim().isNotEmpty));
 
     return Column(
       children: [
@@ -446,7 +874,7 @@ class _MobileTabbedWorkspaceState
             unselectedLabelStyle: AppTextStyles.caption.copyWith(fontSize: 11),
             tabs: [
               const Tab(
-                icon: Icon(Icons.psychology_rounded, size: 18),
+                icon: Icon(Icons.smart_toy_rounded, size: 18),
                 text: 'Tutor',
               ),
               Tab(

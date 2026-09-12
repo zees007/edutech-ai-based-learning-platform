@@ -89,6 +89,19 @@ class _LearningResourcesPanelState
   late TabController _tabController;
   bool _quizSubmitted = false;
 
+  bool _isQuizCompleted(dynamic step) {
+    if (step == null) return false;
+    if (step.quizScore != null) return true;
+    if (step.userAnswers != null && step.userAnswers is Map) {
+      final map = step.userAnswers as Map;
+      if (map.isNotEmpty &&
+          map.values.any((v) => v != null && v.toString().trim().isNotEmpty)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -96,7 +109,7 @@ class _LearningResourcesPanelState
 
     // Check if quiz is already completed
     final step = widget.currentStep;
-    if (step.quizScore != null || step.userAnswers != null) {
+    if (_isQuizCompleted(step)) {
       _quizSubmitted = true;
     }
   }
@@ -107,11 +120,13 @@ class _LearningResourcesPanelState
     if (oldWidget.stepIndex != widget.stepIndex) {
       _quizSubmitted = false;
       final step = widget.currentStep;
-      if (step.quizScore != null || step.userAnswers != null) {
+      if (_isQuizCompleted(step)) {
         _quizSubmitted = true;
       }
       // Reset to first tab on step change
       _tabController.animateTo(0);
+    } else if (!_quizSubmitted && _isQuizCompleted(widget.currentStep)) {
+      _quizSubmitted = true;
     }
   }
 
@@ -133,9 +148,7 @@ class _LearningResourcesPanelState
     final hasVideos = step.videos != null && step.videos!.isNotEmpty;
     final hasPapers = step.papers != null && step.papers!.isNotEmpty;
     final hasQuiz = step.quiz != null && step.quiz!.isNotEmpty;
-    final isQuizDone = _quizSubmitted ||
-        step.quizScore != null ||
-        step.userAnswers != null;
+    final isQuizDone = _quizSubmitted || _isQuizCompleted(step);
 
     return Column(
       children: [
@@ -196,8 +209,11 @@ class _LearningResourcesPanelState
           ),
         ),
 
-        // ─── Quiz Gating Bar (pinned at bottom) ───
-        if (hasQuiz) _buildGatingBar(isQuizDone),
+        // ─── Quiz Gating / Advance Bar (pinned at bottom) ───
+        if (hasQuiz)
+          _buildGatingBar(context, isQuizDone)
+        else if (widget.stepIndex < (widget.session.steps.length - 1))
+          _buildNoQuizAdvanceBar(),
       ],
     );
   }
@@ -313,141 +329,239 @@ class _LearningResourcesPanelState
     );
   }
 
-  Widget _buildGatingBar(bool isQuizDone) {
+  void _handleNextStep(BuildContext context, bool isQuizDone) async {
+    if (!isQuizDone) {
+      // 1. Switch to the Quiz tab so the user can easily take it
+      _tabController.animateTo(2);
+
+      // 2. Show floating warning message with quick action
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.quiz_outlined, color: Colors.white, size: 18),
+              const SizedBox(width: 10),
+              const Expanded(
+                child: Text(
+                  'Please complete the Knowledge Check quiz first to move to the next step of learning.',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: AppColors.accentRose,
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 4),
+          margin: const EdgeInsets.all(16),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          action: SnackBarAction(
+            label: 'Take Quiz',
+            textColor: Colors.white,
+            onPressed: () {
+              _tabController.animateTo(2);
+            },
+          ),
+        ),
+      );
+      return;
+    }
+
+    // Quiz completed: advance to next step
+    await widget.onNextStep();
+  }
+
+  Widget _buildGatingBar(BuildContext context, bool isQuizDone) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
-        gradient: isQuizDone
-            ? LinearGradient(
-                colors: [
-                  AppColors.accentGreen.withValues(alpha: 0.2),
-                  AppColors.emerald.withValues(alpha: 0.1),
-                ],
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-              )
-            : LinearGradient(
-                colors: [
-                  AppColors.rose.withValues(alpha: 0.15),
-                  AppColors.accentAmber.withValues(alpha: 0.1),
-                ],
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-              ),
+        gradient: LinearGradient(
+          colors: [
+            AppColors.accentGreen.withValues(alpha: 0.2),
+            AppColors.emerald.withValues(alpha: 0.1),
+          ],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+        ),
         border: Border(
           top: BorderSide(
-            color: isQuizDone
-                ? AppColors.accentGreen.withValues(alpha: 0.4)
-                : AppColors.rose.withValues(alpha: 0.3),
+            color: AppColors.accentGreen.withValues(alpha: 0.4),
             width: 1,
           ),
         ),
       ),
-      child: isQuizDone
-          ? _buildUnlockedBar()
-          : _buildLockedBar(),
-    );
-  }
-
-  Widget _buildLockedBar() {
-    return GestureDetector(
-      onTap: () {
-        // Navigate to Quiz tab
-        _tabController.animateTo(2);
-      },
       child: Row(
         children: [
-          Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: AppColors.rose.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: const Icon(
-              Icons.lock_rounded,
-              size: 14,
-              color: AppColors.roseLight,
-            ),
-          ),
-          const SizedBox(width: 10),
+          // Left indicator and guidance text
           Expanded(
-            child: Text(
-              'Complete the Knowledge Check to unlock the next step',
-              style: AppTextStyles.captionBold.copyWith(
-                color: AppColors.roseLight,
-                fontSize: 12,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () {
+                if (!isQuizDone) {
+                  _handleNextStep(context, isQuizDone);
+                }
+              },
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: AppColors.accentGreen.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Icon(
+                      isQuizDone
+                          ? Icons.check_circle_rounded
+                          : Icons.quiz_rounded,
+                      size: 14,
+                      color: AppColors.accentGreen,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      isQuizDone
+                          ? 'Quiz complete! Tap to proceed to next step →'
+                          : 'Complete Knowledge Check quiz to unlock next step',
+                      style: AppTextStyles.captionBold.copyWith(
+                        color: AppColors.accentGreen,
+                        fontSize: 12,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
-          Icon(
-            Icons.arrow_forward_ios_rounded,
-            size: 12,
-            color: AppColors.roseLight.withValues(alpha: 0.6),
+          const SizedBox(width: 12),
+          // Green Next Step Button
+          MouseRegion(
+            cursor: SystemMouseCursors.click,
+            child: Tooltip(
+              message: isQuizDone
+                  ? 'Proceed to next step'
+                  : 'Complete Knowledge Check quiz first to advance',
+              child: GestureDetector(
+                onTap: () => _handleNextStep(context, isQuizDone),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [AppColors.accentGreen, AppColors.greenDeep],
+                    ),
+                    borderRadius: BorderRadius.circular(8),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.accentGreen.withValues(alpha: 0.35),
+                        blurRadius: 8,
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Next Step',
+                        style: AppTextStyles.badge.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 11,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      const Icon(
+                        Icons.arrow_forward_rounded,
+                        size: 12,
+                        color: Colors.white,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildUnlockedBar() {
-    return GestureDetector(
-      onTap: () async {
-        await widget.onNextStep();
-      },
+  Widget _buildNoQuizAdvanceBar() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceSolidHeader,
+        border: Border(
+          top: BorderSide(
+            color: AppColors.glassBorder,
+            width: 1,
+          ),
+        ),
+      ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
-              color: AppColors.accentGreen.withValues(alpha: 0.2),
+              color: AppColors.accentCyan.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(6),
             ),
             child: const Icon(
-              Icons.check_circle_rounded,
+              Icons.auto_awesome_rounded,
               size: 14,
-              color: AppColors.accentGreen,
+              color: AppColors.accentCyan,
             ),
           ),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              'Quiz complete! Tap to proceed to next step →',
-              style: AppTextStyles.captionBold.copyWith(
-                color: AppColors.accentGreen,
+              'Explore resources above, or proceed when ready',
+              style: AppTextStyles.caption.copyWith(
+                color: AppColors.textSecondary,
                 fontSize: 12,
               ),
             ),
           ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [AppColors.accentGreen, AppColors.greenDeep],
-              ),
-              borderRadius: BorderRadius.circular(8),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.accentGreen.withValues(alpha: 0.3),
-                  blurRadius: 8,
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Next Step',
-                  style: AppTextStyles.badge.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 11,
+          GestureDetector(
+            onTap: () async {
+              await widget.onNextStep();
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                gradient: AppColors.primaryGradient,
+                borderRadius: BorderRadius.circular(8),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withValues(alpha: 0.3),
+                    blurRadius: 8,
                   ),
-                ),
-                const SizedBox(width: 4),
-                const Icon(Icons.arrow_forward_rounded,
-                    size: 12, color: Colors.white),
-              ],
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Next Step',
+                    style: AppTextStyles.badge.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 11,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  const Icon(Icons.arrow_forward_rounded,
+                      size: 12, color: Colors.white),
+                ],
+              ),
             ),
           ),
         ],
