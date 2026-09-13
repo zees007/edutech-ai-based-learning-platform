@@ -411,7 +411,8 @@ class _TutorPanelHeaderState extends State<_TutorPanelHeader> {
 
   @override
   Widget build(BuildContext context) {
-    final isReviewing = widget.currentIndex < widget.maxUnlockedIndex;
+    final bool isComplete = widget.status.toLowerCase() == 'complete';
+    final isReviewing = widget.currentIndex < widget.maxUnlockedIndex || isComplete;
     final canGoBack = widget.currentIndex > 0;
 
     return Container(
@@ -545,9 +546,10 @@ class _TutorPanelHeaderState extends State<_TutorPanelHeader> {
                       ),
                     ),
                   ],
-                  // Next Step button (only displayed when reviewing previous completed steps; hidden when in process step)
+                  // Next Step button (only displayed when reviewing previous completed steps; hidden on final step or in process step)
                   if (isReviewing &&
                       widget.status.toLowerCase() != 'in_progress' &&
+                      widget.currentIndex < widget.totalSteps - 1 &&
                       widget.currentIndex < widget.maxUnlockedIndex) ...[
                     const SizedBox(width: 6),
                     _StepNavButton(

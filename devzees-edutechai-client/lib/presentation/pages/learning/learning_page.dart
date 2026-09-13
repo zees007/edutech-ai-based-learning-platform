@@ -91,6 +91,7 @@ class _LearningPageState extends ConsumerState<LearningPage> {
           _journeyCompleteOverlay?.remove();
           _journeyCompleteOverlay = null;
           ref.read(journeyCompleteProvider.notifier).dismiss();
+          ref.read(activeSessionProvider.notifier).ensureJourneyCompleted();
         },
         onNewTopic: () {
           _journeyCompleteOverlay?.remove();

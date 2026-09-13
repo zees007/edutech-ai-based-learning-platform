@@ -286,6 +286,9 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       final newLevel = GamificationUtils.calculateLevel(totalXp);
       final bool leveledUp = newLevel > oldLevel;
 
+      final nextStepIdx = data['next_step_index'] as int? ?? session.currentStepIndex;
+      final newStepsCompleted = (session.stepsCompleted + 1).clamp(0, session.steps.length);
+
       final updatedSteps = List<MilestoneStep>.from(session.steps);
       if (stepIndex >= 0 && stepIndex < updatedSteps.length) {
         final currentStep = updatedSteps[stepIndex];
@@ -296,7 +299,8 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
 
       final updatedSession = session.copyWith(
         xpEarned: totalXp,
-        stepsCompleted: session.stepsCompleted + 1,
+        stepsCompleted: newStepsCompleted,
+        currentStepIndex: nextStepIdx,
         steps: updatedSteps,
       );
       
@@ -349,6 +353,22 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
         stepIndex >= session.steps.length - 1;
 
     if (isSessionComplete) {
+      // 1. Optimistic completion: ensure all steps are marked complete in local state
+      final completedSteps = session.steps.map((s) => s.copyWith(status: 'complete')).toList();
+      final fullyCompletedSession = session.copyWith(
+        stepsCompleted: session.steps.length,
+        steps: completedSteps,
+      );
+      state = state.copyWith(session: fullyCompletedSession);
+
+      // Sync progress with learning history list
+      ref.read(sessionsProvider.notifier).updateSessionProgress(
+        sessionId: session.sessionId,
+        stepsCompleted: session.steps.length,
+        xpEarned: fullyCompletedSession.xpEarned,
+        isComplete: true,
+      );
+
       // Calculate average quiz score across steps
       double totalScore = 0.0;
       int quizCount = 0;
@@ -367,11 +387,39 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
         bonusXp: 100,
         averageQuizScore: avgScore,
       );
+
+      // 2. Fire silent background sync immediately while celebration modal is animating
+      loadSession(session.sessionId, silent: true);
       return;
     }
 
     // Now transition to the next step (triggers NeuralInferenceLoader if ungenerated)
     setActiveStep(stepIndex + 1);
+  }
+
+  /// Failsafe invoked when the Journey Complete celebration is dismissed.
+  /// Locks local state into the completed review mode and triggers a silent sync.
+  void ensureJourneyCompleted() {
+    final session = state.session;
+    if (session == null || session.steps.isEmpty) return;
+
+    final completedSteps = session.steps.map((s) => s.copyWith(status: 'complete')).toList();
+    final fullyCompletedSession = session.copyWith(
+      stepsCompleted: session.steps.length,
+      steps: completedSteps,
+    );
+    state = state.copyWith(session: fullyCompletedSession);
+
+    // Sync progress with learning history list
+    ref.read(sessionsProvider.notifier).updateSessionProgress(
+      sessionId: session.sessionId,
+      stepsCompleted: session.steps.length,
+      xpEarned: fullyCompletedSession.xpEarned,
+      isComplete: true,
+    );
+
+    // Reconcile with server silently in background
+    loadSession(session.sessionId, silent: true);
   }
 
   /// Check if the quiz for a given step has been completed.
@@ -399,24 +447,26 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     _wsService.sendChat(content);
   }
 
-  Future<void> loadSession(String sessionId, {bool fromStepComplete = false}) async {
+  Future<void> loadSession(String sessionId, {bool fromStepComplete = false, bool silent = false}) async {
     _apiFetchStopwatch.reset();
     _apiFetchStopwatch.start();
 
-    state = state.copyWith(
-      isLoading: true,
-      isSynthesizing: fromStepComplete,
-      clearError: true,
-    );
+    if (!silent) {
+      state = state.copyWith(
+        isLoading: true,
+        isSynthesizing: fromStepComplete,
+        clearError: true,
+      );
+    }
     try {
       var response = await _service.fetchSessionById(sessionId);
       _apiFetchStopwatch.stop();
       _lastApiFetchMs = _apiFetchStopwatch.elapsedMilliseconds;
       
       int stepIndex = response.currentStepIndex;
-      // Safety check: ensure index is within bounds
+      // Safety check: ensure index is within bounds (stay on final milestone upon completion)
       if (response.steps.isNotEmpty && stepIndex >= response.steps.length) {
-        stepIndex = 0;
+        stepIndex = response.steps.length - 1;
       }
 
       // Preserve quiz results from local state when the server response has
@@ -450,17 +500,17 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
         }
       }
 
-      // When loading after step_complete, preserve the user's current view
+      // When loading after step_complete or silent sync, preserve the user's current view
       // position instead of jumping to the server's currentStepIndex.
-      if (fromStepComplete && existingSession != null) {
+      if ((fromStepComplete || silent) && existingSession != null) {
         stepIndex = state.activeStepIndex;
         // Ensure the index is still valid with the new response
         if (stepIndex >= response.steps.length) {
-          stepIndex = response.currentStepIndex;
+          stepIndex = response.steps.isNotEmpty ? response.steps.length - 1 : 0;
         }
       }
 
-      debugPrint('📥 [Client API] Session payload retrieved in ${_lastApiFetchMs}ms. Initiating UI render for Step $stepIndex...');
+      debugPrint('📥 [Client API] Session payload retrieved in ${_lastApiFetchMs}ms (silent: $silent). Initiating UI render for Step $stepIndex...');
 
       _uiRenderStopwatch.reset();
       _uiRenderStopwatch.start();
@@ -508,15 +558,17 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       });
       
       // Only connect to WebSocket if it's a new session load, to avoid double "plan" events
-      // when refreshing the session data after step_complete.
-      if (!fromStepComplete) {
+      // when refreshing the session data after step_complete or silent sync.
+      if (!fromStepComplete && !silent) {
         _wsService.connect(sessionId);
       }
     } catch (e) {
       _uiRenderStopwatch.stop();
       _stepTotalStopwatch.stop();
       _isStepGenerationActive = false;
-      state = state.copyWith(isLoading: false, isSynthesizing: false, error: e.toString());
+      if (!silent) {
+        state = state.copyWith(isLoading: false, isSynthesizing: false, error: e.toString());
+      }
     }
   }
 
