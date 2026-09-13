@@ -91,12 +91,9 @@ class _SplitLearningWorkspaceState
           setState(() {});
         },
         onNextStep: () async {
-          await ref
-              .read(activeSessionProvider.notifier)
-              .markStepComplete(currentStep.index);
-          ref
-              .read(activeSessionProvider.notifier)
-              .setActiveStep(currentStep.index + 1);
+          _removeFullscreenOverlay();
+          setState(() {});
+          await _handleNextStep(currentStep);
         },
       ),
     );
@@ -161,10 +158,7 @@ class _SplitLearningWorkspaceState
   Future<void> _handleNextStep(dynamic currentStep) async {
     await ref
         .read(activeSessionProvider.notifier)
-        .markStepComplete(currentStep.index);
-    ref
-        .read(activeSessionProvider.notifier)
-        .setActiveStep(currentStep.index + 1);
+        .completeAndAdvanceStep(currentStep.index);
   }
 
   Widget _buildPanel({
@@ -246,14 +240,7 @@ class _SplitLearningWorkspaceState
         currentStep: currentStep,
         session: widget.session,
         stepIndex: widget.currentStepIndex,
-        onNextStep: () async {
-          await ref
-              .read(activeSessionProvider.notifier)
-              .markStepComplete(currentStep.index);
-          ref
-              .read(activeSessionProvider.notifier)
-              .setActiveStep(currentStep.index + 1);
-        },
+        onNextStep: () => _handleNextStep(currentStep),
       ),
     );
   }
@@ -902,10 +889,7 @@ class _MobileTabbedWorkspaceState
 
     await ref
         .read(activeSessionProvider.notifier)
-        .markStepComplete(widget.currentStep.index);
-    ref
-        .read(activeSessionProvider.notifier)
-        .setActiveStep(widget.currentStep.index + 1);
+        .completeAndAdvanceStep(widget.currentStep.index);
   }
 
   void _showQuizRequiredModal(BuildContext context) {

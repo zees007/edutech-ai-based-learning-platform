@@ -4,9 +4,11 @@ import 'package:devzees_edutechai_client/presentation/widgets/glow_background.da
 import 'package:devzees_edutechai_client/core/constants/responsive.dart';
 import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
 import 'package:devzees_edutechai_client/core/providers/learning_provider.dart';
+import 'package:devzees_edutechai_client/core/providers/gamification_provider.dart';
 
 import 'widgets/sidebar/learning_sidebar.dart';
 import 'widgets/main_content/learning_main_content.dart';
+import 'widgets/gamification/level_up_celebration.dart';
 
 class LearningPage extends ConsumerStatefulWidget {
   const LearningPage({super.key});
@@ -18,6 +20,7 @@ class LearningPage extends ConsumerStatefulWidget {
 class _LearningPageState extends ConsumerState<LearningPage> {
   bool isExpanded = true;
   final ScrollController _scrollController = ScrollController();
+  OverlayEntry? _levelUpOverlay;
 
   @override
   void initState() {
@@ -36,6 +39,7 @@ class _LearningPageState extends ConsumerState<LearningPage> {
   @override
   void dispose() {
     _scrollController.dispose();
+    _levelUpOverlay?.remove();
     super.dispose();
   }
 
@@ -51,8 +55,35 @@ class _LearningPageState extends ConsumerState<LearningPage> {
     }
   }
 
+  void _showLevelUpCelebration(GamificationEvent event) {
+    if (_levelUpOverlay != null) return;
+    
+    _levelUpOverlay = OverlayEntry(
+      builder: (context) => LevelUpCelebration(
+        level: event.level,
+        levelTitle: event.levelTitle,
+        xpEarned: event.xpEarned,
+        onComplete: () {
+          _levelUpOverlay?.remove();
+          _levelUpOverlay = null;
+          ref.read(gamificationEventProvider.notifier).dismiss();
+        },
+      ),
+    );
+    Overlay.of(context).insert(_levelUpOverlay!);
+  }
+
   @override
   Widget build(BuildContext context) {
+    ref.listen<GamificationEvent?>(gamificationEventProvider, (previous, next) {
+      if (next != null) {
+        // Ensure this runs after the current frame
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+           _showLevelUpCelebration(next);
+        });
+      }
+    });
+
     final bool isMobile = Responsive.isMobile(context);
 
     if (isMobile) {

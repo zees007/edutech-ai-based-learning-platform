@@ -119,6 +119,23 @@ async def submit_quiz(
     except Exception as e:
         logger.warning(f"Failed to persist quiz result to DB: {e}")
 
+    # Broadcast XPUpdateEvent
+    try:
+        from models.schemas import XPUpdateEvent
+        from services.gamification import calculate_level
+        from app.routers.websocket import manager as ws_manager
+        
+        level_info = calculate_level(memory.xp_earned)
+        xp_event = XPUpdateEvent(
+            xp_earned=xp_earned,
+            total_xp=memory.xp_earned,
+            level=level_info["level"],
+            level_title=level_info["title"],
+        )
+        await ws_manager.send_event(submission.session_id, xp_event)
+    except Exception as e:
+        logger.error(f"Failed to broadcast XPUpdateEvent: {e}")
+
     logger.info(
         f"Quiz submitted: session={submission.session_id}, "
         f"step={submission.step_index}, score={score:.0%}, xp={xp_earned}"

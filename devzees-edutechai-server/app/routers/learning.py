@@ -223,7 +223,6 @@ async def complete_step(
 
     memory.xp_earned += awarded_xp
 
-    # Persist to database
     try:
         await session_manager.update_session(memory)
         await session_manager.save_step_progress(
@@ -233,6 +232,23 @@ async def complete_step(
         )
     except Exception as e:
         logger.warning(f"Failed to persist step progress to DB: {e}")
+
+    # Broadcast XPUpdateEvent
+    try:
+        from models.schemas import XPUpdateEvent
+        from services.gamification import calculate_level
+        from app.routers.websocket import manager as ws_manager
+        
+        level_info = calculate_level(memory.xp_earned)
+        xp_event = XPUpdateEvent(
+            xp_earned=awarded_xp,
+            total_xp=memory.xp_earned,
+            level=level_info["level"],
+            level_title=level_info["title"],
+        )
+        await ws_manager.send_event(session_id, xp_event)
+    except Exception as e:
+        logger.error(f"Failed to broadcast XPUpdateEvent: {e}")
 
     logger.info(
         f"Session {session_id}: step {step_index} completed (+{awarded_xp} XP, total={memory.xp_earned})"

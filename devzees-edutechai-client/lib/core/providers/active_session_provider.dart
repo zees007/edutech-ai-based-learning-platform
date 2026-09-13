@@ -7,6 +7,7 @@ import '../../data/models/learning/quiz_result.dart';
 import 'learning_provider.dart';
 import '../services/learning_service.dart';
 import '../services/learning_websocket_service.dart';
+import 'gamification_provider.dart';
 
 final learningWebSocketServiceProvider = Provider<LearningWebSocketService>((ref) {
   final service = LearningWebSocketService();
@@ -116,6 +117,34 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       return;
     }
 
+    if (type == 'xp_update') {
+      final xpEarned = event['xp_earned'] as int? ?? 0;
+      final totalXp = event['total_xp'] as int? ?? session.xpEarned;
+      final newLevel = event['level'] as int? ?? GamificationUtils.calculateLevel(totalXp);
+      final levelTitle = event['level_title'] as String? ?? GamificationUtils.getLevelTitle(newLevel);
+      
+      debugPrint('🌟 [Client WS] XP Update: +$xpEarned XP (Total: $totalXp) - $levelTitle (Lvl $newLevel)');
+      
+      final oldLevel = GamificationUtils.calculateLevel(session.xpEarned);
+      
+      // Update the local session state with the new XP
+      final updatedSession = session.copyWith(
+        xpEarned: totalXp,
+      );
+      state = state.copyWith(session: updatedSession);
+      
+      // Only trigger celebration if level actually increased
+      if (newLevel > oldLevel) {
+        ref.read(gamificationEventProvider.notifier).triggerEvent(
+          xpEarned: xpEarned,
+          totalXp: totalXp,
+          level: newLevel,
+          levelTitle: levelTitle,
+        );
+      }
+      return;
+    }
+
     if (type == 'error') {
       debugPrint('❌ [Client WS] Error event received: ${event['message']}');
     }
@@ -183,6 +212,11 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       quizWatch.stop();
       debugPrint('📝 [Client API] Quiz evaluated in ${quizWatch.elapsedMilliseconds}ms. Awarded XP: ${result.xpEarned}');
       
+      final oldLevel = GamificationUtils.calculateLevel(session.xpEarned);
+      final totalXp = session.xpEarned + result.xpEarned;
+      final newLevel = GamificationUtils.calculateLevel(totalXp);
+      final leveledUp = newLevel > oldLevel;
+
       // Update session XP and step quiz score/answers locally
       final updatedSteps = List<MilestoneStep>.from(session.steps);
       if (stepIndex >= 0 && stepIndex < updatedSteps.length) {
@@ -196,7 +230,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       }
 
       final updatedSession = session.copyWith(
-        xpEarned: session.xpEarned + result.xpEarned,
+        xpEarned: totalXp,
         steps: updatedSteps,
       );
       
@@ -214,6 +248,17 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
         xpEarned: updatedSession.xpEarned,
       );
 
+      // Instant level-up celebration trigger for quiz submit
+      if (leveledUp) {
+        final levelTitle = GamificationUtils.getLevelTitle(newLevel);
+        ref.read(gamificationEventProvider.notifier).triggerEvent(
+          xpEarned: result.xpEarned,
+          totalXp: totalXp,
+          level: newLevel,
+          levelTitle: levelTitle,
+        );
+      }
+
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _uiRenderStopwatch.stop();
         debugPrint('🎨 [Client UI] Quiz results rendered to screen in ${_uiRenderStopwatch.elapsedMilliseconds}ms');
@@ -226,16 +271,21 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     }
   }
 
-  Future<void> markStepComplete(int stepIndex) async {
+  Future<bool> markStepComplete(int stepIndex) async {
     final session = state.session;
-    if (session == null) return;
+    if (session == null) return false;
     
     state = state.copyWith(clearError: true);
     try {
+      final oldLevel = GamificationUtils.calculateLevel(session.xpEarned);
       final data = await _service.completeStep(session.sessionId, stepIndex);
       
       // Update XP locally
       final awardedXp = data['xp_earned'] as int? ?? 0;
+      final totalXp = data['total_xp'] as int? ?? (session.xpEarned + awardedXp);
+      final newLevel = GamificationUtils.calculateLevel(totalXp);
+      final bool leveledUp = newLevel > oldLevel;
+
       final updatedSteps = List<MilestoneStep>.from(session.steps);
       if (stepIndex >= 0 && stepIndex < updatedSteps.length) {
         final currentStep = updatedSteps[stepIndex];
@@ -245,7 +295,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       }
 
       final updatedSession = session.copyWith(
-        xpEarned: session.xpEarned + awardedXp,
+        xpEarned: totalXp,
         stepsCompleted: session.stepsCompleted + 1,
         steps: updatedSteps,
       );
@@ -261,9 +311,37 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
         xpEarned: updatedSession.xpEarned,
         isComplete: updatedSession.stepsCompleted >= updatedSession.steps.length,
       );
+
+      if (leveledUp) {
+        final levelTitle = GamificationUtils.getLevelTitle(newLevel);
+        ref.read(gamificationEventProvider.notifier).triggerEvent(
+          xpEarned: awardedXp,
+          totalXp: totalXp,
+          level: newLevel,
+          levelTitle: levelTitle,
+        );
+      }
+
+      return leveledUp;
     } catch (e) {
       state = state.copyWith(error: e.toString());
+      return false;
     }
+  }
+
+  /// Completes the current step, pauses if a level-up celebration is shown,
+  /// and advances to the next step once the celebration modal is dismissed.
+  Future<void> completeAndAdvanceStep(int stepIndex) async {
+    final leveledUp = await markStepComplete(stepIndex);
+
+    // If level-up occurred or celebration overlay is active, wait for user to dismiss
+    final gamificationNotifier = ref.read(gamificationEventProvider.notifier);
+    if (leveledUp || gamificationNotifier.isCelebrating) {
+      await gamificationNotifier.onDismissed;
+    }
+
+    // Now transition to the next step (triggers NeuralInferenceLoader if ungenerated)
+    setActiveStep(stepIndex + 1);
   }
 
   /// Check if the quiz for a given step has been completed.
