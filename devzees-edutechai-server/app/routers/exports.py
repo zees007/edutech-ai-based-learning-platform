@@ -51,16 +51,13 @@ def generate_markdown(memory) -> str:
         md += f"**Objective:** {step.description}\n\n"
         md += f"**Estimated Time:** {est_min} min\n\n"
 
-        # Get StepResult as fallback source
-        step_result = memory.get_step_result(step_idx) if hasattr(memory, 'get_step_result') else None
-
         # ── Socratic Tutor Explanation ──
-        explanation = getattr(step, 'tutor_explanation', None) or (step_result.explanation if step_result else None)
+        explanation = getattr(step, 'tutor_explanation', None)
         if explanation:
             md += f"### 🎓 Socratic Tutor Explanation\n\n{explanation}\n\n"
 
         # ── Socratic Follow-Up Questions ──
-        socratic_qs = getattr(step, 'socratic_questions', []) or (step_result.socratic_questions if step_result else [])
+        socratic_qs = getattr(step, 'socratic_questions', [])
         if socratic_qs:
             md += "### 💡 Suggested Socratic Questions\n\n"
             for qi, q in enumerate(socratic_qs, 1):
@@ -68,7 +65,7 @@ def generate_markdown(memory) -> str:
             md += "\n"
 
         # ── YouTube Videos ──
-        videos = getattr(step, 'videos', []) or (step_result.youtube_clips if step_result else [])
+        videos = getattr(step, 'videos', [])
         if videos:
             md += "### 🎬 Recommended YouTube Videos\n\n"
             for vid in videos:
@@ -90,7 +87,7 @@ def generate_markdown(memory) -> str:
             md += "\n"
 
         # ── Academic Papers ──
-        papers = getattr(step, 'papers', []) or (step_result.academic_papers if step_result else [])
+        papers = getattr(step, 'papers', [])
         if papers:
             md += "### 📚 Academic Research Papers\n\n"
             for paper in papers:

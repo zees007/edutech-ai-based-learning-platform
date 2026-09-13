@@ -147,8 +147,7 @@ class SocraticTutorAgent(BaseAgent):
         step = memory.steps[step_index] if step_index < len(memory.steps) else None
         step_title = step.title if step else memory.topic
         step_description = step.description if step else ""
-        step_result = memory.get_step_result(step_index)
-        explanation = step_result.explanation or ""
+        explanation = step.tutor_explanation if step and step.tutor_explanation else ""
 
         system_prompt = (
             f"You are the Socratic Tutor Agent teaching a {memory.student_level} level student about '{memory.topic}'.\n"
@@ -205,8 +204,7 @@ class SocraticTutorAgent(BaseAgent):
         self.logger.info(f"Teaching step {step_index}: '{step.title}'")
 
         # Mark step as in progress
-        step_result = memory.get_step_result(step_index)
-        step_result.status = StepStatus.IN_PROGRESS
+        step.status = StepStatus.IN_PROGRESS
 
         # Load and format the prompt
         is_first_step = (step_index == 0)
@@ -255,12 +253,12 @@ class SocraticTutorAgent(BaseAgent):
             )
         except Exception as e:
             self.logger.error(f"Socratic Tutor LLM call failed: {e}")
-            step_result.explanation = (
+            step.tutor_explanation = (
                 f"Let's explore **{step.title}** together! "
                 f"{step.description} "
                 f"(The AI tutor is temporarily unavailable — please try again.)"
             )
-            step_result.socratic_questions = [
+            step.socratic_questions = [
                 f"What do you already know about {step.title}?",
                 f"Why do you think {memory.topic} is important?",
             ]
@@ -269,8 +267,8 @@ class SocraticTutorAgent(BaseAgent):
         # Parse the response — split explanation from Socratic questions
         explanation, questions = self._parse_response(response)
 
-        step_result.explanation = explanation
-        step_result.socratic_questions = questions
+        step.tutor_explanation = explanation
+        step.socratic_questions = questions
 
         # Add to conversation history
         memory.add_conversation_turn("tutor", explanation, step_index=step_index)
@@ -364,9 +362,8 @@ class SocraticTutorAgent(BaseAgent):
 
         # After streaming completes, write the full response to SharedMemory
         explanation, questions = self._parse_response(full_response)
-        step_result = memory.get_step_result(step_index)
-        step_result.explanation = explanation
-        step_result.socratic_questions = questions
+        step.tutor_explanation = explanation
+        step.socratic_questions = questions
         memory.add_conversation_turn("tutor", explanation, step_index=step_index)
 
     def _parse_response(self, response: str) -> tuple[str, list[str]]:

@@ -4,7 +4,7 @@ EduTechAI — Synthesizer Agent
 Read-only agent that assembles outputs from all worker agents into structured
 WebSocket events for the client. Does NOT write to SharedMemory.
 
-Reads: memory.step_results[step_index], memory.steps, memory.xp_earned
+Reads: memory.steps[step_index], memory.xp_earned
 Writes: Nothing — streams events to the WebSocket instead
 """
 
@@ -72,13 +72,13 @@ class SynthesizerAgent(BaseAgent):
         step_index: int,
     ) -> SocraticQuestionsEvent | None:
         """Create a WebSocket event for Socratic questions (after explanation)."""
-        step_result = memory.step_results.get(step_index)
-        if not step_result or not step_result.socratic_questions:
+        step = memory.steps[step_index] if step_index < len(memory.steps) else None
+        if not step or not step.socratic_questions:
             return None
         return SocraticQuestionsEvent(
             session_id=memory.session_id,
             step_index=step_index,
-            questions=step_result.socratic_questions,
+            questions=step.socratic_questions,
         )
 
     def create_youtube_clip_events(
@@ -87,8 +87,8 @@ class SynthesizerAgent(BaseAgent):
         step_index: int,
     ) -> list[YouTubeClipEvent]:
         """Create WebSocket events for YouTube clips found for a step."""
-        step_result = memory.step_results.get(step_index)
-        if not step_result:
+        step = memory.steps[step_index] if step_index < len(memory.steps) else None
+        if not step:
             return []
         return [
             YouTubeClipEvent(
@@ -96,7 +96,7 @@ class SynthesizerAgent(BaseAgent):
                 step_index=step_index,
                 clip=clip,
             )
-            for clip in step_result.youtube_clips
+            for clip in step.videos
         ]
 
     def create_academic_paper_events(
@@ -105,8 +105,8 @@ class SynthesizerAgent(BaseAgent):
         step_index: int,
     ) -> list[AcademicPaperEvent]:
         """Create WebSocket events for academic papers found for a step."""
-        step_result = memory.step_results.get(step_index)
-        if not step_result:
+        step = memory.steps[step_index] if step_index < len(memory.steps) else None
+        if not step:
             return []
         return [
             AcademicPaperEvent(
@@ -114,7 +114,7 @@ class SynthesizerAgent(BaseAgent):
                 step_index=step_index,
                 paper=paper,
             )
-            for paper in step_result.academic_papers
+            for paper in step.papers
         ]
 
     def create_quiz_event(
@@ -123,13 +123,14 @@ class SynthesizerAgent(BaseAgent):
         step_index: int,
     ) -> QuizEvent | None:
         """Create a WebSocket event for the quiz (after all agents finish)."""
-        step_result = memory.step_results.get(step_index)
-        if not step_result or not step_result.quiz:
+        from models.schemas import Quiz
+        step = memory.steps[step_index] if step_index < len(memory.steps) else None
+        if not step or not step.quiz:
             return None
         return QuizEvent(
             session_id=memory.session_id,
             step_index=step_index,
-            quiz=step_result.quiz,
+            quiz=Quiz(step_index=step_index, questions=step.quiz),
         )
 
     def create_step_complete_event(

@@ -4,8 +4,8 @@ EduTechAI — Quiz Agent
 Dynamically generates comprehension check questions based on the
 Socratic Tutor's explanation for the current step.
 
-Reads: memory.step_results[step_index].explanation, memory.student_level
-Writes: memory.step_results[step_index].quiz
+Reads: memory.steps[step_index].tutor_explanation, memory.student_level
+Writes: memory.steps[step_index].quiz
 Model: config.QUIZ_AGENT_MODEL
 
 Runs AFTER the Socratic Tutor completes (needs the explanation as context).
@@ -104,8 +104,7 @@ class QuizAgent(BaseAgent):
         if step is None:
             return
 
-        step_result = memory.get_step_result(step_index)
-        if not step_result.explanation:
+        if not step.tutor_explanation:
             self.logger.warning(f"No explanation for step {step_index} — cannot generate quiz.")
             return
 
@@ -118,7 +117,7 @@ class QuizAgent(BaseAgent):
             topic=memory.topic,
             step_title=step.title,
             student_level=memory.student_level,
-            explanation=step_result.explanation[:3000],  # Truncate to stay within context
+            explanation=step.tutor_explanation[:3000],  # Truncate to stay within context
         )
 
         messages = [
@@ -138,24 +137,21 @@ class QuizAgent(BaseAgent):
         except Exception as e:
             self.logger.error(f"Quiz generation failed: {e}")
             # Fallback: create a simple generic question
-            step_result.quiz = Quiz(
-                step_index=step_index,
-                questions=[
-                    QuizQuestion(
-                        index=0,
-                        question=f"What is the key takeaway from this step about {step.title}?",
-                        question_type=QuestionType.FILL_IN_BLANK,
-                        options=[],
-                        correct_answer="(Open-ended — any thoughtful response is valid)",
-                        explanation="Reflect on what you just learned!",
-                    )
-                ],
-            )
+            step.quiz = [
+                QuizQuestion(
+                    index=0,
+                    question=f"What is the key takeaway from this step about {step.title}?",
+                    question_type=QuestionType.FILL_IN_BLANK,
+                    options=[],
+                    correct_answer="(Open-ended — any thoughtful response is valid)",
+                    explanation="Reflect on what you just learned!",
+                )
+            ]
             return
 
         # Parse the response
         quiz = self._parse_quiz(step_index, result)
-        step_result.quiz = quiz
+        step.quiz = quiz.questions
 
         self.logger.info(f"Quiz generated: {len(quiz.questions)} questions for step {step_index}")
 

@@ -77,16 +77,6 @@ get_session = get_session_or_404
 def _build_session_response(memory: SharedMemory) -> SessionResponse:
     """Helper to merge step results into the milestone steps for API responses."""
     for idx, step in enumerate(memory.steps):
-        result = memory.step_results.get(idx)
-        if result:
-            step.tutor_explanation = result.explanation or step.tutor_explanation
-            step.socratic_questions = result.socratic_questions or step.socratic_questions
-            step.videos = result.youtube_clips or step.videos
-            step.papers = result.academic_papers or step.papers
-            step.quiz = result.quiz.questions if result.quiz else step.quiz
-            if result.status and result.status != StepStatus.PENDING:
-                step.status = result.status
-
         # Synchronize quiz score from session-level dict onto the step if not set
         if step.quiz_score is None and idx in memory.quiz_scores:
             step.quiz_score = memory.quiz_scores[idx]
@@ -95,11 +85,6 @@ def _build_session_response(memory: SharedMemory) -> SessionResponse:
             step.status = StepStatus.COMPLETE
         elif idx == memory.current_step_index and step.status != StepStatus.COMPLETE:
             step.status = StepStatus.IN_PROGRESS
-
-        step.conversation_history = [
-            turn for turn in memory.conversation_history
-            if turn.step_index == idx
-        ]
 
     return SessionResponse(
         session_id=memory.session_id,
@@ -334,9 +319,13 @@ async def regenerate_step(
             errors=f"Step index {step_index} out of range [0, {len(memory.steps) - 1}]",
         )
 
-    # Clear the step result so it can be regenerated upon next interaction or load
-    if step_index in memory.step_results:
-        del memory.step_results[step_index]
+    # Clear the step content so it can be regenerated upon next interaction or load
+    step = memory.steps[step_index]
+    step.tutor_explanation = None
+    step.socratic_questions = []
+    step.videos = []
+    step.papers = []
+    step.quiz = None
     
     # We could optionally trigger the agents right here, but typically the orchestrator/ws layer 
     # lazy-loads or we just return success and let the client re-fetch/re-interact.

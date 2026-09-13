@@ -10,7 +10,7 @@ from httpx import ASGITransport, AsyncClient
 
 from app.main import create_app
 from models.db_models import GamificationRecord, SessionRecord, StepProgress, User
-from models.schemas import LearningMode, MilestoneStep, StepResult, StepStatus
+from models.schemas import LearningMode, MilestoneStep, StepStatus
 from models.shared_memory import SharedMemory
 from models.user_schemas import SearchDTO, UserCreateRequest
 from services.database import get_db_session, init_db
@@ -263,25 +263,25 @@ async def test_rest_api_sessions_endpoint(app):
         )
         assert login_res.status_code == 200
 
-        # 3. Create a session via /api/learn
+        # 3. Create a session via /api/v1/learn
         learn_res = await client.post(
-            "/api/learn",
-            json={"topic": "Black Holes & Event Horizons", "learning_mode": "visual", "student_level": "general"},
+            "/api/v1/learn",
+            json={"topic": "Black Holes & Event Horizons", "learning_mode": "bite_sized", "student_level": "general"},
         )
         assert learn_res.status_code == 200
         session_id = learn_res.json()["session_id"]
 
-        # 4. Search sessions via GET /api/sessions
-        hist_res = await client.get("/api/sessions?page=0&size=10")
+        # 4. Search sessions via GET /api/v1/sessions
+        hist_res = await client.get("/api/v1/sessions?page=0&size=10")
         assert hist_res.status_code == 200
         data = hist_res.json()
         assert data["total"] >= 1
         assert any(s["session_id"] == session_id for s in data["items"])
 
-        # 5. Delete session via DELETE /api/sessions/{session_id}
-        del_res = await client.delete(f"/api/sessions/{session_id}")
+        # 5. Delete session via DELETE /api/v1/sessions/{session_id}
+        del_res = await client.delete(f"/api/v1/sessions/{session_id}")
         assert del_res.status_code == 200
 
         # 6. Verify session is gone
-        after_del_res = await client.get(f"/api/sessions/{session_id}")
+        after_del_res = await client.get(f"/api/v1/sessions/{session_id}")
         assert after_del_res.status_code == 404

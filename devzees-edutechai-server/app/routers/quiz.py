@@ -44,18 +44,18 @@ async def submit_quiz(
     memory = await get_session(submission.session_id)
 
     # Validate step has a quiz
-    step_result = memory.step_results.get(submission.step_index)
-    if not step_result or not step_result.quiz:
+    step = memory.steps[submission.step_index] if 0 <= submission.step_index < len(memory.steps) else None
+    if not step or not step.quiz:
         raise BadRequestException(
             error_code="QUIZ_NOT_FOUND",
             errors=f"No quiz found for step {submission.step_index}.",
         )
 
-    quiz = step_result.quiz
+    quiz_questions = step.quiz
     feedback: list[QuestionFeedback] = []
     correct_count = 0
 
-    for question in quiz.questions:
+    for question in quiz_questions:
         student_answer = submission.answers.get(question.index, "")
         is_correct = student_answer.strip().lower() == question.correct_answer.strip().lower()
 
@@ -72,7 +72,7 @@ async def submit_quiz(
             )
         )
 
-    total = len(quiz.questions)
+    total = len(quiz_questions)
     score = correct_count / total if total > 0 else 0.0
 
     # Calculate role multiplier (Ultra=2.0x, Pro=1.5x, Free=1.0x)
@@ -142,11 +142,12 @@ async def get_quiz(session_id: str, step_index: int):
     """Get the quiz for a specific step (if generated)."""
     memory = await get_session(session_id)
 
-    step_result = memory.step_results.get(step_index)
-    if not step_result or not step_result.quiz:
+    step = memory.steps[step_index] if 0 <= step_index < len(memory.steps) else None
+    if not step or not step.quiz:
         raise NotFoundException(
             error_code="QUIZ_NOT_AVAILABLE",
             errors=f"No quiz available for step {step_index}.",
         )
 
-    return step_result.quiz
+    from models.schemas import Quiz
+    return Quiz(step_index=step_index, questions=step.quiz)

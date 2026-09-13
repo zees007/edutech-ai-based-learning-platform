@@ -121,20 +121,16 @@ class MilestoneStep(BaseModel):
         default_factory=list,
         description="Suggested Socratic follow-up questions.",
     )
-    conversation_history: list[ConversationTurn] = Field(
-        default_factory=list,
-        description="Follow-up conversations for this step.",
-    )
-    videos: list[Any] = Field(
+    videos: list[YouTubeClip] = Field(
         default_factory=list,
         description="Curated YouTube video clips for this step.",
     )
-    papers: list[Any] = Field(
+    papers: list[AcademicPaper] = Field(
         default_factory=list,
         description="Curated academic research papers for this step.",
     )
-    quiz: list[Any] = Field(
-        default_factory=list,
+    quiz: list[QuizQuestion] | None = Field(
+        default=None,
         description="Quiz questions for comprehension checking.",
     )
     quiz_score: float | None = Field(
@@ -148,6 +144,10 @@ class MilestoneStep(BaseModel):
     user_full_answers: dict[int, str] = Field(
         default_factory=dict,
         description="Student's submitted full option strings by question index.",
+    )
+    follow_up_count: int = Field(
+        default=0,
+        description="Number of follow-up questions asked for this step.",
     )
 
 
@@ -239,19 +239,6 @@ class QuestionFeedback(BaseModel):
     student_answer: str
     correct_answer: str
     explanation: str
-
-
-class StepResult(BaseModel):
-    """Combined outputs from all agents for a single milestone step."""
-
-    step_index: int
-    status: StepStatus = StepStatus.PENDING
-    explanation: str = ""
-    socratic_questions: list[str] = Field(default_factory=list)
-    youtube_clips: list[YouTubeClip] = Field(default_factory=list)
-    academic_papers: list[AcademicPaper] = Field(default_factory=list)
-    quiz: Quiz | None = None
-    follow_up_count: int = 0
 
 
 # ═══════════════════════════════════════════════════════════════════
