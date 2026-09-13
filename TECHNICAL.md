@@ -8,9 +8,10 @@ This document provides comprehensive technical documentation for the EduTechAI a
 
 1. [Architectural Overview](#1-architectural-overview)
    - [The Blackboard Design Pattern](#the-blackboard-design-pattern)
-   - [State Flow Lifecycle](#state-flow-lifecycle)
+   - [Unified MilestoneStep Schema Architecture](#unified-milestonestep-schema-architecture)
 2. [SharedMemory State Machine](#2-sharedmemory-state-machine)
    - [Schema & Slot Allocation](#schema--slot-allocation)
+   - [Unified MilestoneStep Domain Model](#unified-milestonestep-domain-model)
    - [Agent Read / Write Matrix](#agent-read--write-matrix)
 3. [Agent Deep Dives](#3-agent-deep-dives)
    - [1. Orchestrator Agent (Supervisor)](#1-orchestrator-agent-supervisor)
@@ -26,6 +27,7 @@ This document provides comprehensive technical documentation for the EduTechAI a
    - [Session Initialization Sequence](#session-initialization-sequence)
    - [Step Execution Sequence](#step-execution-sequence)
    - [Follow-up Socratic Chat Sequence](#follow-up-socratic-chat-sequence)
+   - [Gamification, Journey Completion & Review Flow](#gamification-journey-completion--review-flow)
 6. [Data Persistence & Session Recovery](#6-data-persistence--session-recovery)
 7. [Configuration & Model Routing](#7-configuration--model-routing)
 8. [Role-Based Access Control (RBAC) & Subscription Tiers](#8-role-based-access-control-rbac--subscription-tiers)
@@ -42,10 +44,15 @@ This document provides comprehensive technical documentation for the EduTechAI a
     - [AI Key Insight Extraction & Fallback Hierarchy](#ai-key-insight-extraction--fallback-hierarchy)
     - [Client Presentation & Micro-Interactions](#client-presentation--micro-interactions)
     - [Backend REST API & Privilege Gating](#backend-rest-api--privilege-gating)
-11. [Flutter Client Architecture & WebSocket Streaming](#11-flutter-client-architecture--websocket-streaming)
+11. [Flutter Client Architecture, Interactive Workspace & Gamification](#11-flutter-client-architecture-interactive-workspace--gamification)
+    - [Dual-Panel Split Learning Workspace](#dual-panel-split-learning-workspace)
     - [State Management & Provider Architecture](#state-management--provider-architecture)
-    - [WebSocket Event Lifecycle](#websocket-event-lifecycle)
-    - [UI Performance & Rendering Optimizations](#ui-performance--rendering-optimizations)
+    - [WebSocket Event Streaming Lifecycle](#websocket-event-streaming-lifecycle)
+    - [Real-Time Gamification, XP Rewards & Leveling](#real-time-gamification-xp-rewards--leveling)
+    - [Sequenced Level-Up & Journey Complete Celebrations](#sequenced-level-up--journey-complete-celebrations)
+    - [Optimistic State & Silent Background Synchronization](#optimistic-state--silent-background-synchronization)
+    - [Formative Knowledge Check Quiz Engine](#formative-knowledge-check-quiz-engine)
+    - [UI Performance & 60FPS Rendering Optimizations](#ui-performance--60fps-rendering-optimizations)
 
 ---
 
@@ -61,7 +68,7 @@ In EduTechAI:
 
 ```
                          ┌───────────────────────┐
-                         │   Streamlit / Client  │
+                         │   Flutter UI Client   │
                          └───────────┬───────────┘
                                      │
                                      ▼
@@ -85,6 +92,12 @@ In EduTechAI:
                        (WebSocket Event Streaming)
 ```
 
+### Unified MilestoneStep Schema Architecture
+Historically, multi-agent frameworks decoupled agent outputs into fragmented structures (such as a separate `step_results: dict[int, StepResult]` map). In EduTechAI, this schema was modernized into a **single-source-of-truth model**:
+- **All agent outputs are consolidated directly onto `MilestoneStep`** inside `SharedMemory.steps: list[MilestoneStep]`.
+- The Tutor's pedagogical explanation, Socratic questions, curated YouTube clips, academic papers, generated quizzes, student submitted answers, and calculated scores live on the step itself.
+- This eliminates state drift between worker agent outputs, database persistence (Supabase / PostgreSQL), and client-side reactive rendering.
+
 ---
 
 ## 2. SharedMemory State Machine
@@ -103,19 +116,16 @@ class SharedMemory(BaseModel):
     student_level: str              # middle_school | high_school | undergraduate | graduate | general
     created_at: datetime
 
-    # Curriculum & Milestone Plan (Written by Orchestrator)
+    # Curriculum & Milestone Plan (Written by Orchestrator & updated by worker agents)
     has_prerequisite_gap: bool
     prerequisite_summary: str | None
     steps: list[MilestoneStep]
     current_step_index: int
 
-    # Session-Level Literature (Written by Academic Researcher)
+    # Session-Level Literature (Curated once per session by Academic Researcher)
     academic_papers: list[AcademicPaper]
 
-    # Per-Step Agent Outputs (Keyed by step index)
-    step_results: dict[int, StepResult]
-
-    # Conversation History (Append-only)
+    # Conversation History (Append-only dialogue turns)
     conversation_history: list[ConversationTurn]
 
     # Gamification State
@@ -125,18 +135,49 @@ class SharedMemory(BaseModel):
     streak_count: int
 ```
 
-> **Note on Gamification Architecture:** Currently, progression data (`GamificationRecord`) is bound directly to a `session_id`. This means XP, Leveling, and Streaks are isolated per-topic journey. A single user with 3 active topics will level them up independently with separate streak counters. A future roadmap enhancement will migrate these isolated records to a unified global User Profile.
+### Unified MilestoneStep Domain Model
+
+Defined in `models/schemas.py`, the `MilestoneStep` encapsulates all curricular, multimedia, pedagogical, and evaluation data for a single step:
+
+```python
+class MilestoneStep(BaseModel):
+    index: int
+    title: str
+    description: str
+    is_prerequisite: bool = False
+    prerequisite: str | None = None
+    status: StepStatus = StepStatus.PENDING
+    estimated_minutes: int = 5
+
+    # Pedagogical Content (Written by Socratic Tutor Agent)
+    tutor_explanation: str | None = None
+    socratic_questions: list[str] = Field(default_factory=list)
+    follow_up_count: int = 0
+
+    # Curated Resources (Written by YouTube Curator & Academic Researcher)
+    videos: list[YouTubeClip] = Field(default_factory=list)
+    papers: list[AcademicPaper] = Field(default_factory=list)
+
+    # Formative Assessment & Student Answers (Written by Quiz Agent & Submit API)
+    quiz: list[QuizQuestion] | None = None
+    quiz_score: float | None = None
+    user_answers: dict[int, str] = Field(default_factory=dict)
+    user_full_answers: dict[int, str] = Field(default_factory=dict)
+```
+
+> **Note on Gamification Architecture:** Currently, progression data (`GamificationRecord`) is bound directly to a `session_id`. This means XP, Leveling, and Streaks are calculated per-topic journey. A future roadmap enhancement will migrate these isolated records to a unified global User Profile.
 
 ### Agent Read / Write Matrix
 
 | Agent | Reads from `SharedMemory` | Writes to `SharedMemory` | Execution Trigger |
 | :--- | :--- | :--- | :--- |
 | **Orchestrator** | `topic`, `student_level`, `learning_mode`, `conversation_history` | `steps`, `has_prerequisite_gap`, `prerequisite_summary` | Session Creation / Plan Update |
-| **Academic Researcher** | `topic`, `student_level`, `learning_mode` | `academic_papers` | Session Creation (Once per Topic) |
-| **Socratic Tutor** | `topic`, `steps[i]`, `student_level`, `learning_mode`, `conversation_history` | `step_results[i].explanation`, `step_results[i].socratic_questions` | Step Execution & Follow-up Chat |
-| **YouTube Curator** | `topic`, `steps[i]`, `student_level`, `learning_mode` | `step_results[i].youtube_clips` | Concurrent Step Execution |
-| **Quiz Agent** | `topic`, `steps[i]`, `step_results[i].explanation`, `student_level` | `step_results[i].quiz` | Post-Tutor Step Execution |
-| **Synthesizer** | `steps`, `step_results[i]`, `academic_papers`, `xp_earned` | *None (Read-Only Event Streamer)* | WebSocket / Client Dispatch |
+| **Academic Researcher** | `topic`, `student_level`, `learning_mode` | `academic_papers` (session), `steps[i].papers` (step) | Session Creation (Once per Topic) |
+| **Socratic Tutor** | `topic`, `steps[i]`, `student_level`, `learning_mode`, `conversation_history` | `steps[i].tutor_explanation`, `steps[i].socratic_questions` | Step Execution & Follow-up Chat |
+| **YouTube Curator** | `topic`, `steps[i]`, `student_level`, `learning_mode` | `steps[i].videos` | Concurrent Step Execution |
+| **Quiz Agent** | `topic`, `steps[i]`, `steps[i].tutor_explanation`, `student_level` | `steps[i].quiz` | Post-Tutor Step Execution |
+| **Quiz Evaluator API** | `steps[i].quiz`, student answers | `steps[i].quiz_score`, `steps[i].user_answers`, `xp_earned` | Quiz Submission (`POST /api/v1/quiz/submit`) |
+| **Synthesizer** | `steps[i]`, `academic_papers`, `xp_earned` | *None (Read-Only Event Streamer)* | WebSocket / Client Dispatch |
 
 ---
 
@@ -229,7 +270,7 @@ class SharedMemory(BaseModel):
   - `undergraduate`, `graduate`, `general`: Fetches 3 landmark papers (scaled to 4 in `deep_dive` mode).
 - **0ms Step Latency & Event Streaming:**
   - Literature is curated once during session initialization and cached in `memory.academic_papers`.
-  - In WebSocket step progression, cached papers are instantly bound to `step_result.academic_papers` without repeated network hops, and emitted to clients as `AcademicPaperEvent` payloads via the Synthesizer Agent.
+  - In WebSocket step progression, cached papers are instantly bound to `memory.steps[i].papers` without repeated network hops, and emitted to clients as `AcademicPaperEvent` payloads via the Synthesizer Agent.
 
 ---
 
@@ -238,7 +279,7 @@ class SharedMemory(BaseModel):
 - **Prompt Template:** `prompts/quiz_agent.md`
 - **Model Role:** Context-Grounded Comprehension Evaluation
 - **Temperature:** `0.4`
-- **Execution Constraint:** Runs **after** the Socratic Tutor completes to ingest `step_results[i].explanation`.
+- **Execution Constraint:** Runs **after** the Socratic Tutor completes to ingest `memory.steps[i].tutor_explanation`.
 - **Question Types (Fixed 3-Question Battery):**
   1. `multiple_choice`: 4 options (A, B, C, D) with 1 correct answer and distractor rationale.
   2. `true_false`: Nuanced statement based strictly on the explanation text.
@@ -304,10 +345,51 @@ User (UI)             Orchestrator         AcademicResearcher      SharedMemory
 User (UI)          SocraticTutor         YouTubeCurator         QuizAgent         SharedMemory
    │                     │                      │                   │                  │
    ├── Start Step(i) ───►│                      │                   │                  │
-   │                     ├── Stream Expl. ──────┼───────────────────┼─────────────────►│ (explanation)
-   │◄── Typing Stream ───┤                      ├── Find Clips ─────┼─────────────────►│ (youtube_clips)
-   │                     │                      │                   ├── Gen Quiz ─────►│ (quiz)
+   │                     ├── Stream Expl. ──────┼───────────────────┼─────────────────►│ (steps[i].tutor_explanation)
+   │◄── Typing Stream ───┤                      ├── Find Clips ─────┼─────────────────►│ (steps[i].videos)
+   │                     │                      │                   ├── Gen Quiz ─────►│ (steps[i].quiz)
    │◄── Render Content ──┴──────────────────────┴───────────────────┴──────────────────┤
+```
+
+### Follow-up Socratic Chat Sequence
+
+```
+User (UI)                  Learning Router                 SocraticTutor           SharedMemory
+   │                             │                               │                      │
+   ├── Ask Follow-up ───────────►│                               │                      │
+   │   (question, step_index)    ├── Read Step & History ────────┼─────────────────────►│ (step.tutor_explanation)
+   │                             ├── Dispatch Socratic Followup ─►│                      │
+   │                             │   (step title, expl, turns)   ├── Generate Answer ───┤
+   │                             │◄── Return Socratic Response ──┤                      │
+   │                             ├── Append Dialogue Turn ───────┼─────────────────────►│ (conversation_history)
+   │◄── Render Tutor Reply ──────┴───────────────────────────────┴──────────────────────┤
+```
+
+### Gamification, Journey Completion & Review Flow
+
+```
+User (UI)             Quiz/Step Route        Gamification Engine      Celebration Modal      SharedMemory / DB
+   │                         │                       │                       │                       │
+   ├── Submit Quiz ─────────►│                       │                       │                       │
+   │   (answers)             ├── Grade & Save ───────┼───────────────────────┼──────────────────────►│ (steps[i].quiz_score)
+   │                         ├── Calculate XP/Streak►│                       │                       │
+   │◄── QuizResult (+XP) ────┤                       │                       │                       │
+   │                         ├── XPUpdateEvent (WS) ─┼──────────────────────►│ (Level Up? Trigger)   │
+   │◄── LevelUp Modal ───────┴───────────────────────┴───────────────────────┤                       │
+   │    (pauses advance until dismissed)                                     │                       │
+   │                                                                         │                       │
+   ├── [Complete Journey 🏆]─►POST /step/N/complete                          │                       │
+   │                         ├── Mark Complete & +Bonus ─────────────────────┼──────────────────────►│ (steps[N].status = 'complete')
+   │                         │                       │                       │                       │
+   │◄── Optimistic Local Lock(All steps marked 'complete' in memory @ 0ms)───┼───────────────────────┤
+   │◄── Journey Complete Modal (Trophy, Confetti, XP Bonus, Stats) ──────────┤                       │
+   │    │                                                                    │                       │
+   │    ├── (In Parallel: Silent Background Sync via loadSession(silent=true))──────────────────────►│ Reconcile DB Snapshot
+   │    │                                                                    │                       │
+   ├── Tap "Review Steps" (Any time: 50ms or 5s)                             │                       │
+   │   ├── Failsafe ensureJourneyCompleted()                                 │                       │
+   │   └── Modal Fades Out ──────────────────────────────────────────────────┴───────────────────────┤
+   │◄── ⚡ Zero-Flicker Completed Review Workspace (Quizzes answered, Socratic Tutor review ready)──┤
 ```
 
 ---
@@ -424,7 +506,7 @@ if "ET_UNLIMITED_FOLLOW_UPS" in privilege_codes:
    ```python
    @router.get("/{session_id}/pdf", dependencies=[Depends(require_privilege(ET_EXPORT_PDF))])
    ```
-2. **Streamlit UI Presentation Layer**: Performs reactive UI element gating:
+2. **Flutter UI Client Presentation Layer**: Performs reactive UI element gating:
    - Evaluates monthly session counts and prevents journey initialization when quotas are exceeded.
    - Disables suggested question chips and shows warning banners when follow-up limits are met.
    - Renders contextual upgrade messaging (`Upgrade to Pro` vs `Upgrade to Ultra`).
@@ -634,24 +716,55 @@ GET /api/v1/academic/search?query={topic}&max_results={limit}
 
 ---
 
-## 11. Flutter Client Architecture & WebSocket Streaming
+## 11. Flutter Client Architecture, Interactive Workspace & Gamification
 
-The Flutter client replaces the original Streamlit interface with a fully reactive, high-performance mobile/desktop frontend. It introduces a complex state management architecture to handle real-time streaming AI generation, resilient WebSocket connections, and complex UI rendering.
+The Flutter client replaces the original Streamlit interface with a fully reactive, high-performance web/desktop/mobile frontend. It introduces a modular architecture handling real-time streaming AI generation, resilient WebSocket connections, formative quiz evaluation, gamification rewards, and a dual-panel split workspace.
+
+### Dual-Panel Split Learning Workspace
+
+The core learning interface is built around `SplitLearningWorkspace` (`lib/presentation/pages/learning/widgets/workspace/split_learning_workspace.dart`), implementing an interactive split layout designed for maximum cognitive engagement:
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                  UnifiedLearningCommandHub (Topic & XP Bar)                  │
+├──────────────────────────────────────┬───────────────────────────────────────┤
+│           Left Panel (55%)           │           Right Panel (45%)           │
+│        [Socratic Tutor Chat]         │       [Learning Resources Panel]      │
+│  - Formatted LaTeX & Markdown prose  │  - Segmented Tab 1: Recommended Videos│
+│  - Architecture Mermaid Diagrams     │  - Segmented Tab 2: Academic Papers   │
+│  - Suggested Socratic Question Chips │  - Segmented Tab 3: Knowledge Quiz    │
+│  - Conversational Follow-Up Input    │  - Pinned Knowledge Check Gating Bar  │
+│  - Fullscreen Maximization Overlay   │  - Fullscreen Maximization Overlay    │
+└──────────────────────────────────────┴───────────────────────────────────────┘
+```
+
+1. **Fluid Draggable Splitter:**
+   - Left-to-right split ratio defaults to `0.55`, bounded between `0.30` and `0.70` via `_buildDraggableDivider()`.
+   - Listens to horizontal drag deltas, dynamically updating layout constraints without rebuilding subtrees.
+2. **Fullscreen Maximization Overlays:**
+   - Both panels feature expand/restore toggle controls (`_toggleFullscreen`).
+   - Uses Flutter `OverlayEntry` with `ClipRRect` and backdrop filters (`ImageFilter.blur(sigmaX: 16, sigmaY: 16)`) to maximize either the Socratic dialogue or resource exploration into an immersive distraction-free view.
+3. **Adaptive Mobile Workspace:**
+   - On viewports narrower than 800px, dynamically switches from the dual-pane desktop row to `_MobileTabbedWorkspace`, providing a bottom tabbed experience (Tutor, Videos, Papers, Quiz) with safe area insets.
+
+---
 
 ### State Management & Provider Architecture
 
-The client utilizes **Riverpod** for robust, reactive state management. The core component is the `ActiveSessionNotifier` (`lib/core/providers/active_session_provider.dart`), which manages the entire lifecycle of a learning session:
+The client utilizes **Riverpod** for robust, reactive state management. The core component is `ActiveSessionNotifier` (`lib/core/providers/active_session_provider.dart`), which coordinates the session lifecycle:
 
-- **State Container (`ActiveSessionState`)**: Holds the full `SessionResponse` payload, the currently active step index, UI loading states, and error contexts.
+- **State Container (`ActiveSessionState`)**: Holds the full `SessionResponse` payload, the active step index, UI loading states (`isLoading`, `isSynthesizing`), and error contexts.
 - **REST API + WebSocket Hybrid Model**:
   - Initial session creation (`startNewSession()`) uses REST to trigger the Orchestrator agent to generate the milestone plan.
   - Upon receiving the `SessionResponse`, the client establishes a WebSocket connection (`LearningWebSocketService`) linked to the `sessionId`.
   - Step execution is triggered via the WebSocket using `sendStartStep()`.
   - When the final `step_complete` event is received via WebSocket, the client makes a single REST HTTP GET (`loadSession()`) to fetch the fully completed, structured payload from the database to guarantee state consistency.
 
-### WebSocket Event Lifecycle
+---
 
-Unlike Streamlit's blocking batch execution, the Flutter client processes real-time streamed chunks to provide immediate user feedback.
+### WebSocket Event Streaming Lifecycle
+
+Unlike blocking batch execution, the Flutter client processes real-time streamed chunks to provide immediate user feedback.
 
 ```
 Client (Riverpod)                   WebSocket Server                      Agents
@@ -675,13 +788,89 @@ Client (Riverpod)                   WebSocket Server                      Agents
        │                                  │                                  │
 ```
 
-### UI Performance & Rendering Optimizations
+---
 
-The client employs several advanced rendering optimizations to ensure 60FPS fluid interactions while managing hundreds of incoming WebSocket events:
+### Real-Time Gamification, XP Rewards & Leveling
 
-1. **Lazy Reconnection Avoidance**: `loadSession(sessionId, fromStepComplete: true)` prevents redundant WebSocket disconnections/reconnections when simply refreshing data after a completed step. This avoids triggering duplicate `plan` events and redundant backend pipeline executions.
-2. **Event Guarding (`isLoading` Barrier)**: The `SocraticTutorChat` widget actively listens to the WebSocket stream, but ignores high-frequency `explanation_chunk` events if the global provider is in an `isLoading` state (e.g., Step 0 initialization). This prevents hundreds of wasteful `setState()` triggers and `AnimationController` allocations behind the loading screen.
-3. **Optimized Concurrent Backend Execution**: The WebSocket backend executes the `QuizAgent` in parallel with the `YouTubeCuratorAgent` and `AcademicResearcherAgent` (via `asyncio.gather`), significantly reducing total execution time while maintaining the token-by-token streaming experience of the `SocraticTutorAgent`.
+EduTechAI integrates a comprehensive gamification framework motivating students through immediate positive reinforcement:
+
+1. **Standardized Level Progression:**
+   Managed by `GamificationUtils` (`lib/core/providers/gamification_provider.dart`), calculating levels from cumulative XP:
+   - **Level 1 (0–99 XP):** Novice
+   - **Level 2 (100–249 XP):** Explorer
+   - **Level 3 (250–499 XP):** Practitioner
+   - **Level 4 (500–999 XP):** Specialist
+   - **Level 5 (1000+ XP):** Master
+2. **Real-Time Event Broadcasting:**
+   - Completing a step emits an `XPUpdateEvent` (+50 base XP, multiplied by streak bonuses).
+   - Submitting a quiz emits an `XPUpdateEvent` (+20 XP per correct question + accuracy bonus).
+   - Completing a journey awards a +100 XP completion bonus (subject to role multipliers: 2.0x for Ultra/Admin, 1.5x for Pro).
+3. **Animated Command Hub:**
+   `UnifiedLearningCommandHub` binds the XP count and level progress bar using `TweenAnimationBuilder`, animating smoothly between values upon every backend event.
+
+---
+
+### Sequenced Level-Up & Journey Complete Celebrations
+
+To prevent visual conflicts when multiple celebrations or loading states trigger simultaneously, the platform enforces strict lifecycle sequencing:
+
+1. **Level-Up Celebration Modal (`LevelUpCelebration`):**
+   - Renders a glowing glassmorphic dialog with animated trophy, pulsing rings, particle systems, level titles, and XP earned counters.
+   - Built with an internal double-fire guard so tapping the modal or allowing the 4-second auto-timer to expire invokes `onComplete()` exactly once.
+2. **Sequenced Step Advancement:**
+   - In `completeAndAdvanceStep(stepIndex)`, if a level-up occurred, step transition pauses until the user dismisses the celebration.
+   - Only upon modal dismissal does the client transition to the next step, ensuring the user is never rushed and the `NeuralInferenceLoader` never clashes with the celebration.
+3. **Dynamic Final Milestone Button States:**
+   - On the final milestone step before completion: The primary button updates from *"Next Step"* to **"Complete Journey 🏆"** with an amber/gold gradient.
+   - After journey completion: The button transitions into a celebratory badge: **`[ 🏆 Journey Completed 🎉 ]`**.
+4. **Grand Journey Completion Celebration (`JourneyCompleteCelebration`):**
+   - Displays a 3-metric summary card (Total XP earned, Quiz accuracy percentage, Milestones mastered) alongside the +100 XP completion bonus.
+   - Offers two distinct actions:
+     - **"Review Steps"**: Dismisses the celebration and lets the student review all unlocked milestones, diagrams, quizzes, and chat with the Socratic AI tutor.
+     - **"New Journey"**: Resets active session state and redirects to create a new topic.
+5. **Multi-Celebration Pipeline:**
+   - When finishing the final step triggers a level up, the Level-Up celebration displays first. Once dismissed, the Journey Complete celebration opens immediately.
+
+---
+
+### Optimistic State & Silent Background Synchronization
+
+To eliminate visual lag and loading spinners when transitioning from celebrations to the review workspace, the client implements the **Stale-While-Revalidate (SWR) / Optimistic Background Sync** pattern:
+
+1. **Synchronous Local Completion (0ms):**
+   - The moment the final step is completed in `completeAndAdvanceStep()`, the client immediately sets `status: 'complete'` across all steps, sets `stepsCompleted: session.steps.length`, and updates learning history in memory.
+   - Before the celebration modal finishes animating onto the screen, the workspace underneath is already 100% completed.
+2. **Silent Background Revalidation:**
+   - `loadSession(sessionId, silent: true)` is dispatched in parallel without setting `isLoading: true` or `isSynthesizing: true`.
+   - While the student views their completion bonus and stats (typically 2–5 seconds), the client silently fetches the authoritative database state from Supabase without UI flicker.
+3. **Dismissal Failsafe (`ensureJourneyCompleted`):**
+   - Wired into `onReview` in `LearningPage`. Whether the user spends 5 seconds on the celebration or dismisses it in **0.05 seconds** (or hits `Esc`), `ensureJourneyCompleted()` guarantees all steps remain unlocked, marked complete, and that quiz answers remain visible.
+4. **Boundary Clamping:**
+   - In `loadSession`, if `stepIndex >= response.steps.length`, it clamps to `response.steps.length - 1` rather than resetting to `0`, ensuring the view stays on the completed final milestone rather than jumping back to Step 1.
+5. **Review Mode Awareness:**
+   - In `SplitLearningWorkspace`, `isReviewing` evaluates `widget.status == 'complete'`, ensuring the final milestone step displays the "Review" badge and hides forward navigation buttons.
+
+---
+
+### Formative Knowledge Check Quiz Engine
+
+The `KnowledgeCheckQuiz` widget (`lib/presentation/pages/learning/widgets/workspace/knowledge_check_quiz.dart`) provides grounded formative assessment:
+
+1. **Multi-Question Formats:** Supports multiple-choice, true/false, and fill-in-the-blank questions.
+2. **Answer Persistence:**
+   - Preserves user answers and scores across step transitions.
+   - Auto-restores submitted answers from local step state (`userAnswers`, `userFullAnswers`) upon revisiting completed milestones.
+3. **Interactive Step Gating:**
+   - Forward navigation is gated until the quiz is completed.
+   - Passing the quiz unlocks the step transition bar and awards gamification XP.
+
+---
+
+### UI Performance & 60FPS Rendering Optimizations
+
+1. **Lazy Reconnection Avoidance**: `loadSession(sessionId, fromStepComplete: true, silent: true)` prevents redundant WebSocket disconnections/reconnections when refreshing data after completed steps, eliminating duplicate `plan` executions.
+2. **Event Guarding (`isLoading` Barrier)**: `SocraticTutorChat` ignores high-frequency `explanation_chunk` events while the global provider is in an `isLoading` state, preventing wasteful `setState()` triggers and animation controller allocations behind the loader.
+3. **Optimized Concurrent Backend Execution**: The WebSocket backend executes the `QuizAgent`, `YouTubeCuratorAgent`, and `AcademicResearcherAgent` concurrently via `asyncio.gather()`, maintaining the token-by-token streaming experience of the `SocraticTutorAgent` while accelerating milestone readiness.
 
 
 
