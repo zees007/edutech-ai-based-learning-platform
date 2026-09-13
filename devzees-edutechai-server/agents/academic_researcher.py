@@ -15,7 +15,7 @@ Architecture:
 - Gated: automatically skipped for middle/high school & bite-sized mode
 
 Reads: memory.topic, memory.learning_mode, memory.student_level
-Writes: memory.academic_papers[], memory.step_results[step_index].academic_papers[]
+Writes: memory.academic_papers[], memory.steps[step_index].papers[]
 """
 
 from __future__ import annotations
@@ -119,8 +119,8 @@ class AcademicResearcherAgent(BaseAgent):
         # If session already has cached papers, just assign to step result
         if memory.academic_papers:
             if step_index < len(memory.steps):
-                step_result = memory.get_step_result(step_index)
-                step_result.academic_papers = memory.academic_papers
+                step = memory.steps[step_index]
+                step.papers = memory.academic_papers
             return
 
         # Check gating before calling APIs
@@ -138,5 +138,5 @@ class AcademicResearcherAgent(BaseAgent):
         memory.academic_papers = papers
 
         if step_index < len(memory.steps):
-            step_result = memory.get_step_result(step_index)
-            step_result.academic_papers = papers
+            step = memory.steps[step_index]
+            step.papers = papers

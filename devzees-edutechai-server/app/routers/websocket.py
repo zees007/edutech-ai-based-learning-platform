@@ -292,7 +292,7 @@ async def _handle_chat(session_id: str, memory: SharedMemory, question: str):
         return
 
     step_index = memory.current_step_index
-    step_result = memory.get_step_result(step_index)
+    step = memory.steps[step_index]
     
     # ─── Enforce Follow-up Limits ───
     from services.database import get_db_session
@@ -325,14 +325,14 @@ async def _handle_chat(session_id: str, memory: SharedMemory, question: str):
     if "Pro" in user_roles:
         limit = settings.pro_followup_limit
         
-    if not is_unlimited and step_result.follow_up_count >= limit:
+    if not is_unlimited and step.follow_up_count >= limit:
         await ws.send_json({
             "event_type": "error",
             "message": f"Follow-up limit reached for this step. Upgrade for more questions.",
         })
         return
             
-    step_result.follow_up_count += 1
+    step.follow_up_count += 1
     memory.add_conversation_turn("student", question, step_index=step_index)
 
     tutor = SocraticTutorAgent()

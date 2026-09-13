@@ -34,7 +34,6 @@ from models.schemas import (
     ConversationTurn,
     LearningMode,
     MilestoneStep,
-    StepResult,
     StepStatus,
 )
 
@@ -64,9 +63,6 @@ class SharedMemory(BaseModel):
 
     # ─── Session-Level Academic Research (curated once per session) ───
     academic_papers: list[AcademicPaper] = Field(default_factory=list)
-
-    # ─── Per-Step Agent Outputs (written by worker agents) ──────
-    step_results: dict[int, StepResult] = Field(default_factory=dict)
 
     # ─── Conversation History (append-only) ─────────────────────
     conversation_history: list[ConversationTurn] = Field(default_factory=list)
@@ -108,18 +104,16 @@ class SharedMemory(BaseModel):
             return 0.0
         return (self.steps_completed / len(self.steps)) * 100.0
 
-    def get_step_result(self, step_index: int) -> StepResult:
-        """Get or create a StepResult for the given step index."""
-        if step_index not in self.step_results:
-            self.step_results[step_index] = StepResult(step_index=step_index)
-        return self.step_results[step_index]
+    def get_step(self, step_index: int) -> MilestoneStep | None:
+        """Get the milestone step by index."""
+        if 0 <= step_index < len(self.steps):
+            return self.steps[step_index]
+        return None
 
     def mark_step_complete(self, step_index: int) -> None:
         """Mark a step as complete and advance to the next."""
         if step_index < len(self.steps):
             self.steps[step_index].status = StepStatus.COMPLETE
-            result = self.get_step_result(step_index)
-            result.status = StepStatus.COMPLETE
             self.steps_completed += 1
             if self.current_step_index == step_index:
                 self.current_step_index += 1

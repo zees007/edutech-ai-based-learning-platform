@@ -100,6 +100,13 @@ class _LearningResourcesPanelState
         return true;
       }
     }
+    if (step.userFullAnswers != null && step.userFullAnswers is Map) {
+      final map = step.userFullAnswers as Map;
+      if (map.isNotEmpty &&
+          map.values.any((v) => v != null && v.toString().trim().isNotEmpty)) {
+        return true;
+      }
+    }
     return false;
   }
 
@@ -134,17 +141,16 @@ class _LearningResourcesPanelState
   @override
   void didUpdateWidget(covariant LearningResourcesPanel oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.stepIndex != widget.stepIndex) {
-      _quizSubmitted = false;
+    if (oldWidget.stepIndex != widget.stepIndex || oldWidget.currentStep != widget.currentStep) {
       final step = widget.currentStep;
-      if (_isQuizCompleted(step)) {
-        _quizSubmitted = true;
-      }
+      _quizSubmitted = _isQuizCompleted(step);
       // Reset to first tab on step change
-      _tabController.animateTo(0);
-      setState(() {
-        _activeTabIndex = 0;
-      });
+      if (oldWidget.stepIndex != widget.stepIndex) {
+        _tabController.animateTo(0);
+        setState(() {
+          _activeTabIndex = 0;
+        });
+      }
     } else if (!_quizSubmitted && _isQuizCompleted(widget.currentStep)) {
       _quizSubmitted = true;
     }
@@ -307,12 +313,13 @@ class _LearningResourcesPanelState
         color: AppColors.accentAmber,
       );
     }
+    final int stepIdx = (step.index is int) ? step.index as int : widget.stepIndex;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: KnowledgeCheckQuiz(
         key: ValueKey('quiz_step_${step.index}'),
         quiz: step.quiz,
-        stepIndex: widget.stepIndex,
+        stepIndex: stepIdx,
         onNextStep: widget.onNextStep,
         onQuizSubmitted: _onQuizSubmitted,
         step: step,

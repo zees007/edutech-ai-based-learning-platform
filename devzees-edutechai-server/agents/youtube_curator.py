@@ -12,7 +12,7 @@ Pipeline:
 5. Return structured YouTubeClip objects
 
 Reads: memory.steps[step_index], memory.learning_mode
-Writes: memory.step_results[step_index].youtube_clips[]
+Writes: memory.steps[step_index].videos[]
 """
 
 from __future__ import annotations
@@ -60,8 +60,6 @@ class YouTubeCuratorAgent(BaseAgent):
             return
 
         self.logger.info(f"Searching YouTube for step {step_index}: '{step.title}'")
-
-        step_result = memory.get_step_result(step_index)
 
         try:
             # Import the YouTube client service
@@ -125,7 +123,7 @@ class YouTubeCuratorAgent(BaseAgent):
             if memory.learning_mode.value == "bite_sized" and clips:
                 clips = [clips[0]]
 
-            step_result.youtube_clips = clips
+            step.videos = clips
             self.logger.info(f"Found {len(clips)} YouTube clips for step {step_index}")
 
         except ImportError:

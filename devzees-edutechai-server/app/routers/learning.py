@@ -77,25 +77,14 @@ get_session = get_session_or_404
 def _build_session_response(memory: SharedMemory) -> SessionResponse:
     """Helper to merge step results into the milestone steps for API responses."""
     for idx, step in enumerate(memory.steps):
-        result = memory.step_results.get(idx)
-        if result:
-            step.tutor_explanation = result.explanation or step.tutor_explanation
-            step.socratic_questions = result.socratic_questions or step.socratic_questions
-            step.videos = result.youtube_clips or step.videos
-            step.papers = result.academic_papers or step.papers
-            step.quiz = result.quiz.questions if result.quiz else step.quiz
-            if result.status and result.status != StepStatus.PENDING:
-                step.status = result.status
+        # Synchronize quiz score from session-level dict onto the step if not set
+        if step.quiz_score is None and idx in memory.quiz_scores:
+            step.quiz_score = memory.quiz_scores[idx]
 
         if idx < memory.steps_completed:
             step.status = StepStatus.COMPLETE
         elif idx == memory.current_step_index and step.status != StepStatus.COMPLETE:
             step.status = StepStatus.IN_PROGRESS
-
-        step.conversation_history = [
-            turn for turn in memory.conversation_history
-            if turn.step_index == idx
-        ]
 
     return SessionResponse(
         session_id=memory.session_id,
@@ -209,12 +198,16 @@ async def complete_step(
     memory.mark_step_complete(step_index)
 
     # Award XP
-    from services.gamification import calculate_step_xp
+    from services.gamification import calculate_step_xp, update_streak, XP_SESSION_COMPLETE
 
+    memory.streak_count = update_streak(
+        memory.created_at,
+        getattr(memory, "streak_count", 0),
+    )
     base_xp = calculate_step_xp(streak_count=memory.streak_count)
     
     # Apply XP Multiplier (Ultra=2.0x, Pro=1.5x, Free=1.0x)
-    user_roles = [r.name for r in current_user.roles if not r.retired]
+    user_roles = [r.name for r in current_user.roles if not r.retired] if hasattr(current_user, "roles") else []
     multiplier = 1.0
     if "Ultra" in user_roles or "Admin" in user_roles:
         multiplier = 2.0
@@ -222,6 +215,12 @@ async def complete_step(
         multiplier = 1.5
         
     awarded_xp = int(base_xp * multiplier)
+
+    # Award +100 XP session completion bonus if all milestone steps are now complete
+    if memory.is_complete:
+        session_bonus = int(XP_SESSION_COMPLETE * multiplier)
+        awarded_xp += session_bonus
+
     memory.xp_earned += awarded_xp
 
     # Persist to database
@@ -320,9 +319,13 @@ async def regenerate_step(
             errors=f"Step index {step_index} out of range [0, {len(memory.steps) - 1}]",
         )
 
-    # Clear the step result so it can be regenerated upon next interaction or load
-    if step_index in memory.step_results:
-        del memory.step_results[step_index]
+    # Clear the step content so it can be regenerated upon next interaction or load
+    step = memory.steps[step_index]
+    step.tutor_explanation = None
+    step.socratic_questions = []
+    step.videos = []
+    step.papers = []
+    step.quiz = None
     
     # We could optionally trigger the agents right here, but typically the orchestrator/ws layer 
     # lazy-loads or we just return success and let the client re-fetch/re-interact.

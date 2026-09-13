@@ -6,6 +6,7 @@ XP calculation, leveling, and streak tracking.
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
 import logging
 
 logger = logging.getLogger(__name__)
@@ -73,34 +74,62 @@ def calculate_level(total_xp: int) -> dict:
     }
 
 
-def calculate_quiz_xp(correct_count: int | float, total_questions: int = 1) -> int:
+def calculate_quiz_xp(
+    correct_count: int | float,
+    total_questions: int = 1,
+    multiplier: float = 1.0,
+) -> int:
     """
-    Calculate XP earned from a quiz.
-
-    Supports calling with:
-    - calculate_quiz_xp(correct_count, total_questions)
-    - calculate_quiz_xp(score_float)
+    Calculate XP earned from a quiz according to specification:
+    - 20 XP per correct question
+    - +30 XP bonus strictly for 100% accuracy
+    - Scaled by user role multiplier (Free 1.0x, Pro 1.5x, Ultra 2.0x)
     """
     if isinstance(correct_count, float) and correct_count <= 1.0 and total_questions == 1:
         accuracy = correct_count
-        base_xp = int(accuracy * 50)
+        c_count = round(accuracy * 3) if accuracy > 0 else 0
+        total_questions = 3
     else:
         c_count = int(correct_count)
-        base_xp = c_count * XP_QUIZ_PER_QUESTION
-        accuracy = c_count / total_questions if total_questions > 0 else 0
+        accuracy = c_count / total_questions if total_questions > 0 else 0.0
 
-    # Accuracy bonus for perfect scores
-    accuracy_bonus = XP_QUIZ_ACCURACY_BONUS if accuracy == 1.0 else int(accuracy * XP_QUIZ_ACCURACY_BONUS)
+    base_xp = c_count * XP_QUIZ_PER_QUESTION
+    # Accuracy bonus (+30 XP) strictly awarded for 100% accuracy
+    accuracy_bonus = XP_QUIZ_ACCURACY_BONUS if (total_questions > 0 and c_count >= total_questions) else 0
 
-    return base_xp + accuracy_bonus
+    return int((base_xp + accuracy_bonus) * multiplier)
 
 
 def calculate_step_xp(streak_count: int = 0) -> int:
     """
     Calculate XP for completing a milestone step.
 
-    Streak multiplier gives bonus XP for consecutive sessions.
+    Streak multiplier gives bonus XP for consecutive sessions (+10% per day, max 10 days).
     """
     base_xp = XP_STEP_COMPLETE
     streak_bonus = int(base_xp * XP_STREAK_MULTIPLIER * min(streak_count, 10))
     return base_xp + streak_bonus
+
+
+def update_streak(last_activity: datetime | None, current_streak: int) -> int:
+    """
+    Update streak based on consecutive activity window per specification:
+    - Within same calendar day: streak remains unchanged.
+    - Exactly 1 day after last activity: streak increases by 1 (capped at 10 days).
+    - More than 1 day missed: streak resets to 1.
+    """
+    now = datetime.now(timezone.utc)
+    if not last_activity:
+        return max(1, current_streak)
+
+    if last_activity.tzinfo is None:
+        last_activity = last_activity.replace(tzinfo=timezone.utc)
+
+    diff_days = (now.date() - last_activity.date()).days
+    if diff_days <= 0:
+        return max(1, current_streak)
+    elif diff_days == 1:
+        return min(max(1, current_streak) + 1, 10)
+    else:
+        return 1
+

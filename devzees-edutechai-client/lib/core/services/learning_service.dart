@@ -93,12 +93,15 @@ class LearningService {
 
   Future<QuizResult> submitQuiz(String sessionId, int stepIndex, Map<int, String> answers) async {
     try {
+      // Dio/jsonEncode requires Map keys to be Strings
+      final stringKeyAnswers = answers.map((k, v) => MapEntry(k.toString(), v));
+      
       final response = await _dio.post(
         '/quiz/submit',
         data: {
           'session_id': sessionId,
           'step_index': stepIndex,
-          'answers': answers,
+          'answers': stringKeyAnswers,
         },
       );
       return QuizResult.fromJson(response.data);

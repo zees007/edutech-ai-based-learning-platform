@@ -222,7 +222,7 @@ class _SplitLearningWorkspaceState
               stepIndex: currentStep.index,
               tutorExplanation: currentStep.tutorExplanation,
               socraticQuestions: currentStep.socraticQuestions,
-              conversationHistory: currentStep.conversationHistory,
+              conversationHistory: widget.session.conversationHistory?.where((turn) => (turn as Map)['step_index'] == currentStep.index).toList(),
               stepTitle: currentStep.title,
             )
           : Center(
@@ -360,7 +360,7 @@ class _FullscreenPanelOverlay extends ConsumerWidget {
             stepIndex: currentStep.index,
             tutorExplanation: currentStep.tutorExplanation,
             socraticQuestions: currentStep.socraticQuestions,
-            conversationHistory: currentStep.conversationHistory,
+            conversationHistory: session.conversationHistory?.where((turn) => (turn as Map)['step_index'] == currentStep.index).toList(),
             stepTitle: currentStep.title,
           )
         : Center(
@@ -1548,7 +1548,7 @@ class _MobileTabbedWorkspaceState
         stepIndex: step.index,
         tutorExplanation: step.tutorExplanation,
         socraticQuestions: step.socraticQuestions,
-        conversationHistory: step.conversationHistory,
+        conversationHistory: ref.read(activeSessionProvider).session?.conversationHistory?.where((turn) => (turn as Map)['step_index'] == step.index).toList(),
         stepTitle: step.title,
       );
     }
@@ -1591,9 +1591,11 @@ class _MobileTabbedWorkspaceState
         color: AppColors.rose,
       );
     }
+    final int stepIdx = (step.index is int) ? step.index as int : widget.stepIndex;
     return LearningResourcesPanel.buildQuizContent(
       quiz: step.quiz,
-      stepIndex: widget.stepIndex,
+      stepIndex: stepIdx,
+      step: step,
       onNextStep: () => _handleNextStep(context, true),
       onQuizSubmitted: () {
         setState(() {

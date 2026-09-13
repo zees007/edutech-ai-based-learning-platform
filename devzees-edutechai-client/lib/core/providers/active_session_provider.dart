@@ -187,9 +187,11 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       final updatedSteps = List<MilestoneStep>.from(session.steps);
       if (stepIndex >= 0 && stepIndex < updatedSteps.length) {
         final currentStep = updatedSteps[stepIndex];
+        final stringKeyAnswers = answers.map((k, v) => MapEntry(k.toString(), v));
         updatedSteps[stepIndex] = currentStep.copyWith(
           quizScore: result.score,
-          userAnswers: answers.map((k, v) => MapEntry(k.toString(), v)),
+          userAnswers: stringKeyAnswers,
+          userFullAnswers: stringKeyAnswers,
         );
       }
 
@@ -299,7 +301,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       clearError: true,
     );
     try {
-      final response = await _service.fetchSessionById(sessionId);
+      var response = await _service.fetchSessionById(sessionId);
       _apiFetchStopwatch.stop();
       _lastApiFetchMs = _apiFetchStopwatch.elapsedMilliseconds;
       
@@ -307,6 +309,47 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       // Safety check: ensure index is within bounds
       if (response.steps.isNotEmpty && stepIndex >= response.steps.length) {
         stepIndex = 0;
+      }
+
+      // Preserve quiz results from local state when the server response has
+      // empty quiz fields (prevents wiping submitted answers on session reload).
+      final existingSession = state.session;
+      if (existingSession != null && existingSession.steps.isNotEmpty) {
+        for (int i = 0; i < response.steps.length && i < existingSession.steps.length; i++) {
+          final localStep = existingSession.steps[i];
+          final serverStep = response.steps[i];
+
+          final bool localHasQuiz = localStep.quizScore != null ||
+              (localStep.userAnswers != null && localStep.userAnswers!.isNotEmpty);
+          final bool serverLacksQuiz = serverStep.quizScore == null ||
+              serverStep.userAnswers == null ||
+              serverStep.userAnswers!.isEmpty;
+
+          if (localHasQuiz && serverLacksQuiz) {
+            response = response.copyWith(
+              steps: List.from(response.steps)
+                ..[i] = serverStep.copyWith(
+                  quizScore: serverStep.quizScore ?? localStep.quizScore,
+                  userAnswers: (serverStep.userAnswers != null && serverStep.userAnswers!.isNotEmpty)
+                      ? serverStep.userAnswers
+                      : localStep.userAnswers,
+                  userFullAnswers: (serverStep.userFullAnswers != null && serverStep.userFullAnswers!.isNotEmpty)
+                      ? serverStep.userFullAnswers
+                      : (localStep.userFullAnswers ?? localStep.userAnswers),
+                ),
+            );
+          }
+        }
+      }
+
+      // When loading after step_complete, preserve the user's current view
+      // position instead of jumping to the server's currentStepIndex.
+      if (fromStepComplete && existingSession != null) {
+        stepIndex = state.activeStepIndex;
+        // Ensure the index is still valid with the new response
+        if (stepIndex >= response.steps.length) {
+          stepIndex = response.currentStepIndex;
+        }
       }
 
       debugPrint('📥 [Client API] Session payload retrieved in ${_lastApiFetchMs}ms. Initiating UI render for Step $stepIndex...');
