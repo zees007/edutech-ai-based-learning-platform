@@ -177,6 +177,15 @@ class _LearningResourcesPanelState
     final hasQuiz = step.quiz != null && step.quiz!.isNotEmpty;
     final isQuizDone = _quizSubmitted || _isQuizCompleted(step);
 
+    final totalSteps = widget.session.steps.length;
+    final bool isLastStep = totalSteps > 0 && widget.stepIndex >= totalSteps - 1;
+    final bool isSessionComplete = widget.session.steps.isNotEmpty &&
+        widget.session.stepsCompleted >= totalSteps &&
+        totalSteps > 0;
+    final bool isCurrentStepComplete = widget.currentStep.status == 'complete' ||
+        (isLastStep && isSessionComplete) ||
+        (widget.stepIndex < widget.session.stepsCompleted);
+
     return Column(
       children: [
         // Premium Segmented Tab Bar Header
@@ -274,10 +283,13 @@ class _LearningResourcesPanelState
         ),
 
         // ─── Quiz Gating / Advance Bar (pinned at bottom) ───
-        if (hasQuiz)
-          _buildGatingBar(context, isQuizDone)
-        else if (widget.stepIndex < (widget.session.steps.length - 1))
-          _buildNoQuizAdvanceBar(),
+        // Only displayed on non-quiz tabs (Videos/Papers) and when current step is not yet completed
+        if (_activeTabIndex != 2 && !isCurrentStepComplete) ...[
+          if (hasQuiz)
+            _buildGatingBar(context, isQuizDone)
+          else if (widget.stepIndex < (widget.session.steps.length - 1))
+            _buildNoQuizAdvanceBar(),
+        ],
       ],
     );
   }
@@ -575,7 +587,8 @@ class _LearningResourcesPanelState
         widget.session.stepsCompleted >= totalSteps &&
         totalSteps > 0;
     final bool isCurrentStepComplete = widget.currentStep.status == 'complete' ||
-        (isLastStep && isSessionComplete);
+        (isLastStep && isSessionComplete) ||
+        (widget.stepIndex < widget.session.stepsCompleted);
 
     String guidanceText;
     if (isLastStep && isCurrentStepComplete) {
@@ -584,6 +597,10 @@ class _LearningResourcesPanelState
       guidanceText = isQuizDone
           ? 'Quiz complete! Tap to complete your journey →'
           : 'Complete Knowledge Check quiz to finish journey';
+    } else if (isCurrentStepComplete) {
+      guidanceText = isQuizDone
+          ? 'Quiz complete! Tap to proceed to next step →'
+          : 'Step completed! Proceed to next step →';
     } else {
       guidanceText = isQuizDone
           ? 'Quiz complete! Tap to proceed to next step →'
