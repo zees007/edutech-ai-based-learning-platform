@@ -1,0 +1,160 @@
+import 'dart:async';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+/// Centralized gamification levels and helpers matching backend gamification.py
+class GamificationUtils {
+  static const levels = [
+    {"level": 1, "xp_required": 0, "title": "Curious Explorer"},
+    {"level": 2, "xp_required": 100, "title": "Knowledge Seeker"},
+    {"level": 3, "xp_required": 300, "title": "Quick Learner"},
+    {"level": 4, "xp_required": 600, "title": "Deep Thinker"},
+    {"level": 5, "xp_required": 1000, "title": "Rising Scholar"},
+    {"level": 6, "xp_required": 1500, "title": "Concept Master"},
+    {"level": 7, "xp_required": 2200, "title": "Wisdom Weaver"},
+    {"level": 8, "xp_required": 3000, "title": "Knowledge Architect"},
+    {"level": 9, "xp_required": 4000, "title": "Enlightened Mind"},
+    {"level": 10, "xp_required": 5500, "title": "Grand Sage"},
+  ];
+
+  static int calculateLevel(int totalXp) {
+    for (var i = levels.length - 1; i >= 0; i--) {
+      if (totalXp >= (levels[i]["xp_required"] as int)) {
+        return levels[i]["level"] as int;
+      }
+    }
+    return 1;
+  }
+
+  static String getLevelTitle(int level) {
+    for (final lvl in levels) {
+      if ((lvl["level"] as int) == level) {
+        return lvl["title"] as String;
+      }
+    }
+    return 'Level $level';
+  }
+}
+
+class GamificationEvent {
+  final int xpEarned;
+  final int totalXp;
+  final int level;
+  final String levelTitle;
+  final DateTime timestamp;
+
+  GamificationEvent({
+    required this.xpEarned,
+    required this.totalXp,
+    required this.level,
+    required this.levelTitle,
+    required this.timestamp,
+  });
+}
+
+class GamificationEventNotifier extends Notifier<GamificationEvent?> {
+  Completer<void>? _dismissCompleter;
+
+  @override
+  GamificationEvent? build() {
+    return null;
+  }
+
+  /// True if a level-up celebration overlay is currently visible and not yet dismissed
+  bool get isCelebrating =>
+      state != null && _dismissCompleter != null && !_dismissCompleter!.isCompleted;
+
+  /// Awaits until the user dismisses the celebration or the auto-dismiss timer completes.
+  /// Includes a 5s safety timeout to prevent stalling workflow.
+  Future<void> get onDismissed {
+    if (_dismissCompleter == null || _dismissCompleter!.isCompleted) {
+      return Future.value();
+    }
+    return _dismissCompleter!.future.timeout(
+      const Duration(seconds: 5),
+      onTimeout: () {
+        dismiss();
+      },
+    );
+  }
+
+  void triggerEvent({
+    required int xpEarned,
+    required int totalXp,
+    required int level,
+    required String levelTitle,
+  }) {
+    if (_dismissCompleter != null && !_dismissCompleter!.isCompleted) {
+      _dismissCompleter!.complete();
+    }
+    _dismissCompleter = Completer<void>();
+    state = GamificationEvent(
+      xpEarned: xpEarned,
+      totalXp: totalXp,
+      level: level,
+      levelTitle: levelTitle,
+      timestamp: DateTime.now(),
+    );
+  }
+
+  void dismiss() {
+    if (_dismissCompleter != null && !_dismissCompleter!.isCompleted) {
+      _dismissCompleter!.complete();
+    }
+    state = null;
+  }
+}
+
+final gamificationEventProvider =
+    NotifierProvider<GamificationEventNotifier, GamificationEvent?>(() {
+  return GamificationEventNotifier();
+});
+
+class JourneyCompleteEvent {
+  final String topic;
+  final int totalSteps;
+  final int totalXp;
+  final int bonusXp;
+  final double? averageQuizScore;
+  final DateTime timestamp;
+
+  JourneyCompleteEvent({
+    required this.topic,
+    required this.totalSteps,
+    required this.totalXp,
+    required this.bonusXp,
+    this.averageQuizScore,
+    required this.timestamp,
+  });
+}
+
+class JourneyCompleteNotifier extends Notifier<JourneyCompleteEvent?> {
+  @override
+  JourneyCompleteEvent? build() => null;
+
+  void triggerEvent({
+    required String topic,
+    required int totalSteps,
+    required int totalXp,
+    required int bonusXp,
+    double? averageQuizScore,
+  }) {
+    state = JourneyCompleteEvent(
+      topic: topic,
+      totalSteps: totalSteps,
+      totalXp: totalXp,
+      bonusXp: bonusXp,
+      averageQuizScore: averageQuizScore,
+      timestamp: DateTime.now(),
+    );
+  }
+
+  void dismiss() {
+    state = null;
+  }
+}
+
+final journeyCompleteProvider =
+    NotifierProvider<JourneyCompleteNotifier, JourneyCompleteEvent?>(() {
+  return JourneyCompleteNotifier();
+});
+

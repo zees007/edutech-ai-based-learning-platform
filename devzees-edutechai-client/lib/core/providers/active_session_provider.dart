@@ -7,6 +7,7 @@ import '../../data/models/learning/quiz_result.dart';
 import 'learning_provider.dart';
 import '../services/learning_service.dart';
 import '../services/learning_websocket_service.dart';
+import 'gamification_provider.dart';
 
 final learningWebSocketServiceProvider = Provider<LearningWebSocketService>((ref) {
   final service = LearningWebSocketService();
@@ -116,6 +117,34 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       return;
     }
 
+    if (type == 'xp_update') {
+      final xpEarned = event['xp_earned'] as int? ?? 0;
+      final totalXp = event['total_xp'] as int? ?? session.xpEarned;
+      final newLevel = event['level'] as int? ?? GamificationUtils.calculateLevel(totalXp);
+      final levelTitle = event['level_title'] as String? ?? GamificationUtils.getLevelTitle(newLevel);
+      
+      debugPrint('🌟 [Client WS] XP Update: +$xpEarned XP (Total: $totalXp) - $levelTitle (Lvl $newLevel)');
+      
+      final oldLevel = GamificationUtils.calculateLevel(session.xpEarned);
+      
+      // Update the local session state with the new XP
+      final updatedSession = session.copyWith(
+        xpEarned: totalXp,
+      );
+      state = state.copyWith(session: updatedSession);
+      
+      // Only trigger celebration if level actually increased
+      if (newLevel > oldLevel) {
+        ref.read(gamificationEventProvider.notifier).triggerEvent(
+          xpEarned: xpEarned,
+          totalXp: totalXp,
+          level: newLevel,
+          levelTitle: levelTitle,
+        );
+      }
+      return;
+    }
+
     if (type == 'error') {
       debugPrint('❌ [Client WS] Error event received: ${event['message']}');
     }
@@ -183,6 +212,11 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       quizWatch.stop();
       debugPrint('📝 [Client API] Quiz evaluated in ${quizWatch.elapsedMilliseconds}ms. Awarded XP: ${result.xpEarned}');
       
+      final oldLevel = GamificationUtils.calculateLevel(session.xpEarned);
+      final totalXp = session.xpEarned + result.xpEarned;
+      final newLevel = GamificationUtils.calculateLevel(totalXp);
+      final leveledUp = newLevel > oldLevel;
+
       // Update session XP and step quiz score/answers locally
       final updatedSteps = List<MilestoneStep>.from(session.steps);
       if (stepIndex >= 0 && stepIndex < updatedSteps.length) {
@@ -196,7 +230,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       }
 
       final updatedSession = session.copyWith(
-        xpEarned: session.xpEarned + result.xpEarned,
+        xpEarned: totalXp,
         steps: updatedSteps,
       );
       
@@ -214,6 +248,17 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
         xpEarned: updatedSession.xpEarned,
       );
 
+      // Instant level-up celebration trigger for quiz submit
+      if (leveledUp) {
+        final levelTitle = GamificationUtils.getLevelTitle(newLevel);
+        ref.read(gamificationEventProvider.notifier).triggerEvent(
+          xpEarned: result.xpEarned,
+          totalXp: totalXp,
+          level: newLevel,
+          levelTitle: levelTitle,
+        );
+      }
+
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _uiRenderStopwatch.stop();
         debugPrint('🎨 [Client UI] Quiz results rendered to screen in ${_uiRenderStopwatch.elapsedMilliseconds}ms');
@@ -226,16 +271,24 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     }
   }
 
-  Future<void> markStepComplete(int stepIndex) async {
+  Future<bool> markStepComplete(int stepIndex) async {
     final session = state.session;
-    if (session == null) return;
+    if (session == null) return false;
     
     state = state.copyWith(clearError: true);
     try {
+      final oldLevel = GamificationUtils.calculateLevel(session.xpEarned);
       final data = await _service.completeStep(session.sessionId, stepIndex);
       
       // Update XP locally
       final awardedXp = data['xp_earned'] as int? ?? 0;
+      final totalXp = data['total_xp'] as int? ?? (session.xpEarned + awardedXp);
+      final newLevel = GamificationUtils.calculateLevel(totalXp);
+      final bool leveledUp = newLevel > oldLevel;
+
+      final nextStepIdx = data['next_step_index'] as int? ?? session.currentStepIndex;
+      final newStepsCompleted = (session.stepsCompleted + 1).clamp(0, session.steps.length);
+
       final updatedSteps = List<MilestoneStep>.from(session.steps);
       if (stepIndex >= 0 && stepIndex < updatedSteps.length) {
         final currentStep = updatedSteps[stepIndex];
@@ -245,8 +298,9 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       }
 
       final updatedSession = session.copyWith(
-        xpEarned: session.xpEarned + awardedXp,
-        stepsCompleted: session.stepsCompleted + 1,
+        xpEarned: totalXp,
+        stepsCompleted: newStepsCompleted,
+        currentStepIndex: nextStepIdx,
         steps: updatedSteps,
       );
       
@@ -261,9 +315,111 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
         xpEarned: updatedSession.xpEarned,
         isComplete: updatedSession.stepsCompleted >= updatedSession.steps.length,
       );
+
+      if (leveledUp) {
+        final levelTitle = GamificationUtils.getLevelTitle(newLevel);
+        ref.read(gamificationEventProvider.notifier).triggerEvent(
+          xpEarned: awardedXp,
+          totalXp: totalXp,
+          level: newLevel,
+          levelTitle: levelTitle,
+        );
+      }
+
+      return leveledUp;
     } catch (e) {
       state = state.copyWith(error: e.toString());
+      return false;
     }
+  }
+
+  /// Completes the current step, pauses if a level-up celebration is shown,
+  /// and advances to the next step once the celebration modal is dismissed.
+  /// If completing the final step, triggers the Journey Complete celebration!
+  Future<void> completeAndAdvanceStep(int stepIndex) async {
+    final leveledUp = await markStepComplete(stepIndex);
+
+    // If level-up occurred or celebration overlay is active, wait for user to dismiss
+    final gamificationNotifier = ref.read(gamificationEventProvider.notifier);
+    if (leveledUp || gamificationNotifier.isCelebrating) {
+      await gamificationNotifier.onDismissed;
+    }
+
+    final session = state.session;
+    if (session == null) return;
+
+    final bool isSessionComplete =
+        (session.steps.isNotEmpty && session.stepsCompleted >= session.steps.length) ||
+        stepIndex >= session.steps.length - 1;
+
+    if (isSessionComplete) {
+      // 1. Optimistic completion: ensure all steps are marked complete in local state
+      final completedSteps = session.steps.map((s) => s.copyWith(status: 'complete')).toList();
+      final fullyCompletedSession = session.copyWith(
+        stepsCompleted: session.steps.length,
+        steps: completedSteps,
+      );
+      state = state.copyWith(session: fullyCompletedSession);
+
+      // Sync progress with learning history list
+      ref.read(sessionsProvider.notifier).updateSessionProgress(
+        sessionId: session.sessionId,
+        stepsCompleted: session.steps.length,
+        xpEarned: fullyCompletedSession.xpEarned,
+        isComplete: true,
+      );
+
+      // Calculate average quiz score across steps
+      double totalScore = 0.0;
+      int quizCount = 0;
+      for (final s in session.steps) {
+        if (s.quizScore != null) {
+          totalScore += s.quizScore!;
+          quizCount++;
+        }
+      }
+      final avgScore = quizCount > 0 ? (totalScore / quizCount) : null;
+
+      ref.read(journeyCompleteProvider.notifier).triggerEvent(
+        topic: session.topic,
+        totalSteps: session.steps.length,
+        totalXp: session.xpEarned,
+        bonusXp: 100,
+        averageQuizScore: avgScore,
+      );
+
+      // 2. Fire silent background sync immediately while celebration modal is animating
+      loadSession(session.sessionId, silent: true);
+      return;
+    }
+
+    // Now transition to the next step (triggers NeuralInferenceLoader if ungenerated)
+    setActiveStep(stepIndex + 1);
+  }
+
+  /// Failsafe invoked when the Journey Complete celebration is dismissed.
+  /// Locks local state into the completed review mode and triggers a silent sync.
+  void ensureJourneyCompleted() {
+    final session = state.session;
+    if (session == null || session.steps.isEmpty) return;
+
+    final completedSteps = session.steps.map((s) => s.copyWith(status: 'complete')).toList();
+    final fullyCompletedSession = session.copyWith(
+      stepsCompleted: session.steps.length,
+      steps: completedSteps,
+    );
+    state = state.copyWith(session: fullyCompletedSession);
+
+    // Sync progress with learning history list
+    ref.read(sessionsProvider.notifier).updateSessionProgress(
+      sessionId: session.sessionId,
+      stepsCompleted: session.steps.length,
+      xpEarned: fullyCompletedSession.xpEarned,
+      isComplete: true,
+    );
+
+    // Reconcile with server silently in background
+    loadSession(session.sessionId, silent: true);
   }
 
   /// Check if the quiz for a given step has been completed.
@@ -291,24 +447,26 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     _wsService.sendChat(content);
   }
 
-  Future<void> loadSession(String sessionId, {bool fromStepComplete = false}) async {
+  Future<void> loadSession(String sessionId, {bool fromStepComplete = false, bool silent = false}) async {
     _apiFetchStopwatch.reset();
     _apiFetchStopwatch.start();
 
-    state = state.copyWith(
-      isLoading: true,
-      isSynthesizing: fromStepComplete,
-      clearError: true,
-    );
+    if (!silent) {
+      state = state.copyWith(
+        isLoading: true,
+        isSynthesizing: fromStepComplete,
+        clearError: true,
+      );
+    }
     try {
       var response = await _service.fetchSessionById(sessionId);
       _apiFetchStopwatch.stop();
       _lastApiFetchMs = _apiFetchStopwatch.elapsedMilliseconds;
       
       int stepIndex = response.currentStepIndex;
-      // Safety check: ensure index is within bounds
+      // Safety check: ensure index is within bounds (stay on final milestone upon completion)
       if (response.steps.isNotEmpty && stepIndex >= response.steps.length) {
-        stepIndex = 0;
+        stepIndex = response.steps.length - 1;
       }
 
       // Preserve quiz results from local state when the server response has
@@ -342,17 +500,17 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
         }
       }
 
-      // When loading after step_complete, preserve the user's current view
+      // When loading after step_complete or silent sync, preserve the user's current view
       // position instead of jumping to the server's currentStepIndex.
-      if (fromStepComplete && existingSession != null) {
+      if ((fromStepComplete || silent) && existingSession != null) {
         stepIndex = state.activeStepIndex;
         // Ensure the index is still valid with the new response
         if (stepIndex >= response.steps.length) {
-          stepIndex = response.currentStepIndex;
+          stepIndex = response.steps.isNotEmpty ? response.steps.length - 1 : 0;
         }
       }
 
-      debugPrint('📥 [Client API] Session payload retrieved in ${_lastApiFetchMs}ms. Initiating UI render for Step $stepIndex...');
+      debugPrint('📥 [Client API] Session payload retrieved in ${_lastApiFetchMs}ms (silent: $silent). Initiating UI render for Step $stepIndex...');
 
       _uiRenderStopwatch.reset();
       _uiRenderStopwatch.start();
@@ -400,15 +558,17 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       });
       
       // Only connect to WebSocket if it's a new session load, to avoid double "plan" events
-      // when refreshing the session data after step_complete.
-      if (!fromStepComplete) {
+      // when refreshing the session data after step_complete or silent sync.
+      if (!fromStepComplete && !silent) {
         _wsService.connect(sessionId);
       }
     } catch (e) {
       _uiRenderStopwatch.stop();
       _stepTotalStopwatch.stop();
       _isStepGenerationActive = false;
-      state = state.copyWith(isLoading: false, isSynthesizing: false, error: e.toString());
+      if (!silent) {
+        state = state.copyWith(isLoading: false, isSynthesizing: false, error: e.toString());
+      }
     }
   }
 

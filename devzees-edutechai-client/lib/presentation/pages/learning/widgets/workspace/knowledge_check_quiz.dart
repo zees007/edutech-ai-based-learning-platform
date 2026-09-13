@@ -994,6 +994,16 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
     final int bonusXp = (correctCount == quizList.length && quizList.isNotEmpty) ? 30 : 0;
     final int fallbackXp = baseQuizXp + bonusXp;
     final int xpEarned = _quizResult?.xpEarned ?? fallbackXp;
+    final activeState = ref.watch(activeSessionProvider);
+    final session = activeState.session;
+    final totalSteps = session?.steps.length ?? 0;
+    final bool isLastStep = totalSteps > 0 && widget.stepIndex >= totalSteps - 1;
+    final bool isSessionComplete = session != null &&
+        session.steps.isNotEmpty &&
+        session.stepsCompleted >= totalSteps &&
+        totalSteps > 0;
+    final bool isCurrentStepComplete = (widget.step != null && widget.step.status == 'complete') ||
+        (isLastStep && isSessionComplete);
 
     final bool isPassed = scorePct >= 70;
 
@@ -1128,77 +1138,123 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
             const SizedBox(height: 18),
             Align(
               alignment: Alignment.centerRight,
-              child: MouseRegion(
-                cursor: SystemMouseCursors.click,
-                child: GestureDetector(
-                  onTap: _isAdvancing
-                      ? null
-                      : () async {
-                          setState(() {
-                            _isAdvancing = true;
-                          });
-                          await widget.onNextStep!();
-                          if (mounted) {
-                            setState(() {
-                              _isAdvancing = false;
-                            });
-                          }
-                        },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 20, vertical: 10),
-                    decoration: BoxDecoration(
-                      gradient: isPassed
-                          ? const LinearGradient(
-                              colors: [
-                                AppColors.accentGreen,
-                                AppColors.greenDeep,
-                              ],
-                            )
-                          : AppColors.primaryGradient,
-                      borderRadius: BorderRadius.circular(10),
-                      boxShadow: [
-                        BoxShadow(
-                          color: (isPassed
-                                  ? AppColors.accentGreen
-                                  : AppColors.primary)
-                              .withValues(alpha: 0.35),
-                          blurRadius: 10,
-                          offset: const Offset(0, 2),
+              child: isLastStep && isCurrentStepComplete
+                  ? Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 9),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.amber.withValues(alpha: 0.2),
+                            AppColors.accentGreen.withValues(alpha: 0.15),
+                          ],
                         ),
-                      ],
-                    ),
-                    child: _isAdvancing
-                        ? const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: Colors.amber.withValues(alpha: 0.4),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.emoji_events_rounded,
+                              color: Colors.amber, size: 16),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Journey Completed 🎉',
+                            style: AppTextStyles.badge.copyWith(
+                              color: Colors.amber.shade200,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 12,
                             ),
-                          )
-                        : Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                'Next Step',
-                                style: AppTextStyles.badge.copyWith(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 12,
-                                ),
-                              ),
-                              const SizedBox(width: 6),
-                              const Icon(
-                                Icons.arrow_forward_rounded,
-                                size: 14,
-                                color: Colors.white,
+                          ),
+                        ],
+                      ),
+                    )
+                  : MouseRegion(
+                      cursor: SystemMouseCursors.click,
+                      child: GestureDetector(
+                        onTap: _isAdvancing
+                            ? null
+                            : () async {
+                                setState(() {
+                                  _isAdvancing = true;
+                                });
+                                await widget.onNextStep!();
+                                if (mounted) {
+                                  setState(() {
+                                    _isAdvancing = false;
+                                  });
+                                }
+                              },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 10),
+                          decoration: BoxDecoration(
+                            gradient: isLastStep
+                                ? LinearGradient(
+                                    colors: [
+                                      Colors.amber.shade600,
+                                      Colors.orange.shade800,
+                                    ],
+                                  )
+                                : (isPassed
+                                    ? const LinearGradient(
+                                        colors: [
+                                          AppColors.accentGreen,
+                                          AppColors.greenDeep,
+                                        ],
+                                      )
+                                    : AppColors.primaryGradient),
+                            borderRadius: BorderRadius.circular(10),
+                            boxShadow: [
+                              BoxShadow(
+                                color: (isLastStep
+                                        ? Colors.amber
+                                        : (isPassed
+                                            ? AppColors.accentGreen
+                                            : AppColors.primary))
+                                    .withValues(alpha: 0.35),
+                                blurRadius: 10,
+                                offset: const Offset(0, 2),
                               ),
                             ],
                           ),
-                  ),
-                ),
-              ),
+                          child: _isAdvancing
+                              ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      isLastStep
+                                          ? 'Complete Journey 🏆'
+                                          : 'Next Step',
+                                      style: AppTextStyles.badge.copyWith(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Icon(
+                                      isLastStep
+                                          ? Icons.emoji_events_rounded
+                                          : Icons.arrow_forward_rounded,
+                                      size: 14,
+                                      color: Colors.white,
+                                    ),
+                                  ],
+                                ),
+                        ),
+                      ),
+                    ),
             ),
           ],
         ],

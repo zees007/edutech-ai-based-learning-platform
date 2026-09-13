@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../data/models/learning/session_response.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/text_styles.dart';
@@ -8,7 +9,7 @@ import 'milestone_roadmap_stepper.dart';
 /// A consolidated, ultra-premium Glassmorphic Command & Mastery Hub.
 /// Merges Mastery Gamification, 4 Key Metrics, Your Goal, and the Milestone Roadmap
 /// into a single cohesive container, reclaiming up to 65% of vertical viewport real estate.
-class UnifiedLearningCommandHub extends StatefulWidget {
+class UnifiedLearningCommandHub extends ConsumerStatefulWidget {
   final SessionResponse session;
   final int activeIndex;
   final int maxUnlockedIndex;
@@ -23,10 +24,10 @@ class UnifiedLearningCommandHub extends StatefulWidget {
   });
 
   @override
-  State<UnifiedLearningCommandHub> createState() => _UnifiedLearningCommandHubState();
+  ConsumerState<UnifiedLearningCommandHub> createState() => _UnifiedLearningCommandHubState();
 }
 
-class _UnifiedLearningCommandHubState extends State<UnifiedLearningCommandHub> {
+class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningCommandHub> {
   bool _isHovered = false;
 
   Map<String, dynamic> _calculateLevel(int totalXp) {
@@ -492,80 +493,88 @@ class _UnifiedLearningCommandHubState extends State<UnifiedLearningCommandHub> {
     );
   }
 
-  // ─── MICRO METRIC PILL 3: LEVEL PROGRESS BAR ─────────────────────────────────
+  // ─── MICRO METRIC PILL 3: LEVEL PROGRESS BAR ────────────────────────────────
   Widget _buildLevelProgressPill(Map<String, dynamic> levelData, double lvlPct) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-      decoration: BoxDecoration(
-        color: AppColors.glassSurface.withValues(alpha: 0.03),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.fuchsia.withValues(alpha: 0.25)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Lvl ${levelData['level']} → ${(levelData['level'] as int) + 1}',
-                style: AppTextStyles.caption.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.slate400,
-                ),
-              ),
-              const SizedBox(width: 6),
-              Text(
-                '${(lvlPct * 100).toStringAsFixed(0)}%',
-                style: AppTextStyles.captionBold.copyWith(
-                  color: AppColors.fuchsia,
-                ),
-              ),
-            ],
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(begin: lvlPct, end: lvlPct),
+      duration: const Duration(milliseconds: 1000),
+      curve: Curves.easeOutCubic,
+      builder: (context, animatedLvlPct, child) {
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+          decoration: BoxDecoration(
+            color: AppColors.glassSurface.withValues(alpha: 0.03),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.fuchsia.withValues(alpha: 0.25)),
           ),
-          const SizedBox(height: 4),
-          Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
-                width: 52,
-                height: 5,
-                decoration: BoxDecoration(
-                  color: AppColors.glassSurface.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(3),
-                ),
-                child: FractionallySizedBox(
-                  alignment: Alignment.centerLeft,
-                  widthFactor: lvlPct,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: AppColors.pinkPurpleGradient,
-                      borderRadius: BorderRadius.circular(3),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.fuchsia.withValues(alpha: 0.5),
-                          blurRadius: 4,
-                        ),
-                      ],
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Lvl ${levelData['level']} → ${(levelData['level'] as int) + 1}',
+                    style: AppTextStyles.caption.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.slate400,
                     ),
                   ),
-                ),
+                  const SizedBox(width: 6),
+                  Text(
+                    '${(animatedLvlPct * 100).toStringAsFixed(0)}%',
+                    style: AppTextStyles.captionBold.copyWith(
+                      color: AppColors.fuchsia,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 6),
-              Text(
-                '${levelData['xp_in_level']}/${levelData['xp_needed_for_next']}',
-                style: AppTextStyles.badge.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textMuted,
-                ),
+              const SizedBox(height: 4),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 52,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: AppColors.glassSurface.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                    child: FractionallySizedBox(
+                      alignment: Alignment.centerLeft,
+                      widthFactor: animatedLvlPct,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: AppColors.pinkPurpleGradient,
+                          borderRadius: BorderRadius.circular(3),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.fuchsia.withValues(alpha: 0.5),
+                              blurRadius: 4,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    '${levelData['xp_in_level']}/${levelData['xp_needed_for_next']}',
+                    style: AppTextStyles.badge.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textMuted,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
+
 
   // ─── MICRO METRIC PILL 4: TOPIC COMPLETION BAR ──────────────────────────────
   Widget _buildTopicProgressPill(int completedSteps, int totalSteps, double topicPct) {
