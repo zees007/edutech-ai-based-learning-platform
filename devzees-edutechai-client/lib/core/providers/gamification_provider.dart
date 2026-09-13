@@ -108,3 +108,53 @@ final gamificationEventProvider =
     NotifierProvider<GamificationEventNotifier, GamificationEvent?>(() {
   return GamificationEventNotifier();
 });
+
+class JourneyCompleteEvent {
+  final String topic;
+  final int totalSteps;
+  final int totalXp;
+  final int bonusXp;
+  final double? averageQuizScore;
+  final DateTime timestamp;
+
+  JourneyCompleteEvent({
+    required this.topic,
+    required this.totalSteps,
+    required this.totalXp,
+    required this.bonusXp,
+    this.averageQuizScore,
+    required this.timestamp,
+  });
+}
+
+class JourneyCompleteNotifier extends Notifier<JourneyCompleteEvent?> {
+  @override
+  JourneyCompleteEvent? build() => null;
+
+  void triggerEvent({
+    required String topic,
+    required int totalSteps,
+    required int totalXp,
+    required int bonusXp,
+    double? averageQuizScore,
+  }) {
+    state = JourneyCompleteEvent(
+      topic: topic,
+      totalSteps: totalSteps,
+      totalXp: totalXp,
+      bonusXp: bonusXp,
+      averageQuizScore: averageQuizScore,
+      timestamp: DateTime.now(),
+    );
+  }
+
+  void dismiss() {
+    state = null;
+  }
+}
+
+final journeyCompleteProvider =
+    NotifierProvider<JourneyCompleteNotifier, JourneyCompleteEvent?>(() {
+  return JourneyCompleteNotifier();
+});
+

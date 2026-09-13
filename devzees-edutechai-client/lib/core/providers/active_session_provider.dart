@@ -331,6 +331,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
 
   /// Completes the current step, pauses if a level-up celebration is shown,
   /// and advances to the next step once the celebration modal is dismissed.
+  /// If completing the final step, triggers the Journey Complete celebration!
   Future<void> completeAndAdvanceStep(int stepIndex) async {
     final leveledUp = await markStepComplete(stepIndex);
 
@@ -338,6 +339,35 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     final gamificationNotifier = ref.read(gamificationEventProvider.notifier);
     if (leveledUp || gamificationNotifier.isCelebrating) {
       await gamificationNotifier.onDismissed;
+    }
+
+    final session = state.session;
+    if (session == null) return;
+
+    final bool isSessionComplete =
+        (session.steps.isNotEmpty && session.stepsCompleted >= session.steps.length) ||
+        stepIndex >= session.steps.length - 1;
+
+    if (isSessionComplete) {
+      // Calculate average quiz score across steps
+      double totalScore = 0.0;
+      int quizCount = 0;
+      for (final s in session.steps) {
+        if (s.quizScore != null) {
+          totalScore += s.quizScore!;
+          quizCount++;
+        }
+      }
+      final avgScore = quizCount > 0 ? (totalScore / quizCount) : null;
+
+      ref.read(journeyCompleteProvider.notifier).triggerEvent(
+        topic: session.topic,
+        totalSteps: session.steps.length,
+        totalXp: session.xpEarned,
+        bonusXp: 100,
+        averageQuizScore: avgScore,
+      );
+      return;
     }
 
     // Now transition to the next step (triggers NeuralInferenceLoader if ungenerated)
