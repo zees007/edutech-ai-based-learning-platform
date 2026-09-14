@@ -6,6 +6,7 @@ import '../../../../../core/theme/text_styles.dart';
 import 'recommended_videos.dart';
 import 'academic_papers.dart';
 import 'knowledge_check_quiz.dart';
+import 'keep_alive_wrapper.dart';
 
 /// Tabbed resource panel with 3 tabs: Videos, Papers, Quiz.
 /// Includes a pinned quiz gating bar at the bottom.
@@ -310,11 +311,20 @@ class _LearningResourcesPanelState
               controller: _tabController,
               children: [
                 // Videos tab
-                _buildVideosTab(step),
+                KeepAliveWrapper(
+                  key: ValueKey('tab_videos_${step.index}'),
+                  child: _buildVideosTab(step),
+                ),
                 // Papers tab
-                _buildPapersTab(step),
+                KeepAliveWrapper(
+                  key: ValueKey('tab_papers_${step.index}'),
+                  child: _buildPapersTab(step),
+                ),
                 // Quiz tab
-                _buildQuizTab2(step),
+                KeepAliveWrapper(
+                  key: ValueKey('tab_quiz_${step.index}'),
+                  child: _buildQuizTab2(step),
+                ),
               ],
             ),
           ),

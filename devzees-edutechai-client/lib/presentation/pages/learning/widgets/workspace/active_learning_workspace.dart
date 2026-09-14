@@ -23,12 +23,16 @@ class ActiveLearningWorkspace extends ConsumerWidget {
             : session.stepsCompleted)
         .clamp(0, session.steps.isNotEmpty ? session.steps.length - 1 : 0);
 
+    final isMobile = MediaQuery.of(context).size.width < 800;
+
     return NestedScrollView(
       headerSliverBuilder: (context, innerBoxIsScrolled) {
         return [
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(20.0, 16.0, 20.0, 10.0),
+              padding: isMobile
+                  ? const EdgeInsets.fromLTRB(12.0, 10.0, 12.0, 6.0)
+                  : const EdgeInsets.fromLTRB(20.0, 16.0, 20.0, 10.0),
               child: UnifiedLearningCommandHub(
                 session: session,
                 activeIndex: activeState.activeStepIndex,
@@ -84,9 +88,13 @@ class _StepContentContainerState extends ConsumerState<_StepContentContainer> {
                 (v) => v != null && v.toString().trim().isNotEmpty));
     final isQuizGated = hasQuiz && !isQuizDone;
 
+    final isMobile = MediaQuery.of(context).size.width < 800;
+
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+      margin: isMobile
+          ? const EdgeInsets.fromLTRB(10, 0, 10, 6)
+          : const EdgeInsets.fromLTRB(24, 0, 24, 24),
       clipBehavior: Clip.hardEdge,
       decoration: BoxDecoration(
         gradient: AppColors.commandHubGradient,
