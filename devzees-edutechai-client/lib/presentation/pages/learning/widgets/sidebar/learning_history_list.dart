@@ -70,12 +70,12 @@ class LearningHistoryList extends ConsumerWidget {
       data: ScrollbarThemeData(
         thumbColor: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.dragged)) {
-            return AppColors.primary;
+            return AppColors.purpleLight;
           }
           if (states.contains(WidgetState.hovered)) {
-            return AppColors.primary.withValues(alpha: 0.85);
+            return AppColors.purpleLight;
           }
-          return AppColors.primary.withValues(alpha: 0.4);
+          return AppColors.purple;
         }),
         trackColor: WidgetStateProperty.all(Colors.transparent),
         trackBorderColor: WidgetStateProperty.all(Colors.transparent),

@@ -85,11 +85,11 @@ class LearningResourcesPanel extends ConsumerStatefulWidget {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.accentAmber.withValues(alpha: 0.1),
+                color: AppColors.accentGreen.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(Icons.quiz_outlined,
-                  size: 32, color: AppColors.accentAmber.withValues(alpha: 0.5)),
+                  size: 32, color: AppColors.accentGreen.withValues(alpha: 0.5)),
             ),
             const SizedBox(height: 12),
             Text(
@@ -273,7 +273,7 @@ class _LearningResourcesPanelState
                     isActive: _activeTabIndex == 2,
                     label: 'Quiz',
                     icon: Icons.quiz_outlined,
-                    accentColor: isQuizDone ? AppColors.accentGreen : AppColors.accentAmber,
+                    accentColor: AppColors.accentGreen,
                     leadingWidget: hasQuiz && isQuizDone
                         ? Container(
                             width: 17,
@@ -360,7 +360,7 @@ class _LearningResourcesPanelState
       return _buildEmptyState(
         icon: Icons.quiz_outlined,
         label: 'No quiz available for this step',
-        color: AppColors.accentAmber,
+        color: AppColors.accentGreen,
       );
     }
     final int stepIdx = (step.index is int) ? step.index as int : widget.stepIndex;
@@ -957,8 +957,8 @@ class _PulsingDotState extends State<_PulsingDot>
       animation: _animation,
       builder: (context, _) {
         return Container(
-          width: 10,
-          height: 10,
+          width: 8,
+          height: 8,
           decoration: BoxDecoration(
             color: widget.color.withValues(alpha: _animation.value),
             shape: BoxShape.circle,

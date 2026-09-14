@@ -1569,7 +1569,7 @@ class _MobileTabbedWorkspaceState
                   isActive: _activeTabIndex == 3,
                   label: 'Quiz',
                   icon: Icons.quiz_outlined,
-                  accentColor: isQuizDone ? AppColors.accentGreen : AppColors.accentAmber,
+                  accentColor: AppColors.accentGreen,
                   leadingWidget: hasQuiz
                       ? (isQuizDone
                           ? Container(
@@ -1595,11 +1595,11 @@ class _MobileTabbedWorkspaceState
                               width: 8,
                               height: 8,
                               decoration: BoxDecoration(
-                                color: AppColors.accentAmber,
+                                color: AppColors.accentGreen,
                                 shape: BoxShape.circle,
                                 boxShadow: [
                                   BoxShadow(
-                                    color: AppColors.accentAmber.withValues(alpha: 0.5),
+                                    color: AppColors.accentGreen.withValues(alpha: 0.5),
                                     blurRadius: 4,
                                   ),
                                 ],
