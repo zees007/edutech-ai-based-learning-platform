@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:flutter_markdown/flutter_markdown.dart';
@@ -1310,6 +1311,19 @@ class _CustomCodeBlockBuilder extends MarkdownElementBuilder {
       return MermaidWebView(code: textContent);
     }
 
+    // 4. Code Snippet Blocks with Copy Icon (Centered card matching existing style)
+    final hasLanguage =
+        element.attributes['class']?.contains('language-') == true;
+    final isMultiLine = textContent.contains('\n');
+
+    if (hasLanguage || isMultiLine) {
+      var code = textContent;
+      if (code.endsWith('\n')) {
+        code = code.substring(0, code.length - 1);
+      }
+      return _CodeSnippetCard(code: code);
+    }
+
     return null;
   }
 }
@@ -1447,4 +1461,153 @@ Widget _buildMathCard(String tex) {
       ),
     ),
   );
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Centered Code Snippet Card with Copy Feature (Matching Existing Style)
+// ═══════════════════════════════════════════════════════════════════
+
+class _CodeSnippetCard extends StatefulWidget {
+  final String code;
+
+  const _CodeSnippetCard({required this.code});
+
+  @override
+  State<_CodeSnippetCard> createState() => _CodeSnippetCardState();
+}
+
+class _CodeSnippetCardState extends State<_CodeSnippetCard> {
+  final ScrollController _horizontalController = ScrollController();
+  final ScrollController _verticalController = ScrollController();
+  bool _copied = false;
+  Timer? _copyTimer;
+
+  @override
+  void dispose() {
+    _horizontalController.dispose();
+    _verticalController.dispose();
+    _copyTimer?.cancel();
+    super.dispose();
+  }
+
+  void _copy() async {
+    await Clipboard.setData(ClipboardData(text: widget.code));
+    if (!mounted) return;
+    setState(() => _copied = true);
+    _copyTimer?.cancel();
+    _copyTimer = Timer(const Duration(seconds: 2), () {
+      if (mounted) {
+        setState(() => _copied = false);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Container(
+        width: double.infinity,
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        constraints: const BoxConstraints(
+          maxHeight: 380,
+        ),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceDark.withValues(alpha: 0.8),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Stack(
+          children: [
+            ScrollbarTheme(
+              data: ScrollbarThemeData(
+                thumbColor: WidgetStateProperty.resolveWith((states) {
+                  if (states.contains(WidgetState.dragged) ||
+                      states.contains(WidgetState.hovered)) {
+                    return const Color(0xFF475569).withValues(alpha: 0.90);
+                  }
+                  return const Color(0xFF334155).withValues(alpha: 0.65);
+                }),
+                trackColor: WidgetStateProperty.all(
+                  AppColors.surfaceDark.withValues(alpha: 0.40),
+                ),
+                trackBorderColor: WidgetStateProperty.all(Colors.transparent),
+                radius: const Radius.circular(6),
+                thickness: WidgetStateProperty.all(6.0),
+                crossAxisMargin: 2.0,
+                mainAxisMargin: 4.0,
+              ),
+              child: Scrollbar(
+                controller: _verticalController,
+                notificationPredicate: (notif) =>
+                    notif.metrics.axis == Axis.vertical,
+                thumbVisibility: false,
+                child: Scrollbar(
+                  controller: _horizontalController,
+                  notificationPredicate: (notif) =>
+                      notif.metrics.axis == Axis.horizontal,
+                  thumbVisibility: false,
+                  child: SingleChildScrollView(
+                    controller: _verticalController,
+                    scrollDirection: Axis.vertical,
+                    physics: const ClampingScrollPhysics(),
+                    child: SingleChildScrollView(
+                      controller: _horizontalController,
+                      scrollDirection: Axis.horizontal,
+                      physics: const ClampingScrollPhysics(),
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 14, 46, 14),
+                        child: SelectableText(
+                          widget.code,
+                          style: GoogleFonts.firaCode(
+                            fontSize: 13,
+                            height: 1.5,
+                            color: const Color(0xFFF1F5F9),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              top: 6,
+              right: 12,
+              child: Material(
+                color: AppColors.surfaceDark.withValues(alpha: 0.85),
+                borderRadius: BorderRadius.circular(6),
+                child: Tooltip(
+                  message: _copied ? 'Copied!' : 'Copy code',
+                  child: InkWell(
+                    onTap: _copy,
+                    borderRadius: BorderRadius.circular(6),
+                    hoverColor: Colors.white.withValues(alpha: 0.12),
+                    child: Padding(
+                      padding: const EdgeInsets.all(5),
+                      child: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 200),
+                        child: _copied
+                            ? const Icon(
+                                Icons.check_rounded,
+                                key: ValueKey('copied'),
+                                size: 16,
+                                color: AppColors.greenMint,
+                              )
+                            : Icon(
+                                Icons.copy_rounded,
+                                key: const ValueKey('copy'),
+                                size: 16,
+                                color: Colors.white.withValues(alpha: 0.65),
+                              ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
