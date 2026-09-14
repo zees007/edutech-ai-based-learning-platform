@@ -504,11 +504,14 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(16),
                 child: AnimatedBuilder(
-                  animation: _pulseController,
-                  builder: (context, child) => CustomPaint(
-                    size: Size(canvasWidth, canvasHeight),
-                    painter: NeuralNetworkPainter(
-                      animationValue: _pulseController.value,
+                  animation: Listenable.merge([_pulseController, _pulseDotController]),
+                  builder: (context, child) => Transform.scale(
+                    scale: 0.97 + (_pulseDotController.value * 0.03),
+                    child: CustomPaint(
+                      size: Size(canvasWidth, canvasHeight),
+                      painter: NeuralNetworkPainter(
+                        animationValue: _pulseController.value,
+                      ),
                     ),
                   ),
                 ),
@@ -863,11 +866,11 @@ class NeuralNetworkPainter extends CustomPainter {
     
     final orchestrator = getPt(280, 32);
     final roadmap = getPt(280, 92);
-    final vectorRag = getPt(280, 140);
+    final vectorRag = getPt(280, 152);
     
     final socratic = getPt(520, 32);
     final youtube = getPt(520, 92);
-    final academic = getPt(520, 140);
+    final academic = getPt(520, 152);
     
     final workspace = getPt(720, 92);
 
@@ -910,17 +913,24 @@ class NeuralNetworkPainter extends CustomPainter {
       return Offset(p1.dx + (p2.dx - p1.dx) * t, p1.dy + (p2.dy - p1.dy) * t);
     }
 
-    // Pulse 1: Topic -> Orchestrator
+    // Flow from left to middle
     pulsePaint.color = const Color(0xFFEC4899);
     canvas.drawCircle(lerp(topic, orchestrator, animationValue), 4, pulsePaint);
+    canvas.drawCircle(lerp(contextNode, vectorRag, (animationValue + 0.2) % 1.0), 4, pulsePaint);
+    canvas.drawCircle(lerp(topic, roadmap, (animationValue + 0.5) % 1.0), 4, pulsePaint);
+    canvas.drawCircle(lerp(contextNode, roadmap, (animationValue + 0.8) % 1.0), 4, pulsePaint);
     
-    // Pulse 2: Orchestrator -> YouTube
+    // Flow from middle to right
     pulsePaint.color = const Color(0xFFA855F7);
-    canvas.drawCircle(lerp(orchestrator, youtube, (animationValue + 0.3) % 1.0), 4, pulsePaint);
+    canvas.drawCircle(lerp(orchestrator, socratic, (animationValue + 0.1) % 1.0), 4, pulsePaint);
+    canvas.drawCircle(lerp(roadmap, youtube, (animationValue + 0.4) % 1.0), 4, pulsePaint);
+    canvas.drawCircle(lerp(vectorRag, academic, (animationValue + 0.7) % 1.0), 4, pulsePaint);
 
-    // Pulse 3: YouTube -> Workspace
+    // Flow from right to Workspace
     pulsePaint.color = const Color(0xFF3B82F6);
+    canvas.drawCircle(lerp(socratic, workspace, (animationValue + 0.3) % 1.0), 4, pulsePaint);
     canvas.drawCircle(lerp(youtube, workspace, (animationValue + 0.6) % 1.0), 4, pulsePaint);
+    canvas.drawCircle(lerp(academic, workspace, (animationValue + 0.9) % 1.0), 4, pulsePaint);
 
     // Draw Nodes with luminous aura
     void drawNode(

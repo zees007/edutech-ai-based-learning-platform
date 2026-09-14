@@ -192,10 +192,13 @@ class _VideoCardState extends State<_VideoCard> {
                                 child: AnimatedScale(
                                   scale: _isHovered ? 1.15 : 1.0,
                                   duration: const Duration(milliseconds: 250),
-                                  child: Icon(
-                                    Icons.play_circle_fill_rounded, 
-                                    color: Colors.white.withValues(alpha: _isHovered ? 1.0 : 0.9), 
-                                    size: 56,
+                                  child: ShaderMask(
+                                    shaderCallback: (bounds) => AppColors.primaryGradient.createShader(bounds),
+                                    child: const Icon(
+                                      Icons.play_circle_fill_rounded, 
+                                      color: Colors.white, 
+                                      size: 56,
+                                    ),
                                   ),
                                 ),
                               ),
