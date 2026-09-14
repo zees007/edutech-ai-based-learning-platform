@@ -337,7 +337,16 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
   /// and advances to the next step once the celebration modal is dismissed.
   /// If completing the final step, triggers the Journey Complete celebration!
   Future<void> completeAndAdvanceStep(int stepIndex) async {
-    final leveledUp = await markStepComplete(stepIndex);
+    final session = state.session;
+    if (session == null) return;
+
+    bool leveledUp = false;
+    final currentStep = session.steps[stepIndex];
+    if (currentStep.status != 'complete') {
+      leveledUp = await markStepComplete(stepIndex);
+    } else {
+      debugPrint('⏭️ [Client] Step $stepIndex is already complete. Skipping completion API call.');
+    }
 
     // If level-up occurred or celebration overlay is active, wait for user to dismiss
     final gamificationNotifier = ref.read(gamificationEventProvider.notifier);
@@ -345,26 +354,26 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       await gamificationNotifier.onDismissed;
     }
 
-    final session = state.session;
-    if (session == null) return;
+    final updatedSession = state.session;
+    if (updatedSession == null) return;
 
     final bool isSessionComplete =
-        (session.steps.isNotEmpty && session.stepsCompleted >= session.steps.length) ||
-        stepIndex >= session.steps.length - 1;
+        (updatedSession.steps.isNotEmpty && updatedSession.stepsCompleted >= updatedSession.steps.length) ||
+        stepIndex >= updatedSession.steps.length - 1;
 
     if (isSessionComplete) {
       // 1. Optimistic completion: ensure all steps are marked complete in local state
-      final completedSteps = session.steps.map((s) => s.copyWith(status: 'complete')).toList();
-      final fullyCompletedSession = session.copyWith(
-        stepsCompleted: session.steps.length,
+      final completedSteps = updatedSession.steps.map((s) => s.copyWith(status: 'complete')).toList();
+      final fullyCompletedSession = updatedSession.copyWith(
+        stepsCompleted: updatedSession.steps.length,
         steps: completedSteps,
       );
       state = state.copyWith(session: fullyCompletedSession);
 
       // Sync progress with learning history list
       ref.read(sessionsProvider.notifier).updateSessionProgress(
-        sessionId: session.sessionId,
-        stepsCompleted: session.steps.length,
+        sessionId: updatedSession.sessionId,
+        stepsCompleted: updatedSession.steps.length,
         xpEarned: fullyCompletedSession.xpEarned,
         isComplete: true,
       );
@@ -372,7 +381,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       // Calculate average quiz score across steps
       double totalScore = 0.0;
       int quizCount = 0;
-      for (final s in session.steps) {
+      for (final s in updatedSession.steps) {
         if (s.quizScore != null) {
           totalScore += s.quizScore!;
           quizCount++;
@@ -381,15 +390,15 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       final avgScore = quizCount > 0 ? (totalScore / quizCount) : null;
 
       ref.read(journeyCompleteProvider.notifier).triggerEvent(
-        topic: session.topic,
-        totalSteps: session.steps.length,
-        totalXp: session.xpEarned,
+        topic: updatedSession.topic,
+        totalSteps: updatedSession.steps.length,
+        totalXp: updatedSession.xpEarned,
         bonusXp: 100,
         averageQuizScore: avgScore,
       );
 
       // 2. Fire silent background sync immediately while celebration modal is animating
-      loadSession(session.sessionId, silent: true);
+      loadSession(updatedSession.sessionId, silent: true);
       return;
     }
 
