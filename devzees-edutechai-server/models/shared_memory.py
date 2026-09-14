@@ -25,7 +25,7 @@ Agent Read/Write Map:
 from __future__ import annotations
 
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 
 from pydantic import BaseModel, Field
 
@@ -53,7 +53,7 @@ class SharedMemory(BaseModel):
     topic: str = ""
     learning_mode: LearningMode = LearningMode.VISUAL
     student_level: str = "general"
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     # ─── Learning Plan (written by Orchestrator) ────────────────
     has_prerequisite_gap: bool = False

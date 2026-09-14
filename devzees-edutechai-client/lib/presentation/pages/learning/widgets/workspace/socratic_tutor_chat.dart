@@ -94,6 +94,7 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
               sender: _Sender.tutor,
               text: chunk,
               animController: tutorAnim,
+              timestamp: DateTime.now(),
             ),
           );
           tutorAnim.forward();
@@ -118,6 +119,7 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
             sender: _Sender.tutor,
             text: "⚠️ WebSocket Error: ${event['message']}",
             animController: errorAnim,
+            timestamp: DateTime.now(),
           ),
         );
         errorAnim.forward();
@@ -170,7 +172,61 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
     return text.trim();
   }
 
+  DateTime _parseUtcDateTime(dynamic raw) {
+    if (raw == null) return DateTime.now();
+    if (raw is DateTime) return raw.toLocal();
+    if (raw is String) {
+      try {
+        final trimmed = raw.trim();
+        if (trimmed.isEmpty) return DateTime.now();
+        // If server sent naive UTC ISO (no Z or timezone offset), treat as UTC by appending 'Z'
+        if (!trimmed.endsWith('Z') &&
+            !RegExp(r'[+-]\d{2}:?\d{2}$').hasMatch(trimmed)) {
+          return DateTime.parse('${trimmed}Z').toLocal();
+        }
+        return DateTime.parse(trimmed).toLocal();
+      } catch (_) {
+        return DateTime.now();
+      }
+    }
+    return DateTime.now();
+  }
+
+  String _formatBubbleTime(DateTime dt) {
+    final local = dt.toLocal();
+    final hour =
+        local.hour == 0 ? 12 : (local.hour > 12 ? local.hour - 12 : local.hour);
+    final minute = local.minute.toString().padLeft(2, '0');
+    final period = local.hour >= 12 ? 'PM' : 'AM';
+    return '$hour:$minute $period';
+  }
+
   void _initializeMessages() {
+    final initialSanitized = widget.tutorExplanation != null
+        ? _sanitizeExplanation(widget.tutorExplanation!)
+        : '';
+
+    DateTime initialTimestamp =
+        ref.read(activeSessionProvider).session?.createdAt.toLocal() ??
+            DateTime.now();
+
+    if (widget.conversationHistory != null) {
+      for (final rawTurn in widget.conversationHistory!) {
+        if (rawTurn is! Map) continue;
+        final role = (rawTurn['role'] as String? ?? '').toLowerCase();
+        final content = (rawTurn['content'] as String? ?? '').trim();
+        if ((role == 'tutor' || role == 'assistant') &&
+            (content == widget.tutorExplanation ||
+                (initialSanitized.isNotEmpty &&
+                    _sanitizeExplanation(content) == initialSanitized))) {
+          if (rawTurn['timestamp'] != null) {
+            initialTimestamp = _parseUtcDateTime(rawTurn['timestamp']);
+          }
+          break;
+        }
+      }
+    }
+
     // 1. Render tutorExplanation as the first tutor bubble (matching Streamlit)
     if (widget.tutorExplanation != null &&
         widget.tutorExplanation!.trim().isNotEmpty) {
@@ -180,6 +236,7 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
           sender: _Sender.tutor,
           text: sanitized,
           animController: _createAnimController(),
+          timestamp: initialTimestamp,
         ),
       );
     } else {
@@ -190,6 +247,7 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
           text:
               '🧩 *Socratic Tutor Agent is preparing the explanation for **${widget.stepTitle}**...*',
           animController: _createAnimController(),
+          timestamp: initialTimestamp,
         ),
       );
     }
@@ -197,9 +255,6 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
     // 2. Replay all follow-up conversation turns from conversationHistory
     if (widget.conversationHistory != null &&
         widget.conversationHistory!.isNotEmpty) {
-      final initialSanitized = widget.tutorExplanation != null
-          ? _sanitizeExplanation(widget.tutorExplanation!)
-          : '';
       for (final rawTurn in widget.conversationHistory!) {
         if (rawTurn is! Map) continue;
         final turn = Map<String, dynamic>.from(rawTurn);
@@ -207,12 +262,15 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
         final content = (turn['content'] as String? ?? '').trim();
         if (content.isEmpty) continue;
 
+        final turnTimestamp = _parseUtcDateTime(turn['timestamp']);
+
         if (role == 'student' || role == 'user') {
           _messages.add(
             _ChatMessage(
               sender: _Sender.user,
               text: content,
               animController: _createAnimController(),
+              timestamp: turnTimestamp,
             ),
           );
         } else if (role == 'tutor' || role == 'assistant') {
@@ -228,6 +286,7 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
               sender: _Sender.tutor,
               text: sanitizedContent,
               animController: _createAnimController(),
+              timestamp: turnTimestamp,
             ),
           );
         }
@@ -270,6 +329,7 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
           sender: _Sender.user,
           text: text,
           animController: userAnim,
+          timestamp: DateTime.now(),
         ),
       );
       _controller.clear();
@@ -304,6 +364,7 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
             text:
                 "⚠️ I encountered an issue connecting to the socratic agent. Please try asking again.",
             animController: errorAnim,
+            timestamp: DateTime.now(),
           ),
         );
       });
@@ -499,60 +560,84 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
                 : MainAxisAlignment.end,
             children: [
               if (isTutor) ...[_buildTutorAvatar(), const SizedBox(width: 10)],
-              // Bubble
+              // Bubble & Timestamp
               Flexible(
-                child: Container(
-                  constraints: BoxConstraints(
-                    maxWidth: MediaQuery.of(context).size.width * 0.72,
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 16,
-                  ),
-                  decoration: BoxDecoration(
-                    gradient: isTutor
-                        ? LinearGradient(
-                            colors: [
-                              AppColors.surfaceMid.withValues(alpha: 0.75),
-                              AppColors.surfaceDark.withValues(alpha: 0.85),
-                            ],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          )
-                        : null,
-                    color: isTutor
-                        ? null
-                        : AppColors.accentBlue.withValues(alpha: 0.12),
-                    borderRadius: isTutor
-                        ? BorderRadius.circular(16)
-                        : const BorderRadius.only(
-                            topLeft: Radius.circular(20),
-                            topRight: Radius.circular(4),
-                            bottomLeft: Radius.circular(20),
-                            bottomRight: Radius.circular(20),
-                          ),
+                child: Column(
+                  crossAxisAlignment: isTutor
+                      ? CrossAxisAlignment.start
+                      : CrossAxisAlignment.end,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      constraints: BoxConstraints(
+                        maxWidth: MediaQuery.of(context).size.width * 0.72,
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 16,
+                      ),
+                      decoration: BoxDecoration(
+                        gradient: isTutor
+                            ? LinearGradient(
+                                colors: [
+                                  AppColors.surfaceMid.withValues(alpha: 0.75),
+                                  AppColors.surfaceDark.withValues(alpha: 0.85),
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              )
+                            : null,
+                        color: isTutor
+                            ? null
+                            : AppColors.accentBlue.withValues(alpha: 0.12),
+                        borderRadius: isTutor
+                            ? BorderRadius.circular(16)
+                            : const BorderRadius.only(
+                                topLeft: Radius.circular(20),
+                                topRight: Radius.circular(4),
+                                bottomLeft: Radius.circular(20),
+                                bottomRight: Radius.circular(20),
+                              ),
 
-                    boxShadow: isTutor
-                        ? [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.3),
-                              blurRadius: 20,
-                              offset: const Offset(0, 6),
-                            ),
-                          ]
-                        : [
-                            BoxShadow(
-                              color: const Color(
-                                0xFF3B82F6,
-                              ).withValues(alpha: 0.06),
-                              blurRadius: 16,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                  ),
-                  child: isTutor
-                      ? _buildMarkdownContent(msg.text)
-                      : _buildPlainText(msg.text),
+                        boxShadow: isTutor
+                            ? [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.3),
+                                  blurRadius: 20,
+                                  offset: const Offset(0, 6),
+                                ),
+                              ]
+                            : [
+                                BoxShadow(
+                                  color: const Color(
+                                    0xFF3B82F6,
+                                  ).withValues(alpha: 0.06),
+                                  blurRadius: 16,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                      ),
+                      child: isTutor
+                          ? _buildMarkdownContent(msg.text)
+                          : _buildPlainText(msg.text),
+                    ),
+                    const SizedBox(height: 5),
+                    Padding(
+                      padding: EdgeInsets.only(
+                        left: isTutor ? 4 : 0,
+                        right: isTutor ? 0 : 4,
+                      ),
+                      child: Text(
+                        _formatBubbleTime(msg.timestamp),
+                        style: GoogleFonts.inter(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w400,
+                          color: AppColors.textMuted.withValues(alpha: 0.7),
+                          letterSpacing: 0.2,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
               if (!isTutor) ...[
@@ -1239,11 +1324,13 @@ class _ChatMessage {
   final _Sender sender;
   String text;
   final AnimationController animController;
+  final DateTime timestamp;
 
   _ChatMessage({
     required this.sender,
     required this.text,
     required this.animController,
+    required this.timestamp,
   });
 }
 

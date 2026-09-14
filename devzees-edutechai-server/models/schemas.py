@@ -7,7 +7,7 @@ These are API-facing models (serialization), distinct from ORM models (persisten
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Literal
 
@@ -251,7 +251,7 @@ class ConversationTurn(BaseModel):
 
     role: Literal["student", "tutor"]
     content: str
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     step_index: int | None = None
 
 
@@ -264,7 +264,7 @@ class WSEventBase(BaseModel):
     """Base for all WebSocket events."""
 
     session_id: str
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class PlanEvent(WSEventBase):
