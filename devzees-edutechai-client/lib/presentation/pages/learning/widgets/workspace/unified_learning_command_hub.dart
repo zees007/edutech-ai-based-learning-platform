@@ -29,6 +29,7 @@ class UnifiedLearningCommandHub extends ConsumerStatefulWidget {
 
 class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningCommandHub> {
   bool _isHovered = false;
+  bool _isTopicExpanded = false;
 
   Map<String, dynamic> _calculateLevel(int totalXp) {
     const levels = [
@@ -350,7 +351,10 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Row(
+              Wrap(
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: 6,
+                runSpacing: 4,
                 children: [
                   Text(
                     'YOUR GOAL',
@@ -360,14 +364,12 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
                       letterSpacing: 0.6,
                     ),
                   ),
-                  const SizedBox(width: 8),
                   // Micro Mode Chip
                   _buildMicroChip(
                     label: _formatMode(session.learningMode),
                     color: AppColors.purpleLight,
                     icon: Icons.psychology_rounded,
                   ),
-                  const SizedBox(width: 6),
                   // Micro Audience Chip
                   _buildMicroChip(
                     label: _formatLevel(session.studentLevel),
@@ -377,14 +379,33 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
                 ],
               ),
               const SizedBox(height: 3),
-              Text(
-                session.topic,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: AppTextStyles.h3.copyWith(
-                  fontSize: isMobile ? 13 : 15,
-                  color: AppColors.textPrimary,
-                  letterSpacing: 0.1,
+              GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _isTopicExpanded = !_isTopicExpanded;
+                  });
+                },
+                child: MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  child: Tooltip(
+                    message: _isTopicExpanded ? 'Tap to collapse' : 'Tap to expand topic',
+                    waitDuration: const Duration(milliseconds: 400),
+                    child: AnimatedSize(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOutCubic,
+                      alignment: Alignment.topCenter,
+                      child: Text(
+                        session.topic,
+                        maxLines: _isTopicExpanded ? null : (isMobile ? 3 : 2),
+                        overflow: _isTopicExpanded ? null : TextOverflow.ellipsis,
+                        style: AppTextStyles.h3.copyWith(
+                          fontSize: isMobile ? 13 : 15,
+                          color: AppColors.textPrimary,
+                          letterSpacing: 0.1,
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ],
