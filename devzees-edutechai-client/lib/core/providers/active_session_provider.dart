@@ -50,8 +50,8 @@ class ActiveSessionState {
 }
 
 class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
-  late final LearningService _service;
-  late final LearningWebSocketService _wsService;
+  late LearningService _service;
+  late LearningWebSocketService _wsService;
 
   // ─── Performance & Render Timing Stopwatches ────────────────────────
   final Stopwatch _stepTotalStopwatch = Stopwatch();

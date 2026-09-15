@@ -76,7 +76,13 @@ class LearningService {
         '/learn',
         data: {
           'topic': topic,
-          'learning_mode': mode.toLowerCase().split(' ')[0], // e.g. "Visual 🎬" -> "visual"
+          'learning_mode': mode
+              .replaceAll(RegExp(r'[\u{1F300}-\u{1F9FF}]', unicode: true), '')
+              .replaceAll(RegExp(r'[^\w\s-]'), '')
+              .trim()
+              .toLowerCase()
+              .replaceAll(RegExp(r'\s+'), '_')
+              .replaceAll('-', '_'),
           'student_level': level
               .replaceAll(RegExp(r'[\u{1F300}-\u{1F9FF}]', unicode: true), '')
               .replaceAll(RegExp(r'[^\w\s-]'), '')
