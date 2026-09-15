@@ -306,10 +306,14 @@ class _FullscreenPanelOverlay extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Material(
-      color: AppColors.background,
-      child: Column(
-        children: [
-          // Header
+      color: AppColors.background, // Base color
+      child: Container(
+        decoration: const BoxDecoration(
+          gradient: AppColors.commandHubGradient,
+        ),
+        child: Column(
+          children: [
+            // Header
           panel == _MaximizedPanel.left
               ? _TutorPanelHeader(
                   currentIndex: stepIndex,
@@ -336,38 +340,49 @@ class _FullscreenPanelOverlay extends ConsumerWidget {
           ),
         ],
       ),
+    ),
+  );
+}
+
+  Widget _buildFullscreenChat() {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surfaceDark.withValues(alpha: 0.3),
+      ),
+      child: (currentStep.tutorExplanation != null ||
+              (currentStep.socraticQuestions != null &&
+                  currentStep.socraticQuestions!.isNotEmpty))
+          ? SocraticTutorChat(
+              key: ValueKey('fullscreen_socratic_${currentStep.index}'),
+              stepIndex: currentStep.index,
+              tutorExplanation: currentStep.tutorExplanation,
+              socraticQuestions: currentStep.socraticQuestions,
+              conversationHistory: session.conversationHistory?.where((turn) => (turn as Map)['step_index'] == currentStep.index).toList(),
+              stepTitle: currentStep.title,
+            )
+          : Center(
+              child: Text(
+                'Socratic Tutor is preparing...',
+                style: AppTextStyles.bodyPrimary.copyWith(
+                  color: AppColors.textMuted,
+                ),
+              ),
+            ),
     );
   }
 
-  Widget _buildFullscreenChat() {
-    return (currentStep.tutorExplanation != null ||
-            (currentStep.socraticQuestions != null &&
-                currentStep.socraticQuestions!.isNotEmpty))
-        ? SocraticTutorChat(
-            key: ValueKey('fullscreen_socratic_${currentStep.index}'),
-            stepIndex: currentStep.index,
-            tutorExplanation: currentStep.tutorExplanation,
-            socraticQuestions: currentStep.socraticQuestions,
-            conversationHistory: session.conversationHistory?.where((turn) => (turn as Map)['step_index'] == currentStep.index).toList(),
-            stepTitle: currentStep.title,
-          )
-        : Center(
-            child: Text(
-              'Socratic Tutor is preparing...',
-              style: AppTextStyles.bodyPrimary.copyWith(
-                color: AppColors.textMuted,
-              ),
-            ),
-          );
-  }
-
   Widget _buildFullscreenResources(WidgetRef ref) {
-    return LearningResourcesPanel(
-      key: ValueKey('fullscreen_resources_${currentStep.index}'),
-      currentStep: currentStep,
-      session: session,
-      stepIndex: stepIndex,
-      onNextStep: onNextStep,
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surfaceDark.withValues(alpha: 0.3),
+      ),
+      child: LearningResourcesPanel(
+        key: ValueKey('fullscreen_resources_${currentStep.index}'),
+        currentStep: currentStep,
+        session: session,
+        stepIndex: stepIndex,
+        onNextStep: onNextStep,
+      ),
     );
   }
 }
