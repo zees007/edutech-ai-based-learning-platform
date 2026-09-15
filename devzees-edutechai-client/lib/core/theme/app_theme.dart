@@ -58,6 +58,26 @@ class AppTheme {
         labelSmall: AppTextStyles.labelSmall,
         bodySmall: AppTextStyles.caption,
       ),
+      tooltipTheme: TooltipThemeData(
+        decoration: BoxDecoration(
+          color: AppColors.popoverBackground.withValues(alpha: 0.95),
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.5),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        textStyle: AppTextStyles.caption.copyWith(
+          color: AppColors.textPrimary,
+          height: 1.35,
+          letterSpacing: 0.2,
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        waitDuration: const Duration(milliseconds: 300),
+      ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,

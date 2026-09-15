@@ -163,13 +163,27 @@ class _ChevronStepItemState extends State<_ChevronStepItem> {
     final double arrowWidth = widget.arrowWidth;
 
     // Tooltip message
-    final String tooltipMsg = isLocked
-        ? '🔒 Step ${widget.index + 1}${widget.step.isPrerequisite ? " • Prerequisite" : ""}: Complete previous step to unlock\n${widget.step.title}'
-        : (isActive
-            ? '⭐ Active (Step ${widget.index + 1}${widget.step.isPrerequisite ? " • Prerequisite" : ""})\n${widget.step.title}\n${widget.step.description}'
-            : (isCompleted
-                ? '✅ Completed (Step ${widget.index + 1}${widget.step.isPrerequisite ? " • Prerequisite" : ""}) — Tap to review\n${widget.step.title}'
-                : '⚡ Step ${widget.index + 1}${widget.step.isPrerequisite ? " • Prerequisite" : ""}\n${widget.step.title}\n${widget.step.description}'));
+    final InlineSpan tooltipRichMsg;
+    if (isLocked) {
+      tooltipRichMsg = TextSpan(text: '🔒 Step ${widget.index + 1}${widget.step.isPrerequisite ? " • Prerequisite" : ""}: Complete previous step to unlock\n${widget.step.title}');
+    } else if (isActive) {
+      tooltipRichMsg = TextSpan(text: '⭐ Active (Step ${widget.index + 1}${widget.step.isPrerequisite ? " • Prerequisite" : ""})\n${widget.step.title}\n${widget.step.description}');
+    } else if (isCompleted) {
+      tooltipRichMsg = TextSpan(
+        children: [
+          const WidgetSpan(
+            alignment: PlaceholderAlignment.middle,
+            child: Padding(
+              padding: EdgeInsets.only(right: 4.0),
+              child: Icon(Icons.check_circle_rounded, size: 14, color: AppColors.greenMint),
+            ),
+          ),
+          TextSpan(text: 'Completed (Step ${widget.index + 1}${widget.step.isPrerequisite ? " • Prerequisite" : ""}) — Tap to review\n${widget.step.title}'),
+        ],
+      );
+    } else {
+      tooltipRichMsg = TextSpan(text: '⚡ Step ${widget.index + 1}${widget.step.isPrerequisite ? " • Prerequisite" : ""}\n${widget.step.title}\n${widget.step.description}');
+    }
 
     // Status icon
     final Widget statusIcon = Icon(
@@ -286,14 +300,7 @@ class _ChevronStepItemState extends State<_ChevronStepItem> {
     );
 
     return Tooltip(
-      message: tooltipMsg,
-      textStyle: AppTextStyles.caption.copyWith(color: Colors.white, height: 1.35),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceMid,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.glassBorder),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      richMessage: tooltipRichMsg,
       child: MouseRegion(
         cursor: isLocked ? SystemMouseCursors.forbidden : SystemMouseCursors.click,
         onEnter: (_) => setState(() => _isHovered = true),
