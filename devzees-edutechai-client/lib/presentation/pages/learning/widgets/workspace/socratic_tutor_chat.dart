@@ -195,11 +195,35 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
 
   String _formatBubbleTime(DateTime dt) {
     final local = dt.toLocal();
+    final now = DateTime.now();
+    
+    // Create date-only DateTime objects for comparison
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
+    final msgDate = DateTime(local.year, local.month, local.day);
+
     final hour =
         local.hour == 0 ? 12 : (local.hour > 12 ? local.hour - 12 : local.hour);
     final minute = local.minute.toString().padLeft(2, '0');
     final period = local.hour >= 12 ? 'PM' : 'AM';
-    return '$hour:$minute $period';
+    final timeString = '$hour:$minute $period';
+
+    if (msgDate == today) {
+      return timeString; // Usually standard apps just show time for today
+    } else if (msgDate == yesterday) {
+      return 'Yesterday, $timeString';
+    } else {
+      final months = [
+        'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      ];
+      final monthStr = months[local.month - 1];
+      if (local.year == now.year) {
+        return '$monthStr ${local.day}, $timeString';
+      } else {
+        return '$monthStr ${local.day}, ${local.year}, $timeString';
+      }
+    }
   }
 
   void _initializeMessages() {
@@ -696,7 +720,7 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
 
   MarkdownStyleSheet _buildMarkdownStyleSheet() {
     final baseTextStyle = GoogleFonts.inter(
-      color: Colors.white.withValues(alpha: 0.92),
+      color: AppColors.textPrimary.withValues(alpha: 0.92),
       fontSize: 14,
       height: 1.55,
     );
@@ -706,43 +730,43 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
       p: baseTextStyle,
       pPadding: const EdgeInsets.only(bottom: 8),
 
-      // Headers (All Cyan)
+      // Headers
       h1: GoogleFonts.inter(
-        color: AppColors.accentCyan,
+        color: AppColors.textPrimary,
         fontSize: 20,
         fontWeight: FontWeight.w700,
         height: 1.3,
       ),
       h1Padding: const EdgeInsets.only(bottom: 12, top: 4),
       h2: GoogleFonts.inter(
-        color: AppColors.accentCyan,
+        color: AppColors.textPrimary,
         fontSize: 17,
         fontWeight: FontWeight.w700,
         height: 1.3,
       ),
       h2Padding: const EdgeInsets.only(bottom: 10, top: 8),
       h3: GoogleFonts.inter(
-        color: AppColors.accentCyan,
+        color: AppColors.textPrimary,
         fontSize: 15,
         fontWeight: FontWeight.w600,
         height: 1.3,
       ),
       h3Padding: const EdgeInsets.only(bottom: 8, top: 6),
       h4: GoogleFonts.inter(
-        color: AppColors.accentCyan,
+        color: AppColors.textPrimary,
         fontSize: 14,
         fontWeight: FontWeight.w600,
         height: 1.3,
       ),
       h4Padding: const EdgeInsets.only(bottom: 6, top: 4),
       h5: GoogleFonts.inter(
-        color: AppColors.accentCyan,
+        color: AppColors.textPrimary,
         fontSize: 13,
         fontWeight: FontWeight.w600,
         height: 1.3,
       ),
       h6: GoogleFonts.inter(
-        color: AppColors.accentCyan,
+        color: AppColors.textPrimary,
         fontSize: 12,
         fontWeight: FontWeight.w600,
         height: 1.3,
@@ -750,11 +774,11 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
 
       // Bold & emphasis
       strong: GoogleFonts.inter(
-        color: Colors.white,
+        color: AppColors.textPrimary,
         fontWeight: FontWeight.w700,
       ),
       em: GoogleFonts.inter(
-        color: Colors.white.withValues(alpha: 0.85),
+        color: AppColors.textPrimary.withValues(alpha: 0.85),
         fontStyle: FontStyle.italic,
       ),
 
@@ -766,7 +790,7 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
       ),
 
       // Lists
-      listBullet: baseTextStyle.copyWith(color: AppColors.accentCyan),
+      listBullet: baseTextStyle.copyWith(color: AppColors.textPrimary),
       listBulletPadding: const EdgeInsets.only(right: 8),
       listIndent: 20,
 
@@ -775,7 +799,7 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
         color: AppColors.greenMint, // Vibrant green
 
         fontSize: 13,
-        backgroundColor: Colors.white.withValues(alpha: 0.08),
+        backgroundColor: AppColors.textPrimary.withValues(alpha: 0.08),
       ),
 
       // Code blocks
