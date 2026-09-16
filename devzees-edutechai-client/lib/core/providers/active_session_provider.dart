@@ -431,6 +431,49 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     loadSession(session.sessionId, silent: true);
   }
 
+  /// Regenerates the content for a specific step.
+  Future<void> regenerateCurrentStep(int stepIndex) async {
+    final session = state.session;
+    if (session == null || stepIndex < 0 || stepIndex >= session.steps.length) return;
+
+    // 1. Trigger backend API
+    try {
+      await _service.regenerateStep(session.sessionId, stepIndex);
+    } catch (e) {
+      debugPrint('Failed to trigger regeneration on backend: $e');
+      return;
+    }
+
+    // 2. Optimistic update: clear step content to show loading state
+    final currentStep = session.steps[stepIndex];
+    final clearedStep = currentStep.copyWith(
+      tutorExplanation: null,
+      socraticQuestions: [],
+      videos: [],
+      papers: [],
+      quiz: [],
+      quizScore: null,
+      userAnswers: {},
+      userFullAnswers: {},
+      followUpCount: 0,
+    );
+
+    final updatedSteps = List<MilestoneStep>.from(session.steps)..[stepIndex] = clearedStep;
+    final updatedSession = session.copyWith(steps: updatedSteps);
+    
+    state = state.copyWith(session: updatedSession);
+    
+    // 3. Re-fetch session to poll for newly generated content
+    loadSession(session.sessionId, silent: true);
+
+    // 4. Trigger the backend agents to start generating the cleared step
+    if (!_wsService.isConnected) {
+      debugPrint('Reconnecting WebSocket for regeneration...');
+      _wsService.connect(session.sessionId);
+    }
+    _wsService.sendStartStep(stepIndex);
+  }
+
   /// Check if the quiz for a given step has been completed.
   bool isQuizCompletedForStep(int stepIndex) {
     final session = state.session;
