@@ -4,8 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../core/providers/active_session_provider.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/text_styles.dart';
-import 'socratic_tutor_chat.dart';
 import 'learning_resources_panel.dart';
+import 'socratic_tutor_chat.dart';
+import 'keep_alive_wrapper.dart';
 import '../../../../widgets/animated_tutor_icon.dart';
 
 /// A dual-panel layout that splits the learning workspace into:
@@ -305,10 +306,14 @@ class _FullscreenPanelOverlay extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Material(
-      color: AppColors.background,
-      child: Column(
-        children: [
-          // Header
+      color: AppColors.background, // Base color
+      child: Container(
+        decoration: const BoxDecoration(
+          gradient: AppColors.commandHubGradient,
+        ),
+        child: Column(
+          children: [
+            // Header
           panel == _MaximizedPanel.left
               ? _TutorPanelHeader(
                   currentIndex: stepIndex,
@@ -335,38 +340,49 @@ class _FullscreenPanelOverlay extends ConsumerWidget {
           ),
         ],
       ),
+    ),
+  );
+}
+
+  Widget _buildFullscreenChat() {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surfaceDark.withValues(alpha: 0.3),
+      ),
+      child: (currentStep.tutorExplanation != null ||
+              (currentStep.socraticQuestions != null &&
+                  currentStep.socraticQuestions!.isNotEmpty))
+          ? SocraticTutorChat(
+              key: ValueKey('fullscreen_socratic_${currentStep.index}'),
+              stepIndex: currentStep.index,
+              tutorExplanation: currentStep.tutorExplanation,
+              socraticQuestions: currentStep.socraticQuestions,
+              conversationHistory: session.conversationHistory?.where((turn) => (turn as Map)['step_index'] == currentStep.index).toList(),
+              stepTitle: currentStep.title,
+            )
+          : Center(
+              child: Text(
+                'Socratic Tutor is preparing...',
+                style: AppTextStyles.bodyPrimary.copyWith(
+                  color: AppColors.textMuted,
+                ),
+              ),
+            ),
     );
   }
 
-  Widget _buildFullscreenChat() {
-    return (currentStep.tutorExplanation != null ||
-            (currentStep.socraticQuestions != null &&
-                currentStep.socraticQuestions!.isNotEmpty))
-        ? SocraticTutorChat(
-            key: ValueKey('fullscreen_socratic_${currentStep.index}'),
-            stepIndex: currentStep.index,
-            tutorExplanation: currentStep.tutorExplanation,
-            socraticQuestions: currentStep.socraticQuestions,
-            conversationHistory: session.conversationHistory?.where((turn) => (turn as Map)['step_index'] == currentStep.index).toList(),
-            stepTitle: currentStep.title,
-          )
-        : Center(
-            child: Text(
-              'Socratic Tutor is preparing...',
-              style: AppTextStyles.bodyPrimary.copyWith(
-                color: AppColors.textMuted,
-              ),
-            ),
-          );
-  }
-
   Widget _buildFullscreenResources(WidgetRef ref) {
-    return LearningResourcesPanel(
-      key: ValueKey('fullscreen_resources_${currentStep.index}'),
-      currentStep: currentStep,
-      session: session,
-      stepIndex: stepIndex,
-      onNextStep: onNextStep,
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surfaceDark.withValues(alpha: 0.3),
+      ),
+      child: LearningResourcesPanel(
+        key: ValueKey('fullscreen_resources_${currentStep.index}'),
+        currentStep: currentStep,
+        session: session,
+        stepIndex: stepIndex,
+        onNextStep: onNextStep,
+      ),
     );
   }
 }
@@ -1202,7 +1218,8 @@ class _MobileTabbedWorkspaceState
     final bool isSessionComplete = widget.session.steps.isNotEmpty &&
         widget.session.stepsCompleted >= totalSteps && totalSteps > 0;
     final bool isCurrentStepComplete = widget.currentStep.status == 'complete' ||
-        (isLastStep && isSessionComplete);
+        (isLastStep && isSessionComplete) ||
+        (widget.stepIndex < widget.session.stepsCompleted);
 
     String guidanceText;
     if (isLastStep && isCurrentStepComplete) {
@@ -1219,19 +1236,24 @@ class _MobileTabbedWorkspaceState
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
       decoration: BoxDecoration(
-        color: AppColors.surfaceSolidHeader,
+        gradient: LinearGradient(
+          colors: [
+            AppColors.accentGreen.withValues(alpha: 0.2),
+            AppColors.emerald.withValues(alpha: 0.1),
+          ],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+        ),
         border: Border(
           top: BorderSide(
-            color: AppColors.accentGreen.withValues(alpha: 0.35),
+            color: AppColors.accentGreen.withValues(alpha: 0.4),
             width: 1,
           ),
         ),
       ),
-      child: SafeArea(
-        top: false,
-        child: Row(
+      child: Row(
           children: [
             Expanded(
               child: GestureDetector(
@@ -1358,8 +1380,7 @@ class _MobileTabbedWorkspaceState
               ),
           ],
         ),
-      ),
-    );
+      );
   }
 
   Widget _buildMobileNoQuizAdvanceBar(BuildContext context) {
@@ -1368,7 +1389,8 @@ class _MobileTabbedWorkspaceState
     final bool isSessionComplete = widget.session.steps.isNotEmpty &&
         widget.session.stepsCompleted >= totalSteps && totalSteps > 0;
     final bool isCurrentStepComplete = widget.currentStep.status == 'complete' ||
-        (isLastStep && isSessionComplete);
+        (isLastStep && isSessionComplete) ||
+        (widget.stepIndex < widget.session.stepsCompleted);
 
     return Container(
       width: double.infinity,
@@ -1382,9 +1404,7 @@ class _MobileTabbedWorkspaceState
           ),
         ),
       ),
-      child: SafeArea(
-        top: false,
-        child: Row(
+      child: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(6),
@@ -1495,8 +1515,7 @@ class _MobileTabbedWorkspaceState
               ),
           ],
         ),
-      ),
-    );
+      );
   }
 
   @override
@@ -1506,6 +1525,15 @@ class _MobileTabbedWorkspaceState
     final hasPapers = step.papers != null && step.papers!.isNotEmpty;
     final hasQuiz = step.quiz != null && step.quiz!.isNotEmpty;
     final isQuizDone = _quizSubmitted || _isQuizCompleted(step);
+
+    final totalSteps = widget.totalSteps;
+    final bool isLastStep = totalSteps > 0 && widget.stepIndex >= totalSteps - 1;
+    final bool isSessionComplete = widget.session.steps.isNotEmpty &&
+        widget.session.stepsCompleted >= totalSteps &&
+        totalSteps > 0;
+    final bool isCurrentStepComplete = widget.currentStep.status == 'complete' ||
+        (isLastStep && isSessionComplete) ||
+        (widget.stepIndex < widget.session.stepsCompleted);
 
     return Column(
       children: [
@@ -1569,7 +1597,7 @@ class _MobileTabbedWorkspaceState
                   isActive: _activeTabIndex == 3,
                   label: 'Quiz',
                   icon: Icons.quiz_outlined,
-                  accentColor: isQuizDone ? AppColors.accentGreen : AppColors.accentAmber,
+                  accentColor: AppColors.accentGreen,
                   leadingWidget: hasQuiz
                       ? (isQuizDone
                           ? Container(
@@ -1595,11 +1623,11 @@ class _MobileTabbedWorkspaceState
                               width: 8,
                               height: 8,
                               decoration: BoxDecoration(
-                                color: AppColors.accentAmber,
+                                color: AppColors.accentGreen,
                                 shape: BoxShape.circle,
                                 boxShadow: [
                                   BoxShadow(
-                                    color: AppColors.accentAmber.withValues(alpha: 0.5),
+                                    color: AppColors.accentGreen.withValues(alpha: 0.5),
                                     blurRadius: 4,
                                   ),
                                 ],
@@ -1618,22 +1646,37 @@ class _MobileTabbedWorkspaceState
             controller: _tabController,
             children: [
               // Tutor tab
-              _buildTutorTab(step),
+              KeepAliveWrapper(
+                key: ValueKey('mobile_tab_tutor_${step.index}'),
+                child: _buildTutorTab(step),
+              ),
               // Videos tab
-              _buildVideosTab(step),
+              KeepAliveWrapper(
+                key: ValueKey('mobile_tab_videos_${step.index}'),
+                child: _buildVideosTab(step),
+              ),
               // Papers tab
-              _buildPapersTab(step),
+              KeepAliveWrapper(
+                key: ValueKey('mobile_tab_papers_${step.index}'),
+                child: _buildPapersTab(step),
+              ),
               // Quiz tab
-              _buildQuizTab(step),
+              KeepAliveWrapper(
+                key: ValueKey('mobile_tab_quiz_${step.index}'),
+                child: _buildQuizTab(step),
+              ),
             ],
           ),
         ),
 
-        // Pinned Bottom Advance / Gating Bar
-        if (hasQuiz)
-          _buildMobileGatingBar(context, isQuizDone)
-        else
-          _buildMobileNoQuizAdvanceBar(context),
+        // ─── Quiz Gating / Advance Bar (pinned at bottom) ───
+        // Only displayed on non-quiz tabs (Tutor/Videos/Papers) and when current step is not yet completed
+        if (_activeTabIndex != 3 && !isCurrentStepComplete) ...[
+          if (hasQuiz)
+            _buildMobileGatingBar(context, isQuizDone)
+          else if (widget.stepIndex < (totalSteps - 1))
+            _buildMobileNoQuizAdvanceBar(context),
+        ],
       ],
     );
   }
@@ -1687,7 +1730,7 @@ class _MobileTabbedWorkspaceState
       return _buildEmptyState(
         icon: Icons.quiz_outlined,
         label: 'No quiz available for this step',
-        color: AppColors.rose,
+        color: AppColors.accentGreen,
       );
     }
     final int stepIdx = (step.index is int) ? step.index as int : widget.stepIndex;

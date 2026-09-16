@@ -62,7 +62,7 @@ class SessionsState {
 }
 
 class SessionsNotifier extends Notifier<SessionsState> {
-  late final LearningService _service;
+  late LearningService _service;
 
   @override
   SessionsState build() {

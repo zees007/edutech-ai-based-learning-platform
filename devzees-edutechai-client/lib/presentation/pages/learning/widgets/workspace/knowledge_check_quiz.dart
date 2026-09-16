@@ -5,6 +5,48 @@ import '../../../../../../core/theme/app_colors.dart';
 import '../../../../../../core/theme/text_styles.dart';
 import '../../../../../../data/models/learning/quiz_result.dart';
 
+/// In-memory cache for unsubmitted quiz draft answers across tab/step switches.
+class QuizDraftStore {
+  static final Map<String, Map<int, int>> _selectedAnswers = {};
+  static final Map<String, Map<int, String>> _textAnswers = {};
+
+  static String _key(String sessionId, int stepIndex) => '${sessionId}_$stepIndex';
+
+  static Map<int, int>? getSelectedAnswers(String sessionId, int stepIndex) {
+    final key = _key(sessionId, stepIndex);
+    final data = _selectedAnswers[key];
+    return data != null ? Map<int, int>.from(data) : null;
+  }
+
+  static Map<int, String>? getTextAnswers(String sessionId, int stepIndex) {
+    final key = _key(sessionId, stepIndex);
+    final data = _textAnswers[key];
+    return data != null ? Map<int, String>.from(data) : null;
+  }
+
+  static void saveDraft({
+    required String sessionId,
+    required int stepIndex,
+    required Map<int, int> selectedAnswers,
+    required Map<int, String> textAnswers,
+  }) {
+    final key = _key(sessionId, stepIndex);
+    _selectedAnswers[key] = Map<int, int>.from(selectedAnswers);
+    _textAnswers[key] = Map<int, String>.from(textAnswers);
+  }
+
+  static void clearDraft(String sessionId, int stepIndex) {
+    final key = _key(sessionId, stepIndex);
+    _selectedAnswers.remove(key);
+    _textAnswers.remove(key);
+  }
+
+  static void clearAll() {
+    _selectedAnswers.clear();
+    _textAnswers.clear();
+  }
+}
+
 /// Redesigned Knowledge Check Quiz matching the EduTech AI dark glassmorphic theme.
 /// Features discrete question cards, animated option tiles, live progress tracking,
 /// terminal-style fill-in-the-blank inputs, and gamified XP completion rewards.
@@ -89,6 +131,7 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
           _quizResult = null;
         });
       }
+      _restoreDraft();
       return;
     }
 
@@ -167,8 +210,57 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
     return null;
   }
 
+  String _getSessionId() {
+    try {
+      final session = ref.read(activeSessionProvider).session;
+      if (session != null && session.sessionId.isNotEmpty) {
+        return session.sessionId;
+      }
+    } catch (_) {}
+    return 'active_session';
+  }
+
+  void _saveDraft() {
+    if (_submitted) return;
+    final sessionId = _getSessionId();
+    QuizDraftStore.saveDraft(
+      sessionId: sessionId,
+      stepIndex: widget.stepIndex,
+      selectedAnswers: _selectedAnswers,
+      textAnswers: _textAnswers,
+    );
+  }
+
+  void _restoreDraft() {
+    if (_submitted) return;
+    final sessionId = _getSessionId();
+    final savedSelected = QuizDraftStore.getSelectedAnswers(sessionId, widget.stepIndex);
+    if (savedSelected != null && savedSelected.isNotEmpty) {
+      _selectedAnswers.clear();
+      _selectedAnswers.addAll(savedSelected);
+    }
+    final savedText = QuizDraftStore.getTextAnswers(sessionId, widget.stepIndex);
+    if (savedText != null && savedText.isNotEmpty) {
+      _textAnswers.clear();
+      _textAnswers.addAll(savedText);
+      for (final entry in savedText.entries) {
+        if (_controllers.containsKey(entry.key)) {
+          if (_controllers[entry.key]!.text != entry.value) {
+            _controllers[entry.key]!.text = entry.value;
+          }
+        }
+      }
+    }
+  }
+
+  void _clearDraft() {
+    final sessionId = _getSessionId();
+    QuizDraftStore.clearDraft(sessionId, widget.stepIndex);
+  }
+
   @override
   void dispose() {
+    _saveDraft();
     for (final controller in _controllers.values) {
       controller.dispose();
     }
@@ -347,8 +439,10 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
       if (_isFillInTheBlank(qData)) {
         formattedAnswers[i] = _textAnswers[i] ?? '';
       } else {
-        final options =
-            (qData['options'] as List?)?.map((e) => e.toString()).toList() ?? [];
+        final options = (qData['options'] as List?)
+                ?.map((e) => (e is Map ? (e['text'] ?? e['option'] ?? e.toString()) : e).toString())
+                .toList() ??
+            [];
         final selectedIndex = _selectedAnswers[i];
         if (selectedIndex != null && selectedIndex < options.length) {
           formattedAnswers[i] = options[selectedIndex];
@@ -361,6 +455,7 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
         .submitStepQuiz(widget.stepIndex, formattedAnswers);
 
     if (mounted) {
+      _clearDraft();
       setState(() {
         _submitted = true;
         _isSubmitting = false;
@@ -835,6 +930,7 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
                         setState(() {
                           _selectedAnswers[index] = optIndex;
                         });
+                        _saveDraft();
                       },
                 parseOption: _parseOption,
               );
@@ -907,6 +1003,7 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
           setState(() {
             _textAnswers[index] = val;
           });
+          _saveDraft();
         },
       ),
     );

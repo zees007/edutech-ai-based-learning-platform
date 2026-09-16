@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/text_styles.dart';
+import 'app_gradient_spinner.dart';
 
 class GlassLoaderOverlay extends StatelessWidget {
   final bool isLoading;
@@ -76,24 +77,10 @@ class GlassLoaderOverlay extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           // Spinning loader with glowing gradient ring
-          SizedBox(
-            width: 64,
-            height: 64,
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                // Inner icon
-                const CircularProgressIndicator(
-                  strokeWidth: 4,
-                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.purple),
-                ),
-                Icon(
-                  Icons.auto_awesome,
-                  color: AppColors.lavender.withValues(alpha: 0.8),
-                  size: 24,
-                ),
-              ],
-            ),
+          const AppGradientSpinner(
+            size: 64,
+            strokeWidth: 4.0,
+            showSparkle: true,
           ),
           const SizedBox(height: 24),
           // Title

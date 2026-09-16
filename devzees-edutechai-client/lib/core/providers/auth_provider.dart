@@ -2,6 +2,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/auth/login_request.dart';
 import '../../data/models/auth/user_create_request.dart';
 import '../services/auth_service.dart';
+import 'active_session_provider.dart';
+import 'learning_provider.dart';
+import 'gamification_provider.dart';
 
 final authServiceProvider = Provider<AuthService>((ref) {
   return AuthService();
@@ -36,7 +39,7 @@ class AuthState {
 }
 
 class AuthNotifier extends Notifier<AuthState> {
-  late final AuthService _authService;
+  late AuthService _authService;
 
   @override
   AuthState build() {
@@ -96,6 +99,12 @@ class AuthNotifier extends Notifier<AuthState> {
     state = state.copyWith(isLoading: true, loadingMessage: 'Signing out...');
     await _authService.logout();
     state = AuthState(); // Reset auth state entirely
+    
+    // Invalidate user-specific state to clear data for next login
+    ref.invalidate(activeSessionProvider);
+    ref.invalidate(sessionsProvider);
+    ref.invalidate(gamificationEventProvider);
+    ref.invalidate(journeyCompleteProvider);
   }
 }
 

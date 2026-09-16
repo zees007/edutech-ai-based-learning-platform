@@ -6,6 +6,7 @@ import '../../../../../core/theme/text_styles.dart';
 import 'recommended_videos.dart';
 import 'academic_papers.dart';
 import 'knowledge_check_quiz.dart';
+import 'keep_alive_wrapper.dart';
 
 /// Tabbed resource panel with 3 tabs: Videos, Papers, Quiz.
 /// Includes a pinned quiz gating bar at the bottom.
@@ -27,15 +28,47 @@ class LearningResourcesPanel extends ConsumerStatefulWidget {
   ConsumerState<LearningResourcesPanel> createState() =>
       _LearningResourcesPanelState();
 
+  // ─── Scrollbar theme matching Socratic Tutor ──────────────────
+
+  static ScrollbarThemeData get workspaceScrollbarTheme => ScrollbarThemeData(
+        thumbColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.dragged) ||
+              states.contains(WidgetState.hovered)) {
+            return const Color(0xFF475569).withValues(alpha: 0.90);
+          }
+          return const Color(0xFF334155).withValues(alpha: 0.65);
+        }),
+        trackColor: WidgetStateProperty.all(
+          AppColors.surfaceDark.withValues(alpha: 0.40),
+        ),
+        trackBorderColor: WidgetStateProperty.all(Colors.transparent),
+        radius: const Radius.circular(6),
+        thickness: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.hovered) ||
+              states.contains(WidgetState.dragged)) {
+            return 6.0;
+          }
+          return 5.0;
+        }),
+        crossAxisMargin: 2.0,
+        mainAxisMargin: 4.0,
+      );
+
   // ─── Static builders for mobile tab reuse ─────────────────────
 
   static Widget buildVideosContent(List<dynamic>? videos) {
     if (videos == null || videos.isEmpty) return const SizedBox.shrink();
-    return RecommendedVideos(videos: videos);
+    return ScrollbarTheme(
+      data: workspaceScrollbarTheme,
+      child: RecommendedVideos(videos: videos),
+    );
   }
 
   static Widget buildPapersContent(List<dynamic>? papers, [String? topic]) {
-    return AcademicPapers(papers: papers);
+    return ScrollbarTheme(
+      data: workspaceScrollbarTheme,
+      child: AcademicPapers(papers: papers),
+    );
   }
 
   static Widget buildQuizContent({
@@ -53,11 +86,11 @@ class LearningResourcesPanel extends ConsumerStatefulWidget {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.accentAmber.withValues(alpha: 0.1),
+                color: AppColors.accentGreen.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(Icons.quiz_outlined,
-                  size: 32, color: AppColors.accentAmber.withValues(alpha: 0.5)),
+                  size: 32, color: AppColors.accentGreen.withValues(alpha: 0.5)),
             ),
             const SizedBox(height: 12),
             Text(
@@ -69,15 +102,18 @@ class LearningResourcesPanel extends ConsumerStatefulWidget {
         ),
       );
     }
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: KnowledgeCheckQuiz(
-        key: ValueKey('quiz_step_$stepIndex'),
-        quiz: quiz,
-        stepIndex: stepIndex,
-        onNextStep: onNextStep,
-        onQuizSubmitted: onQuizSubmitted,
-        step: step,
+    return ScrollbarTheme(
+      data: workspaceScrollbarTheme,
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: KnowledgeCheckQuiz(
+          key: ValueKey('quiz_step_$stepIndex'),
+          quiz: quiz,
+          stepIndex: stepIndex,
+          onNextStep: onNextStep,
+          onQuizSubmitted: onQuizSubmitted,
+          step: step,
+        ),
       ),
     );
   }
@@ -177,108 +213,132 @@ class _LearningResourcesPanelState
     final hasQuiz = step.quiz != null && step.quiz!.isNotEmpty;
     final isQuizDone = _quizSubmitted || _isQuizCompleted(step);
 
-    return Column(
-      children: [
-        // Premium Segmented Tab Bar Header
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          decoration: BoxDecoration(
-            color: AppColors.surfaceSolidHeader.withValues(alpha: 0.65),
-            border: Border(
-              bottom: BorderSide(color: AppColors.glassBorder, width: 0.8),
-            ),
-          ),
-          child: Container(
-            padding: const EdgeInsets.all(3),
+    final totalSteps = widget.session.steps.length;
+    final bool isLastStep = totalSteps > 0 && widget.stepIndex >= totalSteps - 1;
+    final bool isSessionComplete = widget.session.steps.isNotEmpty &&
+        widget.session.stepsCompleted >= totalSteps &&
+        totalSteps > 0;
+    final bool isCurrentStepComplete = widget.currentStep.status == 'complete' ||
+        (isLastStep && isSessionComplete) ||
+        (widget.stepIndex < widget.session.stepsCompleted);
+
+    return ScrollbarTheme(
+      data: LearningResourcesPanel.workspaceScrollbarTheme,
+      child: Column(
+        children: [
+          // Premium Segmented Tab Bar Header
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: AppColors.surfaceDark.withValues(alpha: 0.55),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: AppColors.glassBorderSubtle,
-                width: 0.8,
+              color: AppColors.surfaceSolidHeader.withValues(alpha: 0.65),
+              border: Border(
+                bottom: BorderSide(color: AppColors.glassBorder, width: 0.8),
               ),
             ),
-            child: Row(
+            child: Container(
+              padding: const EdgeInsets.all(3),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceDark.withValues(alpha: 0.55),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: AppColors.glassBorderSubtle,
+                  width: 0.8,
+                ),
+              ),
+              child: Row(
+                children: [
+                  _ResourceTabItem(
+                    index: 0,
+                    isActive: _activeTabIndex == 0,
+                    label: 'Videos',
+                    icon: Icons.play_circle_outline_rounded,
+                    accentColor: AppColors.accentRose,
+                    badgeCount: hasVideos ? step.videos!.length : 0,
+                    badgeColor: AppColors.accentRose,
+                    onTap: () => _onSelectTab(0),
+                  ),
+                  const SizedBox(width: 4),
+                  _ResourceTabItem(
+                    index: 1,
+                    isActive: _activeTabIndex == 1,
+                    label: 'Papers',
+                    icon: Icons.science_outlined,
+                    accentColor: AppColors.blueLight,
+                    badgeCount: hasPapers ? step.papers!.length : 0,
+                    badgeColor: AppColors.accentBlue,
+                    onTap: () => _onSelectTab(1),
+                  ),
+                  const SizedBox(width: 4),
+                  _ResourceTabItem(
+                    index: 2,
+                    isActive: _activeTabIndex == 2,
+                    label: 'Quiz',
+                    icon: Icons.quiz_outlined,
+                    accentColor: AppColors.accentGreen,
+                    leadingWidget: hasQuiz && isQuizDone
+                        ? Container(
+                            width: 17,
+                            height: 17,
+                            decoration: BoxDecoration(
+                              color: AppColors.accentGreen,
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.accentGreen.withValues(alpha: 0.4),
+                                  blurRadius: 6,
+                                ),
+                              ],
+                            ),
+                            child: const Icon(
+                              Icons.check_rounded,
+                              size: 11,
+                              color: Colors.white,
+                            ),
+                          )
+                        : (hasQuiz && !isQuizDone
+                            ? _PulsingDot(color: AppColors.accentGreen)
+                            : null),
+                    onTap: () => _onSelectTab(2),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // Tab content
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
               children: [
-                _ResourceTabItem(
-                  index: 0,
-                  isActive: _activeTabIndex == 0,
-                  label: 'Videos',
-                  icon: Icons.play_circle_outline_rounded,
-                  accentColor: AppColors.accentRose,
-                  badgeCount: hasVideos ? step.videos!.length : 0,
-                  badgeColor: AppColors.accentRose,
-                  onTap: () => _onSelectTab(0),
+                // Videos tab
+                KeepAliveWrapper(
+                  key: ValueKey('tab_videos_${step.index}'),
+                  child: _buildVideosTab(step),
                 ),
-                const SizedBox(width: 4),
-                _ResourceTabItem(
-                  index: 1,
-                  isActive: _activeTabIndex == 1,
-                  label: 'Papers',
-                  icon: Icons.science_outlined,
-                  accentColor: AppColors.blueLight,
-                  badgeCount: hasPapers ? step.papers!.length : 0,
-                  badgeColor: AppColors.accentBlue,
-                  onTap: () => _onSelectTab(1),
+                // Papers tab
+                KeepAliveWrapper(
+                  key: ValueKey('tab_papers_${step.index}'),
+                  child: _buildPapersTab(step),
                 ),
-                const SizedBox(width: 4),
-                _ResourceTabItem(
-                  index: 2,
-                  isActive: _activeTabIndex == 2,
-                  label: 'Quiz',
-                  icon: Icons.quiz_outlined,
-                  accentColor: isQuizDone ? AppColors.accentGreen : AppColors.accentAmber,
-                  leadingWidget: hasQuiz && isQuizDone
-                      ? Container(
-                          width: 17,
-                          height: 17,
-                          decoration: BoxDecoration(
-                            color: AppColors.accentGreen,
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppColors.accentGreen.withValues(alpha: 0.4),
-                                blurRadius: 6,
-                              ),
-                            ],
-                          ),
-                          child: const Icon(
-                            Icons.check_rounded,
-                            size: 11,
-                            color: Colors.white,
-                          ),
-                        )
-                      : (hasQuiz && !isQuizDone
-                          ? _PulsingDot(color: AppColors.accentGreen)
-                          : null),
-                  onTap: () => _onSelectTab(2),
+                // Quiz tab
+                KeepAliveWrapper(
+                  key: ValueKey('tab_quiz_${step.index}'),
+                  child: _buildQuizTab2(step),
                 ),
               ],
             ),
           ),
-        ),
 
-        // Tab content
-        Expanded(
-          child: TabBarView(
-            controller: _tabController,
-            children: [
-              // Videos tab
-              _buildVideosTab(step),
-              // Papers tab
-              _buildPapersTab(step),
-              // Quiz tab
-              _buildQuizTab2(step),
-            ],
-          ),
-        ),
-
-        // ─── Quiz Gating / Advance Bar (pinned at bottom) ───
-        if (hasQuiz)
-          _buildGatingBar(context, isQuizDone)
-        else if (widget.stepIndex < (widget.session.steps.length - 1))
-          _buildNoQuizAdvanceBar(),
-      ],
+          // ─── Quiz Gating / Advance Bar (pinned at bottom) ───
+          // Only displayed on non-quiz tabs (Videos/Papers) and when current step is not yet completed
+          if (_activeTabIndex != 2 && !isCurrentStepComplete) ...[
+            if (hasQuiz)
+              _buildGatingBar(context, isQuizDone)
+            else if (widget.stepIndex < (widget.session.steps.length - 1))
+              _buildNoQuizAdvanceBar(),
+          ],
+        ],
+      ),
     );
   }
 
@@ -310,7 +370,7 @@ class _LearningResourcesPanelState
       return _buildEmptyState(
         icon: Icons.quiz_outlined,
         label: 'No quiz available for this step',
-        color: AppColors.accentAmber,
+        color: AppColors.accentGreen,
       );
     }
     final int stepIdx = (step.index is int) ? step.index as int : widget.stepIndex;
@@ -575,7 +635,8 @@ class _LearningResourcesPanelState
         widget.session.stepsCompleted >= totalSteps &&
         totalSteps > 0;
     final bool isCurrentStepComplete = widget.currentStep.status == 'complete' ||
-        (isLastStep && isSessionComplete);
+        (isLastStep && isSessionComplete) ||
+        (widget.stepIndex < widget.session.stepsCompleted);
 
     String guidanceText;
     if (isLastStep && isCurrentStepComplete) {
@@ -584,6 +645,10 @@ class _LearningResourcesPanelState
       guidanceText = isQuizDone
           ? 'Quiz complete! Tap to complete your journey →'
           : 'Complete Knowledge Check quiz to finish journey';
+    } else if (isCurrentStepComplete) {
+      guidanceText = isQuizDone
+          ? 'Quiz complete! Tap to proceed to next step →'
+          : 'Step completed! Proceed to next step →';
     } else {
       guidanceText = isQuizDone
           ? 'Quiz complete! Tap to proceed to next step →'
@@ -902,8 +967,8 @@ class _PulsingDotState extends State<_PulsingDot>
       animation: _animation,
       builder: (context, _) {
         return Container(
-          width: 10,
-          height: 10,
+          width: 8,
+          height: 8,
           decoration: BoxDecoration(
             color: widget.color.withValues(alpha: _animation.value),
             shape: BoxShape.circle,

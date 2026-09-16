@@ -36,13 +36,59 @@ class LearningMainContent extends ConsumerWidget {
     
     if (activeState.session != null || activeState.isLoading) {
       if (activeState.isLoading) {
-        // When switching session from learning history, display the theme gradient spinner only
+        // When switching session from learning history, display the theme gradient spinner in a card
         if (!activeState.isSynthesizing) {
-          return const Center(
-            child: AppGradientSpinner(
-              size: 56,
-              strokeWidth: 3.5,
-              showSparkle: true,
+          return Center(
+            child: Container(
+              width: 320,
+              padding: const EdgeInsets.all(32),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: AppColors.purple.withValues(alpha: 0.45),
+                  width: 1.5,
+                ),
+                gradient: AppColors.cardGradientOpaque,
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.purple.withValues(alpha: 0.3),
+                    blurRadius: 40,
+                    spreadRadius: -10,
+                  ),
+                  BoxShadow(
+                    color: AppColors.accentPink.withValues(alpha: 0.2),
+                    blurRadius: 30,
+                    spreadRadius: -5,
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const AppGradientSpinner(
+                    size: 56,
+                    strokeWidth: 3.5,
+                    showSparkle: true,
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    'Loading Session',
+                    style: AppTextStyles.h4.copyWith(
+                      letterSpacing: 0.5,
+                      fontWeight: FontWeight.w800,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Restoring your learning journey...',
+                    style: AppTextStyles.body2.copyWith(
+                      color: AppColors.lavender.withValues(alpha: 0.7),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
             ),
           );
         }

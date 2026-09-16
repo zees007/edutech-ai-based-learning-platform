@@ -33,14 +33,41 @@ class RecommendedVideos extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 16),
-        ListView.separated(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: videos!.length,
-          separatorBuilder: (context, index) => const SizedBox(height: 16),
-          itemBuilder: (context, index) {
-            final video = videos![index];
-            return _VideoCard(video: video, index: index);
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final double width = constraints.maxWidth;
+            int crossAxisCount = 1;
+            if (width > 1200) {
+              crossAxisCount = 3;
+            } else if (width > 750) {
+              crossAxisCount = 2;
+            }
+
+            if (crossAxisCount == 1) {
+              return ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: videos!.length,
+                separatorBuilder: (context, index) => const SizedBox(height: 16),
+                itemBuilder: (context, index) {
+                  return _VideoCard(video: videos![index], index: index);
+                },
+              );
+            }
+
+            final double spacing = 16.0;
+            final double cardWidth = ((width - (spacing * (crossAxisCount - 1))) / crossAxisCount).floorToDouble();
+
+            return Wrap(
+              spacing: spacing,
+              runSpacing: spacing,
+              children: videos!.asMap().entries.map((entry) {
+                return SizedBox(
+                  width: cardWidth,
+                  child: _VideoCard(video: entry.value, index: entry.key),
+                );
+              }).toList(),
+            );
           },
         ),
       ],
@@ -192,10 +219,13 @@ class _VideoCardState extends State<_VideoCard> {
                                 child: AnimatedScale(
                                   scale: _isHovered ? 1.15 : 1.0,
                                   duration: const Duration(milliseconds: 250),
-                                  child: Icon(
-                                    Icons.play_circle_fill_rounded, 
-                                    color: Colors.white.withValues(alpha: _isHovered ? 1.0 : 0.9), 
-                                    size: 56,
+                                  child: ShaderMask(
+                                    shaderCallback: (bounds) => AppColors.primaryGradient.createShader(bounds),
+                                    child: const Icon(
+                                      Icons.play_circle_fill_rounded, 
+                                      color: Colors.white, 
+                                      size: 56,
+                                    ),
                                   ),
                                 ),
                               ),

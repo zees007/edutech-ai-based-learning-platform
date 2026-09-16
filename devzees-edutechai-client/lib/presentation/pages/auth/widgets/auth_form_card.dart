@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/providers/auth_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/text_styles.dart';
+import '../../../widgets/gradient_button.dart';
 
 class AuthFormCard extends ConsumerStatefulWidget {
   final bool isLogin;
@@ -348,13 +349,13 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
           onFieldSubmitted: (_) => _handleLogin(),
         ),
         const SizedBox(height: 32),
-        _buildGradientButton("Sign In & Launch Agents 🚀", _handleLogin),
+        _buildGradientButton("Sign In", _handleLogin),
         const SizedBox(height: 24),
         Center(
           child: TextButton(
             onPressed: widget.onToggleMode,
             child: Text(
-              "Don't have an account? Create one",
+              "Don't have an account? Sign Up",
               style: AppTextStyles.subtitle2.copyWith(
                 color: AppColors.lavender.withValues(alpha: 0.9),
                 fontWeight: FontWeight.w600,
@@ -487,7 +488,7 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
           ),
         ],
         const SizedBox(height: 32),
-        _buildGradientButton("Create Account & Spawn Agent Squad 🚀", _handleSignUp),
+        _buildGradientButton("Sign Up", _handleSignUp),
         const SizedBox(height: 24),
         Center(
           child: TextButton(
@@ -576,42 +577,13 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
   }
 
   Widget _buildGradientButton(String text, VoidCallback onTap) {
-    return Container(
-      height: 52,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(14),
-        gradient: AppColors.pinkPurpleGradient,
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.accentPurple.withValues(alpha: 0.4),
-            offset: const Offset(0, 8),
-            blurRadius: 25,
-          ),
-          BoxShadow(
-            color: AppColors.accentPink.withValues(alpha: 0.25),
-            offset: const Offset(0, 0),
-            blurRadius: 20,
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(14),
-          onTap: onTap,
-          child: Center(
-            child: Text(
-              text,
-              style: AppTextStyles.button.copyWith(
-                color: AppColors.textPrimary,
-                fontSize: 16,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 0.3,
-              ),
-            ),
-          ),
-        ),
-      ),
+    final isLoading = ref.watch(authProvider).isLoading;
+    return GradientButton(
+      text: text,
+      width: double.infinity,
+      height: 48,
+      isLoading: isLoading,
+      onPressed: onTap,
     );
   }
 }

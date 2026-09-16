@@ -23,23 +23,23 @@ class AppTheme {
       fontFamily: AppTextStyles.fontFamily,
       scrollbarTheme: ScrollbarThemeData(
         thumbColor: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.dragged)) {
-            return AppColors.primary;
+          if (states.contains(WidgetState.dragged) ||
+              states.contains(WidgetState.hovered)) {
+            return const Color(0xFF475569).withValues(alpha: 0.90);
           }
-          if (states.contains(WidgetState.hovered)) {
-            return AppColors.primary.withValues(alpha: 0.85);
-          }
-          return AppColors.primary.withValues(alpha: 0.4);
+          return const Color(0xFF334155).withValues(alpha: 0.65);
         }),
-        trackColor: WidgetStateProperty.all(Colors.transparent),
+        trackColor: WidgetStateProperty.all(
+          AppColors.surfaceDark.withValues(alpha: 0.40),
+        ),
         trackBorderColor: WidgetStateProperty.all(Colors.transparent),
-        radius: const Radius.circular(8),
+        radius: const Radius.circular(6),
         thickness: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.hovered) ||
               states.contains(WidgetState.dragged)) {
-            return 5.0;
+            return 6.0;
           }
-          return 3.5;
+          return 5.0;
         }),
         crossAxisMargin: 2.0,
         mainAxisMargin: 4.0,
@@ -57,6 +57,26 @@ class AppTheme {
         labelMedium: AppTextStyles.label,
         labelSmall: AppTextStyles.labelSmall,
         bodySmall: AppTextStyles.caption,
+      ),
+      tooltipTheme: TooltipThemeData(
+        decoration: BoxDecoration(
+          color: AppColors.popoverBackground.withValues(alpha: 0.95),
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.5),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        textStyle: AppTextStyles.caption.copyWith(
+          color: AppColors.textPrimary,
+          height: 1.35,
+          letterSpacing: 0.2,
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        waitDuration: const Duration(milliseconds: 300),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
