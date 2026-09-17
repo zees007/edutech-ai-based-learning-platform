@@ -340,6 +340,13 @@ async def regenerate_step(
     step.tutor_explanation = None
     step.socratic_questions = []
     step.quiz = None
+    step.follow_up_count = 0
+
+    # Clear conversation history ONLY for the regenerated step
+    memory.conversation_history = [
+        turn for turn in memory.conversation_history 
+        if turn.step_index != step_index
+    ]
     
     # We could optionally trigger the agents right here, but typically the orchestrator/ws layer 
     # lazy-loads or we just return success and let the client re-fetch/re-interact.
