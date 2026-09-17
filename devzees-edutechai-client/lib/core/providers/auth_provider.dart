@@ -5,6 +5,7 @@ import '../services/auth_service.dart';
 import 'active_session_provider.dart';
 import 'learning_provider.dart';
 import 'gamification_provider.dart';
+import 'user_provider.dart';
 
 final authServiceProvider = Provider<AuthService>((ref) {
   return AuthService();
@@ -101,6 +102,7 @@ class AuthNotifier extends Notifier<AuthState> {
     state = AuthState(); // Reset auth state entirely
     
     // Invalidate user-specific state to clear data for next login
+    ref.invalidate(userProvider);
     ref.invalidate(activeSessionProvider);
     ref.invalidate(sessionsProvider);
     ref.invalidate(gamificationEventProvider);
