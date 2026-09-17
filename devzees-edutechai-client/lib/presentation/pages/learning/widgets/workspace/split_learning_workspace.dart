@@ -610,14 +610,14 @@ class _TutorPanelHeaderState extends State<_TutorPanelHeader> {
                     ),
                   ],
                   // Regenerate Step button
-                  if (widget.onRegenerateStep != null) ...[
+                  if (widget.onRegenerateStep != null && !isReviewing) ...[
                     const SizedBox(width: 6),
                     _StepNavButton(
                       icon: Icons.refresh_rounded,
                       label: 'Regen',
                       tooltip: 'Regenerate Step ${widget.currentIndex + 1}',
                       onTap: widget.onRegenerateStep,
-                      useGradient: false,
+                      useGradient: true,
                     ),
                   ],
                 ],
