@@ -77,7 +77,7 @@ All content adapts dynamically based on the selected **Learning Mode** and **Edu
 
 ## System Architecture
 
-> 📖 **Looking for deep technical specs?** See [TECHNICAL.md](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/TECHNICAL.md) for full agent state machine specs, prompt engineering frameworks, and sequence diagrams.
+> 📖 **Looking for deep technical specs?** See [TECHNICAL.md](TECHNICAL.md) for full agent state machine specs, prompt engineering frameworks, and sequence diagrams.
 
 ### Multi-Agent Design
 
@@ -129,8 +129,7 @@ The `SharedMemory` object is the **single source of truth** for an entire learni
 | Section | Contents |
 |---------|----------|
 | **Session Info** | Topic, learning mode, student level, session ID, creation time |
-| **Learning Plan** | List of milestone steps, prerequisite detection flags |
-| **Step Results** | Per-step agent outputs — explanations, YouTube clips, papers, quizzes |
+| **Learning Plan** | List of milestone steps (contains per-step explanations, YouTube clips, papers, quizzes) |
 | **Conversation History** | Append-only log of all student ↔ tutor exchanges |
 | **Gamification State** | XP earned, streak count, quiz scores |
 
@@ -140,12 +139,12 @@ Each agent has clearly defined read and write permissions:
 
 | Agent | Reads | Writes |
 |-------|-------|--------|
-| **Orchestrator** | Session Info, Conversation History | Learning Plan (steps) |
-| **Socratic Tutor** | Session Info, Learning Plan, Conversation History | Step Results (explanation, questions) |
-| **YouTube Curator** | Session Info, Learning Plan | Step Results (YouTube clips) |
-| **Academic Researcher** | Session Info, Learning Plan | Step Results (papers) |
-| **Quiz Agent** | Session Info, Step Results (explanation) | Step Results (quiz) |
-| **Synthesizer** | Learning Plan, Step Results, Gamification State | Nothing (read-only) |
+| **Orchestrator** | Session Info, Conversation History | Learning Plan (steps array) |
+| **Socratic Tutor** | Session Info, Learning Plan, Conversation History | Milestone Step (explanation, questions) |
+| **YouTube Curator** | Session Info, Learning Plan | Milestone Step (YouTube clips) |
+| **Academic Researcher** | Session Info, Learning Plan | Milestone Step (papers) |
+| **Quiz Agent** | Session Info, Milestone Step (explanation) | Milestone Step (quiz) |
+| **Synthesizer** | Learning Plan, Gamification State | Nothing (read-only) |
 
 ---
 
@@ -507,10 +506,10 @@ The entire `SharedMemory` state is serialized to JSON and stored in the database
 | Data | Stored? | Location |
 |------|---------|----------|
 | Learning plan (all steps) | ✅ | `SessionRecord.state_json` |
-| Socratic explanations | ✅ | Inside `state_json` → `step_results` |
-| YouTube clips (with timestamps) | ✅ | Inside `state_json` → `step_results` |
-| Academic papers | ✅ | Inside `state_json` → `step_results` |
-| Quiz questions & correct answers | ✅ | Inside `state_json` → `step_results` |
+| Socratic explanations | ✅ | Inside `state_json` → `steps[i].tutor_explanation` |
+| YouTube clips (with timestamps) | ✅ | Inside `state_json` → `steps[i].videos` |
+| Academic papers | ✅ | Inside `state_json` → `steps[i].papers` |
+| Quiz questions & correct answers | ✅ | Inside `state_json` → `steps[i].quiz` |
 | Conversation history (all turns) | ✅ | Inside `state_json` → `conversation_history` |
 | Quiz scores per step | ✅ | `StepProgress.quiz_score` |
 | XP earned | ✅ | `GamificationRecord.xp_earned` |
@@ -527,21 +526,29 @@ The entire `SharedMemory` state is serialized to JSON and stored in the database
 
 ---
 
-## Step Navigation (Go Back / Forward)
+## Step Navigation & Regeneration
 
 EduTechAI supports **free navigation between steps** via the Milestone Step Navigation Bar at the top of the workspace.
 
 ### How It Works
 
-- All milestone steps are displayed as interactive buttons: `✅ Step 1` `🟡 Step 2` `⚪ Step 3` ...
-- **Status icons:**
-  - `✅` — Completed step
-  - `🟡` — Currently active step
-  - `⚪` — Not yet started
-- Clicking any step button **instantly navigates** to that step
-- **Going back to a completed step** re-displays all cached outputs (explanation, videos, papers, quiz) **without re-running the AI agents**
-- This is possible because all outputs are stored in `SharedMemory.step_results` and remain in memory throughout the session
-- Step results are also **persisted to the database** via `SessionRecord.state_json`, enabling session recovery
+- All milestone steps are displayed as interactive buttons or timeline nodes in the UI.
+- **Status indicators:**
+  - **Completed (Checkmark):** Step is finished and quiz is submitted.
+  - **Active (Blue/Play Icon):** The currently active step.
+  - **Pending (Gray):** Not yet started.
+- Clicking any step button **instantly navigates** to that step.
+- **Going back to a completed step** re-displays all cached outputs (explanation, videos, papers, quiz) **without re-running the AI agents**.
+- This is possible because all outputs are stored directly on the `MilestoneStep` object and remain in memory throughout the session.
+- Step results are also **persisted to the database** via `SessionRecord.state_json`, enabling session recovery.
+
+### Smart Step Regeneration
+
+Users on **Pro** and **Ultra** tiers can click the **Regenerate Step** button if they want a different explanation or have switched their Learning Mode (e.g., from *Deep Dive* to *Bite-Sized*). 
+
+To maximize speed and minimize API costs, **Regeneration is Smart**:
+- It completely wipes and rewrites the **Socratic Tutor Explanation**, **Socratic Questions**, and **Quiz**.
+- It **preserves** the existing curated **YouTube Videos** and **Academic Papers** for that step, because the core topic of the milestone hasn't changed. This makes regeneration almost instant, as it skips external API fetches and allows you to keep your favorite video resources while reading a fresh explanation!
 
 ---
 

@@ -95,7 +95,14 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
           _isStepGenerationActive = true;
 
           debugPrint('🚀 [Client] Triggering backend agents for Step $_currentTrackingStepIndex (loader displayed)...');
-          state = state.copyWith(isLoading: true, isSynthesizing: true);
+          
+          // Only show the massive full-screen neural loader for the very first step of a new journey.
+          // For all other steps (e.g. regenerating), use the seamless inline workspace loader.
+          final isBrandNewJourney = state.activeStepIndex == 0 && session.stepsCompleted == 0;
+          if (isBrandNewJourney) {
+            state = state.copyWith(isLoading: true, isSynthesizing: true);
+          }
+          
           _wsService.sendStartStep(state.activeStepIndex);
         }
       }
@@ -449,8 +456,6 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     final clearedStep = currentStep.copyWith(
       tutorExplanation: null,
       socraticQuestions: [],
-      videos: [],
-      papers: [],
       quiz: [],
       quizScore: null,
       userAnswers: {},

@@ -339,8 +339,6 @@ async def regenerate_step(
     step = memory.steps[step_index]
     step.tutor_explanation = None
     step.socratic_questions = []
-    step.videos = []
-    step.papers = []
     step.quiz = None
     
     # We could optionally trigger the agents right here, but typically the orchestrator/ws layer 
