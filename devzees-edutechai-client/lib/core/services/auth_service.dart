@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import '../../data/models/auth/login_request.dart';
 import '../../data/models/auth/user_create_request.dart';
+import '../../data/models/auth/user_current_profile_response.dart';
 import '../constants/api_constants.dart';
 import 'api_client.dart';
 
@@ -82,6 +83,19 @@ class AuthService {
     } catch (e) {
       // If API logout fails, still return false but don't crash
       return false;
+    }
+  }
+  Future<UserCurrentProfileResponse?> getMe() async {
+    try {
+      final response = await _dio.get(ApiConstants.me);
+      if (response.statusCode == 200) {
+        return UserCurrentProfileResponse.fromJson(response.data);
+      }
+      return null;
+    } catch (e) {
+      // Depending on requirements, we can throw or just return null
+      // For now, return null if fetching me fails
+      return null;
     }
   }
 }

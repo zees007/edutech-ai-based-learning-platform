@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../core/providers/active_session_provider.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/text_styles.dart';
+import '../../../../widgets/app_gradient_spinner.dart';
 import 'learning_resources_panel.dart';
 import 'socratic_tutor_chat.dart';
 import 'keep_alive_wrapper.dart';
@@ -96,6 +97,11 @@ class _SplitLearningWorkspaceState
           setState(() {});
           await _handleNextStep(currentStep);
         },
+        onRegenerateStep: () async {
+          _removeFullscreenOverlay();
+          setState(() {});
+          await _handleRegenerateStep(currentStep);
+        },
       ),
     );
 
@@ -162,6 +168,12 @@ class _SplitLearningWorkspaceState
         .completeAndAdvanceStep(currentStep.index);
   }
 
+  Future<void> _handleRegenerateStep(dynamic currentStep) async {
+    await ref
+        .read(activeSessionProvider.notifier)
+        .regenerateCurrentStep(currentStep.index);
+  }
+
   Widget _buildPanel({
     required double width,
     required double height,
@@ -188,6 +200,7 @@ class _SplitLearningWorkspaceState
                   isQuizGated: widget.isQuizGated,
                   onStepChange: widget.onStepChange,
                   onNextStep: () => _handleNextStep(currentStep),
+                  onRegenerateStep: () => _handleRegenerateStep(currentStep),
                   onToggleFullscreen: () => _toggleFullscreen(panelType),
                 )
               : _ResourcesPanelHeader(
@@ -221,11 +234,18 @@ class _SplitLearningWorkspaceState
               stepTitle: currentStep.title,
             )
           : Center(
-              child: Text(
-                'Socratic Tutor is preparing...',
-                style: AppTextStyles.bodyPrimary.copyWith(
-                  color: AppColors.textMuted,
-                ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const AppGradientSpinner(size: 40),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Socratic Tutor is preparing...',
+                    style: AppTextStyles.bodyPrimary.copyWith(
+                      color: AppColors.textMuted,
+                    ),
+                  ),
+                ],
               ),
             ),
     );
@@ -289,6 +309,7 @@ class _FullscreenPanelOverlay extends ConsumerWidget {
   final ValueChanged<int> onStepChange;
   final VoidCallback onClose;
   final Future<void> Function() onNextStep;
+  final Future<void> Function() onRegenerateStep;
 
   const _FullscreenPanelOverlay({
     required this.panel,
@@ -301,6 +322,7 @@ class _FullscreenPanelOverlay extends ConsumerWidget {
     required this.onStepChange,
     required this.onClose,
     required this.onNextStep,
+    required this.onRegenerateStep,
   });
 
   @override
@@ -325,6 +347,7 @@ class _FullscreenPanelOverlay extends ConsumerWidget {
                   isQuizGated: isQuizGated,
                   onStepChange: onStepChange,
                   onNextStep: onNextStep,
+                  onRegenerateStep: onRegenerateStep,
                   isFullscreen: true,
                   onToggleFullscreen: onClose,
                 )
@@ -361,11 +384,18 @@ class _FullscreenPanelOverlay extends ConsumerWidget {
               stepTitle: currentStep.title,
             )
           : Center(
-              child: Text(
-                'Socratic Tutor is preparing...',
-                style: AppTextStyles.bodyPrimary.copyWith(
-                  color: AppColors.textMuted,
-                ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const AppGradientSpinner(size: 40),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Socratic Tutor is preparing...',
+                    style: AppTextStyles.bodyPrimary.copyWith(
+                      color: AppColors.textMuted,
+                    ),
+                  ),
+                ],
               ),
             ),
     );
@@ -401,6 +431,7 @@ class _TutorPanelHeader extends StatefulWidget {
   final bool isQuizGated;
   final ValueChanged<int> onStepChange;
   final Future<void> Function()? onNextStep;
+  final Future<void> Function()? onRegenerateStep;
   final bool isFullscreen;
   final VoidCallback onToggleFullscreen;
 
@@ -414,6 +445,7 @@ class _TutorPanelHeader extends StatefulWidget {
     required this.isQuizGated,
     required this.onStepChange,
     this.onNextStep,
+    this.onRegenerateStep,
     this.isFullscreen = false,
     required this.onToggleFullscreen,
   });
@@ -574,6 +606,17 @@ class _TutorPanelHeaderState extends State<_TutorPanelHeader> {
                       tooltip: 'Go to Step ${widget.currentIndex + 2}',
                       onTap: () => widget.onStepChange(widget.currentIndex + 1),
                       iconAfterLabel: true,
+                      useGradient: true,
+                    ),
+                  ],
+                  // Regenerate Step button
+                  if (widget.onRegenerateStep != null && !isReviewing) ...[
+                    const SizedBox(width: 6),
+                    _StepNavButton(
+                      icon: Icons.refresh_rounded,
+                      label: 'Regen',
+                      tooltip: 'Regenerate Step ${widget.currentIndex + 1}',
+                      onTap: widget.onRegenerateStep,
                       useGradient: true,
                     ),
                   ],
@@ -1695,9 +1738,16 @@ class _MobileTabbedWorkspaceState
       );
     }
     return Center(
-      child: Text(
-        'Socratic Tutor is preparing...',
-        style: AppTextStyles.bodyPrimary.copyWith(color: AppColors.textMuted),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const AppGradientSpinner(size: 40),
+          const SizedBox(height: 16),
+          Text(
+            'Socratic Tutor is preparing...',
+            style: AppTextStyles.bodyPrimary.copyWith(color: AppColors.textMuted),
+          ),
+        ],
       ),
     );
   }

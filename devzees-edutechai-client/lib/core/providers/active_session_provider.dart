@@ -63,6 +63,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
   int _lastApiFetchMs = 0;
   int _currentTrackingStepIndex = 0;
   bool _isStepGenerationActive = false;
+  bool _isRegenerating = false;
 
   @override
   ActiveSessionState build() {
@@ -95,7 +96,14 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
           _isStepGenerationActive = true;
 
           debugPrint('🚀 [Client] Triggering backend agents for Step $_currentTrackingStepIndex (loader displayed)...');
-          state = state.copyWith(isLoading: true, isSynthesizing: true);
+          
+          // Only show the massive full-screen neural loader for the very first step of a new journey.
+          // For all other steps (e.g. regenerating), use the seamless inline workspace loader.
+          final isBrandNewJourney = state.activeStepIndex == 0 && session.stepsCompleted == 0 && !_isRegenerating;
+          if (isBrandNewJourney) {
+            state = state.copyWith(isLoading: true, isSynthesizing: true);
+          }
+          
           _wsService.sendStartStep(state.activeStepIndex);
         }
       }
@@ -111,9 +119,10 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     // Render the UI only when all agents finish their job
     if (type == 'step_complete') {
       _backendStopwatch.stop();
+      _isRegenerating = false;
       _lastBackendMs = _backendStopwatch.elapsedMilliseconds;
       debugPrint('✅ [Client WS] "step_complete" received for Step $_currentTrackingStepIndex in ${_lastBackendMs}ms (${(_lastBackendMs / 1000).toStringAsFixed(2)}s). Fetching full session data...');
-      loadSession(session.sessionId, fromStepComplete: true);
+      loadSession(session.sessionId, fromStepComplete: true, silent: true);
       return;
     }
 
@@ -429,6 +438,50 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
 
     // Reconcile with server silently in background
     loadSession(session.sessionId, silent: true);
+  }
+
+  /// Regenerates the content for a specific step.
+  Future<void> regenerateCurrentStep(int stepIndex) async {
+    final session = state.session;
+    if (session == null || stepIndex < 0 || stepIndex >= session.steps.length) return;
+
+    _isRegenerating = true;
+
+    // 1. Trigger backend API
+    try {
+      await _service.regenerateStep(session.sessionId, stepIndex);
+    } catch (e) {
+      _isRegenerating = false;
+      debugPrint('Failed to trigger regeneration on backend: $e');
+      return;
+    }
+
+    // 2. Optimistic update: clear step content to show loading state
+    final currentStep = session.steps[stepIndex];
+    final clearedStep = currentStep.copyWith(
+      tutorExplanation: null,
+      socraticQuestions: [],
+      quiz: [],
+      quizScore: null,
+      userAnswers: {},
+      userFullAnswers: {},
+      followUpCount: 0,
+    );
+
+    final updatedSteps = List<MilestoneStep>.from(session.steps)..[stepIndex] = clearedStep;
+    final updatedSession = session.copyWith(steps: updatedSteps);
+    
+    state = state.copyWith(session: updatedSession);
+    
+    // 3. Re-fetch session to poll for newly generated content
+    loadSession(session.sessionId, silent: true);
+
+    // 4. Trigger the backend agents to start generating the cleared step
+    if (!_wsService.isConnected) {
+      debugPrint('Reconnecting WebSocket for regeneration...');
+      _wsService.connect(session.sessionId);
+    }
+    _wsService.sendStartStep(stepIndex);
   }
 
   /// Check if the quiz for a given step has been completed.

@@ -872,5 +872,11 @@ The `KnowledgeCheckQuiz` widget (`lib/presentation/pages/learning/widgets/worksp
 2. **Event Guarding (`isLoading` Barrier)**: `SocraticTutorChat` ignores high-frequency `explanation_chunk` events while the global provider is in an `isLoading` state, preventing wasteful `setState()` triggers and animation controller allocations behind the loader.
 3. **Optimized Concurrent Backend Execution**: The WebSocket backend executes the `QuizAgent`, `YouTubeCuratorAgent`, and `AcademicResearcherAgent` concurrently via `asyncio.gather()`, maintaining the token-by-token streaming experience of the `SocraticTutorAgent` while accelerating milestone readiness.
 
+---
 
+### Smart Step Regeneration Engine
 
+To balance flexibility with API cost-efficiency, the client features a highly optimized Step Regeneration pipeline:
+1. **Targeted State Clearing**: `regenerateCurrentStep()` optimistically wipes `tutorExplanation`, `socraticQuestions`, and `quiz` from the local `MilestoneStep`, but intentionally preserves `videos` and `papers`. 
+2. **Seamless Inline Loaders**: Instead of invoking the massive full-screen `NeuralInferenceLoader` (which is reserved exclusively for Step 0 of a new journey), regeneration uses the inline `Socratic Tutor is preparing...` skeleton loader to maintain visual context.
+3. **Idempotent Agent Execution**: On the backend, `websocket.py` checks `if step and not step.videos` before dispatching the `YouTubeCuratorAgent` and `AcademicResearcherAgent`. Because the `topic` and step `title` do not change during regeneration, the pre-existing curated resources remain highly relevant. Bypassing these agents saves tokens, avoids rate limits (YouTube Data API), and dramatically accelerates regeneration latency.

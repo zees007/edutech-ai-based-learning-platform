@@ -270,9 +270,6 @@ class SocraticTutorAgent(BaseAgent):
         step.tutor_explanation = explanation
         step.socratic_questions = questions
 
-        # Add to conversation history
-        memory.add_conversation_turn("tutor", explanation, step_index=step_index)
-
         self.logger.info(
             f"Step {step_index} explained ({len(explanation)} chars, "
             f"{len(questions)} Socratic questions)"
@@ -364,7 +361,6 @@ class SocraticTutorAgent(BaseAgent):
         explanation, questions = self._parse_response(full_response)
         step.tutor_explanation = explanation
         step.socratic_questions = questions
-        memory.add_conversation_turn("tutor", explanation, step_index=step_index)
 
     def _parse_response(self, response: str) -> tuple[str, list[str]]:
         """

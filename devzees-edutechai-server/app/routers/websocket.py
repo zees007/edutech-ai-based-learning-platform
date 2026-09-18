@@ -198,17 +198,23 @@ async def _process_step(
             raise e
 
     # ─── 1. Start parallel background tasks (YouTube + Academic Researcher) ─
+    step = memory.steps[step_index] if step_index < len(memory.steps) else None
+
     try:
         from agents.youtube_curator import YouTubeCuratorAgent
         youtube_agent = YouTubeCuratorAgent()
-        youtube_task = asyncio.create_task(_timed_execute(youtube_agent, memory, step_index, "YouTubeCuratorAgent"))
+        youtube_task = None
+        if step and not step.videos:
+            youtube_task = asyncio.create_task(_timed_execute(youtube_agent, memory, step_index, "YouTubeCuratorAgent"))
     except ImportError:
         youtube_task = None
 
     try:
         from agents.academic_researcher import AcademicResearcherAgent
         academic_agent = AcademicResearcherAgent()
-        academic_task = asyncio.create_task(_timed_execute(academic_agent, memory, step_index, "AcademicResearcherAgent"))
+        academic_task = None
+        if step and not step.papers:
+            academic_task = asyncio.create_task(_timed_execute(academic_agent, memory, step_index, "AcademicResearcherAgent"))
     except ImportError:
         academic_task = None
 

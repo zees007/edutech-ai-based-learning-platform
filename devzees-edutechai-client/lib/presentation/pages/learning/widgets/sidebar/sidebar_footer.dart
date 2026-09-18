@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../../core/providers/auth_provider.dart';
+import '../../../../../core/providers/user_provider.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/text_styles.dart';
+import '../subscription/subscription_modal.dart';
 
 class SidebarFooter extends ConsumerStatefulWidget {
   final bool expanded;
@@ -25,6 +27,32 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
     final RenderBox renderBox = _settingsIconKey.currentContext!.findRenderObject() as RenderBox;
     final size = renderBox.size;
     final offset = renderBox.localToGlobal(Offset.zero);
+
+    final userAsync = ref.read(userProvider);
+    final tier = userAsync.value?.subscription?.tier.toLowerCase() ?? 'free';
+    
+    Widget? upgradeButton;
+    if (tier == 'free') {
+      upgradeButton = _buildMenuItem(
+        context, 
+        'Upgrade to PRO', 
+        Icons.bolt, 
+        AppColors.purple,
+        onTap: () {
+          showDialog(context: context, builder: (_) => const SubscriptionModal());
+        },
+      );
+    } else if (tier == 'pro') {
+      upgradeButton = _buildMenuItem(
+        context, 
+        'Upgrade to Ultra', 
+        Icons.bolt, 
+        AppColors.purple,
+        onTap: () {
+          showDialog(context: context, builder: (_) => const SubscriptionModal());
+        },
+      );
+    }
 
     showMenu<String>(
       context: context,
@@ -67,8 +95,16 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
                   children: [
                     _buildUserInfo(),
                     Divider(color: AppColors.glassBorder, height: 16),
-                    _buildMenuItem(context, 'Upgrade to PRO', Icons.bolt, AppColors.purple),
-                    _buildMenuItem(context, 'Billing & Plan', Icons.credit_card, AppColors.textSecondary),
+                    if (upgradeButton != null) upgradeButton,
+                    _buildMenuItem(
+                      context, 
+                      'Manage Subscription', 
+                      Icons.credit_card, 
+                      AppColors.textSecondary,
+                      onTap: () {
+                        showDialog(context: context, builder: (_) => const SubscriptionModal());
+                      },
+                    ),
                     _buildMenuItem(context, 'Admin Console', Icons.admin_panel_settings, AppColors.textSecondary),
                     Divider(color: AppColors.glassBorder, height: 16),
                     _buildMenuItem(
@@ -94,60 +130,81 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
   }
 
   Widget _buildUserInfo() {
+    final userAsync = ref.watch(userProvider);
+    
+    if (userAsync.isLoading) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        child: Center(
+          child: CircularProgressIndicator(color: AppColors.purple),
+        ),
+      );
+    }
+    
+    final user = userAsync.value;
+    if (user == null) {
+      return const SizedBox.shrink();
+    }
+    
+    final initials = user.firstName.isNotEmpty ? user.firstName[0].toUpperCase() : '';
+    final name = '${user.firstName} ${user.lastName}'.trim();
+    final email = user.email;
+    final plan = user.subscription?.tier != null ? '${user.subscription!.tier.toUpperCase()} MEMBER' : 'FREE MEMBER';
+
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Row(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           CircleAvatar(
-            radius: 18,
+            radius: 32,
             backgroundColor: AppColors.purple.withValues(alpha: 0.2),
             child: Text(
-              'Z',
-              style: AppTextStyles.label.copyWith(
+              initials,
+              style: AppTextStyles.h4.copyWith(
                 color: AppColors.purple,
                 fontWeight: FontWeight.bold,
               ),
             ),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          const SizedBox(height: 12),
+          Text(
+            name,
+            style: AppTextStyles.subtitle1,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            email,
+            style: AppTextStyles.caption.copyWith(color: AppColors.textMuted),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            decoration: BoxDecoration(
+              color: AppColors.accentGreen.withValues(alpha: 0.1),
+              border: Border.all(color: AppColors.accentGreen.withValues(alpha: 0.3)),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  'Zeeshan',
-                  style: AppTextStyles.subtitle2,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 4),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  width: 6,
+                  height: 6,
                   decoration: BoxDecoration(
-                    color: AppColors.accentGreen.withValues(alpha: 0.1),
-                    border: Border.all(color: AppColors.accentGreen.withValues(alpha: 0.3)),
-                    borderRadius: BorderRadius.circular(4),
+                    color: AppColors.accentGreen,
+                    shape: BoxShape.circle,
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        width: 6,
-                        height: 6,
-                        decoration: BoxDecoration(
-                          color: AppColors.accentGreen,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        'FREE MEMBER',
-                        style: AppTextStyles.badge.copyWith(
-                          color: AppColors.accentGreen,
-                        ),
-                      ),
-                    ],
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  plan,
+                  style: AppTextStyles.badge.copyWith(
+                    color: AppColors.accentGreen,
                   ),
                 ),
               ],
@@ -201,6 +258,52 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
 
   @override
   Widget build(BuildContext context) {
+    final userAsync = ref.watch(userProvider);
+    
+    if (userAsync.isLoading || userAsync.value == null) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: const BoxDecoration(
+          border: Border(
+            top: BorderSide(
+              color: AppColors.glassBorder,
+              width: 1,
+            ),
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: widget.expanded
+              ? MainAxisAlignment.start
+              : MainAxisAlignment.center,
+          children: [
+            if (widget.expanded)
+              const SizedBox(
+                width: 36,
+                height: 36,
+                child: CircularProgressIndicator(
+                  color: AppColors.purple,
+                  strokeWidth: 2,
+                ),
+              ),
+            if (!widget.expanded)
+              Container(
+                key: _settingsIconKey,
+                child: IconButton(
+                  icon: const Icon(Icons.settings, color: AppColors.textMuted, size: 20),
+                  onPressed: () => _showSettingsPopover(context),
+                ),
+              ),
+          ],
+        ),
+      );
+    }
+
+    final user = userAsync.value!;
+    final initials = user.firstName.isNotEmpty ? user.firstName[0].toUpperCase() : '';
+    final name = '${user.firstName} ${user.lastName}'.trim();
+    final plan = user.subscription?.tier ?? 'Free';
+    final planCapitalized = plan.isNotEmpty ? '${plan[0].toUpperCase()}${plan.substring(1).toLowerCase()} Plan' : 'Free Plan';
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -221,7 +324,7 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
               radius: 18,
               backgroundColor: AppColors.purple.withValues(alpha: 0.2),
               child: Text(
-                'Z',
+                initials,
                 style: AppTextStyles.label.copyWith(
                   color: AppColors.purple,
                   fontWeight: FontWeight.bold,
@@ -236,13 +339,13 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'Zeeshan',
+                    name,
                     style: AppTextStyles.subtitle2,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   Text(
-                    'Free Plan',
+                    planCapitalized,
                     style: AppTextStyles.caption.copyWith(color: AppColors.textMuted),
                   ),
                 ],

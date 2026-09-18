@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import '../../data/models/learning/session_model.dart';
 import '../../data/models/learning/session_response.dart';
 import '../../data/models/learning/quiz_result.dart';
+import '../constants/api_constants.dart';
 import 'api_client.dart';
 
 class LearningService {
@@ -27,7 +28,7 @@ class LearningService {
       }
 
       final response = await _dio.get(
-        '/sessions',
+        ApiConstants.sessions,
         queryParameters: queryParams,
       );
 
@@ -39,7 +40,7 @@ class LearningService {
 
   Future<SessionResponse> fetchSessionById(String sessionId) async {
     try {
-      final response = await _dio.get('/sessions/$sessionId');
+      final response = await _dio.get(ApiConstants.sessionDetails(sessionId));
       return SessionResponse.fromJson(response.data);
     } catch (e) {
       throw Exception('Failed to fetch learning session details: $e');
@@ -48,7 +49,7 @@ class LearningService {
 
   Future<void> deleteSession(String sessionId) async {
     try {
-      await _dio.delete('/sessions/$sessionId');
+      await _dio.delete(ApiConstants.sessionDetails(sessionId));
     } catch (e) {
       throw Exception('Failed to delete learning session: $e');
     }
@@ -57,7 +58,7 @@ class LearningService {
   Future<String> sendFollowUpQuestion(String sessionId, int stepIndex, String question) async {
     try {
       final response = await _dio.post(
-        '/sessions/$sessionId/step/$stepIndex/followup',
+        ApiConstants.followUpQuestion(sessionId, stepIndex),
         data: {'question': question},
       );
       return response.data['answer'] as String;
@@ -73,7 +74,7 @@ class LearningService {
   }) async {
     try {
       final response = await _dio.post(
-        '/learn',
+        ApiConstants.learn,
         data: {
           'topic': topic,
           'learning_mode': mode
@@ -103,7 +104,7 @@ class LearningService {
       final stringKeyAnswers = answers.map((k, v) => MapEntry(k.toString(), v));
       
       final response = await _dio.post(
-        '/quiz/submit',
+        ApiConstants.quizSubmit,
         data: {
           'session_id': sessionId,
           'step_index': stepIndex,
@@ -119,11 +120,21 @@ class LearningService {
   Future<Map<String, dynamic>> completeStep(String sessionId, int stepIndex) async {
     try {
       final response = await _dio.post(
-        '/sessions/$sessionId/step/$stepIndex/complete',
+        ApiConstants.completeStep(sessionId, stepIndex),
       );
       return response.data as Map<String, dynamic>;
     } catch (e) {
       throw Exception('Failed to complete step: $e');
+    }
+  }
+
+  Future<void> regenerateStep(String sessionId, int stepIndex) async {
+    try {
+      await _dio.post(
+        ApiConstants.regenerateStep(sessionId, stepIndex),
+      );
+    } catch (e) {
+      throw Exception('Failed to regenerate step: $e');
     }
   }
 }
