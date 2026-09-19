@@ -1,8 +1,10 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
+import '../export/export_session_modal.dart';
 
 class JourneyCompleteCelebration extends StatefulWidget {
+  final String? sessionId;
   final String topic;
   final int totalSteps;
   final int totalXp;
@@ -13,6 +15,7 @@ class JourneyCompleteCelebration extends StatefulWidget {
 
   const JourneyCompleteCelebration({
     super.key,
+    this.sessionId,
     required this.topic,
     required this.totalSteps,
     required this.totalXp,
@@ -273,6 +276,42 @@ class _JourneyCompleteCelebrationState extends State<JourneyCompleteCelebration>
                       ),
                       const SizedBox(height: 30),
 
+                      // Export Mastered Journey Button (if sessionId available)
+                      if (widget.sessionId != null && widget.sessionId!.isNotEmpty) ...[
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              ExportSessionModal.show(
+                                context,
+                                sessionId: widget.sessionId!,
+                                topic: widget.topic,
+                                totalSteps: widget.totalSteps,
+                                stepsCompleted: widget.totalSteps,
+                                xpEarned: widget.totalXp,
+                                isCompleted: true,
+                              );
+                            },
+                            icon: const Icon(Icons.ios_share_rounded, size: 18),
+                            label: const Text(
+                              'Export Mastered Journey (.md / .pdf)',
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              foregroundColor: Colors.white,
+                              backgroundColor: AppColors.primary,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              elevation: 6,
+                              shadowColor: AppColors.primary.withValues(alpha: 0.5),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                      ],
+
                       // Action Buttons
                       Row(
                         children: [
@@ -303,13 +342,13 @@ class _JourneyCompleteCelebrationState extends State<JourneyCompleteCelebration>
                               label: const Text('New Journey'),
                               style: ElevatedButton.styleFrom(
                                 foregroundColor: Colors.white,
-                                backgroundColor: AppColors.primary,
+                                backgroundColor: AppColors.surfaceMid,
                                 padding: const EdgeInsets.symmetric(vertical: 14),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(14),
+                                  side: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
                                 ),
-                                elevation: 6,
-                                shadowColor: AppColors.primary.withValues(alpha: 0.5),
+                                elevation: 2,
                               ),
                             ),
                           ),

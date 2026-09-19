@@ -470,8 +470,9 @@ Protected by ET_ACCESS_ACADEMIC_SEARCH privilege.
 ## Export Session Markdown
 **Endpoint:** `GET /api/v1/export/{session_id}/md`
 
-Export the learning session as a Markdown text file.
-Requires ET_EXPORT_MARKDOWN privilege (Pro/Ultra).
+Export the learning session as a structured Markdown study notes file.
+Requires `ET_EXPORT_MARKDOWN` privilege (Pro/Ultra).
+**Note:** Only available once the learning journey is 100% completed (all steps completed).
 
 ### Request
 
@@ -483,15 +484,24 @@ Requires ET_EXPORT_MARKDOWN privilege (Pro/Ultra).
 
 **200 Successful Response**
 
-No content.
+Returns plain text Markdown (`text/plain; charset=utf-8`) with `Content-Disposition: attachment; filename="session_{session_id}.md"`.
+
+**400 Bad Request**
+
+Returned if the session journey is not yet completed (`SESSION_INCOMPLETE`).
+
+**403 Forbidden**
+
+Returned if the user lacks the `ET_EXPORT_MARKDOWN` privilege (e.g. Free tier).
 
 ---
 
 ## Export Session Pdf
 **Endpoint:** `GET /api/v1/export/{session_id}/pdf`
 
-Export the learning session as a PDF file.
-Requires ET_EXPORT_PDF privilege (Ultra).
+Export the learning session as an executive-grade PDF study guide with EduTechAI branding.
+Requires `ET_EXPORT_PDF` privilege (Ultra).
+**Note:** Only available once the learning journey is 100% completed (all steps completed).
 
 ### Request
 
@@ -503,7 +513,15 @@ Requires ET_EXPORT_PDF privilege (Ultra).
 
 **200 Successful Response**
 
-No content.
+Returns binary PDF stream (`application/pdf`) with `Content-Disposition: attachment; filename="session_{session_id}.pdf"`.
+
+**400 Bad Request**
+
+Returned if the session journey is not yet completed (`SESSION_INCOMPLETE`).
+
+**403 Forbidden**
+
+Returned if the user lacks the `ET_EXPORT_PDF` privilege (e.g. Free or Pro tier).
 
 ---
 

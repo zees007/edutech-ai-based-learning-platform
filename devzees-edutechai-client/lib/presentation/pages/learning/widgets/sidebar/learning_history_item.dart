@@ -6,6 +6,7 @@ import '../../../../../core/providers/learning_provider.dart';
 import '../../../../../core/providers/active_session_provider.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/text_styles.dart';
+import '../export/export_session_modal.dart';
 
 class LearningHistoryItem extends ConsumerStatefulWidget {
   final SessionModel session;
@@ -71,6 +72,36 @@ class _LearningHistoryItemState extends ConsumerState<LearningHistoryItem> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    InkWell(
+                      onTap: () {
+                        Navigator.of(context).pop();
+                        final total = widget.session.totalSteps ?? widget.session.stepsCompleted;
+                        final bool isCompleted = total > 0 && widget.session.stepsCompleted >= total;
+                        ExportSessionModal.show(
+                          context,
+                          sessionId: widget.session.sessionId,
+                          topic: widget.session.topic,
+                          totalSteps: total,
+                          stepsCompleted: widget.session.stepsCompleted,
+                          xpEarned: widget.session.xpEarned,
+                          isCompleted: isCompleted,
+                        );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.ios_share_rounded, color: AppColors.purpleLight, size: 18),
+                            const SizedBox(width: 12),
+                            Text(
+                              'Export',
+                              style: AppTextStyles.label.copyWith(color: Colors.white),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const Divider(color: AppColors.glassBorder, height: 1),
                     InkWell(
                       onTap: () {
                         Navigator.of(context).pop();

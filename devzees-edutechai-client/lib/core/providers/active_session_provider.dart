@@ -399,6 +399,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       final avgScore = quizCount > 0 ? (totalScore / quizCount) : null;
 
       ref.read(journeyCompleteProvider.notifier).triggerEvent(
+        sessionId: updatedSession.sessionId,
         topic: updatedSession.topic,
         totalSteps: updatedSession.steps.length,
         totalXp: updatedSession.xpEarned,

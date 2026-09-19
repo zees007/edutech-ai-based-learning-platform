@@ -110,6 +110,7 @@ final gamificationEventProvider =
 });
 
 class JourneyCompleteEvent {
+  final String sessionId;
   final String topic;
   final int totalSteps;
   final int totalXp;
@@ -118,6 +119,7 @@ class JourneyCompleteEvent {
   final DateTime timestamp;
 
   JourneyCompleteEvent({
+    required this.sessionId,
     required this.topic,
     required this.totalSteps,
     required this.totalXp,
@@ -132,6 +134,7 @@ class JourneyCompleteNotifier extends Notifier<JourneyCompleteEvent?> {
   JourneyCompleteEvent? build() => null;
 
   void triggerEvent({
+    required String sessionId,
     required String topic,
     required int totalSteps,
     required int totalXp,
@@ -139,6 +142,7 @@ class JourneyCompleteNotifier extends Notifier<JourneyCompleteEvent?> {
     double? averageQuizScore,
   }) {
     state = JourneyCompleteEvent(
+      sessionId: sessionId,
       topic: topic,
       totalSteps: totalSteps,
       totalXp: totalXp,

@@ -95,7 +95,7 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
                   children: [
                     _buildUserInfo(),
                     Divider(color: AppColors.glassBorder, height: 16),
-                    if (upgradeButton != null) upgradeButton,
+                    ?upgradeButton,
                     _buildMenuItem(
                       context, 
                       'Manage Subscription', 
