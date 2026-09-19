@@ -31,4 +31,5 @@ class ApiConstants {
   // Export Endpoints
   static String exportMarkdown(String sessionId) => '/export/$sessionId/md';
   static String exportPdf(String sessionId) => '/export/$sessionId/pdf';
+  static String exportHtml(String sessionId) => '/export/$sessionId/html';
 }

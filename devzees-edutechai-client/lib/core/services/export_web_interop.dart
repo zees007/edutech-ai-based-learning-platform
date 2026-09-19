@@ -28,3 +28,19 @@ void downloadFileWeb({
     })();
   '''.toJS);
 }
+
+void openHtmlInNewTabWeb(String htmlContent) {
+  final base64Str = base64Encode(utf8.encode(htmlContent));
+  _jsEval('''
+    (function() {
+      try {
+        var win = window.open('data:text/html;charset=utf-8;base64,' + '$base64Str', '_blank');
+        if (win) {
+          win.focus();
+        }
+      } catch(e) {
+        console.error('Open error:', e);
+      }
+    })();
+  '''.toJS);
+}

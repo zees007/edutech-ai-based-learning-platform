@@ -57,7 +57,9 @@ class ExportSessionModal extends ConsumerStatefulWidget {
 class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
   bool _isLoadingMd = false;
   bool _isLoadingPdf = false;
+  bool _isLoadingHtml = false;
   String? _loadedMarkdown;
+  String? _loadedHtml;
 
   bool get _isJourneyComplete =>
       widget.isCompleted ||
@@ -166,6 +168,57 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
     }
   }
 
+  Future<void> _handleOpenHtml() async {
+    if (_isLoadingHtml) return;
+    setState(() => _isLoadingHtml = true);
+    try {
+      final exportService = ref.read(exportServiceProvider);
+      _loadedHtml ??= await exportService.fetchHtml(widget.sessionId);
+      if (!mounted) return;
+      await ExportHelper.openHtmlInBrowser(
+        htmlContent: _loadedHtml!,
+        sessionId: widget.sessionId,
+        context: context,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ExportHelper.showToast(
+        context,
+        message: e.toString().replaceAll('Exception: ', ''),
+        icon: Icons.error_outline_rounded,
+        isError: true,
+      );
+    } finally {
+      if (mounted) setState(() => _isLoadingHtml = false);
+    }
+  }
+
+  Future<void> _handleDownloadHtml() async {
+    if (_isLoadingHtml) return;
+    setState(() => _isLoadingHtml = true);
+    try {
+      final exportService = ref.read(exportServiceProvider);
+      _loadedHtml ??= await exportService.fetchHtml(widget.sessionId);
+      if (!mounted) return;
+      await ExportHelper.saveOrShareText(
+        content: _loadedHtml!,
+        filename: 'session_${widget.sessionId}.html',
+        context: context,
+        mimeType: 'text/html',
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ExportHelper.showToast(
+        context,
+        message: e.toString().replaceAll('Exception: ', ''),
+        icon: Icons.error_outline_rounded,
+        isError: true,
+      );
+    } finally {
+      if (mounted) setState(() => _isLoadingHtml = false);
+    }
+  }
+
   void _showUpgradeInfo(BuildContext ctx, String format, String requiredTier) {
     showDialog(
       context: ctx,
@@ -237,6 +290,7 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
     final bool isSuperAdmin = privs.contains('ET_ALL');
     final bool canExportMd = isSuperAdmin || privs.contains('ET_EXPORT_MARKDOWN');
     final bool canExportPdf = isSuperAdmin || privs.contains('ET_EXPORT_PDF');
+    final bool canExportHtml = canExportMd || canExportPdf;
 
     final size = MediaQuery.of(context).size;
     final isMobile = size.width < 650;
@@ -371,6 +425,7 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
                         isUnlocked: canExportMd,
                         isEnabled: isComplete,
                         isLoading: _isLoadingMd,
+                        downloadLabel: 'Download .md',
                         onPreview: _handlePreviewMarkdown,
                         onCopy: _handleCopyMarkdown,
                         onDownload: _handleDownloadMarkdown,
@@ -379,7 +434,27 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
 
                       const SizedBox(height: 14),
 
-                      // ── Option 2: PDF Document (.pdf) ──
+                      // ── Option 2: Interactive Web Report (.html) ──
+                      _buildExportOptionCard(
+                        icon: Icons.language_rounded,
+                        iconColor: AppColors.purpleLight,
+                        title: 'Interactive Web Report (.html)',
+                        description:
+                            'Modern responsive report with syntax styling, interactive quizzes, and one-click "Save as PDF".',
+                        tierBadge: 'PRO / ULTRA',
+                        isUnlocked: canExportHtml,
+                        isEnabled: isComplete,
+                        isLoading: _isLoadingHtml,
+                        downloadLabel: 'Download HTML',
+                        openLabel: 'View & Print',
+                        onOpen: _handleOpenHtml,
+                        onDownload: _handleDownloadHtml,
+                        onLockedTap: () => _showUpgradeInfo(context, 'Interactive Web Report', 'Pro or Ultra'),
+                      ),
+
+                      const SizedBox(height: 14),
+
+                      // ── Option 3: PDF Document (.pdf) ──
                       _buildExportOptionCard(
                         icon: Icons.picture_as_pdf_rounded,
                         iconColor: AppColors.rose,
@@ -391,6 +466,7 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
                         isEnabled: isComplete,
                         isLoading: _isLoadingPdf,
                         isPdf: true,
+                        downloadLabel: 'Download PDF',
                         onDownload: _handleDownloadPdf,
                         onLockedTap: () => _showUpgradeInfo(context, 'PDF', 'Ultra'),
                       ),
@@ -514,6 +590,9 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
     required bool isEnabled,
     required bool isLoading,
     bool isPdf = false,
+    String? downloadLabel,
+    VoidCallback? onOpen,
+    String? openLabel,
     VoidCallback? onPreview,
     VoidCallback? onCopy,
     VoidCallback? onDownload,
@@ -633,6 +712,20 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
+                  if (onOpen != null && openLabel != null) ...[
+                    OutlinedButton.icon(
+                      onPressed: interactive ? onOpen : null,
+                      icon: const Icon(Icons.open_in_browser_rounded, size: 14),
+                      label: Text(openLabel),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.purpleLight,
+                        side: BorderSide(color: AppColors.purpleLight.withValues(alpha: 0.4)),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                  ],
                   if (!isPdf && onPreview != null) ...[
                     OutlinedButton.icon(
                       onPressed: interactive ? onPreview : null,
@@ -664,9 +757,9 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
                   ElevatedButton.icon(
                     onPressed: interactive ? onDownload : null,
                     icon: const Icon(Icons.download_rounded, size: 14),
-                    label: Text(isPdf ? 'Download PDF' : 'Download .md'),
+                    label: Text(downloadLabel ?? (isPdf ? 'Download PDF' : 'Download .md')),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: isPdf ? AppColors.rose : AppColors.primary,
+                      backgroundColor: isPdf ? AppColors.rose : (downloadLabel != null && downloadLabel.contains('HTML') ? const Color(0xFF6366F1) : AppColors.primary),
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),

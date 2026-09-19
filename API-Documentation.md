@@ -25,6 +25,10 @@ Adaptive AI-powered learning platform with multi-agent Socratic tutoring, YouTub
     *   `POST /api/v1/sessions/{session_id}/step/{step_index}/complete`
     *   `POST /api/v1/sessions/{session_id}/step/{step_index}/followup`
     *   `POST /api/v1/sessions/{session_id}/step/{step_index}/regenerate`
+*   **Session Exports** (`export_service.dart`):
+    *   `GET /api/v1/export/{session_id}/md` (Export Markdown)
+    *   `GET /api/v1/export/{session_id}/pdf` (Export PDF)
+    *   `GET /api/v1/export/{session_id}/html` (Export Interactive HTML)
 *   **Academic Search** (`academic_service.dart`):
     *   `GET /api/v1/academic/search`
 *   **Quiz** (`learning_service.dart`):
@@ -33,8 +37,6 @@ Adaptive AI-powered learning platform with multi-agent Socratic tutoring, YouTub
 **Pending / Not Integrated APIs:**
 
 *   `POST /api/v1/sessions/{session_id}/mode` (Change Learning Mode)
-*   `GET /api/v1/export/{session_id}/md` (Export Markdown)
-*   `GET /api/v1/export/{session_id}/pdf` (Export PDF)
 *   `GET /api/v1/quiz/{session_id}/{step_index}` (Get Quiz)
 *   `GET /api/v1/users/search` (Search Users)
 *   `GET /api/v1/users/{user_id}` (Get User By Id)
@@ -522,6 +524,36 @@ Returned if the session journey is not yet completed (`SESSION_INCOMPLETE`).
 **403 Forbidden**
 
 Returned if the user lacks the `ET_EXPORT_PDF` privilege (e.g. Free or Pro tier).
+
+---
+
+## Export Session HTML
+**Endpoint:** `GET /api/v1/export/{session_id}/html`
+
+Export the learning session as a modern, responsive, standalone interactive HTML study report.
+Features Google Fonts (`Plus Jakarta Sans`, `JetBrains Mono`), syntax-highlighted code blocks, interactive quiz cards, and a sticky action bar with built-in **Print / Save as PDF** (`window.print()`).
+Requires `ET_EXPORT_MARKDOWN` or `ET_EXPORT_PDF` privilege (Pro/Ultra).
+**Note:** Only available once the learning journey is 100% completed (all steps completed).
+
+### Request
+
+**Parameters:**
+- `session_id` (path) *(Required)*
+- `access_token` (cookie) *(Required)*
+
+### Response
+
+**200 Successful Response**
+
+Returns standalone HTML page (`text/html; charset=utf-8`) with `Content-Disposition: inline; filename="session_{session_id}.html"`.
+
+**400 Bad Request**
+
+Returned if the session journey is not yet completed (`SESSION_INCOMPLETE`).
+
+**403 Forbidden**
+
+Returned if the user lacks both `ET_EXPORT_MARKDOWN` and `ET_EXPORT_PDF` privileges (e.g. Free tier).
 
 ---
 

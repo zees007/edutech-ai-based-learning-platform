@@ -1,12 +1,12 @@
 """
-EduTechAI — Tests for Learning Session Export (Markdown & PDF)
+EduTechAI — Tests for Learning Session Export (Markdown, PDF, HTML)
 """
 
 import pytest
 from uuid import uuid4
 
 from app.exceptions import BadRequestException
-from app.routers.exports import check_session_completed, generate_markdown, generate_pdf
+from app.routers.exports import check_session_completed, generate_html, generate_markdown, generate_pdf
 from models.schemas import AcademicPaper, LearningMode, MilestoneStep, QuizQuestion, QuestionType, StepStatus, YouTubeClip
 from models.shared_memory import SharedMemory
 
@@ -39,7 +39,7 @@ def create_sample_session(is_completed: bool = True) -> SharedMemory:
             description="Understand basic quantum state representations.",
             status=StepStatus.COMPLETE,
             estimated_minutes=8,
-            tutor_explanation="A qubit can exist in a linear combination of states |0> and |1>.",
+            tutor_explanation="A qubit can exist in a linear combination of states |0> and |1>.\n\n```python\nimport qiskit\nqc = QuantumCircuit(1)\n```\n",
             socratic_questions=["What distinguishes a qubit from a classical bit?"],
             videos=[
                 YouTubeClip(
@@ -89,7 +89,6 @@ def test_completion_guard():
     assert exc_info.value.error_code == "SESSION_INCOMPLETE"
 
     completed_mem = create_sample_session(is_completed=True)
-    # Should not raise
     check_session_completed(completed_mem)
 
 
@@ -110,13 +109,27 @@ def test_generate_markdown_content():
 
 
 def test_generate_pdf_content():
-    """Verify PDF byte generation and presence of header branding."""
+    """Verify PDF byte generation, clean formatting, and pre/code block inclusion."""
     memory = create_sample_session(is_completed=True)
     pdf_bytes = generate_pdf(memory)
 
     assert isinstance(pdf_bytes, bytes)
     assert len(pdf_bytes) > 1000
     assert pdf_bytes[:4] == b"%PDF"
+
+
+def test_generate_html_content():
+    """Verify standalone HTML generation with fonts, interactive cards, and print styles."""
+    memory = create_sample_session(is_completed=True)
+    html_content = generate_html(memory)
+
+    assert "<!DOCTYPE html>" in html_content
+    assert "EduTechAI" in html_content
+    assert "Quantum Computing Fundamentals" in html_content
+    assert "window.print()" in html_content
+    assert "@media print" in html_content
+    assert "Plus Jakarta Sans" in html_content
+    assert "interactive-quiz-item" in html_content
 
 
 @pytest.mark.asyncio
@@ -126,7 +139,7 @@ async def test_export_endpoints_completion_and_auth():
     from app.main import create_app
     from services.database import get_db_session, init_db
     from services.session_manager import SessionManager
-    from models.db_models import Role, User
+    from models.db_models import Role
     from models.user_schemas import UserCreateRequest
     from services.user_service import UserService
     from sqlalchemy import select
@@ -174,6 +187,10 @@ async def test_export_endpoints_completion_and_auth():
         assert pdf_incomplete_res.status_code == 400
         assert pdf_incomplete_res.json()["error_code"] == "SESSION_INCOMPLETE"
 
+        html_incomplete_res = await client.get(f"/api/v1/export/{incomplete_mem.session_id}/html")
+        assert html_incomplete_res.status_code == 400
+        assert html_incomplete_res.json()["error_code"] == "SESSION_INCOMPLETE"
+
         # 3. Create a completed session
         complete_mem = create_sample_session(is_completed=True)
         complete_mem.user_id = user_id
@@ -190,3 +207,8 @@ async def test_export_endpoints_completion_and_auth():
         assert pdf_res.headers["content-type"] == "application/pdf"
         assert len(pdf_res.content) > 1000
 
+        html_res = await client.get(f"/api/v1/export/{complete_mem.session_id}/html")
+        assert html_res.status_code == 200
+        assert "text/html" in html_res.headers["content-type"]
+        assert "EduTechAI" in html_res.text
+        assert "window.print()" in html_res.text

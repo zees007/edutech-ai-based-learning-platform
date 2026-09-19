@@ -52,6 +52,26 @@ class ExportService {
     }
   }
 
+  /// Fetches the learning session as a standalone interactive HTML document.
+  /// Requires `ET_EXPORT_MARKDOWN` or `ET_EXPORT_PDF` privilege (Pro/Ultra).
+  /// Only available when all steps in the session are completed.
+  Future<String> fetchHtml(String sessionId) async {
+    try {
+      final response = await _dio.get<String>(
+        ApiConstants.exportHtml(sessionId),
+        options: Options(
+          responseType: ResponseType.plain,
+          headers: {'Accept': 'text/html'},
+        ),
+      );
+      return response.data ?? '';
+    } on DioException catch (e) {
+      throw _handleDioError(e, 'HTML');
+    } catch (e) {
+      throw Exception('Failed to export HTML: $e');
+    }
+  }
+
   Exception _handleDioError(DioException e, String format) {
     final status = e.response?.statusCode;
     if (status == 400) {

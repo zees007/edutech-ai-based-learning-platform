@@ -90,6 +90,31 @@ class ExportHelper {
     );
   }
 
+  /// Open HTML content in browser (or share file on native platforms).
+  static Future<void> openHtmlInBrowser({
+    required String htmlContent,
+    required String sessionId,
+    required BuildContext context,
+  }) async {
+    if (kIsWeb) {
+      openHtmlInNewTabWeb(htmlContent);
+      if (context.mounted) {
+        showToast(
+          context,
+          message: 'Interactive report opened in a new tab!',
+          icon: Icons.open_in_new_rounded,
+        );
+      }
+    } else {
+      await saveOrShareText(
+        content: htmlContent,
+        filename: 'session_$sessionId.html',
+        context: context,
+        mimeType: 'text/html',
+      );
+    }
+  }
+
   /// Copy text to system clipboard and display quick toast.
   static Future<void> copyToClipboard(
     BuildContext context, {
