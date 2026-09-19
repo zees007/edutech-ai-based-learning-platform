@@ -21,6 +21,7 @@ class ApiConstants {
   static const String sessions = '/sessions';
   static const String learn = '/learn';
   static const String quizSubmit = '/quiz/submit';
+  static const String academicSearch = '/academic/search';
   
   static String sessionDetails(String sessionId) => '/sessions/$sessionId';
   static String followUpQuestion(String sessionId, int stepIndex) => '/sessions/$sessionId/step/$stepIndex/followup';

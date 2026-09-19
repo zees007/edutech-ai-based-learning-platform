@@ -233,16 +233,52 @@ class _SplitLearningWorkspaceState
               conversationHistory: widget.session.conversationHistory?.where((turn) => (turn as Map)['step_index'] == currentStep.index).toList(),
               stepTitle: currentStep.title,
             )
-          : Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
+          : Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const AppGradientSpinner(size: 40),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Socratic Tutor is preparing...',
-                    style: AppTextStyles.bodyPrimary.copyWith(
-                      color: AppColors.textMuted,
+                  const Padding(
+                    padding: EdgeInsets.only(top: 4),
+                    child: AnimatedTutorIcon(size: 32),
+                  ),
+                  const SizedBox(width: 12),
+                  Flexible(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            AppColors.surfaceMid.withValues(alpha: 0.75),
+                            AppColors.surfaceDark.withValues(alpha: 0.85),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.3),
+                            blurRadius: 20,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const _RegeneratingDots(),
+                          const SizedBox(height: 12),
+                          Text(
+                            'Socratic tutor is preparing and regenerating the step...',
+                            style: AppTextStyles.bodyPrimary.copyWith(
+                              color: Colors.white.withValues(alpha: 0.9),
+                              height: 1.5,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
@@ -1976,6 +2012,65 @@ class _MobileWorkspaceTabItemState extends State<_MobileWorkspaceTabItem> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _RegeneratingDots extends StatefulWidget {
+  const _RegeneratingDots();
+  @override
+  State<_RegeneratingDots> createState() => _RegeneratingDotsState();
+}
+
+class _RegeneratingDotsState extends State<_RegeneratingDots>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, _) {
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: List.generate(3, (i) {
+            final delay = i * 0.2;
+            final t = (_controller.value - delay).clamp(0.0, 1.0);
+            final bounce = (t < 0.5) ? t * 2 : (1 - t) * 2;
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 3),
+              child: Transform.translate(
+                offset: Offset(0, -4 * bounce),
+                child: Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: const Color(
+                      0xFFC084FC,
+                    ).withValues(alpha: 0.4 + 0.5 * bounce),
+                  ),
+                ),
+              ),
+            );
+          }),
+        );
+      },
     );
   }
 }
