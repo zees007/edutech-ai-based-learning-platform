@@ -25,6 +25,8 @@ Adaptive AI-powered learning platform with multi-agent Socratic tutoring, YouTub
     *   `POST /api/v1/sessions/{session_id}/step/{step_index}/complete`
     *   `POST /api/v1/sessions/{session_id}/step/{step_index}/followup`
     *   `POST /api/v1/sessions/{session_id}/step/{step_index}/regenerate`
+*   **Academic Search** (`academic_service.dart`):
+    *   `GET /api/v1/academic/search`
 *   **Quiz** (`learning_service.dart`):
     *   `POST /api/v1/quiz/submit`
 
@@ -38,9 +40,6 @@ Adaptive AI-powered learning platform with multi-agent Socratic tutoring, YouTub
 *   `GET /api/v1/users/{user_id}` (Get User By Id)
 *   `PUT /api/v1/users/{user_id}/edit` (Edit User)
 *   `PATCH /api/v1/users/{user_id}/change-password` (Change Password)
-
-> [!NOTE]
-> `GET /api/v1/academic/search` is currently bypassed. The Flutter client implements its own `AcademicService` to directly query SemanticScholar and OpenAlex instead of routing through the backend.
 
 ---
 
