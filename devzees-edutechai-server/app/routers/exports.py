@@ -13,7 +13,7 @@ from xhtml2pdf import pisa
 
 from app.dependencies import get_current_user, require_privilege
 from app.exceptions import BadRequestException, NotFoundException
-from app.privileges_config import ET_EXPORT_MARKDOWN, ET_EXPORT_PDF
+from app.privileges_config import ET_EXPORT_HTML, ET_EXPORT_MARKDOWN, ET_EXPORT_PDF
 from models.db_models import User
 from app.routers.learning import get_session_or_404
 
@@ -58,6 +58,54 @@ def _get_attr(item, key, default=None):
     if isinstance(item, dict):
         return item.get(key, default)
     return getattr(item, key, default)
+
+
+LEVEL_ICONS = {
+    1: "🧭",
+    2: "🔍",
+    3: "⚡",
+    4: "🧠",
+    5: "📚",
+    6: "🎯",
+    7: "🔮",
+    8: "🏛️",
+    9: "💡",
+    10: "👑",
+}
+
+
+def _calculate_level_and_grade(xp_earned: int, quiz_scores_map: dict | None = None) -> dict:
+    """Calculate the student's gamification level title and academic performance grade."""
+    from services.gamification import calculate_level
+
+    level_info = calculate_level(xp_earned or 0)
+    level_num = level_info.get("level", 1)
+    level_title = level_info.get("title", "Curious Explorer")
+    level_icon = LEVEL_ICONS.get(level_num, "🌟")
+
+    letter_grade = "A+"
+    if quiz_scores_map and len(quiz_scores_map) > 0:
+        avg = sum(quiz_scores_map.values()) / len(quiz_scores_map)
+        if avg >= 0.90:
+            letter_grade = "A+"
+        elif avg >= 0.80:
+            letter_grade = "A"
+        elif avg >= 0.70:
+            letter_grade = "B"
+        elif avg >= 0.60:
+            letter_grade = "C"
+        else:
+            letter_grade = "Pass"
+
+    return {
+        "level": level_num,
+        "title": level_title,
+        "icon": level_icon,
+        "grade": letter_grade,
+        "display": f"{level_icon} {level_title}",
+        "badge": f"Level {level_num} • Grade {letter_grade}",
+        "clean_title": level_title,
+    }
 
 
 def _sanitize_text_for_pdf(text: str) -> str:
@@ -130,6 +178,50 @@ def _sanitize_text_for_pdf(text: str) -> str:
     return "".join(cleaned)
 
 
+def _render_mermaid_for_pdf(m_code: str) -> str:
+    """
+    Parse Mermaid flowchart code into a clean, printable visual flow table for PDF.
+    Extracts nodes and transitions into structured table rows with arrow connectors,
+    falling back to formatted code block if no explicit transitions are found.
+    """
+    lines = [line.strip() for line in m_code.strip().split("\n") if line.strip()]
+    transitions = []
+    node_labels = {}
+
+    for line in lines:
+        for match in re.finditer(r'([a-zA-Z0-9_\-]+)\s*(?:\[\s*\(?"(.*?)"\)?\s*\]|\(\s*\["(.*?)"\]\s*\))', line):
+            nid = match.group(1)
+            lbl = match.group(2) or match.group(3)
+            if lbl:
+                node_labels[nid] = lbl.strip()
+
+    for line in lines:
+        edge_match = re.search(r'([a-zA-Z0-9_\-]+)\s*--+>(?:\|"?(.*?)"?\|)?\s*([a-zA-Z0-9_\-]+)', line)
+        if edge_match:
+            src = edge_match.group(1)
+            edge_lbl = edge_match.group(2) or ""
+            dst = edge_match.group(3)
+            src_name = node_labels.get(src, src)
+            dst_name = node_labels.get(dst, dst)
+            transitions.append((src_name, edge_lbl.strip(), dst_name))
+
+    if transitions:
+        flow_rows = []
+        for i, (src, edge_lbl, dst) in enumerate(transitions):
+            if i == 0:
+                s_esc = html.escape(_sanitize_text_for_pdf(src))
+                flow_rows.append(f'<tr><td class="flow-node-cell"><strong>{s_esc}</strong></td></tr>')
+            arrow_txt = f'&darr; <em>{html.escape(_sanitize_text_for_pdf(edge_lbl))}</em>' if edge_lbl else '&darr;'
+            flow_rows.append(f'<tr><td class="flow-arrow-cell">{arrow_txt}</td></tr>')
+            d_esc = html.escape(_sanitize_text_for_pdf(dst))
+            flow_rows.append(f'<tr><td class="flow-node-cell"><strong>{d_esc}</strong></td></tr>')
+
+        return f'<table class="flow-sequence-table">{"".join(flow_rows)}</table>'
+    else:
+        clean_code = html.escape(_sanitize_text_for_pdf(m_code.strip()))
+        return f'<pre class="diagram-code-box"><code>{clean_code}</code></pre>'
+
+
 def generate_markdown(memory) -> str:
     """
     Generate an attractive, concise, and structured Markdown string
@@ -160,11 +252,13 @@ def generate_markdown(memory) -> str:
     md += f"> **Exported On:** {datetime.now().strftime('%B %d, %Y at %I:%M %p')}\n\n"
 
     # ─── Key Metrics Table ──────────────────────────────────────
+    level_grade_data = _calculate_level_and_grade(xp_earned, quiz_scores_map)
     md += "### 📊 Journey Overview\n\n"
     md += "| Metric | Details |\n"
     md += "|---|---|\n"
     md += f"| **Learning Mode** | {mode_str.replace('_', ' ').title()} |\n"
     md += f"| **Student Level** | {str(student_level).replace('_', ' ').title()} |\n"
+    md += f"| **Level Grade** | {level_grade_data['display']} ({level_grade_data['badge']}) |\n"
     md += f"| **Milestones Completed** | {completed_steps}/{total_steps} ({progress_pct:.0f}%) |\n"
     md += f"| **Total XP Earned** | +{xp_earned} XP |\n"
     md += f"| **Learning Streak** | {streak_count} days |\n\n"
@@ -351,28 +445,107 @@ def generate_pdf(memory) -> bytes:
     topic_clean = _sanitize_text_for_pdf(topic)
     mode_clean = _sanitize_text_for_pdf(mode_str.replace("_", " ").title())
     level_clean = _sanitize_text_for_pdf(str(student_level).replace("_", " ").title())
+    level_grade_data = _calculate_level_and_grade(xp_earned, quiz_scores_map)
+    level_title_clean = _sanitize_text_for_pdf(level_grade_data["clean_title"])
+    level_badge_clean = _sanitize_text_for_pdf(level_grade_data["badge"])
 
     # Build PDF Body HTML with clean non-list containers for Quizzes and pre-blocks for code
     body_html = ""
 
-    # 1. Overview Table
+    # 1. Hero Overview Banner & Metrics Table (Matches HTML design)
     body_html += f"""
-    <div class="card">
-        <h3>Journey Overview</h3>
-        <table class="overview-table">
-            <tr><th style="width: 35%;">Metric</th><th>Details</th></tr>
-            <tr><td><strong>Topic</strong></td><td>{topic_clean}</td></tr>
-            <tr><td><strong>Learning Mode</strong></td><td>{mode_clean}</td></tr>
-            <tr><td><strong>Student Level</strong></td><td>{level_clean}</td></tr>
-            <tr><td><strong>Milestones Completed</strong></td><td>{completed_steps}/{total_steps} ({progress_pct:.0f}%)</td></tr>
-            <tr><td><strong>Total XP Earned</strong></td><td>+{xp_earned} XP</td></tr>
-            <tr><td><strong>Learning Streak</strong></td><td>{streak_count} days</td></tr>
-        </table>
-    </div>
+    <table class="hero-banner-table">
+        <tr>
+            <td colspan="6" class="hero-header-cell">
+                <div class="hero-title">{topic_clean}</div>
+                <div class="hero-subtitle">Exported on {datetime.now().strftime('%B %d, %Y')} &bull; 100% Mastered Journey</div>
+            </td>
+        </tr>
+        <tr>
+            <td class="hero-metric-cell">
+                <div class="metric-label">Learning Mode</div>
+                <div class="metric-val">{mode_clean}</div>
+            </td>
+            <td class="hero-metric-cell">
+                <div class="metric-label">Student Level</div>
+                <div class="metric-val">{level_clean}</div>
+            </td>
+            <td class="hero-metric-cell highlight-level-pdf">
+                <div class="metric-label">Level Grade</div>
+                <div class="metric-val">{level_title_clean}</div>
+                <div class="metric-sub-pdf">{level_badge_clean}</div>
+            </td>
+            <td class="hero-metric-cell">
+                <div class="metric-label">Milestones</div>
+                <div class="metric-val">{completed_steps}/{total_steps}</div>
+            </td>
+            <td class="hero-metric-cell">
+                <div class="metric-label">XP Earned</div>
+                <div class="metric-val">+{xp_earned} XP</div>
+            </td>
+            <td class="hero-metric-cell">
+                <div class="metric-label">Streak</div>
+                <div class="metric-val">{streak_count} Days</div>
+            </td>
+        </tr>
+    </table>
     """
 
-    # 2. Milestones
-    body_html += '<h2 style="margin-top: 24px; border-bottom: 2px solid #4F46E5; padding-bottom: 4px;">Mastered Milestones</h2>'
+    # 2. Executive Milestone Roadmap Table (Mirrors HTML Learning Journey Milestone Path)
+    if len(steps) >= 2:
+        path_rows = []
+        for si, st in enumerate(steps):
+            s_title = _get_attr(st, "title", f"Step {si + 1}")
+            s_title_clean = html.escape(_sanitize_text_for_pdf(str(s_title)))
+            path_rows.append(f"""
+            <tr>
+                <td class="path-step-col">
+                    <table class="path-inner-table">
+                        <tr>
+                            <td class="path-num-cell">STEP {si + 1}</td>
+                            <td class="path-title-cell">{s_title_clean}</td>
+                            <td class="path-badge-cell">[100% Mastered]</td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            """)
+            path_rows.append('<tr><td class="path-arrow-col">&darr;</td></tr>')
+
+        path_rows.append("""
+        <tr>
+            <td class="path-step-col">
+                <table class="path-mastered-table">
+                    <tr>
+                        <td class="path-mastered-cell">
+                            <strong>JOURNEY MASTERED</strong> &bull; All milestones completed with comprehensive retention
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        """)
+
+        body_html += f"""
+        <table class="roadmap-table-pdf">
+            <tr>
+                <td class="roadmap-header-cell">
+                    <span class="roadmap-badge">[Roadmap]</span>
+                    <span class="roadmap-heading">Learning Journey Milestone Path</span>
+                </td>
+            </tr>
+            <tr>
+                <td class="roadmap-body-cell">
+                    <table class="roadmap-path-table">
+                        {"".join(path_rows)}
+                    </table>
+                </td>
+            </tr>
+        </table>
+        """
+
+    # 3. Milestones
+    body_html += '<h2 class="section-title">Mastered Milestones</h2>'
 
     for step in steps:
         step_idx = _get_attr(step, "index", 0)
@@ -382,18 +555,40 @@ def generate_pdf(memory) -> bytes:
 
         body_html += f"""
         <div class="milestone-block">
-            <h3 class="milestone-title">Milestone {step_idx + 1}: {title} <span class="badge-success">[Mastered]</span></h3>
+            <table class="milestone-header-table">
+                <tr>
+                    <td class="milestone-header-left">
+                        <span class="milestone-badge">MILESTONE {step_idx + 1}</span>
+                        <span class="milestone-heading">{title}</span>
+                    </td>
+                    <td class="milestone-header-right">
+                        <span class="badge-success">100% Mastered</span>
+                    </td>
+                </tr>
+            </table>
         """
 
         if description:
-            body_html += f'<p class="objective-box"><strong>Objective:</strong> {description} <em>(Est. {est_min} min)</em></p>'
+            body_html += f'<div class="objective-box"><strong>Objective:</strong> {description} <em>(Est. {est_min} min)</em></div>'
 
         # Tutor explanation
         explanation = _get_attr(step, "tutor_explanation", "")
         if explanation:
-            # Strip Mermaid diagrams
-            explanation = re.sub(r"```mermaid\s*\n.*?```", "", explanation, flags=re.DOTALL)
-            sanitized_exp = _sanitize_text_for_pdf(explanation)
+            mermaid_blocks = []
+
+            def _extract_mermaid_pdf(match):
+                idx = len(mermaid_blocks)
+                mermaid_blocks.append(match.group(1).strip())
+                return f"\n\n<!--MERMAID_PLACEHOLDER_{idx}-->\n\n"
+
+            explanation_clean = re.sub(
+                r"```(?:mermaid|flowchart)[^\n]*\n(.*?)```",
+                _extract_mermaid_pdf,
+                explanation,
+                flags=re.DOTALL,
+            )
+
+            sanitized_exp = _sanitize_text_for_pdf(explanation_clean)
 
             # Convert to markdown with fenced_code and tables
             exp_html = markdown.markdown(sanitized_exp, extensions=["tables", "fenced_code"])
@@ -404,21 +599,46 @@ def generate_pdf(memory) -> bytes:
                 exp_html,
                 flags=re.DOTALL,
             )
-            body_html += f'<h4>Key Conceptual Takeaways</h4><div class="explanation-content">{exp_html}</div>'
+
+            # Re-inject Mermaid diagrams as executive PDF diagram cards
+            for idx, m_code in enumerate(mermaid_blocks):
+                diagram_rendered = _render_mermaid_for_pdf(m_code)
+                diagram_card = f"""
+                <table class="diagram-card-pdf">
+                    <tr>
+                        <td class="diagram-header-cell">
+                            <span class="diagram-badge">[Architecture]</span>
+                            <span class="diagram-heading">Concept Architecture &amp; Flowchart</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="diagram-body-cell">
+                            {diagram_rendered}
+                        </td>
+                    </tr>
+                </table>
+                """
+                exp_html = re.sub(
+                    rf"(?:<p>)?<!--MERMAID_PLACEHOLDER_{idx}-->(?:</p>)?",
+                    diagram_card,
+                    exp_html,
+                )
+
+            body_html += f'<h4 class="subhead">Key Conceptual Takeaways</h4><div class="explanation-content">{exp_html}</div>'
 
         # Socratic Prompts
         socratic_qs = _get_attr(step, "socratic_questions", []) or []
         if socratic_qs:
-            body_html += "<h4>Reflection & Socratic Prompts</h4><ol class='socratic-list'>"
+            body_html += "<h4 class='subhead'>Reflection & Socratic Prompts</h4><ol class='socratic-list'>"
             for q in socratic_qs:
                 q_clean = _sanitize_text_for_pdf(q)
                 body_html += f"<li>{q_clean}</li>"
             body_html += "</ol>"
 
-        # Recommended Video Clips (Top 2 to keep document concise)
+        # Recommended Video Clips
         videos = _get_attr(step, "videos", []) or []
         if videos:
-            body_html += "<h4>Recommended Video Clips</h4><table class='video-table'>"
+            body_html += "<h4 class='subhead'>Recommended Video Clips</h4><table class='video-table'>"
             for vid in videos[:2]:
                 v_title = _sanitize_text_for_pdf(_get_attr(vid, "title", "Video Clip"))
                 v_channel = _sanitize_text_for_pdf(_get_attr(vid, "channel", "YouTube"))
@@ -426,23 +646,23 @@ def generate_pdf(memory) -> bytes:
                 if any(bad in v_exp.lower() for bad in ["bootcamp", "discount", "$", "code ", "off "]):
                     v_exp = ""
                 snippet = f"<br/><small style='color: #64748B;'>{v_exp[:110]}...</small>" if v_exp else ""
-                body_html += f"<tr><td><strong>{v_title}</strong> — <em>{v_channel}</em>{snippet}</td></tr>"
+                body_html += f"<tr><td class='video-cell'><span class='video-tag'>VIDEO</span> <strong>{v_title}</strong> &mdash; <em>{v_channel}</em>{snippet}</td></tr>"
             body_html += "</table>"
 
         # Academic Papers
         step_papers = _get_attr(step, "papers", []) or []
         if step_papers:
-            body_html += "<h4>Academic Research Papers</h4><ul class='paper-list'>"
+            body_html += "<h4 class='subhead'>Academic Research Papers</h4><ul class='paper-list'>"
             for paper in step_papers[:2]:
                 p_title = _sanitize_text_for_pdf(_get_attr(paper, "title", "Research Paper"))
                 p_authors = _get_attr(paper, "authors", [])
                 p_year = _get_attr(paper, "year", None)
                 year_str = f" ({p_year})" if p_year else ""
                 authors_str = _sanitize_text_for_pdf(", ".join(p_authors[:2])) if p_authors else "Scholarly Source"
-                body_html += f"<li><strong>{p_title}</strong>{year_str} — <em>{authors_str}</em></li>"
+                body_html += f"<li><strong>{p_title}</strong>{year_str} &mdash; <em>{authors_str}</em></li>"
             body_html += "</ul>"
 
-        # Comprehension Quiz (Table structure — completely fixes the 1, 2, 3 -> 6, 7 -> 10, 11, 12 list bug)
+        # Comprehension Quiz (Table structure matching interactive cards in HTML)
         quiz_data = _get_attr(step, "quiz", []) or []
         quiz_score = _get_attr(step, "quiz_score", None)
         if quiz_score is None:
@@ -453,7 +673,7 @@ def generate_pdf(memory) -> bytes:
 
         if quiz_data and isinstance(quiz_data, list) and len(quiz_data) > 0:
             score_str = f"{quiz_score:.0%}" if quiz_score is not None else "100%"
-            body_html += f"<h4>Comprehension Quiz Results (Score: {score_str})</h4>"
+            body_html += f"<h4 class='subhead'>Comprehension Quiz Results (Score: {score_str})</h4>"
             for qi, q_item in enumerate(quiz_data):
                 q_text = _sanitize_text_for_pdf(_get_attr(q_item, "question", f"Question {qi + 1}"))
                 correct_ans = _sanitize_text_for_pdf(str(_get_attr(q_item, "correct_answer", "")))
@@ -480,38 +700,60 @@ def generate_pdf(memory) -> bytes:
 
                 body_html += f"""
                 <div class="quiz-card">
-                    <p class="quiz-q-title"><strong>Q{qi + 1}: {q_text}</strong></p>
+                    <table class="quiz-title-table">
+                        <tr>
+                            <td class="q-title-left"><span class="q-num">Q{qi + 1}</span> <strong>{q_text}</strong></td>
+                            <td class="q-title-right">{status_badge}</td>
+                        </tr>
+                    </table>
                     <table class="quiz-ans-table">
                         <tr>
-                            <td style="width: 25%;"><strong>Your Answer:</strong></td>
-                            <td>{student_ans_clean} {status_badge}</td>
+                            <td style="width: 25%; color: #64748B;"><strong>Your Answer:</strong></td>
+                            <td>{student_ans_clean}</td>
                         </tr>
                         <tr>
-                            <td><strong>Correct Answer:</strong></td>
-                            <td>{correct_ans}</td>
+                            <td style="color: #64748B;"><strong>Correct Answer:</strong></td>
+                            <td><strong style="color: #059669;">{correct_ans}</strong></td>
                         </tr>
-                        {"<tr><td colspan='2'><small style='color: #475569;'><em>Explanation:</em> " + explanation_text + "</small></td></tr>" if explanation_text else ""}
+                        {"<tr><td colspan='2' class='quiz-exp-cell'><small style='color: #475569;'><em>Explanation:</em> " + explanation_text + "</small></td></tr>" if explanation_text else ""}
                     </table>
                 </div>
                 """
 
         body_html += "</div><hr class='milestone-divider'/>"
 
-    # 3. Session Mastery Summary
+    # 3. Session Mastery Summary (Matching HTML 3-metric summary card)
     if quiz_scores_map:
         avg_score = sum(quiz_scores_map.values()) / len(quiz_scores_map)
-        body_html += f"""
-        <div class="card summary-card">
-            <h3>Session Mastery Summary</h3>
-            <table class="overview-table">
-                <tr><td><strong>Comprehension Quiz Average:</strong></td><td>{avg_score:.0%}</td></tr>
-                <tr><td><strong>Milestone Completion Rate:</strong></td><td>100% ({total_steps}/{total_steps} steps)</td></tr>
-                <tr><td><strong>Total Experience Earned:</strong></td><td>+{xp_earned} XP</td></tr>
-            </table>
-        </div>
-        """
+        avg_score_str = f"{avg_score:.0%}"
+    else:
+        avg_score_str = "100%"
 
-    body_html += '<p class="footer-note">Generated by EduTechAI — Your AI-Powered Learning Companion</p>'
+    body_html += f"""
+    <table class="summary-card-table">
+        <tr>
+            <td colspan="3" class="summary-card-header">
+                <h3>Session Mastery Summary</h3>
+            </td>
+        </tr>
+        <tr>
+            <td class="summary-metric-col">
+                <div class="summary-metric-label">Quiz Score Average</div>
+                <div class="summary-metric-val">{avg_score_str}</div>
+            </td>
+            <td class="summary-metric-col">
+                <div class="summary-metric-label">Completion Rate</div>
+                <div class="summary-metric-val">100%</div>
+            </td>
+            <td class="summary-metric-col">
+                <div class="summary-metric-label">Total Experience</div>
+                <div class="summary-metric-val">+{xp_earned} XP</div>
+            </td>
+        </tr>
+    </table>
+    """
+
+    body_html += '<p class="footer-note">Generated by EduTechAI &mdash; Your AI-Powered Learning Companion</p>'
 
     styled_html = f"""
     <!DOCTYPE html>
@@ -531,16 +773,16 @@ def generate_pdf(memory) -> bytes:
                 margin: 0;
                 padding: 0;
             }}
-            /* ── App Brand Header (Pure CSS vector, zero raw emojis) ── */
+            /* ── App Brand Header ── */
             .logo-table {{
                 width: 100%;
                 border: none;
-                margin-bottom: 14px;
+                margin-bottom: 12px;
                 border-bottom: 2px solid #4F46E5;
                 padding-bottom: 8px;
             }}
             .logo-brand {{
-                font-size: 20pt;
+                font-size: 18pt;
                 font-weight: bold;
                 color: #0F172A;
                 letter-spacing: -0.5px;
@@ -574,41 +816,279 @@ def generate_pdf(memory) -> bytes:
                 line-height: 1.4;
                 text-align: right;
             }}
-            /* ── Typography & Headings ── */
-            h2 {{
-                color: #1E293B;
-                font-size: 13pt;
-                font-weight: bold;
-                margin-top: 16px;
-                margin-bottom: 8px;
-                page-break-after: avoid;
+            /* ── Hero Banner Card (Mirrors HTML Hero Card) ── */
+            .hero-banner-table {{
+                width: 100%;
+                border: 1px solid #CBD5E1;
+                background-color: #0F172A;
+                border-radius: 6px;
+                margin-bottom: 16px;
+                page-break-inside: avoid;
             }}
-            h3 {{
-                color: #4F46E5;
+            .hero-header-cell {{
+                border: none;
+                padding: 12px 14px 10px 14px;
+                color: #FFFFFF;
+                border-bottom: 1px solid #334155;
+            }}
+            .hero-title {{
+                font-size: 15pt;
+                font-weight: bold;
+                color: #FFFFFF;
+                margin-bottom: 2px;
+            }}
+            .hero-subtitle {{
+                font-size: 8.5pt;
+                color: #94A3B8;
+            }}
+            .hero-metric-cell {{
+                border: none;
+                background-color: #1E293B;
+                padding: 8px 10px;
+                text-align: center;
+                border-right: 1px solid #334155;
+            }}
+            .highlight-level-pdf {{
+                background-color: #312E81 !important;
+                border: 1px solid #6366F1 !important;
+            }}
+            .metric-sub-pdf {{
+                font-size: 6.5pt;
+                color: #A5B4FC;
+                margin-top: 2px;
+                font-weight: bold;
+            }}
+            .metric-label {{
+                font-size: 7.5pt;
+                color: #94A3B8;
+                text-transform: uppercase;
+                margin-bottom: 2px;
+                font-weight: 600;
+            }}
+            .metric-val {{
                 font-size: 11pt;
                 font-weight: bold;
-                margin-top: 12px;
-                margin-bottom: 4px;
+                color: #38BDF8;
+            }}
+            /* ── Roadmap Table (Mirrors HTML Journey Milestone Path) ── */
+            .roadmap-table-pdf {{
+                width: 100%;
+                border: 1px solid #CBD5E1;
+                background-color: #FFFFFF;
+                border-radius: 6px;
+                margin-bottom: 14px;
+                page-break-inside: avoid;
+            }}
+            .roadmap-header-cell {{
+                background-color: #F8FAFC;
+                border: none;
+                border-bottom: 1px solid #E2E8F0;
+                padding: 7px 10px;
+            }}
+            .roadmap-badge {{
+                font-size: 7pt;
+                background-color: #EEF2FF;
+                color: #4F46E5;
+                font-weight: bold;
+                padding: 2px 5px;
+                border-radius: 3px;
+                margin-right: 6px;
+            }}
+            .roadmap-heading {{
+                font-size: 9pt;
+                font-weight: bold;
+                color: #0F172A;
+            }}
+            .roadmap-body-cell {{
+                border: none;
+                padding: 8px 12px;
+            }}
+            .roadmap-path-table {{
+                width: 100%;
+                border: none;
+            }}
+            .path-step-col {{
+                border: none;
+                padding: 0;
+            }}
+            .path-inner-table {{
+                width: 100%;
+                background-color: #F8FAFC;
+                border: 1px solid #CBD5E1;
+                border-radius: 4px;
+                padding: 4px 8px;
+            }}
+            .path-num-cell {{
+                border: none;
+                font-size: 7pt;
+                font-weight: bold;
+                color: #4F46E5;
+                width: 55px;
+            }}
+            .path-title-cell {{
+                border: none;
+                font-size: 8.5pt;
+                font-weight: bold;
+                color: #1E293B;
+            }}
+            .path-badge-cell {{
+                border: none;
+                font-size: 7pt;
+                font-weight: bold;
+                color: #059669;
+                text-align: right;
+                width: 100px;
+            }}
+            .path-arrow-col {{
+                border: none;
+                text-align: center;
+                font-size: 8.5pt;
+                font-weight: bold;
+                color: #6366F1;
+                padding: 1px 0;
+            }}
+            .path-mastered-table {{
+                width: 100%;
+                background-color: #ECFDF5;
+                border: 1.5px solid #10B981;
+                border-radius: 5px;
+                padding: 5px 10px;
+            }}
+            .path-mastered-cell {{
+                border: none;
+                text-align: center;
+                font-size: 8.5pt;
+                color: #065F46;
+            }}
+            /* ── Concept Architecture & Flowchart Cards (Mirrors HTML Mermaid Card) ── */
+            .diagram-card-pdf {{
+                width: 100%;
+                border: 1px solid #CBD5E1;
+                background-color: #FFFFFF;
+                border-radius: 6px;
+                margin: 10px 0;
+                page-break-inside: avoid;
+            }}
+            .diagram-header-cell {{
+                background-color: #F8FAFC;
+                border: none;
+                border-bottom: 1px solid #E2E8F0;
+                padding: 6px 10px;
+            }}
+            .diagram-badge {{
+                font-size: 7pt;
+                background-color: #EEF2FF;
+                color: #4F46E5;
+                font-weight: bold;
+                padding: 2px 5px;
+                border-radius: 3px;
+                margin-right: 6px;
+            }}
+            .diagram-heading {{
+                font-size: 8.5pt;
+                font-weight: bold;
+                color: #0F172A;
+            }}
+            .diagram-body-cell {{
+                border: none;
+                padding: 8px 10px;
+                background-color: #F8FAFC;
+            }}
+            .flow-sequence-table {{
+                width: 100%;
+                border: none;
+            }}
+            .flow-node-cell {{
+                background-color: #FFFFFF;
+                border: 1px solid #CBD5E1;
+                border-radius: 4px;
+                padding: 5px 8px;
+                font-size: 8pt;
+                color: #0F172A;
+                text-align: center;
+            }}
+            .flow-arrow-cell {{
+                border: none;
+                text-align: center;
+                font-size: 8pt;
+                font-weight: bold;
+                color: #4F46E5;
+                padding: 2px 0;
+            }}
+            .diagram-code-box {{
+                background-color: #0F172A;
+                color: #38BDF8;
+                padding: 8px 10px;
+                border-radius: 4px;
+                font-family: monospace;
+                font-size: 7.5pt;
+            }}
+            /* ── Section Title ── */
+            .section-title {{
+                color: #0F172A;
+                font-size: 13pt;
+                font-weight: bold;
+                margin-top: 14px;
+                margin-bottom: 10px;
+                border-bottom: 2px solid #4F46E5;
+                padding-bottom: 4px;
                 page-break-after: avoid;
             }}
-            h4 {{
-                color: #334155;
-                font-size: 9.5pt;
+            /* ── Milestone Cards (Mirrors HTML milestone-card) ── */
+            .milestone-block {{
+                border: 1px solid #E2E8F0;
+                background-color: #FFFFFF;
+                border-radius: 6px;
+                padding: 10px 12px;
+                margin-bottom: 12px;
+                page-break-inside: avoid;
+            }}
+            .milestone-header-table {{
+                width: 100%;
+                border: none;
+                margin: 0 0 6px 0;
+            }}
+            .milestone-header-left {{
+                border: none;
+                padding: 0;
+            }}
+            .milestone-header-right {{
+                border: none;
+                padding: 0;
+                text-align: right;
+                width: 100px;
+            }}
+            .milestone-badge {{
+                font-size: 7.5pt;
+                background-color: #EEF2FF;
+                color: #4F46E5;
                 font-weight: bold;
-                margin-top: 10px;
+                border: 1px solid #C7D2FE;
+                padding: 2px 6px;
+                border-radius: 3px;
+                margin-right: 6px;
+            }}
+            .milestone-heading {{
+                font-size: 11pt;
+                font-weight: bold;
+                color: #0F172A;
+            }}
+            .subhead {{
+                color: #334155;
+                font-size: 9pt;
+                font-weight: bold;
+                margin-top: 8px;
                 margin-bottom: 3px;
                 page-break-after: avoid;
-            }}
-            p {{
-                margin: 0 0 6px 0;
             }}
             .objective-box {{
                 background-color: #F8FAFC;
                 border-left: 3px solid #6366F1;
-                padding: 5px 8px;
+                padding: 6px 10px;
                 font-size: 8.5pt;
                 color: #475569;
                 margin-bottom: 8px;
+                border-radius: 3px;
             }}
             /* ── Badges ── */
             .badge-success {{
@@ -616,7 +1096,7 @@ def generate_pdf(memory) -> bytes:
                 background-color: #ECFDF5;
                 color: #059669;
                 border: 1px solid #A7F3D0;
-                padding: 1px 5px;
+                padding: 2px 6px;
                 border-radius: 3px;
                 font-weight: bold;
             }}
@@ -625,7 +1105,7 @@ def generate_pdf(memory) -> bytes:
                 background-color: #FEF2F2;
                 color: #DC2626;
                 border: 1px solid #FECACA;
-                padding: 1px 5px;
+                padding: 2px 6px;
                 border-radius: 3px;
                 font-weight: bold;
             }}
@@ -633,10 +1113,10 @@ def generate_pdf(memory) -> bytes:
                 font-size: 7.5pt;
                 background-color: #F1F5F9;
                 color: #64748B;
-                padding: 1px 5px;
+                padding: 2px 6px;
                 border-radius: 3px;
             }}
-            /* ── Code Blocks (Monospace + background card) ── */
+            /* ── Code Blocks ── */
             pre {{
                 background-color: #F8FAFC;
                 border: 1px solid #E2E8F0;
@@ -655,49 +1135,72 @@ def generate_pdf(memory) -> bytes:
                 background-color: #F1F5F9;
                 padding: 1px 3px;
             }}
-            /* ── Tables ── */
-            table {{
-                border-collapse: collapse;
-                width: 100%;
-                margin-top: 4px;
-                margin-bottom: 8px;
-                page-break-inside: avoid;
-            }}
-            th, td {{
-                border: 1px solid #E2E8F0;
-                padding: 4px 8px;
-                text-align: left;
-                font-size: 8.5pt;
-            }}
-            th {{
-                background-color: #F8FAFC;
-                color: #334155;
-                font-weight: bold;
-            }}
-            /* ── Quiz Card Layout ── */
+            /* ── Quiz Card (Mirrors HTML interactive-quiz-item) ── */
             .quiz-card {{
-                border: 1px solid #E2E8F0;
-                background-color: #FAFAFA;
-                padding: 6px 8px;
+                border: 1px solid #CBD5E1;
+                border-left: 4px solid #4F46E5;
+                background-color: #F8FAFC;
+                padding: 8px 10px;
                 margin-bottom: 6px;
                 border-radius: 4px;
                 page-break-inside: avoid;
             }}
-            .quiz-q-title {{
-                font-size: 9pt;
+            .quiz-title-table {{
+                width: 100%;
+                border: none;
+                margin: 0 0 4px 0;
+            }}
+            .q-title-left {{
+                border: none;
+                padding: 0;
+                font-size: 8.5pt;
                 color: #0F172A;
-                margin-bottom: 4px;
+            }}
+            .q-title-right {{
+                border: none;
+                padding: 0;
+                text-align: right;
+                width: 70px;
+            }}
+            .q-num {{
+                font-weight: bold;
+                color: #4F46E5;
+                margin-right: 4px;
             }}
             .quiz-ans-table {{
                 margin: 0;
                 background-color: #FFFFFF;
+                border: 1px solid #E2E8F0;
             }}
             .quiz-ans-table td {{
-                border: 1px solid #EEF2FF;
+                border: 1px solid #E2E8F0;
                 padding: 3px 6px;
                 font-size: 8pt;
             }}
-            /* ── Lists & Dividers ── */
+            .quiz-exp-cell {{
+                background-color: #F8FAFC;
+            }}
+            /* ── Videos & Papers ── */
+            .video-table {{
+                width: 100%;
+                border: none;
+                margin-bottom: 6px;
+            }}
+            .video-cell {{
+                background-color: #F8FAFC;
+                border: 1px solid #E2E8F0;
+                padding: 5px 8px;
+                font-size: 8pt;
+            }}
+            .video-tag {{
+                background-color: #EF4444;
+                color: #FFFFFF;
+                font-size: 6.5pt;
+                font-weight: bold;
+                padding: 1px 4px;
+                border-radius: 2px;
+                margin-right: 4px;
+            }}
             ol, ul {{
                 margin: 0 0 6px 0;
                 padding-left: 16px;
@@ -709,13 +1212,52 @@ def generate_pdf(memory) -> bytes:
             .milestone-divider {{
                 border: none;
                 border-top: 1px solid #E2E8F0;
-                margin: 12px 0;
+                margin: 10px 0;
+            }}
+            /* ── Summary Card Table (Mirrors HTML summary-card) ── */
+            .summary-card-table {{
+                width: 100%;
+                border: 1px solid #CBD5E1;
+                background-color: #0F172A;
+                border-radius: 6px;
+                margin-top: 14px;
+                margin-bottom: 8px;
+                page-break-inside: avoid;
+            }}
+            .summary-card-header {{
+                border: none;
+                padding: 8px 12px;
+                border-bottom: 1px solid #334155;
+            }}
+            .summary-card-header h3 {{
+                color: #FFFFFF;
+                margin: 0;
+                font-size: 11pt;
+            }}
+            .summary-metric-col {{
+                border: none;
+                background-color: #1E293B;
+                padding: 10px;
+                text-align: center;
+                border-right: 1px solid #334155;
+            }}
+            .summary-metric-label {{
+                font-size: 7.5pt;
+                color: #94A3B8;
+                text-transform: uppercase;
+                margin-bottom: 3px;
+                font-weight: 600;
+            }}
+            .summary-metric-val {{
+                font-size: 13pt;
+                font-weight: bold;
+                color: #38BDF8;
             }}
             .footer-note {{
                 font-size: 8pt;
                 color: #94A3B8;
                 text-align: center;
-                margin-top: 14px;
+                margin-top: 12px;
             }}
         </style>
     </head>
@@ -777,6 +1319,44 @@ def generate_html(memory) -> str:
     level_esc = html.escape(str(student_level).replace("_", " ").title())
     date_str = datetime.now().strftime("%B %d, %Y at %I:%M %p")
 
+    # Calculate Level & Grade achieved
+    level_grade_data = _calculate_level_and_grade(xp_earned, quiz_scores_map)
+    level_title_esc = html.escape(level_grade_data["title"])
+    level_display_esc = html.escape(level_grade_data["display"])
+    level_badge_esc = html.escape(level_grade_data["badge"])
+
+    # Generate Journey Roadmap Flowchart
+    roadmap_html = ""
+    if len(steps) >= 2:
+        roadmap_nodes = []
+        roadmap_edges = []
+        for si, st in enumerate(steps):
+            s_title = _get_attr(st, "title", f"Step {si + 1}")
+            clean_title = html.escape(str(s_title)).replace('"', "'").replace("\n", " ")
+            nid = f"M{si + 1}"
+            roadmap_nodes.append(f'        {nid}["{si + 1}. {clean_title} ✅"]:::stepNode')
+            if si > 0:
+                roadmap_edges.append(f"        M{si} --> {nid}")
+        roadmap_edges.append(f'        M{len(steps)} --> FIN(["🏆 Journey Mastered"]):::finishNode')
+        roadmap_mermaid_code = (
+            "flowchart TD\n"
+            "        classDef stepNode fill:#EFF6FF,stroke:#3B82F6,stroke-width:1.5px,color:#1E3A8A,font-weight:600;\n"
+            "        classDef finishNode fill:#ECFDF5,stroke:#10B981,stroke-width:2px,color:#065F46,font-weight:700;\n"
+            + "\n".join(roadmap_nodes + roadmap_edges)
+        )
+        roadmap_html = f"""
+        <div class="content-block roadmap-block">
+            <div class="mermaid-canvas-card">
+                <div class="mermaid-header-bar">
+                    <span class="mermaid-label">🗺️ Learning Journey Milestone Path</span>
+                </div>
+                <div class="mermaid-body">
+                    <pre class="mermaid">{roadmap_mermaid_code}</pre>
+                </div>
+            </div>
+        </div>
+        """
+
     # Render milestones
     milestones_html = ""
     for step in steps:
@@ -786,9 +1366,9 @@ def generate_html(memory) -> str:
         est_min = _get_attr(step, "estimated_minutes", 5)
 
         milestones_html += f"""
-        <section class="milestone-card">
+        <article class="milestone-card" id="milestone-{step_idx + 1}">
             <div class="milestone-header">
-                <span class="milestone-tag">Milestone {step_idx + 1}</span>
+                <span class="milestone-tag">MILESTONE {step_idx + 1}</span>
                 <h3 class="milestone-name">{title}</h3>
                 <span class="mastered-pill">Mastered</span>
             </div>
@@ -804,7 +1384,21 @@ def generate_html(memory) -> str:
 
         explanation = _get_attr(step, "tutor_explanation", "")
         if explanation:
-            explanation_clean = re.sub(r"```mermaid\s*\n.*?```", "", explanation, flags=re.DOTALL)
+            # Safely extract Mermaid diagrams before Markdown processing so they are preserved
+            mermaid_blocks = []
+
+            def _extract_mermaid(match):
+                idx = len(mermaid_blocks)
+                mermaid_blocks.append(match.group(1).strip())
+                return f"\n\n<!--MERMAID_PLACEHOLDER_{idx}-->\n\n"
+
+            explanation_clean = re.sub(
+                r"```(?:mermaid|flowchart)[^\n]*\n(.*?)```",
+                _extract_mermaid,
+                explanation,
+                flags=re.DOTALL,
+            )
+
             exp_html = markdown.markdown(explanation_clean, extensions=["tables", "fenced_code"])
             # Format code blocks with language badge
             exp_html = re.sub(
@@ -813,6 +1407,26 @@ def generate_html(memory) -> str:
                 exp_html,
                 flags=re.DOTALL,
             )
+
+            # Re-inject Mermaid diagrams as interactive cards
+            for idx, m_code in enumerate(mermaid_blocks):
+                m_escaped = html.escape(m_code)
+                mermaid_card = f"""
+                <div class="mermaid-canvas-card">
+                    <div class="mermaid-header-bar">
+                        <span class="mermaid-label">📐 Concept Architecture &amp; Flowchart</span>
+                    </div>
+                    <div class="mermaid-body">
+                        <pre class="mermaid">{m_escaped}</pre>
+                    </div>
+                </div>
+                """
+                exp_html = re.sub(
+                    rf"(?:<p>)?<!--MERMAID_PLACEHOLDER_{idx}-->(?:</p>)?",
+                    mermaid_card,
+                    exp_html,
+                )
+
             milestones_html += f"""
             <div class="content-block">
                 <h4>🎓 Key Conceptual Takeaways</h4>
@@ -858,7 +1472,7 @@ def generate_html(memory) -> str:
                         <span class="play-icon">▶</span>
                         <div>
                             <div class="video-title">{v_title}</div>
-                            <div class="video-channel">{v_channel}</div>
+                            <div class="video-channel">{v_channel} <span class="video-url-print">({v_url_esc})</span></div>
                         </div>
                     </a>
                     {snippet}
@@ -945,6 +1559,7 @@ def generate_html(memory) -> str:
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
     <style>
         :root {{
             --primary: #4F46E5;
@@ -1084,6 +1699,22 @@ def generate_html(memory) -> str:
             border-radius: 10px;
             padding: 12px 16px;
             border: 1px solid var(--slate-200);
+        }}
+        .metric-card.highlight-level {{
+            background: linear-gradient(135deg, #EEF2FF 0%, #F5F3FF 100%);
+            border: 1px solid #C7D2FE;
+        }}
+        .metric-card.highlight-level .metric-title {{
+            color: #4F46E5;
+        }}
+        .metric-card.highlight-level .metric-value {{
+            color: #1E1B4B;
+        }}
+        .metric-sub {{
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #4F46E5;
+            margin-top: 3px;
         }}
         .metric-title {{
             font-size: 0.75rem;
@@ -1383,6 +2014,10 @@ def generate_html(memory) -> str:
                 page-break-inside: avoid;
                 margin-bottom: 16px !important;
             }}
+            .metric-card.highlight-level {{
+                background: #F8FAFC !important;
+                border: 1px solid #CBD5E1 !important;
+            }}
             .summary-card {{
                 background: #F8FAFC !important;
                 color: #0F172A !important;
@@ -1395,10 +2030,72 @@ def generate_html(memory) -> str:
                 color: #0F172A !important;
                 border: 1px solid #CBD5E1 !important;
             }}
+            .mermaid-canvas-card {{
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                border: 1px solid #CBD5E1 !important;
+                background: #FFFFFF !important;
+                box-shadow: none !important;
+                margin: 14px 0 !important;
+            }}
+            .mermaid-canvas-card svg {{
+                max-width: 100% !important;
+                height: auto !important;
+            }}
+            .video-url-print {{
+                display: inline !important;
+                font-size: 0.72rem;
+                color: #64748B;
+                word-break: break-all;
+            }}
             @page {{
                 size: A4;
                 margin: 15mm 12mm 15mm 12mm;
             }}
+        }}
+        /* ── Mermaid Diagrams ── */
+        .mermaid-canvas-card {{
+            margin: 18px 0;
+            border-radius: 12px;
+            background: #FFFFFF;
+            border: 1px solid var(--slate-200);
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }}
+        .mermaid-header-bar {{
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 16px;
+            background: #F8FAFC;
+            border-bottom: 1px solid var(--slate-200);
+        }}
+        .mermaid-label {{
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--slate-700);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }}
+        .mermaid-body {{
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: auto;
+            background: #FFFFFF;
+        }}
+        .mermaid-body svg {{
+            max-width: 100%;
+            height: auto !important;
+            display: block;
+            margin: 0 auto;
+        }}
+        .video-url-print {{
+            display: none;
         }}
     </style>
 </head>
@@ -1433,6 +2130,11 @@ def generate_html(memory) -> str:
                     <div class="metric-title">Student Level</div>
                     <div class="metric-value">{level_esc}</div>
                 </div>
+                <div class="metric-card highlight-level">
+                    <div class="metric-title">Level Grade</div>
+                    <div class="metric-value">{level_display_esc}</div>
+                    <div class="metric-sub">{level_badge_esc}</div>
+                </div>
                 <div class="metric-card">
                     <div class="metric-title">Milestones</div>
                     <div class="metric-value">{completed_steps}/{total_steps}</div>
@@ -1446,6 +2148,7 @@ def generate_html(memory) -> str:
                     <div class="metric-value">{streak_count} Days</div>
                 </div>
             </div>
+            {roadmap_html}
         </header>
 
         <!-- Milestones List -->
@@ -1474,6 +2177,26 @@ def generate_html(memory) -> str:
     </div>
 
     <script>
+        if (window.mermaid) {{
+            mermaid.initialize({{
+                startOnLoad: true,
+                theme: 'neutral',
+                securityLevel: 'loose',
+                themeVariables: {{
+                    fontFamily: 'Plus Jakarta Sans, system-ui, sans-serif',
+                    fontSize: '13px',
+                    primaryColor: '#EEF2FF',
+                    primaryBorderColor: '#6366F1',
+                    primaryTextColor: '#1E1B4B'
+                }},
+                flowchart: {{
+                    useMaxWidth: false,
+                    htmlLabels: true,
+                    curve: 'basis'
+                }}
+            }});
+        }}
+
         function downloadCurrentHtml() {{
             const blob = new Blob([document.documentElement.outerHTML], {{ type: 'text/html' }});
             const a = document.createElement('a');
@@ -1550,7 +2273,7 @@ async def export_session_pdf(
 @router.get(
     "/{session_id}/html",
     response_class=HTMLResponse,
-    dependencies=[Depends(require_privilege(ET_EXPORT_MARKDOWN, ET_EXPORT_PDF))],
+    dependencies=[Depends(require_privilege(ET_EXPORT_HTML))],
 )
 async def export_session_html(
     session_id: str,
@@ -1558,7 +2281,7 @@ async def export_session_html(
 ):
     """
     Export the learning session as an interactive, standalone HTML document.
-    Requires ET_EXPORT_MARKDOWN or ET_EXPORT_PDF privilege (Pro/Ultra).
+    Requires ET_EXPORT_HTML privilege (Pro/Ultra).
     Only available when the learning session is 100% completed.
     """
     memory = await get_session_or_404(session_id)

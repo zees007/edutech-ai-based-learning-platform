@@ -83,6 +83,8 @@ class ExportService {
     } else if (status == 403) {
       if (format == 'PDF') {
         return Exception('PDF Study Guide export requires an active Ultra subscription.');
+      } else if (format == 'HTML') {
+        return Exception('Interactive HTML report requires an active Pro or Ultra subscription.');
       }
       return Exception('Markdown export requires an active Pro or Ultra subscription.');
     } else if (status == 404) {

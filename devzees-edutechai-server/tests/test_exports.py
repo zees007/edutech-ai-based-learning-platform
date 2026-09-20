@@ -39,7 +39,7 @@ def create_sample_session(is_completed: bool = True) -> SharedMemory:
             description="Understand basic quantum state representations.",
             status=StepStatus.COMPLETE,
             estimated_minutes=8,
-            tutor_explanation="A qubit can exist in a linear combination of states |0> and |1>.\n\n```python\nimport qiskit\nqc = QuantumCircuit(1)\n```\n",
+            tutor_explanation="A qubit can exist in a linear combination of states |0> and |1>.\n\n```mermaid\ngraph TD\n    A[Classical: 0 or 1] --> B[Quantum: |0> + |1>]\n```\n\n```python\nimport qiskit\nqc = QuantumCircuit(1)\n```\n",
             socratic_questions=["What distinguishes a qubit from a classical bit?"],
             videos=[
                 YouTubeClip(
@@ -119,7 +119,7 @@ def test_generate_pdf_content():
 
 
 def test_generate_html_content():
-    """Verify standalone HTML generation with fonts, interactive cards, and print styles."""
+    """Verify standalone HTML generation with fonts, interactive cards, Mermaid diagrams, and print styles."""
     memory = create_sample_session(is_completed=True)
     html_content = generate_html(memory)
 
@@ -130,6 +130,11 @@ def test_generate_html_content():
     assert "@media print" in html_content
     assert "Plus Jakarta Sans" in html_content
     assert "interactive-quiz-item" in html_content
+    assert "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js" in html_content
+    assert "mermaid.initialize" in html_content
+    assert "Concept Architecture &amp; Flowchart" in html_content
+    assert "Learning Journey Milestone Path" in html_content
+    assert "video-url-print" in html_content
 
 
 @pytest.mark.asyncio
@@ -139,7 +144,7 @@ async def test_export_endpoints_completion_and_auth():
     from app.main import create_app
     from services.database import get_db_session, init_db
     from services.session_manager import SessionManager
-    from models.db_models import Role
+    from models.db_models import Privilege, Role, User
     from models.user_schemas import UserCreateRequest
     from services.user_service import UserService
     from sqlalchemy import select
@@ -165,9 +170,19 @@ async def test_export_endpoints_completion_and_auth():
 
             # Add Admin role (has ET_ALL) for privilege access
             admin_role = (await db.execute(select(Role).where(Role.name == "Admin"))).scalar_one_or_none()
-            if admin_role:
-                user.roles.append(admin_role)
+            if not admin_role:
+                p_all = (await db.execute(select(Privilege).where(Privilege.code == "ET_ALL"))).scalar_one_or_none()
+                if not p_all:
+                    p_all = Privilege(name="All", code="ET_ALL")
+                    db.add(p_all)
+                    await db.commit()
+                    await db.refresh(p_all)
+                admin_role = Role(name="Admin", privileges=[p_all])
+                db.add(admin_role)
                 await db.commit()
+                await db.refresh(admin_role)
+            user.roles.append(admin_role)
+            await db.commit()
 
         # Login
         login_res = await client.post("/api/v1/auth/login", json={"email": test_email, "password": "Password123!"})
@@ -212,3 +227,102 @@ async def test_export_endpoints_completion_and_auth():
         assert "text/html" in html_res.headers["content-type"]
         assert "EduTechAI" in html_res.text
         assert "window.print()" in html_res.text
+
+
+@pytest.mark.asyncio
+async def test_export_roles_and_privileges_matrix():
+    """
+    Verify RBAC access matrix across subscription roles:
+    1. Free user (no export privileges) -> 403 on MD, HTML, and PDF
+    2. Pro user (ET_EXPORT_MARKDOWN, ET_EXPORT_HTML) -> 200 on MD & HTML, 403 on PDF
+    3. Ultra user (ET_EXPORT_MARKDOWN, ET_EXPORT_HTML, ET_EXPORT_PDF) -> 200 on all
+    """
+    from httpx import ASGITransport, AsyncClient
+    from app.main import create_app
+    from services.database import get_db_session, init_db
+    from services.session_manager import SessionManager
+    from models.db_models import Privilege, Role, User
+    from models.user_schemas import UserCreateRequest
+    from services.user_service import UserService
+    from sqlalchemy import select
+
+    await init_db()
+    app = create_app()
+    sm = SessionManager()
+
+    free_email = f"free_{uuid4().hex[:8]}@example.com"
+    pro_email = f"pro_{uuid4().hex[:8]}@example.com"
+    ultra_email = f"ultra_{uuid4().hex[:8]}@example.com"
+
+    async with get_db_session() as db:
+        async def get_or_create_priv(name: str, code: str):
+            p = (await db.execute(select(Privilege).where(Privilege.code == code))).scalar_one_or_none()
+            if not p:
+                p = Privilege(name=name, code=code)
+                db.add(p)
+                await db.commit()
+                await db.refresh(p)
+            return p
+
+        p_md = await get_or_create_priv("Export Markdown", "ET_EXPORT_MARKDOWN")
+        p_html = await get_or_create_priv("Export Html", "ET_EXPORT_HTML")
+        p_pdf = await get_or_create_priv("Export Pdf", "ET_EXPORT_PDF")
+
+        # Create isolated test roles
+        role_free = Role(name=f"TFree_{uuid4().hex[:6]}", privileges=[])
+        role_pro = Role(name=f"TPro_{uuid4().hex[:6]}", privileges=[p_md, p_html])
+        role_ultra = Role(name=f"TUltra_{uuid4().hex[:6]}", privileges=[p_md, p_html, p_pdf])
+        db.add_all([role_free, role_pro, role_ultra])
+        await db.commit()
+
+        async def create_user_with_role(email: str, role: Role):
+            u = await UserService.create_user(
+                db,
+                UserCreateRequest(
+                    first_name="Test",
+                    last_name="User",
+                    email=email,
+                    password="Password123!",
+                ),
+            )
+            u.roles = [role]
+            await db.commit()
+            return u.id
+
+        free_uid = await create_user_with_role(free_email, role_free)
+        pro_uid = await create_user_with_role(pro_email, role_pro)
+        ultra_uid = await create_user_with_role(ultra_email, role_ultra)
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:
+        async def check_user_exports(email: str, uid: str):
+            login_res = await client.post("/api/v1/auth/login", json={"email": email, "password": "Password123!"})
+            assert login_res.status_code == 200
+
+            mem = create_sample_session(is_completed=True)
+            mem.user_id = uid
+            await sm.create_session(mem, user_id=uid)
+
+            res_md = await client.get(f"/api/v1/export/{mem.session_id}/md")
+            res_html = await client.get(f"/api/v1/export/{mem.session_id}/html")
+            res_pdf = await client.get(f"/api/v1/export/{mem.session_id}/pdf")
+
+            await client.post("/api/v1/auth/logout")
+            return res_md.status_code, res_html.status_code, res_pdf.status_code
+
+        # 1. Free User: 403 on MD, HTML, and PDF
+        f_md, f_html, f_pdf = await check_user_exports(free_email, free_uid)
+        assert f_md == 403
+        assert f_html == 403
+        assert f_pdf == 403
+
+        # 2. Pro User: 200 on MD & HTML, 403 on PDF
+        p_md, p_html, p_pdf = await check_user_exports(pro_email, pro_uid)
+        assert p_md == 200
+        assert p_html == 200
+        assert p_pdf == 403
+
+        # 3. Ultra User: 200 on MD, HTML, and PDF
+        u_md, u_html, u_pdf = await check_user_exports(ultra_email, ultra_uid)
+        assert u_md == 200
+        assert u_html == 200
+        assert u_pdf == 200

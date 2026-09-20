@@ -54,6 +54,7 @@ ET_ACCESS_FULL_TEXT_RESEARCH = "ET_ACCESS_FULL_TEXT_RESEARCH"
 ET_REGENERATE_STEP = "ET_REGENERATE_STEP"
 ET_UNLIMITED_FOLLOW_UPS = "ET_UNLIMITED_FOLLOW_UPS"
 ET_EXPORT_MARKDOWN = "ET_EXPORT_MARKDOWN"
+ET_EXPORT_HTML = "ET_EXPORT_HTML"
 ET_EXPORT_PDF = "ET_EXPORT_PDF"
 
 # ─── 6. QUIZ MODULE PRIVILEGES ──────────────────────────────────
@@ -98,6 +99,7 @@ ALL_PRIVILEGE_CODES = [
     ET_REGENERATE_STEP,
     ET_UNLIMITED_FOLLOW_UPS,
     ET_EXPORT_MARKDOWN,
+    ET_EXPORT_HTML,
     ET_EXPORT_PDF,
     # Quiz Module
     ET_FULL_ACCESS_QUIZ,
@@ -140,4 +142,8 @@ ENDPOINT_PRIVILEGE_MAP = {
     # Quiz Endpoints
     "GET /api/v1/quiz/{session_id}/{step_index}": ET_GENERATE_QUIZ,
     "POST /api/v1/quiz/submit": ET_SUBMIT_QUIZ,
+    # Export Endpoints
+    "GET /api/v1/export/{session_id}/md": ET_EXPORT_MARKDOWN,
+    "GET /api/v1/export/{session_id}/html": ET_EXPORT_HTML,
+    "GET /api/v1/export/{session_id}/pdf": ET_EXPORT_PDF,
 }
