@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../data/models/learning/session_response.dart';
+import '../../../../../core/providers/gamification_provider.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/text_styles.dart';
 import 'milestone_roadmap_stepper.dart';
@@ -32,58 +33,8 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
   bool _isHovered = false;
   bool _isTopicExpanded = false;
 
-  Map<String, dynamic> _calculateLevel(int totalXp) {
-    const levels = [
-      {"level": 1, "xp_required": 0, "title": "Curious Explorer"},
-      {"level": 2, "xp_required": 100, "title": "Knowledge Seeker"},
-      {"level": 3, "xp_required": 300, "title": "Quick Learner"},
-      {"level": 4, "xp_required": 600, "title": "Deep Thinker"},
-      {"level": 5, "xp_required": 1000, "title": "Rising Scholar"},
-      {"level": 6, "xp_required": 1500, "title": "Concept Master"},
-      {"level": 7, "xp_required": 2200, "title": "Wisdom Weaver"},
-      {"level": 8, "xp_required": 3000, "title": "Knowledge Architect"},
-      {"level": 9, "xp_required": 4000, "title": "Enlightened Mind"},
-      {"level": 10, "xp_required": 5500, "title": "Grand Sage"},
-    ];
-
-    var current = levels[0];
-    var nextLevel = levels.length > 1 ? levels[1] : null;
-
-    for (var i = 0; i < levels.length; i++) {
-      final levelInfo = levels[i];
-      if (totalXp >= (levelInfo["xp_required"] as int)) {
-        current = levelInfo;
-        nextLevel = (i + 1 < levels.length) ? levels[i + 1] : null;
-      } else {
-        break;
-      }
-    }
-
-    int xpInLevel;
-    int xpNeeded;
-    double progress;
-
-    if (nextLevel != null) {
-      xpInLevel = totalXp - (current["xp_required"] as int);
-      xpNeeded = (nextLevel["xp_required"] as int) - (current["xp_required"] as int);
-      progress = xpNeeded > 0 ? (xpInLevel / xpNeeded) : 1.0;
-    } else {
-      xpInLevel = totalXp - (current["xp_required"] as int);
-      xpNeeded = 0;
-      progress = 1.0;
-    }
-
-    return {
-      "level": current["level"],
-      "title": current["title"],
-      "total_xp": totalXp,
-      "xp_for_current_level": current["xp_required"],
-      "xp_for_next_level": nextLevel != null ? nextLevel["xp_required"] : current["xp_required"],
-      "xp_in_level": xpInLevel,
-      "xp_needed_for_next": xpNeeded,
-      "progress": progress.clamp(0.0, 1.0),
-    };
-  }
+  Map<String, dynamic> _calculateLevel(int totalXp) =>
+      GamificationUtils.calculateLevelData(totalXp);
 
   @override
   Widget build(BuildContext context) {
