@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
+import 'package:devzees_edutechai_client/presentation/pages/learning/widgets/main_content/neural_inference_loader.dart';
+import 'package:devzees_edutechai_client/presentation/widgets/animated_tutor_icon.dart';
 
 void main() {
   group('Mobile Step Header Logic & UI tests', () {
@@ -216,6 +218,32 @@ void main() {
       expect(find.byKey(const Key('btn_prev')), findsOneWidget);
       expect(find.byKey(const Key('btn_next')), findsNothing);
       expect(find.byKey(const Key('btn_regen')), findsNothing);
+    });
+
+    testWidgets('NeuralInferenceLoader in mobile width renders AnimatedTutorIcon inside spinner', (tester) async {
+      tester.view.physicalSize = const Size(400, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: NeuralInferenceLoader(
+              title: 'Synthesizing Step 2: CNNs',
+              subtitle: 'Multi-Agents generating content...',
+            ),
+          ),
+        ),
+      );
+
+      // Verify AnimatedTutorIcon is found in mobile view
+      expect(find.byType(AnimatedTutorIcon), findsOneWidget);
+      final tutorIcon = tester.widget<AnimatedTutorIcon>(find.byType(AnimatedTutorIcon));
+      expect(tutorIcon.size, equals(34.0));
+      expect(tutorIcon.showHalo, isFalse);
     });
   });
 }
