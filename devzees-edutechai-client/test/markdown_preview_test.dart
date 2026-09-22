@@ -36,21 +36,26 @@ graph TD
       expect(widget, isNotNull);
     });
 
-    test('Fenced mermaid block is detected by code builder and renders KeepAliveWrapper with MermaidWebView', () {
-      // Create a test element or builder harness
-      final builder = Markdown(
-        data: '''
+    testWidgets('Fenced mermaid block is detected by code builder and renders KeepAliveWrapper with MermaidWebView', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: MarkdownPreviewDialog(
+              topic: 'Test',
+              markdownContent: '''
+# Test
 ```mermaid
 graph TD
   A --> B
 ```
 ''',
-        builders: {
-          'code': _TestMermaidCodeBlockDetector(),
-        },
+              sessionId: '123',
+            ),
+          ),
+        ),
       );
-
-      expect(builder, isNotNull);
+      await tester.pump();
+      expect(find.byType(MermaidWebView), findsOneWidget);
     });
 
     testWidgets('MarkdownPreviewDialog renders cleanly on mobile screen (360x780) without overflow', (tester) async {

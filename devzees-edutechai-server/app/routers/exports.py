@@ -222,6 +222,41 @@ def _render_mermaid_for_pdf(m_code: str) -> str:
         return f'<pre class="diagram-code-box"><code>{clean_code}</code></pre>'
 
 
+def _normalize_markdown_diagrams(text: str) -> str:
+    """Ensure any Mermaid diagrams (flowcharts, sequence diagrams, etc.) are enclosed in standard ```mermaid ... ``` code blocks."""
+    if not text:
+        return text
+
+    # Protect existing code blocks
+    fenced_blocks = []
+    def _save_block(m):
+        idx = len(fenced_blocks)
+        fenced_blocks.append(m.group(0))
+        return f"@@MD_BLOCK_{idx}@@"
+
+    processed = re.sub(r"```[\s\S]*?```", _save_block, text)
+
+    # 1. Detect unfenced mermaid diagrams (e.g. starting with graph TD / flowchart / sequenceDiagram etc.)
+    mermaid_pattern = re.compile(
+        r"(?:^|\n\n)(graph\s+[A-Z]{2}|flowchart\s+[A-Z]{2}|sequenceDiagram|classDiagram|stateDiagram(?:-v2)?|erDiagram|gantt|pie|mindmap|gitGraph)([\s\S]*?)(?=(?:\r?\n\s*\r?\n\S)|(?:\r?\n\s*\r?\n#)|$)",
+        re.IGNORECASE,
+    )
+    processed = mermaid_pattern.sub(r"\n\n```mermaid\n\1\2\n```\n\n", processed)
+
+    # Restore fenced blocks, standardizing ```flowchart into ```mermaid
+    for idx, block in enumerate(fenced_blocks):
+        clean_block = re.sub(r"^```flowchart\b", "```mermaid", block)
+        clean_block = re.sub(
+            r"^```\s*\n(graph\s+[A-Z]{2}|flowchart\s+[A-Z]{2}|sequenceDiagram|classDiagram|stateDiagram)",
+            r"```mermaid\n\1",
+            clean_block,
+            flags=re.IGNORECASE,
+        )
+        processed = processed.replace(f"@@MD_BLOCK_{idx}@@", clean_block)
+
+    return processed
+
+
 def generate_markdown(memory) -> str:
     """
     Generate an attractive, concise, and structured Markdown string
@@ -280,7 +315,8 @@ def generate_markdown(memory) -> str:
         # ── Socratic Explanation ──
         explanation = _get_attr(step, "tutor_explanation", None)
         if explanation:
-            md += f"#### 🎓 Key Conceptual Takeaways\n\n{explanation.strip()}\n\n"
+            norm_exp = _normalize_markdown_diagrams(explanation.strip())
+            md += f"#### 🎓 Key Conceptual Takeaways\n\n{norm_exp}\n\n"
 
         # ── Socratic Questions ──
         socratic_qs = _get_attr(step, "socratic_questions", []) or []

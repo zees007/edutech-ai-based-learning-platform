@@ -150,7 +150,7 @@ class MarkdownPreviewDialog extends StatelessWidget {
                         onPressed: () {
                           ExportHelper.copyToClipboard(
                             context,
-                            text: markdownContent,
+                            text: processedContent,
                             message: 'Markdown notes copied to clipboard!',
                           );
                         },
@@ -168,7 +168,7 @@ class MarkdownPreviewDialog extends StatelessWidget {
                         ),
                         onPressed: () {
                           ExportHelper.saveOrShareText(
-                            content: markdownContent,
+                            content: processedContent,
                             filename: 'session_${sessionId}_notes.md',
                             context: context,
                           );
@@ -253,6 +253,10 @@ class MarkdownPreviewDialog extends StatelessWidget {
                           fontFamily: 'monospace',
                           fontSize: 12.5,
                         ),
+                        codeblockDecoration: const BoxDecoration(
+                          color: Colors.transparent,
+                        ),
+                        codeblockPadding: EdgeInsets.zero,
                         tableBorder: TableBorder.all(
                           color: AppColors.glassBorder,
                           width: 1,
@@ -311,7 +315,7 @@ class MarkdownPreviewDialog extends StatelessWidget {
                               ),
                               onPressed: () {
                                 ExportHelper.saveOrShareText(
-                                  content: markdownContent,
+                                  content: processedContent,
                                   filename: 'session_${sessionId}_notes.md',
                                   context: context,
                                 );
@@ -362,7 +366,7 @@ class MarkdownPreviewDialog extends StatelessWidget {
                               ),
                               onPressed: () {
                                 ExportHelper.saveOrShareText(
-                                  content: markdownContent,
+                                  content: processedContent,
                                   filename: 'session_${sessionId}_notes.md',
                                   context: context,
                                 );
@@ -385,23 +389,35 @@ class MarkdownPreviewDialog extends StatelessWidget {
 // ═══════════════════════════════════════════════════════════════════
 
 String _preprocessMarkdownForPreview(String text) {
-  // 1. Protect existing fenced code blocks (```...```) so we don't double-process them
+  // Normalize Windows CRLF to standard LF so regexes match reliably
+  var processed = text.replaceAll('\r\n', '\n');
+
+  // 1. Standardize existing code fences: ```flowchart -> ```mermaid, and bare ``` followed by diagram
+  processed = processed.replaceAllMapped(
+    RegExp(
+      r'```(?:flowchart)?\s*\n\s*(graph\s+[A-Za-z]{2}|flowchart\s+[A-Za-z]{2}|sequenceDiagram|classDiagram|stateDiagram)',
+      caseSensitive: false,
+    ),
+    (m) => '```mermaid\n${m.group(1)}',
+  );
+
+  // 2. Protect existing fenced code blocks (```...```) so we don't double-process them
   final codeBlocks = <String>[];
-  var processed = text.replaceAllMapped(RegExp(r'```[\s\S]*?```'), (m) {
+  processed = processed.replaceAllMapped(RegExp(r'```[\s\S]*?```'), (m) {
     codeBlocks.add(m.group(0)!);
     return '@@PREVIEW_CODEBLOCK_${codeBlocks.length - 1}@@';
   });
 
-  // 2. Wrap unfenced mermaid diagrams (e.g. lines starting with graph TD / flowchart / sequenceDiagram etc.)
+  // 3. Wrap unfenced mermaid diagrams (e.g. lines starting with graph TD / flowchart / sequenceDiagram etc.)
   processed = processed.replaceAllMapped(
     RegExp(
-      r'(?:^|\n\n)(graph\s+[A-Z]{2}|flowchart\s+[A-Z]{2}|sequenceDiagram|classDiagram|stateDiagram(?:-v2)?|erDiagram|gantt|pie|mindmap|gitGraph)([\s\S]*?)(?=(?:\r?\n\s*\r?\n\S)|(?:\r?\n\s*\r?\n#)|$)',
+      r'(?:^|\n\n)(graph\s+[A-Za-z]{2}|flowchart\s+[A-Za-z]{2}|sequenceDiagram|classDiagram|stateDiagram(?:-v2)?|erDiagram|gantt|pie|mindmap|gitGraph)([\s\S]*?)(?=(?:\n\s*\n\S)|(?:\n\s*\n#)|$)',
       caseSensitive: false,
     ),
     (match) => '\n\n```mermaid\n${match.group(1)}${match.group(2)}\n```\n\n',
   );
 
-  // 3. Block math: \begin{...} ... \end{...}
+  // 4. Block math: \begin{...} ... \end{...}
   processed = processed.replaceAllMapped(
     RegExp(
       r'(?:\\\[|\[)?\s*(\\begin\{(?:aligned|matrix|bmatrix|pmatrix|vmatrix|cases|gather|equation)\b[\s\S]+?\\end\{(?:aligned|matrix|bmatrix|pmatrix|vmatrix|cases|gather|equation)\})\s*(?:\\\]|\])?',
@@ -410,31 +426,31 @@ String _preprocessMarkdownForPreview(String text) {
     (match) => '\n```latex\n${match.group(1)}\n```\n',
   );
 
-  // 4. Block math: \[ ... \]
+  // 5. Block math: \[ ... \]
   processed = processed.replaceAllMapped(
     RegExp(r'\\\[([\s\S]+?)\\\]'),
     (match) => '\n```latex\n${match.group(1)}\n```\n',
   );
 
-  // 5. Block math: $$ ... $$
+  // 6. Block math: $$ ... $$
   processed = processed.replaceAllMapped(
     RegExp(r'\$\$([\s\S]+?)\$\$'),
     (match) => '\n```latex\n${match.group(1)}\n```\n',
   );
 
-  // 6. Inline math: \( ... \)
+  // 7. Inline math: \( ... \)
   processed = processed.replaceAllMapped(
     RegExp(r'\\\(([\s\S]+?)\\\)'),
     (match) => '`math:${match.group(1)}`',
   );
 
-  // 7. Inline math with single $
+  // 8. Inline math with single $
   processed = processed.replaceAllMapped(
     RegExp(r'(?<!\$)\$(?!\$)([\s\S]+?)(?<!\$)\$(?!\$)'),
     (match) => '`math:${match.group(1)}`',
   );
 
-  // 8. Restore protected code blocks
+  // 9. Restore protected code blocks
   for (int i = 0; i < codeBlocks.length; i++) {
     processed = processed.replaceAll('@@PREVIEW_CODEBLOCK_$i@@', codeBlocks[i]);
   }
@@ -478,20 +494,21 @@ class _MarkdownPreviewCodeBuilder extends MarkdownElementBuilder {
     final isMermaidBlock = className.contains('language-mermaid') ||
         className.contains('language-flowchart');
     final trimmed = textContent.trimLeft();
+    final lowerTrimmed = trimmed.toLowerCase();
 
     if (isMermaidBlock ||
-        trimmed.startsWith('graph ') ||
-        trimmed.startsWith('graph\n') ||
-        trimmed.startsWith('flowchart ') ||
-        trimmed.startsWith('flowchart\n') ||
-        trimmed.startsWith('sequenceDiagram') ||
-        trimmed.startsWith('classDiagram') ||
-        trimmed.startsWith('stateDiagram') ||
-        trimmed.startsWith('erDiagram') ||
-        trimmed.startsWith('gantt') ||
-        trimmed.startsWith('pie') ||
-        trimmed.startsWith('mindmap') ||
-        trimmed.startsWith('gitGraph') ||
+        lowerTrimmed.startsWith('graph ') ||
+        lowerTrimmed.startsWith('graph\n') ||
+        lowerTrimmed.startsWith('flowchart ') ||
+        lowerTrimmed.startsWith('flowchart\n') ||
+        lowerTrimmed.startsWith('sequencediagram') ||
+        lowerTrimmed.startsWith('classdiagram') ||
+        lowerTrimmed.startsWith('statediagram') ||
+        lowerTrimmed.startsWith('erdiagram') ||
+        lowerTrimmed.startsWith('gantt') ||
+        lowerTrimmed.startsWith('pie') ||
+        lowerTrimmed.startsWith('mindmap') ||
+        lowerTrimmed.startsWith('gitgraph') ||
         ((trimmed.contains('-->') || trimmed.contains('---')) &&
             trimmed.contains('['))) {
       return KeepAliveWrapper(
