@@ -1,0 +1,221 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
+
+void main() {
+  group('Mobile Step Header Logic & UI tests', () {
+    Widget buildHeaderHarness({
+      required int stepIndex,
+      required int totalSteps,
+      required int maxUnlockedIndex,
+      required String stepStatus,
+      required int stepsCompleted,
+      required ValueChanged<int> onStepChange,
+      required VoidCallback onRegenerate,
+      bool isRegenerating = false,
+    }) {
+      final bool isLastStep = totalSteps > 0 && stepIndex >= totalSteps - 1;
+      final bool isSessionComplete = totalSteps > 0 && stepsCompleted >= totalSteps;
+      final bool isCurrentStepComplete = stepStatus == 'complete' ||
+          (isLastStep && isSessionComplete) ||
+          (stepIndex < stepsCompleted);
+      final bool isReviewing = stepIndex < maxUnlockedIndex || isCurrentStepComplete;
+      final bool canGoBack = stepIndex > 0;
+      final bool canGoForward = stepIndex < totalSteps - 1 &&
+          (isCurrentStepComplete || stepIndex < maxUnlockedIndex);
+
+      return MaterialApp(
+        home: Scaffold(
+          body: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: const BoxDecoration(
+              color: AppColors.surfaceSolidHeader,
+            ),
+            child: Row(
+              children: [
+                if (canGoBack) ...[
+                  Tooltip(
+                    message: 'Go back to Step $stepIndex',
+                    child: GestureDetector(
+                      key: const Key('btn_prev'),
+                      onTap: () => onStepChange(stepIndex - 1),
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        child: const Icon(
+                          Icons.arrow_back_ios_new_rounded,
+                          size: 12,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                ],
+                // Step pill
+                Container(
+                  key: const Key('step_pill'),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  child: Text('Step ${stepIndex + 1}/$totalSteps'),
+                ),
+                const SizedBox(width: 10),
+                // Title
+                const Expanded(
+                  child: Text('Test Step Title'),
+                ),
+                // Trailing end
+                if (!isCurrentStepComplete) ...[
+                  const SizedBox(width: 8),
+                  Tooltip(
+                    message: 'Regenerate Step ${stepIndex + 1}',
+                    child: GestureDetector(
+                      key: const Key('btn_regen'),
+                      onTap: isRegenerating ? null : onRegenerate,
+                      child: Container(
+                        padding: const EdgeInsets.all(5),
+                        decoration: BoxDecoration(
+                          gradient: AppColors.royalBlueIndigoGradient,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: const Icon(
+                          Icons.refresh_rounded,
+                          size: 13,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ] else if (canGoForward) ...[
+                  const SizedBox(width: 8),
+                  Tooltip(
+                    message: 'Go forward to Step ${stepIndex + 2}',
+                    child: GestureDetector(
+                      key: const Key('btn_next'),
+                      onTap: () => onStepChange(stepIndex + 1),
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: AppColors.glassBase,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: const Icon(
+                          Icons.arrow_forward_ios_rounded,
+                          size: 12,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    testWidgets('Uncompleted step 0: shows regenerate icon with royalBlueIndigoGradient, no back, no forward', (tester) async {
+      int stepChangeCall = -1;
+      bool regenCalled = false;
+
+      await tester.pumpWidget(
+        buildHeaderHarness(
+          stepIndex: 0,
+          totalSteps: 3,
+          maxUnlockedIndex: 0,
+          stepStatus: 'in_progress',
+          stepsCompleted: 0,
+          onStepChange: (index) => stepChangeCall = index,
+          onRegenerate: () => regenCalled = true,
+        ),
+      );
+
+      expect(find.byKey(const Key('btn_prev')), findsNothing);
+      expect(find.byKey(const Key('btn_next')), findsNothing);
+      expect(find.byKey(const Key('btn_regen')), findsOneWidget);
+
+      // Verify gradient decoration on regenerate button
+      final container = tester.widget<Container>(
+        find.descendant(
+          of: find.byKey(const Key('btn_regen')),
+          matching: find.byType(Container),
+        ),
+      );
+      final boxDec = container.decoration as BoxDecoration;
+      expect(boxDec.gradient, equals(AppColors.royalBlueIndigoGradient));
+
+      // Tap regenerate
+      await tester.tap(find.byKey(const Key('btn_regen')));
+      expect(regenCalled, isTrue);
+      expect(stepChangeCall, equals(-1));
+    });
+
+    testWidgets('Completed step 0: shows go forward icon at trailing end, no regen, no back', (tester) async {
+      int stepChangeCall = -1;
+      bool regenCalled = false;
+
+      await tester.pumpWidget(
+        buildHeaderHarness(
+          stepIndex: 0,
+          totalSteps: 3,
+          maxUnlockedIndex: 1,
+          stepStatus: 'complete',
+          stepsCompleted: 1,
+          onStepChange: (index) => stepChangeCall = index,
+          onRegenerate: () => regenCalled = true,
+        ),
+      );
+
+      expect(find.byKey(const Key('btn_prev')), findsNothing);
+      expect(find.byKey(const Key('btn_regen')), findsNothing);
+      expect(find.byKey(const Key('btn_next')), findsOneWidget);
+
+      await tester.tap(find.byKey(const Key('btn_next')));
+      expect(stepChangeCall, equals(1));
+      expect(regenCalled, isFalse);
+    });
+
+    testWidgets('Reviewing step 1 of 3 (completed): shows both back and forward icons', (tester) async {
+      int stepChangeCall = -1;
+
+      await tester.pumpWidget(
+        buildHeaderHarness(
+          stepIndex: 1,
+          totalSteps: 3,
+          maxUnlockedIndex: 2,
+          stepStatus: 'complete',
+          stepsCompleted: 2,
+          onStepChange: (index) => stepChangeCall = index,
+          onRegenerate: () {},
+        ),
+      );
+
+      expect(find.byKey(const Key('btn_prev')), findsOneWidget);
+      expect(find.byKey(const Key('btn_next')), findsOneWidget);
+      expect(find.byKey(const Key('btn_regen')), findsNothing);
+
+      await tester.tap(find.byKey(const Key('btn_prev')));
+      expect(stepChangeCall, equals(0));
+
+      await tester.tap(find.byKey(const Key('btn_next')));
+      expect(stepChangeCall, equals(2));
+    });
+
+    testWidgets('Final step (completed): shows back icon, neither forward nor regen', (tester) async {
+      await tester.pumpWidget(
+        buildHeaderHarness(
+          stepIndex: 2,
+          totalSteps: 3,
+          maxUnlockedIndex: 2,
+          stepStatus: 'complete',
+          stepsCompleted: 3,
+          onStepChange: (_) {},
+          onRegenerate: () {},
+        ),
+      );
+
+      expect(find.byKey(const Key('btn_prev')), findsOneWidget);
+      expect(find.byKey(const Key('btn_next')), findsNothing);
+      expect(find.byKey(const Key('btn_regen')), findsNothing);
+    });
+  });
+}

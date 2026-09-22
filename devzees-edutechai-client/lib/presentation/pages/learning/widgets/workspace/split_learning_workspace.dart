@@ -124,6 +124,7 @@ class _SplitLearningWorkspaceState
         totalSteps: widget.totalSteps,
         maxUnlockedIndex: widget.maxUnlockedIndex,
         onStepChange: widget.onStepChange,
+        onRegenerateStep: () => _handleRegenerateStep(currentStep),
       );
     }
 
@@ -893,6 +894,7 @@ class _MobileTabbedWorkspace extends ConsumerStatefulWidget {
   final int totalSteps;
   final int maxUnlockedIndex;
   final ValueChanged<int> onStepChange;
+  final Future<void> Function()? onRegenerateStep;
 
   const _MobileTabbedWorkspace({
     required this.session,
@@ -902,6 +904,7 @@ class _MobileTabbedWorkspace extends ConsumerStatefulWidget {
     required this.totalSteps,
     required this.maxUnlockedIndex,
     required this.onStepChange,
+    this.onRegenerateStep,
   });
 
   @override
@@ -915,6 +918,7 @@ class _MobileTabbedWorkspaceState
   late TabController _tabController;
   int _activeTabIndex = 0;
   bool _quizSubmitted = false;
+  bool _isRegenerating = false;
 
   bool _isQuizCompleted(dynamic step) {
     if (step == null) return false;
@@ -954,10 +958,36 @@ class _MobileTabbedWorkspaceState
     });
   }
 
+  Future<void> _handleRegenerate() async {
+    if (_isRegenerating) return;
+    _onSelectTab(0);
+    setState(() {
+      _isRegenerating = true;
+    });
+    try {
+      if (widget.onRegenerateStep != null) {
+        await widget.onRegenerateStep!();
+      } else {
+        await ref
+            .read(activeSessionProvider.notifier)
+            .regenerateCurrentStep(widget.currentStep.index);
+      }
+    } catch (e) {
+      debugPrint('Error regenerating step: $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isRegenerating = false;
+        });
+      }
+    }
+  }
+
   @override
   void didUpdateWidget(covariant _MobileTabbedWorkspace oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.stepIndex != widget.stepIndex) {
+      _isRegenerating = false;
       _quizSubmitted = false;
       if (_isQuizCompleted(widget.currentStep)) {
         _quizSubmitted = true;
@@ -1222,7 +1252,18 @@ class _MobileTabbedWorkspaceState
 
   Widget _buildMobileStepHeader() {
     final step = widget.currentStep;
-    final canGoBack = widget.stepIndex > 0;
+    final totalSteps = widget.totalSteps;
+    final bool isLastStep = totalSteps > 0 && widget.stepIndex >= totalSteps - 1;
+    final bool isSessionComplete = widget.session.steps.isNotEmpty &&
+        widget.session.stepsCompleted >= totalSteps &&
+        totalSteps > 0;
+    final bool isCurrentStepComplete = widget.currentStep.status == 'complete' ||
+        (isLastStep && isSessionComplete) ||
+        (widget.stepIndex < widget.session.stepsCompleted);
+    final bool isReviewing = widget.stepIndex < widget.maxUnlockedIndex || isCurrentStepComplete;
+    final bool canGoBack = widget.stepIndex > 0;
+    final bool canGoForward = widget.stepIndex < totalSteps - 1 &&
+        (isCurrentStepComplete || widget.stepIndex < widget.maxUnlockedIndex);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
@@ -1237,44 +1278,73 @@ class _MobileTabbedWorkspaceState
       ),
       child: Row(
         children: [
+          // Previous Step button (Left)
           if (canGoBack) ...[
-            GestureDetector(
-              onTap: () => widget.onStepChange(widget.stepIndex - 1),
-              child: Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: AppColors.glassBase,
-                  borderRadius: BorderRadius.circular(6),
-                  border: Border.all(color: AppColors.glassBorder),
-                ),
-                child: const Icon(
-                  Icons.arrow_back_ios_new_rounded,
-                  size: 12,
-                  color: AppColors.textSecondary,
+            Tooltip(
+              message: 'Go back to Step ${widget.stepIndex}',
+              child: GestureDetector(
+                onTap: () => widget.onStepChange(widget.stepIndex - 1),
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: AppColors.glassBase,
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: AppColors.glassBorder),
+                  ),
+                  child: const Icon(
+                    Icons.arrow_back_ios_new_rounded,
+                    size: 12,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
               ),
             ),
             const SizedBox(width: 8),
           ],
+          // Step pill
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
             decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.15),
+              color: isReviewing
+                  ? AppColors.cyanLight.withValues(alpha: 0.15)
+                  : AppColors.primary.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(6),
               border: Border.all(
-                color: AppColors.primary.withValues(alpha: 0.4),
+                color: isReviewing
+                    ? AppColors.cyanLight.withValues(alpha: 0.45)
+                    : AppColors.primary.withValues(alpha: 0.4),
               ),
             ),
-            child: Text(
-              'Step ${widget.stepIndex + 1}/${widget.totalSteps}',
-              style: AppTextStyles.badge.copyWith(
-                fontSize: 10.5,
-                fontWeight: FontWeight.w700,
-                color: AppColors.purpleLight,
-              ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Step ${widget.stepIndex + 1}/${widget.totalSteps}',
+                  style: AppTextStyles.badge.copyWith(
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w700,
+                    color: isReviewing ? AppColors.cyanLight : AppColors.purpleLight,
+                  ),
+                ),
+                if (isReviewing) ...[
+                  const SizedBox(width: 4),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 1),
+                    decoration: BoxDecoration(
+                      color: AppColors.cyanLight.withValues(alpha: 0.25),
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                    child: Text(
+                      'Review',
+                      style: AppTextStyles.badge.copyWith(fontSize: 7.5, color: Colors.white),
+                    ),
+                  ),
+                ],
+              ],
             ),
           ),
           const SizedBox(width: 10),
+          // Step Title (Middle)
           Expanded(
             child: Text(
               step.title?.toString() ?? 'Learning Step',
@@ -1286,6 +1356,68 @@ class _MobileTabbedWorkspaceState
               overflow: TextOverflow.ellipsis,
             ),
           ),
+          // Top-right trailing end: Regenerate icon when step is NOT completed; Go forward icon when completed
+          if (!isCurrentStepComplete) ...[
+            const SizedBox(width: 8),
+            Tooltip(
+              message: 'Regenerate Step ${widget.stepIndex + 1}',
+              child: GestureDetector(
+                onTap: _isRegenerating ? null : _handleRegenerate,
+                child: Container(
+                  padding: const EdgeInsets.all(5),
+                  decoration: BoxDecoration(
+                    gradient: AppColors.royalBlueIndigoGradient,
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(
+                      color: AppColors.purpleLight.withValues(alpha: 0.5),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.accentBlue.withValues(alpha: 0.35),
+                        blurRadius: 8,
+                        offset: const Offset(0, 1),
+                      ),
+                    ],
+                  ),
+                  child: _isRegenerating
+                      ? const SizedBox(
+                          width: 12,
+                          height: 12,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 1.5,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Icon(
+                          Icons.refresh_rounded,
+                          size: 13,
+                          color: Colors.white,
+                        ),
+                ),
+              ),
+            ),
+          ] else if (canGoForward) ...[
+            const SizedBox(width: 8),
+            Tooltip(
+              message: 'Go forward to Step ${widget.stepIndex + 2}',
+              child: GestureDetector(
+                onTap: () => widget.onStepChange(widget.stepIndex + 1),
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: AppColors.glassBase,
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: AppColors.glassBorder),
+                  ),
+                  child: const Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 12,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -1761,9 +1893,10 @@ class _MobileTabbedWorkspaceState
   }
 
   Widget _buildTutorTab(dynamic step) {
-    if (step.tutorExplanation != null ||
-        (step.socraticQuestions != null &&
-            step.socraticQuestions!.isNotEmpty)) {
+    if (!_isRegenerating &&
+        (step.tutorExplanation != null ||
+            (step.socraticQuestions != null &&
+                step.socraticQuestions!.isNotEmpty))) {
       return SocraticTutorChat(
         key: ValueKey('mobile_socratic_${step.index}'),
         stepIndex: step.index,
@@ -1773,15 +1906,54 @@ class _MobileTabbedWorkspaceState
         stepTitle: step.title,
       );
     }
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const AppGradientSpinner(size: 40),
-          const SizedBox(height: 16),
-          Text(
-            'Socratic Tutor is preparing...',
-            style: AppTextStyles.bodyPrimary.copyWith(color: AppColors.textMuted),
+          const Padding(
+            padding: EdgeInsets.only(top: 4),
+            child: AnimatedTutorIcon(size: 32),
+          ),
+          const SizedBox(width: 12),
+          Flexible(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.surfaceMid.withValues(alpha: 0.75),
+                    AppColors.surfaceDark.withValues(alpha: 0.85),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.3),
+                    blurRadius: 20,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const _RegeneratingDots(),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Socratic tutor is preparing and regenerating the step...',
+                    style: AppTextStyles.bodyPrimary.copyWith(
+                      color: Colors.white.withValues(alpha: 0.9),
+                      height: 1.5,
+                      fontSize: 13.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ],
       ),
