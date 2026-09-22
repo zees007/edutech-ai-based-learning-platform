@@ -1236,36 +1236,57 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
             Align(
               alignment: Alignment.centerRight,
               child: isLastStep && isCurrentStepComplete
-                  ? Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 9),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            Colors.amber.withValues(alpha: 0.2),
-                            AppColors.accentGreen.withValues(alpha: 0.15),
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: Colors.amber.withValues(alpha: 0.4),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.emoji_events_rounded,
-                              color: Colors.amber, size: 16),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Journey Completed 🎉',
-                            style: AppTextStyles.badge.copyWith(
-                              color: Colors.amber.shade200,
-                              fontWeight: FontWeight.w700,
-                              fontSize: 12,
+                  ? MouseRegion(
+                      cursor: SystemMouseCursors.click,
+                      child: Tooltip(
+                        message: 'View Completed Journey Summary & Stats',
+                        child: GestureDetector(
+                          onTap: () {
+                            ref
+                                .read(activeSessionProvider.notifier)
+                                .showJourneySummary();
+                          },
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 18, vertical: 10),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.amber.shade600,
+                                  Colors.orange.shade800,
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(10),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.amber.withValues(alpha: 0.35),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.emoji_events_rounded,
+                                  color: Colors.white,
+                                  size: 16,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Journey Completed 🎉',
+                                  style: AppTextStyles.badge.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                        ],
+                        ),
                       ),
                     )
                   : MouseRegion(

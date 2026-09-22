@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
@@ -19,12 +20,25 @@ class MermaidWebView extends StatefulWidget {
   State<MermaidWebView> createState() => _MermaidWebViewState();
 }
 
-class _MermaidWebViewState extends State<MermaidWebView> {
+class _MermaidWebViewState extends State<MermaidWebView>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
   late final WebViewController _controller;
   String? _renderedSvg;
   bool _isLoading = true;
-  double _webViewHeight = 280;
+  double _webViewHeight = 320;
   bool _isIframeHovered = false;
+  bool _isPlatformSupported = true;
+
+  Timer? _fallbackTimer;
+
+  @override
+  void dispose() {
+    _fallbackTimer?.cancel();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -33,56 +47,73 @@ class _MermaidWebViewState extends State<MermaidWebView> {
   }
 
   void _initWebView() {
-    _controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(Colors.transparent)
-      ..addJavaScriptChannel(
-        'SvgChannel',
-        onMessageReceived: (JavaScriptMessage message) {
+    try {
+      _controller = WebViewController()
+        ..setJavaScriptMode(JavaScriptMode.unrestricted)
+        ..setBackgroundColor(Colors.transparent);
+
+      // Only attach JS channels on non-web platforms where they are supported
+      if (!kIsWeb) {
+        try {
+          _controller
+            ..addJavaScriptChannel(
+              'SvgChannel',
+              onMessageReceived: (JavaScriptMessage message) {
+                if (mounted) {
+                  setState(() {
+                    _renderedSvg = message.message;
+                    _isLoading = false;
+                  });
+                }
+              },
+            )
+            ..addJavaScriptChannel(
+              'HeightChannel',
+              onMessageReceived: (JavaScriptMessage message) {
+                final height = double.tryParse(message.message);
+                if (height != null && height > 100 && mounted) {
+                  setState(() {
+                    _webViewHeight = height;
+                  });
+                }
+              },
+            )
+            ..addJavaScriptChannel(
+              'HoverChannel',
+              onMessageReceived: (JavaScriptMessage message) {
+                if (mounted) {
+                  setState(() {
+                    _isIframeHovered = message.message == 'enter';
+                  });
+                }
+              },
+            );
+        } catch (e) {
+          debugPrint('addJavaScriptChannel not supported on platform: $e');
+        }
+      }
+
+      _controller.loadHtmlString(_buildHtml());
+
+      // Fallback for web or platforms where SvgChannel isn't fully supported
+      _fallbackTimer = Timer(const Duration(milliseconds: 1200), () {
+        if (mounted && _isLoading) {
           setState(() {
-            _renderedSvg = message.message;
             _isLoading = false;
           });
-        },
-      )
-      ..addJavaScriptChannel(
-        'HeightChannel',
-        onMessageReceived: (JavaScriptMessage message) {
-          final height = double.tryParse(message.message);
-          if (height != null && height > 100) {
-            setState(() {
-              _webViewHeight = height;
-            });
-          }
-        },
-      )
-      ..addJavaScriptChannel(
-        'HoverChannel',
-        onMessageReceived: (JavaScriptMessage message) {
-          setState(() {
-            _isIframeHovered = message.message == 'enter';
-          });
-        },
-      )
-      ..loadHtmlString(_buildHtml());
-
-    // Fallback for platforms where SvgChannel isn't fully supported (like Web)
-    // webview_flutter_web also doesn't support NavigationDelegate, so we just use a timer.
-    Future.delayed(const Duration(milliseconds: 1500), () {
-      if (mounted && _isLoading) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    });
+        }
+      });
+    } catch (e) {
+      debugPrint('WebView initialization skipped (e.g. test environment): $e');
+      _isPlatformSupported = false;
+      _isLoading = false;
+    }
   }
 
   String _buildHtml() {
     final safeCode = jsonEncode(widget.code);
 
-    // We use a dark theme configuration for Mermaid to match the app
-    final html =
-        '''
+    final html = '''
 <!DOCTYPE html>
 <html>
 <head>
@@ -96,6 +127,7 @@ class _MermaidWebViewState extends State<MermaidWebView> {
       height: 100%;
       overflow: auto;
       background-color: transparent;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     }
     body {
       display: block;
@@ -105,6 +137,11 @@ class _MermaidWebViewState extends State<MermaidWebView> {
       display: inline-block;
       min-width: 100%;
       text-align: center;
+      padding: 12px 8px;
+      box-sizing: border-box;
+    }
+    #mermaid-container {
+      display: none; /* Hide raw code text while rendering */
     }
     
     /* Custom Scrollbar matching card background (#1E293B / #0F172A) */
@@ -127,20 +164,34 @@ class _MermaidWebViewState extends State<MermaidWebView> {
     .error-msg {
       color: #EF4444;
       font-family: monospace;
+      font-size: 12px;
+      padding: 14px;
+      text-align: left;
       white-space: pre-wrap;
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: 8px;
+    }
+    .loading-pulse {
+      display: inline-block;
+      color: #94A3B8;
+      font-size: 13px;
+      padding: 24px;
+      font-family: sans-serif;
     }
   </style>
 </head>
 <body>
   <div id="graphDiv">
     <div class="mermaid" id="mermaid-container"></div>
+    <div id="loading" class="loading-pulse">Rendering flowchart...</div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js" onload="onMermaidLoaded()"></script>
   <script>
-    // Safely inject the code using jsonEncode from Dart
     const code = $safeCode;
-    document.getElementById('mermaid-container').textContent = code;
+    const container = document.getElementById('mermaid-container');
+    if (container) container.textContent = code;
 
     // Hover detection for Flutter overlay
     document.body.addEventListener('mouseenter', () => {
@@ -150,46 +201,119 @@ class _MermaidWebViewState extends State<MermaidWebView> {
       if (window.HoverChannel) window.HoverChannel.postMessage('leave');
     });
 
-    mermaid.initialize({
-      startOnLoad: true,
-      theme: 'dark',
-      themeVariables: {
-        primaryColor: '#1E293B',
-        primaryTextColor: '#F8FAFC',
-        primaryBorderColor: '#3B82F6',
-        lineColor: '#94A3B8',
-        secondaryColor: '#0F172A',
-        tertiaryColor: '#C084FC'
-      },
-      securityLevel: 'loose'
-    });
+    let isRendered = false;
 
-    // Helper: always get fresh SVG from the DOM
-    function getSvgString() {
-      const el = document.querySelector('.mermaid svg');
-      return el ? el.outerHTML : '';
-    }
-
-    // Extract SVG after render and send to Flutter
-    setTimeout(() => {
+    function sendSvgAndHeight() {
       try {
-        const svg = getSvgString();
-        if (svg) {
-          window.renderedSvgString = svg;
+        const el = document.querySelector('#graphDiv svg') || document.querySelector('.mermaid svg');
+        if (el) {
+          const svgString = el.outerHTML;
+          window.renderedSvgString = svgString;
           if (window.SvgChannel) {
-            window.SvgChannel.postMessage(svg);
+            window.SvgChannel.postMessage(svgString);
           }
-          const svgElement = document.querySelector('.mermaid svg');
-          if (svgElement && window.HeightChannel) {
-            const rect = svgElement.getBoundingClientRect();
-            // Add some padding to prevent cut-off
+          const rect = el.getBoundingClientRect();
+          if (window.HeightChannel && rect.height > 20) {
             window.HeightChannel.postMessage(Math.ceil(rect.height + 40).toString());
           }
         }
+      } catch (e) {}
+    }
+
+    async function doRender() {
+      if (isRendered) return;
+      if (!window.mermaid) return;
+
+      try {
+        mermaid.initialize({
+          startOnLoad: false,
+          theme: 'dark',
+          themeVariables: {
+            primaryColor: '#1E293B',
+            primaryTextColor: '#F8FAFC',
+            primaryBorderColor: '#3B82F6',
+            lineColor: '#94A3B8',
+            secondaryColor: '#0F172A',
+            tertiaryColor: '#C084FC',
+            background: 'transparent'
+          },
+          securityLevel: 'loose'
+        });
       } catch (e) {
-        console.error(e);
+        console.warn('Mermaid initialize warning:', e);
       }
-    }, 1000);
+
+      // Strategy 1: Direct compilation via mermaid.render()
+      try {
+        const renderId = 'mermaid_svg_' + Math.random().toString(36).substring(2, 9);
+        const res = await mermaid.render(renderId, code);
+        const graphDiv = document.getElementById('graphDiv');
+        if (graphDiv && res && res.svg) {
+          graphDiv.innerHTML = res.svg;
+          isRendered = true;
+          const loader = document.getElementById('loading');
+          if (loader) loader.remove();
+          sendSvgAndHeight();
+          return;
+        }
+      } catch (err1) {
+        console.warn("Direct mermaid.render failed, falling back to mermaid.run:", err1);
+      }
+
+      // Strategy 2: mermaid.run({ nodes: [container] })
+      try {
+        const c = document.getElementById('mermaid-container');
+        if (c) {
+          c.style.display = 'block';
+          await mermaid.run({ nodes: [c] });
+          isRendered = true;
+          const loader = document.getElementById('loading');
+          if (loader) loader.remove();
+          sendSvgAndHeight();
+          return;
+        }
+      } catch (err2) {
+        console.warn("mermaid.run failed:", err2);
+      }
+
+      // Strategy 3: Error messaging
+      const graphDiv = document.getElementById('graphDiv');
+      if (graphDiv && !isRendered) {
+        const loader = document.getElementById('loading');
+        if (loader) loader.remove();
+        graphDiv.innerHTML = '<div class="error-msg">⚠️ Flowchart preview rendering issue. Exported markdown contains valid diagram syntax.</div>';
+      }
+    }
+
+    function onMermaidLoaded() {
+      doRender();
+    }
+
+    if (window.mermaid) {
+      doRender();
+    } else {
+      window.addEventListener('load', doRender);
+      window.addEventListener('DOMContentLoaded', doRender);
+    }
+
+    // Polling retry for CDN loading latency
+    let attempts = 0;
+    const interval = setInterval(() => {
+      attempts++;
+      if (window.mermaid) {
+        doRender();
+        if (isRendered || attempts >= 15) clearInterval(interval);
+      } else if (attempts >= 25) {
+        clearInterval(interval);
+        const loader = document.getElementById('loading');
+        if (loader && !isRendered) {
+          loader.innerText = '⚠️ Flowchart preview unavailable';
+        }
+      }
+    }, 200);
+
+    setTimeout(sendSvgAndHeight, 800);
+    setTimeout(sendSvgAndHeight, 1500);
   </script>
 </body>
 </html>
@@ -388,6 +512,35 @@ class _MermaidWebViewState extends State<MermaidWebView> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
+
+    if (!_isPlatformSupported) {
+      return Container(
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceDark,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.glassBorderSubtle),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.account_tree_rounded, color: AppColors.accentCyan, size: 16),
+                const SizedBox(width: 8),
+                Text('Mermaid Flowchart', style: AppTextStyles.label.copyWith(color: AppColors.cyanLight)),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(widget.code, style: const TextStyle(color: Colors.white70, fontFamily: 'monospace', fontSize: 12)),
+          ],
+        ),
+      );
+    }
+
     return MouseRegion(
       onEnter: (_) => setState(() => _isCardHovered = true),
       onExit: (_) => setState(() => _isCardHovered = false),

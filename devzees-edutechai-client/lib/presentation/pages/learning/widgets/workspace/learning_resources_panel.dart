@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/text_styles.dart';
+import '../../../../../core/providers/active_session_provider.dart';
 import 'recommended_videos.dart';
 import 'academic_papers.dart';
 import 'knowledge_check_quiz.dart';
@@ -728,38 +729,57 @@ class _LearningResourcesPanelState
           const SizedBox(width: 12),
           // Right Button or Completion Badge
           if (isLastStep && isCurrentStepComplete)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.amber.withValues(alpha: 0.25),
-                    AppColors.accentGreen.withValues(alpha: 0.2),
-                  ],
-                ),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: Colors.amber.withValues(alpha: 0.4),
-                ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(
-                    Icons.emoji_events_rounded,
-                    size: 14,
-                    color: Colors.amber,
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    'Journey Completed 🎉',
-                    style: AppTextStyles.badge.copyWith(
-                      color: Colors.amber.shade100,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 11,
+            MouseRegion(
+              cursor: SystemMouseCursors.click,
+              child: Tooltip(
+                message: 'View Completed Journey Summary & Stats',
+                child: GestureDetector(
+                  onTap: () {
+                    ref
+                        .read(activeSessionProvider.notifier)
+                        .showJourneySummary();
+                  },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 7),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.amber.shade600,
+                          Colors.orange.shade800,
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.amber.withValues(alpha: 0.35),
+                          blurRadius: 8,
+                          offset: const Offset(0, 1),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.emoji_events_rounded,
+                          size: 14,
+                          color: Colors.white,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Journey Completed 🎉',
+                          style: AppTextStyles.badge.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
+                ),
               ),
             )
           else

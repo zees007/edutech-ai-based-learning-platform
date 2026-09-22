@@ -6,7 +6,7 @@ import '../../../../../core/theme/text_styles.dart';
 /// An ultra-premium, modern Chevron Pipeline Stepper.
 /// Displays milestone roadmap steps as an interlocking, continuous chevron ribbon
 /// inspired by enterprise workflow breadcrumb designs.
-class MilestoneRoadmapStepper extends StatelessWidget {
+class MilestoneRoadmapStepper extends StatefulWidget {
   final List<MilestoneStep> steps;
   final int activeIndex;
   final int maxUnlockedIndex;
@@ -25,13 +25,72 @@ class MilestoneRoadmapStepper extends StatelessWidget {
   static const double _minItemWidth = 145.0;
 
   @override
+  State<MilestoneRoadmapStepper> createState() => _MilestoneRoadmapStepperState();
+}
+
+class _MilestoneRoadmapStepperState extends State<MilestoneRoadmapStepper> {
+  final ScrollController _scrollController = ScrollController();
+  double _lastAvailableWidth = 0.0;
+  double _lastEffectiveItemWidth = 165.0;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToActiveStep(animate: false);
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _scrollToActiveStep({bool animate = true}) {
+    if (!_scrollController.hasClients) return;
+    final double availableWidth = _lastAvailableWidth;
+    if (availableWidth <= 0) return;
+
+    final int index = widget.activeIndex;
+    final double effectiveItemWidth = _lastEffectiveItemWidth;
+    final double stepPitch = effectiveItemWidth - MilestoneRoadmapStepper._arrowWidth;
+
+    // Center the active step horizontally in the available viewport
+    final double itemCenter = index * stepPitch + (effectiveItemWidth / 2);
+    final double targetOffset = (itemCenter - (availableWidth / 2))
+        .clamp(0.0, _scrollController.position.maxScrollExtent);
+
+    if (animate) {
+      _scrollController.animateTo(
+        targetOffset,
+        duration: const Duration(milliseconds: 380),
+        curve: Curves.easeInOutCubic,
+      );
+    } else {
+      _scrollController.jumpTo(targetOffset);
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant MilestoneRoadmapStepper oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.activeIndex != widget.activeIndex ||
+        oldWidget.steps.length != widget.steps.length) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _scrollToActiveStep(animate: true);
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    if (steps.isEmpty) {
+    if (widget.steps.isEmpty) {
       return const SizedBox.shrink();
     }
 
-    final maxUnlocked = maxUnlockedIndex.clamp(0, steps.length - 1);
-    final int count = steps.length;
+    final maxUnlocked = widget.maxUnlockedIndex.clamp(0, widget.steps.length - 1);
+    final int count = widget.steps.length;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -39,23 +98,26 @@ class MilestoneRoadmapStepper extends StatelessWidget {
         // Total formula: totalWidth = N * itemWidth - (N - 1) * arrowWidth
         // => itemWidth = (totalWidth + (N - 1) * arrowWidth) / N
         final double calculatedItemWidth = count > 1
-            ? (availableWidth + (count - 1) * _arrowWidth) / count
+            ? (availableWidth + (count - 1) * MilestoneRoadmapStepper._arrowWidth) / count
             : availableWidth;
 
-        final bool fitsInAvailableWidth = calculatedItemWidth >= _minItemWidth;
+        final bool fitsInAvailableWidth = calculatedItemWidth >= MilestoneRoadmapStepper._minItemWidth;
         final double effectiveItemWidth =
             fitsInAvailableWidth ? calculatedItemWidth : 165.0;
         final double totalContentWidth = count > 1
-            ? (count * effectiveItemWidth - (count - 1) * _arrowWidth)
+            ? (count * effectiveItemWidth - (count - 1) * MilestoneRoadmapStepper._arrowWidth)
             : effectiveItemWidth;
+
+        _lastAvailableWidth = availableWidth;
+        _lastEffectiveItemWidth = effectiveItemWidth;
 
         Widget content = SizedBox(
           width: totalContentWidth,
-          height: _stepperHeight,
+          height: MilestoneRoadmapStepper._stepperHeight,
           child: Stack(
             children: List.generate(count, (index) {
-              final step = steps[index];
-              final bool isActive = index == activeIndex;
+              final step = widget.steps[index];
+              final bool isActive = index == widget.activeIndex;
               final bool isCompleted =
                   step.status == 'complete' || index < maxUnlocked;
               final bool isUnlocked = index <= maxUnlocked ||
@@ -66,7 +128,7 @@ class MilestoneRoadmapStepper extends StatelessWidget {
               final bool isLast = index == count - 1;
 
               final double leftPos =
-                  index * (effectiveItemWidth - _arrowWidth);
+                  index * (effectiveItemWidth - MilestoneRoadmapStepper._arrowWidth);
 
               return Positioned(
                 left: leftPos,
@@ -82,8 +144,8 @@ class MilestoneRoadmapStepper extends StatelessWidget {
                   isLocked: isLocked,
                   isFirst: isFirst,
                   isLast: isLast,
-                  arrowWidth: _arrowWidth,
-                  onTap: isLocked ? null : () => onStepTapped(index),
+                  arrowWidth: MilestoneRoadmapStepper._arrowWidth,
+                  onTap: isLocked ? null : () => widget.onStepTapped(index),
                 ),
               );
             }),
@@ -91,7 +153,7 @@ class MilestoneRoadmapStepper extends StatelessWidget {
         );
 
         return Container(
-          height: _stepperHeight,
+          height: MilestoneRoadmapStepper._stepperHeight,
           decoration: BoxDecoration(
             color: AppColors.surfaceDeep,
             borderRadius: BorderRadius.circular(10),
@@ -111,6 +173,8 @@ class MilestoneRoadmapStepper extends StatelessWidget {
           child: fitsInAvailableWidth
               ? content
               : SingleChildScrollView(
+                  controller: _scrollController,
+                  physics: const BouncingScrollPhysics(),
                   scrollDirection: Axis.horizontal,
                   child: content,
                 ),

@@ -366,11 +366,9 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     final updatedSession = state.session;
     if (updatedSession == null) return;
 
-    final bool isSessionComplete =
-        (updatedSession.steps.isNotEmpty && updatedSession.stepsCompleted >= updatedSession.steps.length) ||
-        stepIndex >= updatedSession.steps.length - 1;
+    final bool isLastStep = stepIndex >= updatedSession.steps.length - 1;
 
-    if (isSessionComplete) {
+    if (isLastStep) {
       // 1. Optimistic completion: ensure all steps are marked complete in local state
       final completedSteps = updatedSession.steps.map((s) => s.copyWith(status: 'complete')).toList();
       final fullyCompletedSession = updatedSession.copyWith(
@@ -399,6 +397,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       final avgScore = quizCount > 0 ? (totalScore / quizCount) : null;
 
       ref.read(journeyCompleteProvider.notifier).triggerEvent(
+        sessionId: updatedSession.sessionId,
         topic: updatedSession.topic,
         totalSteps: updatedSession.steps.length,
         totalXp: updatedSession.xpEarned,
@@ -413,6 +412,32 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
 
     // Now transition to the next step (triggers NeuralInferenceLoader if ungenerated)
     setActiveStep(stepIndex + 1);
+  }
+
+  /// Displays the Journey Complete celebration modal with summary metrics and stats.
+  /// Used in Review Mode when the student taps "Journey Completed" or "View Summary".
+  void showJourneySummary() {
+    final session = state.session;
+    if (session == null || session.steps.isEmpty) return;
+
+    double totalScore = 0.0;
+    int quizCount = 0;
+    for (final s in session.steps) {
+      if (s.quizScore != null) {
+        totalScore += s.quizScore!;
+        quizCount++;
+      }
+    }
+    final avgScore = quizCount > 0 ? (totalScore / quizCount) : null;
+
+    ref.read(journeyCompleteProvider.notifier).triggerEvent(
+      sessionId: session.sessionId,
+      topic: session.topic,
+      totalSteps: session.steps.length,
+      totalXp: session.xpEarned,
+      bonusXp: 0,
+      averageQuizScore: avgScore,
+    );
   }
 
   /// Failsafe invoked when the Journey Complete celebration is dismissed.

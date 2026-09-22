@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../../widgets/animated_tutor_icon.dart';
 
 class NeuralInferenceLoader extends StatefulWidget {
   final String title;
@@ -218,19 +219,10 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
                   ),
                   // Rotating Gradient Spinner Ring
                   const GradientSpinner(size: 52),
-                  // Inner AI Core Icon
-                  Container(
-                    width: 34,
-                    height: 34,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Color(0xFF151426),
-                    ),
-                    child: const Icon(
-                      Icons.hub_outlined,
-                      size: 18,
-                      color: Color(0xFFEC4899),
-                    ),
+                  // Inner Socratic Tutor Animated Icon
+                  const AnimatedTutorIcon(
+                    size: 34,
+                    showHalo: false,
                   ),
                 ],
               ),

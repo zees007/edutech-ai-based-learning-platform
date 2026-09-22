@@ -27,4 +27,9 @@ class ApiConstants {
   static String followUpQuestion(String sessionId, int stepIndex) => '/sessions/$sessionId/step/$stepIndex/followup';
   static String completeStep(String sessionId, int stepIndex) => '/sessions/$sessionId/step/$stepIndex/complete';
   static String regenerateStep(String sessionId, int stepIndex) => '/sessions/$sessionId/step/$stepIndex/regenerate';
+
+  // Export Endpoints
+  static String exportMarkdown(String sessionId) => '/export/$sessionId/md';
+  static String exportPdf(String sessionId) => '/export/$sessionId/pdf';
+  static String exportHtml(String sessionId) => '/export/$sessionId/html';
 }

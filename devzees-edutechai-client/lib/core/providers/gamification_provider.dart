@@ -33,6 +33,47 @@ class GamificationUtils {
     }
     return 'Level $level';
   }
+
+  static Map<String, dynamic> calculateLevelData(int totalXp) {
+    var current = levels[0];
+    Map<String, Object>? nextLevel = levels.length > 1 ? levels[1] : null;
+
+    for (var i = 0; i < levels.length; i++) {
+      final levelInfo = levels[i];
+      if (totalXp >= (levelInfo["xp_required"] as int)) {
+        current = levelInfo;
+        nextLevel = (i + 1 < levels.length) ? levels[i + 1] : null;
+      } else {
+        break;
+      }
+    }
+
+    int xpInLevel;
+    int xpNeeded;
+    double progress;
+
+    if (nextLevel != null) {
+      xpInLevel = totalXp - (current["xp_required"] as int);
+      xpNeeded = (nextLevel["xp_required"] as int) - (current["xp_required"] as int);
+      progress = xpNeeded > 0 ? (xpInLevel / xpNeeded) : 1.0;
+    } else {
+      xpInLevel = totalXp - (current["xp_required"] as int);
+      xpNeeded = 0;
+      progress = 1.0;
+    }
+
+    return {
+      "level": current["level"] as int,
+      "title": current["title"] as String,
+      "total_xp": totalXp,
+      "xp_for_current_level": current["xp_required"] as int,
+      "xp_for_next_level": nextLevel != null ? (nextLevel["xp_required"] as int) : (current["xp_required"] as int),
+      "xp_in_level": xpInLevel,
+      "xp_needed_for_next": xpNeeded,
+      "progress": progress.clamp(0.0, 1.0),
+      "is_max_level": nextLevel == null,
+    };
+  }
 }
 
 class GamificationEvent {
@@ -110,6 +151,7 @@ final gamificationEventProvider =
 });
 
 class JourneyCompleteEvent {
+  final String sessionId;
   final String topic;
   final int totalSteps;
   final int totalXp;
@@ -118,6 +160,7 @@ class JourneyCompleteEvent {
   final DateTime timestamp;
 
   JourneyCompleteEvent({
+    required this.sessionId,
     required this.topic,
     required this.totalSteps,
     required this.totalXp,
@@ -132,6 +175,7 @@ class JourneyCompleteNotifier extends Notifier<JourneyCompleteEvent?> {
   JourneyCompleteEvent? build() => null;
 
   void triggerEvent({
+    required String sessionId,
     required String topic,
     required int totalSteps,
     required int totalXp,
@@ -139,6 +183,7 @@ class JourneyCompleteNotifier extends Notifier<JourneyCompleteEvent?> {
     double? averageQuizScore,
   }) {
     state = JourneyCompleteEvent(
+      sessionId: sessionId,
       topic: topic,
       totalSteps: totalSteps,
       totalXp: totalXp,

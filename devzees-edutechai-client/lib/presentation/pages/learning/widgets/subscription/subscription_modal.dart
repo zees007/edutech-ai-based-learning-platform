@@ -22,7 +22,7 @@ class SubscriptionModal extends ConsumerWidget {
     final userAsync = ref.watch(userProvider);
     final user = userAsync.value;
 
-    final currentTier = user?.subscription?.tier?.toLowerCase() ?? 'free';
+    final currentTier = user?.subscription?.tier.toLowerCase() ?? 'free';
     final price = user?.subscription?.priceAmount?.toInt() ?? 0;
     final end = user?.subscription?.currentPeriodEnd;
 

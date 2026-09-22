@@ -82,6 +82,7 @@ class _LearningPageState extends ConsumerState<LearningPage> {
     
     _journeyCompleteOverlay = OverlayEntry(
       builder: (context) => JourneyCompleteCelebration(
+        sessionId: event.sessionId,
         topic: event.topic,
         totalSteps: event.totalSteps,
         totalXp: event.totalXp,

@@ -31,6 +31,7 @@ INSERT INTO privileges (name, code) VALUES ('Access Youtube Advanced', 'ET_ACCES
 INSERT INTO privileges (name, code) VALUES ('Access Academic Search', 'ET_ACCESS_ACADEMIC_SEARCH') ON CONFLICT DO NOTHING;
 INSERT INTO privileges (name, code) VALUES ('Regenerate Step', 'ET_REGENERATE_STEP') ON CONFLICT DO NOTHING;
 INSERT INTO privileges (name, code) VALUES ('Export Markdown', 'ET_EXPORT_MARKDOWN') ON CONFLICT DO NOTHING;
+INSERT INTO privileges (name, code) VALUES ('Export Html', 'ET_EXPORT_HTML') ON CONFLICT DO NOTHING;
 INSERT INTO privileges (name, code) VALUES ('Access Full Text Research', 'ET_ACCESS_FULL_TEXT_RESEARCH') ON CONFLICT DO NOTHING;
 INSERT INTO privileges (name, code) VALUES ('Unlimited Follow Ups', 'ET_UNLIMITED_FOLLOW_UPS') ON CONFLICT DO NOTHING;
 INSERT INTO privileges (name, code) VALUES ('Export Pdf', 'ET_EXPORT_PDF') ON CONFLICT DO NOTHING;
@@ -58,7 +59,7 @@ WHERE r.name = 'Pro' AND p.code IN (
     'ET_GENERATE_QUIZ', 'ET_SUBMIT_QUIZ', 'ET_VIEW_SUBSCRIPTION', 'ET_UPGRADE_SUBSCRIPTION',
     'ET_ACCESS_YOUTUBE_BASIC', 'ET_DOWNGRADE_SUBSCRIPTION', 'ET_ACCESS_ADVANCED_MODES',
     'ET_ACCESS_YOUTUBE_ADVANCED', 'ET_ACCESS_ACADEMIC_SEARCH', 'ET_REGENERATE_STEP',
-    'ET_EXPORT_MARKDOWN'
+    'ET_EXPORT_MARKDOWN', 'ET_EXPORT_HTML'
 ) ON CONFLICT DO NOTHING;
 
 INSERT INTO role_privileges (role_id, privilege_id)
@@ -68,7 +69,7 @@ WHERE r.name = 'Ultra' AND p.code IN (
     'ET_GENERATE_QUIZ', 'ET_SUBMIT_QUIZ', 'ET_VIEW_SUBSCRIPTION', 'ET_UPGRADE_SUBSCRIPTION',
     'ET_ACCESS_YOUTUBE_BASIC', 'ET_DOWNGRADE_SUBSCRIPTION', 'ET_ACCESS_ADVANCED_MODES',
     'ET_ACCESS_YOUTUBE_ADVANCED', 'ET_ACCESS_ACADEMIC_SEARCH', 'ET_REGENERATE_STEP',
-    'ET_EXPORT_MARKDOWN', 'ET_ACCESS_FULL_TEXT_RESEARCH', 'ET_UNLIMITED_FOLLOW_UPS',
+    'ET_EXPORT_MARKDOWN', 'ET_EXPORT_HTML', 'ET_ACCESS_FULL_TEXT_RESEARCH', 'ET_UNLIMITED_FOLLOW_UPS',
     'ET_EXPORT_PDF'
 ) ON CONFLICT DO NOTHING;
 
@@ -96,6 +97,7 @@ ROLE AND PRIVILEGES MATRIX
 | ET_ACCESS_ACADEMIC_SEARCH        | -    | Yes | Yes   | All   |
 | ET_REGENERATE_STEP               | -    | Yes | Yes   | All   |
 | ET_EXPORT_MARKDOWN               | -    | Yes | Yes   | All   |
+| ET_EXPORT_HTML                   | -    | Yes | Yes   | All   |
 | ET_ACCESS_FULL_TEXT_RESEARCH     | -    | -   | Yes   | All   |
 | ET_UNLIMITED_FOLLOW_UPS          | -    | -   | Yes   | All   |
 | ET_EXPORT_PDF                    | -    | -   | Yes   | All   |
@@ -103,12 +105,18 @@ ROLE AND PRIVILEGES MATRIX
 
 
 ----------------------------------------------------------------------
-STANDALONE MIGRATION SCRIPT FOR ET_ACCESS_ACADEMIC_SEARCH
+STANDALONE MIGRATION SCRIPT FOR ET_EXPORT_HTML
 (Use this to patch existing databases without dropping tables)
 ----------------------------------------------------------------------
 
 -- 1. Insert the privilege into privileges table
 INSERT INTO privileges (name, code)
-VALUES ('Access Academic Search', 'ET_ACCESS_ACADEMIC_SEARCH')
+VALUES ('Export Html', 'ET_EXPORT_HTML')
 ON CONFLICT (code) DO NOTHING;
+
+-- 2. Grant to Pro and Ultra roles
+INSERT INTO role_privileges (role_id, privilege_id)
+SELECT r.id, p.id FROM roles r, privileges p
+WHERE r.name IN ('Pro', 'Ultra') AND p.code = 'ET_EXPORT_HTML'
+ON CONFLICT DO NOTHING;
 

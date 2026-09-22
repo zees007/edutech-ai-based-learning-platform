@@ -2,9 +2,11 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../data/models/learning/session_response.dart';
+import '../../../../../core/providers/gamification_provider.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/text_styles.dart';
 import 'milestone_roadmap_stepper.dart';
+import '../export/export_session_modal.dart';
 
 /// A consolidated, ultra-premium Glassmorphic Command & Mastery Hub.
 /// Merges Mastery Gamification, 4 Key Metrics, Your Goal, and the Milestone Roadmap
@@ -31,58 +33,8 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
   bool _isHovered = false;
   bool _isTopicExpanded = false;
 
-  Map<String, dynamic> _calculateLevel(int totalXp) {
-    const levels = [
-      {"level": 1, "xp_required": 0, "title": "Curious Explorer"},
-      {"level": 2, "xp_required": 100, "title": "Knowledge Seeker"},
-      {"level": 3, "xp_required": 300, "title": "Quick Learner"},
-      {"level": 4, "xp_required": 600, "title": "Deep Thinker"},
-      {"level": 5, "xp_required": 1000, "title": "Rising Scholar"},
-      {"level": 6, "xp_required": 1500, "title": "Concept Master"},
-      {"level": 7, "xp_required": 2200, "title": "Wisdom Weaver"},
-      {"level": 8, "xp_required": 3000, "title": "Knowledge Architect"},
-      {"level": 9, "xp_required": 4000, "title": "Enlightened Mind"},
-      {"level": 10, "xp_required": 5500, "title": "Grand Sage"},
-    ];
-
-    var current = levels[0];
-    var nextLevel = levels.length > 1 ? levels[1] : null;
-
-    for (var i = 0; i < levels.length; i++) {
-      final levelInfo = levels[i];
-      if (totalXp >= (levelInfo["xp_required"] as int)) {
-        current = levelInfo;
-        nextLevel = (i + 1 < levels.length) ? levels[i + 1] : null;
-      } else {
-        break;
-      }
-    }
-
-    int xpInLevel;
-    int xpNeeded;
-    double progress;
-
-    if (nextLevel != null) {
-      xpInLevel = totalXp - (current["xp_required"] as int);
-      xpNeeded = (nextLevel["xp_required"] as int) - (current["xp_required"] as int);
-      progress = xpNeeded > 0 ? (xpInLevel / xpNeeded) : 1.0;
-    } else {
-      xpInLevel = totalXp - (current["xp_required"] as int);
-      xpNeeded = 0;
-      progress = 1.0;
-    }
-
-    return {
-      "level": current["level"],
-      "title": current["title"],
-      "total_xp": totalXp,
-      "xp_for_current_level": current["xp_required"],
-      "xp_for_next_level": nextLevel != null ? nextLevel["xp_required"] : current["xp_required"],
-      "xp_in_level": xpInLevel,
-      "xp_needed_for_next": xpNeeded,
-      "progress": progress.clamp(0.0, 1.0),
-    };
-  }
+  Map<String, dynamic> _calculateLevel(int totalXp) =>
+      GamificationUtils.calculateLevelData(totalXp);
 
   @override
   Widget build(BuildContext context) {
@@ -236,6 +188,8 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
             _buildLevelProgressPill(levelData, lvlPct),
             const SizedBox(width: 8),
             _buildTopicProgressPill(session.stepsCompleted, totalSteps, topicPct),
+            const SizedBox(width: 8),
+            _buildExportButton(session, totalSteps),
           ],
         ),
       ],
@@ -267,6 +221,8 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
               _buildLevelProgressPill(levelData, lvlPct),
               const SizedBox(width: 8),
               _buildTopicProgressPill(session.stepsCompleted, totalSteps, topicPct),
+              const SizedBox(width: 8),
+              _buildExportButton(session, totalSteps),
             ],
           ),
         ),
@@ -299,6 +255,8 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
               _buildLevelProgressPill(levelData, lvlPct),
               const SizedBox(width: 8),
               _buildTopicProgressPill(session.stepsCompleted, totalSteps, topicPct),
+              const SizedBox(width: 8),
+              _buildExportButton(session, totalSteps),
             ],
           ),
         ),
@@ -668,6 +626,73 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  // ─── EXPORT ACTION BUTTON ───────────────────────────────────────────────────
+  Widget _buildExportButton(SessionResponse session, int totalSteps) {
+    final bool isCompleted = totalSteps > 0 && session.stepsCompleted >= totalSteps;
+
+    return Tooltip(
+      message: isCompleted
+          ? 'Export Mastered Journey (.md / .pdf)'
+          : 'Complete all milestones to unlock export (${session.stepsCompleted}/$totalSteps)',
+      child: InkWell(
+        onTap: () {
+          ExportSessionModal.show(
+            context,
+            sessionId: session.sessionId,
+            topic: session.topic,
+            totalSteps: totalSteps,
+            stepsCompleted: session.stepsCompleted,
+            xpEarned: session.xpEarned,
+            isCompleted: isCompleted,
+          );
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+          decoration: BoxDecoration(
+            color: isCompleted
+                ? AppColors.primary.withValues(alpha: 0.20)
+                : Colors.white.withValues(alpha: 0.04),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isCompleted
+                  ? AppColors.primary.withValues(alpha: 0.55)
+                  : Colors.white.withValues(alpha: 0.12),
+              width: 1.0,
+            ),
+            boxShadow: isCompleted
+                ? [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.25),
+                      blurRadius: 8,
+                    ),
+                  ]
+                : null,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.ios_share_rounded,
+                size: 15,
+                color: isCompleted ? AppColors.purpleLight : AppColors.textMuted,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                'Export',
+                style: AppTextStyles.label.copyWith(
+                  fontSize: 12,
+                  fontWeight: isCompleted ? FontWeight.bold : FontWeight.w500,
+                  color: isCompleted ? Colors.white : AppColors.textMuted,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
