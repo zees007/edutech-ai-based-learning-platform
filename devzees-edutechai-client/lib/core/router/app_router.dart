@@ -2,6 +2,7 @@ import 'package:go_router/go_router.dart';
 import 'package:devzees_edutechai_client/presentation/pages/home/home_page.dart';
 import 'package:devzees_edutechai_client/presentation/pages/auth/auth_page.dart';
 import 'package:devzees_edutechai_client/presentation/pages/learning/learning_page.dart';
+import 'package:devzees_edutechai_client/presentation/pages/admin/admin_page.dart';
 
 class AppRouter {
   static final router = GoRouter(
@@ -21,6 +22,11 @@ class AppRouter {
         path: '/learning',
         name: 'learning',
         builder: (context, state) => const LearningPage(),
+      ),
+      GoRoute(
+        path: '/admin',
+        name: 'admin',
+        builder: (context, state) => const AdminPage(),
       ),
     ],
   );
