@@ -19,7 +19,11 @@ class MermaidWebView extends StatefulWidget {
   State<MermaidWebView> createState() => _MermaidWebViewState();
 }
 
-class _MermaidWebViewState extends State<MermaidWebView> {
+class _MermaidWebViewState extends State<MermaidWebView>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
   late final WebViewController _controller;
   String? _renderedSvg;
   bool _isLoading = true;
@@ -388,6 +392,7 @@ class _MermaidWebViewState extends State<MermaidWebView> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return MouseRegion(
       onEnter: (_) => setState(() => _isCardHovered = true),
       onExit: (_) => setState(() => _isCardHovered = false),

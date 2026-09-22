@@ -745,8 +745,8 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
               Align(
                 alignment: Alignment.centerRight,
                 child: Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
+                  spacing: isMobile ? 6 : 8,
+                  runSpacing: isMobile ? 6 : 8,
                   alignment: WrapAlignment.end,
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
@@ -759,7 +759,7 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
                           foregroundColor: AppColors.purpleLight,
                           side: BorderSide(color: AppColors.purpleLight.withValues(alpha: 0.4)),
                           padding: EdgeInsets.symmetric(
-                            horizontal: isMobile ? 10 : 12,
+                            horizontal: isMobile ? 8 : 12,
                             vertical: isMobile ? 6 : 8,
                           ),
                           visualDensity: isMobile ? VisualDensity.compact : VisualDensity.standard,
@@ -775,7 +775,7 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
                           foregroundColor: AppColors.textSlate,
                           side: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
                           padding: EdgeInsets.symmetric(
-                            horizontal: isMobile ? 10 : 12,
+                            horizontal: isMobile ? 8 : 12,
                             vertical: isMobile ? 6 : 8,
                           ),
                           visualDensity: isMobile ? VisualDensity.compact : VisualDensity.standard,
@@ -791,7 +791,7 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
                           foregroundColor: AppColors.accentCyan,
                           side: BorderSide(color: AppColors.accentCyan.withValues(alpha: 0.3)),
                           padding: EdgeInsets.symmetric(
-                            horizontal: isMobile ? 10 : 12,
+                            horizontal: isMobile ? 8 : 12,
                             vertical: isMobile ? 6 : 8,
                           ),
                           visualDensity: isMobile ? VisualDensity.compact : VisualDensity.standard,
@@ -810,7 +810,7 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
                                 : AppColors.primary),
                         foregroundColor: Colors.white,
                         padding: EdgeInsets.symmetric(
-                          horizontal: isMobile ? 12 : 14,
+                          horizontal: isMobile ? 10 : 14,
                           vertical: isMobile ? 6 : 8,
                         ),
                         visualDensity: isMobile ? VisualDensity.compact : VisualDensity.standard,
