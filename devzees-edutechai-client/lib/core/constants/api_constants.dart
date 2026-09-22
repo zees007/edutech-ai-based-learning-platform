@@ -32,4 +32,20 @@ class ApiConstants {
   static String exportMarkdown(String sessionId) => '/export/$sessionId/md';
   static String exportPdf(String sessionId) => '/export/$sessionId/pdf';
   static String exportHtml(String sessionId) => '/export/$sessionId/html';
+
+  // Admin — User Management
+  static const String usersSearch = '/users/search';
+  static String userById(String userId) => '/users/$userId';
+  static String userRoles(String userId) => '/users/$userId/roles';
+
+  // Admin — Role Management
+  static const String rolesSearch = '/roles/search';
+  static const String rolesCreate = '/roles/create';
+  static const String privileges = '/privileges';
+
+  // Admin — Subscription Management
+  static String userSubscriptionTier(String userId) => '/subscriptions/users/$userId/tier';
+
+  // Admin — Metrics
+  static const String adminMetrics = '/admin/metrics';
 }

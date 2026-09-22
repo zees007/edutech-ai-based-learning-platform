@@ -105,7 +105,15 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
                         showDialog(context: context, builder: (_) => const SubscriptionModal());
                       },
                     ),
-                    _buildMenuItem(context, 'Admin Console', Icons.admin_panel_settings, AppColors.textSecondary),
+                    _buildMenuItem(
+                      context, 
+                      'Admin Console', 
+                      Icons.admin_panel_settings, 
+                      AppColors.textSecondary,
+                      onTap: () {
+                        context.go('/admin');
+                      },
+                    ),
                     Divider(color: AppColors.glassBorder, height: 16),
                     _buildMenuItem(
                       context, 
