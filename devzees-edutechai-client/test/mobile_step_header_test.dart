@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
+import 'package:devzees_edutechai_client/data/models/learning/milestone_step.dart';
 import 'package:devzees_edutechai_client/presentation/pages/learning/widgets/main_content/neural_inference_loader.dart';
+import 'package:devzees_edutechai_client/presentation/pages/learning/widgets/workspace/milestone_roadmap_stepper.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/animated_tutor_icon.dart';
 
 void main() {
@@ -244,6 +246,73 @@ void main() {
       final tutorIcon = tester.widget<AnimatedTutorIcon>(find.byType(AnimatedTutorIcon));
       expect(tutorIcon.size, equals(34.0));
       expect(tutorIcon.showHalo, isFalse);
+    });
+
+    testWidgets('MilestoneRoadmapStepper in mobile width auto-scrolls to center active step cleanly without edge overlays', (tester) async {
+      tester.view.physicalSize = const Size(360, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      final List<MilestoneStep> testSteps = List.generate(
+        7,
+        (i) => MilestoneStep(
+          index: i,
+          title: 'Step ${i + 1} Topic',
+          description: 'Step ${i + 1} description',
+          status: i < 3 ? 'complete' : 'in_progress',
+        ),
+      );
+
+      // Pump with activeIndex = 0
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: SizedBox(
+              width: 360,
+              child: MilestoneRoadmapStepper(
+                steps: testSteps,
+                activeIndex: 0,
+                maxUnlockedIndex: 3,
+                onStepTapped: (_) {},
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // No edge chevron overlay icons should exist
+      expect(find.byIcon(Icons.chevron_right_rounded), findsNothing);
+      expect(find.byIcon(Icons.chevron_left_rounded), findsNothing);
+
+      // Now update activeIndex to 4 (Step 5)
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: SizedBox(
+              width: 360,
+              child: MilestoneRoadmapStepper(
+                steps: testSteps,
+                activeIndex: 4,
+                maxUnlockedIndex: 4,
+                onStepTapped: (_) {},
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Still no edge chevrons
+      expect(find.byIcon(Icons.chevron_left_rounded), findsNothing);
+      expect(find.byIcon(Icons.chevron_right_rounded), findsNothing);
+
+      // Verify scroll offset moved past 200 to center Step 5
+      final scrollable = tester.widget<SingleChildScrollView>(find.byType(SingleChildScrollView));
+      expect(scrollable.controller!.offset, greaterThan(200.0));
     });
   });
 }
