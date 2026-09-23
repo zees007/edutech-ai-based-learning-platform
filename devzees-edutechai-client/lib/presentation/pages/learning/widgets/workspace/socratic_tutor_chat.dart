@@ -1332,7 +1332,12 @@ class _CustomCodeBlockBuilder extends MarkdownElementBuilder {
         textContent.trimLeft().startsWith('mindmap') ||
         ((textContent.contains('-->') || textContent.contains('---')) &&
             textContent.contains('['))) {
-      return MermaidWebView(code: textContent);
+      // Fix LLM hallucinated unclosed pipe string syntax (e.g. A -->|"text" B instead of A -->|"text"| B)
+      final sanitizedMermaid = textContent.replaceAllMapped(
+        RegExp(r'(-->\|"[^"]+")(\s*[A-Za-z0-9_]+)'),
+        (match) => '${match.group(1)}|${match.group(2)}',
+      );
+      return MermaidWebView(code: sanitizedMermaid);
     }
 
     // 4. Code Snippet Blocks with Copy Icon (Centered card matching existing style)
