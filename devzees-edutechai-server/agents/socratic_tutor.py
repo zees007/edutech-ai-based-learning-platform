@@ -159,7 +159,11 @@ class SocraticTutorAgent(BaseAgent):
 
         messages = [{"role": "system", "content": system_prompt}]
 
-        for turn in memory.conversation_history[-6:]:
+        relevant_history = [
+            turn for turn in memory.conversation_history 
+            if turn.step_index is None or turn.step_index <= step_index
+        ]
+        for turn in relevant_history[-6:]:
             messages.append({
                 "role": "user" if turn.role == "student" else "assistant",
                 "content": turn.content,
@@ -231,7 +235,11 @@ class SocraticTutorAgent(BaseAgent):
         ]
 
         # Add recent conversation for context continuity
-        for turn in memory.conversation_history[-6:]:
+        relevant_history = [
+            turn for turn in memory.conversation_history 
+            if turn.step_index is None or turn.step_index <= step_index
+        ]
+        for turn in relevant_history[-6:]:
             messages.append({
                 "role": "user" if turn.role == "student" else "assistant",
                 "content": turn.content,
@@ -319,7 +327,11 @@ class SocraticTutorAgent(BaseAgent):
         messages = [
             {"role": "system", "content": system_prompt},
         ]
-        for turn in memory.conversation_history[-6:]:
+        relevant_history = [
+            turn for turn in memory.conversation_history 
+            if turn.step_index is None or turn.step_index <= step_index
+        ]
+        for turn in relevant_history[-6:]:
             messages.append({
                 "role": "user" if turn.role == "student" else "assistant",
                 "content": turn.content,

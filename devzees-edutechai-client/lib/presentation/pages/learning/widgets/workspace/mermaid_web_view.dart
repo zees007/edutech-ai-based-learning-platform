@@ -46,6 +46,24 @@ class _MermaidWebViewState extends State<MermaidWebView>
     _initWebView();
   }
 
+  @override
+  void didUpdateWidget(covariant MermaidWebView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.code != widget.code) {
+      _controller.loadHtmlString(_buildHtml());
+      // Re-trigger fallback timer in case SVG channel fails on new code
+      _fallbackTimer?.cancel();
+      _isLoading = true;
+      _fallbackTimer = Timer(const Duration(milliseconds: 1200), () {
+        if (mounted && _isLoading) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
+      });
+    }
+  }
+
   void _initWebView() {
     try {
       _controller = WebViewController()

@@ -62,7 +62,7 @@ class SharedMemory(BaseModel):
     current_step_index: int = 0
 
     # ─── Session-Level Academic Research (curated once per session) ───
-    academic_papers: list[AcademicPaper] = Field(default_factory=list)
+    academic_papers: list[AcademicPaper] | None = None
 
     # ─── Conversation History (append-only) ─────────────────────
     conversation_history: list[ConversationTurn] = Field(default_factory=list)
