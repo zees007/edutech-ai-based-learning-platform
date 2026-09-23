@@ -8,6 +8,7 @@ import logging
 import re
 from datetime import datetime
 
+import asyncio
 import httpx
 from fastapi import APIRouter, Depends
 from fastapi.responses import HTMLResponse, PlainTextResponse, Response
@@ -197,6 +198,42 @@ _MERMAID_KEYWORDS = (
 _MERMAID_KEYWORDS_RE = "|".join(_MERMAID_KEYWORDS)
 
 
+def _sanitize_mermaid_syntax(m_code: str) -> str:
+    """Fix LLM hallucinated unclosed pipe string syntax (e.g. A -->|"text" B instead of A -->|"text"| B)"""
+    return re.sub(r'(-->\|"[^"]+")(\s*[a-zA-Z0-9_]+)', r'\1|\2', m_code)
+
+
+def _sanitize_math_tex(content: str) -> str:
+    """Sanitize raw TeX to fix LLM hallucinations based on established patterns."""
+    clean = content.replace(r'\!', '')
+    clean = re.sub(r',\s*(?:\\\s+|\\\\)', r' \\\\ ', clean)
+    clean = re.sub(r',\s*&\s*', r' \\\\ ', clean)
+    clean = re.sub(r'\\{2,}(?:\s*\\+)*', r'\\\\', clean)
+    clean = re.sub(r'\\+\s*(?=\\end\{)', '\n', clean)
+    clean = re.sub(r'(?<!\\)\\\s*(?=\r?\n|$)', '', clean)
+    return clean
+
+
+def _sanitize_math_blocks(text: str) -> str:
+    """Find all math blocks in text and sanitize their LaTeX content."""
+    if not text:
+        return text
+
+    def replacer(match):
+        return _sanitize_math_tex(match.group(0))
+
+    # 1. $$ ... $$
+    text = re.sub(r'\$\$[\s\S]+?\$\$', replacer, text)
+    # 2. \[ ... \]
+    text = re.sub(r'\\\[[\s\S]+?\\\]', replacer, text)
+    # 3. ```math or ```latex
+    text = re.sub(r'```(?:math|latex)\s*\n[\s\S]+?```', replacer, text)
+    # 4. \begin{...} ... \end{...}
+    text = re.sub(r'\\begin\{[a-zA-Z0-9_\*]+\}[\s\S]+?\\end\{[a-zA-Z0-9_\*]+\}', replacer, text)
+
+    return text
+
+
 async def _render_mermaid_as_image(m_code: str) -> str | None:
     """
     Render a Mermaid diagram to a PNG image via the Mermaid Ink API.
@@ -233,8 +270,31 @@ async def _render_mermaid_as_image(m_code: str) -> str | None:
 
         logger.warning("Mermaid Ink API returned non-200 or empty image, using fallback.")
         return None
+        return None
     except Exception as e:
         logger.warning(f"Mermaid Ink API call failed, using fallback: {e}")
+        return None
+
+
+async def _render_math_as_image(math_code: str) -> str | None:
+    """
+    Render LaTeX math to a PNG image via CodeCogs API.
+    Returns a base64-encoded PNG data URI string, or None on failure.
+    """
+    try:
+        import urllib.parse
+        encoded = urllib.parse.quote(math_code.strip())
+        url = f"https://latex.codecogs.com/png.image?\\dpi{{150}}\\bg_white\\;{encoded}"
+        
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.get(url)
+            if resp.status_code == 200 and len(resp.content) > 100:
+                img_b64 = base64.b64encode(resp.content).decode("ascii")
+                return f"data:image/png;base64,{img_b64}"
+
+        return None
+    except Exception as e:
+        logger.warning(f"Math image API call failed, using fallback: {e}")
         return None
 
 
@@ -359,7 +419,7 @@ def _normalize_markdown_diagrams(text: str) -> str:
         )
         processed = processed.replace(f"@@MD_BLOCK_{idx}@@", clean_block)
 
-    return processed
+    return _sanitize_mermaid_syntax(processed)
 
 
 def generate_markdown(memory) -> str:
@@ -420,6 +480,7 @@ def generate_markdown(memory) -> str:
         # ── Socratic Explanation ──
         explanation = _get_attr(step, "tutor_explanation", None)
         if explanation:
+            explanation = _sanitize_math_blocks(explanation)
             norm_exp = _normalize_markdown_diagrams(explanation.strip())
             md += f"#### 🎓 Key Conceptual Takeaways\n\n{norm_exp}\n\n"
 
@@ -714,6 +775,20 @@ async def generate_pdf(memory) -> bytes:
         # Tutor explanation
         explanation = _get_attr(step, "tutor_explanation", "")
         if explanation:
+            explanation = _sanitize_math_blocks(explanation)
+            
+            math_pdf_blocks = []
+            def _extract_math_pdf(match):
+                idx = len(math_pdf_blocks)
+                math_pdf_blocks.append(match.group(0))
+                return f"\n\n<!--MATH_PDF_PLACEHOLDER_{idx}-->\n\n"
+            
+            # Extract math blocks for PDF image rendering
+            explanation = re.sub(r'\$\$([\s\S]+?)\$\$', _extract_math_pdf, explanation)
+            explanation = re.sub(r'\\\[([\s\S]+?)\\\]', _extract_math_pdf, explanation)
+            explanation = re.sub(r'```(?:math|latex)\s*\n([\s\S]+?)```', _extract_math_pdf, explanation)
+            explanation = re.sub(r'\\begin\{[a-zA-Z0-9_\*]+\}[\s\S]+?\\end\{[a-zA-Z0-9_\*]+\}', _extract_math_pdf, explanation)
+
             mermaid_blocks = []
 
             def _extract_mermaid_pdf(match):
@@ -740,10 +815,16 @@ async def generate_pdf(memory) -> bytes:
                 flags=re.DOTALL,
             )
 
+            # Fetch all Mermaid images concurrently
+            mermaid_uris = await asyncio.gather(*[
+                _render_mermaid_as_image(_sanitize_mermaid_syntax(m_code))
+                for m_code in mermaid_blocks
+            ])
+
             # Re-inject Mermaid diagrams as executive PDF diagram cards
-            for idx, m_code in enumerate(mermaid_blocks):
+            for idx, (m_code, mermaid_img_uri) in enumerate(zip(mermaid_blocks, mermaid_uris)):
+                m_code = _sanitize_mermaid_syntax(m_code)
                 # Try pixel-perfect image via Mermaid Ink API first
-                mermaid_img_uri = await _render_mermaid_as_image(m_code)
                 if mermaid_img_uri:
                     diagram_rendered = (
                         f'<div style="text-align: center; padding: 6px 0;">'
@@ -771,6 +852,35 @@ async def generate_pdf(memory) -> bytes:
                 exp_html = re.sub(
                     rf"(?:<p>)?<!--MERMAID_PLACEHOLDER_{idx}-->(?:</p>)?",
                     diagram_card,
+                    exp_html,
+                )
+            # Fetch all Math images concurrently
+            cleaned_math_codes = []
+            for m in math_pdf_blocks:
+                c = re.sub(r'^\$\$|\$\$$', '', m)
+                c = re.sub(r'^\\\[|\\\]$', '', c)
+                c = re.sub(r'^```(?:math|latex)\s*\n|```$', '', c)
+                cleaned_math_codes.append(c)
+
+            math_uris = await asyncio.gather(*[
+                _render_math_as_image(c)
+                for c in cleaned_math_codes
+            ])
+
+            # Re-inject Math diagrams as executive PDF images
+            for idx, (math_code, math_img_uri) in enumerate(zip(math_pdf_blocks, math_uris)):
+                if math_img_uri:
+                    math_rendered = (
+                        f'<div style="text-align: center; padding: 6px 0;">'
+                        f'<img src="{math_img_uri}" class="mermaid-image" />'
+                        f'</div>'
+                    )
+                else:
+                    math_rendered = f'<pre class="diagram-code-box"><code>{html.escape(math_code)}</code></pre>'
+
+                exp_html = re.sub(
+                    rf"(?:<p>)?<!--MATH_PDF_PLACEHOLDER_{idx}-->(?:</p>)?",
+                    math_rendered,
                     exp_html,
                 )
 
@@ -1554,6 +1664,7 @@ def generate_html(memory) -> str:
 
         explanation = _get_attr(step, "tutor_explanation", "")
         if explanation:
+            explanation = _sanitize_math_blocks(explanation)
             # Safely extract Mermaid diagrams before Markdown processing so they are preserved
             mermaid_blocks = []
 
@@ -1569,7 +1680,21 @@ def generate_html(memory) -> str:
                 flags=re.DOTALL,
             )
 
+            # Protect LaTeX delimiters from being stripped by python-markdown escaping
+            explanation_clean = explanation_clean.replace(r"\[", "@@B_MATH_START@@")
+            explanation_clean = explanation_clean.replace(r"\]", "@@B_MATH_END@@")
+            explanation_clean = explanation_clean.replace(r"\(", "@@I_MATH_START@@")
+            explanation_clean = explanation_clean.replace(r"\)", "@@I_MATH_END@@")
+            explanation_clean = explanation_clean.replace(r"$$", "@@MATH_DOLLAR@@")
+
             exp_html = markdown.markdown(explanation_clean, extensions=["tables", "fenced_code"])
+            
+            # Restore LaTeX delimiters
+            exp_html = exp_html.replace("@@B_MATH_START@@", r"\[")
+            exp_html = exp_html.replace("@@B_MATH_END@@", r"\]")
+            exp_html = exp_html.replace("@@I_MATH_START@@", r"\(")
+            exp_html = exp_html.replace("@@I_MATH_END@@", r"\)")
+            exp_html = exp_html.replace("@@MATH_DOLLAR@@", r"$$")
             # Format code blocks with language badge
             exp_html = re.sub(
                 r"<p><code>(?:([a-zA-Z0-9_\-]+)\n)?(.*?)</code></p>",
@@ -1580,6 +1705,7 @@ def generate_html(memory) -> str:
 
             # Re-inject Mermaid diagrams as interactive cards
             for idx, m_code in enumerate(mermaid_blocks):
+                m_code = _sanitize_mermaid_syntax(m_code)
                 m_escaped = html.escape(m_code)
                 mermaid_card = f"""
                 <div class="mermaid-canvas-card">
@@ -2346,6 +2472,19 @@ def generate_html(memory) -> str:
         <p class="page-footer">Generated by EduTechAI — Your AI-Powered Learning Companion</p>
     </div>
 
+    <script>
+      window.MathJax = {{
+        tex: {{
+          inlineMath: [['$', '$'], ['\\\\(', '\\\\)']],
+          displayMath: [['$$', '$$'], ['\\\\[', '\\\\]']]
+        }},
+        svg: {{
+          fontCache: 'global'
+        }}
+      }};
+    </script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>
         if (window.mermaid) {{
             mermaid.initialize({{
