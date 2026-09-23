@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+import base64
 import html
 import io
+import json
 import logging
 import re
 from datetime import datetime
 
+import httpx
 from fastapi import APIRouter, Depends
 from fastapi.responses import HTMLResponse, PlainTextResponse, Response
 import markdown
@@ -178,43 +181,132 @@ def _sanitize_text_for_pdf(text: str) -> str:
     return "".join(cleaned)
 
 
-def _render_mermaid_for_pdf(m_code: str) -> str:
+# ── Mermaid keywords used for detection ──────────────────────────
+_MERMAID_KEYWORDS = (
+    r"graph\s+[A-Z]{2}",
+    r"flowchart\s+[A-Z]{2}",
+    r"sequenceDiagram",
+    r"classDiagram",
+    r"stateDiagram(?:-v2)?",
+    r"erDiagram",
+    r"gantt",
+    r"pie",
+    r"mindmap",
+    r"gitGraph",
+)
+_MERMAID_KEYWORDS_RE = "|".join(_MERMAID_KEYWORDS)
+
+
+async def _render_mermaid_as_image(m_code: str) -> str | None:
     """
-    Parse Mermaid flowchart code into a clean, printable visual flow table for PDF.
-    Extracts nodes and transitions into structured table rows with arrow connectors,
-    falling back to formatted code block if no explicit transitions are found.
+    Render a Mermaid diagram to a PNG image via the Mermaid Ink API.
+    Returns a base64-encoded PNG data URI string, or None on failure.
+    """
+    try:
+        # Build a Mermaid Ink config payload for a clean light-themed render
+        payload = {
+            "code": m_code.strip(),
+            "mermaid": {
+                "theme": "default",
+                "themeVariables": {
+                    "fontFamily": "Helvetica, Arial, sans-serif",
+                    "fontSize": "14px",
+                    "primaryColor": "#EEF2FF",
+                    "primaryBorderColor": "#6366F1",
+                    "primaryTextColor": "#1E1B4B",
+                    "lineColor": "#64748B",
+                    "secondaryColor": "#F0FDF4",
+                    "tertiaryColor": "#FEF3C7",
+                },
+            },
+        }
+        # Mermaid Ink expects base64-encoded JSON in the URL path
+        payload_json = json.dumps(payload, ensure_ascii=True)
+        encoded = base64.urlsafe_b64encode(payload_json.encode("utf-8")).decode("ascii")
+        url = f"https://mermaid.ink/img/{encoded}"
+
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.get(url)
+            if resp.status_code == 200 and len(resp.content) > 200:
+                img_b64 = base64.b64encode(resp.content).decode("ascii")
+                return f"data:image/png;base64,{img_b64}"
+
+        logger.warning("Mermaid Ink API returned non-200 or empty image, using fallback.")
+        return None
+    except Exception as e:
+        logger.warning(f"Mermaid Ink API call failed, using fallback: {e}")
+        return None
+
+
+def _render_mermaid_fallback_for_pdf(m_code: str) -> str:
+    """
+    Parse Mermaid flowchart code into a styled visual flow table for PDF.
+    Used as a fallback when the Mermaid Ink API is unavailable.
+    Extracts nodes and transitions into structured table rows with styled
+    node boxes and arrow connectors, with proper deduplication.
     """
     lines = [line.strip() for line in m_code.strip().split("\n") if line.strip()]
-    transitions = []
-    node_labels = {}
+    transitions: list[tuple[str, str, str]] = []
+    node_labels: dict[str, str] = {}
+
+    # Extended node label patterns:
+    # A["Label"], A["Label (info)"], A(["Label"]), A(Label), A{Label}, A>Label]
+    node_patterns = [
+        r'([a-zA-Z0-9_\-]+)\s*\[\s*"(.*?)"\s*\]',          # A["Label"]
+        r'([a-zA-Z0-9_\-]+)\s*\[\s*([^"\]]+?)\s*\]',       # A[Label]
+        r'([a-zA-Z0-9_\-]+)\s*\(\s*\[\s*"(.*?)"\s*\]\s*\)', # A(["Label"])
+        r'([a-zA-Z0-9_\-]+)\s*\(\s*\[\s*([^"\]]+?)\s*\]\s*\)',  # A([Label])
+        r'([a-zA-Z0-9_\-]+)\s*\(\s*"(.*?)"\s*\)',          # A("Label")
+        r'([a-zA-Z0-9_\-]+)\s*\(\s*([^"\)]+?)\s*\)',       # A(Label)
+        r'([a-zA-Z0-9_\-]+)\s*\{\s*"(.*?)"\s*\}',          # A{"Label"}
+        r'([a-zA-Z0-9_\-]+)\s*\{\s*([^"\}]+?)\s*\}',       # A{Label}
+    ]
 
     for line in lines:
-        for match in re.finditer(r'([a-zA-Z0-9_\-]+)\s*(?:\[\s*\(?"(.*?)"\)?\s*\]|\(\s*\["(.*?)"\]\s*\))', line):
-            nid = match.group(1)
-            lbl = match.group(2) or match.group(3)
-            if lbl:
-                node_labels[nid] = lbl.strip()
+        for pattern in node_patterns:
+            for match in re.finditer(pattern, line):
+                nid = match.group(1)
+                lbl = match.group(2)
+                if lbl and nid not in node_labels:
+                    node_labels[nid] = lbl.strip()
 
+    # Extract edges: A --> B, A --> B["Label"], A["Label"] --> B, A -->|label| B, A ==> B, A -.-> B
+    # The node label definition (e.g. ["Label"], (Label), {Label}) can appear between the
+    # source node ID and the arrow, so we need to skip over it.
+    edge_pattern = re.compile(
+        r'([a-zA-Z0-9_\-]+)'           # src node ID
+        r'(?:\s*(?:\[.*?\]|\(.*?\)|\{.*?\}))?'  # optional node label definition (skip)
+        r'\s*(?:--+>|=+>|-\.+->)'       # arrow
+        r'(?:\|\s*"?(.*?)"?\s*\|)?'     # optional edge label
+        r'\s*'
+        r'([a-zA-Z0-9_\-]+)'           # dst node ID
+    )
     for line in lines:
-        edge_match = re.search(r'([a-zA-Z0-9_\-]+)\s*--+>(?:\|"?(.*?)"?\|)?\s*([a-zA-Z0-9_\-]+)', line)
-        if edge_match:
-            src = edge_match.group(1)
-            edge_lbl = edge_match.group(2) or ""
-            dst = edge_match.group(3)
+        for match in edge_pattern.finditer(line):
+            src = match.group(1)
+            edge_lbl = (match.group(2) or "").strip()
+            dst = match.group(3)
             src_name = node_labels.get(src, src)
             dst_name = node_labels.get(dst, dst)
-            transitions.append((src_name, edge_lbl.strip(), dst_name))
+            transitions.append((src_name, edge_lbl, dst_name))
 
     if transitions:
         flow_rows = []
+        rendered_nodes: set[str] = set()
         for i, (src, edge_lbl, dst) in enumerate(transitions):
-            if i == 0:
+            # Only render the source node if it hasn't been rendered yet
+            if src not in rendered_nodes:
                 s_esc = html.escape(_sanitize_text_for_pdf(src))
                 flow_rows.append(f'<tr><td class="flow-node-cell"><strong>{s_esc}</strong></td></tr>')
+                rendered_nodes.add(src)
+            # Arrow with optional edge label
             arrow_txt = f'&darr; <em>{html.escape(_sanitize_text_for_pdf(edge_lbl))}</em>' if edge_lbl else '&darr;'
             flow_rows.append(f'<tr><td class="flow-arrow-cell">{arrow_txt}</td></tr>')
-            d_esc = html.escape(_sanitize_text_for_pdf(dst))
-            flow_rows.append(f'<tr><td class="flow-node-cell"><strong>{d_esc}</strong></td></tr>')
+            # Destination node
+            if dst not in rendered_nodes:
+                d_esc = html.escape(_sanitize_text_for_pdf(dst))
+                flow_rows.append(f'<tr><td class="flow-node-cell"><strong>{d_esc}</strong></td></tr>')
+                rendered_nodes.add(dst)
 
         return f'<table class="flow-sequence-table">{"".join(flow_rows)}</table>'
     else:
@@ -227,8 +319,9 @@ def _normalize_markdown_diagrams(text: str) -> str:
     if not text:
         return text
 
-    # Protect existing code blocks
-    fenced_blocks = []
+    # Protect existing code blocks and collect them
+    fenced_blocks: list[str] = []
+
     def _save_block(m):
         idx = len(fenced_blocks)
         fenced_blocks.append(m.group(0))
@@ -236,21 +329,33 @@ def _normalize_markdown_diagrams(text: str) -> str:
 
     processed = re.sub(r"```[\s\S]*?```", _save_block, text)
 
-    # 1. Detect unfenced mermaid diagrams (e.g. starting with graph TD / flowchart / sequenceDiagram etc.)
-    mermaid_pattern = re.compile(
-        r"(?:^|\n\n)(graph\s+[A-Z]{2}|flowchart\s+[A-Z]{2}|sequenceDiagram|classDiagram|stateDiagram(?:-v2)?|erDiagram|gantt|pie|mindmap|gitGraph)([\s\S]*?)(?=(?:\r?\n\s*\r?\n\S)|(?:\r?\n\s*\r?\n#)|$)",
+    # 1. Detect unfenced mermaid diagrams (bare mermaid keywords not inside code blocks)
+    #    Match: optional blank line(s), then a mermaid keyword, then content until next
+    #    blank-line-followed-by-non-whitespace, or heading, or end-of-string.
+    mermaid_unfenced = re.compile(
+        r"(?:^|\n\s*\n|\n)\s*(" + _MERMAID_KEYWORDS_RE + r")"
+        r"([\s\S]*?)"
+        r"(?=\n\s*\n\S|\n\s*\n#|\n@@MD_BLOCK_|$)",
         re.IGNORECASE,
     )
-    processed = mermaid_pattern.sub(r"\n\n```mermaid\n\1\2\n```\n\n", processed)
+    processed = mermaid_unfenced.sub(r"\n\n```mermaid\n\1\2\n```\n\n", processed)
 
-    # Restore fenced blocks, standardizing ```flowchart into ```mermaid
+    # 2. Restore fenced blocks, normalizing their language tags
     for idx, block in enumerate(fenced_blocks):
-        clean_block = re.sub(r"^```flowchart\b", "```mermaid", block)
+        clean_block = block
+        # ```flowchart ... ``` → ```mermaid ... ```
         clean_block = re.sub(
-            r"^```\s*\n(graph\s+[A-Z]{2}|flowchart\s+[A-Z]{2}|sequenceDiagram|classDiagram|stateDiagram)",
+            r"^```flowchart\b",
+            "```mermaid",
+            clean_block,
+            flags=re.MULTILINE,
+        )
+        # ``` (no language) with mermaid content → ```mermaid
+        clean_block = re.sub(
+            r"^```\s*\n\s*(" + _MERMAID_KEYWORDS_RE + r")",
             r"```mermaid\n\1",
             clean_block,
-            flags=re.IGNORECASE,
+            flags=re.IGNORECASE | re.MULTILINE,
         )
         processed = processed.replace(f"@@MD_BLOCK_{idx}@@", clean_block)
 
@@ -326,12 +431,11 @@ def generate_markdown(memory) -> str:
                 md += f"{qi}. {q}\n"
             md += "\n"
 
-        # ── YouTube Videos (Curated Top 3) ──
+        # ── YouTube Videos ──
         videos = _get_attr(step, "videos", []) or []
         if videos:
             md += "#### 🎬 Recommended Video Clips\n\n"
-            curated_videos = videos[:3]
-            for vid in curated_videos:
+            for vid in videos:
                 v_title = _get_attr(vid, "title", "Video Clip")
                 v_channel = _get_attr(vid, "channel", "YouTube")
                 v_video_id = _get_attr(vid, "video_id", "")
@@ -458,7 +562,7 @@ def generate_markdown(memory) -> str:
     return md
 
 
-def generate_pdf(memory) -> bytes:
+async def generate_pdf(memory) -> bytes:
     """Generate an executive-grade, beautifully branded, and glyph-clean PDF byte stream."""
     steps = _get_attr(memory, "steps", []) or []
     total_steps = len(steps)
@@ -638,7 +742,17 @@ def generate_pdf(memory) -> bytes:
 
             # Re-inject Mermaid diagrams as executive PDF diagram cards
             for idx, m_code in enumerate(mermaid_blocks):
-                diagram_rendered = _render_mermaid_for_pdf(m_code)
+                # Try pixel-perfect image via Mermaid Ink API first
+                mermaid_img_uri = await _render_mermaid_as_image(m_code)
+                if mermaid_img_uri:
+                    diagram_rendered = (
+                        f'<div style="text-align: center; padding: 6px 0;">'
+                        f'<img src="{mermaid_img_uri}" class="mermaid-image" />'
+                        f'</div>'
+                    )
+                else:
+                    diagram_rendered = _render_mermaid_fallback_for_pdf(m_code)
+
                 diagram_card = f"""
                 <table class="diagram-card-pdf">
                     <tr>
@@ -675,14 +789,26 @@ def generate_pdf(memory) -> bytes:
         videos = _get_attr(step, "videos", []) or []
         if videos:
             body_html += "<h4 class='subhead'>Recommended Video Clips</h4><table class='video-table'>"
-            for vid in videos[:2]:
+            for vid in videos:
                 v_title = _sanitize_text_for_pdf(_get_attr(vid, "title", "Video Clip"))
                 v_channel = _sanitize_text_for_pdf(_get_attr(vid, "channel", "YouTube"))
+                
+                v_video_id = _get_attr(vid, "video_id", "")
+                v_ts = _get_attr(vid, "start_time", 0) or _get_attr(vid, "timestamp_seconds", 0)
+                v_url = _get_attr(vid, "url", "") or _get_attr(vid, "timestamp_url", "")
+                if not v_url and v_video_id:
+                    v_url = f"https://www.youtube.com/watch?v={v_video_id}&t={int(v_ts or 0)}"
+                v_url_clean = html.escape(v_url) if v_url else ""
+
                 v_exp = _sanitize_text_for_pdf(_get_attr(vid, "timestamp_explanation", "") or _get_attr(vid, "relevance_snippet", ""))
                 if any(bad in v_exp.lower() for bad in ["bootcamp", "discount", "$", "code ", "off "]):
                     v_exp = ""
                 snippet = f"<br/><small style='color: #64748B;'>{v_exp[:110]}...</small>" if v_exp else ""
-                body_html += f"<tr><td class='video-cell'><span class='video-tag'>VIDEO</span> <strong>{v_title}</strong> &mdash; <em>{v_channel}</em>{snippet}</td></tr>"
+                
+                url_display = f"<br/><small style='color: #4F46E5;'>&#128279; <a href='{v_url_clean}' style='color: #4F46E5; text-decoration: none;'>{v_url_clean}</a></small>" if v_url_clean else ""
+                title_display = f"<a href='{v_url_clean}' style='color: inherit; text-decoration: none;'><strong>{v_title}</strong></a>" if v_url_clean else f"<strong>{v_title}</strong>"
+                
+                body_html += f"<tr><td class='video-cell'><span class='video-tag'>VIDEO</span> {title_display} &mdash; <em>{v_channel}</em>{snippet}{url_display}</td></tr>"
             body_html += "</table>"
 
         # Academic Papers
@@ -1031,25 +1157,26 @@ def generate_pdf(memory) -> bytes:
                 background-color: #F8FAFC;
             }}
             .flow-sequence-table {{
-                width: 100%;
+                width: 80%;
                 border: none;
+                margin: 4px auto;
             }}
             .flow-node-cell {{
-                background-color: #FFFFFF;
-                border: 1px solid #CBD5E1;
-                border-radius: 4px;
-                padding: 5px 8px;
-                font-size: 8pt;
-                color: #0F172A;
+                background-color: #EEF2FF;
+                border: 1.5px solid #6366F1;
+                border-radius: 6px;
+                padding: 7px 12px;
+                font-size: 8.5pt;
+                color: #1E1B4B;
                 text-align: center;
             }}
             .flow-arrow-cell {{
                 border: none;
                 text-align: center;
-                font-size: 8pt;
+                font-size: 9pt;
                 font-weight: bold;
                 color: #4F46E5;
-                padding: 2px 0;
+                padding: 3px 0;
             }}
             .diagram-code-box {{
                 background-color: #0F172A;
@@ -1058,6 +1185,13 @@ def generate_pdf(memory) -> bytes:
                 border-radius: 4px;
                 font-family: monospace;
                 font-size: 7.5pt;
+            }}
+            .mermaid-image {{
+                max-width: 100%;
+                width: auto;
+                height: auto;
+                display: block;
+                margin: 0 auto;
             }}
             /* ── Section Title ── */
             .section-title {{
@@ -1488,7 +1622,7 @@ def generate_html(memory) -> str:
                 <h4>🎬 Recommended Video Clips</h4>
                 <div class="video-grid">
             """
-            for vid in videos[:3]:
+            for vid in videos:
                 v_title = html.escape(str(_get_attr(vid, "title", "Video Clip")))
                 v_channel = html.escape(str(_get_attr(vid, "channel", "YouTube")))
                 v_video_id = _get_attr(vid, "video_id", "")
@@ -2295,7 +2429,7 @@ async def export_session_pdf(
     check_session_completed(memory)
 
     try:
-        pdf_bytes = generate_pdf(memory)
+        pdf_bytes = await generate_pdf(memory)
         return Response(
             content=pdf_bytes,
             media_type="application/pdf",
