@@ -67,8 +67,8 @@ String sanitizeMathTex(String rawTex) {
   // 1. Remove unnecessary \! (negative thin space)
   clean = clean.replaceAll(r'\!', '');
   
-  // 2. Replace comma followed by backslash(es) with LaTeX newline \\
-  clean = clean.replaceAll(RegExp(r',\s*\\+'), r' \\ ');
+  // 2. Replace comma followed by unescaped newline ', \ ' or ', \\' with LaTeX newline \\
+  clean = clean.replaceAll(RegExp(r',\s*(?:\\\s+|\\\\)'), r' \\ ');
   
   // 3. Replace comma followed by ampersand (multi-column equation separator) with \\
   clean = clean.replaceAll(RegExp(r',\s*&\s*'), r' \\ ');
