@@ -413,7 +413,7 @@ def generate_markdown(memory) -> str:
         description = _get_attr(step, "description", "")
         est_min = _get_attr(step, "estimated_minutes", 5)
 
-        md += f"### Milestone {step_idx + 1}: {title} ✅\n\n"
+        md += f"### Step {step_idx + 1}: {title} ✅\n\n"
         if description:
             md += f"**Objective:** {description} *(Est. {est_min} min)*\n\n"
 
@@ -685,7 +685,7 @@ async def generate_pdf(memory) -> bytes:
         """
 
     # 3. Milestones
-    body_html += '<h2 class="section-title">Mastered Milestones</h2>'
+    body_html += '<h2 class="section-title">Mastered Steps</h2>'
 
     for step in steps:
         step_idx = _get_attr(step, "index", 0)
@@ -698,7 +698,7 @@ async def generate_pdf(memory) -> bytes:
             <table class="milestone-header-table">
                 <tr>
                     <td class="milestone-header-left">
-                        <span class="milestone-badge">MILESTONE {step_idx + 1}</span>
+                        <span class="milestone-badge">STEP {step_idx + 1}</span>
                         <span class="milestone-heading">{title}</span>
                     </td>
                     <td class="milestone-header-right">
@@ -1538,7 +1538,7 @@ def generate_html(memory) -> str:
         milestones_html += f"""
         <article class="milestone-card" id="milestone-{step_idx + 1}">
             <div class="milestone-header">
-                <span class="milestone-tag">MILESTONE {step_idx + 1}</span>
+                <span class="milestone-tag">STEP {step_idx + 1}</span>
                 <h3 class="milestone-name">{title}</h3>
                 <span class="mastered-pill">Mastered</span>
             </div>
