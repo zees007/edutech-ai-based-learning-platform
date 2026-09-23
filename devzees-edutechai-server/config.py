@@ -102,6 +102,9 @@ class Settings(BaseSettings):
     # ─── Academic APIs ───────────────────────────────────────────
     openalex_email: str = ""
     semantic_scholar_api_key: str = ""
+    openalex_api_url: str = "https://api.openalex.org/works"
+    semantic_scholar_api_url: str = "https://api.semanticscholar.org/graph/v1/paper/search"
+    arxiv_api_url: str = "https://export.arxiv.org/api/query"
 
     # ─── Database ────────────────────────────────────────────────
     database_url: str = "sqlite+aiosqlite:///./data/edutechai.db"
