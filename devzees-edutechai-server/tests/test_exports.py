@@ -383,3 +383,33 @@ async def test_inline_math_rendering_in_pdf():
     assert len(pdf_bytes) > 1000
     assert pdf_bytes.startswith(b"%PDF")
 
+
+@pytest.mark.asyncio
+async def test_nested_list_rendering_in_html_and_pdf():
+    from app.routers.exports import generate_html, generate_pdf
+
+    sample_md = (
+        "Key components include:\n\n"
+        "1. **Data pipeline**\n"
+        "  - Tokenization (byte-pair, BPE, or sentencepiece).\n"
+        "  - Sharding and prefetching across nodes to keep GPUs fed.\n"
+        "2. **Parallelism strategy**\n"
+        "  - Data parallelism: replicate the model, aggregate gradients.\n"
+        "  - Tensor parallelism: split weight matrices across devices.\n"
+        "3. **Learning-rate schedule**\n"
+    )
+    mem = create_sample_session(is_completed=True)
+    mem.steps[0].tutor_explanation = sample_md
+
+    html_out = generate_html(mem)
+    # The parent list should contain <li>...<strong>Data pipeline</strong>... followed by a nested <ul>
+    assert "<ul>" in html_out
+    assert "<li>Tokenization (byte-pair, BPE, or sentencepiece).</li>" in html_out
+    assert "<li>Sharding and prefetching across nodes to keep GPUs fed.</li>" in html_out
+
+    # PDF generation also succeeds with proper nested lists
+    pdf_bytes = await generate_pdf(mem)
+    assert isinstance(pdf_bytes, bytes)
+    assert pdf_bytes.startswith(b"%PDF")
+
+

@@ -285,6 +285,43 @@ def _sanitize_math_blocks(text: str) -> str:
     return text
 
 
+def normalize_markdown_list_indentation(text: str) -> str:
+    """
+    Python-Markdown requires 4 spaces per indentation level for nested lists,
+    whereas LLMs and modern GFM editors use 2 or 3 spaces (e.g. `  - bullet`).
+    Without 4 spaces, Python-Markdown flattens sub-bullets into the parent <ol>,
+    causing sub-bullets to be erroneously numbered as consecutive parent items (e.g. 1..17).
+    This normalizes 2-space or 3-space list indentation to 4-space increments.
+    """
+    if not text:
+        return ""
+    lines = text.split("\n")
+    new_lines = []
+    in_code_block = False
+
+    for line in lines:
+        stripped = line.strip()
+        if stripped.startswith("```"):
+            in_code_block = not in_code_block
+            new_lines.append(line)
+            continue
+
+        if not in_code_block and stripped:
+            match = re.match(r"^( +)([-\*\+]|\d+[\.\)])\s+(.*)$", line)
+            if match:
+                spaces, marker, rest = match.groups()
+                num_spaces = len(spaces)
+                # LLMs indent sublists with 2 or 3 spaces per level.
+                level = max(1, num_spaces // 2)
+                new_spaces = " " * (level * 4)
+                new_lines.append(f"{new_spaces}{marker} {rest}")
+                continue
+
+        new_lines.append(line)
+
+    return "\n".join(new_lines)
+
+
 # ── Mappings for LaTeX inline math conversion to HTML in PDFs ───────
 _LATEX_GREEK_MAP = {
     r'\alpha': '&alpha;',
@@ -1078,7 +1115,7 @@ async def generate_pdf(memory) -> bytes:
             sanitized_exp = _sanitize_text_for_pdf(explanation_clean)
 
             # Convert to markdown with fenced_code and tables
-            exp_html = markdown.markdown(sanitized_exp, extensions=["tables", "fenced_code"])
+            exp_html = markdown.markdown(normalize_markdown_list_indentation(sanitized_exp), extensions=["tables", "fenced_code"])
             # Normalize code blocks to <pre><code>
             exp_html = re.sub(
                 r"<p><code>(?:[a-zA-Z0-9_\-]+\n)?(.*?)</code></p>",
@@ -1852,7 +1889,7 @@ async def generate_pdf(memory) -> bytes:
     """
 
     pdf_buffer = io.BytesIO()
-    pisa_status = pisa.CreatePDF(io.StringIO(styled_html), dest=pdf_buffer)
+    pisa_status = await asyncio.to_thread(pisa.CreatePDF, io.StringIO(styled_html), dest=pdf_buffer)
 
     if pisa_status.err:
         raise Exception("Failed to generate PDF")
@@ -2020,7 +2057,7 @@ def generate_html(memory) -> str:
                 _protect_math, explanation_clean
             )
 
-            exp_html = markdown.markdown(explanation_clean, extensions=["tables", "fenced_code"])
+            exp_html = markdown.markdown(normalize_markdown_list_indentation(explanation_clean), extensions=["tables", "fenced_code"])
 
             # Restore all math placeholders back into the HTML
             for idx, original_math in enumerate(math_placeholders):
@@ -2420,8 +2457,27 @@ def generate_html(memory) -> str:
         .explanation-body ol {{
             margin-top: 6px;
             margin-bottom: 14px;
+            padding-left: 24px;
+        }}
+        .explanation-body > ul,
+        .explanation-body > ol {{
             margin-left: 12px;
+        }}
+        .explanation-body ul {{
+            list-style-type: disc;
+        }}
+        .explanation-body ol {{
+            list-style-type: decimal;
+        }}
+        .explanation-body li > ul,
+        .explanation-body li > ol {{
+            margin-top: 4px;
+            margin-bottom: 8px;
+            margin-left: 0;
             padding-left: 20px;
+        }}
+        .explanation-body li > ul {{
+            list-style-type: disc;
         }}
         .explanation-body li {{
             margin-bottom: 6px;
@@ -2929,12 +2985,15 @@ async def export_session_pdf(
     check_session_completed(memory)
 
     try:
-        pdf_bytes = await generate_pdf(memory)
+        pdf_bytes = await asyncio.wait_for(generate_pdf(memory), timeout=120.0)
         return Response(
             content=pdf_bytes,
             media_type="application/pdf",
             headers={"Content-Disposition": f'attachment; filename="session_{session_id}.pdf"'},
         )
+    except asyncio.TimeoutError:
+        logger.error(f"PDF generation timed out after 120s for session {session_id}")
+        return PlainTextResponse(content="PDF generation timed out. Please try again.", status_code=504)
     except Exception as e:
         logger.error(f"Failed to generate PDF for session {session_id}: {e}")
         return PlainTextResponse(content="Error generating PDF", status_code=500)
