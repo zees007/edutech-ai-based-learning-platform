@@ -106,6 +106,7 @@ def test_generate_markdown_content():
     assert "Can a qubit be both 0 and 1 simultaneously?" in md
     assert "**Your Answer:** True ✅" in md
     assert "100%" in md
+    assert "Reflection & Socratic Prompts" not in md
 
 
 @pytest.mark.asyncio
@@ -117,6 +118,7 @@ async def test_generate_pdf_content():
     assert isinstance(pdf_bytes, bytes)
     assert len(pdf_bytes) > 1000
     assert pdf_bytes[:4] == b"%PDF"
+    assert "Reflection & Socratic Prompts" not in str(pdf_bytes)
 
 
 def test_generate_html_content():
@@ -136,6 +138,7 @@ def test_generate_html_content():
     assert "Concept Architecture &amp; Flowchart" in html_content
     assert "Learning Journey Milestone Path" in html_content
     assert "video-url-print" in html_content
+    assert "Reflection & Socratic Prompts" not in html_content
 
 
 @pytest.mark.asyncio

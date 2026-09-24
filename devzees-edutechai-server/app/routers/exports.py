@@ -717,13 +717,6 @@ def generate_markdown(memory) -> str:
             norm_exp = _normalize_markdown_diagrams(explanation.strip())
             md += f"#### 🎓 Key Conceptual Takeaways\n\n{norm_exp}\n\n"
 
-        # ── Socratic Questions ──
-        socratic_qs = _get_attr(step, "socratic_questions", []) or []
-        if socratic_qs:
-            md += "#### 💡 Reflection & Socratic Prompts\n\n"
-            for qi, q in enumerate(socratic_qs, 1):
-                md += f"{qi}. {q}\n"
-            md += "\n"
 
         # ── YouTube Videos ──
         videos = _get_attr(step, "videos", []) or []
@@ -1155,14 +1148,6 @@ async def generate_pdf(memory) -> bytes:
 
             body_html += f'<h4 class="subhead">Key Conceptual Takeaways</h4><div class="explanation-content">{exp_html}</div>'
 
-        # Socratic Prompts
-        socratic_qs = _get_attr(step, "socratic_questions", []) or []
-        if socratic_qs:
-            body_html += "<h4 class='subhead'>Reflection & Socratic Prompts</h4><ol class='socratic-list'>"
-            for q in socratic_qs:
-                q_clean = format_inline_math_for_pdf(_sanitize_text_for_pdf(q))
-                body_html += f"<li>{q_clean}</li>"
-            body_html += "</ol>"
 
         # Recommended Video Clips
         videos = _get_attr(step, "videos", []) or []
@@ -2075,16 +2060,6 @@ def generate_html(memory) -> str:
             </div>
             """
 
-        socratic_qs = _get_attr(step, "socratic_questions", []) or []
-        if socratic_qs:
-            milestones_html += """
-            <div class="content-block">
-                <h4>💡 Reflection &amp; Socratic Prompts</h4>
-                <ul class="socratic-items">
-            """
-            for q in socratic_qs:
-                milestones_html += f"<li>{html.escape(str(q))}</li>"
-            milestones_html += "</ul></div>"
 
         videos = _get_attr(step, "videos", []) or []
         if videos:
