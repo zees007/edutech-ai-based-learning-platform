@@ -60,6 +60,7 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
   bool _isLoadingHtml = false;
   String? _loadedMarkdown;
   String? _loadedHtml;
+  String? _errorMessage;
 
   bool get _isJourneyComplete =>
       widget.isCompleted ||
@@ -67,7 +68,10 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
 
   Future<void> _handlePreviewMarkdown() async {
     if (_isLoadingMd) return;
-    setState(() => _isLoadingMd = true);
+    setState(() {
+      _isLoadingMd = true;
+      _errorMessage = null;
+    });
     try {
       final exportService = ref.read(exportServiceProvider);
       _loadedMarkdown ??= await exportService.fetchMarkdown(widget.sessionId);
@@ -80,12 +84,9 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
       );
     } catch (e) {
       if (!mounted) return;
-      ExportHelper.showToast(
-        context,
-        message: e.toString().replaceAll('Exception: ', ''),
-        icon: Icons.error_outline_rounded,
-        isError: true,
-      );
+      setState(() {
+        _errorMessage = e.toString().replaceAll('Exception: ', '');
+      });
     } finally {
       if (mounted) setState(() => _isLoadingMd = false);
     }
@@ -93,7 +94,10 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
 
   Future<void> _handleCopyMarkdown() async {
     if (_isLoadingMd) return;
-    setState(() => _isLoadingMd = true);
+    setState(() {
+      _isLoadingMd = true;
+      _errorMessage = null;
+    });
     try {
       final exportService = ref.read(exportServiceProvider);
       _loadedMarkdown ??= await exportService.fetchMarkdown(widget.sessionId);
@@ -105,12 +109,9 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
       );
     } catch (e) {
       if (!mounted) return;
-      ExportHelper.showToast(
-        context,
-        message: e.toString().replaceAll('Exception: ', ''),
-        icon: Icons.error_outline_rounded,
-        isError: true,
-      );
+      setState(() {
+        _errorMessage = e.toString().replaceAll('Exception: ', '');
+      });
     } finally {
       if (mounted) setState(() => _isLoadingMd = false);
     }
@@ -118,7 +119,10 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
 
   Future<void> _handleDownloadMarkdown() async {
     if (_isLoadingMd) return;
-    setState(() => _isLoadingMd = true);
+    setState(() {
+      _isLoadingMd = true;
+      _errorMessage = null;
+    });
     try {
       final exportService = ref.read(exportServiceProvider);
       _loadedMarkdown ??= await exportService.fetchMarkdown(widget.sessionId);
@@ -130,12 +134,9 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
       );
     } catch (e) {
       if (!mounted) return;
-      ExportHelper.showToast(
-        context,
-        message: e.toString().replaceAll('Exception: ', ''),
-        icon: Icons.error_outline_rounded,
-        isError: true,
-      );
+      setState(() {
+        _errorMessage = e.toString().replaceAll('Exception: ', '');
+      });
     } finally {
       if (mounted) setState(() => _isLoadingMd = false);
     }
@@ -143,7 +144,10 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
 
   Future<void> _handleDownloadPdf() async {
     if (_isLoadingPdf) return;
-    setState(() => _isLoadingPdf = true);
+    setState(() {
+      _isLoadingPdf = true;
+      _errorMessage = null;
+    });
     try {
       final exportService = ref.read(exportServiceProvider);
       final bytes = await exportService.fetchPdf(widget.sessionId);
@@ -157,12 +161,9 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
       );
     } catch (e) {
       if (!mounted) return;
-      ExportHelper.showToast(
-        context,
-        message: e.toString().replaceAll('Exception: ', ''),
-        icon: Icons.error_outline_rounded,
-        isError: true,
-      );
+      setState(() {
+        _errorMessage = e.toString().replaceAll('Exception: ', '');
+      });
     } finally {
       if (mounted) setState(() => _isLoadingPdf = false);
     }
@@ -170,7 +171,10 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
 
   Future<void> _handleOpenHtml() async {
     if (_isLoadingHtml) return;
-    setState(() => _isLoadingHtml = true);
+    setState(() {
+      _isLoadingHtml = true;
+      _errorMessage = null;
+    });
     try {
       final exportService = ref.read(exportServiceProvider);
       _loadedHtml ??= await exportService.fetchHtml(widget.sessionId);
@@ -182,12 +186,9 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
       );
     } catch (e) {
       if (!mounted) return;
-      ExportHelper.showToast(
-        context,
-        message: e.toString().replaceAll('Exception: ', ''),
-        icon: Icons.error_outline_rounded,
-        isError: true,
-      );
+      setState(() {
+        _errorMessage = e.toString().replaceAll('Exception: ', '');
+      });
     } finally {
       if (mounted) setState(() => _isLoadingHtml = false);
     }
@@ -195,7 +196,10 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
 
   Future<void> _handleDownloadHtml() async {
     if (_isLoadingHtml) return;
-    setState(() => _isLoadingHtml = true);
+    setState(() {
+      _isLoadingHtml = true;
+      _errorMessage = null;
+    });
     try {
       final exportService = ref.read(exportServiceProvider);
       _loadedHtml ??= await exportService.fetchHtml(widget.sessionId);
@@ -208,12 +212,9 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
       );
     } catch (e) {
       if (!mounted) return;
-      ExportHelper.showToast(
-        context,
-        message: e.toString().replaceAll('Exception: ', ''),
-        icon: Icons.error_outline_rounded,
-        isError: true,
-      );
+      setState(() {
+        _errorMessage = e.toString().replaceAll('Exception: ', '');
+      });
     } finally {
       if (mounted) setState(() => _isLoadingHtml = false);
     }
@@ -416,6 +417,12 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
+                        // ── Inline Error Alert Banner ──
+                        if (_errorMessage != null) ...[
+                          _buildInlineErrorBanner(_errorMessage!),
+                          const SizedBox(height: 14),
+                        ],
+
                         // ── Milestone Completion Badge / Warning ──
                         if (!isComplete)
                           _buildIncompleteWarning()
@@ -561,6 +568,66 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
     if (xp >= 300) return '⚡ Quick Learner (Lvl 3)';
     if (xp >= 100) return '🔍 Knowledge Seeker (Lvl 2)';
     return '🧭 Curious Explorer (Lvl 1)';
+  }
+
+  Widget _buildInlineErrorBanner(String message) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: AppColors.rose.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppColors.rose.withValues(alpha: 0.45),
+          width: 1.2,
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: AppColors.rose.withValues(alpha: 0.2),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.error_outline_rounded, color: AppColors.rose, size: 18),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Export Failed',
+                  style: AppTextStyles.label.copyWith(
+                    color: AppColors.rose,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  message,
+                  style: AppTextStyles.caption.copyWith(
+                    color: Colors.white.withValues(alpha: 0.9),
+                    fontSize: 12.5,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          IconButton(
+            icon: const Icon(Icons.close_rounded, size: 18, color: Colors.white60),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+            splashRadius: 16,
+            onPressed: () => setState(() => _errorMessage = null),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildCompletionSuccessBanner() {

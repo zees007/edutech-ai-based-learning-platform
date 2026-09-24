@@ -56,10 +56,21 @@ class AcademicClient:
         for i, result in enumerate(results):
             source = ["OpenAlex", "Semantic Scholar", "arXiv"][i]
             if isinstance(result, Exception):
-                logger.warning(f"{source} search failed: {result}")
+                # Format a friendly error message, especially for 429 rate limits
+                status_msg = str(result)
+                if hasattr(result, 'response') and result.response is not None:
+                    status_code = result.response.status_code
+                    if status_code == 429:
+                        status_msg = "429 Too Many Requests (Rate Limited)"
+                    elif status_code == 406:
+                        status_msg = "406 Not Acceptable"
+                    else:
+                        status_msg = f"HTTP {status_code}"
+                
+                logger.warning(f"[Academic] {source} returned 0 papers due to error: {status_msg}")
             elif isinstance(result, list):
                 all_papers.extend(result)
-                logger.info(f"{source}: found {len(result)} papers")
+                logger.info(f"[Academic] {source} returned {len(result)} papers successfully.")
 
         # Deduplicate by title similarity
         deduplicated = self._deduplicate(all_papers)
@@ -81,15 +92,17 @@ class AcademicClient:
         has_wildcard = "*" in clean_query or "?" in clean_query
         search_key = "search.exact" if has_wildcard else "search"
 
-        url = "https://api.openalex.org/works"
+        url = self.settings.openalex_api_url
         params: dict[str, Any] = {
             search_key: clean_query,
             "per_page": max_results,
             "sort": "relevance_score:desc",
             "select": "id,title,authorships,publication_year,cited_by_count,doi,open_access,abstract_inverted_index",
         }
-        if self._openalex_email:
+        if self._openalex_email and self._openalex_email != "your_email@example.com":
             params["mailto"] = self._openalex_email
+        else:
+            params["mailto"] = "hello@edutechai.com"
 
         async with httpx.AsyncClient() as client:
             response = await client.get(url, params=params, timeout=10.0)
@@ -129,7 +142,7 @@ class AcademicClient:
 
     async def _search_semantic_scholar(self, query: str, max_results: int) -> list[AcademicPaper]:
         """Search Semantic Scholar API."""
-        url = "https://api.semanticscholar.org/graph/v1/paper/search"
+        url = self.settings.semantic_scholar_api_url
         params = {
             "query": query,
             "limit": max_results,
@@ -175,7 +188,7 @@ class AcademicClient:
 
     async def _search_arxiv(self, query: str, max_results: int) -> list[AcademicPaper]:
         """Search arXiv API (Atom XML)."""
-        url = "https://export.arxiv.org/api/query"
+        url = self.settings.arxiv_api_url
         params = {
             "search_query": f"all:{query}",
             "start": 0,
@@ -184,7 +197,7 @@ class AcademicClient:
             "sortOrder": "descending",
         }
 
-        async with httpx.AsyncClient(follow_redirects=True) as client:
+        async with httpx.AsyncClient(headers={"User-Agent": "EduTechAI/1.0"}) as client:
             response = await client.get(url, params=params, timeout=10.0)
             response.raise_for_status()
 

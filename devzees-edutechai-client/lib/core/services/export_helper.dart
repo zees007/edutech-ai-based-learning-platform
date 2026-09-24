@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../theme/app_colors.dart';
 import '../theme/text_styles.dart';
@@ -106,12 +107,33 @@ class ExportHelper {
         );
       }
     } else {
-      await saveOrShareText(
-        content: htmlContent,
-        filename: 'session_$sessionId.html',
-        context: context,
-        mimeType: 'text/html',
-      );
+      try {
+        final tempDir = await getTemporaryDirectory();
+        final filePath = '${tempDir.path}/session_$sessionId.html';
+        final file = File(filePath);
+        await file.writeAsString(htmlContent, flush: true);
+        final fileUri = Uri.file(filePath);
+        if (await canLaunchUrl(fileUri)) {
+          await launchUrl(fileUri);
+          if (context.mounted) {
+            showToast(
+              context,
+              message: 'Interactive report opened in browser for View & Print!',
+              icon: Icons.open_in_new_rounded,
+            );
+          }
+          return;
+        }
+      } catch (_) {}
+
+      if (context.mounted) {
+        await saveOrShareText(
+          content: htmlContent,
+          filename: 'session_$sessionId.html',
+          context: context,
+          mimeType: 'text/html',
+        );
+      }
     }
   }
 

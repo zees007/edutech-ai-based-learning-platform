@@ -116,8 +116,8 @@ class AcademicResearcherAgent(BaseAgent):
         if step_index is None:
             step_index = memory.current_step_index
 
-        # If session already has cached papers, just assign to step result
-        if memory.academic_papers:
+        # If session already has cached papers (even empty list), just assign to step result
+        if memory.academic_papers is not None:
             if step_index < len(memory.steps):
                 step = memory.steps[step_index]
                 step.papers = memory.academic_papers

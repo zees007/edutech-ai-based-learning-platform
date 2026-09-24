@@ -163,6 +163,36 @@ Short note content for narrow viewport testing.
       expect(find.widgetWithText(ElevatedButton, 'Download .md'), findsOneWidget);
       expect(find.text('⚡ Compatible with Obsidian, Notion & GitHub'), findsOneWidget);
     });
+
+    testWidgets('MarkdownPreviewDialog parses and renders complex display and inline math formulas correctly', (tester) async {
+      const mathMarkdown = r'''
+# Natural Language Processing
+
+Probability distribution over the vocabulary:
+\[ P(w_t \mid w_{<t}) = \frac{\exp\bigl(\text{logit}_t(w_t)\bigr)}{\sum_{w'}\exp\bigl(\text{logit}_t(w')\bigr)} . \]
+
+Mass-energy equivalence:
+$$ E = mc^2 $$
+
+Inline formulas: \( a^2 + b^2 = c^2 \) and $O(n \log n)$ complexity.
+''';
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: MarkdownPreviewDialog(
+              topic: 'NLP & Language Models',
+              markdownContent: mathMarkdown,
+              sessionId: 'sess_math_test',
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      expect(find.byType(Math), findsNWidgets(4));
+    });
   });
 }
 

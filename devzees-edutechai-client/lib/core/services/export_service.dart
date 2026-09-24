@@ -22,6 +22,9 @@ class ExportService {
         options: Options(
           responseType: ResponseType.plain,
           headers: {'Accept': 'text/plain'},
+          connectTimeout: const Duration(seconds: 60),
+          receiveTimeout: const Duration(seconds: 60),
+          sendTimeout: const Duration(seconds: 60),
         ),
       );
       return response.data ?? '';
@@ -42,6 +45,9 @@ class ExportService {
         options: Options(
           responseType: ResponseType.bytes,
           headers: {'Accept': 'application/pdf'},
+          connectTimeout: const Duration(seconds: 120),
+          receiveTimeout: const Duration(seconds: 120),
+          sendTimeout: const Duration(seconds: 120),
         ),
       );
       return response.data ?? [];
@@ -62,6 +68,9 @@ class ExportService {
         options: Options(
           responseType: ResponseType.plain,
           headers: {'Accept': 'text/html'},
+          connectTimeout: const Duration(seconds: 60),
+          receiveTimeout: const Duration(seconds: 60),
+          sendTimeout: const Duration(seconds: 60),
         ),
       );
       return response.data ?? '';
@@ -74,6 +83,9 @@ class ExportService {
 
   Exception _handleDioError(DioException e, String format) {
     final status = e.response?.statusCode;
+    if (e.type == DioExceptionType.receiveTimeout || e.type == DioExceptionType.connectionTimeout || status == 504) {
+      return Exception('$format generation timed out while compiling. Please try again.');
+    }
     if (status == 400) {
       final data = e.response?.data;
       if (data is Map && data['error_code'] == 'SESSION_INCOMPLETE') {
