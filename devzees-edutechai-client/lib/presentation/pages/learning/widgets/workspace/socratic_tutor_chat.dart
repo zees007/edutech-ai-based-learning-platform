@@ -1393,34 +1393,34 @@ String _preprocessMathToMarkdown(String text) {
   // 1. Block math: \begin{...} ... \end{...} with optional enclosing [ ... ] or \[ ... \]
   processed = processed.replaceAllMapped(
     RegExp(
-      r'(?:\\\[|\[)?\s*(\\begin\{(?:aligned|matrix|bmatrix|pmatrix|vmatrix|cases|gather|equation)\b[\s\S]+?\\end\{(?:aligned|matrix|bmatrix|pmatrix|vmatrix|cases|gather|equation)\})\s*(?:\\\]|\])?',
+      r'(?:\\\[|\[)?\s*(\\begin\{(?:aligned|matrix|bmatrix|pmatrix|vmatrix|Vmatrix|cases|gather|gather\*|equation|equation\*|align|align\*|alignat|alignat\*|split|multline|multline*)\b[\s\S]+?\\end\{(?:aligned|matrix|bmatrix|pmatrix|vmatrix|Vmatrix|cases|gather|gather\*|equation|equation\*|align|align\*|alignat|alignat\*|split|multline|multline*)\})\s*(?:\\\]|\])?',
       multiLine: true,
     ),
-    (match) => '\n```latex\n${match.group(1)}\n```\n',
+    (match) => '\n\n```latex\n${match.group(1)!.trim()}\n```\n\n',
   );
 
   // 2. Block math: \[ ... \]
   processed = processed.replaceAllMapped(
     RegExp(r'\\\[([\s\S]+?)\\\]'),
-    (match) => '\n```latex\n${match.group(1)}\n```\n',
+    (match) => '\n\n```latex\n${match.group(1)!.trim()}\n```\n\n',
   );
 
   // 3. Block math: $$ ... $$
   processed = processed.replaceAllMapped(
     RegExp(r'\$\$([\s\S]+?)\$\$'),
-    (match) => '\n```latex\n${match.group(1)}\n```\n',
+    (match) => '\n\n```latex\n${match.group(1)!.trim()}\n```\n\n',
   );
 
   // 4. Inline math: \( ... \)
   processed = processed.replaceAllMapped(
     RegExp(r'\\\(([\s\S]+?)\\\)'),
-    (match) => '`math:${match.group(1)}`',
+    (match) => '`math:${match.group(1)!.trim()}`',
   );
 
-  // 5. Inline math with single $
+  // 5. Inline math with single $ (excluding currency like $50 or $$)
   processed = processed.replaceAllMapped(
-    RegExp(r'(?<!\$)\$(?!\$)([\s\S]+?)(?<!\$)\$(?!\$)'),
-    (match) => '`math:${match.group(1)}`',
+    RegExp(r'(?<![\$\\0-9])\$(?!\s)(.+?)(?<!\s)\$(?![0-9\$])'),
+    (match) => '`math:${match.group(1)!.trim()}`',
   );
 
   // 6. Common LLM fallback for inline math: ( \mathbf{...} ) or ( L=T-V ) etc., allowing following punctuation
@@ -1428,7 +1428,7 @@ String _preprocessMathToMarkdown(String text) {
     RegExp(
       r'(?<!\S)\(\s*(\\[a-zA-Z]+[\s\S]*?|[a-zA-Z0-9_]+=[a-zA-Z0-9_+-]+)\s*\)(?=[,\.;:!?]|\s|$)',
     ),
-    (match) => '`math:${match.group(1)}`',
+    (match) => '`math:${match.group(1)!.trim()}`',
   );
 
   // Restore protected code blocks untouched
@@ -1441,23 +1441,32 @@ String _preprocessMathToMarkdown(String text) {
 
 String _sanitizeMathTex(String rawTex) {
   var clean = rawTex.trim();
-  // 1. Remove unnecessary \! (negative thin space)
-  clean = clean.replaceAll(r'\!', '');
 
-  // 2. Replace comma followed by unescaped newline ', \ ' or ', \\' with LaTeX newline \\
+  // Strip wrapping block delimiters if present
+  if (clean.startsWith(r'\[') && clean.endsWith(r'\]')) {
+    clean = clean.substring(2, clean.length - 2).trim();
+  } else if (clean.startsWith(r'$$') && clean.endsWith(r'$$') && clean.length >= 4) {
+    clean = clean.substring(2, clean.length - 2).trim();
+  } else if (clean.startsWith(r'\(') && clean.endsWith(r'\)')) {
+    clean = clean.substring(2, clean.length - 2).trim();
+  } else if (clean.startsWith(r'$') && clean.endsWith(r'$') && clean.length >= 2) {
+    clean = clean.substring(1, clean.length - 1).trim();
+  }
+
+  // Strip outer [ ... ] wrapper around \begin{...}...\end{...} blocks
+  if (clean.startsWith('[') && clean.endsWith(']') && clean.contains(r'\begin{')) {
+    clean = clean.substring(1, clean.length - 1).trim();
+  }
+
+  // Normalize 3+ consecutive backslashes down to \\
+  clean = clean.replaceAll(RegExp(r'\\{3,}'), r'\\');
+
+  // Fix spurious \\ right before \end{...}
+  clean = clean.replaceAll(RegExp(r'\\{2,}\s*(?=\\end\{)'), '\n');
+
+  // Replace commas followed by escaped newline or ampersand if LLM hallucinated
   clean = clean.replaceAll(RegExp(r',\s*(?:\\\s+|\\\\)'), r' \\ ');
-
-  // 3. Replace comma followed by ampersand (multi-column equation separator) with \\
   clean = clean.replaceAll(RegExp(r',\s*&\s*'), r' \\ ');
-
-  // 4. Normalize any sequence of 2+ backslashes with optional whitespace/backslashes (e.g. \\\ or \\ \ or \\\\) to \\
-  clean = clean.replaceAll(RegExp(r'\\{2,}(?:\s*\\+)*'), r'\\');
-
-  // 5. Remove any trailing \\ or \ right before \end{...}
-  clean = clean.replaceAll(RegExp(r'\\+\s*(?=\\end\{)'), '\n');
-
-  // 6. Remove any stray trailing backslash before newline or end of string
-  clean = clean.replaceAll(RegExp(r'(?<!\\)\\\s*(?=\r?\n|$)'), '');
 
   return clean.trim();
 }

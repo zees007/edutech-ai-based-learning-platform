@@ -42,6 +42,8 @@ class ExportService {
         options: Options(
           responseType: ResponseType.bytes,
           headers: {'Accept': 'application/pdf'},
+          receiveTimeout: const Duration(seconds: 60),
+          sendTimeout: const Duration(seconds: 60),
         ),
       );
       return response.data ?? [];
@@ -62,6 +64,8 @@ class ExportService {
         options: Options(
           responseType: ResponseType.plain,
           headers: {'Accept': 'text/html'},
+          receiveTimeout: const Duration(seconds: 45),
+          sendTimeout: const Duration(seconds: 45),
         ),
       );
       return response.data ?? '';
@@ -73,6 +77,9 @@ class ExportService {
   }
 
   Exception _handleDioError(DioException e, String format) {
+    if (e.type == DioExceptionType.receiveTimeout || e.type == DioExceptionType.connectionTimeout) {
+      return Exception('$format generation timed out while compiling. Please try again.');
+    }
     final status = e.response?.statusCode;
     if (status == 400) {
       final data = e.response?.data;

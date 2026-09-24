@@ -108,10 +108,11 @@ def test_generate_markdown_content():
     assert "100%" in md
 
 
-def test_generate_pdf_content():
+@pytest.mark.asyncio
+async def test_generate_pdf_content():
     """Verify PDF byte generation, clean formatting, and pre/code block inclusion."""
     memory = create_sample_session(is_completed=True)
-    pdf_bytes = generate_pdf(memory)
+    pdf_bytes = await generate_pdf(memory)
 
     assert isinstance(pdf_bytes, bytes)
     assert len(pdf_bytes) > 1000
@@ -326,3 +327,54 @@ async def test_export_roles_and_privileges_matrix():
         assert u_md == 200
         assert u_html == 200
         assert u_pdf == 200
+
+
+@pytest.mark.asyncio
+async def test_inline_math_rendering_in_pdf():
+    from app.routers.exports import latex_inline_to_html, format_inline_math_for_pdf
+
+    # 1. Verify individual LaTeX conversions produce valid HTML math typography
+    s1 = latex_inline_to_html(r"(\mathcal{S}, \mathcal{A}, T, \gamma)")
+    assert '<span class="math-cal">S</span>' in s1
+    assert '<span class="math-cal">A</span>' in s1
+    assert "&gamma;" in s1
+
+    s2 = latex_inline_to_html(r"\{(x_i, y_i)\}")
+    assert "x<sub>i</sub>" in s2
+    assert "y<sub>i</sub>" in s2
+
+    s3 = latex_inline_to_html(r"R_\theta : \mathcal{S} \times \mathcal{A} \rightarrow \mathbb{R}")
+    assert "R<sub>&theta;</sub>" in s3
+    assert "&times;" in s3
+    assert "&rarr;" in s3
+    assert "<b>R</b>" in s3
+
+    s4 = latex_inline_to_html(r"\sigma")
+    assert "&sigma;" in s4
+
+    s5 = latex_inline_to_html(r"\pi_\phi")
+    assert "&pi;<sub>&phi;</sub>" in s5
+
+    # 2. Verify format_inline_math_for_pdf converts embedded \(...\) and $...$
+    text = (
+        r"Formally, let MDP be \((\mathcal{S}, \mathcal{A}, T, \gamma)\). "
+        r"Feedback provides pairs \(\{(x_i, y_i)\}\) where $x_i, y_i$ are trajectories. "
+        r"A reward model \(R_\theta : \mathcal{S} \times \mathcal{A} \rightarrow \mathbb{R}\) is trained. "
+        r"Where $\sigma$ is the sigmoid function. Once \(R_\theta\) is learned, a policy \(\pi_\phi\) is optimized."
+    )
+    formatted = format_inline_math_for_pdf(text)
+    assert r"\(" not in formatted
+    assert r"\mathcal{S}" not in formatted
+    assert "&gamma;" in formatted
+    assert "&sigma;" in formatted
+    assert "&rarr;" in formatted
+    assert '<span class="math-inline-pdf">' in formatted
+
+    # 3. Verify generate_pdf generates valid PDF with inline math
+    mem = create_sample_session(is_completed=True)
+    mem.steps[0].tutor_explanation = text
+    pdf_bytes = await generate_pdf(mem)
+    assert isinstance(pdf_bytes, bytes)
+    assert len(pdf_bytes) > 1000
+    assert pdf_bytes.startswith(b"%PDF")
+

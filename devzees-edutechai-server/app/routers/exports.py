@@ -112,6 +112,50 @@ def _calculate_level_and_grade(xp_earned: int, quiz_scores_map: dict | None = No
     }
 
 
+# ── Math Unicode symbols that should be preserved in PDF text fallback ──
+_MATH_UNICODE_MAP = {
+    "\u2211": "sum",       # ∑
+    "\u220F": "prod",      # ∏
+    "\u222B": "int",       # ∫
+    "\u221A": "sqrt",      # √
+    "\u221E": "inf",       # ∞
+    "\u2202": "d",         # ∂
+    "\u2207": "nabla",     # ∇
+    "\u2208": "in",        # ∈
+    "\u2209": "not in",    # ∉
+    "\u2260": "!=",        # ≠
+    "\u2264": "<=",        # ≤
+    "\u2265": ">=",        # ≥
+    "\u00D7": "x",        # ×
+    "\u00F7": "/",        # ÷
+    "\u00B1": "+/-",      # ±
+    "\u2248": "~=",        # ≈
+    "\u2261": "==",        # ≡
+    "\u2282": "subset",   # ⊂
+    "\u2283": "superset", # ⊃
+    "\u222A": "union",    # ∪
+    "\u2229": "intersect",# ∩
+    "\u2192": "->",       # →
+    "\u2190": "<-",       # ←
+    "\u21D2": "=>",       # ⇒
+    "\u21D0": "<=",       # ⇐
+    "\u2200": "forall",   # ∀
+    "\u2203": "exists",   # ∃
+    "\u03B1": "alpha",    # α
+    "\u03B2": "beta",     # β
+    "\u03B3": "gamma",    # γ
+    "\u03B4": "delta",    # δ
+    "\u03B5": "epsilon",  # ε
+    "\u03B8": "theta",    # θ
+    "\u03BB": "lambda",   # λ
+    "\u03BC": "mu",       # μ
+    "\u03C0": "pi",       # π
+    "\u03C3": "sigma",    # σ
+    "\u03C6": "phi",      # φ
+    "\u03C9": "omega",    # ω
+}
+
+
 def _sanitize_text_for_pdf(text: str) -> str:
     """
     Sanitize text to prevent ReportLab / xhtml2pdf from rendering black box ('tofu') glyphs.
@@ -170,7 +214,11 @@ def _sanitize_text_for_pdf(text: str) -> str:
     for k, v in emoji_map.items():
         text = text.replace(k, v)
 
-    # 4. Remove any remaining characters outside standard Latin-1 / ASCII (e.g. Indic, Asian, emoji symbols)
+    # 4. Convert known math Unicode to ASCII-safe equivalents
+    for k, v in _MATH_UNICODE_MAP.items():
+        text = text.replace(k, v)
+
+    # 5. Remove any remaining characters outside standard Latin-1 / ASCII (e.g. Indic, Asian, emoji symbols)
     cleaned = []
     for ch in text:
         cp = ord(ch)
@@ -204,13 +252,16 @@ def _sanitize_mermaid_syntax(m_code: str) -> str:
 
 
 def _sanitize_math_tex(content: str) -> str:
-    """Sanitize raw TeX to fix LLM hallucinations based on established patterns."""
-    clean = content.replace(r'\!', '')
-    clean = re.sub(r',\s*(?:\\\s+|\\\\)', r' \\\\ ', clean)
-    clean = re.sub(r',\s*&\s*', r' \\\\ ', clean)
-    clean = re.sub(r'\\{2,}(?:\s*\\+)*', r'\\\\', clean)
-    clean = re.sub(r'\\+\s*(?=\\end\{)', '\n', clean)
-    clean = re.sub(r'(?<!\\)\\\s*(?=\r?\n|$)', '', clean)
+    """
+    Sanitize raw TeX to fix LLM hallucinations based on established patterns.
+    Only fixes genuinely broken patterns — preserves valid LaTeX constructs.
+    """
+    clean = content
+    # Fix: collapse 3+ consecutive backslashes into a proper \\ (line-break)
+    # but leave single \ and double \\ untouched (they are valid TeX)
+    clean = re.sub(r'\\{3,}', r'\\\\', clean)
+    # Fix: remove spurious \\ immediately before \end{...} (LLM hallucination)
+    clean = re.sub(r'\\\\\s*(?=\\end\{)', '\n', clean)
     return clean
 
 
@@ -231,6 +282,179 @@ def _sanitize_math_blocks(text: str) -> str:
     # 4. \begin{...} ... \end{...}
     text = re.sub(r'\\begin\{[a-zA-Z0-9_\*]+\}[\s\S]+?\\end\{[a-zA-Z0-9_\*]+\}', replacer, text)
 
+    return text
+
+
+# ── Mappings for LaTeX inline math conversion to HTML in PDFs ───────
+_LATEX_GREEK_MAP = {
+    r'\alpha': '&alpha;',
+    r'\beta': '&beta;',
+    r'\gamma': '&gamma;',
+    r'\Gamma': '&Gamma;',
+    r'\delta': '&delta;',
+    r'\Delta': '&Delta;',
+    r'\epsilon': '&epsilon;',
+    r'\varepsilon': '&epsilon;',
+    r'\zeta': '&zeta;',
+    r'\eta': '&eta;',
+    r'\theta': '&theta;',
+    r'\Theta': '&Theta;',
+    r'\iota': '&iota;',
+    r'\kappa': '&kappa;',
+    r'\lambda': '&lambda;',
+    r'\Lambda': '&Lambda;',
+    r'\mu': '&mu;',
+    r'\nu': '&nu;',
+    r'\xi': '&xi;',
+    r'\Xi': '&Xi;',
+    r'\pi': '&pi;',
+    r'\Pi': '&Pi;',
+    r'\rho': '&rho;',
+    r'\sigma': '&sigma;',
+    r'\Sigma': '&Sigma;',
+    r'\tau': '&tau;',
+    r'\upsilon': '&upsilon;',
+    r'\phi': '&phi;',
+    r'\varphi': '&phi;',
+    r'\Phi': '&Phi;',
+    r'\chi': '&chi;',
+    r'\psi': '&psi;',
+    r'\Psi': '&Psi;',
+    r'\omega': '&omega;',
+    r'\Omega': '&Omega;',
+}
+
+_LATEX_SYMBOL_MAP = {
+    r'\rightarrow': '&rarr;',
+    r'\leftarrow': '&larr;',
+    r'\Rightarrow': '&rArr;',
+    r'\Leftarrow': '&lArr;',
+    r'\leftrightarrow': '&harr;',
+    r'\Leftrightarrow': '&hArr;',
+    r'\to': '&rarr;',
+    r'\times': '&times;',
+    r'\div': '&divide;',
+    r'\pm': '&plusmn;',
+    r'\mp': '&#8723;',
+    r'\leq': '&le;',
+    r'\geq': '&ge;',
+    r'\neq': '&ne;',
+    r'\le': '&le;',
+    r'\ge': '&ge;',
+    r'\ne': '&ne;',
+    r'\approx': '&asymp;',
+    r'\equiv': '&equiv;',
+    r'\sim': '~',
+    r'\propto': '&prop;',
+    r'\infty': '&infin;',
+    r'\notin': '&notin;',
+    r'\in': '&isin;',
+    r'\subseteq': '&sube;',
+    r'\subset': '&sub;',
+    r'\cup': '&cup;',
+    r'\cap': '&cap;',
+    r'\forall': '&forall;',
+    r'\exists': '&exist;',
+    r'\nabla': '&nabla;',
+    r'\partial': '&part;',
+    r'\cdot': '&sdot;',
+    r'\cdots': '&hellip;',
+    r'\dots': '&hellip;',
+    r'\ldots': '&hellip;',
+    r'\mid': '|',
+    r'\parallel': '||',
+    r'\setminus': '\\',
+    r'\mathbb{R}': '<b>R</b>',
+    r'\mathbb{N}': '<b>N</b>',
+    r'\mathbb{Z}': '<b>Z</b>',
+    r'\mathbb{C}': '<b>C</b>',
+    r'\mathbb{E}': '<b>E</b>',
+    r'\sum': '&sum;',
+    r'\prod': '&prod;',
+    r'\int': '&int;',
+    r'\langle': '&lang;',
+    r'\rangle': '&rang;',
+    r'\quad': '&nbsp;&nbsp;',
+    r'\qquad': '&nbsp;&nbsp;&nbsp;&nbsp;',
+    r'\top': '&#8868;',
+    r'\prime': '&prime;',
+    r'\Pr': 'Pr',
+    r'\log': 'log',
+    r'\exp': 'exp',
+    r'\sin': 'sin',
+    r'\cos': 'cos',
+    r'\tan': 'tan',
+    r'\max': 'max',
+    r'\min': 'min',
+    r'\arg': 'arg',
+}
+
+_SORTED_LATEX_SYMBOLS = sorted(_LATEX_SYMBOL_MAP.items(), key=lambda x: len(x[0]), reverse=True)
+_SORTED_LATEX_GREEK = sorted(_LATEX_GREEK_MAP.items(), key=lambda x: len(x[0]), reverse=True)
+
+
+def latex_inline_to_html(tex: str) -> str:
+    """
+    Convert an inline LaTeX formula (e.g. `\\sigma`, `\\pi_\\phi`, `R_\\theta`, `\\mathcal{S}`)
+    into cleanly formatted HTML with Greek entities, subscripts, superscripts, and math typography.
+    Avoids external network calls and renders sharply in xhtml2pdf / ReportLab.
+    """
+    s = tex.strip()
+    if s.startswith(r'\(') and s.endswith(r'\)'):
+        s = s[2:-2].strip()
+    elif s.startswith('$') and s.endswith('$'):
+        s = s[1:-1].strip()
+
+    # Normalize delimiters
+    s = s.replace(r'\bigl(', '(').replace(r'\bigr)', ')')
+    s = s.replace(r'\Bigl(', '(').replace(r'\Bigr)', ')')
+    s = s.replace(r'\left(', '(').replace(r'\right)', ')')
+    s = s.replace(r'\left[', '[').replace(r'\right]', ']')
+    s = s.replace(r'\left\{', '{').replace(r'\right\}', '}')
+    s = s.replace(r'\{', '{').replace(r'\}', '}')
+
+    # Fractions \frac{a}{b} -> (a)/(b) and \sqrt{x} -> √(x)
+    s = re.sub(r'\\frac\{([^}]+)\}\{([^}]+)\}', r'(\1)/(\2)', s)
+    s = re.sub(r'\\sqrt\{([^}]+)\}', r'&radic;(\1)', s)
+
+    # Styles
+    s = re.sub(r'\\mathcal\{([A-Za-z0-9]+)\}', r'<span class="math-cal">\1</span>', s)
+    s = re.sub(r'\\mathbf\{([A-Za-z0-9]+)\}', r'<b>\1</b>', s)
+    s = re.sub(r'\\mathrm\{([A-Za-z0-9]+)\}', r'\1', s)
+    s = re.sub(r'\\text\{([A-Za-z0-9\s]+)\}', r'\1', s)
+    s = re.sub(r'\\hat\{([A-Za-z0-9])\}', r'\1&#770;', s)
+
+    # Symbols & Greek (longest first to avoid prefix collisions)
+    for k, v in _SORTED_LATEX_SYMBOLS:
+        s = re.sub(re.escape(k) + r'(?![a-zA-Z])', lambda _, val=v: val, s)
+    for k, v in _SORTED_LATEX_GREEK:
+        s = re.sub(re.escape(k) + r'(?![a-zA-Z])', lambda _, val=v: val, s)
+
+    # Prime: w' -> w&prime;
+    s = re.sub(r"([a-zA-Z0-9_]+)'", r'\1&prime;', s)
+
+    # Subscripts and Superscripts
+    s = re.sub(r'_\{([^}]+)\}', lambda m: f"<sub>{html.escape(m.group(1))}</sub>", s)
+    s = re.sub(r'\^\{([^}]+)\}', lambda m: f"<sup>{html.escape(m.group(1))}</sup>", s)
+    s = re.sub(r'_(&[a-zA-Z0-9#]+;|[a-zA-Z0-9])', r'<sub>\1</sub>', s)
+    s = re.sub(r'\^(&[a-zA-Z0-9#]+;|[a-zA-Z0-9])', r'<sup>\1</sup>', s)
+
+    # Clean whitespace and lingering commands
+    s = s.replace(r'\,', ' ').replace(r'\;', ' ').replace(r'\!', '').replace(r'\quad', ' ')
+    s = re.sub(r'\\[a-zA-Z]+', '', s)
+    s = s.strip()
+
+    return f'<span class="math-inline-pdf">{s}</span>'
+
+
+def format_inline_math_for_pdf(text: str) -> str:
+    r"""Format inline LaTeX math delimiters \(...\) and $...$ into crisp HTML math typography for PDF."""
+    if not text:
+        return text
+    # 1. \( ... \) (inline math)
+    text = re.sub(r'\\\(([\s\S]+?)\\\)', lambda m: latex_inline_to_html(m.group(1)), text)
+    # 2. $...$ (inline math, single-line only, avoiding $$)
+    text = re.sub(r'(?<!\$)\$(?!\$)(.+?)(?<!\$)\$(?!\$)', lambda m: latex_inline_to_html(m.group(1)), text)
     return text
 
 
@@ -262,14 +486,13 @@ async def _render_mermaid_as_image(m_code: str) -> str | None:
         encoded = base64.urlsafe_b64encode(payload_json.encode("utf-8")).decode("ascii")
         url = f"https://mermaid.ink/img/{encoded}"
 
-        async with httpx.AsyncClient(timeout=10.0) as client:
+        async with httpx.AsyncClient(timeout=4.0) as client:
             resp = await client.get(url)
             if resp.status_code == 200 and len(resp.content) > 200:
                 img_b64 = base64.b64encode(resp.content).decode("ascii")
                 return f"data:image/png;base64,{img_b64}"
 
         logger.warning("Mermaid Ink API returned non-200 or empty image, using fallback.")
-        return None
         return None
     except Exception as e:
         logger.warning(f"Mermaid Ink API call failed, using fallback: {e}")
@@ -283,10 +506,19 @@ async def _render_math_as_image(math_code: str) -> str | None:
     """
     try:
         import urllib.parse
-        encoded = urllib.parse.quote(math_code.strip())
+        clean_code = math_code.strip()
+        # Normalizations for CodeCogs compatibility
+        clean_code = clean_code.replace(r'\bigl(', '(').replace(r'\bigr)', ')')
+        clean_code = clean_code.replace(r'\Bigl(', '(').replace(r'\Bigr)', ')')
+        clean_code = clean_code.replace(r'\left(', '(').replace(r'\right)', ')')
+        clean_code = re.sub(r"([a-zA-Z0-9_]+)'", r"\1^{\\prime}", clean_code)
+        clean_code = re.sub(r'\\text\{([^}]+)\}', r'\\mathrm{\1}', clean_code)
+        clean_code = clean_code.replace(r'\mid', '|')
+
+        encoded = urllib.parse.quote(clean_code)
         url = f"https://latex.codecogs.com/png.image?\\dpi{{150}}\\bg_white\\;{encoded}"
         
-        async with httpx.AsyncClient(timeout=10.0) as client:
+        async with httpx.AsyncClient(timeout=3.0) as client:
             resp = await client.get(url)
             if resp.status_code == 200 and len(resp.content) > 100:
                 img_b64 = base64.b64encode(resp.content).decode("ascii")
@@ -480,7 +712,8 @@ def generate_markdown(memory) -> str:
         # ── Socratic Explanation ──
         explanation = _get_attr(step, "tutor_explanation", None)
         if explanation:
-            explanation = _sanitize_math_blocks(explanation)
+            # For Markdown export, preserve LaTeX as-is (MD viewers/renderers handle it natively)
+            # Only normalize Mermaid diagrams, do NOT sanitize math content
             norm_exp = _normalize_markdown_diagrams(explanation.strip())
             md += f"#### 🎓 Key Conceptual Takeaways\n\n{norm_exp}\n\n"
 
@@ -748,10 +981,84 @@ async def generate_pdf(memory) -> bytes:
     # 3. Milestones
     body_html += '<h2 class="section-title">Mastered Steps</h2>'
 
+    # Pre-scan all steps to fetch all Mermaid and Math images concurrently across the document
+    step_prepared_data = []
+    all_mermaid_tasks = []
+    all_math_tasks = []
+
     for step in steps:
-        step_idx = _get_attr(step, "index", 0)
-        title = _sanitize_text_for_pdf(_get_attr(step, "title", f"Step {step_idx + 1}"))
-        description = _sanitize_text_for_pdf(_get_attr(step, "description", ""))
+        explanation = _get_attr(step, "tutor_explanation", "")
+        math_pdf_blocks = []
+        mermaid_blocks = []
+        cleaned_math = []
+
+        if explanation:
+            explanation = _sanitize_math_blocks(explanation)
+
+            def _extract_math_pdf(match):
+                idx = len(math_pdf_blocks)
+                math_pdf_blocks.append(match.group(0))
+                return f"\n\n<!--MATH_PDF_PLACEHOLDER_{idx}-->\n\n"
+
+            # 1. ```math / ```latex fenced blocks
+            explanation = re.sub(r'```(?:math|latex)\s*\n([\s\S]+?)```', _extract_math_pdf, explanation)
+            # 2. \begin{...} ... \end{...} environments
+            explanation = re.sub(r'\\begin\{[a-zA-Z0-9_\*]+\}[\s\S]+?\\end\{[a-zA-Z0-9_\*]+\}', _extract_math_pdf, explanation)
+            # 3. $$ ... $$ (display math)
+            explanation = re.sub(r'\$\$([\s\S]+?)\$\$', _extract_math_pdf, explanation)
+            # 4. \[ ... \] (display math)
+            explanation = re.sub(r'\\\[([\s\S]+?)\\\]', _extract_math_pdf, explanation)
+
+            # Format inline math cleanly in-line with math typography
+            explanation = format_inline_math_for_pdf(explanation)
+
+            def _extract_mermaid_pdf(match):
+                idx = len(mermaid_blocks)
+                mermaid_blocks.append(match.group(1).strip())
+                return f"\n\n<!--MERMAID_PLACEHOLDER_{idx}-->\n\n"
+
+            explanation_clean = re.sub(
+                r"```(?:mermaid|flowchart)[^\n]*\n(.*?)```",
+                _extract_mermaid_pdf,
+                explanation,
+                flags=re.DOTALL,
+            )
+
+            for mb in math_pdf_blocks:
+                c = mb
+                c = re.sub(r'^\$\$|\$\$$', '', c)
+                c = re.sub(r'^\\\[|\\\]$', '', c)
+                c = re.sub(r'^\\\(|\\\)$', '', c)
+                c = re.sub(r'^\$|\$$', '', c)
+                c = re.sub(r'^```(?:math|latex)\s*\n|```$', '', c)
+                cleaned_math.append(c.strip())
+        else:
+            explanation_clean = ""
+
+        step_prepared_data.append({
+            "explanation_clean": explanation_clean,
+            "math_blocks": math_pdf_blocks,
+            "cleaned_math": cleaned_math,
+            "mermaid_blocks": mermaid_blocks,
+        })
+        for m in mermaid_blocks:
+            all_mermaid_tasks.append(_render_mermaid_as_image(_sanitize_mermaid_syntax(m)))
+        for cm in cleaned_math:
+            all_math_tasks.append(_render_math_as_image(cm))
+
+    # Fetch ALL mermaid and math images concurrently for the entire document
+    all_mermaid_uris, all_math_uris = await asyncio.gather(
+        asyncio.gather(*all_mermaid_tasks) if all_mermaid_tasks else asyncio.sleep(0, result=[]),
+        asyncio.gather(*all_math_tasks) if all_math_tasks else asyncio.sleep(0, result=[]),
+    )
+
+    mermaid_ptr = 0
+    math_ptr = 0
+
+    for step_idx, step in enumerate(steps):
+        prep = step_prepared_data[step_idx]
+        title = format_inline_math_for_pdf(_sanitize_text_for_pdf(_get_attr(step, "title", f"Step {step_idx + 1}")))
+        description = format_inline_math_for_pdf(_sanitize_text_for_pdf(_get_attr(step, "description", "")))
         est_min = _get_attr(step, "estimated_minutes", 5)
 
         body_html += f"""
@@ -773,36 +1080,8 @@ async def generate_pdf(memory) -> bytes:
             body_html += f'<div class="objective-box"><strong>Objective:</strong> {description} <em>(Est. {est_min} min)</em></div>'
 
         # Tutor explanation
-        explanation = _get_attr(step, "tutor_explanation", "")
-        if explanation:
-            explanation = _sanitize_math_blocks(explanation)
-            
-            math_pdf_blocks = []
-            def _extract_math_pdf(match):
-                idx = len(math_pdf_blocks)
-                math_pdf_blocks.append(match.group(0))
-                return f"\n\n<!--MATH_PDF_PLACEHOLDER_{idx}-->\n\n"
-            
-            # Extract math blocks for PDF image rendering
-            explanation = re.sub(r'\$\$([\s\S]+?)\$\$', _extract_math_pdf, explanation)
-            explanation = re.sub(r'\\\[([\s\S]+?)\\\]', _extract_math_pdf, explanation)
-            explanation = re.sub(r'```(?:math|latex)\s*\n([\s\S]+?)```', _extract_math_pdf, explanation)
-            explanation = re.sub(r'\\begin\{[a-zA-Z0-9_\*]+\}[\s\S]+?\\end\{[a-zA-Z0-9_\*]+\}', _extract_math_pdf, explanation)
-
-            mermaid_blocks = []
-
-            def _extract_mermaid_pdf(match):
-                idx = len(mermaid_blocks)
-                mermaid_blocks.append(match.group(1).strip())
-                return f"\n\n<!--MERMAID_PLACEHOLDER_{idx}-->\n\n"
-
-            explanation_clean = re.sub(
-                r"```(?:mermaid|flowchart)[^\n]*\n(.*?)```",
-                _extract_mermaid_pdf,
-                explanation,
-                flags=re.DOTALL,
-            )
-
+        explanation_clean = prep["explanation_clean"]
+        if explanation_clean:
             sanitized_exp = _sanitize_text_for_pdf(explanation_clean)
 
             # Convert to markdown with fenced_code and tables
@@ -815,20 +1094,15 @@ async def generate_pdf(memory) -> bytes:
                 flags=re.DOTALL,
             )
 
-            # Fetch all Mermaid images concurrently
-            mermaid_uris = await asyncio.gather(*[
-                _render_mermaid_as_image(_sanitize_mermaid_syntax(m_code))
-                for m_code in mermaid_blocks
-            ])
-
             # Re-inject Mermaid diagrams as executive PDF diagram cards
-            for idx, (m_code, mermaid_img_uri) in enumerate(zip(mermaid_blocks, mermaid_uris)):
+            for m_idx, m_code in enumerate(prep["mermaid_blocks"]):
                 m_code = _sanitize_mermaid_syntax(m_code)
-                # Try pixel-perfect image via Mermaid Ink API first
-                if mermaid_img_uri:
+                m_uri = all_mermaid_uris[mermaid_ptr] if mermaid_ptr < len(all_mermaid_uris) else None
+                mermaid_ptr += 1
+                if m_uri:
                     diagram_rendered = (
                         f'<div style="text-align: center; padding: 6px 0;">'
-                        f'<img src="{mermaid_img_uri}" class="mermaid-image" />'
+                        f'<img src="{m_uri}" class="mermaid-image" />'
                         f'</div>'
                     )
                 else:
@@ -850,25 +1124,15 @@ async def generate_pdf(memory) -> bytes:
                 </table>
                 """
                 exp_html = re.sub(
-                    rf"(?:<p>)?<!--MERMAID_PLACEHOLDER_{idx}-->(?:</p>)?",
-                    diagram_card,
+                    rf"(?:<p>)?<!--MERMAID_PLACEHOLDER_{m_idx}-->(?:</p>)?",
+                    lambda _, c=diagram_card: c,
                     exp_html,
                 )
-            # Fetch all Math images concurrently
-            cleaned_math_codes = []
-            for m in math_pdf_blocks:
-                c = re.sub(r'^\$\$|\$\$$', '', m)
-                c = re.sub(r'^\\\[|\\\]$', '', c)
-                c = re.sub(r'^```(?:math|latex)\s*\n|```$', '', c)
-                cleaned_math_codes.append(c)
-
-            math_uris = await asyncio.gather(*[
-                _render_math_as_image(c)
-                for c in cleaned_math_codes
-            ])
 
             # Re-inject Math diagrams as executive PDF images
-            for idx, (math_code, math_img_uri) in enumerate(zip(math_pdf_blocks, math_uris)):
+            for m_idx, (math_code, cleaned_code) in enumerate(zip(prep["math_blocks"], prep["cleaned_math"])):
+                math_img_uri = all_math_uris[math_ptr] if math_ptr < len(all_math_uris) else None
+                math_ptr += 1
                 if math_img_uri:
                     math_rendered = (
                         f'<div style="text-align: center; padding: 6px 0;">'
@@ -876,11 +1140,16 @@ async def generate_pdf(memory) -> bytes:
                         f'</div>'
                     )
                 else:
-                    math_rendered = f'<pre class="diagram-code-box"><code>{html.escape(math_code)}</code></pre>'
+                    sanitized_fallback = _sanitize_text_for_pdf(cleaned_code)
+                    math_rendered = (
+                        f'<div class="math-fallback-box">'
+                        f'<code>{html.escape(sanitized_fallback)}</code>'
+                        f'</div>'
+                    )
 
                 exp_html = re.sub(
-                    rf"(?:<p>)?<!--MATH_PDF_PLACEHOLDER_{idx}-->(?:</p>)?",
-                    math_rendered,
+                    rf"(?:<p>)?<!--MATH_PDF_PLACEHOLDER_{m_idx}-->(?:</p>)?",
+                    lambda _, r=math_rendered: r,
                     exp_html,
                 )
 
@@ -891,7 +1160,7 @@ async def generate_pdf(memory) -> bytes:
         if socratic_qs:
             body_html += "<h4 class='subhead'>Reflection & Socratic Prompts</h4><ol class='socratic-list'>"
             for q in socratic_qs:
-                q_clean = _sanitize_text_for_pdf(q)
+                q_clean = format_inline_math_for_pdf(_sanitize_text_for_pdf(q))
                 body_html += f"<li>{q_clean}</li>"
             body_html += "</ol>"
 
@@ -947,9 +1216,9 @@ async def generate_pdf(memory) -> bytes:
             score_str = f"{quiz_score:.0%}" if quiz_score is not None else "100%"
             body_html += f"<h4 class='subhead'>Comprehension Quiz Results (Score: {score_str})</h4>"
             for qi, q_item in enumerate(quiz_data):
-                q_text = _sanitize_text_for_pdf(_get_attr(q_item, "question", f"Question {qi + 1}"))
-                correct_ans = _sanitize_text_for_pdf(str(_get_attr(q_item, "correct_answer", "")))
-                explanation_text = _sanitize_text_for_pdf(_get_attr(q_item, "explanation", ""))
+                q_text = format_inline_math_for_pdf(_sanitize_text_for_pdf(_get_attr(q_item, "question", f"Question {qi + 1}")))
+                correct_ans = format_inline_math_for_pdf(_sanitize_text_for_pdf(str(_get_attr(q_item, "correct_answer", ""))))
+                explanation_text = format_inline_math_for_pdf(_sanitize_text_for_pdf(_get_attr(q_item, "explanation", "")))
 
                 student_ans = (
                     user_full_answers.get(qi)
@@ -1302,6 +1571,36 @@ async def generate_pdf(memory) -> bytes:
                 height: auto;
                 display: block;
                 margin: 0 auto;
+            }}
+            /* ── Inline Math ── */
+            .math-inline-pdf {{
+                font-family: 'Times-Italic', 'Times-Roman', 'Times', serif;
+                font-style: italic;
+                font-size: 9.5pt;
+                color: #0F172A;
+            }}
+            .math-inline-pdf sub, .math-inline-pdf sup {{
+                font-size: 7pt;
+                font-style: normal;
+            }}
+            .math-cal {{
+                font-family: 'Times-Italic', serif;
+                font-weight: bold;
+                font-style: italic;
+            }}
+            /* ── Math Fallback (when image rendering fails) ── */
+            .math-fallback-box {{
+                background-color: #F8FAFC;
+                border: 1px solid #CBD5E1;
+                border-left: 3px solid #8B5CF6;
+                border-radius: 4px;
+                padding: 8px 12px;
+                margin: 6px 0;
+                text-align: center;
+                font-family: 'Courier New', Courier, monospace;
+                font-size: 8.5pt;
+                color: #334155;
+                line-height: 1.5;
             }}
             /* ── Section Title ── */
             .section-title {{
@@ -1680,21 +1979,67 @@ def generate_html(memory) -> str:
                 flags=re.DOTALL,
             )
 
-            # Protect LaTeX delimiters from being stripped by python-markdown escaping
-            explanation_clean = explanation_clean.replace(r"\[", "@@B_MATH_START@@")
-            explanation_clean = explanation_clean.replace(r"\]", "@@B_MATH_END@@")
-            explanation_clean = explanation_clean.replace(r"\(", "@@I_MATH_START@@")
-            explanation_clean = explanation_clean.replace(r"\)", "@@I_MATH_END@@")
-            explanation_clean = explanation_clean.replace(r"$$", "@@MATH_DOLLAR@@")
+            # ── Protect ALL math from python-markdown mangling ──
+            # python-markdown treats backslashes as escape chars and underscores
+            # as emphasis markers — both destroy LaTeX formulas.
+            # Strategy: extract all math blocks/inline into placeholders,
+            # run markdown, then re-inject the original LaTeX.
+            math_placeholders = []
+
+            def _protect_math(match):
+                idx = len(math_placeholders)
+                raw = match.group(0)
+                # If it's a fenced block ```math or ```latex, convert to display math
+                if raw.startswith("```"):
+                    inner = re.sub(r"^```(?:math|latex)?\s*\n?", "", raw)
+                    inner = re.sub(r"\n?```$", "", inner).strip()
+                    if inner.startswith(r"\[") and inner.endswith(r"\]"):
+                        inner = inner[2:-2].strip()
+                    elif inner.startswith("$$") and inner.endswith("$$"):
+                        inner = inner[2:-2].strip()
+                    formatted = f"\\[{inner}\\]"
+                    math_placeholders.append(html.escape(formatted, quote=False))
+                else:
+                    # Escape < and > so math like w_{<t} is not parsed by the browser as an unclosed HTML tag <t>
+                    math_placeholders.append(html.escape(raw, quote=False))
+                return f"@@MATH_PH_{idx}@@"
+
+            # 1. Protect ```math / ```latex fenced blocks
+            explanation_clean = re.sub(
+                r'```(?:math|latex)\s*\n[\s\S]+?```',
+                _protect_math, explanation_clean
+            )
+            # 2. Protect \begin{...} ... \end{...} environments
+            explanation_clean = re.sub(
+                r'\\begin\{[a-zA-Z0-9_\*]+\}[\s\S]+?\\end\{[a-zA-Z0-9_\*]+\}',
+                _protect_math, explanation_clean
+            )
+            # 3. Protect $$ ... $$ (display math)
+            explanation_clean = re.sub(
+                r'\$\$[\s\S]+?\$\$',
+                _protect_math, explanation_clean
+            )
+            # 4. Protect \[ ... \] (display math)
+            explanation_clean = re.sub(
+                r'\\\[[\s\S]+?\\\]',
+                _protect_math, explanation_clean
+            )
+            # 5. Protect \( ... \) (inline math)
+            explanation_clean = re.sub(
+                r'\\\([\s\S]+?\\\)',
+                _protect_math, explanation_clean
+            )
+            # 6. Protect $...$ (inline math) — single-line only, avoid false positives on currency
+            explanation_clean = re.sub(
+                r'(?<![\$\\0-9])\$(?!\s)(.+?)(?<!\s)\$(?![0-9\$])',
+                _protect_math, explanation_clean
+            )
 
             exp_html = markdown.markdown(explanation_clean, extensions=["tables", "fenced_code"])
-            
-            # Restore LaTeX delimiters
-            exp_html = exp_html.replace("@@B_MATH_START@@", r"\[")
-            exp_html = exp_html.replace("@@B_MATH_END@@", r"\]")
-            exp_html = exp_html.replace("@@I_MATH_START@@", r"\(")
-            exp_html = exp_html.replace("@@I_MATH_END@@", r"\)")
-            exp_html = exp_html.replace("@@MATH_DOLLAR@@", r"$$")
+
+            # Restore all math placeholders back into the HTML
+            for idx, original_math in enumerate(math_placeholders):
+                exp_html = exp_html.replace(f"@@MATH_PH_{idx}@@", original_math)
             # Format code blocks with language badge
             exp_html = re.sub(
                 r"<p><code>(?:([a-zA-Z0-9_\-]+)\n)?(.*?)</code></p>",
@@ -1719,7 +2064,7 @@ def generate_html(memory) -> str:
                 """
                 exp_html = re.sub(
                     rf"(?:<p>)?<!--MERMAID_PLACEHOLDER_{idx}-->(?:</p>)?",
-                    mermaid_card,
+                    lambda _, card=mermaid_card: card,
                     exp_html,
                 )
 
@@ -2344,6 +2689,15 @@ def generate_html(memory) -> str:
                 color: #64748B;
                 word-break: break-all;
             }}
+            mjx-container {{
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                max-width: 100% !important;
+            }}
+            mjx-container[display="true"] {{
+                margin: 14px 0 !important;
+                overflow-x: visible !important;
+            }}
             @page {{
                 size: A4;
                 margin: 15mm 12mm 15mm 12mm;
@@ -2403,7 +2757,7 @@ def generate_html(memory) -> str:
             <span class="badge-report">Interactive Study Report</span>
         </div>
         <div class="action-buttons">
-            <button class="btn btn-print" onclick="window.print()">
+            <button class="btn btn-print" onclick="printDocument()">
                 🖨️ Print / Save as PDF
             </button>
             <button class="btn btn-download" onclick="downloadCurrentHtml()">
@@ -2476,14 +2830,20 @@ def generate_html(memory) -> str:
       window.MathJax = {{
         tex: {{
           inlineMath: [['$', '$'], ['\\\\(', '\\\\)']],
-          displayMath: [['$$', '$$'], ['\\\\[', '\\\\]']]
+          displayMath: [['$$', '$$'], ['\\\\[', '\\\\]']],
+          processEscapes: true,
+          processEnvironments: true,
+          tags: 'ams'
         }},
-        svg: {{
-          fontCache: 'global'
+        options: {{
+          skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+          ignoreHtmlClass: 'mermaid'
+        }},
+        chtml: {{
+          scale: 1
         }}
       }};
     </script>
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>
         if (window.mermaid) {{
@@ -2504,6 +2864,17 @@ def generate_html(memory) -> str:
                     curve: 'basis'
                 }}
             }});
+        }}
+
+        async function printDocument() {{
+            if (window.MathJax && MathJax.typesetPromise) {{
+                try {{
+                    await MathJax.typesetPromise();
+                }} catch (e) {{
+                    console.warn('MathJax typesetting error before print:', e);
+                }}
+            }}
+            window.print();
         }}
 
         function downloadCurrentHtml() {{

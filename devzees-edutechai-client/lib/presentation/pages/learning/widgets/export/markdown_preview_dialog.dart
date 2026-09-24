@@ -150,7 +150,7 @@ class MarkdownPreviewDialog extends StatelessWidget {
                         onPressed: () {
                           ExportHelper.copyToClipboard(
                             context,
-                            text: processedContent,
+                            text: markdownContent,
                             message: 'Markdown notes copied to clipboard!',
                           );
                         },
@@ -168,7 +168,7 @@ class MarkdownPreviewDialog extends StatelessWidget {
                         ),
                         onPressed: () {
                           ExportHelper.saveOrShareText(
-                            content: processedContent,
+                            content: markdownContent,
                             filename: 'session_${sessionId}_notes.md',
                             context: context,
                           );
@@ -315,7 +315,7 @@ class MarkdownPreviewDialog extends StatelessWidget {
                               ),
                               onPressed: () {
                                 ExportHelper.saveOrShareText(
-                                  content: processedContent,
+                                  content: markdownContent,
                                   filename: 'session_${sessionId}_notes.md',
                                   context: context,
                                 );
@@ -366,7 +366,7 @@ class MarkdownPreviewDialog extends StatelessWidget {
                               ),
                               onPressed: () {
                                 ExportHelper.saveOrShareText(
-                                  content: processedContent,
+                                  content: markdownContent,
                                   filename: 'session_${sessionId}_notes.md',
                                   context: context,
                                 );
@@ -417,40 +417,48 @@ String _preprocessMarkdownForPreview(String text) {
     (match) => '\n\n```mermaid\n${match.group(1)}${match.group(2)}\n```\n\n',
   );
 
-  // 4. Block math: \begin{...} ... \end{...}
+  // 4. Block math: \begin{...} ... \end{...} (with optional enclosing [ ... ] or \[ ... \])
   processed = processed.replaceAllMapped(
     RegExp(
-      r'(?:\\\[|\[)?\s*(\\begin\{(?:aligned|matrix|bmatrix|pmatrix|vmatrix|cases|gather|equation)\b[\s\S]+?\\end\{(?:aligned|matrix|bmatrix|pmatrix|vmatrix|cases|gather|equation)\})\s*(?:\\\]|\])?',
+      r'(?:\\\[|\[)?\s*(\\begin\{(?:aligned|matrix|bmatrix|pmatrix|vmatrix|Vmatrix|cases|gather|gather\*|equation|equation\*|align|align\*|alignat|alignat\*|split|multline|multline*)\b[\s\S]+?\\end\{(?:aligned|matrix|bmatrix|pmatrix|vmatrix|Vmatrix|cases|gather|gather\*|equation|equation\*|align|align\*|alignat|alignat\*|split|multline|multline*)\})\s*(?:\\\]|\])?',
       multiLine: true,
     ),
-    (match) => '\n```latex\n${match.group(1)}\n```\n',
+    (match) => '\n\n```latex\n${match.group(1)!.trim()}\n```\n\n',
   );
 
   // 5. Block math: \[ ... \]
   processed = processed.replaceAllMapped(
     RegExp(r'\\\[([\s\S]+?)\\\]'),
-    (match) => '\n```latex\n${match.group(1)}\n```\n',
+    (match) => '\n\n```latex\n${match.group(1)!.trim()}\n```\n\n',
   );
 
   // 6. Block math: $$ ... $$
   processed = processed.replaceAllMapped(
     RegExp(r'\$\$([\s\S]+?)\$\$'),
-    (match) => '\n```latex\n${match.group(1)}\n```\n',
+    (match) => '\n\n```latex\n${match.group(1)!.trim()}\n```\n\n',
   );
 
   // 7. Inline math: \( ... \)
   processed = processed.replaceAllMapped(
     RegExp(r'\\\(([\s\S]+?)\\\)'),
-    (match) => '`math:${match.group(1)}`',
+    (match) => '`math:${match.group(1)!.trim()}`',
   );
 
-  // 8. Inline math with single $
+  // 8. Inline math with single $ (excluding currency like $50 or $$)
   processed = processed.replaceAllMapped(
-    RegExp(r'(?<!\$)\$(?!\$)([\s\S]+?)(?<!\$)\$(?!\$)'),
-    (match) => '`math:${match.group(1)}`',
+    RegExp(r'(?<![\$\\0-9])\$(?!\s)(.+?)(?<!\s)\$(?![0-9\$])'),
+    (match) => '`math:${match.group(1)!.trim()}`',
   );
 
-  // 9. Restore protected code blocks
+  // 9. Parenthesized equation fallback from LLMs: ( \mathbf{...} ) or ( L=T-V )
+  processed = processed.replaceAllMapped(
+    RegExp(
+      r'(?<!\S)\(\s*(\\[a-zA-Z]+[\s\S]*?|[a-zA-Z0-9_]+=[a-zA-Z0-9_+-]+)\s*\)(?=[,\.;:!?]|\s|$)',
+    ),
+    (match) => '`math:${match.group(1)!.trim()}`',
+  );
+
+  // 10. Restore protected code blocks
   for (int i = 0; i < codeBlocks.length; i++) {
     processed = processed.replaceAll('@@PREVIEW_CODEBLOCK_$i@@', codeBlocks[i]);
   }
@@ -470,12 +478,13 @@ class _MarkdownPreviewCodeBuilder extends MarkdownElementBuilder {
     // 1. Inline Math
     if (textContent.startsWith('math:')) {
       final mathTex = textContent.substring(5).trim();
+      final cleanTex = _sanitizeMathTex(mathTex);
       return Math.tex(
-        _sanitizeMathTex(mathTex),
+        cleanTex,
         mathStyle: MathStyle.text,
         textStyle: preferredStyle?.copyWith(color: Colors.white, fontSize: 14),
         onErrorFallback: (err) => Text(
-          mathTex,
+          cleanTex,
           style: preferredStyle?.copyWith(color: AppColors.lavender),
         ),
       );
@@ -484,7 +493,9 @@ class _MarkdownPreviewCodeBuilder extends MarkdownElementBuilder {
     // 2. Block Math
     final className = element.attributes['class'] ?? '';
     final isLatexBlock = className.contains('language-latex') ||
-        className.contains('language-math');
+        className.contains('language-math') ||
+        className.contains('language-tex') ||
+        className.contains('language-katex');
 
     if (isLatexBlock) {
       return _buildMathCard(textContent);
@@ -538,12 +549,33 @@ class _MarkdownPreviewCodeBuilder extends MarkdownElementBuilder {
 
 String _sanitizeMathTex(String rawTex) {
   var clean = rawTex.trim();
-  clean = clean.replaceAll(r'\!', '');
-  clean = clean.replaceAll(RegExp(r',\s*\\+'), r' \\ ');
+
+  // Strip wrapping block delimiters if present (e.g. from code blocks or legacy format)
+  if (clean.startsWith(r'\[') && clean.endsWith(r'\]')) {
+    clean = clean.substring(2, clean.length - 2).trim();
+  } else if (clean.startsWith(r'$$') && clean.endsWith(r'$$') && clean.length >= 4) {
+    clean = clean.substring(2, clean.length - 2).trim();
+  } else if (clean.startsWith(r'\(') && clean.endsWith(r'\)')) {
+    clean = clean.substring(2, clean.length - 2).trim();
+  } else if (clean.startsWith(r'$') && clean.endsWith(r'$') && clean.length >= 2) {
+    clean = clean.substring(1, clean.length - 1).trim();
+  }
+
+  // Strip outer [ ... ] wrapper around \begin{...}...\end{...} blocks
+  if (clean.startsWith('[') && clean.endsWith(']') && clean.contains(r'\begin{')) {
+    clean = clean.substring(1, clean.length - 1).trim();
+  }
+
+  // Normalize 3+ consecutive backslashes down to \\
+  clean = clean.replaceAll(RegExp(r'\\{3,}'), r'\\');
+
+  // Fix spurious \\ right before \end{...}
+  clean = clean.replaceAll(RegExp(r'\\{2,}\s*(?=\\end\{)'), '\n');
+
+  // Replace commas followed by escaped newline or ampersand if LLM hallucinated
+  clean = clean.replaceAll(RegExp(r',\s*(?:\\\s+|\\\\)'), r' \\ ');
   clean = clean.replaceAll(RegExp(r',\s*&\s*'), r' \\ ');
-  clean = clean.replaceAll(RegExp(r'\\{2,}(?:\s*\\+)*'), r'\\');
-  clean = clean.replaceAll(RegExp(r'\\+\s*(?=\\end\{)'), '\n');
-  clean = clean.replaceAll(RegExp(r'(?<!\\)\\\s*(?=\r?\n|$)'), '');
+
   return clean.trim();
 }
 
