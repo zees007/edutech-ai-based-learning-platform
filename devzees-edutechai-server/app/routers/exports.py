@@ -2158,7 +2158,7 @@ def generate_html(memory) -> str:
                 """
             milestones_html += "</div></div>"
 
-        milestones_html += "</section>"
+        milestones_html += "</article>"
 
     # Average score
     avg_score_str = "100%"
@@ -2414,6 +2414,21 @@ def generate_html(memory) -> str:
         }}
         .explanation-body p {{
             margin-bottom: 12px;
+            margin-left: 12px;
+        }}
+        .explanation-body ul,
+        .explanation-body ol {{
+            margin-top: 6px;
+            margin-bottom: 14px;
+            margin-left: 12px;
+            padding-left: 20px;
+        }}
+        .explanation-body li {{
+            margin-bottom: 6px;
+            line-height: 1.6;
+        }}
+        .explanation-body li::marker {{
+            color: var(--slate-900);
         }}
         /* ── Code Blocks ── */
         .code-wrapper {{

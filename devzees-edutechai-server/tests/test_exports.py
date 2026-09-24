@@ -139,6 +139,8 @@ def test_generate_html_content():
     assert "Learning Journey Milestone Path" in html_content
     assert "video-url-print" in html_content
     assert "Reflection & Socratic Prompts" not in html_content
+    assert html_content.count('<article class="milestone-card"') == len(memory.steps)
+    assert html_content.count("</article>") == len(memory.steps)
 
 
 @pytest.mark.asyncio
