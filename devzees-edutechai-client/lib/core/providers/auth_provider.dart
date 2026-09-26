@@ -54,14 +54,14 @@ class AuthNotifier extends Notifier<AuthState> {
       final request = LoginRequest(email: email, password: password);
       final success = await _authService.login(request);
       if (success) {
-        state = state.copyWith(loadingMessage: 'Loading profile...');
+        state = state.copyWith(loadingMessage: 'Loading profile...', isAuthenticated: true);
         try {
           ref.invalidate(userProvider);
           await ref.read(userProvider.future);
         } catch (e) {
           // If profile fetch fails, we can either fail login or proceed. Proceeding is safer.
         }
-        state = state.copyWith(isLoading: false, isAuthenticated: true);
+        state = state.copyWith(isLoading: false);
         return true;
       }
       state = state.copyWith(isLoading: false, error: 'Login failed.');

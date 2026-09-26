@@ -3,6 +3,11 @@ import '../../data/models/auth/user_current_profile_response.dart';
 import 'auth_provider.dart';
 
 final userProvider = FutureProvider<UserCurrentProfileResponse?>((ref) async {
+  final authState = ref.read(authProvider);
+  if (!authState.isAuthenticated) {
+    return null;
+  }
+  
   final authService = ref.watch(authServiceProvider);
   return await authService.getMe();
 });
