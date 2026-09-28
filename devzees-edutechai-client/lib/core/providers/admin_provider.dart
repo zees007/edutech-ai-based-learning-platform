@@ -5,7 +5,6 @@ import '../../data/models/admin/paginated_role_response.dart';
 import '../../data/models/admin/privilege_response.dart';
 import '../../data/models/admin/role_create_request.dart';
 import '../../data/models/admin/subscription_update_request.dart';
-import '../../data/models/admin/user_response.dart';
 import '../services/admin_service.dart';
 
 // ─── Service Provider ─────────────────────────────────────────────
