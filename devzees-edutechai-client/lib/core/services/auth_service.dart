@@ -85,6 +85,18 @@ class AuthService {
       return false;
     }
   }
+
+  Future<bool> logoutAll() async {
+    try {
+      final response = await _dio.post(ApiConstants.logoutAll);
+      if (response.statusCode == 200 || response.statusCode == 204) {
+        return true;
+      }
+      return false;
+    } catch (e) {
+      return false;
+    }
+  }
   Future<UserCurrentProfileResponse?> getMe() async {
     try {
       final response = await _dio.get(ApiConstants.me);

@@ -8,6 +8,8 @@ from __future__ import annotations
 
 import logging
 
+from datetime import datetime, timezone
+
 from fastapi import Cookie, Depends, Request
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -72,6 +74,14 @@ async def get_current_user(
             error_code="USER_NOT_FOUND",
             errors="Authenticated user not found or account is retired.",
         )
+
+    if user.tokens_invalidated_before and "iat" in payload:
+        token_iat = datetime.fromtimestamp(payload["iat"], tz=timezone.utc)
+        if token_iat < user.tokens_invalidated_before:
+            raise UnauthorizedException(
+                error_code="TOKEN_REVOKED",
+                errors="Session has been terminated. Please log in again.",
+            )
 
     return user
 

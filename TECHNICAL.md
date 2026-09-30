@@ -880,3 +880,59 @@ To balance flexibility with API cost-efficiency, the client features a highly op
 1. **Targeted State Clearing**: `regenerateCurrentStep()` optimistically wipes `tutorExplanation`, `socraticQuestions`, and `quiz` from the local `MilestoneStep`, but intentionally preserves `videos` and `papers`. 
 2. **Seamless Inline Loaders**: Instead of invoking the massive full-screen `NeuralInferenceLoader` (which is reserved exclusively for Step 0 of a new journey), regeneration uses the inline `Socratic Tutor is preparing...` skeleton loader to maintain visual context.
 3. **Idempotent Agent Execution**: On the backend, `websocket.py` checks `if step and not step.videos` before dispatching the `YouTubeCuratorAgent` and `AcademicResearcherAgent`. Because the `topic` and step `title` do not change during regeneration, the pre-existing curated resources remain highly relevant. Bypassing these agents saves tokens, avoids rate limits (YouTube Data API), and dramatically accelerates regeneration latency.
+
+---
+
+## 10. Authentication & Token Management Architecture
+
+EduTechAI employs a highly secure, dual-token stateless/stateful hybrid authentication system designed to support seamless user experiences while maintaining strict security controls across mobile and web clients.
+
+### 10.1 Dual-Token Strategy
+- **Access Tokens (JWT):** Short-lived (15 minutes), stateless tokens containing user claims (`sub`, `role`, `tier`). Used for extremely low-latency authorization on every request without requiring a database round-trip.
+- **Refresh Tokens (Database-Backed):** Long-lived (7 days), stateful tokens stored securely in the `refresh_tokens` table. Contains a hashed secret, a `family_id` for rotation tracking, and expiration timestamps.
+
+### 10.2 Transparent Token Refresh & Queued Interceptor (Client)
+On the Flutter client, the `ApiClient` utilizes a powerful `QueuedInterceptor` (via the `dio` package).
+- When a `401 Unauthorized` response is received, the interceptor automatically halts and queues all outgoing API requests.
+- A single background request is dispatched to `/auth/refresh` using the secure `refresh_token` HTTP-only cookie (or secured storage).
+- If successful, the new short-lived Access Token is extracted, and all paused requests in the queue are retried transparently. The user never notices the token rotation.
+- If the refresh fails (e.g., token expired or revoked), the user is gracefully logged out via `AuthProvider.forceLogout()`.
+
+### 10.3 Token Rotation & Replay Detection
+- Every time a refresh token is used, it is rotated. A new token is issued, and the old token is invalidated (`revoked_at` timestamp set).
+- **Token Families:** All tokens in a rotation chain share a `family_id`.
+- **Theft Detection:** If a revoked refresh token is presented to the `/auth/refresh` endpoint (indicating potential token theft), the backend immediately revokes **all** tokens in that `family_id`, requiring the user to re-authenticate fully.
+
+### 10.4 Global Invalidation (Logout All)
+- The `users` table includes a `tokens_invalidated_before` timestamp column.
+- When a user triggers `/auth/logout-all`, this timestamp is updated to the current time.
+- The `get_current_user` FastAPI dependency intercepts incoming JWT Access Tokens and compares the token's `iat` (Issued At) claim against the user's `tokens_invalidated_before`. If `iat` is older, the request is rejected as `401 Unauthorized`, instantly neutralizing all active JWTs globally without requiring a centralized blacklist cache (e.g., Redis).
+
+### 10.5 Step-by-Step Flow Example
+**Scenario:** Ram logs in at **September 30, 2026 at 8:00 PM**.
+1. **Initial Login:** The server issues an Access Token (expires 8:15 PM) and a Refresh Token (expires Oct 7, 8:00 PM) tied to a unique `family_id`.
+2. **Normal Usage (8:00 PM - 8:14 PM):** The Flutter app attaches the Access Token to API requests. The server validates the JWT cryptographically without hitting the database, providing maximum performance.
+3. **Transparent Refresh (8:16 PM):** 
+   - Ram attempts to fetch a quiz. 
+   - The server rejects the expired Access Token (`401 Unauthorized`).
+   - The Flutter `QueuedInterceptor` pauses the quiz request, hits `/auth/refresh` with the Refresh Token, receives a new Access Token (expires 8:31 PM) and a rotated Refresh Token, and automatically unpauses the quiz request. Ram never experiences an interruption.
+4. **Token Theft Defense:** If a hacker steals the *old* (revoked) Refresh Token and tries to use it, the server detects the reuse, identifies the `family_id`, and immediately revokes *all* active tokens in that family. Ram's compromised session is killed, forcing him to securely log in again.
+5. **Global Logout:** If Ram clicks "Log out of all devices" from his phone, the server updates his `tokens_invalidated_before` timestamp to the exact current time. Even if his laptop still has an active 15-minute Access Token, the server will instantly reject it because its `iat` (Issued At) time is now older than the invalidation timestamp.
+
+---
+
+## 11. Database Migrations (Alembic) Workflow
+
+EduTechAI utilizes `alembic` to strictly version control and propagate PostgreSQL database schema changes.
+
+### 11.1 Migration Auto-Generation
+When DDL updates are required (e.g., adding `refresh_tokens` or `tokens_invalidated_before`), we rely on Alembic's autogenerate capability to detect changes in the SQLAlchemy `db_models.py` definitions:
+```bash
+alembic revision --autogenerate -m "Add refresh tokens"
+```
+*Note on Renaming:* Alembic generates a random hash ID (e.g., `c2debcfa4613`) for the revision. You can safely rename the physical Python script (e.g., to `0005_add_refresh_tokens.py`), but you **must** preserve the internal `revision: str = '...'` variable exactly as generated unless you are also manually updating the `alembic_version` tracking table to match.
+
+### 11.2 Automatic Startup Migrations
+- Upon starting the FastAPI backend, `database.py` evaluates the `AUTO_CREATE_TABLES` environment variable.
+- If true, `asyncio.to_thread(command.upgrade, alembic_cfg, "head")` is invoked, programmatically executing all pending migrations before the application accepts traffic.
+- This ensures the database schema is perfectly synchronized with the codebase upon deployment.

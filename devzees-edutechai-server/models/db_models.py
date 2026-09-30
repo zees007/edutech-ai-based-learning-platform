@@ -67,6 +67,7 @@ class User(LoggedEntity, Base):
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     mobile: Mapped[str | None] = mapped_column(String(20), nullable=True)
     country: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    tokens_invalidated_before: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     roles: Mapped[list[Role]] = relationship(
         "Role",
@@ -83,6 +84,12 @@ class User(LoggedEntity, Base):
     )
     sessions: Mapped[list[SessionRecord]] = relationship(
         "SessionRecord",
+        back_populates="user",
+        cascade="all, delete-orphan",
+        lazy="selectin",
+    )
+    refresh_tokens: Mapped[list[RefreshToken]] = relationship(
+        "RefreshToken",
         back_populates="user",
         cascade="all, delete-orphan",
         lazy="selectin",
@@ -294,3 +301,25 @@ class GamificationRecord(Base):
 
     def __repr__(self) -> str:
         return f"<Gamification session={self.session_id} xp={self.xp_earned} level={self.level}>"
+
+
+class RefreshToken(Base):
+    """
+    Session refresh token for maintaining user sessions securely.
+    """
+
+    __tablename__ = "refresh_tokens"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    user_id: Mapped[str] = mapped_column(String(36), ForeignKey("users.id", ondelete="CASCADE"), index=True, nullable=False)
+    token_hash: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
+    family_id: Mapped[str] = mapped_column(String(36), index=True, nullable=False)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, server_default=func.now(), onupdate=func.now())
+
+    user: Mapped[User] = relationship("User", back_populates="refresh_tokens")
+
+    def __repr__(self) -> str:
+        return f"<RefreshToken {self.id} for user={self.user_id}>"
