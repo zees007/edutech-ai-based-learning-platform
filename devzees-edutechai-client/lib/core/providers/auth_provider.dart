@@ -3,6 +3,7 @@ import '../../data/models/auth/login_request.dart';
 import '../../data/models/auth/user_create_request.dart';
 import '../../data/models/auth/user_current_profile_response.dart';
 import '../services/auth_service.dart';
+import '../services/api_client.dart';
 import 'active_session_provider.dart';
 import 'learning_provider.dart';
 import 'gamification_provider.dart';
@@ -73,11 +74,25 @@ class AuthNotifier extends Notifier<AuthState> {
   @override
   AuthState build() {
     _authService = ref.watch(authServiceProvider);
+    
+    // Wire the interceptor callback
+    ApiClient.instance.onSessionExpired = forceLogout;
 
     // Automatically verify session cookie on app startup / page refresh (F5)
     Future.microtask(() => tryRestoreSession());
 
     return AuthState(status: AuthStatus.initial);
+  }
+
+  void forceLogout() {
+    state = AuthState(
+      status: AuthStatus.unauthenticated, 
+      error: "Session expired. Please log in again."
+    );
+    ref.invalidate(activeSessionProvider);
+    ref.invalidate(sessionsProvider);
+    ref.invalidate(gamificationEventProvider);
+    ref.invalidate(journeyCompleteProvider);
   }
 
   /// Restores session on cold boot or browser refresh (F5) by verifying the HTTP-only
@@ -131,7 +146,6 @@ class AuthNotifier extends Notifier<AuthState> {
           clearError: true,
         );
 
-        ref.invalidate(userProvider);
         return true;
       }
       state = state.copyWith(
@@ -191,14 +205,15 @@ class AuthNotifier extends Notifier<AuthState> {
   Future<void> logout() async {
     state = state.copyWith(isLoading: true, loadingMessage: 'Signing out...');
     await _authService.logout();
-    state = AuthState(status: AuthStatus.unauthenticated); // Reset auth state entirely
-    
-    // Invalidate user-specific state to clear data for next login
-    ref.invalidate(userProvider);
-    ref.invalidate(activeSessionProvider);
-    ref.invalidate(sessionsProvider);
-    ref.invalidate(gamificationEventProvider);
-    ref.invalidate(journeyCompleteProvider);
+    forceLogout();
+    state = AuthState(status: AuthStatus.unauthenticated); // Reset error
+  }
+
+  Future<void> logoutAll() async {
+    state = state.copyWith(isLoading: true, loadingMessage: 'Signing out of all devices...');
+    await _authService.logoutAll();
+    forceLogout();
+    state = AuthState(status: AuthStatus.unauthenticated);
   }
 }
 

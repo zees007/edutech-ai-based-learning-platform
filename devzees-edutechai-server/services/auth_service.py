@@ -7,7 +7,10 @@ user credential authentication, and current profile assembly.
 
 from __future__ import annotations
 
+import hashlib
 import logging
+import os
+import uuid
 from datetime import datetime, timedelta, timezone
 
 import jwt
@@ -17,7 +20,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.exceptions import UnauthorizedException
 from config import get_settings
 from models.auth_schemas import UserCurrentProfileResponse
-from models.db_models import User, Role
+from models.db_models import User, Role, RefreshToken
 from models.subscription_schemas import SubscriptionResponse
 from services.user_service import UserService
 
@@ -45,7 +48,7 @@ class AuthService:
         if expires_delta:
             expire = now + expires_delta
         else:
-            expire = now + timedelta(minutes=settings.jwt_expire_minutes)
+            expire = now + timedelta(minutes=settings.jwt_access_expire_minutes)
 
         to_encode.update({
             "iat": now,
@@ -164,3 +167,103 @@ class AuthService:
             subscription=subscription_response,
             privilege_codes=privilege_codes_list,
         )
+
+    @staticmethod
+    async def create_refresh_token(db: AsyncSession, user_id: str, family_id: str | None = None) -> str:
+        settings = get_settings()
+        
+        # Generate a cryptographically secure random token
+        raw_token = os.urandom(32).hex()
+        
+        # Hash it for storage
+        token_hash = hashlib.sha256(raw_token.encode()).hexdigest()
+        
+        # Determine expiry
+        now = datetime.now(timezone.utc)
+        expires_at = now + timedelta(days=settings.jwt_refresh_expire_days)
+        
+        if family_id is None:
+            family_id = str(uuid.uuid4())
+            
+        new_token_record = RefreshToken(
+            user_id=user_id,
+            token_hash=token_hash,
+            family_id=family_id,
+            expires_at=expires_at,
+        )
+        db.add(new_token_record)
+        await db.commit()
+        
+        return raw_token
+
+    @staticmethod
+    async def rotate_refresh_token(db: AsyncSession, raw_token: str) -> tuple[str, str]:
+        """
+        Validates the provided refresh token, rotates it (issues a new one), 
+        and returns a tuple of (new_access_token, new_refresh_token).
+        
+        If reuse is detected, revokes all tokens in the family.
+        """
+        token_hash = hashlib.sha256(raw_token.encode()).hexdigest()
+        
+        stmt = select(RefreshToken).where(RefreshToken.token_hash == token_hash)
+        res = await db.execute(stmt)
+        token_record = res.scalar_one_or_none()
+        
+        if not token_record:
+            raise UnauthorizedException(
+                error_code="INVALID_REFRESH_TOKEN",
+                errors="Refresh token is invalid or does not exist."
+            )
+            
+        now = datetime.now(timezone.utc)
+        
+        # Token reuse detection!
+        if token_record.revoked_at is not None:
+            # This token was already used or revoked!
+            # We must revoke the entire family immediately to protect the user.
+            revoke_stmt = select(RefreshToken).where(
+                RefreshToken.family_id == token_record.family_id,
+                RefreshToken.revoked_at.is_(None)
+            )
+            active_family_res = await db.execute(revoke_stmt)
+            for rt in active_family_res.scalars().all():
+                rt.revoked_at = now
+            await db.commit()
+            
+            raise UnauthorizedException(
+                error_code="TOKEN_REUSE_DETECTED",
+                errors="Compromised session detected. Please log in again."
+            )
+            
+        if token_record.expires_at < now:
+            raise UnauthorizedException(
+                error_code="REFRESH_TOKEN_EXPIRED",
+                errors="Refresh token has expired. Please log in again."
+            )
+            
+        # Token is valid! 
+        # 1. Fetch user to ensure they are active and create new access token
+        stmt_user = select(User).where(User.id == token_record.user_id)
+        res_user = await db.execute(stmt_user)
+        user = res_user.scalar_one_or_none()
+        
+        if user is None or user.retired:
+            raise UnauthorizedException(
+                error_code="USER_NOT_FOUND",
+                errors="User account not found or retired."
+            )
+            
+        # 2. Mark current refresh token as used/revoked
+        token_record.revoked_at = now
+        
+        # 3. Issue a new access token
+        new_access_token = AuthService.create_access_token({
+            "sub": user.id,
+            "email": user.email,
+        })
+        
+        # 4. Issue a new refresh token within the same family
+        new_refresh_token = await AuthService.create_refresh_token(db, user.id, family_id=token_record.family_id)
+        
+        return new_access_token, new_refresh_token

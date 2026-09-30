@@ -127,6 +127,18 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
                         }
                       },
                     ),
+                    _buildMenuItem(
+                      context, 
+                      'Sign Out of All Devices', 
+                      Icons.phonelink_erase, 
+                      AppColors.rose.withValues(alpha: 0.8),
+                      onTap: () async {
+                        await ref.read(authProvider.notifier).logoutAll();
+                        if (context.mounted) {
+                          context.go('/auth');
+                        }
+                      },
+                    ),
                   ],
                 ),
               ),

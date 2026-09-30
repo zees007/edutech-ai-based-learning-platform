@@ -7,8 +7,73 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 
 import '../constants/api_constants.dart';
 
+class AuthInterceptor extends QueuedInterceptor {
+  final ApiClient apiClient;
+
+  AuthInterceptor(this.apiClient);
+
+  @override
+  void onError(DioException err, ErrorInterceptorHandler handler) async {
+    // Check if error is 401 and it's not from refresh or login itself
+    if (err.response?.statusCode == 401 && 
+        !err.requestOptions.path.contains(ApiConstants.refresh) && 
+        !err.requestOptions.path.contains(ApiConstants.login)) {
+      
+      final data = err.response?.data;
+      bool isTokenExpired = false;
+      bool isTokenRevoked = false;
+      
+      if (data is Map) {
+         if (data['error_code'] == 'TOKEN_EXPIRED' || data['error_code'] == 'UNAUTHORIZED' || data['error_code'] == 'INVALID_TOKEN') {
+            isTokenExpired = true;
+         } else if (data['error_code'] == 'TOKEN_REVOKED' || data['error_code'] == 'TOKEN_REUSE_DETECTED') {
+            isTokenRevoked = true;
+         }
+      } else {
+         isTokenExpired = true; // Fallback assume expired
+      }
+
+      if (isTokenRevoked) {
+         apiClient.onSessionExpired?.call();
+         return handler.next(err);
+      }
+
+      if (isTokenExpired) {
+        try {
+          final refreshDio = Dio(
+            BaseOptions(
+              baseUrl: apiClient.dio.options.baseUrl,
+              extra: {'withCredentials': true},
+            )
+          );
+          
+          if (apiClient.cookieJar != null) {
+            refreshDio.interceptors.add(CookieManager(apiClient.cookieJar!));
+          }
+
+          final refreshResponse = await refreshDio.post(ApiConstants.refresh);
+          
+          if (refreshResponse.statusCode == 200) {
+            // Successfully refreshed token, retry original request
+            final opts = err.requestOptions;
+            final response = await apiClient.dio.fetch(opts);
+            return handler.resolve(response);
+          }
+        } catch (_) {
+          // Refresh failed (e.g. refresh token expired)
+          apiClient.onSessionExpired?.call();
+          return handler.next(err);
+        }
+      }
+    }
+    return handler.next(err);
+  }
+}
+
 class ApiClient {
   late final Dio _dio;
+  void Function()? onSessionExpired;
+  PersistCookieJar? cookieJar;
 
   ApiClient._internal() {
     _dio = Dio(
@@ -22,6 +87,7 @@ class ApiClient {
         },
       ),
     );
+    _dio.interceptors.add(AuthInterceptor(this));
   }
 
   static final ApiClient _instance = ApiClient._internal();
@@ -33,14 +99,12 @@ class ApiClient {
     if (!kIsWeb) {
       final Directory appDocDir = await getApplicationDocumentsDirectory();
       final String appDocPath = appDocDir.path;
-      final cookieJar = PersistCookieJar(
+      cookieJar = PersistCookieJar(
         ignoreExpires: true,
         storage: FileStorage("$appDocPath/.cookies/"),
       );
-      _dio.interceptors.add(CookieManager(cookieJar));
+      _dio.interceptors.add(CookieManager(cookieJar!));
     } else {
-      // For Web, cookies are managed by the browser. 
-      // But we need to enable `withCredentials` to send cross-origin cookies.
       _dio.options.extra['withCredentials'] = true;
     }
   }

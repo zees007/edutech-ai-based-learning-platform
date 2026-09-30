@@ -12,6 +12,8 @@ class ApiConstants {
   // Auth Endpoints
   static const String login = '/auth/login';
   static const String logout = '/auth/logout';
+  static const String logoutAll = '/auth/logout-all';
+  static const String refresh = '/auth/refresh';
   static const String me = '/auth/me';
 
   // User Endpoints
