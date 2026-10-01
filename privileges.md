@@ -4,9 +4,9 @@ This document maps all privileges across the system, explains their functionalit
 
 ## Role Definitions
 
-- **Free**: Base tier. Access to standard learning sessions, basic Youtube content, and limited quizzes.
-- **Pro**: Intermediate tier. Unlocks advanced modes, advanced Youtube search, academic search, and HTML/Markdown exports.
-- **Ultra**: Premium tier. Unlocks full text research, PDF exports, and unlimited socratic follow-ups.
+- **Free**: Base tier. Access to standard learning sessions, 1 YouTube video per step, 1 follow-up question per step, and full quizzes & gamification.
+- **Pro**: Intermediate tier. Unlocks Visual & Deep Dive learning modes, up to 3 YouTube videos per step, 5 follow-up questions, academic paper summaries, and Markdown/HTML note exports.
+- **Ultra**: Premium tier. Unlocks unlimited follow-up questions, up to 5 YouTube videos, full-text academic research, and premium PDF note exports.
 - **Admin**: Internal users and system administrators. Has unrestricted access to the entire system via the `ET_ALL` bypass.
 
 ---
@@ -60,16 +60,29 @@ This document maps all privileges across the system, explains their functionalit
 | `ET_START_LEARNING_SESSION` | **Start Learning Session**. Initiate a new topic session. | ✅ | ✅ | ✅ | ✅ |
 | `ET_INTERACT_LEARNING_SESSION` | **Interact Learning Session**. Stream agent responses and chat. | ✅ | ✅ | ✅ | ✅ |
 | `ET_VIEW_LEARNING_HISTORY` | **View Learning History**. Access past saved sessions. | ✅ | ✅ | ✅ | ✅ |
-| `ET_ACCESS_YOUTUBE_BASIC` | **Basic YouTube Search**. Standard video curation. | ✅ | ✅ | ✅ | ✅ |
-| `ET_ACCESS_ADVANCED_MODES` | **Advanced AI Modes**. Socratic deep-dive modes. | - | ✅ | ✅ | ✅ |
-| `ET_ACCESS_YOUTUBE_ADVANCED` | **Advanced YouTube Search**. Higher limit API queries. | - | ✅ | ✅ | ✅ |
+| `ET_ACCESS_ADVANCED_MODES` | **Advanced Learning Modes**. Unlock Visual and Deep Dive modes. | - | ✅ | ✅ | ✅ |
 | `ET_ACCESS_ACADEMIC_SEARCH` | **Academic Search**. Search ArXiv and Semantic Scholar. | - | ✅ | ✅ | ✅ |
-| `ET_EXPORT_MARKDOWN` | **Export to Markdown**. Download notes. | - | ✅ | ✅ | ✅ |
-| `ET_EXPORT_HTML` | **Export to HTML**. Download notes. | - | ✅ | ✅ | ✅ |
 | `ET_ACCESS_FULL_TEXT_RESEARCH` | **Full Text Research**. Extract full PDF text from academic papers. | - | - | ✅ | ✅ |
 | `ET_UNLIMITED_FOLLOW_UPS` | **Unlimited Follow Ups**. Bypass the chat message cap. | - | - | ✅ | ✅ |
-| `ET_EXPORT_PDF` | **Export to PDF**. Download styled PDF notes. | - | - | ✅ | ✅ |
 | `ET_MANAGE_KNOWLEDGE_BASE` | **Manage Knowledge Base**. Manually curate vector DB documents. | - | - | - | ✅ |
+
+
+## 5.1 Video Module
+
+| Code | Name & Explanation | Free | Pro | Ultra | Admin |
+| :--- | :--- | :---: | :---: | :---: | :---: |
+| `ET_FULL_ACCESS_VIDEO` | **Video Management**. Parent node for video integrations. | - | - | - | ✅ |
+| `ET_ACCESS_YOUTUBE_BASIC` | **Basic YouTube Search**. 1 curated video clip per learning step. | ✅ | ✅ | ✅ | ✅ |
+| `ET_ACCESS_YOUTUBE_ADVANCED` | **Advanced YouTube Search**. Up to 5 curated video clips per step (3 for Pro, 5 for Ultra). | - | ✅ | ✅ | ✅ |
+
+## 5.2 Export Module
+
+| Code | Name & Explanation | Free | Pro | Ultra | Admin |
+| :--- | :--- | :---: | :---: | :---: | :---: |
+| `ET_FULL_ACCESS_EXPORT` | **Export Management**. Parent node for document exports. | - | - | - | ✅ |
+| `ET_EXPORT_MARKDOWN` | **Export to Markdown**. Download notes. | - | ✅ | ✅ | ✅ |
+| `ET_EXPORT_HTML` | **Export to HTML**. Download notes. | - | ✅ | ✅ | ✅ |
+| `ET_EXPORT_PDF` | **Export to PDF**. Download styled PDF notes. | - | - | ✅ | ✅ |
 
 ## 6. Quiz Module
 

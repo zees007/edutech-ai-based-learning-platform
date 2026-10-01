@@ -557,15 +557,20 @@ class _PrivilegeTreeViewState extends State<_PrivilegeTreeView> {
     final newSelections = List<int>.from(widget.selectedIds);
     final bool isSelected = selected ?? false;
 
-    if (isSelected) {
-      if (!newSelections.contains(id)) newSelections.add(id);
-    } else {
-      newSelections.remove(id);
+    void toggleRecursive(int nodeId) {
+      if (isSelected) {
+        if (!newSelections.contains(nodeId)) newSelections.add(nodeId);
+      } else {
+        newSelections.remove(nodeId);
+      }
+      
+      final children = _tree[nodeId] ?? [];
+      for (final child in children) {
+        toggleRecursive(child.id);
+      }
     }
-    
-    // Optional: if checking parent, maybe don't auto-check children if we want them granular.
-    // For now, simple independent checkboxes in a tree structure.
-    
+
+    toggleRecursive(id);
     widget.onChanged(newSelections);
   }
 

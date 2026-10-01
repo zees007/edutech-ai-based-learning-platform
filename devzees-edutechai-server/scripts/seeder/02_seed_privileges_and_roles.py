@@ -56,12 +56,22 @@ TREE = {
                     "ET_VIEW_LEARNING_HISTORY": "View Learning History",
                     "ET_MANAGE_KNOWLEDGE_BASE": "Manage Knowledge Base",
                     "ET_ACCESS_ADVANCED_MODES": "Access Advanced Modes",
-                    "ET_ACCESS_YOUTUBE_BASIC": "Access Youtube Basic",
-                    "ET_ACCESS_YOUTUBE_ADVANCED": "Access Youtube Advanced",
                     "ET_ACCESS_ACADEMIC_SEARCH": "Access Academic Search",
                     "ET_ACCESS_FULL_TEXT_RESEARCH": "Access Full Text Research",
                     "ET_REGENERATE_STEP": "Regenerate Step",
-                    "ET_UNLIMITED_FOLLOW_UPS": "Unlimited Follow Ups",
+                    "ET_UNLIMITED_FOLLOW_UPS": "Unlimited Follow Ups"
+                }
+            },
+            "ET_FULL_ACCESS_VIDEO": {
+                "name": "Video Management",
+                "children": {
+                    "ET_ACCESS_YOUTUBE_BASIC": "Access Youtube Basic",
+                    "ET_ACCESS_YOUTUBE_ADVANCED": "Access Youtube Advanced"
+                }
+            },
+            "ET_FULL_ACCESS_EXPORT": {
+                "name": "Export Management",
+                "children": {
                     "ET_EXPORT_MARKDOWN": "Export Markdown",
                     "ET_EXPORT_HTML": "Export Html",
                     "ET_EXPORT_PDF": "Export Pdf"
