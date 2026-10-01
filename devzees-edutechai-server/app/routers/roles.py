@@ -22,7 +22,6 @@ from app.privileges_config import (
     ET_CREATE_ROLE,
     ET_EDIT_ROLE,
     ET_RETIRE_ROLE,
-    ET_SEARCH_ROLE,
     ET_VIEW_PRIVILEGE,
     ET_VIEW_ROLE,
 )
@@ -88,7 +87,7 @@ async def create_role(
 @router.get(
     "/roles/search",
     response_model=PaginatedRoleResponse,
-    dependencies=[Depends(require_privilege(ET_SEARCH_ROLE))],
+    dependencies=[Depends(require_privilege(ET_VIEW_ROLE))],
 )
 async def search_roles(
     page: Annotated[int, Query(ge=0, description="Page number (0-indexed)")] = 0,

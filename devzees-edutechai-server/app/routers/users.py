@@ -22,7 +22,6 @@ from app.privileges_config import (
     ET_ASSIGN_USER_ROLE,
     ET_EDIT_USER,
     ET_RETIRE_USER,
-    ET_SEARCH_USER,
     ET_VIEW_USER,
 )
 from models.user_schemas import (
@@ -52,7 +51,7 @@ async def create_user(
 @router.get(
     "/users/search",
     response_model=PaginatedUserResponse,
-    dependencies=[Depends(require_privilege(ET_SEARCH_USER))],
+    dependencies=[Depends(require_privilege(ET_VIEW_USER))],
 )
 async def search_users(
     page: Annotated[int, Query(ge=0, description="Page number (0-indexed)")] = 0,

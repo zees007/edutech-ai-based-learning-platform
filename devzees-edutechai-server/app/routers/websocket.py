@@ -26,7 +26,7 @@ import json
 import logging
 import time
 
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query
 
 from agents.orchestrator import OrchestratorAgent
 from agents.socratic_tutor import SocraticTutorAgent
@@ -71,19 +71,50 @@ manager = ConnectionManager()
 
 
 @router.websocket("/ws/learn/{session_id}")
-async def learning_websocket(websocket: WebSocket, session_id: str):
+async def learning_websocket(websocket: WebSocket, session_id: str, token: str | None = Query(None)):
     """
     WebSocket endpoint for real-time learning session streaming.
-
-    Flow:
-    1. Connect and validate session exists
-    2. Stream the learning plan
-    3. For each step, run agents and stream their outputs
-    4. Wait for client to advance to next step
     """
     await manager.connect(session_id, websocket)
 
+    if not token:
+        await websocket.send_json({
+            "event_type": "error",
+            "message": "Authentication token missing. Please pass ?token=YOUR_JWT_TOKEN",
+        })
+        await websocket.close()
+        return
+
     try:
+        from services.auth_service import AuthService
+        from services.database import get_db_session
+        from sqlalchemy import select
+        from models.db_models import User
+        from app.dependencies import has_privilege
+        from app.privileges_config import ET_INTERACT_LEARNING_SESSION
+        
+        try:
+            payload = AuthService.decode_access_token(token)
+            user_id = payload.get("sub")
+        except Exception:
+            await websocket.send_json({"event_type": "error", "message": "Invalid token."})
+            await websocket.close()
+            return
+            
+        async with get_db_session() as db:
+            res = await db.execute(select(User).where(User.id == user_id))
+            user = res.scalar_one_or_none()
+            
+        if not user or user.retired:
+            await websocket.send_json({"event_type": "error", "message": "User not found or retired."})
+            await websocket.close()
+            return
+            
+        if not has_privilege(user, ET_INTERACT_LEARNING_SESSION):
+            await websocket.send_json({"event_type": "error", "message": "Missing required privilege: ET_INTERACT_LEARNING_SESSION."})
+            await websocket.close()
+            return
+
         # Get or create session
         memory = _sessions.get(session_id)
         if memory is None:
@@ -96,6 +127,14 @@ async def learning_websocket(websocket: WebSocket, session_id: str):
             await websocket.send_json({
                 "event_type": "error",
                 "message": f"Session '{session_id}' not found. Create one first via POST /api/learn.",
+            })
+            await websocket.close()
+            return
+            
+        if memory.user_id != user.id and not has_privilege(user, "ET_ALL"):
+            await websocket.send_json({
+                "event_type": "error",
+                "message": "You do not own this session.",
             })
             await websocket.close()
             return
