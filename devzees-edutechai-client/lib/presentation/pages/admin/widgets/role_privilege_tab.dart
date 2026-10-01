@@ -5,6 +5,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../data/models/admin/privilege_response.dart';
 import '../../../../data/models/admin/role_create_request.dart';
+import '../../../../data/models/admin/role_edit_request.dart';
 import '../../../widgets/shimmer_loading.dart';
 import 'admin_data_table.dart';
 
@@ -20,6 +21,7 @@ class _RolePrivilegeTabState extends ConsumerState<RolePrivilegeTab> {
   final _roleNameController = TextEditingController();
   List<int> _selectedPrivilegeIds = [];
   bool _isCreating = false;
+  String? _editingRoleId;
 
   @override
   void initState() {
@@ -60,7 +62,7 @@ class _RolePrivilegeTabState extends ConsumerState<RolePrivilegeTab> {
           _buildRolesTable(rolesState),
           const SizedBox(height: 32),
           // Create Role Form
-          _buildCreateRoleForm(privilegesAsync),
+          _buildRoleForm(privilegesAsync),
 
           const SizedBox(height: 32),
 
@@ -103,8 +105,8 @@ class _RolePrivilegeTabState extends ConsumerState<RolePrivilegeTab> {
         ),
         const SizedBox(height: 12),
         AdminDataTable(
-          columns: const ['Role Name', 'Privileges', 'Assigned Privileges', 'Created'],
-          columnWidths: const [1.2, 2.8, 2.8, 1.0],
+          columns: const ['Role Name', 'Privileges', 'Assigned Privileges', 'Created', 'Actions'],
+          columnWidths: const [1.2, 2.5, 2.3, 1.0, 0.8],
           sortBy: rolesState.sortBy,
           isDesc: rolesState.isDesc,
           onSort: (colName) {
@@ -139,6 +141,22 @@ class _RolePrivilegeTabState extends ConsumerState<RolePrivilegeTab> {
                 _formatDate(r.createdAt),
                 style: AppTextStyles.caption.copyWith(color: AppColors.textMuted),
               ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.edit, color: AppColors.accentBlue, size: 18),
+                    onPressed: () {
+                      setState(() {
+                        _editingRoleId = r.id;
+                        _roleNameController.text = r.name;
+                        _selectedPrivilegeIds = r.privileges.map((p) => p.id as int).toList();
+                      });
+                    },
+                    tooltip: 'Edit Role',
+                  ),
+                ],
+              ),
             ];
           }).toList(),
         ),
@@ -146,7 +164,7 @@ class _RolePrivilegeTabState extends ConsumerState<RolePrivilegeTab> {
     );
   }
 
-  Widget _buildCreateRoleForm(AsyncValue<List<PrivilegeResponse>> privilegesAsync) {
+  Widget _buildRoleForm(AsyncValue<List<PrivilegeResponse>> privilegesAsync) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -157,9 +175,26 @@ class _RolePrivilegeTabState extends ConsumerState<RolePrivilegeTab> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Create New Role',
-            style: AppTextStyles.subtitle1.copyWith(color: AppColors.textPrimary),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                _editingRoleId == null ? 'Create New Role' : 'Edit Role',
+                style: AppTextStyles.subtitle1.copyWith(color: AppColors.textPrimary),
+              ),
+              if (_editingRoleId != null)
+                TextButton.icon(
+                  onPressed: () {
+                    setState(() {
+                      _editingRoleId = null;
+                      _roleNameController.clear();
+                      _selectedPrivilegeIds = [];
+                    });
+                  },
+                  icon: const Icon(Icons.close, size: 16, color: AppColors.textSecondary),
+                  label: Text('Cancel Edit', style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary)),
+                )
+            ],
           ),
           const SizedBox(height: 16),
           // Role Name
@@ -198,43 +233,28 @@ class _RolePrivilegeTabState extends ConsumerState<RolePrivilegeTab> {
           ),
           const SizedBox(height: 8),
           privilegesAsync.when(
-            data: (privileges) => Container(
-              constraints: const BoxConstraints(maxHeight: 200),
-              child: SingleChildScrollView(
-                child: Wrap(
-                  spacing: 6,
-                  runSpacing: 6,
-                  children: privileges.map((p) {
-                    final isSelected = _selectedPrivilegeIds.contains(p.id);
-                    return FilterChip(
-                      label: Text(p.code, style: const TextStyle(fontSize: 11)),
-                      selected: isSelected,
-                      onSelected: (selected) {
-                        setState(() {
-                          if (selected) {
-                            _selectedPrivilegeIds.add(p.id);
-                          } else {
-                            _selectedPrivilegeIds.remove(p.id);
-                          }
-                        });
-                      },
-                      selectedColor: AppColors.purple.withValues(alpha: 0.2),
-                      checkmarkColor: AppColors.purple,
-                      backgroundColor: AppColors.glassBase,
-                      side: BorderSide(
-                        color: isSelected
-                            ? AppColors.purple.withValues(alpha: 0.5)
-                            : AppColors.glassBorder,
-                      ),
-                      labelStyle: AppTextStyles.caption.copyWith(
-                        color: isSelected ? AppColors.textPrimary : AppColors.textSecondary,
-                      ),
-                      visualDensity: VisualDensity.compact,
-                    );
-                  }).toList(),
+            data: (privileges) {
+              return Container(
+                constraints: const BoxConstraints(maxHeight: 300),
+                decoration: BoxDecoration(
+                  color: AppColors.glassBase,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.glassBorder),
                 ),
-              ),
-            ),
+                padding: const EdgeInsets.all(12),
+                child: SingleChildScrollView(
+                  child: _PrivilegeTreeView(
+                    allPrivileges: privileges,
+                    selectedIds: _selectedPrivilegeIds,
+                    onChanged: (newSelections) {
+                      setState(() {
+                        _selectedPrivilegeIds = newSelections;
+                      });
+                    },
+                  ),
+                ),
+              );
+            },
             loading: () => const ShimmerLoading(child: ShimmerBox(height: 80)),
             error: (err, _) => Text(
               'Failed to load privileges',
@@ -246,7 +266,7 @@ class _RolePrivilegeTabState extends ConsumerState<RolePrivilegeTab> {
             width: double.infinity,
             height: 44,
             child: ElevatedButton(
-              onPressed: _isCreating ? null : _createRole,
+              onPressed: _isCreating ? null : _submitRole,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.purple,
                 shape: RoundedRectangleBorder(
@@ -262,7 +282,7 @@ class _RolePrivilegeTabState extends ConsumerState<RolePrivilegeTab> {
                         color: Colors.white,
                       ),
                     )
-                  : Text('Create Role', style: AppTextStyles.button),
+                  : Text(_editingRoleId == null ? 'Create Role' : 'Update Role', style: AppTextStyles.button),
             ),
           ),
         ],
@@ -303,7 +323,7 @@ class _RolePrivilegeTabState extends ConsumerState<RolePrivilegeTab> {
     );
   }
 
-  Future<void> _createRole() async {
+  Future<void> _submitRole() async {
     final name = _roleNameController.text.trim();
     if (name.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -319,17 +339,27 @@ class _RolePrivilegeTabState extends ConsumerState<RolePrivilegeTab> {
 
     setState(() => _isCreating = true);
     try {
-      final request = RoleCreateRequest(
-        name: name,
-        privilegeIds: _selectedPrivilegeIds,
-      );
-      await ref.read(adminRolesProvider.notifier).createRole(request);
+      if (_editingRoleId == null) {
+        final request = RoleCreateRequest(
+          name: name,
+          privilegeIds: _selectedPrivilegeIds,
+        );
+        await ref.read(adminRolesProvider.notifier).createRole(request);
+      } else {
+        final request = RoleEditRequest(
+          name: name,
+          privilegeIds: _selectedPrivilegeIds,
+        );
+        await ref.read(adminRolesProvider.notifier).editRole(_editingRoleId!, request);
+      }
+      
+      _editingRoleId = null;
       _roleNameController.clear();
       _selectedPrivilegeIds = [];
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Role "$name" created successfully!'),
+            content: Text('Role "$name" saved successfully!'),
             backgroundColor: AppColors.accentGreen,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -475,6 +505,122 @@ class _PrivilegeExpandableCellState extends State<_PrivilegeExpandableCell> {
             ),
           ),
       ],
+    );
+  }
+}
+
+class _PrivilegeTreeView extends StatefulWidget {
+  final List<PrivilegeResponse> allPrivileges;
+  final List<int> selectedIds;
+  final ValueChanged<List<int>> onChanged;
+
+  const _PrivilegeTreeView({
+    Key? key,
+    required this.allPrivileges,
+    required this.selectedIds,
+    required this.onChanged,
+  }) : super(key: key);
+
+  @override
+  State<_PrivilegeTreeView> createState() => _PrivilegeTreeViewState();
+}
+
+class _PrivilegeTreeViewState extends State<_PrivilegeTreeView> {
+  // Map of parentId -> list of children
+  late Map<int?, List<PrivilegeResponse>> _tree;
+
+  @override
+  void initState() {
+    super.initState();
+    _buildTree();
+  }
+
+  @override
+  void didUpdateWidget(covariant _PrivilegeTreeView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.allPrivileges != widget.allPrivileges) {
+      _buildTree();
+    }
+  }
+
+  void _buildTree() {
+    _tree = {};
+    for (final p in widget.allPrivileges) {
+      if (!_tree.containsKey(p.parentId)) {
+        _tree[p.parentId] = [];
+      }
+      _tree[p.parentId]!.add(p);
+    }
+  }
+
+  void _toggleSelection(int id, bool? selected) {
+    final newSelections = List<int>.from(widget.selectedIds);
+    final bool isSelected = selected ?? false;
+
+    if (isSelected) {
+      if (!newSelections.contains(id)) newSelections.add(id);
+    } else {
+      newSelections.remove(id);
+    }
+    
+    // Optional: if checking parent, maybe don't auto-check children if we want them granular.
+    // For now, simple independent checkboxes in a tree structure.
+    
+    widget.onChanged(newSelections);
+  }
+
+  Widget _buildNode(PrivilegeResponse node, int depth) {
+    final children = _tree[node.id] ?? [];
+    final isSelected = widget.selectedIds.contains(node.id);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: EdgeInsets.only(left: depth * 24.0, top: 4, bottom: 4),
+          child: Row(
+            children: [
+              SizedBox(
+                width: 24,
+                height: 24,
+                child: Checkbox(
+                  value: isSelected,
+                  onChanged: (val) => _toggleSelection(node.id, val),
+                  activeColor: AppColors.purple,
+                  side: const BorderSide(color: AppColors.glassBorder),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                node.code,
+                style: AppTextStyles.body2.copyWith(
+                  color: isSelected ? AppColors.textPrimary : AppColors.textSecondary,
+                  fontWeight: children.isNotEmpty ? FontWeight.w600 : FontWeight.normal,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  node.name,
+                  style: AppTextStyles.caption.copyWith(color: AppColors.textMuted),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ),
+        if (children.isNotEmpty)
+          ...children.map((c) => _buildNode(c, depth + 1)),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final rootNodes = _tree[null] ?? [];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: rootNodes.map((node) => _buildNode(node, 0)).toList(),
     );
   }
 }

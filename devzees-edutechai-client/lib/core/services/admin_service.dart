@@ -3,6 +3,7 @@ import '../../data/models/admin/paginated_user_response.dart';
 import '../../data/models/admin/paginated_role_response.dart';
 import '../../data/models/admin/privilege_response.dart';
 import '../../data/models/admin/role_create_request.dart';
+import '../../data/models/admin/role_edit_request.dart';
 import '../../data/models/admin/role_response.dart';
 import '../../data/models/admin/subscription_update_request.dart';
 import '../../data/models/admin/user_response.dart';
@@ -135,6 +136,19 @@ class AdminService {
       return RoleResponse.fromJson(response.data);
     } on DioException catch (e) {
       throw Exception(_parseError(e, 'Failed to create role'));
+    }
+  }
+
+  /// Edit an existing role with updated privilege IDs.
+  Future<RoleResponse> editRole(String roleId, RoleEditRequest request) async {
+    try {
+      final response = await _dio.put(
+        ApiConstants.rolesEdit(roleId),
+        data: request.toJson(),
+      );
+      return RoleResponse.fromJson(response.data);
+    } on DioException catch (e) {
+      throw Exception(_parseError(e, 'Failed to edit role'));
     }
   }
 

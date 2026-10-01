@@ -4,6 +4,7 @@ import '../../data/models/admin/paginated_user_response.dart';
 import '../../data/models/admin/paginated_role_response.dart';
 import '../../data/models/admin/privilege_response.dart';
 import '../../data/models/admin/role_create_request.dart';
+import '../../data/models/admin/role_edit_request.dart';
 import '../../data/models/admin/subscription_update_request.dart';
 import '../services/admin_service.dart';
 
@@ -220,6 +221,16 @@ class AdminRolesNotifier extends Notifier<AdminRolesState> {
     try {
       final service = ref.read(adminServiceProvider);
       await service.createRole(request);
+      await loadRoles(); // Refresh list
+    } catch (e) {
+      throw Exception(e.toString().replaceAll('Exception: ', ''));
+    }
+  }
+
+  Future<void> editRole(String roleId, RoleEditRequest request) async {
+    try {
+      final service = ref.read(adminServiceProvider);
+      await service.editRole(roleId, request);
       await loadRoles(); // Refresh list
     } catch (e) {
       throw Exception(e.toString().replaceAll('Exception: ', ''));
