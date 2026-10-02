@@ -43,6 +43,7 @@ class ApiConstants {
   // Admin — Role Management
   static const String rolesSearch = '/roles/search';
   static const String rolesCreate = '/roles/create';
+  static String rolesEdit(String roleId) => '/roles/$roleId/edit';
   static const String privileges = '/privileges';
 
   // Admin — Subscription Management

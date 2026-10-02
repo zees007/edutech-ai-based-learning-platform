@@ -66,7 +66,7 @@ All content adapts dynamically based on the selected **Learning Mode** and **Edu
 | 📝 **Dynamic Quizzes** | Generates 2–3 contextual comprehension questions per step with instant grading |
 | 🏆 **Gamification** | XP rewards, streak tracking, and a 10-level progression system |
 | 💎 **Tiered Subscriptions (RBAC)** | Free, Pro, and Ultra tiers with calibrated limits for videos, follow-ups, and advanced tools |
-| 📥 **Rich Session Exports** | Download complete learning journeys in Markdown (`.md`) or professionally styled PDF (`.pdf`) |
+| 📥 **Rich Session Exports** | Download complete learning journeys in Markdown (`.md`), HTML (`.html`), or professionally styled PDF (`.pdf`) |
 | 🎨 **Three Learning Modes** | Visual, Deep Dive, and Bite-Sized — each adapts all agent outputs |
 | 🎓 **Five Education Levels** | Middle School through Graduate — language and complexity calibrate automatically |
 | 💬 **Follow-up Chat** | Ask the Socratic Tutor follow-up questions at any step |
@@ -408,16 +408,15 @@ EduTechAI integrates a comprehensive **Role-Based Access Control (RBAC)** archit
 
 | Feature / Capability | 🥉 Free Tier | 🥈 Pro Tier | 🥇 Ultra Tier |
 | :--- | :--- | :--- | :--- |
-| **Socratic Follow-Up Chat** | Max **1 question** / step (`FREE_FOLLOWUP_LIMIT=1`) | Max **5 questions** / step (`PRO_FOLLOWUP_LIMIT=5`) | **Unlimited** questions / step (`ET_UNLIMITED_FOLLOW_UPS`) |
-| **YouTube Video Curation** | Max **1 clip** / step (`FREE_YOUTUBE_LIMIT=1`) | Max **3 clips** / step (`PRO_YOUTUBE_LIMIT=3`) | Max **5 clips** / step (`ULTRA_YOUTUBE_LIMIT=5`) |
+| **Monthly Learning Sessions** | 10 sessions / month | **Unlimited** sessions | **Unlimited** sessions |
+| **Socratic Tutor Questions** | 1 follow-up / step | 5 follow-ups / step | **Unlimited** follow-ups |
+| **YouTube Video Curation** | 1 best clip / step | Up to 3 clips / step | Up to 5 clips / step |
 | **Learning Modes** | Standard / Bite-Sized | **All Modes** (Visual, Deep Dive, Bite-Sized) | **All Modes** (Visual, Deep Dive, Bite-Sized) |
-| **Academic Research** | Omitted / Baseline check | **Preprints & AI TL;DR** (OpenAlex, arXiv, Semantic Scholar) | **Full-Text Research & Insights** |
-| **Step Content Regeneration** | ❌ Disabled | ✅ Enabled (`ET_REGENERATE_STEP`) | ✅ Enabled (`ET_REGENERATE_STEP`) |
-| **Session Export** | ❌ None | 📝 **Markdown (`.md`)** | 📝 **Markdown (`.md`)** + 📄 **PDF (`.pdf`)** |
-| **Interactive Learning Sessions** | Max **10 sessions** / month | **Unlimited** AI Sessions | **Unlimited** AI Sessions |
-| **Session History & Recovery** | Full access to past sessions | Full access to past sessions | Full access to past sessions |
-| **Milestone Quizzes & XP** | ✅ Full Access | ✅ Full Access | ✅ Full Access |
-| **Subscription Management** | View & Upgrade | View, Upgrade, Downgrade | View, Downgrade |
+| **Academic Research** | None | **Research Summaries** (AI TL;DRs) | **Full-Text Research** (Deep Insights) |
+| **Session Notes Export** | None | 📝 **Markdown & HTML** | 📝 **Markdown, HTML & PDF** |
+| **Step Regeneration** | ❌ Disabled | ✅ Enabled (Try new modes instantly) | ✅ Enabled (Try new modes instantly) |
+| **Quizzes & Gamification** | ✅ Full Access | ✅ Full Access | ✅ Full Access |
+| **Session History & Recovery**| ✅ Full Access | ✅ Full Access | ✅ Full Access |
 
 > 🛡️ **SuperAdmin Role:** An internal `Admin` role exists with full system bypass (`ET_ALL`), granting access to all endpoints, user management, and role/privilege administration.
 
@@ -435,6 +434,10 @@ Students on **Pro** and **Ultra** plans can export their complete learning sessi
   - 📊 **Interactive Diagrams:** Preserves raw `mermaid` code blocks that render natively in GitHub and Obsidian.
   - 📝 **Quiz Results & Feedback:** Submitted student answers, correct answers, ✅/❌ indicators, and rationale.
   - 🏆 **Session Summary Footer:** Overall quiz accuracy score and gamification achievements.
+
+### 🌐 HTML Export (`.html`) — *Pro & Ultra*
+- **Best for:** Viewing in any web browser, sharing easily, and embedding.
+- **Styling:** Fully rendered clean UI that matches the platform's look and feel, including rendered diagrams.
 
 ### 📄 PDF Export (`.pdf`) — *Ultra Exclusive*
 - **Best for:** Printable study guides, offline reading, classroom distribution, and archival.
