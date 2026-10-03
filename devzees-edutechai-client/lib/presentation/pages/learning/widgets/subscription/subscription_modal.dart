@@ -34,12 +34,7 @@ class SubscriptionModal extends ConsumerWidget {
         Responsive.isMobile(context) ||
         MediaQuery.of(context).size.width < 1100;
 
-    // Determine initial index for the mobile deck based on current plan
-    int initialDeckIndex = 0;
-    if (currentTier == 'pro') initialDeckIndex = 1;
-    if (currentTier == 'ultra') initialDeckIndex = 2;
-
-    final List<Widget> rawCards = [
+    final List<Widget> allCards = [
       Padding(
         padding: EdgeInsets.only(
           top: (!isMobile && currentTier != 'free') ? 32.0 : 0.0,
@@ -54,9 +49,9 @@ class SubscriptionModal extends ConsumerWidget {
             '10 AI Sessions / month',
             '1 Follow-Up Question / step',
             '1 YouTube Video / step',
-            'Bite-Sized Learning Mode',
+            'Bite-Sized & Visual Modes',
             'Milestone Quizzes & XP',
-            'All 5 Education Levels',
+            'Academic Paper Search',
             'Session History & Recovery',
           ],
           buttonText: currentTier == 'free'
@@ -79,15 +74,14 @@ class SubscriptionModal extends ConsumerWidget {
           price: '\$19',
           billingCycle: 'mo',
           description:
-              'Full agent squad, visual modes, research preprints & Markdown export.',
+              'Full agent squad, deep dive modes, & Markdown export.',
           features: const [
             'Unlimited AI Sessions',
             '5 Follow-Up Questions / step',
-            '3 YouTube Videos / step (Clips)',
-            'Visual & Deep-Dive Modes',
-            'Academic Preprints & AI TL;DR',
+            '3 YouTube Videos / step',
+            'Unlock Deep Dive Mode',
             'Step Content Regeneration',
-            'Markdown (.md) Export',
+            'Markdown & HTML Export',
             '1.5x XP Multiplier',
           ],
           buttonText: currentTier == 'free'
@@ -116,10 +110,9 @@ class SubscriptionModal extends ConsumerWidget {
             'Unlimited Follow-Up Chat',
             '5 YouTube Videos / step',
             'Full-Text Academic Research',
-            'Markdown + PDF (.pdf) Export',
+            'PDF (.pdf) Export',
             'Priority Multi-Agent Exec',
             '2x XP Boost & Fast Leveling',
-            '24/7 Priority Support',
           ],
           buttonText: currentTier == 'ultra'
               ? 'Current Plan'
@@ -133,6 +126,20 @@ class SubscriptionModal extends ConsumerWidget {
         ),
       ),
     ];
+
+    List<Widget> rawCards;
+    int initialDeckIndex = 0;
+
+    if (currentTier == 'free') {
+      rawCards = allCards;
+      initialDeckIndex = 0;
+    } else if (currentTier == 'pro') {
+      rawCards = [allCards[1], allCards[2]];
+      initialDeckIndex = 0;
+    } else {
+      rawCards = [allCards[2]];
+      initialDeckIndex = 0;
+    }
 
     return BackdropFilter(
       filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
@@ -217,13 +224,13 @@ class SubscriptionModal extends ConsumerWidget {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              rawCards[0],
-                              const SizedBox(width: 24),
-                              rawCards[1],
-                              const SizedBox(width: 24),
-                              rawCards[2],
-                            ],
+                            children: rawCards.asMap().entries.expand((e) {
+                              return [
+                                e.value,
+                                if (e.key != rawCards.length - 1)
+                                  const SizedBox(width: 24),
+                              ];
+                            }).toList(),
                           ),
                         ),
                       ),

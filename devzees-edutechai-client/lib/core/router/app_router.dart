@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:devzees_edutechai_client/core/providers/auth_provider.dart';
+import 'package:devzees_edutechai_client/core/providers/permission_provider.dart';
 import 'package:devzees_edutechai_client/presentation/pages/home/home_page.dart';
 import 'package:devzees_edutechai_client/presentation/pages/auth/auth_page.dart';
 import 'package:devzees_edutechai_client/presentation/pages/learning/learning_page.dart';
@@ -26,11 +27,13 @@ class AppRouterNotifier extends ChangeNotifier {
   /// - `initial`: preserves exact current route without premature redirect
   /// - `authenticated`: redirects away from `/auth` to `/learning`
   /// - `unauthenticated`: guards protected routes (`/learning`, `/admin`) and redirects to `/auth`
+  /// - `/admin`: additionally requires admin privileges
   String? redirect(BuildContext context, GoRouterState state) {
     final authState = _ref.read(authProvider);
     final location = state.matchedLocation;
     final isAuthRoute = location == '/auth';
     final isHomeRoute = location == '/';
+    final isAdminRoute = location == '/admin';
 
     // 1. Session verification in-flight (cold boot / F5 refresh)
     // Preserves the user's exact requested URL.
@@ -45,6 +48,15 @@ class AppRouterNotifier extends ChangeNotifier {
       if (isAuthRoute) {
         return '/learning';
       }
+
+      // 2b. Admin route privilege guard — redirect non-admins to /learning
+      if (isAdminRoute) {
+        final perms = _ref.read(permissionProvider);
+        if (!perms.isAdmin) {
+          return '/learning';
+        }
+      }
+
       return null;
     }
 

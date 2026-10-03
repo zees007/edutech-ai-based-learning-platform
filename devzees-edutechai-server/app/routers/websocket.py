@@ -77,10 +77,11 @@ async def learning_websocket(websocket: WebSocket, session_id: str, token: str |
     """
     await manager.connect(session_id, websocket)
 
-    if not token:
+    actual_token = token or websocket.cookies.get("access_token")
+    if not actual_token:
         await websocket.send_json({
             "event_type": "error",
-            "message": "Authentication token missing. Please pass ?token=YOUR_JWT_TOKEN",
+            "message": "Authentication token missing. Please pass ?token=YOUR_JWT_TOKEN or set access_token cookie.",
         })
         await websocket.close()
         return
@@ -94,7 +95,7 @@ async def learning_websocket(websocket: WebSocket, session_id: str, token: str |
         from app.privileges_config import ET_INTERACT_LEARNING_SESSION
         
         try:
-            payload = AuthService.decode_access_token(token)
+            payload = AuthService.decode_access_token(actual_token)
             user_id = payload.get("sub")
         except Exception:
             await websocket.send_json({"event_type": "error", "message": "Invalid token."})

@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../core/providers/active_session_provider.dart';
+import '../../../../../core/providers/permission_provider.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/text_styles.dart';
 import '../../../../widgets/app_gradient_spinner.dart';
@@ -77,6 +78,8 @@ class _SplitLearningWorkspaceState
 
     final currentStep = widget.session.steps[widget.currentStepIndex];
 
+    final canRegen = ref.read(permissionProvider).canRegenerateStep;
+
     _fullscreenPanel = panel;
     _fullscreenOverlay = OverlayEntry(
       builder: (context) => _FullscreenPanelOverlay(
@@ -97,11 +100,13 @@ class _SplitLearningWorkspaceState
           setState(() {});
           await _handleNextStep(currentStep);
         },
-        onRegenerateStep: () async {
-          _removeFullscreenOverlay();
-          setState(() {});
-          await _handleRegenerateStep(currentStep);
-        },
+        onRegenerateStep: canRegen
+            ? () async {
+                _removeFullscreenOverlay();
+                setState(() {});
+                await _handleRegenerateStep(currentStep);
+              }
+            : null,
       ),
     );
 
@@ -114,6 +119,7 @@ class _SplitLearningWorkspaceState
     final currentStep = widget.session.steps[widget.currentStepIndex];
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 800;
+    final canRegen = ref.watch(permissionProvider).canRegenerateStep;
 
     if (isMobile) {
       return _MobileTabbedWorkspace(
@@ -124,14 +130,14 @@ class _SplitLearningWorkspaceState
         totalSteps: widget.totalSteps,
         maxUnlockedIndex: widget.maxUnlockedIndex,
         onStepChange: widget.onStepChange,
-        onRegenerateStep: () => _handleRegenerateStep(currentStep),
+        onRegenerateStep: canRegen ? () => _handleRegenerateStep(currentStep) : null,
       );
     }
 
-    return _buildDesktopSplitLayout(currentStep);
+    return _buildDesktopSplitLayout(currentStep, canRegen: canRegen);
   }
 
-  Widget _buildDesktopSplitLayout(dynamic currentStep) {
+  Widget _buildDesktopSplitLayout(dynamic currentStep, {bool canRegen = true}) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final totalWidth = constraints.maxWidth;
@@ -149,6 +155,7 @@ class _SplitLearningWorkspaceState
               height: totalHeight,
               isLeft: true,
               currentStep: currentStep,
+              canRegen: canRegen,
             ),
             _buildDraggableDivider(totalWidth),
             _buildPanel(
@@ -156,6 +163,7 @@ class _SplitLearningWorkspaceState
               height: totalHeight,
               isLeft: false,
               currentStep: currentStep,
+              canRegen: canRegen,
             ),
           ],
         );
@@ -180,6 +188,7 @@ class _SplitLearningWorkspaceState
     required double height,
     required bool isLeft,
     required dynamic currentStep,
+    required bool canRegen,
   }) {
     final panelType =
         isLeft ? _MaximizedPanel.left : _MaximizedPanel.right;
@@ -201,7 +210,7 @@ class _SplitLearningWorkspaceState
                   isQuizGated: widget.isQuizGated,
                   onStepChange: widget.onStepChange,
                   onNextStep: () => _handleNextStep(currentStep),
-                  onRegenerateStep: () => _handleRegenerateStep(currentStep),
+                  onRegenerateStep: canRegen ? () => _handleRegenerateStep(currentStep) : null,
                   onToggleFullscreen: () => _toggleFullscreen(panelType),
                 )
               : _ResourcesPanelHeader(
@@ -346,7 +355,7 @@ class _FullscreenPanelOverlay extends ConsumerWidget {
   final ValueChanged<int> onStepChange;
   final VoidCallback onClose;
   final Future<void> Function() onNextStep;
-  final Future<void> Function() onRegenerateStep;
+  final Future<void> Function()? onRegenerateStep;
 
   const _FullscreenPanelOverlay({
     required this.panel,

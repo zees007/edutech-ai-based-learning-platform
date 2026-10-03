@@ -2,7 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../../core/providers/user_provider.dart';
+import '../../../../../core/providers/permission_provider.dart';
 import '../../../../../core/services/export_helper.dart';
 import '../../../../../core/services/export_service.dart';
 import '../../../../../core/theme/app_colors.dart';
@@ -286,12 +286,10 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
 
   @override
   Widget build(BuildContext context) {
-    final userProfile = ref.watch(userProvider).asData?.value;
-    final privs = userProfile?.privilegeCodes ?? [];
-    final bool isSuperAdmin = privs.contains('ET_ALL');
-    final bool canExportMd = isSuperAdmin || privs.contains('ET_EXPORT_MARKDOWN');
-    final bool canExportHtml = isSuperAdmin || privs.contains('ET_EXPORT_HTML');
-    final bool canExportPdf = isSuperAdmin || privs.contains('ET_EXPORT_PDF');
+    final perms = ref.watch(permissionProvider);
+    final bool canExportMd = perms.canExportMarkdown;
+    final bool canExportHtml = perms.canExportHtml;
+    final bool canExportPdf = perms.canExportPdf;
 
     final size = MediaQuery.of(context).size;
     final isMobile = size.width < 650;

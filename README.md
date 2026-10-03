@@ -415,7 +415,7 @@ EduTechAI integrates a comprehensive **Role-Based Access Control (RBAC)** archit
 | **Academic Research** | **Paper Summaries** (AI TL;DRs) | **Paper Summaries** (AI TL;DRs) | **Full-Text Research** (Deep Insights) |
 | **Session Notes Export** | None | 📝 **Markdown & HTML** | 📝 **Markdown, HTML & PDF** |
 | **Step Regeneration** | ❌ Disabled | ✅ Enabled (Try new modes instantly) | ✅ Enabled (Try new modes instantly) |
-| **Quizzes & Gamification** | ✅ Full Access | ✅ Full Access | ✅ Full Access |
+| **Quizzes & Gamification** | ✅ Base XP | 🚀 **1.5x XP Boost** | 🚀 **2x XP Boost** |
 | **Session History & Recovery**| ✅ Full Access | ✅ Full Access | ✅ Full Access |
 
 > 🛡️ **SuperAdmin Role:** An internal `Admin` role exists with full system bypass (`ET_ALL`), granting access to all endpoints, user management, and role/privilege administration.

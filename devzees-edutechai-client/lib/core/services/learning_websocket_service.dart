@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import '../constants/api_constants.dart';
+import 'api_client.dart';
 
 class LearningWebSocketService {
   WebSocketChannel? _channel;
@@ -13,14 +14,29 @@ class LearningWebSocketService {
 
   bool get isConnected => _channel != null;
 
-  void connect(String sessionId) {
+  Future<void> connect(String sessionId) async {
     if (_channel != null) {
       disconnect();
     }
     
+    String? token;
+    final cookies = await ApiClient.instance.cookieJar?.loadForRequest(Uri.parse(ApiConstants.baseUrl));
+    if (cookies != null) {
+      for (var cookie in cookies) {
+        if (cookie.name == 'access_token') {
+          token = cookie.value;
+          break;
+        }
+      }
+    }
+
     // Replace http/https with ws/wss and remove the API prefix for WebSockets
     String wsBaseUrl = ApiConstants.baseUrl.replaceAll('http', 'ws').replaceAll('/api/v1', '');
-    final uri = Uri.parse('$wsBaseUrl/ws/learn/$sessionId');
+    String url = '$wsBaseUrl/ws/learn/$sessionId';
+    if (token != null) {
+      url += '?token=$token';
+    }
+    final uri = Uri.parse(url);
     
     _channel = WebSocketChannel.connect(uri);
     

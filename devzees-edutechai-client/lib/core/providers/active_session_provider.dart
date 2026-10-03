@@ -86,6 +86,8 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       if (state.activeStepIndex < session.steps.length) {
         final step = session.steps[state.activeStepIndex];
         if (step.tutorExplanation == null) {
+          if (_isStepGenerationActive) return;
+
           _currentTrackingStepIndex = state.activeStepIndex;
           if (!_stepTotalStopwatch.isRunning) {
             _stepTotalStopwatch.reset();
@@ -471,6 +473,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     if (session == null || stepIndex < 0 || stepIndex >= session.steps.length) return;
 
     _isRegenerating = true;
+    _isStepGenerationActive = true;
 
     // 1. Trigger backend API
     try {
