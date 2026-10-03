@@ -9,6 +9,8 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_math_fork/flutter_math.dart';
 import '../../../../../../core/theme/app_colors.dart';
 import '../../../../../../core/providers/active_session_provider.dart';
+import '../../../../../../core/providers/permission_provider.dart';
+import '../subscription/subscription_modal.dart';
 import 'mermaid_web_view.dart';
 import '../../../../widgets/animated_tutor_icon.dart';
 
@@ -343,7 +345,17 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
     });
   }
 
+  int get _followUpCount {
+    return _messages.where((m) => m.sender == _Sender.user).length;
+  }
+
   void _sendMessage([String? prefilledText]) async {
+    final perms = ref.read(permissionProvider);
+    if (perms.isFollowUpLimitReached(_followUpCount)) {
+      showDialog(context: context, builder: (_) => const SubscriptionModal());
+      return;
+    }
+
     final text = prefilledText ?? _controller.text.trim();
     if (text.isEmpty) return;
 
@@ -914,6 +926,8 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
     final questions = _suggestedQuestions;
     if (questions.isEmpty) return const SizedBox.shrink();
 
+    final limitReached = ref.watch(permissionProvider).isFollowUpLimitReached(_followUpCount);
+
     return Padding(
       padding: const EdgeInsets.only(top: 8, bottom: 8),
       child: Column(
@@ -959,7 +973,7 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
               child: _SuggestedQuestionChip(
                 question: q,
                 onTap: () => _sendMessage(q),
-                disabled: _isTyping,
+                disabled: _isTyping || limitReached,
               ),
             ),
           ),
@@ -971,6 +985,11 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
   // ─── Input Bar ─────────────────────────────────────────────────
 
   Widget _buildInputBar() {
+    final perms = ref.watch(permissionProvider);
+    final limitReached = perms.isFollowUpLimitReached(_followUpCount);
+    final limit = perms.followUpLimitPerStep;
+    final hint = limitReached ? 'Follow-up limit ($limit) reached. Upgrade for more.' : 'Ask Socratic Tutor a follow-up question...';
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
       child: AnimatedContainer(
@@ -1025,8 +1044,12 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
               child: TextField(
                 controller: _controller,
                 focusNode: _inputFocusNode,
+                readOnly: limitReached,
+                onTap: limitReached ? () {
+                  showDialog(context: context, builder: (_) => const SubscriptionModal());
+                } : null,
                 style: GoogleFonts.inter(
-                  color: Colors.white,
+                  color: limitReached ? Colors.white.withValues(alpha: 0.5) : Colors.white,
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
                 ),
@@ -1034,9 +1057,9 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
                 maxLines: 1,
                 textInputAction: TextInputAction.send,
                 decoration: InputDecoration(
-                  hintText: 'Ask Socratic Tutor a follow-up question...',
+                  hintText: hint,
                   hintStyle: GoogleFonts.inter(
-                    color: Colors.white.withValues(alpha: 0.38),
+                    color: limitReached ? AppColors.accentAmber.withValues(alpha: 0.8) : Colors.white.withValues(alpha: 0.38),
                     fontSize: 13.5,
                   ),
                   border: InputBorder.none,

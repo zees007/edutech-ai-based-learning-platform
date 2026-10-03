@@ -1,10 +1,11 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../../core/providers/permission_provider.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/text_styles.dart';
 import '../../../../widgets/gradient_button.dart';
-
-class JourneyPromptCard extends StatefulWidget {
+class JourneyPromptCard extends ConsumerStatefulWidget {
   final void Function(String topic, String mode, String level) onStartJourney;
 
   const JourneyPromptCard({
@@ -13,16 +14,17 @@ class JourneyPromptCard extends StatefulWidget {
   });
 
   @override
-  State<JourneyPromptCard> createState() => _JourneyPromptCardState();
+  ConsumerState<JourneyPromptCard> createState() => _JourneyPromptCardState();
 }
 
-class _JourneyPromptCardState extends State<JourneyPromptCard> {
+class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
   bool _isHovered = false;
   String _selectedMode = 'Visual 🎬';
   String _selectedLevel = 'Middle School 🏫';
   final TextEditingController _promptController = TextEditingController();
 
-  final List<String> _modes = ['Visual 🎬', 'Deep Dive 🔬', 'Bite-Sized ⚡'];
+  static const String _deepDiveMode = 'Deep Dive 🔬';
+  final List<String> _modes = ['Visual 🎬', _deepDiveMode, 'Bite-Sized ⚡'];
   final List<String> _levels = [
     'Middle School 🏫',
     'High School 🎒',
@@ -155,6 +157,9 @@ class _JourneyPromptCardState extends State<JourneyPromptCard> {
   }
 
   Widget _buildDropdownRow() {
+    final perms = ref.watch(permissionProvider);
+    final Set<String> lockedModes = perms.canAccessDeepDiveMode ? {} : {_deepDiveMode};
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final isMobile = constraints.maxWidth < 600;
@@ -167,6 +172,7 @@ class _JourneyPromptCardState extends State<JourneyPromptCard> {
                 value: _selectedMode,
                 items: _modes,
                 onChanged: (val) => setState(() => _selectedMode = val!),
+                lockedItems: lockedModes,
               ),
               const SizedBox(height: 12),
               _buildCustomDropdown(
@@ -187,6 +193,7 @@ class _JourneyPromptCardState extends State<JourneyPromptCard> {
                 value: _selectedMode,
                 items: _modes,
                 onChanged: (val) => setState(() => _selectedMode = val!),
+                lockedItems: lockedModes,
               ),
             ),
             const SizedBox(width: 16),
@@ -209,6 +216,7 @@ class _JourneyPromptCardState extends State<JourneyPromptCard> {
     required String value,
     required List<String> items,
     required ValueChanged<String?> onChanged,
+    Set<String> lockedItems = const {},
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -243,12 +251,64 @@ class _JourneyPromptCardState extends State<JourneyPromptCard> {
                     icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.textSecondary),
                     style: AppTextStyles.bodyPrimary,
                     items: items.map((String item) {
+                      final isLocked = lockedItems.contains(item);
                       return DropdownMenuItem<String>(
                         value: item,
-                        child: Text(item),
+                        enabled: !isLocked,
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                item,
+                                style: isLocked
+                                    ? AppTextStyles.bodyPrimary.copyWith(color: AppColors.textMuted)
+                                    : null,
+                              ),
+                            ),
+                            if (isLocked) ...[
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: AppColors.accentAmber.withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(color: AppColors.accentAmber.withValues(alpha: 0.3)),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(Icons.lock_rounded, size: 10, color: AppColors.accentAmber),
+                                    const SizedBox(width: 3),
+                                    Text(
+                                      'PRO',
+                                      style: AppTextStyles.badge.copyWith(
+                                        fontSize: 9,
+                                        color: AppColors.accentAmber,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
                       );
                     }).toList(),
-                    onChanged: onChanged,
+                    onChanged: (val) {
+                      if (val != null && lockedItems.contains(val)) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: const Text('🔬 Deep Dive mode unlocks with Pro plan — go deeper into any topic!'),
+                            backgroundColor: AppColors.surfaceDark,
+                            behavior: SnackBarBehavior.floating,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                        );
+                        return;
+                      }
+                      onChanged(val);
+                    },
                   ),
                 ),
               );

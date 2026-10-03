@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../../core/providers/auth_provider.dart';
+import '../../../../../core/providers/permission_provider.dart';
 import '../../../../../core/providers/user_provider.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/text_styles.dart';
@@ -28,24 +29,15 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
     final size = renderBox.size;
     final offset = renderBox.localToGlobal(Offset.zero);
 
-    final userAsync = ref.read(userProvider);
-    final tier = userAsync.value?.subscription?.tier.toLowerCase() ?? 'free';
+    final perms = ref.read(permissionProvider);
     
     Widget? upgradeButton;
-    if (tier == 'free') {
+    if (perms.canUpgradeSubscription && !perms.isSuperAdmin) {
+      // Determine label based on whether user can also downgrade (Pro → show "Upgrade to Ultra")
+      final label = perms.canDowngradeSubscription ? 'Upgrade to Ultra' : 'Upgrade to PRO';
       upgradeButton = _buildMenuItem(
         context, 
-        'Upgrade to PRO', 
-        Icons.bolt, 
-        AppColors.purple,
-        onTap: () {
-          showDialog(context: context, builder: (_) => const SubscriptionModal());
-        },
-      );
-    } else if (tier == 'pro') {
-      upgradeButton = _buildMenuItem(
-        context, 
-        'Upgrade to Ultra', 
+        label, 
         Icons.bolt, 
         AppColors.purple,
         onTap: () {
@@ -105,15 +97,16 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
                         showDialog(context: context, builder: (_) => const SubscriptionModal());
                       },
                     ),
-                    _buildMenuItem(
-                      context, 
-                      'Admin Console', 
-                      Icons.admin_panel_settings, 
-                      AppColors.textSecondary,
-                      onTap: () {
-                        context.go('/admin');
-                      },
-                    ),
+                    if (perms.isAdmin)
+                      _buildMenuItem(
+                        context, 
+                        'Admin Console', 
+                        Icons.admin_panel_settings, 
+                        AppColors.textSecondary,
+                        onTap: () {
+                          context.go('/admin');
+                        },
+                      ),
                     Divider(color: AppColors.glassBorder, height: 16),
                     _buildMenuItem(
                       context, 

@@ -4,8 +4,8 @@ This document maps all privileges across the system, explains their functionalit
 
 ## Role Definitions
 
-- **Free**: Base tier. Access to standard learning sessions, 1 YouTube video per step, 1 follow-up question per step, and full quizzes & gamification.
-- **Pro**: Intermediate tier. Unlocks Visual & Deep Dive learning modes, up to 3 YouTube videos per step, 5 follow-up questions, academic paper summaries, and Markdown/HTML note exports.
+- **Free**: Base tier. Access to standard learning sessions (10/month), Bite-Sized & Visual modes, 1 YouTube video per step, 1 follow-up question per step, academic paper summaries, and full quizzes & gamification.
+- **Pro**: Intermediate tier. Unlocks Deep Dive learning mode, step regeneration, up to 3 YouTube videos per step, 5 follow-up questions, and Markdown/HTML note exports.
 - **Ultra**: Premium tier. Unlocks unlimited follow-up questions, up to 5 YouTube videos, full-text academic research, and premium PDF note exports.
 - **Admin**: Internal users and system administrators. Has unrestricted access to the entire system via the `ET_ALL` bypass.
 
@@ -60,9 +60,11 @@ This document maps all privileges across the system, explains their functionalit
 | `ET_START_LEARNING_SESSION` | **Start Learning Session**. Initiate a new topic session. | ✅ | ✅ | ✅ | ✅ |
 | `ET_INTERACT_LEARNING_SESSION` | **Interact Learning Session**. Stream agent responses and chat. | ✅ | ✅ | ✅ | ✅ |
 | `ET_VIEW_LEARNING_HISTORY` | **View Learning History**. Access past saved sessions. | ✅ | ✅ | ✅ | ✅ |
-| `ET_ACCESS_ADVANCED_MODES` | **Advanced Learning Modes**. Unlock Visual and Deep Dive modes. | - | ✅ | ✅ | ✅ |
-| `ET_ACCESS_ACADEMIC_SEARCH` | **Academic Search**. Search ArXiv and Semantic Scholar. | - | ✅ | ✅ | ✅ |
-| `ET_ACCESS_FULL_TEXT_RESEARCH` | **Full Text Research**. Extract full PDF text from academic papers. | - | - | ✅ | ✅ |
+| `ET_ACCESS_VISUAL_MODE` | **Visual Learning Mode**. Unlock the Visual 🎬 mode with rich media-first explanations. | ✅ | ✅ | ✅ | ✅ |
+| `ET_ACCESS_DEEP_DIVE_MODE` | **Deep Dive Learning Mode**. Unlock the Deep Dive 🔬 mode with rigorous, research-level depth. | - | ✅ | ✅ | ✅ |
+| `ET_REGENERATE_STEP` | **Regenerate Step**. Re-generate a step's Socratic explanation, questions, and quiz with a fresh perspective. | - | ✅ | ✅ | ✅ |
+| `ET_ACCESS_ACADEMIC_SEARCH` | **Academic Search**. Search OpenAlex, ArXiv, and Semantic Scholar for curated paper summaries. | ✅ | ✅ | ✅ | ✅ |
+| `ET_ACCESS_FULL_TEXT_RESEARCH` | **Full Text Research**. Extract and read full PDF text from academic papers. | - | - | ✅ | ✅ |
 | `ET_UNLIMITED_FOLLOW_UPS` | **Unlimited Follow Ups**. Bypass the chat message cap. | - | - | ✅ | ✅ |
 | `ET_MANAGE_KNOWLEDGE_BASE` | **Manage Knowledge Base**. Manually curate vector DB documents. | - | - | - | ✅ |
 

@@ -411,11 +411,11 @@ EduTechAI integrates a comprehensive **Role-Based Access Control (RBAC)** archit
 | **Monthly Learning Sessions** | 10 sessions / month | **Unlimited** sessions | **Unlimited** sessions |
 | **Socratic Tutor Questions** | 1 follow-up / step | 5 follow-ups / step | **Unlimited** follow-ups |
 | **YouTube Video Curation** | 1 best clip / step | Up to 3 clips / step | Up to 5 clips / step |
-| **Learning Modes** | Standard / Bite-Sized | **All Modes** (Visual, Deep Dive, Bite-Sized) | **All Modes** (Visual, Deep Dive, Bite-Sized) |
-| **Academic Research** | None | **Research Summaries** (AI TL;DRs) | **Full-Text Research** (Deep Insights) |
+| **Learning Modes** | Bite-Sized & Visual | **All Modes** (+ Deep Dive 🔬) | **All Modes** (+ Deep Dive 🔬) |
+| **Academic Research** | **Paper Summaries** (AI TL;DRs) | **Paper Summaries** (AI TL;DRs) | **Full-Text Research** (Deep Insights) |
 | **Session Notes Export** | None | 📝 **Markdown & HTML** | 📝 **Markdown, HTML & PDF** |
 | **Step Regeneration** | ❌ Disabled | ✅ Enabled (Try new modes instantly) | ✅ Enabled (Try new modes instantly) |
-| **Quizzes & Gamification** | ✅ Full Access | ✅ Full Access | ✅ Full Access |
+| **Quizzes & Gamification** | ✅ Base XP | 🚀 **1.5x XP Boost** | 🚀 **2x XP Boost** |
 | **Session History & Recovery**| ✅ Full Access | ✅ Full Access | ✅ Full Access |
 
 > 🛡️ **SuperAdmin Role:** An internal `Admin` role exists with full system bypass (`ET_ALL`), granting access to all endpoints, user management, and role/privilege administration.

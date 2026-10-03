@@ -4,6 +4,8 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../../core/services/academic_service.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/text_styles.dart';
+import '../../../../../core/providers/permission_provider.dart';
+import '../subscription/subscription_modal.dart';
 
 class AcademicPapers extends ConsumerStatefulWidget {
   final List<dynamic>? papers;
@@ -274,7 +276,8 @@ class _AcademicPapersState extends ConsumerState<AcademicPapers> {
             itemCount: _displayedPapers.length,
             itemBuilder: (context, index) {
               final paper = _displayedPapers[index];
-              return _PaperCard(paper: paper, index: index);
+              final canAccessFullText = ref.watch(permissionProvider).canAccessFullTextResearch;
+              return _PaperCard(paper: paper, index: index, canAccessFullText: canAccessFullText);
             },
           ),
       ],
@@ -285,8 +288,9 @@ class _AcademicPapersState extends ConsumerState<AcademicPapers> {
 class _PaperCard extends StatefulWidget {
   final dynamic paper;
   final int index;
+  final bool canAccessFullText;
 
-  const _PaperCard({required this.paper, required this.index});
+  const _PaperCard({required this.paper, required this.index, required this.canAccessFullText});
 
   @override
   State<_PaperCard> createState() => _PaperCardState();
@@ -375,6 +379,11 @@ class _PaperCardState extends State<_PaperCard> {
         actionTooltip = 'Search on Semantic Scholar (Open Access)';
       }
       actionIcon = Icons.open_in_new_rounded;
+    }
+
+    if (!widget.canAccessFullText) {
+      actionIcon = Icons.lock_rounded;
+      actionTooltip = 'Unlock Full Text Research with ULTRA';
     }
 
     // Extract summary with comprehensive fallback keys
@@ -809,7 +818,13 @@ class _PaperCardState extends State<_PaperCard> {
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
-                      onTap: () => _launchPdf(actionUrl),
+                      onTap: () {
+                        if (!widget.canAccessFullText) {
+                          showDialog(context: context, builder: (_) => const SubscriptionModal());
+                          return;
+                        }
+                        _launchPdf(actionUrl);
+                      },
                       borderRadius: BorderRadius.circular(10),
                       splashColor: AppColors.blueLight.withValues(alpha: 0.25),
                       hoverColor: AppColors.blueLight.withValues(alpha: 0.15),
@@ -843,6 +858,17 @@ class _PaperCardState extends State<_PaperCard> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
+                            if (!widget.canAccessFullText) ...[
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                                margin: const EdgeInsets.only(right: 6),
+                                decoration: BoxDecoration(
+                                  gradient: AppColors.primaryGradient,
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text('ULTRA', style: AppTextStyles.badge.copyWith(fontSize: 8, color: Colors.white, fontWeight: FontWeight.bold)),
+                              ),
+                            ],
                             Icon(
                               actionIcon,
                               size: 15,

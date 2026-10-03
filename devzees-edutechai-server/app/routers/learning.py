@@ -26,7 +26,7 @@ from app.privileges_config import (
     ET_INTERACT_LEARNING_SESSION,
     ET_START_LEARNING_SESSION,
     ET_VIEW_LEARNING_HISTORY,
-    ET_ACCESS_ADVANCED_MODES,
+    ET_ACCESS_DEEP_DIVE_MODE,
     ET_REGENERATE_STEP,
     ET_ACCESS_ACADEMIC_SEARCH,
 )
@@ -120,16 +120,16 @@ async def start_learning_session(
     )
 
     # 1. Enforce Learning Mode Privilege
-    if request.learning_mode in [LearningMode.VISUAL, LearningMode.DEEP_DIVE]:
-        if not has_privilege(current_user, ET_ACCESS_ADVANCED_MODES):
+    if request.learning_mode == LearningMode.DEEP_DIVE:
+        if not has_privilege(current_user, ET_ACCESS_DEEP_DIVE_MODE):
             raise ForbiddenException(
                 error_code="MODE_UPGRADE_REQUIRED",
-                errors="Upgrade to Pro or Ultra to access Visual or Deep Dive modes."
+                errors="Upgrade to Pro or Ultra to access Deep Dive mode."
             )
 
     # 2. Enforce Monthly Session Quota for Free Tier
-    # (Assuming any user without ET_ACCESS_ADVANCED_MODES is on the Free tier)
-    is_premium = has_privilege(current_user, ET_ACCESS_ADVANCED_MODES)
+    # Users with Deep Dive access are on Pro/Ultra tier → unlimited sessions
+    is_premium = has_privilege(current_user, ET_ACCESS_DEEP_DIVE_MODE)
     if not is_premium:
         monthly_sessions = await session_manager.get_monthly_session_count(current_user.id)
         if monthly_sessions >= 10:
@@ -378,12 +378,12 @@ async def change_learning_mode(
     """
     memory = await get_session_or_404(session_id)
     
-    # Check privilege for advanced modes
-    if request.learning_mode in [LearningMode.VISUAL, LearningMode.DEEP_DIVE]:
-        if not has_privilege(current_user, ET_ACCESS_ADVANCED_MODES):
+    # Check privilege for Deep Dive mode
+    if request.learning_mode == LearningMode.DEEP_DIVE:
+        if not has_privilege(current_user, ET_ACCESS_DEEP_DIVE_MODE):
             raise ForbiddenException(
                 error_code="MODE_UPGRADE_REQUIRED",
-                errors="Upgrade to Pro or Ultra to access Visual or Deep Dive modes."
+                errors="Upgrade to Pro or Ultra to access Deep Dive mode."
             )
 
     old_mode = memory.learning_mode
