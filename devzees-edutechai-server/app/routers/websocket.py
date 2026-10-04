@@ -227,14 +227,21 @@ async def _process_step(
     logger.info(f"Processing step {step_index} for session {session_id}")
     step_start_time = time.time()
 
+    # Timing buckets (ms) collected per agent/phase for the perf_summary WS event
+    _timings: dict[str, float] = {}
+
     async def _timed_execute(agent, memory, step_index, name):
         t0 = time.time()
         try:
             res = await agent.execute(memory, step_index)
-            logger.info(f"[{name}] finished in {time.time() - t0:.2f}s")
+            elapsed = time.time() - t0
+            _timings[name] = elapsed * 1000
+            logger.info(f"[WS][{name}] finished in {elapsed:.2f}s ({elapsed*1000:.0f}ms)")
             return res
         except Exception as e:
-            logger.error(f"[{name}] failed in {time.time() - t0:.2f}s: {e}")
+            elapsed = time.time() - t0
+            _timings[name] = elapsed * 1000
+            logger.error(f"[WS][{name}] FAILED in {elapsed:.2f}s: {e}")
             raise e
 
     # ─── 1. Start parallel background tasks (YouTube + Academic Researcher) ─
@@ -245,7 +252,10 @@ async def _process_step(
         youtube_agent = YouTubeCuratorAgent()
         youtube_task = None
         if step and not step.videos:
+            logger.info(f"[WS][YouTubeCuratorAgent] Starting parallel task for step {step_index}")
             youtube_task = asyncio.create_task(_timed_execute(youtube_agent, memory, step_index, "YouTubeCuratorAgent"))
+        else:
+            logger.info(f"[WS][YouTubeCuratorAgent] Skipping — videos already cached for step {step_index}")
     except ImportError:
         youtube_task = None
 
@@ -254,12 +264,16 @@ async def _process_step(
         academic_agent = AcademicResearcherAgent()
         academic_task = None
         if step and not step.papers:
+            logger.info(f"[WS][AcademicResearcherAgent] Starting parallel task for step {step_index}")
             academic_task = asyncio.create_task(_timed_execute(academic_agent, memory, step_index, "AcademicResearcherAgent"))
+        else:
+            logger.info(f"[WS][AcademicResearcherAgent] Skipping — papers already cached for step {step_index}")
     except ImportError:
         academic_task = None
 
     # ─── 2. Stream Socratic Tutor explanation ────────────────
     tutor_start = time.time()
+    logger.info(f"[WS][SocraticTutorAgent] Streaming explanation for step {step_index}...")
     tutor = SocraticTutorAgent()
     try:
         async for chunk in tutor.stream_explanation(memory, step_index):
@@ -273,9 +287,13 @@ async def _process_step(
             memory, step_index, "", is_final=True
         )
         await manager.send_event(session_id, final_event)
-        logger.info(f"[SocraticTutorAgent] finished streaming in {time.time() - tutor_start:.2f}s")
+        tutor_elapsed = time.time() - tutor_start
+        _timings["SocraticTutorAgent"] = tutor_elapsed * 1000
+        logger.info(f"[WS][SocraticTutorAgent] Finished streaming in {tutor_elapsed:.2f}s ({tutor_elapsed*1000:.0f}ms)")
     except Exception as e:
-        logger.error(f"Tutor streaming failed: {e}")
+        tutor_elapsed = time.time() - tutor_start
+        _timings["SocraticTutorAgent"] = tutor_elapsed * 1000
+        logger.error(f"[WS][SocraticTutorAgent] Streaming FAILED after {tutor_elapsed:.2f}s: {e}")
         error_event = ErrorEvent(
             session_id=session_id,
             message=f"Tutor error: {e}",
@@ -288,17 +306,22 @@ async def _process_step(
     try:
         from agents.quiz_agent import QuizAgent
         quiz_agent = QuizAgent()
+        logger.info(f"[WS][QuizAgent] Starting task for step {step_index}")
         quiz_task = asyncio.create_task(_timed_execute(quiz_agent, memory, step_index, "QuizAgent"))
     except ImportError:
         pass  # Quiz agent not yet implemented
 
     # Wait for parallel agents to complete
+    parallel_wait_start = time.time()
     tasks = [t for t in [youtube_task, academic_task, quiz_task] if t is not None]
     if tasks:
+        logger.info(f"[WS] Waiting for {len(tasks)} parallel task(s) to complete...")
         results = await asyncio.gather(*tasks, return_exceptions=True)
         for r in results:
             if isinstance(r, Exception):
-                logger.warning(f"Agent error (non-fatal): {r}")
+                logger.warning(f"[WS] Parallel agent error (non-fatal): {r}")
+        _timings["parallel_gather_wall"] = (time.time() - parallel_wait_start) * 1000
+        logger.info(f"[WS] Parallel tasks completed in {_timings['parallel_gather_wall']:.0f}ms")
 
     # Send YouTube clip and paper events
     for event in synthesizer.create_youtube_clip_events(memory, step_index):
@@ -316,19 +339,49 @@ async def _process_step(
     if sq_event:
         await manager.send_event(session_id, sq_event)
 
-    # ─── 5. Step complete ────────────────────────────────────
+    # ─── 5. Persist BEFORE step_complete so HTTP fetch always sees fresh data ──
+    #  PERF FIX: moved DB persist to happen BEFORE emitting step_complete.
+    #  Previously the client would fire GET /sessions/{id} immediately after
+    #  receiving step_complete, but the DB write hadn't finished yet so it
+    #  would either return stale data or race-condition against the write.
+    persist_start = time.time()
+    try:
+        await SessionManager().update_session(memory)
+        _timings["db_persist"] = (time.time() - persist_start) * 1000
+        logger.info(f"[WS] Session persisted to DB in {_timings['db_persist']:.0f}ms (before step_complete)")
+    except Exception as e:
+        _timings["db_persist"] = (time.time() - persist_start) * 1000
+        logger.error(f"[WS] Failed to persist step {step_index} for session {session_id} ({_timings['db_persist']:.0f}ms): {e}")
+
+    total_time = time.time() - step_start_time
+    _timings["total_backend_ms"] = total_time * 1000
+
+    # ─── 6. Emit perf_summary so the client can log the full backend breakdown ─
+    try:
+        perf_ws = manager.active_connections.get(session_id)
+        if perf_ws:
+            await perf_ws.send_json({
+                "event_type": "perf_summary",
+                "step_index": step_index,
+                "timings_ms": {k: round(v, 1) for k, v in _timings.items()},
+            })
+    except Exception:
+        pass
+
+    # ─── 7. Step complete ────────────────────────────────────
     step_complete = synthesizer.create_step_complete_event(memory, step_index)
     await manager.send_event(session_id, step_complete)
 
-    total_time = time.time() - step_start_time
-    logger.info(f"[SynthesizerAgent] Total time taken to render step {step_index}: {total_time:.2f}s")
-
-    try:
-        await SessionManager().update_session(memory)
-    except Exception as e:
-        logger.error(f"Failed to persist step {step_index} for session {session_id}: {e}")
-
-    logger.info(f"Step {step_index} fully processed for session {session_id}")
+    logger.info(
+        "[WS] Step %d DONE for session %s | total=%.2fs | "
+        "tutor=%.0fms | youtube=%.0fms | academic=%.0fms | quiz=%.0fms | db_persist=%.0fms",
+        step_index, session_id, total_time,
+        _timings.get("SocraticTutorAgent", 0),
+        _timings.get("YouTubeCuratorAgent", 0),
+        _timings.get("AcademicResearcherAgent", 0),
+        _timings.get("QuizAgent", 0),
+        _timings.get("db_persist", 0),
+    )
 
 
 async def _handle_chat(session_id: str, memory: SharedMemory, question: str):

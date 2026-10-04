@@ -86,7 +86,13 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       if (state.activeStepIndex < session.steps.length) {
         final step = session.steps[state.activeStepIndex];
         if (step.tutorExplanation == null) {
-          if (_isStepGenerationActive) return;
+          // Guard: block only if generation is already running for a DIFFERENT step.
+          // When setActiveStep() reconnects the WS and returns early, it sets
+          // _isStepGenerationActive=true for THIS step — we must allow that through.
+          if (_isStepGenerationActive && _currentTrackingStepIndex != state.activeStepIndex) {
+            debugPrint('⚠️ [Client WS] "plan" guard blocked — generation already active for Step $_currentTrackingStepIndex.');
+            return;
+          }
 
           _currentTrackingStepIndex = state.activeStepIndex;
           if (!_stepTotalStopwatch.isRunning) {
@@ -97,7 +103,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
           _backendStopwatch.start();
           _isStepGenerationActive = true;
 
-          debugPrint('🚀 [Client] Triggering backend agents for Step $_currentTrackingStepIndex (loader displayed)...');
+          debugPrint('🚀 [Client] Triggering backend agents for Step $_currentTrackingStepIndex via plan event...');
           
           // Only show the massive full-screen neural loader for the very first step of a new journey.
           // For all other steps (e.g. regenerating), use the seamless inline workspace loader.
@@ -106,6 +112,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
             state = state.copyWith(isLoading: true, isSynthesizing: true);
           }
           
+          debugPrint('📤 [Client WS] Sending start_step for Step ${state.activeStepIndex}...');
           _wsService.sendStartStep(state.activeStepIndex);
         }
       }
@@ -125,6 +132,32 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       _lastBackendMs = _backendStopwatch.elapsedMilliseconds;
       debugPrint('✅ [Client WS] "step_complete" received for Step $_currentTrackingStepIndex in ${_lastBackendMs}ms (${(_lastBackendMs / 1000).toStringAsFixed(2)}s). Fetching full session data...');
       loadSession(session.sessionId, fromStepComplete: true, silent: true);
+      return;
+    }
+
+    if (type == 'perf_summary') {
+      final stepIdx = event['step_index'] as int? ?? -1;
+      final timings = event['timings_ms'] as Map<String, dynamic>? ?? {};
+      final total = (timings['total_backend_ms'] as num?)?.toDouble() ?? 0;
+      final tutor = (timings['SocraticTutorAgent'] as num?)?.toDouble() ?? 0;
+      final youtube = (timings['YouTubeCuratorAgent'] as num?)?.toDouble() ?? 0;
+      final academic = (timings['AcademicResearcherAgent'] as num?)?.toDouble() ?? 0;
+      final quiz = (timings['QuizAgent'] as num?)?.toDouble() ?? 0;
+      final dbPersist = (timings['db_persist'] as num?)?.toDouble() ?? 0;
+      final parallelGather = (timings['parallel_gather_wall'] as num?)?.toDouble() ?? 0;
+      debugPrint('''
+╔════════════════════════════════════════════════════════════════════
+║ 🖥️  [Backend Perf Summary] Step $stepIdx
+╟────────────────────────────────────────────────────────────────────
+║  • SocraticTutorAgent (stream):  ${tutor.toStringAsFixed(0).padLeft(6)} ms
+║  • YouTubeCuratorAgent:          ${youtube.toStringAsFixed(0).padLeft(6)} ms
+║  • AcademicResearcherAgent:      ${academic.toStringAsFixed(0).padLeft(6)} ms
+║  • QuizAgent:                    ${quiz.toStringAsFixed(0).padLeft(6)} ms
+║  • Parallel gather wall:         ${parallelGather.toStringAsFixed(0).padLeft(6)} ms
+║  • DB Persist (update_session):  ${dbPersist.toStringAsFixed(0).padLeft(6)} ms
+╟────────────────────────────────────────────────────────────────────
+║  ⚡ Total backend time:           ${total.toStringAsFixed(0).padLeft(6)} ms (${(total / 1000).toStringAsFixed(2)}s)
+╚════════════════════════════════════════════════════════════════════''');
       return;
     }
 
@@ -158,6 +191,32 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
 
     if (type == 'error') {
       debugPrint('❌ [Client WS] Error event received: ${event['message']}');
+      _isStepGenerationActive = false;
+      _isRegenerating = false;
+      _stepTotalStopwatch.stop();
+      _backendStopwatch.stop();
+      state = state.copyWith(
+        isLoading: false,
+        isSynthesizing: false,
+        error: event['message']?.toString() ?? 'An error occurred during step synthesis',
+      );
+      return;
+    }
+
+    if (type == 'ws_closed') {
+      debugPrint('⚠️ [Client WS] Connection closed.');
+      if (_isStepGenerationActive || state.isLoading) {
+        _isStepGenerationActive = false;
+        _isRegenerating = false;
+        _stepTotalStopwatch.stop();
+        _backendStopwatch.stop();
+        state = state.copyWith(
+          isLoading: false,
+          isSynthesizing: false,
+          error: 'Connection to learning server was closed. Please try reloading or regenerating the step.',
+        );
+      }
+      return;
     }
   }
 
@@ -170,7 +229,6 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     debugPrint('🚀 [Client] Starting new journey for "$topic" ($mode, $level)...');
     _stepTotalStopwatch.reset();
     _stepTotalStopwatch.start();
-    _isStepGenerationActive = true;
     _currentTrackingStepIndex = 0;
 
     state = state.copyWith(isLoading: true, isSynthesizing: true, clearError: true);
@@ -675,6 +733,20 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
         _isStepGenerationActive = true;
 
         state = state.copyWith(activeStepIndex: index, isLoading: true, isSynthesizing: true);
+
+        // BUG FIX (Issue 2 — infinite loader): The WS connection is closed by the
+        // server after step_complete is processed. If not reconnected before sending
+        // start_step, the message is silently dropped and the loader spins forever.
+        final session = state.session!;
+        if (!_wsService.isConnected) {
+          debugPrint('🔌 [Client WS] Connection is closed. Reconnecting before sending start_step for Step $index...');
+          _wsService.connect(session.sessionId);
+          // The WS will emit a "plan" event on connect; sendStartStep is handled there.
+          // We return here to avoid a double start_step send.
+          return;
+        }
+
+        debugPrint('📤 [Client WS] Sending start_step for Step $index (connection already open)');
         _wsService.sendStartStep(index);
       } else {
         debugPrint('🔄 [Client] Switching to cached Step $index...');
@@ -693,6 +765,8 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
 
   void clearSession() {
     _wsService.disconnect();
+    _isStepGenerationActive = false;
+    _isRegenerating = false;
     state = state.copyWith(
       clearSession: true,
       activeStepIndex: 0,

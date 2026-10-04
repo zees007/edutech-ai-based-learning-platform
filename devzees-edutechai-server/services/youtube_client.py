@@ -9,6 +9,7 @@ Daily quota: 100 search.list calls/day (as of June 2026).
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from typing import Any
 
@@ -193,7 +194,7 @@ class YouTubeClient:
         2. Keyword score matching in transcript.
         3. Tier 3 Fallback: Returns video starting at 0s with snippet preview if transcript unavailable.
         """
-        transcript = self.get_transcript(video_id)
+        transcript = await asyncio.to_thread(self.get_transcript, video_id)
 
         # Tier 3 Fallback: If transcript unavailable, still return video clip starting at 0
         if not transcript:

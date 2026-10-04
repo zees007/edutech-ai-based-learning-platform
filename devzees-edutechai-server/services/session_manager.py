@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import json
 import logging
+import time
 from datetime import datetime
 
 from sqlalchemy import delete, func, or_, select
@@ -120,15 +121,27 @@ class SessionManager:
             return None
 
     async def update_session(self, memory: SharedMemory) -> None:
-        """Update an existing session in the database."""
+        """
+        Update an existing session in the database.
+
+        Performance: Uses a single bulk SELECT for all StepProgress records
+        instead of N separate queries (one per step), eliminating the N+1 pattern.
+        """
+        t_total = time.perf_counter()
+        session_id = memory.session_id
+        logger.debug(f"[SessionManager.update_session] START session={session_id} steps={len(memory.steps)}")
+
         async with get_db_session() as db:
+            # ── 1. Fetch SessionRecord ───────────────────────────────────
+            t0 = time.perf_counter()
             result = await db.execute(
-                select(SessionRecord).where(SessionRecord.session_id == memory.session_id)
+                select(SessionRecord).where(SessionRecord.session_id == session_id)
             )
             record = result.scalar_one_or_none()
+            logger.debug(f"[SessionManager.update_session] session_record fetch: {(time.perf_counter()-t0)*1000:.1f}ms")
 
             if record is None:
-                logger.warning(f"Session {memory.session_id} not found for update. Creating.")
+                logger.warning(f"[SessionManager.update_session] Session {session_id} not found — creating instead.")
                 await self.create_session(memory)
                 return
 
@@ -138,34 +151,50 @@ class SessionManager:
             record.current_step_index = memory.current_step_index
             record.total_steps = len(memory.steps)
             record.is_complete = memory.is_complete
+
+            # ── 2. Serialize SharedMemory to JSON ────────────────────────
+            t0 = time.perf_counter()
             record.state_json = memory.model_dump(mode="json")
             record.updated_at = datetime.utcnow()
+            logger.debug(f"[SessionManager.update_session] model_dump (state_json): {(time.perf_counter()-t0)*1000:.1f}ms")
 
-            # Update gamification
+            # ── 3. Update GamificationRecord ─────────────────────────────
+            t0 = time.perf_counter()
             gam_result = await db.execute(
                 select(GamificationRecord).where(
-                    GamificationRecord.session_id == memory.session_id
+                    GamificationRecord.session_id == session_id
                 )
             )
             gam_record = gam_result.scalar_one_or_none()
             if gam_record:
                 from services.gamification import calculate_level
-
                 gam_record.xp_earned = memory.xp_earned
                 gam_record.streak_count = memory.streak_count
                 level_info = calculate_level(memory.xp_earned)
                 gam_record.level = level_info["level"]
                 gam_record.level_title = level_info["title"]
+            logger.debug(f"[SessionManager.update_session] gamification update: {(time.perf_counter()-t0)*1000:.1f}ms")
 
-            # Synchronize step_progress records for all steps in memory
+            # ── 4. Bulk fetch all StepProgress for this session ──────────
+            #  PERF FIX: replaced N individual SELECTs (one per step) with a
+            #  single bulk query, converting results to a lookup dict keyed
+            #  by step_index. This eliminates the N+1 query pattern.
+            t0 = time.perf_counter()
+            sp_all_result = await db.execute(
+                select(StepProgress).where(StepProgress.session_id == session_id)
+            )
+            sp_by_index: dict[int, StepProgress] = {
+                sp.step_index: sp for sp in sp_all_result.scalars().all()
+            }
+            logger.debug(
+                f"[SessionManager.update_session] bulk StepProgress fetch "
+                f"({len(sp_by_index)} records): {(time.perf_counter()-t0)*1000:.1f}ms"
+            )
+
+            # ── 5. Upsert StepProgress records (no DB round-trips in loop) ─
+            t0 = time.perf_counter()
             for i, step in enumerate(memory.steps):
-                sp_result = await db.execute(
-                    select(StepProgress).where(
-                        StepProgress.session_id == memory.session_id,
-                        StepProgress.step_index == i,
-                    )
-                )
-                sp_record = sp_result.scalar_one_or_none()
+                sp_record = sp_by_index.get(i)
                 score = memory.quiz_scores.get(i)
                 status_val = step.status.value if hasattr(step.status, "value") else str(step.status)
 
@@ -177,13 +206,20 @@ class SessionManager:
                         sp_record.completed_at = datetime.utcnow()
                 else:
                     sp_record = StepProgress(
-                        session_id=memory.session_id,
+                        session_id=session_id,
                         step_index=i,
                         status=status_val,
                         quiz_score=score,
                         completed_at=datetime.utcnow() if status_val == "complete" else None,
                     )
                     db.add(sp_record)
+            logger.debug(f"[SessionManager.update_session] step_progress upsert loop: {(time.perf_counter()-t0)*1000:.1f}ms")
+
+            # ── 6. Commit ────────────────────────────────────────────────
+            # (commit is handled by get_db_session context manager)
+
+        elapsed_ms = (time.perf_counter() - t_total) * 1000
+        logger.info(f"[SessionManager.update_session] DONE session={session_id} total={elapsed_ms:.1f}ms")
 
     async def search_user_sessions(
         self,

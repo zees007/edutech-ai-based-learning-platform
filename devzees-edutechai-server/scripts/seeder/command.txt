@@ -1,0 +1,12 @@
+Direct Execution (Recommended — No ExecutionPolicy issues)
+On Windows PowerShell, activating .ps1 scripts is often blocked by Windows default security policy (PSSecurityException). You can bypass this completely by calling the virtual environment's Python directly:
+
+
+cd "d:\Projects\Python Projects\EduTechAI\devzees-edutechai-server"
+.\.venv\Scripts\python.exe scripts\seeder\01_reset_schema.py
+.\.venv\Scripts\python.exe scripts\seeder\02_seed_privileges_and_roles.py
+.\.venv\Scripts\python.exe scripts\seeder\03_seed_users_and_subscriptions.py
+
+Run all 3 in one line:
+
+cd "d:\Projects\Python Projects\EduTechAI\devzees-edutechai-server"; .\.venv\Scripts\python.exe scripts\seeder\01_reset_schema.py; .\.venv\Scripts\python.exe scripts\seeder\02_seed_privileges_and_roles.py; .\.venv\Scripts\python.exe scripts\seeder\03_seed_users_and_subscriptions.py

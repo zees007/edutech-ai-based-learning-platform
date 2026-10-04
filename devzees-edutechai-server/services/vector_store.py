@@ -9,6 +9,7 @@ Uses ChromaDB with its default embedding model (all-MiniLM-L6-v2).
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from typing import Any
 
@@ -146,25 +147,28 @@ class VectorStore:
         Returns:
             Dict with start_time, end_time, and snippet, or None if no match.
         """
-        # Ensure transcript is embedded
-        self.embed_transcript(video_id, transcript)
+        def _sync_search() -> dict | None:
+            # Ensure transcript is embedded
+            self.embed_transcript(video_id, transcript)
 
-        # Semantic search filtered to this video
-        results = self.collection.query(
-            query_texts=[query],
-            n_results=n_results,
-            where={"video_id": video_id},
-        )
+            # Semantic search filtered to this video
+            results = self.collection.query(
+                query_texts=[query],
+                n_results=n_results,
+                where={"video_id": video_id},
+            )
 
-        if not results or not results["ids"] or not results["ids"][0]:
-            return None
+            if not results or not results["ids"] or not results["ids"][0]:
+                return None
 
-        # Get the best match
-        metadata = results["metadatas"][0][0]  # type: ignore
-        document = results["documents"][0][0]  # type: ignore
+            # Get the best match
+            metadata = results["metadatas"][0][0]  # type: ignore
+            document = results["documents"][0][0]  # type: ignore
 
-        return {
-            "start_time": int(metadata["start_time"]),
-            "end_time": int(metadata["end_time"]),
-            "snippet": document[:200],
-        }
+            return {
+                "start_time": int(metadata["start_time"]),
+                "end_time": int(metadata["end_time"]),
+                "snippet": document[:200],
+            }
+
+        return await asyncio.to_thread(_sync_search)
