@@ -1,18 +1,21 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
 import 'package:devzees_edutechai_client/core/theme/text_styles.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/gradient_button.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/gradient_text.dart';
 import 'package:devzees_edutechai_client/core/constants/responsive.dart';
+import 'package:devzees_edutechai_client/core/providers/auth_provider.dart';
 import 'package:go_router/go_router.dart';
 
-class HomeNavbar extends StatelessWidget {
+class HomeNavbar extends ConsumerWidget {
   final Function(String)? onNavTap;
   const HomeNavbar({super.key, this.onNavTap});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isAuthenticated = ref.watch(authProvider.select((s) => s.isAuthenticated));
     return Container(
       constraints: const BoxConstraints(minHeight: 52),
       decoration: BoxDecoration(
@@ -87,30 +90,44 @@ class HomeNavbar extends StatelessWidget {
           // Auth Buttons
           Row(
             children: [
-              if (!Responsive.isMobile(context)) ...[
-                TextButton(
+              if (isAuthenticated) ...[
+                GradientButton(
+                  text: 'Open Workspace',
+                  height: 36,
+                  icon: Icons.arrow_forward_rounded,
+                  onPressed: () {
+                    context.go('/learning');
+                  },
+                ),
+              ] else ...[
+                if (!Responsive.isMobile(context)) ...[
+                  TextButton(
+                    onPressed: () {
+                      context.go('/auth');
+                    },
+                    style: TextButton.styleFrom(
+                      minimumSize: const Size(0, 36),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      textStyle: AppTextStyles.button.copyWith(fontSize: 14, fontWeight: FontWeight.w700),
+                    ),
+                    child: Text('Sign In', style: TextStyle(color: AppColors.textPrimary)),
+                  ),
+                  const SizedBox(width: 8),
+                ],
+                GradientButton(
+                  text: 'Get Started',
+                  height: 36,
                   onPressed: () {
                     context.go('/auth');
                   },
-                  style: TextButton.styleFrom(
-                    minimumSize: const Size(0, 36),
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    textStyle: AppTextStyles.button.copyWith(fontSize: 14, fontWeight: FontWeight.w700),
-                  ),
-                  child: Text('Sign In', style: TextStyle(color: AppColors.textPrimary)),
                 ),
-                const SizedBox(width: 8),
               ],
-              GradientButton(
-                text: 'Get Started',
-                height: 36,
-                onPressed: () {
-                  context.go('/auth');
-                },
-              ),
               if (Responsive.isMobile(context)) ...[
                 const SizedBox(width: 4),
-                _MobileMenuButton(onNavTap: onNavTap),
+                _MobileMenuButton(
+                  onNavTap: onNavTap,
+                  isAuthenticated: isAuthenticated,
+                ),
               ],
             ],
           ),
@@ -173,7 +190,8 @@ class _NavPillState extends State<_NavPill> {
 
 class _MobileMenuButton extends StatefulWidget {
   final Function(String)? onNavTap;
-  const _MobileMenuButton({this.onNavTap});
+  final bool isAuthenticated;
+  const _MobileMenuButton({this.onNavTap, this.isAuthenticated = false});
 
   @override
   State<_MobileMenuButton> createState() => _MobileMenuButtonState();
@@ -203,7 +221,13 @@ class _MobileMenuButtonState extends State<_MobileMenuButton> {
           onCanceled: () => setState(() => _isOpen = false),
           onSelected: (value) {
             setState(() => _isOpen = false);
-            widget.onNavTap?.call(value);
+            if (value == 'workspace') {
+              context.go('/learning');
+            } else if (value == 'signin') {
+              context.go('/auth');
+            } else {
+              widget.onNavTap?.call(value);
+            }
           },
           icon: const Icon(Icons.menu, color: AppColors.textPrimary),
           color: Colors.transparent,
@@ -233,7 +257,9 @@ class _MobileMenuButtonState extends State<_MobileMenuButton> {
                         _buildMenuItem('Agents', 'agents'),
                         _buildMenuItem('Pricing', 'pricing'),
                         Divider(color: AppColors.primary.withValues(alpha: 0.2), height: 1),
-                        _buildMenuItem('Sign In', 'signin'),
+                        widget.isAuthenticated
+                            ? _buildMenuItem('Open Workspace', 'workspace')
+                            : _buildMenuItem('Sign In', 'signin'),
                       ],
                     ),
                   ),

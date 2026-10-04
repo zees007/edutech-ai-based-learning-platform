@@ -16,7 +16,7 @@ class AppRouterNotifier extends ChangeNotifier {
     _ref.listen<AuthState>(
       authProvider,
       (previous, next) {
-        if (previous?.status != next.status) {
+        if (previous?.status != next.status || previous?.user != next.user) {
           notifyListeners();
         }
       },
@@ -51,6 +51,10 @@ class AppRouterNotifier extends ChangeNotifier {
 
       // 2b. Admin route privilege guard — redirect non-admins to /learning
       if (isAdminRoute) {
+        // If user profile is not yet available, keep route pending rehydration
+        if (authState.user == null) {
+          return null;
+        }
         final perms = _ref.read(permissionProvider);
         if (!perms.isAdmin) {
           return '/learning';

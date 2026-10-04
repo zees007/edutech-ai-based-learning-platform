@@ -4,6 +4,8 @@ import 'package:devzees_edutechai_client/core/constants/responsive.dart';
 import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
 import 'package:devzees_edutechai_client/core/theme/text_styles.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/glow_background.dart';
+import 'package:devzees_edutechai_client/core/providers/auth_provider.dart';
+import 'package:devzees_edutechai_client/presentation/widgets/shimmer_app_shell.dart';
 import 'widgets/admin_sidebar.dart';
 import 'widgets/user_directory_tab.dart';
 import 'widgets/role_privilege_tab.dart';
@@ -50,6 +52,11 @@ class _AdminPageState extends ConsumerState<AdminPage> {
 
   @override
   Widget build(BuildContext context) {
+    final authState = ref.watch(authProvider);
+    if (authState.isInitial || (authState.isAuthenticated && authState.user == null)) {
+      return const ShimmerAppShell(key: ValueKey('admin_shimmer_skeleton'));
+    }
+
     final bool isMobile = Responsive.isMobile(context);
 
     if (isMobile) {

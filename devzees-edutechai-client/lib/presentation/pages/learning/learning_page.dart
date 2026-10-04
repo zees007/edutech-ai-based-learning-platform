@@ -5,6 +5,8 @@ import 'package:devzees_edutechai_client/core/constants/responsive.dart';
 import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
 import 'package:devzees_edutechai_client/core/providers/learning_provider.dart';
 import 'package:devzees_edutechai_client/core/providers/gamification_provider.dart';
+import 'package:devzees_edutechai_client/core/providers/auth_provider.dart';
+import 'package:devzees_edutechai_client/presentation/widgets/shimmer_app_shell.dart';
 
 import 'widgets/sidebar/learning_sidebar.dart';
 import 'widgets/main_content/learning_main_content.dart';
@@ -99,6 +101,8 @@ class _LearningPageState extends ConsumerState<LearningPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isAuthInitial = ref.watch(authProvider.select((s) => s.isInitial));
+
     ref.listen<GamificationEvent?>(gamificationEventProvider, (previous, next) {
       if (next != null) {
         // Ensure this runs after the current frame
@@ -116,6 +120,20 @@ class _LearningPageState extends ConsumerState<LearningPage> {
       }
     });
 
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 350),
+      switchInCurve: Curves.easeOut,
+      switchOutCurve: Curves.easeIn,
+      child: isAuthInitial
+          ? const ShimmerAppShell(key: ValueKey('shimmer_skeleton'))
+          : KeyedSubtree(
+              key: const ValueKey('learning_content'),
+              child: _buildScaffold(context),
+            ),
+    );
+  }
+
+  Widget _buildScaffold(BuildContext context) {
     final bool isMobile = Responsive.isMobile(context);
 
     if (isMobile) {
