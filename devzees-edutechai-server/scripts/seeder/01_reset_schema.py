@@ -26,7 +26,7 @@ async def reset_schema():
     print("Running Alembic migrations...")
     project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     os.chdir(project_root)
-    os.system(".venv\\Scripts\\alembic.exe upgrade head")
+    os.system(f'"{sys.executable}" -m alembic upgrade head')
     print("Database reset complete.")
 
 if __name__ == "__main__":

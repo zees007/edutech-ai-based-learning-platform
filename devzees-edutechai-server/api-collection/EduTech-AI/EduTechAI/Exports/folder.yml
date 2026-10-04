@@ -1,0 +1,6 @@
+info:
+  name: Exports
+  type: folder
+
+request:
+  auth: inherit

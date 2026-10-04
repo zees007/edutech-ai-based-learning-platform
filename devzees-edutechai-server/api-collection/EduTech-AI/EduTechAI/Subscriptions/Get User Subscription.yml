@@ -1,0 +1,89 @@
+info:
+  name: Get User Subscription
+  type: http
+  seq: 1
+  tags:
+    - Subscriptions
+
+http:
+  method: GET
+  url: "{{baseUrl}}/api/v1/subscriptions/users/:user_id"
+  params:
+    - name: user_id
+      value: ""
+      type: path
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+examples:
+  - name: 200 Response
+    description: Successful Response
+    request:
+      url: "{{baseUrl}}/api/v1/subscriptions/users/:user_id"
+      method: GET
+      params:
+        - name: user_id
+          value: ""
+          type: path
+    response:
+      status: 200
+      statusText: OK
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "id": 0,
+            "user_id": "",
+            "tier": "",
+            "status": "",
+            "billing_cycle": "",
+            "price_amount": 0,
+            "current_period_start": "",
+            "current_period_end": "",
+            "gateway_provider": "",
+            "gateway_subscription_id": "",
+            "gateway_customer_id": "",
+            "payment_gateway_ref": "",
+            "cancel_at_period_end": false,
+            "auto_renew": false
+          }
+  - name: 422 Response
+    description: Validation Error
+    request:
+      url: "{{baseUrl}}/api/v1/subscriptions/users/:user_id"
+      method: GET
+      params:
+        - name: user_id
+          value: ""
+          type: path
+    response:
+      status: 422
+      statusText: Unprocessable Entity
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "detail": [
+              {
+                "loc": [],
+                "msg": "",
+                "type": "",
+                "input": "",
+                "ctx": {}
+              }
+            ]
+          }
+
+docs: Retrieve active subscription details for a user.

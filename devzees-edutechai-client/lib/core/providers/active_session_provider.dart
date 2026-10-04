@@ -20,6 +20,7 @@ class ActiveSessionState {
   final int activeStepIndex;
   final bool isLoading;
   final bool isSynthesizing;
+  final Set<int> curatingVideoSteps;
   final String? error;
 
   ActiveSessionState({
@@ -27,6 +28,7 @@ class ActiveSessionState {
     this.activeStepIndex = 0,
     this.isLoading = false,
     this.isSynthesizing = false,
+    this.curatingVideoSteps = const {},
     this.error,
   });
 
@@ -36,6 +38,7 @@ class ActiveSessionState {
     int? activeStepIndex,
     bool? isLoading,
     bool? isSynthesizing,
+    Set<int>? curatingVideoSteps,
     String? error,
     bool clearError = false,
   }) {
@@ -44,6 +47,7 @@ class ActiveSessionState {
       activeStepIndex: activeStepIndex ?? this.activeStepIndex,
       isLoading: isLoading ?? this.isLoading,
       isSynthesizing: isSynthesizing ?? this.isSynthesizing,
+      curatingVideoSteps: curatingVideoSteps ?? this.curatingVideoSteps,
       error: clearError ? null : (error ?? this.error),
     );
   }
@@ -86,7 +90,13 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       if (state.activeStepIndex < session.steps.length) {
         final step = session.steps[state.activeStepIndex];
         if (step.tutorExplanation == null) {
-          if (_isStepGenerationActive) return;
+          // Guard: block only if generation is already running for a DIFFERENT step.
+          // When setActiveStep() reconnects the WS and returns early, it sets
+          // _isStepGenerationActive=true for THIS step — we must allow that through.
+          if (_isStepGenerationActive && _currentTrackingStepIndex != state.activeStepIndex) {
+            debugPrint('⚠️ [Client WS] "plan" guard blocked — generation already active for Step $_currentTrackingStepIndex.');
+            return;
+          }
 
           _currentTrackingStepIndex = state.activeStepIndex;
           if (!_stepTotalStopwatch.isRunning) {
@@ -97,15 +107,20 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
           _backendStopwatch.start();
           _isStepGenerationActive = true;
 
-          debugPrint('🚀 [Client] Triggering backend agents for Step $_currentTrackingStepIndex (loader displayed)...');
+          debugPrint('🚀 [Client] Triggering backend agents for Step $_currentTrackingStepIndex via plan event...');
           
+          final updatedCurating = Set<int>.from(state.curatingVideoSteps)..add(state.activeStepIndex);
+
           // Only show the massive full-screen neural loader for the very first step of a new journey.
           // For all other steps (e.g. regenerating), use the seamless inline workspace loader.
           final isBrandNewJourney = state.activeStepIndex == 0 && session.stepsCompleted == 0 && !_isRegenerating;
           if (isBrandNewJourney) {
-            state = state.copyWith(isLoading: true, isSynthesizing: true);
+            state = state.copyWith(isLoading: true, isSynthesizing: true, curatingVideoSteps: updatedCurating);
+          } else {
+            state = state.copyWith(curatingVideoSteps: updatedCurating);
           }
           
+          debugPrint('📤 [Client WS] Sending start_step for Step ${state.activeStepIndex}...');
           _wsService.sendStartStep(state.activeStepIndex);
         }
       }
@@ -118,13 +133,85 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       return;
     }
 
-    // Render the UI only when all agents finish their job
+    // Progressive hydration: YouTube Curator finished indexing in background
+    if (type == 'step_videos_ready') {
+      final stepIdx = event['step_index'] as int? ?? state.activeStepIndex;
+      final rawVideos = event['videos'] as List<dynamic>? ?? [];
+      final durationMs = (event['duration_ms'] as num?)?.toDouble();
+
+      final durationText = durationMs != null && durationMs > 0
+          ? '${durationMs.toStringAsFixed(0)} ms (${(durationMs / 1000).toStringAsFixed(2)}s)'
+          : 'completed';
+
+      debugPrint('''
+╔════════════════════════════════════════════════════════════════════
+║ 🎬 [YouTubeCuratorAgent Completed] Step $stepIdx
+╟────────────────────────────────────────────────────────────────────
+║  • Curation & Transcript Indexing:  $durationText
+║  • Video Clips Curated:             ${rawVideos.length} clip(s)
+║  • UI State:                        Shimmer Skeleton -> Video Cards hydrated
+╚════════════════════════════════════════════════════════════════════''');
+
+      final currentSession = state.session;
+      if (currentSession != null && stepIdx >= 0 && stepIdx < currentSession.steps.length) {
+        final updatedSteps = List<MilestoneStep>.from(currentSession.steps);
+        updatedSteps[stepIdx] = updatedSteps[stepIdx].copyWith(videos: rawVideos);
+        final updatedCurating = Set<int>.from(state.curatingVideoSteps)..remove(stepIdx);
+
+        state = state.copyWith(
+          session: currentSession.copyWith(steps: updatedSteps),
+          curatingVideoSteps: updatedCurating,
+        );
+      }
+      return;
+    }
+
+    // Render the UI only when all core agents finish their job
     if (type == 'step_complete') {
       _backendStopwatch.stop();
       _isRegenerating = false;
       _lastBackendMs = _backendStopwatch.elapsedMilliseconds;
       debugPrint('✅ [Client WS] "step_complete" received for Step $_currentTrackingStepIndex in ${_lastBackendMs}ms (${(_lastBackendMs / 1000).toStringAsFixed(2)}s). Fetching full session data...');
       loadSession(session.sessionId, fromStepComplete: true, silent: true);
+      return;
+    }
+
+    if (type == 'perf_summary') {
+      final stepIdx = event['step_index'] as int? ?? -1;
+      final timings = event['timings_ms'] as Map<String, dynamic>? ?? {};
+      final youtubeStatus = event['youtube_status'] as String? ?? '';
+      final total = (timings['total_backend_ms'] as num?)?.toDouble() ?? 0;
+      final tutor = (timings['SocraticTutorAgent'] as num?)?.toDouble() ?? 0;
+      final youtubeNum = (timings['YouTubeCuratorAgent'] as num?)?.toDouble();
+      final academic = (timings['AcademicResearcherAgent'] as num?)?.toDouble() ?? 0;
+      final quiz = (timings['QuizAgent'] as num?)?.toDouble() ?? 0;
+      final dbPersist = (timings['db_persist'] as num?)?.toDouble() ?? 0;
+      final parallelGather = (timings['parallel_gather_wall'] as num?)?.toDouble() ?? 0;
+
+      String youtubeLine;
+      if (youtubeNum != null && youtubeNum > 0) {
+        youtubeLine = '${youtubeNum.toStringAsFixed(0).padLeft(6)} ms';
+      } else if (youtubeStatus == 'cached') {
+        youtubeLine = '     0 ms (cached)';
+      } else if (youtubeStatus == 'in_background' || youtubeNum == null) {
+        youtubeLine = '⏳ in background...';
+      } else {
+        youtubeLine = '     0 ms';
+      }
+
+      debugPrint('''
+╔════════════════════════════════════════════════════════════════════
+║ 🖥️  [Backend Perf Summary] Step $stepIdx
+╟────────────────────────────────────────────────────────────────────
+║  • SocraticTutorAgent (stream):  ${tutor.toStringAsFixed(0).padLeft(6)} ms
+║  • YouTubeCuratorAgent:          $youtubeLine
+║  • AcademicResearcherAgent:      ${academic.toStringAsFixed(0).padLeft(6)} ms
+║  • QuizAgent:                    ${quiz.toStringAsFixed(0).padLeft(6)} ms
+║  • Parallel gather wall:         ${parallelGather.toStringAsFixed(0).padLeft(6)} ms
+║  • DB Persist (update_session):  ${dbPersist.toStringAsFixed(0).padLeft(6)} ms
+╟────────────────────────────────────────────────────────────────────
+║  ⚡ Total backend time:           ${total.toStringAsFixed(0).padLeft(6)} ms (${(total / 1000).toStringAsFixed(2)}s)
+╚════════════════════════════════════════════════════════════════════''');
       return;
     }
 
@@ -158,6 +245,32 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
 
     if (type == 'error') {
       debugPrint('❌ [Client WS] Error event received: ${event['message']}');
+      _isStepGenerationActive = false;
+      _isRegenerating = false;
+      _stepTotalStopwatch.stop();
+      _backendStopwatch.stop();
+      state = state.copyWith(
+        isLoading: false,
+        isSynthesizing: false,
+        error: event['message']?.toString() ?? 'An error occurred during step synthesis',
+      );
+      return;
+    }
+
+    if (type == 'ws_closed') {
+      debugPrint('⚠️ [Client WS] Connection closed.');
+      if (_isStepGenerationActive || state.isLoading) {
+        _isStepGenerationActive = false;
+        _isRegenerating = false;
+        _stepTotalStopwatch.stop();
+        _backendStopwatch.stop();
+        state = state.copyWith(
+          isLoading: false,
+          isSynthesizing: false,
+          error: 'Connection to learning server was closed. Please try reloading or regenerating the step.',
+        );
+      }
+      return;
     }
   }
 
@@ -170,7 +283,6 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     debugPrint('🚀 [Client] Starting new journey for "$topic" ($mode, $level)...');
     _stepTotalStopwatch.reset();
     _stepTotalStopwatch.start();
-    _isStepGenerationActive = true;
     _currentTrackingStepIndex = 0;
 
     state = state.copyWith(isLoading: true, isSynthesizing: true, clearError: true);
@@ -180,11 +292,13 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       journeyApiWatch.stop();
       debugPrint('📋 [Client API] Orchestrator milestone plan created in ${journeyApiWatch.elapsedMilliseconds}ms (${(journeyApiWatch.elapsedMilliseconds / 1000).toStringAsFixed(2)}s). Total steps: ${response.steps.length}');
 
+      final updatedCurating = Set<int>.from(state.curatingVideoSteps)..add(0);
       state = state.copyWith(
         session: response,
         activeStepIndex: 0,
         isLoading: true,
         isSynthesizing: true, // Keep neural loader visible while step 0 agents run
+        curatingVideoSteps: updatedCurating,
       );
       
       // Prepend to sessionsProvider immediately so history sidebar & recent journeys update in real time
@@ -608,11 +722,21 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       final targetStepIndex = stepIndex;
       final wasStepGeneration = _isStepGenerationActive || fromStepComplete;
 
+      // If the loaded step already has videos, remove it from curatingVideoSteps
+      final updatedCurating = Set<int>.from(state.curatingVideoSteps);
+      if (stepIndex >= 0 && stepIndex < response.steps.length) {
+        final loadedStep = response.steps[stepIndex];
+        if (loadedStep.videos != null && loadedStep.videos!.isNotEmpty) {
+          updatedCurating.remove(stepIndex);
+        }
+      }
+
       state = state.copyWith(
         session: response,
         activeStepIndex: stepIndex,
         isLoading: false,
         isSynthesizing: false,
+        curatingVideoSteps: updatedCurating,
       );
 
       // Measure time until the frame is laid out and painted on screen
@@ -674,7 +798,27 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
         _backendStopwatch.start();
         _isStepGenerationActive = true;
 
-        state = state.copyWith(activeStepIndex: index, isLoading: true, isSynthesizing: true);
+        final updatedCurating = Set<int>.from(state.curatingVideoSteps)..add(index);
+        state = state.copyWith(
+          activeStepIndex: index,
+          isLoading: true,
+          isSynthesizing: true,
+          curatingVideoSteps: updatedCurating,
+        );
+
+        // BUG FIX (Issue 2 — infinite loader): The WS connection is closed by the
+        // server after step_complete is processed. If not reconnected before sending
+        // start_step, the message is silently dropped and the loader spins forever.
+        final session = state.session!;
+        if (!_wsService.isConnected) {
+          debugPrint('🔌 [Client WS] Connection is closed. Reconnecting before sending start_step for Step $index...');
+          _wsService.connect(session.sessionId);
+          // The WS will emit a "plan" event on connect; sendStartStep is handled there.
+          // We return here to avoid a double start_step send.
+          return;
+        }
+
+        debugPrint('📤 [Client WS] Sending start_step for Step $index (connection already open)');
         _wsService.sendStartStep(index);
       } else {
         debugPrint('🔄 [Client] Switching to cached Step $index...');
@@ -693,6 +837,8 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
 
   void clearSession() {
     _wsService.disconnect();
+    _isStepGenerationActive = false;
+    _isRegenerating = false;
     state = state.copyWith(
       clearSession: true,
       activeStepIndex: 0,

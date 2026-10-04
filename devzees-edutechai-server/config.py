@@ -107,7 +107,7 @@ class Settings(BaseSettings):
     arxiv_api_url: str = "https://export.arxiv.org/api/query"
 
     # ─── Database ────────────────────────────────────────────────
-    database_url: str = "sqlite+aiosqlite:///./data/edutechai.db"
+    database_url: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/edutechai"
     database_schema: str = "edutechAI"
     auto_create_tables: bool = True
 

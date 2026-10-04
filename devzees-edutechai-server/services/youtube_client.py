@@ -9,7 +9,10 @@ Daily quota: 100 search.list calls/day (as of June 2026).
 
 from __future__ import annotations
 
+import asyncio
 import logging
+import re
+import time
 from typing import Any
 
 import httpx
@@ -30,6 +33,8 @@ class YouTubeClient:
     2. get_transcript() — youtube-transcript-api
     3. get_timestamped_clip() — ChromaDB semantic search for best timestamp
     """
+
+    _scraping_blocked_until: float = 0.0
 
     def __init__(self):
         self.settings = get_settings()
@@ -115,6 +120,14 @@ class YouTubeClient:
         Returns:
             List of transcript segments: [{"text": "...", "start": 12.5, "duration": 5.0}, ...]
         """
+        if time.time() < self._scraping_blocked_until:
+            remaining = int(self._scraping_blocked_until - time.time())
+            logger.info(
+                f"[YouTubeClient] YouTube IP scraping is temporarily blocked (cooldown {remaining}s remaining) "
+                f"— skipping transcript scrape for {video_id} and using fast chapter/metadata fallback."
+            )
+            return []
+
         try:
             api = YouTubeTranscriptApi()
             transcript_list = api.list(video_id)
@@ -173,8 +186,82 @@ class YouTubeClient:
             return transcript
 
         except Exception as e:
-            logger.warning(f"Transcript extraction failed for {video_id}: {e}")
+            err_msg = str(e)
+            if any(term in err_msg for term in ["blocking requests from your IP", "sorry/index", "SSLEOFError", "Read timed out", "IpBlocked", "RequestBlocked"]):
+                YouTubeClient._scraping_blocked_until = time.time() + 600
+                logger.warning(f"[YouTubeClient] YouTube IP block / rate limit detected. Tripping scraping circuit breaker for 10m: {e}")
+            else:
+                logger.warning(f"Transcript extraction failed for {video_id}: {e}")
             return []
+
+    def _find_chapter_match(
+        self,
+        video_id: str,
+        video_title: str,
+        channel: str,
+        thumbnail_url: str,
+        description: str,
+        query: str,
+    ) -> YouTubeClip | None:
+        """Parse YouTube description for timestamped chapters and match query."""
+        if not description:
+            return None
+
+        # Regex for lines like "01:23 Topic Name", "0:00 Intro", "1:02:30 Advanced Pointers"
+        chapter_regex = re.compile(
+            r'^(?:(?P<hours>\d{1,2}):)?(?P<minutes>\d{1,2}):(?P<seconds>\d{2})\s*[-–—:]?\s*(?P<title>.+)$',
+            re.MULTILINE,
+        )
+
+        chapters: list[tuple[int, str]] = []
+        for match in chapter_regex.finditer(description):
+            h = int(match.group('hours') or 0)
+            m = int(match.group('minutes'))
+            s = int(match.group('seconds'))
+            start_seconds = h * 3600 + m * 60 + s
+            title = match.group('title').strip()
+            chapters.append((start_seconds, title))
+
+        if not chapters or len(chapters) < 2:
+            return None
+
+        keywords = [kw for kw in re.findall(r'\w+', query.lower()) if len(kw) > 2]
+        if not keywords:
+            return None
+
+        best_chapter = None
+        best_score = 0
+        best_index = -1
+
+        for i, (start_sec, ch_title) in enumerate(chapters):
+            ch_lower = ch_title.lower()
+            score = sum(2 if kw in ch_lower else 0 for kw in keywords)
+            if score > best_score:
+                best_score = score
+                best_chapter = (start_sec, ch_title)
+                best_index = i
+
+        if best_chapter and best_score >= 2:
+            start_time, ch_title = best_chapter
+            if best_index + 1 < len(chapters):
+                end_time = chapters[best_index + 1][0]
+                if end_time - start_time > 300:  # cap at 5 min
+                    end_time = start_time + 240
+            else:
+                end_time = start_time + 180
+
+            logger.info(f"[YouTubeClient] {video_id}: Found chapter match '{ch_title}' at {start_time}s (score={best_score})")
+            return YouTubeClip(
+                video_id=video_id,
+                title=video_title,
+                channel=channel,
+                thumbnail_url=thumbnail_url,
+                start_time=start_time,
+                end_time=end_time,
+                relevance_snippet=f"[Chapter: {ch_title}] Direct match from video chapter index.",
+            )
+
+        return None
 
     async def get_timestamped_clip(
         self,
@@ -189,16 +276,73 @@ class YouTubeClient:
         Find the best timestamp range in a video's transcript for a given query.
 
         Pipeline:
-        1. VectorStore (ChromaDB) semantic search (if transcript & vector store available).
-        2. Keyword score matching in transcript.
-        3. Tier 3 Fallback: Returns video starting at 0s with snippet preview if transcript unavailable.
+        0. Instant Chapter match (0ms) — scans video description for chapter markers.
+        1. ChromaDB cache check — if already embedded, skip transcript fetch entirely.
+        2. Fast Keyword match — if transcript has strong keyword density, match in <5ms.
+        3. VectorStore (ChromaDB) semantic search with optimized chunk_size (Tier 1).
+        4. Returns overview clip at 0s if transcript unavailable (Tier 3 fallback).
         """
-        transcript = self.get_transcript(video_id)
+        t0 = time.time()
 
-        # Tier 3 Fallback: If transcript unavailable, still return video clip starting at 0
+        # ── Step 0: Fast-path description chapter detection (0ms) ────────
+        chapter_clip = self._find_chapter_match(
+            video_id=video_id,
+            video_title=video_title,
+            channel=channel,
+            thumbnail_url=thumbnail_url,
+            description=description,
+            query=query,
+        )
+        if chapter_clip:
+            logger.info(f"[YouTubeClient] {video_id}: Resolved via video chapter in {time.time()-t0:.3f}s")
+            return chapter_clip
+
+        # ── Step 1: ChromaDB cache check ─────────────────────────────────
+        try:
+            from services.vector_store import VectorStore
+            vs = VectorStore()
+            already_embedded = await vs.is_transcript_embedded(video_id)
+        except Exception:
+            vs = None
+            already_embedded = False
+
+        if already_embedded and vs:
+            logger.info(f"[YouTubeClient] {video_id}: ChromaDB cache HIT — skipping transcript fetch")
+            best_match = await vs.find_best_timestamp(
+                video_id=video_id,
+                transcript=[],
+                query=query,
+            )
+            if best_match:
+                logger.info(f"[YouTubeClient] {video_id}: ChromaDB cached match found in {time.time()-t0:.2f}s")
+                return YouTubeClip(
+                    video_id=video_id,
+                    title=video_title,
+                    channel=channel,
+                    thumbnail_url=thumbnail_url,
+                    start_time=best_match["start_time"],
+                    end_time=best_match["end_time"],
+                    relevance_snippet=best_match["snippet"],
+                )
+
+        # ── Step 2: Fetch transcript from YouTube (with 3.5s timeout) ─────
+        try:
+            transcript = await asyncio.wait_for(
+                asyncio.to_thread(self.get_transcript, video_id),
+                timeout=3.5,
+            )
+            logger.info(f"[YouTubeClient] {video_id}: transcript fetched in {time.time()-t0:.2f}s ({len(transcript)} segments)")
+        except asyncio.TimeoutError:
+            logger.warning(f"[YouTubeClient] {video_id}: transcript fetch timed out (3.5s limit) — using fallback")
+            transcript = []
+        except Exception as e:
+            logger.warning(f"[YouTubeClient] {video_id}: transcript fetch failed ({e}) — using fallback")
+            transcript = []
+
+        # ── Step 3: Tier 3 Fallback if no transcript available ───────────
         if not transcript:
             snippet_preview = description[:180] + "..." if description else "Recommended video for this learning step."
-            logger.info(f"Using Tier 3 fallback (no transcript) for video {video_id}")
+            logger.info(f"[YouTubeClient] {video_id}: Tier 3 fallback (no transcript) in {time.time()-t0:.2f}s")
             return YouTubeClip(
                 video_id=video_id,
                 title=video_title,
@@ -209,33 +353,43 @@ class YouTubeClient:
                 relevance_snippet=f"[Overview] {snippet_preview}",
             )
 
-        # Tier 1: Try semantic search with ChromaDB
-        try:
-            from services.vector_store import VectorStore
-            vs = VectorStore()
-            best_match = await vs.find_best_timestamp(
-                video_id=video_id,
-                transcript=transcript,
-                query=query,
-            )
-            if best_match:
-                return YouTubeClip(
-                    video_id=video_id,
-                    title=video_title,
-                    channel=channel,
-                    thumbnail_url=thumbnail_url,
-                    start_time=best_match["start_time"],
-                    end_time=best_match["end_time"],
-                    relevance_snippet=best_match["snippet"],
-                )
-        except ImportError:
-            logger.info("VectorStore not available — using keyword fallback.")
-        except Exception as e:
-            logger.warning(f"ChromaDB search failed, using fallback: {e}")
+        # ── Step 4: Fast Keyword matching heuristic (<5ms) ───────────────
+        keyword_clip = self._keyword_match(video_id, video_title, channel, thumbnail_url, transcript, query)
+        # If keyword matching found an explicit multi-term hit (best_score >= 2), use it directly
+        if "score: " in keyword_clip.relevance_snippet:
+            score_str = keyword_clip.relevance_snippet.split("score: ")[1].rstrip(")")
+            try:
+                score = int(score_str)
+                if score >= 2:
+                    logger.info(f"[YouTubeClient] {video_id}: Resolved via fast keyword match (score={score}) in {time.time()-t0:.2f}s")
+                    return keyword_clip
+            except ValueError:
+                pass
 
-        # Tier 2: Fallback keyword matching
-        clip = self._keyword_match(video_id, video_title, channel, thumbnail_url, transcript, query)
-        return clip
+        # ── Step 5: Semantic search via ChromaDB (optimized chunk_size) ──
+        if vs:
+            try:
+                best_match = await vs.find_best_timestamp(
+                    video_id=video_id,
+                    transcript=transcript,
+                    query=query,
+                )
+                if best_match:
+                    logger.info(f"[YouTubeClient] {video_id}: ChromaDB semantic match found in {time.time()-t0:.2f}s")
+                    return YouTubeClip(
+                        video_id=video_id,
+                        title=video_title,
+                        channel=channel,
+                        thumbnail_url=thumbnail_url,
+                        start_time=best_match["start_time"],
+                        end_time=best_match["end_time"],
+                        relevance_snippet=best_match["snippet"],
+                    )
+            except Exception as e:
+                logger.warning(f"[YouTubeClient] {video_id}: ChromaDB search failed ({e})")
+
+        # Fallback to keyword clip if semantic returned nothing
+        return keyword_clip
 
     def _keyword_match(
         self,

@@ -3,10 +3,7 @@ EduTechAI — Database Service
 
 SQLAlchemy async engine and session factory. Reads DATABASE_URL from config.
 
-To switch from SQLite to PostgreSQL, just change .env:
-    DATABASE_URL=postgresql+asyncpg://user:pass@localhost:5432/edutechai
-And install asyncpg:
-    pip install asyncpg
+Uses PostgreSQL via asyncpg driver.
 """
 
 from __future__ import annotations
@@ -53,10 +50,7 @@ def _get_engine(settings: Settings | None = None) -> AsyncEngine:
     if _engine is None:
         settings = settings or get_settings()
         connect_args = {}
-        # SQLite needs check_same_thread=False for async
-        if "sqlite" in settings.database_url:
-            connect_args["check_same_thread"] = False
-        elif "postgresql" in settings.database_url:
+        if "postgresql" in settings.database_url:
             # Route all queries and table creation exclusively to the target schema
             # Disable prepared statement caching for compatibility with PgBouncer / Supabase pooler
             connect_args["statement_cache_size"] = 0
@@ -134,10 +128,6 @@ async def init_db(settings: Settings | None = None) -> None:
         logger.info("Automatic DDL table creation is disabled (AUTO_CREATE_TABLES=false).")
         _db_initialized = True
         return
-
-    # Ensure data directory exists for SQLite
-    if "sqlite" in settings.database_url:
-        settings.data_dir  # This creates the dir via the property
 
     engine = _get_engine(settings)
     async with engine.begin() as conn:

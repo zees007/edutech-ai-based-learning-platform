@@ -14,6 +14,8 @@ class LearningWebSocketService {
 
   bool get isConnected => _channel != null;
 
+  bool _isDisconnecting = false;
+
   Future<void> connect(String sessionId) async {
     if (_channel != null) {
       disconnect();
@@ -55,15 +57,26 @@ class LearningWebSocketService {
       },
       onDone: () {
         debugPrint('WebSocket connection closed.');
+        final wasIntentional = _isDisconnecting;
+        _channel = null;
+        _subscription = null;
+        if (!wasIntentional) {
+          _eventController.add({
+            'event_type': 'ws_closed',
+            'message': 'WebSocket connection closed unexpectedly.',
+          });
+        }
       },
     );
   }
 
   void disconnect() {
+    _isDisconnecting = true;
     _subscription?.cancel();
     _channel?.sink.close();
     _channel = null;
     _subscription = null;
+    _isDisconnecting = false;
   }
 
   void sendStartStep(int stepIndex) {

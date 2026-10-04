@@ -150,7 +150,7 @@ class _RolePrivilegeTabState extends ConsumerState<RolePrivilegeTab> {
                       setState(() {
                         _editingRoleId = r.id;
                         _roleNameController.text = r.name;
-                        _selectedPrivilegeIds = r.privileges.map((p) => p.id as int).toList();
+                        _selectedPrivilegeIds = r.privileges.map((p) => p.id).toList();
                       });
                     },
                     tooltip: 'Edit Role',
@@ -414,7 +414,7 @@ class _RolePrivilegeTabState extends ConsumerState<RolePrivilegeTab> {
 class _PrivilegeExpandableCell extends StatefulWidget {
   final List<dynamic> privileges;
 
-  const _PrivilegeExpandableCell({Key? key, required this.privileges}) : super(key: key);
+  const _PrivilegeExpandableCell({required this.privileges});
 
   @override
   State<_PrivilegeExpandableCell> createState() => _PrivilegeExpandableCellState();
@@ -515,11 +515,10 @@ class _PrivilegeTreeView extends StatefulWidget {
   final ValueChanged<List<int>> onChanged;
 
   const _PrivilegeTreeView({
-    Key? key,
     required this.allPrivileges,
     required this.selectedIds,
     required this.onChanged,
-  }) : super(key: key);
+  });
 
   @override
   State<_PrivilegeTreeView> createState() => _PrivilegeTreeViewState();

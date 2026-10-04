@@ -1,0 +1,6 @@
+info:
+  name: Roles
+  type: folder
+
+request:
+  auth: inherit

@@ -1,0 +1,112 @@
+info:
+  name: Checkout Subscription
+  type: http
+  seq: 3
+  tags:
+    - Subscriptions
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/v1/subscriptions/checkout"
+  body:
+    type: json
+    data: |-
+      {
+        "tier": "",
+        "billing_cycle": "",
+        "gateway_provider": "",
+        "coupon_code": "",
+        "card_number": "",
+        "exp_month": "",
+        "exp_year": "",
+        "cvc": ""
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+examples:
+  - name: 200 Response
+    description: Successful Response
+    request:
+      url: "{{baseUrl}}/api/v1/subscriptions/checkout"
+      method: POST
+      body:
+        type: json
+        data: |-
+          {
+            "tier": "",
+            "billing_cycle": "",
+            "gateway_provider": "",
+            "coupon_code": "",
+            "card_number": "",
+            "exp_month": "",
+            "exp_year": "",
+            "cvc": ""
+          }
+    response:
+      status: 200
+      statusText: OK
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "success": false,
+            "message": "",
+            "transaction_id": "",
+            "tier": "",
+            "billing_cycle": "",
+            "amount_paid": 0,
+            "currency": "",
+            "gateway_provider": "",
+            "current_period_end": "",
+            "receipt_url": ""
+          }
+  - name: 422 Response
+    description: Validation Error
+    request:
+      url: "{{baseUrl}}/api/v1/subscriptions/checkout"
+      method: POST
+      body:
+        type: json
+        data: |-
+          {
+            "tier": "",
+            "billing_cycle": "",
+            "gateway_provider": "",
+            "coupon_code": "",
+            "card_number": "",
+            "exp_month": "",
+            "exp_year": "",
+            "cvc": ""
+          }
+    response:
+      status: 422
+      statusText: Unprocessable Entity
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "detail": [
+              {
+                "loc": [],
+                "msg": "",
+                "type": "",
+                "input": "",
+                "ctx": {}
+              }
+            ]
+          }
+
+docs: Initiate or complete subscription upgrade via requested gateway (Paddle, Sandbox, Razorpay).

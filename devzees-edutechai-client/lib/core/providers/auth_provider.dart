@@ -7,7 +7,6 @@ import '../services/api_client.dart';
 import 'active_session_provider.dart';
 import 'learning_provider.dart';
 import 'gamification_provider.dart';
-import 'user_provider.dart';
 
 final authServiceProvider = Provider<AuthService>((ref) {
   return AuthService();

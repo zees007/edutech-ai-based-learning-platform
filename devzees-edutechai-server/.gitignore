@@ -15,6 +15,7 @@ env/
 # ─── Environment Variables & Secrets ───
 .env
 .env.*
+!.env.example
 .evn
 .evn.*
 .streamlit/secrets.toml
@@ -38,5 +39,9 @@ Thumbs.db
 # ─── Testing ───
 .pytest_cache/
 .mypy_cache/
-htmlcov/
 .coverage
+
+# ─── API Collections ───
+# Ensure the API collections are never ignored (even if they contain subfolders named 'env' or '.env' files)
+!api-collection/
+!api-collection/**

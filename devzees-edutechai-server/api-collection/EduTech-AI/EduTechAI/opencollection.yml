@@ -1,0 +1,14 @@
+opencollection: 1.0.0
+
+info:
+  name: EduTechAI
+
+docs:
+  content: Adaptive AI-powered learning platform with multi-agent Socratic tutoring, YouTube clips, academic resources, and quizzes.
+  type: text/markdown
+bundled: false
+extensions:
+  bruno:
+    ignore:
+      - node_modules
+      - .git

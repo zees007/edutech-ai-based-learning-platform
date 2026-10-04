@@ -1,0 +1,124 @@
+info:
+  name: Update User Subscription Tier
+  type: http
+  seq: 2
+  tags:
+    - Subscriptions
+
+http:
+  method: PUT
+  url: "{{baseUrl}}/api/v1/subscriptions/users/:user_id/tier"
+  params:
+    - name: user_id
+      value: ""
+      type: path
+  body:
+    type: json
+    data: |-
+      {
+        "tier": "",
+        "status": "",
+        "billing_cycle": "",
+        "gateway_provider": "",
+        "current_period_end": "",
+        "payment_gateway_ref": ""
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+examples:
+  - name: 200 Response
+    description: Successful Response
+    request:
+      url: "{{baseUrl}}/api/v1/subscriptions/users/:user_id/tier"
+      method: PUT
+      params:
+        - name: user_id
+          value: ""
+          type: path
+      body:
+        type: json
+        data: |-
+          {
+            "tier": "",
+            "status": "",
+            "billing_cycle": "",
+            "gateway_provider": "",
+            "current_period_end": "",
+            "payment_gateway_ref": ""
+          }
+    response:
+      status: 200
+      statusText: OK
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "id": 0,
+            "user_id": "",
+            "tier": "",
+            "status": "",
+            "billing_cycle": "",
+            "price_amount": 0,
+            "current_period_start": "",
+            "current_period_end": "",
+            "gateway_provider": "",
+            "gateway_subscription_id": "",
+            "gateway_customer_id": "",
+            "payment_gateway_ref": "",
+            "cancel_at_period_end": false,
+            "auto_renew": false
+          }
+  - name: 422 Response
+    description: Validation Error
+    request:
+      url: "{{baseUrl}}/api/v1/subscriptions/users/:user_id/tier"
+      method: PUT
+      params:
+        - name: user_id
+          value: ""
+          type: path
+      body:
+        type: json
+        data: |-
+          {
+            "tier": "",
+            "status": "",
+            "billing_cycle": "",
+            "gateway_provider": "",
+            "current_period_end": "",
+            "payment_gateway_ref": ""
+          }
+    response:
+      status: 422
+      statusText: Unprocessable Entity
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "detail": [
+              {
+                "loc": [],
+                "msg": "",
+                "type": "",
+                "input": "",
+                "ctx": {}
+              }
+            ]
+          }
+
+docs: |-
+  Directly upgrade or downgrade a user's subscription tier (free, pro, ultra).
+  Automatically updates the user's assigned role in the database.

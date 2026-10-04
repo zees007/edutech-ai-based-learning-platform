@@ -4,7 +4,6 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_math_fork/flutter_math.dart';
 import 'package:devzees_edutechai_client/presentation/pages/learning/widgets/export/markdown_preview_dialog.dart';
 import 'package:devzees_edutechai_client/presentation/pages/learning/widgets/workspace/mermaid_web_view.dart';
-import 'package:devzees_edutechai_client/presentation/pages/learning/widgets/workspace/keep_alive_wrapper.dart';
 
 void main() {
   group('Markdown Preview Flowchart & Preprocessing Tests', () {
@@ -196,14 +195,4 @@ Inline formulas: \( a^2 + b^2 = c^2 \) and $O(n \log n)$ complexity.
   });
 }
 
-class _TestMermaidCodeBlockDetector extends MarkdownElementBuilder {
-  @override
-  Widget? visitElementAfter(element, preferredStyle) {
-    final text = element.textContent;
-    if (element.attributes['class']?.contains('language-mermaid') == true ||
-        text.startsWith('graph ')) {
-      return Container(key: const Key('mermaid_detected'));
-    }
-    return null;
-  }
-}
+

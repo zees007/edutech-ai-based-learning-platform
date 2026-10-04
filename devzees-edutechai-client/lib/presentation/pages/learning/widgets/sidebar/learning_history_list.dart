@@ -6,32 +6,58 @@ import '../../../../widgets/shimmer_loading.dart';
 import 'learning_history_item.dart';
 import 'learning_history_skeleton.dart';
 
-class LearningHistoryList extends ConsumerWidget {
-  final ScrollController scrollController;
+class LearningHistoryList extends ConsumerStatefulWidget {
   final bool expanded;
 
   const LearningHistoryList({
     super.key,
-    required this.scrollController,
     required this.expanded,
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<LearningHistoryList> createState() => _LearningHistoryListState();
+}
+
+class _LearningHistoryListState extends ConsumerState<LearningHistoryList> {
+  late final ScrollController _scrollController;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.hasClients &&
+        _scrollController.position.pixels >=
+            _scrollController.position.maxScrollExtent - 200) {
+      ref.read(sessionsProvider.notifier).loadMore();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final state = ref.watch(sessionsProvider);
 
     if (state.isLoading) {
       return ShimmerLoading(
         child: ListView(
-          controller: scrollController,
           padding: const EdgeInsets.symmetric(horizontal: 12),
           physics: const NeverScrollableScrollPhysics(),
           children: [
-            LearningHistorySkeletonItem(expanded: expanded, titleWidth: 120),
-            LearningHistorySkeletonItem(expanded: expanded, titleWidth: 95),
-            LearningHistorySkeletonItem(expanded: expanded, titleWidth: 140),
-            LearningHistorySkeletonItem(expanded: expanded, titleWidth: 110),
-            LearningHistorySkeletonItem(expanded: expanded, titleWidth: 85),
+            LearningHistorySkeletonItem(expanded: widget.expanded, titleWidth: 120),
+            LearningHistorySkeletonItem(expanded: widget.expanded, titleWidth: 95),
+            LearningHistorySkeletonItem(expanded: widget.expanded, titleWidth: 140),
+            LearningHistorySkeletonItem(expanded: widget.expanded, titleWidth: 110),
+            LearningHistorySkeletonItem(expanded: widget.expanded, titleWidth: 85),
           ],
         ),
       );
@@ -90,9 +116,9 @@ class LearningHistoryList extends ConsumerWidget {
         mainAxisMargin: 4.0,
       ),
       child: Scrollbar(
-        controller: scrollController,
+        controller: _scrollController,
         child: ListView.builder(
-          controller: scrollController,
+          controller: _scrollController,
           padding: const EdgeInsets.symmetric(horizontal: 12),
           itemCount: state.items.length + (state.isFetchingMore ? 1 : 0),
           itemBuilder: (context, index) {
@@ -114,7 +140,7 @@ class LearningHistoryList extends ConsumerWidget {
             return LearningHistoryItem(
               session: state.items[index],
               index: index,
-              expanded: expanded,
+              expanded: widget.expanded,
             );
           },
         ),

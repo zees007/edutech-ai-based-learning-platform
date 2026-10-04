@@ -12,7 +12,6 @@ import 'learning_history_list.dart';
 class LearningSidebar extends ConsumerStatefulWidget {
   final bool expanded;
   final bool isMobile;
-  final ScrollController scrollController;
   final VoidCallback onToggle;
   final VoidCallback onClose;
 
@@ -20,7 +19,6 @@ class LearningSidebar extends ConsumerStatefulWidget {
     super.key,
     required this.expanded,
     required this.isMobile,
-    required this.scrollController,
     required this.onToggle,
     required this.onClose,
   });
@@ -62,7 +60,6 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
             else
               Expanded(
                 child: LearningHistoryList(
-                  scrollController: widget.scrollController,
                   expanded: widget.expanded,
                 ),
               )

@@ -17,9 +17,11 @@ from models.schemas import (
     AcademicPaperEvent,
     ExplanationChunkEvent,
     PlanEvent,
+    Quiz,
     QuizEvent,
     SocraticQuestionsEvent,
     StepCompleteEvent,
+    StepVideosReadyEvent,
     WSEvent,
     YouTubeClipEvent,
 )
@@ -99,6 +101,21 @@ class SynthesizerAgent(BaseAgent):
             for clip in step.videos
         ]
 
+    def create_step_videos_ready_event(
+        self,
+        memory: SharedMemory,
+        step_index: int,
+        duration_ms: float = 0.0,
+    ) -> StepVideosReadyEvent:
+        """Create a WebSocket event when background YouTube curation completes."""
+        step = memory.steps[step_index] if step_index < len(memory.steps) else None
+        return StepVideosReadyEvent(
+            session_id=memory.session_id,
+            step_index=step_index,
+            videos=step.videos if step else [],
+            duration_ms=duration_ms,
+        )
+
     def create_academic_paper_events(
         self,
         memory: SharedMemory,
@@ -123,7 +140,6 @@ class SynthesizerAgent(BaseAgent):
         step_index: int,
     ) -> QuizEvent | None:
         """Create a WebSocket event for the quiz (after all agents finish)."""
-        from models.schemas import Quiz
         step = memory.steps[step_index] if step_index < len(memory.steps) else None
         if not step or not step.quiz:
             return None

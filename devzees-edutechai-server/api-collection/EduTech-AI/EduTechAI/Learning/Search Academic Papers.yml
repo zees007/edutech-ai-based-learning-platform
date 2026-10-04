@@ -1,0 +1,105 @@
+info:
+  name: Search Academic Papers
+  type: http
+  seq: 9
+  tags:
+    - Learning
+
+http:
+  method: GET
+  url: "{{baseUrl}}/api/v1/academic/search"
+  params:
+    - name: query
+      value: ""
+      type: query
+      description: Topic or query keywords for scholarly research
+    - name: max_results
+      value: "5"
+      type: query
+      description: Maximum number of papers to return
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+examples:
+  - name: 200 Response
+    description: Successful Response
+    request:
+      url: "{{baseUrl}}/api/v1/academic/search"
+      method: GET
+      params:
+        - name: query
+          value: ""
+          type: query
+          description: Topic or query keywords for scholarly research
+        - name: max_results
+          value: "5"
+          type: query
+          description: Maximum number of papers to return
+    response:
+      status: 200
+      statusText: OK
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          [
+            {
+              "title": "",
+              "authors": [],
+              "year": "",
+              "abstract": "",
+              "tldr": "",
+              "pdf_url": "",
+              "source": "",
+              "relevance_score": 0,
+              "doi": "",
+              "url": ""
+            }
+          ]
+  - name: 422 Response
+    description: Validation Error
+    request:
+      url: "{{baseUrl}}/api/v1/academic/search"
+      method: GET
+      params:
+        - name: query
+          value: ""
+          type: query
+          description: Topic or query keywords for scholarly research
+        - name: max_results
+          value: "5"
+          type: query
+          description: Maximum number of papers to return
+    response:
+      status: 422
+      statusText: Unprocessable Entity
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "detail": [
+              {
+                "loc": [],
+                "msg": "",
+                "type": "",
+                "input": "",
+                "ctx": {}
+              }
+            ]
+          }
+
+docs: |-
+  Search across OpenAlex, Semantic Scholar, and arXiv in parallel.
+  Returns deduplicated, relevance-ranked papers with AI TLDR summaries & open-access links.
+  Protected by ET_ACCESS_ACADEMIC_SEARCH privilege.

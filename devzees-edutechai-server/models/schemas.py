@@ -343,6 +343,15 @@ class ErrorEvent(WSEventBase):
     recoverable: bool = True
 
 
+class StepVideosReadyEvent(WSEventBase):
+    """Background YouTube Curator finished extracting timestamped clips."""
+
+    event_type: Literal["step_videos_ready"] = "step_videos_ready"
+    step_index: int
+    videos: list[YouTubeClip] = Field(default_factory=list)
+    duration_ms: float = 0.0
+
+
 # ─── Union type for all WebSocket events ─────────────────────────
 WSEvent = (
     PlanEvent
@@ -352,6 +361,7 @@ WSEvent = (
     | AcademicPaperEvent
     | QuizEvent
     | StepCompleteEvent
+    | StepVideosReadyEvent
     | XPUpdateEvent
     | ErrorEvent
 )

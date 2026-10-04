@@ -1,0 +1,6 @@
+info:
+  name: Quiz
+  type: folder
+
+request:
+  auth: inherit

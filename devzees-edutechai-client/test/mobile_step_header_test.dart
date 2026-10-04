@@ -23,7 +23,7 @@ void main() {
       final bool isCurrentStepComplete = stepStatus == 'complete' ||
           (isLastStep && isSessionComplete) ||
           (stepIndex < stepsCompleted);
-      final bool isReviewing = stepIndex < maxUnlockedIndex || isCurrentStepComplete;
+
       final bool canGoBack = stepIndex > 0;
       final bool canGoForward = stepIndex < totalSteps - 1 &&
           (isCurrentStepComplete || stepIndex < maxUnlockedIndex);
