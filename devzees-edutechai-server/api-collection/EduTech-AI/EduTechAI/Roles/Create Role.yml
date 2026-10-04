@@ -1,0 +1,99 @@
+info:
+  name: Create Role
+  type: http
+  seq: 3
+  tags:
+    - Roles
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/v1/roles/create"
+  body:
+    type: json
+    data: |-
+      {
+        "name": "",
+        "privilegeIds": []
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+examples:
+  - name: 201 Response
+    description: Successful Response
+    request:
+      url: "{{baseUrl}}/api/v1/roles/create"
+      method: POST
+      body:
+        type: json
+        data: |-
+          {
+            "name": "",
+            "privilegeIds": []
+          }
+    response:
+      status: 201
+      statusText: Created
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "id": "",
+            "name": "",
+            "privileges": [
+              {
+                "id": 0,
+                "name": "",
+                "code": "",
+                "order_number": "",
+                "parent_id": ""
+              }
+            ],
+            "created_at": "",
+            "retired": false,
+            "retired_at": "",
+            "retired_by": ""
+          }
+  - name: 422 Response
+    description: Validation Error
+    request:
+      url: "{{baseUrl}}/api/v1/roles/create"
+      method: POST
+      body:
+        type: json
+        data: |-
+          {
+            "name": "",
+            "privilegeIds": []
+          }
+    response:
+      status: 422
+      statusText: Unprocessable Entity
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "detail": [
+              {
+                "loc": [],
+                "msg": "",
+                "type": "",
+                "input": "",
+                "ctx": {}
+              }
+            ]
+          }
+
+docs: Create a new role with associated privilege IDs.

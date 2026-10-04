@@ -5,12 +5,18 @@ Handles transcript embedding, storage, and semantic search for
 matching YouTube transcript segments to learning step topics.
 
 Uses ChromaDB with its default embedding model (all-MiniLM-L6-v2).
+
+Storage note:
+- ChromaDB is PERSISTENT (data/chroma_db) — data survives server restarts.
+- Each unique video_id is embedded once (idempotent embed_transcript).
+- Storage grows with unique videos. Monitor via `collection.count()`.
 """
 
 from __future__ import annotations
 
 import asyncio
 import logging
+import time
 from typing import Any
 
 import chromadb
@@ -27,6 +33,14 @@ class VectorStore:
     Transcripts are chunked with timestamp metadata so semantic queries
     return the exact timestamp range matching the learning step.
     """
+
+    _embed_lock: asyncio.Lock | None = None
+
+    @classmethod
+    def get_lock(cls) -> asyncio.Lock:
+        if cls._embed_lock is None:
+            cls._embed_lock = asyncio.Lock()
+        return cls._embed_lock
 
     def __init__(self):
         self.settings = get_settings()
@@ -97,10 +111,10 @@ class VectorStore:
     ) -> int:
         """
         Embed a video's transcript chunks into ChromaDB.
-        Skips if already embedded.
+        Skips if already embedded (idempotent).
 
         Returns:
-            Number of chunks embedded.
+            Number of chunks embedded (0 if already cached).
         """
         # Check if already embedded
         existing = self.collection.get(
@@ -108,13 +122,14 @@ class VectorStore:
             limit=1,
         )
         if existing and existing["ids"]:
-            logger.info(f"Transcript for {video_id} already embedded. Skipping.")
+            logger.info(f"[VectorStore] Transcript for {video_id} already embedded — skipping embed.")
             return 0
 
         chunks = self.chunk_transcript(video_id, transcript)
         if not chunks:
             return 0
 
+        t0 = time.time()
         self.collection.add(
             ids=[c["id"] for c in chunks],
             documents=[c["text"] for c in chunks],
@@ -128,9 +143,26 @@ class VectorStore:
             ],
         )
 
-        logger.info(f"Embedded {len(chunks)} transcript chunks for video {video_id}")
+        elapsed = time.time() - t0
+        total_docs = self.collection.count()
+        logger.info(
+            f"[VectorStore] Embedded {len(chunks)} chunks for {video_id} in {elapsed:.2f}s. "
+            f"Total ChromaDB docs: {total_docs}"
+        )
         return len(chunks)
 
+    async def is_transcript_embedded(self, video_id: str) -> bool:
+        """
+        Check if a video's transcript is already in ChromaDB.
+        Used by the caller to skip transcript network fetch on cache-hits.
+        """
+        def _check() -> bool:
+            existing = self.collection.get(
+                where={"video_id": video_id},
+                limit=1,
+            )
+            return bool(existing and existing["ids"])
+        return await asyncio.to_thread(_check)
     async def find_best_timestamp(
         self,
         video_id: str,
@@ -148,14 +180,23 @@ class VectorStore:
             Dict with start_time, end_time, and snippet, or None if no match.
         """
         def _sync_search() -> dict | None:
-            # Ensure transcript is embedded
-            self.embed_transcript(video_id, transcript)
+            t0 = time.time()
+            # Ensure transcript is embedded (skips if already cached)
+            chunks_added = self.embed_transcript(video_id, transcript)
+            embed_ms = (time.time() - t0) * 1000
 
             # Semantic search filtered to this video
+            t1 = time.time()
             results = self.collection.query(
                 query_texts=[query],
                 n_results=n_results,
                 where={"video_id": video_id},
+            )
+            query_ms = (time.time() - t1) * 1000
+
+            logger.info(
+                f"[VectorStore] {video_id}: embed={'new' if chunks_added else 'cached'} "
+                f"embed_time={embed_ms:.0f}ms query_time={query_ms:.0f}ms"
             )
 
             if not results or not results["ids"] or not results["ids"][0]:
@@ -171,4 +212,19 @@ class VectorStore:
                 "snippet": document[:200],
             }
 
-        return await asyncio.to_thread(_sync_search)
+        # PERF: ChromaDB uses SQLite (which locks on concurrent writes) and CPU-heavy 
+        # embedding models. Running these concurrently causes CPU thrashing and lock waits.
+        # We use a global lock to serialize the CPU/DB work while allowing the network 
+        # transcript fetches to remain perfectly parallel.
+        async with self.get_lock():
+            return await asyncio.to_thread(_sync_search)
+
+    def get_collection_stats(self) -> dict:
+        """Return ChromaDB collection size for monitoring/alerting."""
+        count = self.collection.count()
+        return {
+            "collection": self.settings.chroma_collection_name,
+            "persist_dir": self.settings.chroma_persist_dir,
+            "total_chunks": count,
+            "note": "Each unique YouTube video adds ~50-400 chunks. Monitor for unbounded growth.",
+        }

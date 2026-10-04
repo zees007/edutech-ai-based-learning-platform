@@ -14,5 +14,6 @@ graph TD
     (match) => '${match.group(1)}|${match.group(2)}'
   );
 
+  // ignore: avoid_print
   print(fixed);
 }

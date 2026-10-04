@@ -1,0 +1,104 @@
+info:
+  name: Submit Quiz
+  type: http
+  seq: 1
+  tags:
+    - Quiz
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/v1/quiz/submit"
+  body:
+    type: json
+    data: |-
+      {
+        "session_id": "",
+        "step_index": 0,
+        "answers": {}
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+examples:
+  - name: 200 Response
+    description: Successful Response
+    request:
+      url: "{{baseUrl}}/api/v1/quiz/submit"
+      method: POST
+      body:
+        type: json
+        data: |-
+          {
+            "session_id": "",
+            "step_index": 0,
+            "answers": {}
+          }
+    response:
+      status: 200
+      statusText: OK
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "step_index": 0,
+            "total_questions": 0,
+            "correct_count": 0,
+            "score": 0,
+            "xp_earned": 0,
+            "feedback": [
+              {
+                "question_index": 0,
+                "is_correct": false,
+                "student_answer": "",
+                "correct_answer": "",
+                "explanation": ""
+              }
+            ]
+          }
+  - name: 422 Response
+    description: Validation Error
+    request:
+      url: "{{baseUrl}}/api/v1/quiz/submit"
+      method: POST
+      body:
+        type: json
+        data: |-
+          {
+            "session_id": "",
+            "step_index": 0,
+            "answers": {}
+          }
+    response:
+      status: 422
+      statusText: Unprocessable Entity
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "detail": [
+              {
+                "loc": [],
+                "msg": "",
+                "type": "",
+                "input": "",
+                "ctx": {}
+              }
+            ]
+          }
+
+docs: |-
+  Submit quiz answers and get grading results with XP.
+
+  The quiz must have been generated for the specified step.

@@ -1,0 +1,5 @@
+name: edutech-local
+variables:
+  - name: baseUrl
+    value: http://localhost:8000
+    description: ""

@@ -4,8 +4,7 @@ EduTechAI — Session Manager Service
 Handles session persistence via SQLAlchemy ORM.
 Serializes/deserializes SharedMemory state to/from the database.
 
-Uses SQLAlchemy async sessions — portable across SQLite and PostgreSQL
-(change DATABASE_URL in .env to switch).
+Uses SQLAlchemy async sessions for PostgreSQL.
 """
 
 from __future__ import annotations

@@ -1,0 +1,82 @@
+info:
+  name: Get Quiz
+  type: http
+  seq: 2
+  tags:
+    - Quiz
+
+http:
+  method: GET
+  url: "{{baseUrl}}/api/v1/quiz/:session_id/:step_index"
+  params:
+    - name: session_id
+      value: ""
+      type: path
+    - name: step_index
+      value: ""
+      type: path
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+examples:
+  - name: 200 Response
+    description: Successful Response
+    request:
+      url: "{{baseUrl}}/api/v1/quiz/:session_id/:step_index"
+      method: GET
+      params:
+        - name: session_id
+          value: ""
+          type: path
+        - name: step_index
+          value: ""
+          type: path
+    response:
+      status: 200
+      statusText: OK
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: ""
+  - name: 422 Response
+    description: Validation Error
+    request:
+      url: "{{baseUrl}}/api/v1/quiz/:session_id/:step_index"
+      method: GET
+      params:
+        - name: session_id
+          value: ""
+          type: path
+        - name: step_index
+          value: ""
+          type: path
+    response:
+      status: 422
+      statusText: Unprocessable Entity
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "detail": [
+              {
+                "loc": [],
+                "msg": "",
+                "type": "",
+                "input": "",
+                "ctx": {}
+              }
+            ]
+          }
+
+docs: Get the quiz for a specific step (if generated).

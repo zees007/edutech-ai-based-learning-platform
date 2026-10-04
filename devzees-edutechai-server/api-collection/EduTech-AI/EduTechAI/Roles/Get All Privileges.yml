@@ -1,0 +1,70 @@
+info:
+  name: Get All Privileges
+  type: http
+  seq: 2
+  tags:
+    - Roles
+
+http:
+  method: GET
+  url: "{{baseUrl}}/api/v1/privileges"
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+examples:
+  - name: 200 Response
+    description: Successful Response
+    request:
+      url: "{{baseUrl}}/api/v1/privileges"
+      method: GET
+    response:
+      status: 200
+      statusText: OK
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          [
+            {
+              "id": 0,
+              "name": "",
+              "code": "",
+              "order_number": "",
+              "parent_id": ""
+            }
+          ]
+  - name: 422 Response
+    description: Validation Error
+    request:
+      url: "{{baseUrl}}/api/v1/privileges"
+      method: GET
+    response:
+      status: 422
+      statusText: Unprocessable Entity
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "detail": [
+              {
+                "loc": [],
+                "msg": "",
+                "type": "",
+                "input": "",
+                "ctx": {}
+              }
+            ]
+          }
+
+docs: Get flat list of all privileges ordered by order_number and ID.

@@ -1,0 +1,100 @@
+info:
+  name: Answer Followup
+  type: http
+  seq: 5
+  tags:
+    - Learning
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/v1/sessions/:session_id/step/:step_index/followup"
+  params:
+    - name: session_id
+      value: ""
+      type: path
+    - name: step_index
+      value: ""
+      type: path
+  body:
+    type: json
+    data: |-
+      {
+        "question": ""
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+examples:
+  - name: 200 Response
+    description: Successful Response
+    request:
+      url: "{{baseUrl}}/api/v1/sessions/:session_id/step/:step_index/followup"
+      method: POST
+      params:
+        - name: session_id
+          value: ""
+          type: path
+        - name: step_index
+          value: ""
+          type: path
+      body:
+        type: json
+        data: |-
+          {
+            "question": ""
+          }
+    response:
+      status: 200
+      statusText: OK
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: ""
+  - name: 422 Response
+    description: Validation Error
+    request:
+      url: "{{baseUrl}}/api/v1/sessions/:session_id/step/:step_index/followup"
+      method: POST
+      params:
+        - name: session_id
+          value: ""
+          type: path
+        - name: step_index
+          value: ""
+          type: path
+      body:
+        type: json
+        data: |-
+          {
+            "question": ""
+          }
+    response:
+      status: 422
+      statusText: Unprocessable Entity
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "detail": [
+              {
+                "loc": [],
+                "msg": "",
+                "type": "",
+                "input": "",
+                "ctx": {}
+              }
+            ]
+          }
+
+docs: Answer a follow up question from the student on a specific step.

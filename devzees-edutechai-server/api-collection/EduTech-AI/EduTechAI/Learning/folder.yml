@@ -1,0 +1,6 @@
+info:
+  name: Learning
+  type: folder
+
+request:
+  auth: inherit

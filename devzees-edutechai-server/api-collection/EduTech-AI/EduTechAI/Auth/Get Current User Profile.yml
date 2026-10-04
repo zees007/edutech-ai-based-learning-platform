@@ -1,0 +1,75 @@
+info:
+  name: Get Current User Profile
+  type: http
+  seq: 5
+  tags:
+    - Auth
+
+http:
+  method: GET
+  url: "{{baseUrl}}/api/v1/auth/me"
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+examples:
+  - name: 200 Response
+    description: Successful Response
+    request:
+      url: "{{baseUrl}}/api/v1/auth/me"
+      method: GET
+    response:
+      status: 200
+      statusText: OK
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "id": "",
+            "first_name": "",
+            "last_name": "",
+            "email": "",
+            "mobile": "",
+            "country": "",
+            "created_at": "",
+            "roles": [],
+            "subscription": "",
+            "privilege_codes": []
+          }
+  - name: 422 Response
+    description: Validation Error
+    request:
+      url: "{{baseUrl}}/api/v1/auth/me"
+      method: GET
+    response:
+      status: 422
+      statusText: Unprocessable Entity
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "detail": [
+              {
+                "loc": [],
+                "msg": "",
+                "type": "",
+                "input": "",
+                "ctx": {}
+              }
+            ]
+          }
+
+docs: |-
+  Retrieve profile details, assigned roles, subscription status, and
+  flat list of active privilege codes for the currently authenticated user.

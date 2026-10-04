@@ -1,0 +1,74 @@
+info:
+  name: Get Privilege Tree
+  type: http
+  seq: 1
+  tags:
+    - Roles
+
+http:
+  method: GET
+  url: "{{baseUrl}}/api/v1/privileges/tree"
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+examples:
+  - name: 200 Response
+    description: Successful Response
+    request:
+      url: "{{baseUrl}}/api/v1/privileges/tree"
+      method: GET
+    response:
+      status: 200
+      statusText: OK
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          [
+            {
+              "id": 0,
+              "name": "",
+              "code": "",
+              "order_number": "",
+              "parent_id": "",
+              "children": []
+            }
+          ]
+  - name: 422 Response
+    description: Validation Error
+    request:
+      url: "{{baseUrl}}/api/v1/privileges/tree"
+      method: GET
+    response:
+      status: 422
+      statusText: Unprocessable Entity
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "detail": [
+              {
+                "loc": [],
+                "msg": "",
+                "type": "",
+                "input": "",
+                "ctx": {}
+              }
+            ]
+          }
+
+docs: |-
+  Get all privileges as a nested hierarchical tree structure.
+  Top-level privileges (parent_id = null) are returned at root level,
+  with nested children populated recursively for UI tree rendering.

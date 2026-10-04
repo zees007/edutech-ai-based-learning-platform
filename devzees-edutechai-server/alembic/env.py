@@ -75,9 +75,7 @@ def do_run_migrations(connection: Connection) -> None:
 async def run_async_migrations() -> None:
     """Run migrations using async engine."""
     connect_args = {}
-    if "sqlite" in db_url:
-        connect_args["check_same_thread"] = False
-    elif "postgresql" in db_url:
+    if "postgresql" in db_url:
         connect_args["statement_cache_size"] = 0
         connect_args["prepared_statement_cache_size"] = 0
         if schema_name:

@@ -1,0 +1,84 @@
+info:
+  name: Complete Step
+  type: http
+  seq: 4
+  tags:
+    - Learning
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/v1/sessions/:session_id/step/:step_index/complete"
+  params:
+    - name: session_id
+      value: ""
+      type: path
+    - name: step_index
+      value: ""
+      type: path
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+examples:
+  - name: 200 Response
+    description: Successful Response
+    request:
+      url: "{{baseUrl}}/api/v1/sessions/:session_id/step/:step_index/complete"
+      method: POST
+      params:
+        - name: session_id
+          value: ""
+          type: path
+        - name: step_index
+          value: ""
+          type: path
+    response:
+      status: 200
+      statusText: OK
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: ""
+  - name: 422 Response
+    description: Validation Error
+    request:
+      url: "{{baseUrl}}/api/v1/sessions/:session_id/step/:step_index/complete"
+      method: POST
+      params:
+        - name: session_id
+          value: ""
+          type: path
+        - name: step_index
+          value: ""
+          type: path
+    response:
+      status: 422
+      statusText: Unprocessable Entity
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "detail": [
+              {
+                "loc": [],
+                "msg": "",
+                "type": "",
+                "input": "",
+                "ctx": {}
+              }
+            ]
+          }
+
+docs: |-
+  Mark a step as complete and advance the session progress.
+  Awards XP via Gamification service.

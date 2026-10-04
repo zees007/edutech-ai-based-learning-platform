@@ -1,0 +1,117 @@
+info:
+  name: List User Sessions
+  type: http
+  seq: 8
+  tags:
+    - Learning
+
+http:
+  method: GET
+  url: "{{baseUrl}}/api/v1/sessions"
+  params:
+    - name: page
+      value: "0"
+      type: query
+      description: 0-indexed page number
+    - name: size
+      value: "20"
+      type: query
+      description: Page size limit
+    - name: lookup_text
+      value: ""
+      type: query
+      description: Search term for topic, mode, level
+      disabled: true
+    - name: status_filter
+      value: all
+      type: query
+      description: "Status filter: all, in_progress, completed"
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+examples:
+  - name: 200 Response
+    description: Successful Response
+    request:
+      url: "{{baseUrl}}/api/v1/sessions"
+      method: GET
+      params:
+        - name: page
+          value: "0"
+          type: query
+          description: 0-indexed page number
+        - name: size
+          value: "20"
+          type: query
+          description: Page size limit
+        - name: lookup_text
+          value: ""
+          type: query
+          description: Search term for topic, mode, level
+          disabled: true
+        - name: status_filter
+          value: all
+          type: query
+          description: "Status filter: all, in_progress, completed"
+    response:
+      status: 200
+      statusText: OK
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: ""
+  - name: 422 Response
+    description: Validation Error
+    request:
+      url: "{{baseUrl}}/api/v1/sessions"
+      method: GET
+      params:
+        - name: page
+          value: "0"
+          type: query
+          description: 0-indexed page number
+        - name: size
+          value: "20"
+          type: query
+          description: Page size limit
+        - name: lookup_text
+          value: ""
+          type: query
+          description: Search term for topic, mode, level
+          disabled: true
+        - name: status_filter
+          value: all
+          type: query
+          description: "Status filter: all, in_progress, completed"
+    response:
+      status: 422
+      statusText: Unprocessable Entity
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "detail": [
+              {
+                "loc": [],
+                "msg": "",
+                "type": "",
+                "input": "",
+                "ctx": {}
+              }
+            ]
+          }
+
+docs: |-
+  Search & paginate learning sessions for the currently authenticated user.
+  Incomplete sessions are sorted to the top, followed by completed sessions.

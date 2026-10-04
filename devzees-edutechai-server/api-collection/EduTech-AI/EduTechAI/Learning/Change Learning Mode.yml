@@ -1,0 +1,93 @@
+info:
+  name: Change Learning Mode
+  type: http
+  seq: 7
+  tags:
+    - Learning
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/v1/sessions/:session_id/mode"
+  params:
+    - name: session_id
+      value: ""
+      type: path
+  body:
+    type: json
+    data: |-
+      {
+        "learning_mode": "visual"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+examples:
+  - name: 200 Response
+    description: Successful Response
+    request:
+      url: "{{baseUrl}}/api/v1/sessions/:session_id/mode"
+      method: POST
+      params:
+        - name: session_id
+          value: ""
+          type: path
+      body:
+        type: json
+        data: |-
+          {
+            "learning_mode": "visual"
+          }
+    response:
+      status: 200
+      statusText: OK
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: ""
+  - name: 422 Response
+    description: Validation Error
+    request:
+      url: "{{baseUrl}}/api/v1/sessions/:session_id/mode"
+      method: POST
+      params:
+        - name: session_id
+          value: ""
+          type: path
+      body:
+        type: json
+        data: |-
+          {
+            "learning_mode": "visual"
+          }
+    response:
+      status: 422
+      statusText: Unprocessable Entity
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "detail": [
+              {
+                "loc": [],
+                "msg": "",
+                "type": "",
+                "input": "",
+                "ctx": {}
+              }
+            ]
+          }
+
+docs: |-
+  Switch the learning mode for an active session.
+  Affects how subsequent steps are generated (content depth, media emphasis).

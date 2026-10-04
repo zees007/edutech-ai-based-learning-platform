@@ -1,0 +1,135 @@
+info:
+  name: Get Session State
+  type: http
+  seq: 2
+  tags:
+    - Learning
+
+http:
+  method: GET
+  url: "{{baseUrl}}/api/v1/sessions/:session_id"
+  params:
+    - name: session_id
+      value: ""
+      type: path
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+examples:
+  - name: 200 Response
+    description: Successful Response
+    request:
+      url: "{{baseUrl}}/api/v1/sessions/:session_id"
+      method: GET
+      params:
+        - name: session_id
+          value: ""
+          type: path
+    response:
+      status: 200
+      statusText: OK
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "session_id": "",
+            "topic": "",
+            "learning_mode": "visual",
+            "student_level": "",
+            "created_at": "",
+            "steps": [
+              {
+                "index": 0,
+                "title": "",
+                "description": "",
+                "is_prerequisite": false,
+                "prerequisite": "",
+                "status": "pending",
+                "estimated_minutes": 0,
+                "tutor_explanation": "",
+                "socratic_questions": [],
+                "videos": [
+                  {
+                    "video_id": "",
+                    "title": "",
+                    "channel": "",
+                    "thumbnail_url": "",
+                    "start_time": 0,
+                    "end_time": 0,
+                    "relevance_snippet": "",
+                    "url": ""
+                  }
+                ],
+                "papers": [
+                  {
+                    "title": "",
+                    "authors": [],
+                    "year": "",
+                    "abstract": "",
+                    "tldr": "",
+                    "pdf_url": "",
+                    "source": "",
+                    "relevance_score": 0,
+                    "doi": "",
+                    "url": ""
+                  }
+                ],
+                "quiz": "",
+                "quiz_score": "",
+                "user_answers": {},
+                "user_full_answers": {},
+                "follow_up_count": 0
+              }
+            ],
+            "current_step_index": 0,
+            "xp_earned": 0,
+            "steps_completed": 0,
+            "conversation_history": [
+              {
+                "role": "student",
+                "content": "",
+                "timestamp": "",
+                "step_index": ""
+              }
+            ]
+          }
+  - name: 422 Response
+    description: Validation Error
+    request:
+      url: "{{baseUrl}}/api/v1/sessions/:session_id"
+      method: GET
+      params:
+        - name: session_id
+          value: ""
+          type: path
+    response:
+      status: 422
+      statusText: Unprocessable Entity
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "detail": [
+              {
+                "loc": [],
+                "msg": "",
+                "type": "",
+                "input": "",
+                "ctx": {}
+              }
+            ]
+          }
+
+docs: Retrieve the current state of a learning session.

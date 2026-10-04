@@ -1,0 +1,68 @@
+info:
+  name: Get Admin Metrics
+  type: http
+  seq: 1
+  tags:
+    - Admin
+
+http:
+  method: GET
+  url: "{{baseUrl}}/api/v1/admin/metrics"
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+examples:
+  - name: 200 Response
+    description: Successful Response
+    request:
+      url: "{{baseUrl}}/api/v1/admin/metrics"
+      method: GET
+    response:
+      status: 200
+      statusText: OK
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "total_users": 0,
+            "free_count": 0,
+            "pro_count": 0,
+            "ultra_count": 0,
+            "total_roles": 0
+          }
+  - name: 422 Response
+    description: Validation Error
+    request:
+      url: "{{baseUrl}}/api/v1/admin/metrics"
+      method: GET
+    response:
+      status: 422
+      statusText: Unprocessable Entity
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "detail": [
+              {
+                "loc": [],
+                "msg": "",
+                "type": "",
+                "input": "",
+                "ctx": {}
+              }
+            ]
+          }
+
+docs: Retrieve global admin dashboard metrics.

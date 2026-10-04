@@ -66,7 +66,7 @@ class AdminService {
           'size': size,
           if (lookupText != null && lookupText.isNotEmpty) 'lookupText': lookupText,
           if (sortBy != null && sortBy.isNotEmpty) 'sortBy': sortBy,
-          if (isDesc != null) 'isDesc': isDesc,
+          'isDesc': ?isDesc,
         },
       );
       return PaginatedUserResponse.fromJson(response.data);
@@ -117,7 +117,7 @@ class AdminService {
           'size': size,
           if (lookupText != null && lookupText.isNotEmpty) 'lookupText': lookupText,
           if (sortBy != null && sortBy.isNotEmpty) 'sortBy': sortBy,
-          if (isDesc != null) 'isDesc': isDesc,
+          'isDesc': ?isDesc,
         },
       );
       return PaginatedRoleResponse.fromJson(response.data);

@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import time
 from typing import Any
 
 import httpx
@@ -190,16 +191,76 @@ class YouTubeClient:
         Find the best timestamp range in a video's transcript for a given query.
 
         Pipeline:
-        1. VectorStore (ChromaDB) semantic search (if transcript & vector store available).
-        2. Keyword score matching in transcript.
-        3. Tier 3 Fallback: Returns video starting at 0s with snippet preview if transcript unavailable.
-        """
-        transcript = await asyncio.to_thread(self.get_transcript, video_id)
+        1. ChromaDB cache check — if already embedded, skip transcript fetch entirely.
+        2. VectorStore (ChromaDB) semantic search (Tier 1).
+        3. Keyword score matching in transcript (Tier 2 fallback).
+        4. Returns video at 0s if transcript unavailable (Tier 3 fallback).
 
-        # Tier 3 Fallback: If transcript unavailable, still return video clip starting at 0
+        PERF FIX: ChromaDB cache is checked BEFORE fetching the transcript.
+        On a cache-hit (repeat video), the ~5-15s YouTube transcript API call
+        is completely skipped — we go straight to semantic search.
+        """
+        t0 = time.time()
+
+        # ── Tier 1: ChromaDB (semantic timestamp matching) ──────────────
+        try:
+            from services.vector_store import VectorStore
+            vs = VectorStore()
+
+            # PERF: Check if transcript is already embedded in ChromaDB.
+            # If yes, skip the transcript network fetch entirely.
+            already_embedded = await vs.is_transcript_embedded(video_id)
+
+            if already_embedded:
+                logger.info(f"[YouTubeClient] {video_id}: ChromaDB cache HIT — skipping transcript fetch")
+                transcript = []  # not needed; embed_transcript will skip inside find_best_timestamp
+            else:
+                logger.info(f"[YouTubeClient] {video_id}: ChromaDB cache MISS — fetching transcript")
+                transcript = await asyncio.to_thread(self.get_transcript, video_id)
+                logger.info(f"[YouTubeClient] {video_id}: transcript fetched in {time.time()-t0:.2f}s ({len(transcript)} segments)")
+
+            best_match = await vs.find_best_timestamp(
+                video_id=video_id,
+                transcript=transcript,
+                query=query,
+            )
+            if best_match:
+                logger.info(f"[YouTubeClient] {video_id}: ChromaDB match found in {time.time()-t0:.2f}s")
+                return YouTubeClip(
+                    video_id=video_id,
+                    title=video_title,
+                    channel=channel,
+                    thumbnail_url=thumbnail_url,
+                    start_time=best_match["start_time"],
+                    end_time=best_match["end_time"],
+                    relevance_snippet=best_match["snippet"],
+                )
+            # If no semantic match but transcript exists, fall through to keyword
+            if not already_embedded and not transcript:
+                # Tier 3: No transcript available at all
+                snippet_preview = description[:180] + "..." if description else "Recommended video for this learning step."
+                logger.info(f"[YouTubeClient] {video_id}: Tier 3 fallback (no transcript) in {time.time()-t0:.2f}s")
+                return YouTubeClip(
+                    video_id=video_id,
+                    title=video_title,
+                    channel=channel,
+                    thumbnail_url=thumbnail_url,
+                    start_time=0,
+                    end_time=180,
+                    relevance_snippet=f"[Overview] {snippet_preview}",
+                )
+
+        except ImportError:
+            logger.info("[YouTubeClient] VectorStore not available — fetching transcript for keyword fallback.")
+            transcript = await asyncio.to_thread(self.get_transcript, video_id)
+        except Exception as e:
+            logger.warning(f"[YouTubeClient] {video_id}: ChromaDB search failed ({e}), falling back to keyword match")
+            transcript = await asyncio.to_thread(self.get_transcript, video_id)
+
+        # ── Tier 3 Fallback: No transcript ──────────────────────────────
         if not transcript:
             snippet_preview = description[:180] + "..." if description else "Recommended video for this learning step."
-            logger.info(f"Using Tier 3 fallback (no transcript) for video {video_id}")
+            logger.info(f"[YouTubeClient] {video_id}: Tier 3 fallback (no transcript) in {time.time()-t0:.2f}s")
             return YouTubeClip(
                 video_id=video_id,
                 title=video_title,
@@ -210,31 +271,8 @@ class YouTubeClient:
                 relevance_snippet=f"[Overview] {snippet_preview}",
             )
 
-        # Tier 1: Try semantic search with ChromaDB
-        try:
-            from services.vector_store import VectorStore
-            vs = VectorStore()
-            best_match = await vs.find_best_timestamp(
-                video_id=video_id,
-                transcript=transcript,
-                query=query,
-            )
-            if best_match:
-                return YouTubeClip(
-                    video_id=video_id,
-                    title=video_title,
-                    channel=channel,
-                    thumbnail_url=thumbnail_url,
-                    start_time=best_match["start_time"],
-                    end_time=best_match["end_time"],
-                    relevance_snippet=best_match["snippet"],
-                )
-        except ImportError:
-            logger.info("VectorStore not available — using keyword fallback.")
-        except Exception as e:
-            logger.warning(f"ChromaDB search failed, using fallback: {e}")
-
-        # Tier 2: Fallback keyword matching
+        # ── Tier 2: Keyword matching fallback ───────────────────────────
+        logger.info(f"[YouTubeClient] {video_id}: Using keyword fallback in {time.time()-t0:.2f}s")
         clip = self._keyword_match(video_id, video_title, channel, thumbnail_url, transcript, query)
         return clip
 

@@ -11,13 +11,19 @@ Pipeline:
 4. Semantic search → find the best matching timestamp range
 5. Return structured YouTubeClip objects
 
+Perf notes:
+- Videos are processed in PARALLEL using asyncio.gather (not sequentially).
+- ChromaDB "already embedded" check is done BEFORE fetching transcript.
+
 Reads: memory.steps[step_index], memory.learning_mode
 Writes: memory.steps[step_index].videos[]
 """
 
 from __future__ import annotations
 
+import asyncio
 import logging
+import time
 from typing import Any
 
 from agents.base import BaseAgent
@@ -59,21 +65,23 @@ class YouTubeCuratorAgent(BaseAgent):
         if step is None:
             return
 
-        self.logger.info(f"Searching YouTube for step {step_index}: '{step.title}'")
+        t_total = time.time()
+        self.logger.info(f"[YouTubeCuratorAgent] Searching YouTube for step {step_index}: '{step.title}'")
 
         try:
-            # Import the YouTube client service
             from services.youtube_client import YouTubeClient
             client = YouTubeClient()
 
             # Step 1: Search YouTube for relevant videos
-            # Build clean search query (Topic + main step keywords)
             clean_step_title = step.title.split(":")[0].strip() if ":" in step.title else step.title
             search_query = f"{memory.topic} {clean_step_title}".strip()
+
+            t0 = time.time()
             videos = await client.search_videos(search_query)
+            self.logger.info(f"[YouTubeCuratorAgent] YouTube search completed in {time.time()-t0:.2f}s → {len(videos)} videos")
 
             if not videos:
-                self.logger.info(f"No YouTube videos found for: {search_query}")
+                self.logger.info(f"[YouTubeCuratorAgent] No YouTube videos found for: {search_query}")
                 return
 
             # Step 2: Determine User Tier Limit
@@ -81,7 +89,7 @@ class YouTubeCuratorAgent(BaseAgent):
             from models.db_models import User, Role
             from sqlalchemy.orm import selectinload
             from sqlalchemy import select
-            
+
             user_roles = []
             async with get_db_session() as db:
                 res = await db.execute(
@@ -91,42 +99,63 @@ class YouTubeCuratorAgent(BaseAgent):
                 u = res.scalar_one_or_none()
                 if u:
                     user_roles = [r.name for r in u.roles if not r.retired]
-            
+
             from config import get_settings
             settings = get_settings()
-            
+
             limit = settings.free_youtube_limit
             if "Ultra" in user_roles or "Admin" in user_roles:
                 limit = settings.ultra_youtube_limit
             elif "Pro" in user_roles:
                 limit = settings.pro_youtube_limit
 
-            # Step 3-5: For each video, try to get transcript and find best timestamp
-            clips = []
-            for video in videos[:limit]:  # Process top N results based on tier
+            query_text = f"{step.title} {step.description}"
+            selected_videos = videos[:limit]
+
+            self.logger.info(
+                f"[YouTubeCuratorAgent] Processing {len(selected_videos)} video(s) in PARALLEL "
+                f"(tier limit={limit}, user_roles={user_roles})"
+            )
+
+            # Step 3–5: Process ALL videos concurrently (was sequential for-loop before)
+            # PERF FIX: asyncio.gather runs transcript fetch + ChromaDB embed + query
+            # for all N videos simultaneously instead of one at a time.
+            async def _process_one(video: dict) -> YouTubeClip | None:
+                vid_id = video["video_id"]
+                t_vid = time.time()
                 try:
                     clip = await client.get_timestamped_clip(
-                        video_id=video["video_id"],
+                        video_id=vid_id,
                         video_title=video["title"],
                         channel=video["channel"],
                         thumbnail_url=video.get("thumbnail_url", ""),
-                        query=f"{step.title} {step.description}",
+                        query=query_text,
                         description=video.get("description", ""),
                     )
-                    if clip:
-                        clips.append(clip)
+                    elapsed = time.time() - t_vid
+                    self.logger.info(f"[YouTubeCuratorAgent] Video {vid_id} processed in {elapsed:.2f}s (clip={'yes' if clip else 'no'})")
+                    return clip
                 except Exception as e:
-                    self.logger.warning(f"Failed to process video {video['video_id']}: {e}")
-                    continue
+                    elapsed = time.time() - t_vid
+                    self.logger.warning(f"[YouTubeCuratorAgent] Video {vid_id} FAILED in {elapsed:.2f}s: {e}")
+                    return None
+
+            results = await asyncio.gather(*[_process_one(v) for v in selected_videos])
+            clips = [clip for clip in results if clip is not None]
 
             # In Visual mode, prioritize more clips; in Bite-Sized, take only the best one
             if memory.learning_mode.value == "bite_sized" and clips:
                 clips = [clips[0]]
 
             step.videos = clips
-            self.logger.info(f"Found {len(clips)} YouTube clips for step {step_index}")
+            elapsed_total = time.time() - t_total
+            self.logger.info(
+                f"[YouTubeCuratorAgent] DONE step={step_index}: {len(clips)} clips in {elapsed_total:.2f}s "
+                f"(parallel across {len(selected_videos)} videos)"
+            )
 
         except ImportError:
-            self.logger.warning("YouTubeClient not available — skipping video search.")
+            self.logger.warning("[YouTubeCuratorAgent] YouTubeClient not available — skipping video search.")
         except Exception as e:
-            self.logger.error(f"YouTube search failed: {e}")
+            self.logger.error(f"[YouTubeCuratorAgent] YouTube search failed: {e}")
+

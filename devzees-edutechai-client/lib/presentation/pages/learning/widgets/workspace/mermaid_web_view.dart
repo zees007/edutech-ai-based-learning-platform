@@ -205,6 +205,15 @@ class _MermaidWebViewState extends State<MermaidWebView>
     <div id="loading" class="loading-pulse">Rendering flowchart...</div>
   </div>
 
+  <script>
+    function onMermaidLoaded() {
+      if (typeof doRender === 'function') {
+        doRender();
+      } else {
+        window._mermaidLoadedEarly = true;
+      }
+    }
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js" onload="onMermaidLoaded()"></script>
   <script>
     const code = $safeCode;
@@ -303,11 +312,7 @@ class _MermaidWebViewState extends State<MermaidWebView>
       }
     }
 
-    function onMermaidLoaded() {
-      doRender();
-    }
-
-    if (window.mermaid) {
+    if (window.mermaid || window._mermaidLoadedEarly) {
       doRender();
     } else {
       window.addEventListener('load', doRender);

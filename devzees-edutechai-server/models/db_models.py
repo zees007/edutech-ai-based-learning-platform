@@ -1,9 +1,7 @@
 """
 EduTechAI — SQLAlchemy ORM Models
 
-Database models for session persistence. Uses SQLAlchemy async ORM so the
-database engine can be swapped (SQLite → PostgreSQL) by changing DATABASE_URL
-in .env — zero code changes needed.
+Database models for session persistence. Uses SQLAlchemy async ORM.
 
 Current tables:
     - SessionRecord: Learning session metadata + serialized SharedMemory state
