@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '0005'
+revision: str = '0005_add_refresh_tokens_and_user_invalidated'
 down_revision: Union[str, Sequence[str], None] = '0004_sessions_gamification'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None

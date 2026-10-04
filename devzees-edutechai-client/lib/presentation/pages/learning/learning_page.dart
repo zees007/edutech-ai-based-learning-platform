@@ -21,7 +21,6 @@ class LearningPage extends ConsumerStatefulWidget {
 
 class _LearningPageState extends ConsumerState<LearningPage> {
   bool isExpanded = true;
-  final ScrollController _scrollController = ScrollController();
   OverlayEntry? _levelUpOverlay;
   OverlayEntry? _journeyCompleteOverlay;
 
@@ -31,17 +30,10 @@ class _LearningPageState extends ConsumerState<LearningPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(sessionsProvider.notifier).loadInitial();
     });
-    _scrollController.addListener(() {
-      if (_scrollController.position.pixels >=
-          _scrollController.position.maxScrollExtent - 200) {
-        ref.read(sessionsProvider.notifier).loadMore();
-      }
-    });
   }
 
   @override
   void dispose() {
-    _scrollController.dispose();
     _levelUpOverlay?.remove();
     _journeyCompleteOverlay?.remove();
     super.dispose();
@@ -144,7 +136,6 @@ class _LearningPageState extends ConsumerState<LearningPage> {
           child: LearningSidebar(
             expanded: true,
             isMobile: true,
-            scrollController: _scrollController,
             onToggle: _toggleSidebar,
             onClose: _closeDrawer,
           ),
@@ -173,7 +164,6 @@ class _LearningPageState extends ConsumerState<LearningPage> {
               child: LearningSidebar(
                 expanded: isExpanded,
                 isMobile: false,
-                scrollController: _scrollController,
                 onToggle: _toggleSidebar,
                 onClose: _closeDrawer,
               ),

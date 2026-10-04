@@ -8,6 +8,7 @@ import 'recommended_videos.dart';
 import 'academic_papers.dart';
 import 'knowledge_check_quiz.dart';
 import 'keep_alive_wrapper.dart';
+import 'video_curator_shimmer.dart';
 
 /// Tabbed resource panel with 3 tabs: Videos, Papers, Quiz.
 /// Includes a pinned quiz gating bar at the bottom.
@@ -57,8 +58,13 @@ class LearningResourcesPanel extends ConsumerStatefulWidget {
 
   // ─── Static builders for mobile tab reuse ─────────────────────
 
-  static Widget buildVideosContent(List<dynamic>? videos) {
-    if (videos == null || videos.isEmpty) return const SizedBox.shrink();
+  static Widget buildVideosContent(List<dynamic>? videos, {bool isCurating = false}) {
+    if (videos == null || videos.isEmpty) {
+      if (isCurating) {
+        return const VideoCuratorShimmer();
+      }
+      return const SizedBox.shrink();
+    }
     return ScrollbarTheme(
       data: workspaceScrollbarTheme,
       child: RecommendedVideos(videos: videos),
@@ -344,16 +350,26 @@ class _LearningResourcesPanelState
   }
 
   Widget _buildVideosTab(dynamic step) {
+    final activeState = ref.watch(activeSessionProvider);
+    final isCurating = activeState.curatingVideoSteps.contains(step.index);
+
     if (step.videos == null || step.videos!.isEmpty) {
+      if (isCurating) {
+        return const VideoCuratorShimmer();
+      }
       return _buildEmptyState(
         icon: Icons.play_circle_outline_rounded,
         label: 'No recommended videos for this step',
         color: AppColors.accentRose,
       );
     }
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: RecommendedVideos(videos: step.videos),
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 350),
+      child: SingleChildScrollView(
+        key: ValueKey('videos_${step.index}_${step.videos!.length}'),
+        padding: const EdgeInsets.all(20),
+        child: RecommendedVideos(videos: step.videos),
+      ),
     );
   }
 

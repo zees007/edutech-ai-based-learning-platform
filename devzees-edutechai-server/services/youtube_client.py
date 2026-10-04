@@ -34,6 +34,8 @@ class YouTubeClient:
     3. get_timestamped_clip() — ChromaDB semantic search for best timestamp
     """
 
+    _scraping_blocked_until: float = 0.0
+
     def __init__(self):
         self.settings = get_settings()
         self._api_key = self.settings.youtube_api_key
@@ -118,6 +120,14 @@ class YouTubeClient:
         Returns:
             List of transcript segments: [{"text": "...", "start": 12.5, "duration": 5.0}, ...]
         """
+        if time.time() < self._scraping_blocked_until:
+            remaining = int(self._scraping_blocked_until - time.time())
+            logger.info(
+                f"[YouTubeClient] YouTube IP scraping is temporarily blocked (cooldown {remaining}s remaining) "
+                f"— skipping transcript scrape for {video_id} and using fast chapter/metadata fallback."
+            )
+            return []
+
         try:
             api = YouTubeTranscriptApi()
             transcript_list = api.list(video_id)
@@ -176,7 +186,12 @@ class YouTubeClient:
             return transcript
 
         except Exception as e:
-            logger.warning(f"Transcript extraction failed for {video_id}: {e}")
+            err_msg = str(e)
+            if any(term in err_msg for term in ["blocking requests from your IP", "sorry/index", "SSLEOFError", "Read timed out", "IpBlocked", "RequestBlocked"]):
+                YouTubeClient._scraping_blocked_until = time.time() + 600
+                logger.warning(f"[YouTubeClient] YouTube IP block / rate limit detected. Tripping scraping circuit breaker for 10m: {e}")
+            else:
+                logger.warning(f"Transcript extraction failed for {video_id}: {e}")
             return []
 
     def _find_chapter_match(
@@ -310,9 +325,19 @@ class YouTubeClient:
                     relevance_snippet=best_match["snippet"],
                 )
 
-        # ── Step 2: Fetch transcript from YouTube ────────────────────────
-        transcript = await asyncio.to_thread(self.get_transcript, video_id)
-        logger.info(f"[YouTubeClient] {video_id}: transcript fetched in {time.time()-t0:.2f}s ({len(transcript)} segments)")
+        # ── Step 2: Fetch transcript from YouTube (with 3.5s timeout) ─────
+        try:
+            transcript = await asyncio.wait_for(
+                asyncio.to_thread(self.get_transcript, video_id),
+                timeout=3.5,
+            )
+            logger.info(f"[YouTubeClient] {video_id}: transcript fetched in {time.time()-t0:.2f}s ({len(transcript)} segments)")
+        except asyncio.TimeoutError:
+            logger.warning(f"[YouTubeClient] {video_id}: transcript fetch timed out (3.5s limit) — using fallback")
+            transcript = []
+        except Exception as e:
+            logger.warning(f"[YouTubeClient] {video_id}: transcript fetch failed ({e}) — using fallback")
+            transcript = []
 
         # ── Step 3: Tier 3 Fallback if no transcript available ───────────
         if not transcript:

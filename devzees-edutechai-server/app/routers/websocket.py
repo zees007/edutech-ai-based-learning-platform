@@ -62,7 +62,8 @@ class ConnectionManager:
         ws = self.active_connections.get(session_id)
         if ws:
             try:
-                await ws.send_json(event.model_dump(mode="json"))
+                data = event if isinstance(event, dict) else event.model_dump(mode="json")
+                await ws.send_json(data)
             except Exception as e:
                 logger.error(f"Failed to send event to {session_id}: {e}")
 
@@ -247,6 +248,7 @@ async def _process_step(
     # ─── 1. Start parallel background tasks (YouTube + Academic Researcher) ─
     step = memory.steps[step_index] if step_index < len(memory.steps) else None
 
+    youtube_start_time = time.time()
     try:
         from agents.youtube_curator import YouTubeCuratorAgent
         youtube_agent = YouTubeCuratorAgent()
@@ -311,21 +313,27 @@ async def _process_step(
     except ImportError:
         pass  # Quiz agent not yet implemented
 
-    # Wait for parallel agents to complete
+    # ─── 4. Wait for core pedagogical agents (Academic Researcher + Quiz Agent) ──
+    # PERF DECOUPLING: Academic Researcher (~1.5s) and Quiz Agent (~1s) complete rapidly.
+    # We do NOT block step_complete on YouTube transcript indexing.
+    # The client renders the full workspace immediately, and video clips hydrate
+    # progressively via "step_videos_ready" when finished.
     parallel_wait_start = time.time()
-    tasks = [t for t in [youtube_task, academic_task, quiz_task] if t is not None]
-    if tasks:
-        logger.info(f"[WS] Waiting for {len(tasks)} parallel task(s) to complete...")
-        results = await asyncio.gather(*tasks, return_exceptions=True)
+    core_tasks = [t for t in [academic_task, quiz_task] if t is not None]
+    if core_tasks:
+        logger.info(f"[WS] Waiting for {len(core_tasks)} core parallel task(s) (Academic + Quiz)...")
+        results = await asyncio.gather(*core_tasks, return_exceptions=True)
         for r in results:
             if isinstance(r, Exception):
-                logger.warning(f"[WS] Parallel agent error (non-fatal): {r}")
+                logger.warning(f"[WS] Core parallel agent error (non-fatal): {r}")
         _timings["parallel_gather_wall"] = (time.time() - parallel_wait_start) * 1000
-        logger.info(f"[WS] Parallel tasks completed in {_timings['parallel_gather_wall']:.0f}ms")
+        logger.info(f"[WS] Core parallel tasks completed in {_timings['parallel_gather_wall']:.0f}ms")
 
-    # Send YouTube clip and paper events
-    for event in synthesizer.create_youtube_clip_events(memory, step_index):
-        await manager.send_event(session_id, event)
+    # If YouTube Curator finished early (e.g. cache hit or chapter match), emit clips now
+    youtube_already_done = youtube_task is not None and youtube_task.done()
+    if youtube_already_done:
+        for event in synthesizer.create_youtube_clip_events(memory, step_index):
+            await manager.send_event(session_id, event)
 
     for event in synthesizer.create_academic_paper_events(memory, step_index):
         await manager.send_event(session_id, event)
@@ -334,16 +342,12 @@ async def _process_step(
     if quiz_event:
         await manager.send_event(session_id, quiz_event)
 
-    # ─── 4. Socratic questions ───────────────────────────────
+    # Socratic questions
     sq_event = synthesizer.create_socratic_questions_event(memory, step_index)
     if sq_event:
         await manager.send_event(session_id, sq_event)
 
-    # ─── 5. Persist BEFORE step_complete so HTTP fetch always sees fresh data ──
-    #  PERF FIX: moved DB persist to happen BEFORE emitting step_complete.
-    #  Previously the client would fire GET /sessions/{id} immediately after
-    #  receiving step_complete, but the DB write hadn't finished yet so it
-    #  would either return stale data or race-condition against the write.
+    # ─── 5. Persist core step BEFORE step_complete ───────────────────────────
     persist_start = time.time()
     try:
         await SessionManager().update_session(memory)
@@ -356,7 +360,21 @@ async def _process_step(
     total_time = time.time() - step_start_time
     _timings["total_backend_ms"] = total_time * 1000
 
-    # ─── 6. Emit perf_summary so the client can log the full backend breakdown ─
+    # Determine YouTube Curator Agent status at the moment of core step completion
+    youtube_status = "idle"
+    if step and step.videos:
+        youtube_status = "cached"
+        _timings["YouTubeCuratorAgent"] = 0.0
+    elif youtube_task is not None:
+        if youtube_task.done():
+            youtube_status = "completed"
+            # _timings["YouTubeCuratorAgent"] already populated by _timed_execute
+        else:
+            youtube_status = "in_background"
+            # Omit or pop from _timings so we don't send 0.0 when it is actually still running
+            _timings.pop("YouTubeCuratorAgent", None)
+
+    # ─── 6. Emit perf_summary so the client can log the backend breakdown ────
     try:
         perf_ws = manager.active_connections.get(session_id)
         if perf_ws:
@@ -364,24 +382,67 @@ async def _process_step(
                 "event_type": "perf_summary",
                 "step_index": step_index,
                 "timings_ms": {k: round(v, 1) for k, v in _timings.items()},
+                "youtube_status": youtube_status,
             })
     except Exception:
         pass
 
-    # ─── 7. Step complete ────────────────────────────────────
+    # ─── 7. Emit step_complete (User UI immediately unlocks in ~2.5s) ────────
     step_complete = synthesizer.create_step_complete_event(memory, step_index)
     await manager.send_event(session_id, step_complete)
 
     logger.info(
-        "[WS] Step %d DONE for session %s | total=%.2fs | "
-        "tutor=%.0fms | youtube=%.0fms | academic=%.0fms | quiz=%.0fms | db_persist=%.0fms",
+        "[WS] Step %d CORE DONE for session %s | total=%.2fs | "
+        "tutor=%.0fms | youtube_status=%s (done_early=%s) | academic=%.0fms | quiz=%.0fms | db_persist=%.0fms",
         step_index, session_id, total_time,
         _timings.get("SocraticTutorAgent", 0),
-        _timings.get("YouTubeCuratorAgent", 0),
+        youtube_status,
+        youtube_already_done,
         _timings.get("AcademicResearcherAgent", 0),
         _timings.get("QuizAgent", 0),
         _timings.get("db_persist", 0),
     )
+
+    # ─── 8. Background video hydration if YouTube Curator is still indexing ──
+    if youtube_task is not None and not youtube_already_done:
+        async def _finish_youtube_and_notify():
+            try:
+                await youtube_task
+                duration_ms = _timings.get("YouTubeCuratorAgent", (time.time() - youtube_start_time) * 1000)
+                # Persist updated videos to DB
+                await SessionManager().update_session(memory)
+                step_obj = memory.steps[step_index] if step_index < len(memory.steps) else None
+                videos_data = [v.model_dump() for v in step_obj.videos] if (step_obj and step_obj.videos) else []
+
+                # Emit individual clip events for backward compatibility
+                for event in synthesizer.create_youtube_clip_events(memory, step_index):
+                    await manager.send_event(session_id, event)
+
+                # Emit progressive step_videos_ready event to hydrate UI shimmer
+                ready_event = synthesizer.create_step_videos_ready_event(
+                    memory, step_index, duration_ms=round(duration_ms, 1)
+                )
+                await manager.send_event(session_id, ready_event)
+                logger.info(
+                    f"[WS] Background YouTube curation completed for step {step_index} in "
+                    f"{duration_ms:.0f}ms ({duration_ms/1000:.2f}s): {len(videos_data)} clips"
+                )
+            except Exception as e:
+                duration_ms = _timings.get("YouTubeCuratorAgent", (time.time() - youtube_start_time) * 1000)
+                logger.warning(
+                    f"[WS] Background YouTube curation failed for step {step_index} after "
+                    f"{duration_ms:.0f}ms: {e}"
+                )
+                # Still emit step_videos_ready with empty list so client removes shimmer
+                await manager.send_event(session_id, {
+                    "event_type": "step_videos_ready",
+                    "session_id": session_id,
+                    "step_index": step_index,
+                    "videos": [],
+                    "duration_ms": round(duration_ms, 1),
+                })
+
+        asyncio.create_task(_finish_youtube_and_notify())
 
 
 async def _handle_chat(session_id: str, memory: SharedMemory, question: str):

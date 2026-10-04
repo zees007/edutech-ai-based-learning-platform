@@ -1970,16 +1970,26 @@ class _MobileTabbedWorkspaceState
   }
 
   Widget _buildVideosTab(dynamic step) {
+    final activeState = ref.watch(activeSessionProvider);
+    final isCurating = activeState.curatingVideoSteps.contains(step.index);
+
     if (step.videos == null || step.videos!.isEmpty) {
+      if (isCurating) {
+        return LearningResourcesPanel.buildVideosContent(step.videos, isCurating: true);
+      }
       return _buildEmptyState(
         icon: Icons.play_circle_outline_rounded,
         label: 'No videos available for this step',
         color: AppColors.accentRose,
       );
     }
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: LearningResourcesPanel.buildVideosContent(step.videos),
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 350),
+      child: SingleChildScrollView(
+        key: ValueKey('mobile_videos_${step.index}_${step.videos!.length}'),
+        padding: const EdgeInsets.all(16),
+        child: LearningResourcesPanel.buildVideosContent(step.videos),
+      ),
     );
   }
 
