@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
+import '../../core/constants/responsive.dart';
 
 class N8nCanvas extends StatefulWidget {
   const N8nCanvas({super.key});
@@ -8,7 +9,8 @@ class N8nCanvas extends StatefulWidget {
   State<N8nCanvas> createState() => _N8nCanvasState();
 }
 
-class _N8nCanvasState extends State<N8nCanvas> with SingleTickerProviderStateMixin {
+class _N8nCanvasState extends State<N8nCanvas>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _glowAnimation;
 
@@ -19,8 +21,11 @@ class _N8nCanvasState extends State<N8nCanvas> with SingleTickerProviderStateMix
       vsync: this,
       duration: const Duration(seconds: 2),
     )..repeat(reverse: true);
-    
-    _glowAnimation = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
+
+    _glowAnimation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeInOut,
+    );
   }
 
   @override
@@ -40,14 +45,14 @@ class _N8nCanvasState extends State<N8nCanvas> with SingleTickerProviderStateMix
           AppColors.primary.withValues(alpha: 0.5),
           t,
         )!;
-        
+
         final outerShadow = BoxShadow(
           color: AppColors.purpleDeep.withValues(alpha: 0.3 + (0.2 * t)),
           blurRadius: 60 + (10 * t),
           spreadRadius: -15 + (5 * t),
           offset: const Offset(0, 20),
         );
-        
+
         final innerShadow = BoxShadow(
           color: AppColors.primary.withValues(alpha: 0.15 + (0.10 * t)),
           blurRadius: 30 + (10 * t),
@@ -60,47 +65,53 @@ class _N8nCanvasState extends State<N8nCanvas> with SingleTickerProviderStateMix
             color: AppColors.canvasBackground,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(color: borderColor, width: 1.5),
-            boxShadow: [outerShadow, innerShadow],
+            boxShadow: Responsive.isMobile(context) ? null : [outerShadow, innerShadow],
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(20),
             child: Stack(
               children: [
-                Positioned.fill(
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: RadialGradient(
-                        center: const FractionalOffset(0.2, 0.3),
-                        radius: 0.8,
-                        colors: [
-                          AppColors.primary.withValues(alpha: 0.18),
-                          Colors.transparent,
-                        ],
-                        stops: const [0.0, 0.8],
+                // Web/Desktop Glow Orbs
+                if (!Responsive.isMobile(context)) ...[
+                  Positioned.fill(
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: RadialGradient(
+                          center: const FractionalOffset(0.2, 0.3),
+                          radius: 0.8,
+                          colors: [
+                            AppColors.accentCyan.withValues(alpha: 0.12),
+                            Colors.transparent,
+                          ],
+                          stops: const [0.0, 0.8],
+                        ),
                       ),
                     ),
                   ),
-                ),
-                Positioned.fill(
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: RadialGradient(
-                        center: const FractionalOffset(0.8, 0.7),
-                        radius: 0.8,
-                        colors: [
-                          AppColors.accentBlue.withValues(alpha: 0.18),
-                          Colors.transparent,
-                        ],
-                        stops: const [0.0, 0.8],
+                  Positioned.fill(
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: RadialGradient(
+                          center: const FractionalOffset(0.8, 0.7),
+                          radius: 0.8,
+                          colors: [
+                            AppColors.primary.withValues(alpha: 0.12),
+                            Colors.transparent,
+                          ],
+                          stops: const [0.0, 0.8],
+                        ),
                       ),
                     ),
                   ),
-                ),
-                Positioned.fill(
-                  child: CustomPaint(painter: _DotGridPainter()),
-                ),
+                ],
+                Positioned.fill(child: CustomPaint(painter: _DotGridPainter())),
                 Padding(
-                  padding: const EdgeInsets.only(top: 48, left: 24, right: 24, bottom: 24),
+                  padding: const EdgeInsets.only(
+                    top: 48,
+                    left: 24,
+                    right: 24,
+                    bottom: 24,
+                  ),
                   child: child,
                 ),
               ],
@@ -115,10 +126,15 @@ class _N8nCanvasState extends State<N8nCanvas> with SingleTickerProviderStateMix
             padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
             decoration: BoxDecoration(
               color: AppColors.primary.withValues(alpha: 0.15),
-              border: Border.all(color: AppColors.primary.withValues(alpha: 0.4)),
+              border: Border.all(
+                color: AppColors.primary.withValues(alpha: 0.4),
+              ),
               borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(color: AppColors.primary.withValues(alpha: 0.3), blurRadius: 16),
+              boxShadow: Responsive.isMobile(context) ? null : [
+                BoxShadow(
+                  color: AppColors.primary.withValues(alpha: 0.3),
+                  blurRadius: 16,
+                ),
               ],
             ),
             child: const Text(
@@ -133,7 +149,7 @@ class _N8nCanvasState extends State<N8nCanvas> with SingleTickerProviderStateMix
             ),
           ),
           const SizedBox(height: 48),
-          
+
           // Diagram
           SizedBox(
             height: 350,
@@ -144,7 +160,12 @@ class _N8nCanvasState extends State<N8nCanvas> with SingleTickerProviderStateMix
               minScale: 0.1,
               maxScale: 3.0,
               child: Padding(
-                padding: const EdgeInsets.only(bottom: 120, left: 16, right: 16, top: 40),
+                padding: const EdgeInsets.only(
+                  bottom: 120,
+                  left: 16,
+                  right: 16,
+                  top: 40,
+                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -177,34 +198,61 @@ class _N8nCanvasState extends State<N8nCanvas> with SingleTickerProviderStateMix
           topRight: Radius.circular(14),
           bottomRight: Radius.circular(14),
         ),
-        border: Border.all(color: AppColors.accentCyan.withValues(alpha: 0.5), width: 1.5),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.4), blurRadius: 20, offset: const Offset(0, 4)),
-          BoxShadow(color: AppColors.accentCyan.withValues(alpha: 0.25), blurRadius: 15),
+        border: Border.all(
+          color: AppColors.accentCyan.withValues(alpha: 0.5),
+          width: 1.5,
+        ),
+        boxShadow: Responsive.isMobile(context) ? null : [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.4),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
+          BoxShadow(
+            color: AppColors.accentCyan.withValues(alpha: 0.25),
+            blurRadius: 15,
+          ),
         ],
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text('⚡', style: TextStyle(color: Colors.redAccent, fontSize: 14)),
+          const Text(
+            '⚡',
+            style: TextStyle(color: Colors.redAccent, fontSize: 14),
+          ),
           const SizedBox(width: 4),
           Container(
             width: 44,
             height: 44,
             decoration: BoxDecoration(
               color: AppColors.accentCyan.withValues(alpha: 0.2),
-              border: Border.all(color: AppColors.accentCyan.withValues(alpha: 0.5)),
+              border: Border.all(
+                color: AppColors.accentCyan.withValues(alpha: 0.5),
+              ),
               shape: BoxShape.circle,
-              boxShadow: [BoxShadow(color: AppColors.accentCyan.withValues(alpha: 0.3), blurRadius: 12)],
+              boxShadow: Responsive.isMobile(context) ? null : [
+                BoxShadow(
+                  color: AppColors.accentCyan.withValues(alpha: 0.3),
+                  blurRadius: 12,
+                ),
+              ],
             ),
-            child: const Center(child: Text('📝', style: TextStyle(fontSize: 20))),
+            child: const Center(
+              child: Text('📝', style: TextStyle(fontSize: 20)),
+            ),
           ),
           const SizedBox(width: 10),
           const SizedBox(
             width: 110,
             child: Text(
               "On 'Topic Selection' submission",
-              style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold, height: 1.3),
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                height: 1.3,
+              ),
             ),
           ),
         ],
@@ -223,9 +271,15 @@ class _N8nCanvasState extends State<N8nCanvas> with SingleTickerProviderStateMix
           decoration: BoxDecoration(
             color: AppColors.surfaceMid.withValues(alpha: 0.75),
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColors.primary.withValues(alpha: 0.5), width: 1.5),
-            boxShadow: [
-              BoxShadow(color: AppColors.primary.withValues(alpha: 0.25), blurRadius: 30),
+            border: Border.all(
+              color: AppColors.primary.withValues(alpha: 0.5),
+              width: 1.5,
+            ),
+            boxShadow: Responsive.isMobile(context) ? null : [
+              BoxShadow(
+                color: AppColors.primary.withValues(alpha: 0.25),
+                blurRadius: 30,
+              ),
             ],
           ),
           child: Column(
@@ -239,17 +293,36 @@ class _N8nCanvasState extends State<N8nCanvas> with SingleTickerProviderStateMix
                     decoration: BoxDecoration(
                       color: AppColors.primary.withValues(alpha: 0.25),
                       borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: AppColors.primary.withValues(alpha: 0.4)),
-                      boxShadow: [BoxShadow(color: AppColors.primary.withValues(alpha: 0.3), blurRadius: 12)],
+                      border: Border.all(
+                        color: AppColors.primary.withValues(alpha: 0.4),
+                      ),
+                      boxShadow: Responsive.isMobile(context) ? null : [
+                        BoxShadow(
+                          color: AppColors.primary.withValues(alpha: 0.3),
+                          blurRadius: 12,
+                        ),
+                      ],
                     ),
-                    child: const Center(child: Text('🤖', style: TextStyle(fontSize: 18))),
+                    child: const Center(
+                      child: Text('🤖', style: TextStyle(fontSize: 18)),
+                    ),
                   ),
                   const SizedBox(width: 10),
                   const Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('AI Orchestrator', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w800)),
-                      Text('Multi-Agent Supervisor', style: TextStyle(color: Colors.white54, fontSize: 11)),
+                      Text(
+                        'AI Orchestrator',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      Text(
+                        'Multi-Agent Supervisor',
+                        style: TextStyle(color: Colors.white54, fontSize: 11),
+                      ),
                     ],
                   ),
                 ],
@@ -258,14 +331,28 @@ class _N8nCanvasState extends State<N8nCanvas> with SingleTickerProviderStateMix
               Container(
                 padding: const EdgeInsets.only(top: 8),
                 decoration: BoxDecoration(
-                  border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.15), width: 1)),
+                  border: Border(
+                    top: BorderSide(
+                      color: Colors.white.withValues(alpha: 0.15),
+                      width: 1,
+                    ),
+                  ),
                 ),
                 child: const Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    Text('Model*', style: TextStyle(color: Colors.white54, fontSize: 9)),
-                    Text('Memory', style: TextStyle(color: Colors.white54, fontSize: 9)),
-                    Text('Tools', style: TextStyle(color: Colors.white54, fontSize: 9)),
+                    Text(
+                      'Model*',
+                      style: TextStyle(color: Colors.white54, fontSize: 9),
+                    ),
+                    Text(
+                      'Memory',
+                      style: TextStyle(color: Colors.white54, fontSize: 9),
+                    ),
+                    Text(
+                      'Tools',
+                      style: TextStyle(color: Colors.white54, fontSize: 9),
+                    ),
                   ],
                 ),
               ),
@@ -297,23 +384,46 @@ class _N8nCanvasState extends State<N8nCanvas> with SingleTickerProviderStateMix
       mainAxisSize: MainAxisSize.min,
       children: [
         // Dashed wire simulation (solid for simplicity)
-        Container(width: 2, height: 24, color: AppColors.primary.withValues(alpha: 0.4)),
+        Container(
+          width: 2,
+          height: 24,
+          color: AppColors.primary.withValues(alpha: 0.4),
+        ),
         Container(
           width: 52,
           height: 52,
           decoration: BoxDecoration(
             color: AppColors.surfaceMid.withValues(alpha: 0.85),
             shape: BoxShape.circle,
-            border: Border.all(color: AppColors.primary.withValues(alpha: 0.4), width: 1.5),
-            boxShadow: [
-              BoxShadow(color: Colors.black.withValues(alpha: 0.4), blurRadius: 15, offset: const Offset(0, 4)),
-              BoxShadow(color: AppColors.primary.withValues(alpha: 0.25), blurRadius: 12),
+            border: Border.all(
+              color: AppColors.primary.withValues(alpha: 0.4),
+              width: 1.5,
+            ),
+            boxShadow: Responsive.isMobile(context) ? null : [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.4),
+                blurRadius: 15,
+                offset: const Offset(0, 4),
+              ),
+              BoxShadow(
+                color: AppColors.primary.withValues(alpha: 0.25),
+                blurRadius: 12,
+              ),
             ],
           ),
-          child: Center(child: Text(icon, style: const TextStyle(fontSize: 20))),
+          child: Center(
+            child: Text(icon, style: const TextStyle(fontSize: 20)),
+          ),
         ),
         const SizedBox(height: 6),
-        Text(label, style: const TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.bold)),
+        Text(
+          label,
+          style: const TextStyle(
+            color: Colors.white70,
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ],
     );
   }
@@ -324,9 +434,15 @@ class _N8nCanvasState extends State<N8nCanvas> with SingleTickerProviderStateMix
       decoration: BoxDecoration(
         color: AppColors.surfaceMid.withValues(alpha: 0.75),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.accentGreen.withValues(alpha: 0.5), width: 1.5),
-        boxShadow: [
-          BoxShadow(color: AppColors.accentGreen.withValues(alpha: 0.2), blurRadius: 25),
+        border: Border.all(
+          color: AppColors.accentGreen.withValues(alpha: 0.5),
+          width: 1.5,
+        ),
+        boxShadow: Responsive.isMobile(context) ? null : [
+          BoxShadow(
+            color: AppColors.accentGreen.withValues(alpha: 0.2),
+            blurRadius: 25,
+          ),
         ],
       ),
       child: Row(
@@ -338,17 +454,36 @@ class _N8nCanvasState extends State<N8nCanvas> with SingleTickerProviderStateMix
             decoration: BoxDecoration(
               color: AppColors.accentGreen.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: AppColors.accentGreen.withValues(alpha: 0.4)),
-              boxShadow: [BoxShadow(color: AppColors.accentGreen.withValues(alpha: 0.3), blurRadius: 12)],
+              border: Border.all(
+                color: AppColors.accentGreen.withValues(alpha: 0.4),
+              ),
+              boxShadow: Responsive.isMobile(context) ? null : [
+                BoxShadow(
+                  color: AppColors.accentGreen.withValues(alpha: 0.3),
+                  blurRadius: 12,
+                ),
+              ],
             ),
-            child: const Center(child: Text('🔀', style: TextStyle(fontSize: 18))),
+            child: const Center(
+              child: Text('🔀', style: TextStyle(fontSize: 18)),
+            ),
           ),
           const SizedBox(width: 10),
           const Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Task Router', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w800)),
-              Text('Check Step Type', style: TextStyle(color: Colors.white54, fontSize: 11)),
+              Text(
+                'Task Router',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              Text(
+                'Check Step Type',
+                style: TextStyle(color: Colors.white54, fontSize: 11),
+              ),
             ],
           ),
         ],
@@ -364,7 +499,12 @@ class _N8nCanvasState extends State<N8nCanvas> with SingleTickerProviderStateMix
           children: [
             _buildArmLabel('true'),
             const _Wire(),
-            _buildBranchNode('💬', 'Socratic Tutor', 'Guided Dialogue & Clips', AppColors.primary),
+            _buildBranchNode(
+              '💬',
+              'Socratic Tutor',
+              'Guided Dialogue & Clips',
+              AppColors.primary,
+            ),
           ],
         ),
         const SizedBox(height: 32),
@@ -372,7 +512,12 @@ class _N8nCanvasState extends State<N8nCanvas> with SingleTickerProviderStateMix
           children: [
             _buildArmLabel('false'),
             const _Wire(),
-            _buildBranchNode('🏆', 'Quiz & XP Engine', 'Assessment & Rewards', AppColors.accentPink),
+            _buildBranchNode(
+              '🏆',
+              'Quiz & XP Engine',
+              'Assessment & Rewards',
+              AppColors.accentPink,
+            ),
           ],
         ),
       ],
@@ -387,7 +532,14 @@ class _N8nCanvasState extends State<N8nCanvas> with SingleTickerProviderStateMix
         borderRadius: BorderRadius.circular(4),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
-      child: Text(text, style: TextStyle(color: Colors.white.withValues(alpha: 0.45), fontSize: 10, fontWeight: FontWeight.bold)),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: Colors.white.withValues(alpha: 0.45),
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
     );
   }
 
@@ -410,14 +562,26 @@ class _N8nCanvasState extends State<N8nCanvas> with SingleTickerProviderStateMix
               shape: BoxShape.circle,
               border: Border.all(color: color.withValues(alpha: 0.3)),
             ),
-            child: Center(child: Text(icon, style: const TextStyle(fontSize: 16))),
+            child: Center(
+              child: Text(icon, style: const TextStyle(fontSize: 16)),
+            ),
           ),
           const SizedBox(width: 10),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w800)),
-              Text(sub, style: const TextStyle(color: Colors.white54, fontSize: 10)),
+              Text(
+                title,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              Text(
+                sub,
+                style: const TextStyle(color: Colors.white54, fontSize: 10),
+              ),
             ],
           ),
         ],
@@ -440,7 +604,12 @@ class _Wire extends StatelessWidget {
           height: 3,
           decoration: BoxDecoration(
             gradient: AppColors.primaryGradient,
-            boxShadow: [BoxShadow(color: AppColors.primary.withValues(alpha: 0.5), blurRadius: 8)],
+            boxShadow: Responsive.isMobile(context) ? null : [
+              BoxShadow(
+                color: AppColors.primary.withValues(alpha: 0.5),
+                blurRadius: 8,
+              ),
+            ],
           ),
         ),
         _buildPort(),
@@ -456,7 +625,9 @@ class _Wire extends StatelessWidget {
         color: AppColors.purpleLight,
         shape: BoxShape.circle,
         border: Border.all(color: AppColors.surfaceDark, width: 2),
-        boxShadow: const [BoxShadow(color: AppColors.purpleLight, blurRadius: 8)],
+        boxShadow: const [
+          BoxShadow(color: AppColors.purpleLight, blurRadius: 8),
+        ],
       ),
     );
   }

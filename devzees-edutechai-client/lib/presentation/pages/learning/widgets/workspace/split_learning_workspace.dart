@@ -10,6 +10,7 @@ import 'learning_resources_panel.dart';
 import 'socratic_tutor_chat.dart';
 import 'keep_alive_wrapper.dart';
 import '../../../../widgets/animated_tutor_icon.dart';
+import '../../../../../core/constants/responsive.dart';
 
 /// A dual-panel layout that splits the learning workspace into:
 ///   • Left Panel (55%): Socratic Tutor Chat
@@ -266,7 +267,7 @@ class _SplitLearningWorkspaceState
                           end: Alignment.bottomRight,
                         ),
                         borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
+                        boxShadow: Responsive.isMobile(context) ? null : [
                           BoxShadow(
                             color: Colors.black.withValues(alpha: 0.3),
                             blurRadius: 20,
@@ -376,8 +377,9 @@ class _FullscreenPanelOverlay extends ConsumerWidget {
     return Material(
       color: AppColors.background, // Base color
       child: Container(
-        decoration: const BoxDecoration(
-          gradient: AppColors.commandHubGradient,
+        decoration: BoxDecoration(
+          color: Responsive.isMobile(context) ? AppColors.mobileCommandHubSolid : null,
+          gradient: Responsive.isMobile(context) ? null : AppColors.commandHubGradient,
         ),
         child: Column(
           children: [
@@ -531,7 +533,7 @@ class _TutorPanelHeaderState extends State<_TutorPanelHeader> {
             decoration: BoxDecoration(
               color: AppColors.accentGreen,
               shape: BoxShape.circle,
-              boxShadow: [
+              boxShadow: Responsive.isMobile(context) ? null : [
                 BoxShadow(
                   color: AppColors.accentGreen.withValues(alpha: 0.6),
                   blurRadius: 6,
@@ -1060,7 +1062,7 @@ class _MobileTabbedWorkspaceState
                       color: AppColors.primary.withValues(alpha: 0.35),
                       width: 1.2,
                     ),
-                    boxShadow: [
+                    boxShadow: Responsive.isMobile(context) ? null : [
                       BoxShadow(
                         color: Colors.black.withValues(alpha: 0.55),
                         blurRadius: 32,
@@ -1216,7 +1218,7 @@ class _MobileTabbedWorkspaceState
                                 decoration: BoxDecoration(
                                   gradient: AppColors.primaryGradient,
                                   borderRadius: BorderRadius.circular(9),
-                                  boxShadow: [
+                                  boxShadow: Responsive.isMobile(context) ? null : [
                                     BoxShadow(
                                       color: AppColors.primary.withValues(alpha: 0.35),
                                       blurRadius: 10,
@@ -1380,7 +1382,7 @@ class _MobileTabbedWorkspaceState
                     border: Border.all(
                       color: AppColors.purpleLight.withValues(alpha: 0.5),
                     ),
-                    boxShadow: [
+                    boxShadow: Responsive.isMobile(context) ? null : [
                       BoxShadow(
                         color: AppColors.accentBlue.withValues(alpha: 0.35),
                         blurRadius: 8,
@@ -1567,7 +1569,7 @@ class _MobileTabbedWorkspaceState
                             colors: [AppColors.accentGreen, AppColors.greenDeep],
                           ),
                     borderRadius: BorderRadius.circular(8),
-                    boxShadow: [
+                    boxShadow: Responsive.isMobile(context) ? null : [
                       BoxShadow(
                         color: (isLastStep ? Colors.amber : AppColors.accentGreen)
                             .withValues(alpha: 0.35),
@@ -1702,7 +1704,7 @@ class _MobileTabbedWorkspaceState
                           )
                         : AppColors.primaryGradient,
                     borderRadius: BorderRadius.circular(8),
-                    boxShadow: [
+                    boxShadow: Responsive.isMobile(context) ? null : [
                       BoxShadow(
                         color: (isLastStep ? Colors.amber : AppColors.primary)
                             .withValues(alpha: 0.3),
@@ -1826,7 +1828,7 @@ class _MobileTabbedWorkspaceState
                               decoration: BoxDecoration(
                                 color: AppColors.accentGreen,
                                 shape: BoxShape.circle,
-                                boxShadow: [
+                                boxShadow: Responsive.isMobile(context) ? null : [
                                   BoxShadow(
                                     color: AppColors.accentGreen.withValues(alpha: 0.4),
                                     blurRadius: 6,
@@ -1845,7 +1847,7 @@ class _MobileTabbedWorkspaceState
                               decoration: BoxDecoration(
                                 color: AppColors.accentGreen,
                                 shape: BoxShape.circle,
-                                boxShadow: [
+                                boxShadow: Responsive.isMobile(context) ? null : [
                                   BoxShadow(
                                     color: AppColors.accentGreen.withValues(alpha: 0.5),
                                     blurRadius: 4,
@@ -1938,7 +1940,7 @@ class _MobileTabbedWorkspaceState
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(16),
-                boxShadow: [
+                boxShadow: Responsive.isMobile(context) ? null : [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.3),
                     blurRadius: 20,
@@ -2188,7 +2190,7 @@ class _MobileWorkspaceTabItemState extends State<_MobileWorkspaceTabItem> {
                     decoration: BoxDecoration(
                       color: widget.badgeColor ?? AppColors.primary,
                       shape: BoxShape.circle,
-                      boxShadow: [
+                      boxShadow: Responsive.isMobile(context) ? null : [
                         BoxShadow(
                           color: (widget.badgeColor ?? AppColors.primary)
                               .withValues(alpha: 0.5),

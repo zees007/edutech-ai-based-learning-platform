@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../widgets/animated_tutor_icon.dart';
+import '../../../../../core/constants/responsive.dart';
 
 class NeuralInferenceLoader extends StatefulWidget {
   final String title;
@@ -80,24 +81,26 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
                       blurRadius: 36,
                       offset: const Offset(0, 18),
                     ),
-                    // Vibrant neon border rim glow
-                    BoxShadow(
-                      color: const Color(0xFFA855F7).withValues(alpha: 0.38),
-                      blurRadius: 18,
-                      spreadRadius: 2,
-                    ),
-                    // Broad ambient violet glow
-                    BoxShadow(
-                      color: const Color(0xFF8B5CF6).withValues(alpha: 0.25),
-                      blurRadius: 45,
-                      spreadRadius: 6,
-                    ),
-                    // Deep neon atmospheric halo
-                    BoxShadow(
-                      color: const Color(0xFF6366F1).withValues(alpha: 0.15),
-                      blurRadius: 80,
-                      spreadRadius: 12,
-                    ),
+                    if (!isMobile) ...[
+                      // Vibrant neon border rim glow
+                      BoxShadow(
+                        color: const Color(0xFFA855F7).withValues(alpha: 0.38),
+                        blurRadius: 18,
+                        spreadRadius: 2,
+                      ),
+                      // Broad ambient violet glow
+                      BoxShadow(
+                        color: const Color(0xFF8B5CF6).withValues(alpha: 0.25),
+                        blurRadius: 45,
+                        spreadRadius: 6,
+                      ),
+                      // Deep neon atmospheric halo
+                      BoxShadow(
+                        color: const Color(0xFF6366F1).withValues(alpha: 0.15),
+                        blurRadius: 80,
+                        spreadRadius: 12,
+                      ),
+                    ],
                   ],
                 ),
                 child: isMobile ? _buildMobileContent() : _buildDesktopContent(),
@@ -198,20 +201,22 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFFA855F7).withValues(
-                                alpha: 0.35 + 0.20 * _pulseController.value,
+                            if (!Responsive.isMobile(context)) ...[
+                              BoxShadow(
+                                color: const Color(0xFFA855F7).withValues(
+                                  alpha: 0.35 + 0.20 * _pulseController.value,
+                                ),
+                                blurRadius: 22,
+                                spreadRadius: 3,
                               ),
-                              blurRadius: 22,
-                              spreadRadius: 3,
-                            ),
-                            BoxShadow(
-                              color: const Color(0xFFEC4899).withValues(
-                                alpha: 0.20 + 0.15 * _pulseController.value,
+                              BoxShadow(
+                                color: const Color(0xFFEC4899).withValues(
+                                  alpha: 0.20 + 0.15 * _pulseController.value,
+                                ),
+                                blurRadius: 32,
+                                spreadRadius: 1,
                               ),
-                              blurRadius: 32,
-                              spreadRadius: 1,
-                            ),
+                            ]
                           ],
                         ),
                       );

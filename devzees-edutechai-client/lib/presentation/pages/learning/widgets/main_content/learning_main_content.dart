@@ -31,9 +31,9 @@ class LearningMainContent extends ConsumerWidget {
         recentSessions.isEmpty && sessionsState.items.isNotEmpty
         ? sessionsState.items.take(3).toList()
         : recentSessions;
-        
+
     final activeState = ref.watch(activeSessionProvider);
-    
+
     if (activeState.session != null || activeState.isLoading) {
       if (activeState.isLoading) {
         // When switching session from learning history, display the theme gradient spinner in a card
@@ -48,18 +48,21 @@ class LearningMainContent extends ConsumerWidget {
                   color: AppColors.purple.withValues(alpha: 0.45),
                   width: 1.5,
                 ),
-                gradient: AppColors.cardGradientOpaque,
+                color: isMobile ? AppColors.mobileCardSolid : null,
+                gradient: isMobile ? null : AppColors.cardGradientOpaque,
                 boxShadow: [
-                  BoxShadow(
-                    color: AppColors.purple.withValues(alpha: 0.3),
-                    blurRadius: 40,
-                    spreadRadius: -10,
-                  ),
-                  BoxShadow(
-                    color: AppColors.accentPink.withValues(alpha: 0.2),
-                    blurRadius: 30,
-                    spreadRadius: -5,
-                  ),
+                  if (!isMobile) ...[
+                    BoxShadow(
+                      color: AppColors.purple.withValues(alpha: 0.3),
+                      blurRadius: 40,
+                      spreadRadius: -10,
+                    ),
+                    BoxShadow(
+                      color: AppColors.accentPink.withValues(alpha: 0.2),
+                      blurRadius: 30,
+                      spreadRadius: -5,
+                    ),
+                  ]
                 ],
               ),
               child: Column(
@@ -94,36 +97,36 @@ class LearningMainContent extends ConsumerWidget {
         }
 
         String title = "Initializing AI Compute Cluster";
-        String subtitle = "Orchestrating agents and provisioning neural resources...";
-        
+        String subtitle =
+            "Orchestrating agents and provisioning neural resources...";
+
         if (activeState.session != null) {
           final stepIndex = activeState.activeStepIndex;
           if (stepIndex >= 0 && stepIndex < activeState.session!.steps.length) {
             final step = activeState.session!.steps[stepIndex];
             title = "Synthesizing Step ${stepIndex + 1}: ${step.title}";
-            subtitle = "🤖 Multi-Agents (Socratic, YouTube, Academic, Quiz) generating step content concurrently...";
+            subtitle =
+                "🤖 Multi-Agents (Socratic, YouTube, Academic, Quiz) generating step content concurrently...";
           }
         }
-        
-        return NeuralInferenceLoader(
-          title: title,
-          subtitle: subtitle,
-        );
+
+        return NeuralInferenceLoader(title: title, subtitle: subtitle);
       }
       return const ActiveLearningWorkspace();
     }
 
     return Container(
-      decoration: const BoxDecoration(
-        gradient: AppColors.workspaceBackgroundRadial,
+      decoration: BoxDecoration(
+        color: isMobile ? AppColors.mobileBackground : null,
+        gradient: isMobile 
+            ? null 
+            : AppColors.workspaceBackgroundRadial,
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
           return SingleChildScrollView(
             child: ConstrainedBox(
-              constraints: BoxConstraints(
-                minHeight: constraints.maxHeight,
-              ),
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -144,15 +147,19 @@ class LearningMainContent extends ConsumerWidget {
                               children: [
                                 Text(
                                   'EduTechAI ',
-                                  style: (isMobile ? AppTextStyles.h3 : AppTextStyles.h2).copyWith(
-                                    letterSpacing: -0.5,
-                                  ),
+                                  style:
+                                      (isMobile
+                                              ? AppTextStyles.h3
+                                              : AppTextStyles.h2)
+                                          .copyWith(letterSpacing: -0.5),
                                 ),
                                 GradientText(
                                   'Learning Workspace',
-                                  style: (isMobile ? AppTextStyles.h3 : AppTextStyles.h2).copyWith(
-                                    letterSpacing: -0.5,
-                                  ),
+                                  style:
+                                      (isMobile
+                                              ? AppTextStyles.h3
+                                              : AppTextStyles.h2)
+                                          .copyWith(letterSpacing: -0.5),
                                 ),
                               ],
                             ),
@@ -162,10 +169,14 @@ class LearningMainContent extends ConsumerWidget {
                               child: Text(
                                 'An adaptive, intelligent learning studio where specialized AI agents orchestrate personalized roadmaps, intuitive analogies, video deep-dives, and instant mastery checks.',
                                 textAlign: TextAlign.center,
-                                style: (isMobile ? AppTextStyles.body2 : AppTextStyles.body1).copyWith(
-                                  color: AppColors.textSecondary,
-                                  height: 1.6,
-                                ),
+                                style:
+                                    (isMobile
+                                            ? AppTextStyles.body2
+                                            : AppTextStyles.body1)
+                                        .copyWith(
+                                          color: AppColors.textSecondary,
+                                          height: 1.6,
+                                        ),
                               ),
                             ),
                           ],
@@ -182,21 +193,34 @@ class LearningMainContent extends ConsumerWidget {
                                   vertical: isMobile ? 16.0 : 24.0,
                                 ),
                                 child: ConstrainedBox(
-                                  constraints: const BoxConstraints(maxWidth: 900),
+                                  constraints: const BoxConstraints(
+                                    maxWidth: 900,
+                                  ),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
                                     children: [
                                       Row(
                                         mainAxisSize: MainAxisSize.min,
-                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
                                         children: [
-                                          const Text('⚡ ', style: TextStyle(fontSize: 24)),
-                                           Text(
-                                             'Continue Your Recent Active Journeys',
-                                             style: (isMobile ? AppTextStyles.subtitle1 : AppTextStyles.h3).copyWith(
-                                               color: AppColors.textPrimary,
-                                             ),
-                                           ),
+                                          const Text(
+                                            '⚡ ',
+                                            style: TextStyle(fontSize: 24),
+                                          ),
+                                          Text(
+                                            'Continue Your Recent Active Journeys',
+                                            style:
+                                                (isMobile
+                                                        ? AppTextStyles
+                                                              .subtitle1
+                                                        : AppTextStyles.h3)
+                                                    .copyWith(
+                                                      color:
+                                                          AppColors.textPrimary,
+                                                    ),
+                                          ),
                                         ],
                                       ),
                                       const SizedBox(height: 24),
@@ -204,12 +228,20 @@ class LearningMainContent extends ConsumerWidget {
                                         const Column(
                                           children: [
                                             Padding(
-                                              padding: EdgeInsets.only(bottom: 16.0),
-                                              child: RecentJourneySkeletonCard(isMobile: true),
+                                              padding: EdgeInsets.only(
+                                                bottom: 16.0,
+                                              ),
+                                              child: RecentJourneySkeletonCard(
+                                                isMobile: true,
+                                              ),
                                             ),
                                             Padding(
-                                              padding: EdgeInsets.only(bottom: 16.0),
-                                              child: RecentJourneySkeletonCard(isMobile: true),
+                                              padding: EdgeInsets.only(
+                                                bottom: 16.0,
+                                              ),
+                                              child: RecentJourneySkeletonCard(
+                                                isMobile: true,
+                                              ),
                                             ),
                                           ],
                                         )
@@ -221,15 +253,21 @@ class LearningMainContent extends ConsumerWidget {
                                           children: [
                                             SizedBox(
                                               width: 280,
-                                              child: RecentJourneySkeletonCard(isMobile: false),
+                                              child: RecentJourneySkeletonCard(
+                                                isMobile: false,
+                                              ),
                                             ),
                                             SizedBox(
                                               width: 280,
-                                              child: RecentJourneySkeletonCard(isMobile: false),
+                                              child: RecentJourneySkeletonCard(
+                                                isMobile: false,
+                                              ),
                                             ),
                                             SizedBox(
                                               width: 280,
-                                              child: RecentJourneySkeletonCard(isMobile: false),
+                                              child: RecentJourneySkeletonCard(
+                                                isMobile: false,
+                                              ),
                                             ),
                                           ],
                                         ),
@@ -238,75 +276,112 @@ class LearningMainContent extends ConsumerWidget {
                                 ),
                               )
                             : (displaySessions.isNotEmpty
-                                ? Padding(
-                                    key: const ValueKey('recent_journeys_loaded'),
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: isMobile ? 16.0 : 32.0,
-                                      vertical: isMobile ? 16.0 : 24.0,
-                                    ),
-                                    child: ConstrainedBox(
-                                      constraints: const BoxConstraints(maxWidth: 900),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.center,
-                                        children: [
-                                          Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            mainAxisAlignment: MainAxisAlignment.center,
-                                            children: [
-                                              const Text('⚡ ', style: TextStyle(fontSize: 24)),
-                                               Text(
-                                                 'Continue Your Recent Active Journeys',
-                                                 style: (isMobile ? AppTextStyles.subtitle1 : AppTextStyles.h3).copyWith(
-                                                   color: AppColors.textPrimary,
-                                                 ),
-                                               ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 24),
-                                          if (isMobile)
-                                            Column(
-                                              children: displaySessions
-                                                  .map(
-                                                    (session) => Padding(
-                                                      padding: const EdgeInsets.only(
-                                                        bottom: 16.0,
-                                                      ),
-                                                      child: RecentJourneyCard(
-                                                        session: session,
-                                                        isMobile: isMobile,
-                                                        onContinue: () {
-                                                          ref.read(activeSessionProvider.notifier).loadSession(session.sessionId);
-                                                        },
-                                                      ),
-                                                    ),
-                                                  )
-                                                  .toList(),
-                                            )
-                                          else
-                                            Wrap(
-                                              alignment: WrapAlignment.center,
-                                              spacing: 16.0,
-                                              runSpacing: 16.0,
-                                              children: displaySessions
-                                                  .map(
-                                                    (session) => SizedBox(
-                                                      width: 280,
-                                                      child: RecentJourneyCard(
-                                                        session: session,
-                                                        isMobile: isMobile,
-                                                        onContinue: () {
-                                                          ref.read(activeSessionProvider.notifier).loadSession(session.sessionId);
-                                                        },
-                                                      ),
-                                                    ),
-                                                  )
-                                                  .toList(),
-                                            ),
-                                        ],
+                                  ? Padding(
+                                      key: const ValueKey(
+                                        'recent_journeys_loaded',
                                       ),
-                                    ),
-                                  )
-                                : const SizedBox.shrink(key: ValueKey('recent_journeys_empty'))),
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: isMobile ? 16.0 : 32.0,
+                                        vertical: isMobile ? 16.0 : 24.0,
+                                      ),
+                                      child: ConstrainedBox(
+                                        constraints: const BoxConstraints(
+                                          maxWidth: 900,
+                                        ),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          children: [
+                                            Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                const Text(
+                                                  '⚡ ',
+                                                  style: TextStyle(
+                                                    fontSize: 24,
+                                                  ),
+                                                ),
+                                                Text(
+                                                  'Continue Your Recent Active Journeys',
+                                                  style:
+                                                      (isMobile
+                                                              ? AppTextStyles
+                                                                    .subtitle1
+                                                              : AppTextStyles
+                                                                    .h3)
+                                                          .copyWith(
+                                                            color: AppColors
+                                                                .textPrimary,
+                                                          ),
+                                                ),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 24),
+                                            if (isMobile)
+                                              Column(
+                                                children: displaySessions
+                                                    .map(
+                                                      (session) => Padding(
+                                                        padding:
+                                                            const EdgeInsets.only(
+                                                              bottom: 16.0,
+                                                            ),
+                                                        child: RecentJourneyCard(
+                                                          session: session,
+                                                          isMobile: isMobile,
+                                                          onContinue: () {
+                                                            ref
+                                                                .read(
+                                                                  activeSessionProvider
+                                                                      .notifier,
+                                                                )
+                                                                .loadSession(
+                                                                  session
+                                                                      .sessionId,
+                                                                );
+                                                          },
+                                                        ),
+                                                      ),
+                                                    )
+                                                    .toList(),
+                                              )
+                                            else
+                                              Wrap(
+                                                alignment: WrapAlignment.center,
+                                                spacing: 16.0,
+                                                runSpacing: 16.0,
+                                                children: displaySessions
+                                                    .map(
+                                                      (session) => SizedBox(
+                                                        width: 280,
+                                                        child: RecentJourneyCard(
+                                                          session: session,
+                                                          isMobile: isMobile,
+                                                          onContinue: () {
+                                                            ref
+                                                                .read(
+                                                                  activeSessionProvider
+                                                                      .notifier,
+                                                                )
+                                                                .loadSession(
+                                                                  session
+                                                                      .sessionId,
+                                                                );
+                                                          },
+                                                        ),
+                                                      ),
+                                                    )
+                                                    .toList(),
+                                              ),
+                                          ],
+                                        ),
+                                      ),
+                                    )
+                                  : const SizedBox.shrink(
+                                      key: ValueKey('recent_journeys_empty'),
+                                    )),
                       ),
                     ],
                   ),
@@ -336,15 +411,19 @@ class LearningMainContent extends ConsumerWidget {
                           children: [
                             Text(
                               'What do you want to ',
-                              style: (isMobile ? AppTextStyles.h4 : AppTextStyles.h3).copyWith(
-                                letterSpacing: -0.5,
-                              ),
+                              style:
+                                  (isMobile
+                                          ? AppTextStyles.h4
+                                          : AppTextStyles.h3)
+                                      .copyWith(letterSpacing: -0.5),
                             ),
                             GradientText(
                               'learn today?',
-                              style: (isMobile ? AppTextStyles.h4 : AppTextStyles.h3).copyWith(
-                                letterSpacing: -0.5,
-                              ),
+                              style:
+                                  (isMobile
+                                          ? AppTextStyles.h4
+                                          : AppTextStyles.h3)
+                                      .copyWith(letterSpacing: -0.5),
                             ),
                           ],
                         ),
@@ -352,24 +431,33 @@ class LearningMainContent extends ConsumerWidget {
                         Text(
                           'Decompose any concept into adaptive milestones, interactive Socratic lessons, and academic research.',
                           textAlign: TextAlign.center,
-                          style: (isMobile ? AppTextStyles.caption : AppTextStyles.body2).copyWith(
-                            color: AppColors.textSecondary,
-                          ),
+                          style:
+                              (isMobile
+                                      ? AppTextStyles.caption
+                                      : AppTextStyles.body2)
+                                  .copyWith(color: AppColors.textSecondary),
                         ),
                         SizedBox(height: isMobile ? 8 : 16),
                         JourneyPromptCard(
                           onStartJourney: (topic, mode, level) {
-                            ref.read(activeSessionProvider.notifier).startNewSession(
-                              topic: topic,
-                              mode: mode,
-                              level: level,
-                            ).catchError((error) {
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('Failed to start journey: $error')),
-                                );
-                              }
-                            });
+                            ref
+                                .read(activeSessionProvider.notifier)
+                                .startNewSession(
+                                  topic: topic,
+                                  mode: mode,
+                                  level: level,
+                                )
+                                .catchError((error) {
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          'Failed to start journey: $error',
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                });
                           },
                         ),
                       ],

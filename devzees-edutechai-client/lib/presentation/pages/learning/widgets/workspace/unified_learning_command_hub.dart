@@ -59,21 +59,23 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(18),
               boxShadow: [
-                BoxShadow(
-                  color: AppColors.purpleLight.withValues(alpha: _isHovered ? 0.16 : 0.08),
-                  blurRadius: _isHovered ? 28 : 20,
-                  spreadRadius: 0,
-                  offset: const Offset(0, 4),
-                ),
+                if (!isMobile) ...[
+                  BoxShadow(
+                    color: AppColors.purpleLight.withValues(alpha: _isHovered ? 0.16 : 0.08),
+                    blurRadius: _isHovered ? 28 : 20,
+                    spreadRadius: 0,
+                    offset: const Offset(0, 4),
+                  ),
+                  BoxShadow(
+                    color: AppColors.purple.withValues(alpha: 0.08),
+                    blurRadius: 20,
+                    spreadRadius: 0,
+                  ),
+                ],
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.35),
                   blurRadius: 30,
                   offset: const Offset(0, 10),
-                ),
-                BoxShadow(
-                  color: AppColors.purple.withValues(alpha: 0.08),
-                  blurRadius: 20,
-                  spreadRadius: 0,
                 ),
               ],
             ),
@@ -84,7 +86,8 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
                 child: Container(
                   clipBehavior: Clip.antiAlias,
                   decoration: BoxDecoration(
-                    gradient: AppColors.commandHubGradient,
+                    color: isMobile ? AppColors.mobileCommandHubSolid : null,
+                    gradient: isMobile ? null : AppColors.commandHubGradient,
                     borderRadius: const BorderRadius.all(Radius.circular(18)),
                   ),
                   child: Column(
