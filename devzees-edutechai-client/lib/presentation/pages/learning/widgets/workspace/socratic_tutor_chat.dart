@@ -1318,13 +1318,17 @@ class _CustomCodeBlockBuilder extends MarkdownElementBuilder {
     // 1. Inline Math
     if (textContent.startsWith('math:')) {
       final mathTex = textContent.substring(5).trim();
-      return Math.tex(
-        _sanitizeMathTex(mathTex),
-        mathStyle: MathStyle.text,
-        textStyle: preferredStyle?.copyWith(color: Colors.white, fontSize: 14),
-        onErrorFallback: (err) => Text(
-          mathTex,
-          style: preferredStyle?.copyWith(color: AppColors.lavender),
+      return SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        child: Math.tex(
+          _sanitizeMathTex(mathTex),
+          mathStyle: MathStyle.text,
+          textStyle: preferredStyle?.copyWith(color: Colors.white, fontSize: 14),
+          onErrorFallback: (err) => Text(
+            mathTex,
+            style: preferredStyle?.copyWith(color: AppColors.lavender),
+          ),
         ),
       );
     }
@@ -1408,7 +1412,14 @@ String _preprocessMathToMarkdown(String text) {
   // Protect all existing fenced code blocks (e.g. ```mermaid ... ``` or ```python ... ```)
   // so math preprocessing never touches diagram syntax or code samples.
   final codeBlocks = <String>[];
+  // Protect fenced code blocks
   var processed = text.replaceAllMapped(RegExp(r'```[\s\S]*?```'), (m) {
+    codeBlocks.add(m.group(0)!);
+    return '@@CODEBLOCK_${codeBlocks.length - 1}@@';
+  });
+
+  // Protect inline code blocks (prevents PHP vars like `$_GET` from breaking math)
+  processed = processed.replaceAllMapped(RegExp(r'`[^`\n]+`'), (m) {
     codeBlocks.add(m.group(0)!);
     return '@@CODEBLOCK_${codeBlocks.length - 1}@@';
   });
