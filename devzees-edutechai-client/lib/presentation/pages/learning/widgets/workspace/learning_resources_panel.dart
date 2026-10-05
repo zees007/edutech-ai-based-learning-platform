@@ -112,6 +112,7 @@ class LearningResourcesPanel extends ConsumerStatefulWidget {
     return ScrollbarTheme(
       data: workspaceScrollbarTheme,
       child: SingleChildScrollView(
+        primary: false,
         padding: const EdgeInsets.all(20),
         child: KnowledgeCheckQuiz(
           key: ValueKey('quiz_step_$stepIndex'),
@@ -132,6 +133,9 @@ class _LearningResourcesPanelState
   late TabController _tabController;
   int _activeTabIndex = 0;
   bool _quizSubmitted = false;
+  final ScrollController _videosScrollController = ScrollController();
+  final ScrollController _papersScrollController = ScrollController();
+  final ScrollController _quizScrollController = ScrollController();
 
   bool _isQuizCompleted(dynamic step) {
     if (step == null) return false;
@@ -203,6 +207,9 @@ class _LearningResourcesPanelState
   void dispose() {
     _tabController.removeListener(_onTabControllerChanged);
     _tabController.dispose();
+    _videosScrollController.dispose();
+    _papersScrollController.dispose();
+    _quizScrollController.dispose();
     super.dispose();
   }
 
@@ -366,6 +373,7 @@ class _LearningResourcesPanelState
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 350),
       child: SingleChildScrollView(
+        controller: _videosScrollController,
         key: ValueKey('videos_${step.index}_${step.videos!.length}'),
         padding: const EdgeInsets.all(20),
         child: RecommendedVideos(videos: step.videos),
@@ -375,6 +383,7 @@ class _LearningResourcesPanelState
 
   Widget _buildPapersTab(dynamic step) {
     return SingleChildScrollView(
+      controller: _papersScrollController,
       padding: const EdgeInsets.all(20),
       child: AcademicPapers(
         papers: step.papers,
@@ -392,6 +401,7 @@ class _LearningResourcesPanelState
     }
     final int stepIdx = (step.index is int) ? step.index as int : widget.stepIndex;
     return SingleChildScrollView(
+      controller: _quizScrollController,
       padding: const EdgeInsets.all(20),
       child: KnowledgeCheckQuiz(
         key: ValueKey('quiz_step_${step.index}'),
