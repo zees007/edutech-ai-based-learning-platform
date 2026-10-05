@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/text_styles.dart';
+import '../../core/constants/responsive.dart';
 import 'app_gradient_spinner.dart';
 
 class GlassLoaderOverlay extends StatelessWidget {
@@ -39,7 +40,7 @@ class GlassLoaderOverlay extends StatelessWidget {
                 child: Container(
                   color: AppColors.surfaceDark.withValues(alpha: 0.6),
                   child: Center(
-                    child: _buildGlassLoaderBox(),
+                    child: _buildGlassLoaderBox(context),
                   ),
                 ),
               ),
@@ -49,7 +50,7 @@ class GlassLoaderOverlay extends StatelessWidget {
     );
   }
 
-  Widget _buildGlassLoaderBox() {
+  Widget _buildGlassLoaderBox(BuildContext context) {
     return Container(
       width: 320,
       padding: const EdgeInsets.all(32),
@@ -59,18 +60,21 @@ class GlassLoaderOverlay extends StatelessWidget {
           color: AppColors.purple.withValues(alpha: 0.45),
           width: 1.5,
         ),
-        gradient: AppColors.cardGradientOpaque,
+        color: Responsive.isMobile(context) ? AppColors.mobileCardSolid : null,
+        gradient: Responsive.isMobile(context) ? null : AppColors.cardGradientOpaque,
         boxShadow: [
-          BoxShadow(
-            color: AppColors.purple.withValues(alpha: 0.3),
-            blurRadius: 40,
-            spreadRadius: -10,
-          ),
-          BoxShadow(
-            color: AppColors.accentPink.withValues(alpha: 0.2),
-            blurRadius: 30,
-            spreadRadius: -5,
-          ),
+          if (!Responsive.isMobile(context)) ...[
+            BoxShadow(
+              color: AppColors.purple.withValues(alpha: 0.3),
+              blurRadius: 40,
+              spreadRadius: -10,
+            ),
+            BoxShadow(
+              color: AppColors.accentPink.withValues(alpha: 0.2),
+              blurRadius: 30,
+              spreadRadius: -5,
+            ),
+          ]
         ],
       ),
       child: Column(

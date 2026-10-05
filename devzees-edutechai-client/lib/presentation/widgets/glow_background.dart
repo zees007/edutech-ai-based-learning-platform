@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 
+import '../../core/constants/responsive.dart';
+
 class GlowBackground extends StatelessWidget {
   final Widget child;
 
@@ -8,6 +10,17 @@ class GlowBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (Responsive.isMobile(context)) {
+      return Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          color: AppColors.mobileBackground,
+        ),
+        child: child,
+      );
+    }
+
     return Stack(
       children: [
         // Top Left Glow (Violet)

@@ -12,6 +12,7 @@ import '../../../../../../core/providers/active_session_provider.dart';
 import '../../../../../../core/providers/permission_provider.dart';
 import '../subscription/subscription_modal.dart';
 import 'mermaid_web_view.dart';
+import '../../../../../../core/constants/responsive.dart';
 import '../../../../widgets/animated_tutor_icon.dart';
 
 // ═══════════════════════════════════════════════════════════════════
@@ -614,7 +615,7 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
                         vertical: 16,
                       ),
                       decoration: BoxDecoration(
-                        gradient: isTutor
+                        gradient: isTutor && !Responsive.isMobile(context)
                             ? LinearGradient(
                                 colors: [
                                   AppColors.surfaceMid.withValues(alpha: 0.75),
@@ -625,7 +626,7 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
                               )
                             : null,
                         color: isTutor
-                            ? null
+                            ? (Responsive.isMobile(context) ? AppColors.mobileSocraticTutorSolid : null)
                             : AppColors.accentBlue.withValues(alpha: 0.12),
                         borderRadius: isTutor
                             ? BorderRadius.circular(16)
@@ -638,11 +639,12 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
 
                         boxShadow: isTutor
                             ? [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.3),
-                                  blurRadius: 20,
-                                  offset: const Offset(0, 6),
-                                ),
+                                if (!Responsive.isMobile(context))
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.3),
+                                    blurRadius: 20,
+                                    offset: const Offset(0, 6),
+                                  ),
                               ]
                             : [
                                 BoxShadow(
@@ -896,7 +898,8 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
+              color: Responsive.isMobile(context) ? AppColors.mobileSocraticTutorSolid : null,
+              gradient: Responsive.isMobile(context) ? null : LinearGradient(
                 colors: [
                   AppColors.surfaceMid.withValues(alpha: 0.75),
                   AppColors.surfaceDark.withValues(alpha: 0.85),
@@ -906,11 +909,12 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
               ),
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.3),
-                  blurRadius: 20,
-                  offset: const Offset(0, 6),
-                ),
+                if (!Responsive.isMobile(context))
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.3),
+                    blurRadius: 20,
+                    offset: const Offset(0, 6),
+                  ),
               ],
             ),
             child: _TypingDots(),
@@ -1318,13 +1322,17 @@ class _CustomCodeBlockBuilder extends MarkdownElementBuilder {
     // 1. Inline Math
     if (textContent.startsWith('math:')) {
       final mathTex = textContent.substring(5).trim();
-      return Math.tex(
-        _sanitizeMathTex(mathTex),
-        mathStyle: MathStyle.text,
-        textStyle: preferredStyle?.copyWith(color: Colors.white, fontSize: 14),
-        onErrorFallback: (err) => Text(
-          mathTex,
-          style: preferredStyle?.copyWith(color: AppColors.lavender),
+      return SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        child: Math.tex(
+          _sanitizeMathTex(mathTex),
+          mathStyle: MathStyle.text,
+          textStyle: preferredStyle?.copyWith(color: Colors.white, fontSize: 14),
+          onErrorFallback: (err) => Text(
+            mathTex,
+            style: preferredStyle?.copyWith(color: AppColors.lavender),
+          ),
         ),
       );
     }
@@ -1408,7 +1416,14 @@ String _preprocessMathToMarkdown(String text) {
   // Protect all existing fenced code blocks (e.g. ```mermaid ... ``` or ```python ... ```)
   // so math preprocessing never touches diagram syntax or code samples.
   final codeBlocks = <String>[];
+  // Protect fenced code blocks
   var processed = text.replaceAllMapped(RegExp(r'```[\s\S]*?```'), (m) {
+    codeBlocks.add(m.group(0)!);
+    return '@@CODEBLOCK_${codeBlocks.length - 1}@@';
+  });
+
+  // Protect inline code blocks (prevents PHP vars like `$_GET` from breaking math)
+  processed = processed.replaceAllMapped(RegExp(r'`[^`\n]+`'), (m) {
     codeBlocks.add(m.group(0)!);
     return '@@CODEBLOCK_${codeBlocks.length - 1}@@';
   });

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
 import 'package:devzees_edutechai_client/core/theme/text_styles.dart';
+import 'package:devzees_edutechai_client/core/constants/responsive.dart';
 
 class AuthCanvas extends StatefulWidget {
   final bool isLogin;
@@ -16,7 +17,8 @@ class AuthCanvas extends StatefulWidget {
   State<AuthCanvas> createState() => _AuthCanvasState();
 }
 
-class _AuthCanvasState extends State<AuthCanvas> with SingleTickerProviderStateMixin {
+class _AuthCanvasState extends State<AuthCanvas>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _glowAnimation;
 
@@ -27,8 +29,11 @@ class _AuthCanvasState extends State<AuthCanvas> with SingleTickerProviderStateM
       vsync: this,
       duration: const Duration(seconds: 2),
     )..repeat(reverse: true);
-    
-    _glowAnimation = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
+
+    _glowAnimation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeInOut,
+    );
   }
 
   @override
@@ -55,7 +60,7 @@ class _AuthCanvasState extends State<AuthCanvas> with SingleTickerProviderStateM
             color: AppColors.canvasBackground,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(color: borderColor, width: 1.5),
-            boxShadow: [
+            boxShadow: Responsive.isMobile(context) ? null : [
               BoxShadow(
                 color: AppColors.primary.withValues(alpha: 0.15 + (0.1 * t)),
                 blurRadius: 40 + (10 * t),
@@ -67,51 +72,62 @@ class _AuthCanvasState extends State<AuthCanvas> with SingleTickerProviderStateM
             borderRadius: BorderRadius.circular(20),
             child: Stack(
               children: [
-                // Background Gradients & Dots
-                Positioned.fill(
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: RadialGradient(
-                        center: const FractionalOffset(0.2, 0.3),
-                        radius: 0.8,
-                        colors: [
-                          AppColors.accentPurple.withValues(alpha: 0.12),
-                          Colors.transparent,
-                        ],
-                        stops: const [0.0, 0.8],
+                // Web/Desktop Glow Orbs
+                if (!Responsive.isMobile(context)) ...[
+                  Positioned.fill(
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: RadialGradient(
+                          center: const FractionalOffset(0.2, 0.3),
+                          radius: 0.8,
+                          colors: [
+                            AppColors.accentPurple.withValues(alpha: 0.12),
+                            Colors.transparent,
+                          ],
+                          stops: const [0.0, 0.8],
+                        ),
                       ),
                     ),
                   ),
-                ),
-                Positioned.fill(
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: RadialGradient(
-                        center: const FractionalOffset(0.8, 0.7),
-                        radius: 0.8,
-                        colors: [
-                          AppColors.accentBlue.withValues(alpha: 0.12),
-                          Colors.transparent,
-                        ],
-                        stops: const [0.0, 0.8],
+                  Positioned.fill(
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: RadialGradient(
+                          center: const FractionalOffset(0.8, 0.7),
+                          radius: 0.8,
+                          colors: [
+                            AppColors.accentBlue.withValues(alpha: 0.12),
+                            Colors.transparent,
+                          ],
+                          stops: const [0.0, 0.8],
+                        ),
                       ),
                     ),
                   ),
-                ),
-                Positioned.fill(
-                  child: CustomPaint(painter: _DotGridPainter()),
-                ),
-                
+                ],
+                // Background Dots
+                Positioned.fill(child: CustomPaint(painter: _DotGridPainter())),
+
                 // Content Flowchart
                 SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 32,
+                    horizontal: 16,
+                  ),
                   child: Column(
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.accentPurple.withValues(alpha: 0.1),
-                          border: Border.all(color: AppColors.accentPurple.withValues(alpha: 0.3)),
+                          border: Border.all(
+                            color: AppColors.accentPurple.withValues(
+                              alpha: 0.3,
+                            ),
+                          ),
                           borderRadius: BorderRadius.circular(30),
                         ),
                         child: Text(
@@ -125,7 +141,7 @@ class _AuthCanvasState extends State<AuthCanvas> with SingleTickerProviderStateM
                         ),
                       ),
                       const SizedBox(height: 32),
-                      
+
                       // Step 1
                       _buildFlowNode(
                         icon: '👤',
@@ -136,7 +152,7 @@ class _AuthCanvasState extends State<AuthCanvas> with SingleTickerProviderStateM
                         isGradientText: true,
                       ),
                       _buildArrow(),
-                      
+
                       // Step 2
                       _buildFlowNode(
                         icon: '🛡️',
@@ -147,7 +163,7 @@ class _AuthCanvasState extends State<AuthCanvas> with SingleTickerProviderStateM
                         isGradientText: true,
                       ),
                       _buildArrow(),
-                      
+
                       // Step 3
                       _buildFlowNode(
                         icon: '❓',
@@ -157,7 +173,7 @@ class _AuthCanvasState extends State<AuthCanvas> with SingleTickerProviderStateM
                         baseColor: AppColors.accentPink,
                         isGradientText: true,
                       ),
-                      
+
                       const SizedBox(height: 16),
                       // Branches
                       Row(
@@ -176,7 +192,7 @@ class _AuthCanvasState extends State<AuthCanvas> with SingleTickerProviderStateM
                           ),
                         ],
                       ),
-                      
+
                       // Step 4 Actions (The Buttons)
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -208,10 +224,10 @@ class _AuthCanvasState extends State<AuthCanvas> with SingleTickerProviderStateM
                           ),
                         ],
                       ),
-                      
+
                       // Merge arrows
                       _buildMergeArrows(),
-                      
+
                       // Step 5
                       _buildFlowNode(
                         icon: '🧠',
@@ -247,7 +263,7 @@ class _AuthCanvasState extends State<AuthCanvas> with SingleTickerProviderStateM
         color: AppColors.surfaceMid.withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: baseColor.withValues(alpha: 0.3)),
-        boxShadow: [
+        boxShadow: Responsive.isMobile(context) ? null : [
           BoxShadow(
             color: baseColor.withValues(alpha: 0.25),
             blurRadius: 30,
@@ -264,11 +280,17 @@ class _AuthCanvasState extends State<AuthCanvas> with SingleTickerProviderStateM
               color: baseColor.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(10),
               border: Border.all(color: baseColor.withValues(alpha: 0.4)),
-              boxShadow: [
-                BoxShadow(color: baseColor.withValues(alpha: 0.6), blurRadius: 15),
+              boxShadow: Responsive.isMobile(context) ? null : [
+                BoxShadow(
+                  color: baseColor.withValues(alpha: 0.6),
+                  blurRadius: 15,
+                ),
               ],
             ),
-            child: Text(icon, style: const TextStyle(fontSize: 18)), // Reduced from 20
+            child: Text(
+              icon,
+              style: const TextStyle(fontSize: 18),
+            ), // Reduced from 20
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -276,7 +298,10 @@ class _AuthCanvasState extends State<AuthCanvas> with SingleTickerProviderStateM
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: baseColor.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(4),
@@ -294,7 +319,8 @@ class _AuthCanvasState extends State<AuthCanvas> with SingleTickerProviderStateM
                 const SizedBox(height: 4),
                 if (isGradientText)
                   ShaderMask(
-                    shaderCallback: (bounds) => AppColors.pinkPurpleGradient.createShader(bounds),
+                    shaderCallback: (bounds) =>
+                        AppColors.pinkPurpleGradient.createShader(bounds),
                     child: Text(
                       title,
                       style: AppTextStyles.subtitle2.copyWith(
@@ -339,7 +365,11 @@ class _AuthCanvasState extends State<AuthCanvas> with SingleTickerProviderStateM
             height: 20,
             color: Colors.white.withValues(alpha: 0.15),
           ),
-          Icon(Icons.keyboard_arrow_down, color: Colors.white.withValues(alpha: 0.3), size: 16),
+          Icon(
+            Icons.keyboard_arrow_down,
+            color: Colors.white.withValues(alpha: 0.3),
+            size: 16,
+          ),
         ],
       ),
     );
@@ -358,11 +388,7 @@ class _AuthCanvasState extends State<AuthCanvas> with SingleTickerProviderStateM
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 4),
-        Container(
-          width: 2,
-          height: 16,
-          color: color.withValues(alpha: 0.4),
-        ),
+        Container(width: 2, height: 16, color: color.withValues(alpha: 0.4)),
         Icon(Icons.keyboard_arrow_down, color: color, size: 16),
       ],
     );
@@ -385,10 +411,14 @@ class _AuthCanvasState extends State<AuthCanvas> with SingleTickerProviderStateM
         child: Container(
           padding: const EdgeInsets.all(12), // Reduced from 16
           decoration: BoxDecoration(
-            color: isActive ? baseColor.withValues(alpha: 0.15) : AppColors.surfaceMid.withValues(alpha: 0.8),
+            color: isActive
+                ? baseColor.withValues(alpha: 0.15)
+                : AppColors.surfaceMid.withValues(alpha: 0.8),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: isActive ? baseColor.withValues(alpha: 0.6) : baseColor.withValues(alpha: 0.3),
+              color: isActive
+                  ? baseColor.withValues(alpha: 0.6)
+                  : baseColor.withValues(alpha: 0.3),
               width: isActive ? 1.5 : 1.0,
             ),
             boxShadow: isActive
@@ -416,11 +446,17 @@ class _AuthCanvasState extends State<AuthCanvas> with SingleTickerProviderStateM
                   color: baseColor.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(color: baseColor.withValues(alpha: 0.4)),
-                  boxShadow: [
-                    BoxShadow(color: baseColor.withValues(alpha: 0.6), blurRadius: 15),
+                  boxShadow: Responsive.isMobile(context) ? null : [
+                    BoxShadow(
+                      color: baseColor.withValues(alpha: 0.6),
+                      blurRadius: 15,
+                    ),
                   ],
                 ),
-                child: Text(icon, style: const TextStyle(fontSize: 18)), // Reduced from 20
+                child: Text(
+                  icon,
+                  style: const TextStyle(fontSize: 18),
+                ), // Reduced from 20
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -428,7 +464,10 @@ class _AuthCanvasState extends State<AuthCanvas> with SingleTickerProviderStateM
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: baseColor.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(4),
@@ -436,7 +475,9 @@ class _AuthCanvasState extends State<AuthCanvas> with SingleTickerProviderStateM
                       child: Text(
                         tag,
                         style: AppTextStyles.labelSmall.copyWith(
-                          color: isActive ? baseColor : baseColor.withValues(alpha: 0.9),
+                          color: isActive
+                              ? baseColor
+                              : baseColor.withValues(alpha: 0.9),
                           fontSize: 8,
                           fontWeight: FontWeight.w800,
                           letterSpacing: 0.5,
@@ -446,11 +487,14 @@ class _AuthCanvasState extends State<AuthCanvas> with SingleTickerProviderStateM
                     const SizedBox(height: 4),
                     if (isGradientText)
                       ShaderMask(
-                        shaderCallback: (bounds) => AppColors.pinkPurpleGradient.createShader(bounds),
+                        shaderCallback: (bounds) =>
+                            AppColors.pinkPurpleGradient.createShader(bounds),
                         child: Text(
                           title,
                           style: AppTextStyles.subtitle2.copyWith(
-                            color: isActive ? AppColors.textPrimary : AppColors.textSecondary,
+                            color: isActive
+                                ? AppColors.textPrimary
+                                : AppColors.textSecondary,
                             fontSize: 13,
                             fontWeight: FontWeight.w800,
                           ),
@@ -460,7 +504,9 @@ class _AuthCanvasState extends State<AuthCanvas> with SingleTickerProviderStateM
                       Text(
                         title,
                         style: AppTextStyles.subtitle2.copyWith(
-                          color: isActive ? AppColors.textPrimary : AppColors.textSecondary,
+                          color: isActive
+                              ? AppColors.textPrimary
+                              : AppColors.textSecondary,
                           fontSize: 13,
                           fontWeight: FontWeight.w800,
                         ),
@@ -469,7 +515,9 @@ class _AuthCanvasState extends State<AuthCanvas> with SingleTickerProviderStateM
                     Text(
                       subtitle,
                       style: AppTextStyles.caption.copyWith(
-                        color: isActive ? AppColors.textPrimary.withValues(alpha: 0.7) : AppColors.textSecondary,
+                        color: isActive
+                            ? AppColors.textPrimary.withValues(alpha: 0.7)
+                            : AppColors.textSecondary,
                         fontSize: 10,
                       ),
                     ),
@@ -495,7 +543,11 @@ class _AuthCanvasState extends State<AuthCanvas> with SingleTickerProviderStateM
               size: const Size(double.infinity, 30),
               painter: _MergeArrowPainter(),
             ),
-            const Icon(Icons.keyboard_arrow_down, color: AppColors.accentCyan, size: 16),
+            const Icon(
+              Icons.keyboard_arrow_down,
+              color: AppColors.accentCyan,
+              size: 16,
+            ),
           ],
         ),
       ),
@@ -557,10 +609,10 @@ class _DotGridPainter extends CustomPainter {
     final paint = Paint()
       ..color = Colors.white.withValues(alpha: 0.05)
       ..style = PaintingStyle.fill;
-    
+
     const spacing = 15.0;
     const radius = 1.0;
-    
+
     for (double x = 0; x < size.width; x += spacing) {
       for (double y = 0; y < size.height; y += spacing) {
         canvas.drawCircle(Offset(x, y), radius, paint);

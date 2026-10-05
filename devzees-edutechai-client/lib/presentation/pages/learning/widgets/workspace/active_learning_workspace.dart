@@ -97,7 +97,8 @@ class _StepContentContainerState extends ConsumerState<_StepContentContainer> {
           : const EdgeInsets.fromLTRB(24, 0, 24, 24),
       clipBehavior: Clip.hardEdge,
       decoration: BoxDecoration(
-        gradient: AppColors.commandHubGradient,
+        color: isMobile ? AppColors.mobileCommandHubSolid : null,
+        gradient: isMobile ? null : AppColors.commandHubGradient,
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
@@ -105,11 +106,12 @@ class _StepContentContainerState extends ConsumerState<_StepContentContainer> {
             blurRadius: 30,
             offset: const Offset(0, 10),
           ),
-          BoxShadow(
-            color: AppColors.purple.withValues(alpha: 0.08),
-            blurRadius: 20,
-            spreadRadius: 0,
-          ),
+          if (!isMobile)
+            BoxShadow(
+              color: AppColors.purple.withValues(alpha: 0.08),
+              blurRadius: 20,
+              spreadRadius: 0,
+            ),
         ],
       ),
       child: widget.activeState.isLoading

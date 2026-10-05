@@ -19,7 +19,8 @@ class AuthPage extends ConsumerStatefulWidget {
   ConsumerState<AuthPage> createState() => _AuthPageState();
 }
 
-class _AuthPageState extends ConsumerState<AuthPage> with SingleTickerProviderStateMixin {
+class _AuthPageState extends ConsumerState<AuthPage>
+    with SingleTickerProviderStateMixin {
   bool _isLogin = true;
   bool _isFlowchartExpanded = false;
 
@@ -51,7 +52,7 @@ class _AuthPageState extends ConsumerState<AuthPage> with SingleTickerProviderSt
       _isLogin = !_isLogin;
     });
   }
-  
+
   void _setAuthMode(bool isLogin) {
     setState(() {
       _isLogin = isLogin;
@@ -70,60 +71,82 @@ class _AuthPageState extends ConsumerState<AuthPage> with SingleTickerProviderSt
         title: authState.loadingMessage ?? 'Authenticating',
         child: Stack(
           children: [
-          // Background Glow Orbs
-          Positioned(
-            top: -100,
-            left: -100,
-            child: _buildGlowOrb(AppColors.primary.withValues(alpha: 0.12), isMobile ? 250 : 400),
-          ),
-          Positioned(
-            bottom: -50,
-            right: -100,
-            child: _buildGlowOrb(AppColors.accentPink.withValues(alpha: 0.08), isMobile ? 200 : 350),
-          ),
-          Positioned(
-            bottom: -150,
-            left: MediaQuery.of(context).size.width * 0.3,
-            child: _buildGlowOrb(AppColors.accentBlue.withValues(alpha: 0.06), isMobile ? 150 : 300),
-          ),
+            if (isMobile)
+              Container(
+                width: double.infinity,
+                height: double.infinity,
+                decoration: const BoxDecoration(
+                  color: AppColors.mobileBackground,
+                ),
+              )
+            else ...[
+              // Web/Desktop Glow Orbs
+              Positioned(
+                top: -100,
+                left: -100,
+                child: _buildGlowOrb(
+                  AppColors.primary.withValues(alpha: 0.12),
+                  400,
+                ),
+              ),
+              Positioned(
+                bottom: -50,
+                right: -100,
+                child: _buildGlowOrb(
+                  AppColors.accentPink.withValues(alpha: 0.08),
+                  350,
+                ),
+              ),
+              Positioned(
+                bottom: -150,
+                left: MediaQuery.of(context).size.width * 0.3,
+                child: _buildGlowOrb(
+                  AppColors.accentBlue.withValues(alpha: 0.06),
+                  300,
+                ),
+              ),
+            ],
 
-          // Main Content Area
-          SafeArea(
-            child: Column(
-              children: [
-                AuthTopNavbar(isMobile: isMobile),
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: isMobile ? 16 : 32,
-                      vertical: isMobile ? 24 : 40,
-                    ),
-                    child: Center(
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 1200),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            AuthIntroHeader(isMobile: isMobile, showInstructions: !isMobile),
-                            const SizedBox(height: 48),
-                            isMobile
-                                ? _buildMobileLayout()
-                                : _buildDesktopLayout(),
-                          ],
+            // Main Content Area
+            SafeArea(
+              child: Column(
+                children: [
+                  AuthTopNavbar(isMobile: isMobile),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: isMobile ? 16 : 32,
+                        vertical: isMobile ? 24 : 40,
+                      ),
+                      child: Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 1200),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              AuthIntroHeader(
+                                isMobile: isMobile,
+                                showInstructions: !isMobile,
+                              ),
+                              const SizedBox(height: 48),
+                              isMobile
+                                  ? _buildMobileLayout()
+                                  : _buildDesktopLayout(),
+                            ],
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ),
     );
   }
-  
+
   Widget _buildDesktopLayout() {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -131,10 +154,7 @@ class _AuthPageState extends ConsumerState<AuthPage> with SingleTickerProviderSt
         // Left Column: Auth Canvas Flowchart
         Expanded(
           flex: 11,
-          child: AuthCanvas(
-            isLogin: _isLogin,
-            onAuthModeChanged: _setAuthMode,
-          ),
+          child: AuthCanvas(isLogin: _isLogin, onAuthModeChanged: _setAuthMode),
         ),
         const SizedBox(width: 48),
         // Right Column: Auth Form
@@ -158,7 +178,7 @@ class _AuthPageState extends ConsumerState<AuthPage> with SingleTickerProviderSt
       ],
     );
   }
-  
+
   Widget _buildMobileLayout() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -188,17 +208,28 @@ class _AuthPageState extends ConsumerState<AuthPage> with SingleTickerProviderSt
               });
             },
             icon: Icon(
-              _isFlowchartExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+              _isFlowchartExpanded
+                  ? Icons.keyboard_arrow_up
+                  : Icons.keyboard_arrow_down,
               color: AppColors.textSecondary,
             ),
             label: Text(
-              _isFlowchartExpanded ? "Hide Access Flowchart" : "View Access Flowchart",
-              style: AppTextStyles.subtitle2.copyWith(color: AppColors.textPrimary, fontWeight: FontWeight.w600),
+              _isFlowchartExpanded
+                  ? "Hide Access Flowchart"
+                  : "View Access Flowchart",
+              style: AppTextStyles.subtitle2.copyWith(
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.w600,
+              ),
             ),
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-              side: BorderSide(color: AppColors.accentPurple.withValues(alpha: 0.5)),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+              side: BorderSide(
+                color: AppColors.accentPurple.withValues(alpha: 0.5),
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30),
+              ),
               backgroundColor: AppColors.accentPurple.withValues(alpha: 0.1),
             ),
           ),
@@ -232,12 +263,7 @@ class _AuthPageState extends ConsumerState<AuthPage> with SingleTickerProviderSt
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        gradient: RadialGradient(
-          colors: [
-            color,
-            color.withValues(alpha: 0.0),
-          ],
-        ),
+        gradient: RadialGradient(colors: [color, color.withValues(alpha: 0.0)]),
       ),
     );
   }
