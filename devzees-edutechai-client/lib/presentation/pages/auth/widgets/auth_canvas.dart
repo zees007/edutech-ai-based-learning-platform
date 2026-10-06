@@ -72,39 +72,6 @@ class _AuthCanvasState extends State<AuthCanvas>
             borderRadius: BorderRadius.circular(20),
             child: Stack(
               children: [
-                // Web/Desktop Glow Orbs
-                if (!Responsive.isMobile(context)) ...[
-                  Positioned.fill(
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: RadialGradient(
-                          center: const FractionalOffset(0.2, 0.3),
-                          radius: 0.8,
-                          colors: [
-                            AppColors.accentPurple.withValues(alpha: 0.12),
-                            Colors.transparent,
-                          ],
-                          stops: const [0.0, 0.8],
-                        ),
-                      ),
-                    ),
-                  ),
-                  Positioned.fill(
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: RadialGradient(
-                          center: const FractionalOffset(0.8, 0.7),
-                          radius: 0.8,
-                          colors: [
-                            AppColors.accentBlue.withValues(alpha: 0.12),
-                            Colors.transparent,
-                          ],
-                          stops: const [0.0, 0.8],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
                 // Background Dots
                 Positioned.fill(child: CustomPaint(painter: _DotGridPainter())),
 
@@ -133,7 +100,7 @@ class _AuthCanvasState extends State<AuthCanvas>
                         child: Text(
                           '⚡ EduTech AI — Providing Access Flowchart',
                           style: AppTextStyles.badge.copyWith(
-                            color: AppColors.lavender,
+                            color: AppColors.isDark ? AppColors.lavender : AppColors.primaryViolet,
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
                             letterSpacing: 0.5,
@@ -319,6 +286,7 @@ class _AuthCanvasState extends State<AuthCanvas>
                 const SizedBox(height: 4),
                 if (isGradientText)
                   ShaderMask(
+                    blendMode: BlendMode.srcIn,
                     shaderCallback: (bounds) =>
                         AppColors.pinkPurpleGradient.createShader(bounds),
                     child: Text(
@@ -363,11 +331,15 @@ class _AuthCanvasState extends State<AuthCanvas>
           Container(
             width: 2,
             height: 20,
-            color: Colors.white.withValues(alpha: 0.15),
+            color: AppColors.isDark
+                ? Colors.white.withValues(alpha: 0.15)
+                : AppColors.textSecondary.withValues(alpha: 0.35),
           ),
           Icon(
             Icons.keyboard_arrow_down,
-            color: Colors.white.withValues(alpha: 0.3),
+            color: AppColors.isDark
+                ? Colors.white.withValues(alpha: 0.3)
+                : AppColors.textSecondary.withValues(alpha: 0.6),
             size: 16,
           ),
         ],
@@ -487,6 +459,7 @@ class _AuthCanvasState extends State<AuthCanvas>
                     const SizedBox(height: 4),
                     if (isGradientText)
                       ShaderMask(
+                        blendMode: BlendMode.srcIn,
                         shaderCallback: (bounds) =>
                             AppColors.pinkPurpleGradient.createShader(bounds),
                         child: Text(
@@ -607,7 +580,9 @@ class _DotGridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.05)
+      ..color = AppColors.isDark
+          ? Colors.white.withValues(alpha: 0.05)
+          : Colors.black.withValues(alpha: 0.04)
       ..style = PaintingStyle.fill;
 
     const spacing = 15.0;

@@ -5,6 +5,7 @@ import '../../../../../core/services/academic_service.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/text_styles.dart';
 import '../../../../../core/providers/permission_provider.dart';
+import '../../../../../core/providers/theme_provider.dart';
 import '../subscription/subscription_modal.dart';
 
 class AcademicPapers extends ConsumerStatefulWidget {
@@ -90,6 +91,7 @@ class _AcademicPapersState extends ConsumerState<AcademicPapers> {
 
   @override
   Widget build(BuildContext context) {
+    ref.watch(themeModeProvider);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -125,11 +127,18 @@ class _AcademicPapersState extends ConsumerState<AcademicPapers> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
           decoration: BoxDecoration(
-            color: AppColors.glassSurface.withValues(alpha: 0.04),
+            color: AppColors.isDark ? AppColors.glassSurface.withValues(alpha: 0.04) : AppColors.surface,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: AppColors.glassBorder,
+              color: AppColors.border,
             ),
+            boxShadow: AppColors.isDark ? null : [
+              const BoxShadow(
+                color: Color(0x0A000000),
+                blurRadius: 8,
+                offset: Offset(0, 2),
+              ),
+            ],
           ),
           child: Row(
             children: [
@@ -418,32 +427,47 @@ class _PaperCardState extends State<_PaperCard> {
         curve: Curves.easeOutCubic,
         margin: const EdgeInsets.only(bottom: 16),
         padding: const EdgeInsets.all(18),
-        transform: Matrix4.translationValues(0, _isHovered ? -2 : 0, 0),
+        transform: Matrix4.translationValues(0, _isHovered ? -3 : 0, 0),
         decoration: BoxDecoration(
-          color: _isHovered
-              ? AppColors.glassSurface.withValues(alpha: 0.06)
-              : AppColors.glassSurface.withValues(alpha: 0.025),
+          color: AppColors.isDark
+              ? (_isHovered ? AppColors.surfaceSubtle : AppColors.surface)
+              : AppColors.surface,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: _isHovered
-                ? AppColors.blueLight.withValues(alpha: 0.55)
-                : AppColors.blueLight.withValues(alpha: 0.20),
-            width: 1.1,
+            color: AppColors.isDark
+                ? (_isHovered ? AppColors.accentBlue.withValues(alpha: 0.70) : AppColors.border)
+                : (_isHovered ? AppColors.accentBlue : AppColors.border),
+            width: _isHovered ? 1.4 : 1.0,
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.25),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-            if (_isHovered)
-              BoxShadow(
-                color: AppColors.blueLight.withValues(alpha: 0.16),
-                blurRadius: 20,
-                spreadRadius: 1,
-                offset: const Offset(0, 4),
-              ),
-          ],
+          boxShadow: AppColors.isDark
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.35),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                  if (_isHovered)
+                    BoxShadow(
+                      color: AppColors.accentBlue.withValues(alpha: 0.25),
+                      blurRadius: 22,
+                      spreadRadius: 1,
+                      offset: const Offset(0, 6),
+                    ),
+                ]
+              : [
+                  BoxShadow(
+                    color: const Color(0x14000000),
+                    blurRadius: _isHovered ? 20 : 12,
+                    offset: Offset(0, _isHovered ? 8 : 4),
+                  ),
+                  if (_isHovered)
+                    BoxShadow(
+                      color: AppColors.accentBlue.withValues(alpha: 0.20),
+                      blurRadius: 24,
+                      spreadRadius: 1,
+                      offset: const Offset(0, 6),
+                    ),
+                ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -495,10 +519,10 @@ class _PaperCardState extends State<_PaperCard> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
                         decoration: BoxDecoration(
-                          color: AppColors.glassSurface.withValues(alpha: 0.06),
+                          color: AppColors.isDark ? AppColors.glassSurface.withValues(alpha: 0.06) : AppColors.surfaceSubtle,
                           borderRadius: BorderRadius.circular(6),
                           border: Border.all(
-                            color: AppColors.glassBorder,
+                            color: AppColors.border,
                           ),
                         ),
                         child: Row(
@@ -596,10 +620,10 @@ class _PaperCardState extends State<_PaperCard> {
                   height: 20,
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: AppColors.glassSurface.withValues(alpha: 0.08),
+                    color: AppColors.isDark ? AppColors.glassSurface.withValues(alpha: 0.08) : AppColors.surfaceSubtle,
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: AppColors.glassBorderSubtle,
+                      color: AppColors.border,
                     ),
                   ),
                   child: Text(
@@ -657,10 +681,10 @@ class _PaperCardState extends State<_PaperCard> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.blueLight.withValues(alpha: 0.06),
+                color: AppColors.isDark ? AppColors.blueLight.withValues(alpha: 0.06) : AppColors.surfaceSubtle,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: AppColors.blueLight.withValues(alpha: 0.18),
+                  color: AppColors.isDark ? AppColors.blueLight.withValues(alpha: 0.18) : AppColors.border,
                 ),
               ),
               child: IntrinsicHeight(

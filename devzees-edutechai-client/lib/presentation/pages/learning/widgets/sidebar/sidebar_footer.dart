@@ -7,6 +7,7 @@ import '../../../../../core/providers/permission_provider.dart';
 import '../../../../../core/providers/user_provider.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/text_styles.dart';
+import '../../../../../core/providers/theme_provider.dart';
 import '../subscription/subscription_modal.dart';
 
 class SidebarFooter extends ConsumerStatefulWidget {
@@ -72,15 +73,24 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
                 width: 220,
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 decoration: BoxDecoration(
-                  color: AppColors.popoverBackground.withValues(alpha: 0.8),
+                  color: AppColors.popoverBackground,
                   borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.4),
-                      blurRadius: 24,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
+                  border: Border.all(color: AppColors.border, width: 1),
+                  boxShadow: AppColors.isDark
+                      ? [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.45),
+                            blurRadius: 24,
+                            offset: const Offset(0, 8),
+                          ),
+                        ]
+                      : [
+                          const BoxShadow(
+                            color: Color(0x18000000),
+                            blurRadius: 24,
+                            offset: Offset(0, 8),
+                          ),
+                        ],
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -107,6 +117,16 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
                           context.go('/admin');
                         },
                       ),
+                    Divider(color: AppColors.glassBorder, height: 16),
+                    _buildMenuItem(
+                      context,
+                      AppColors.isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme',
+                      AppColors.isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
+                      AppColors.isDark ? AppColors.accentAmber : AppColors.accentViolet,
+                      onTap: () {
+                        ref.read(themeModeProvider.notifier).toggleTheme();
+                      },
+                    ),
                     Divider(color: AppColors.glassBorder, height: 16),
                     _buildMenuItem(
                       context, 
@@ -245,7 +265,7 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               decoration: BoxDecoration(
                 color: isHovered
-                    ? AppColors.glassSurface.withValues(alpha: 0.05)
+                    ? (AppColors.isDark ? AppColors.glassHover : AppColors.surfaceSubtle)
                     : Colors.transparent,
               ),
               child: Row(
@@ -276,7 +296,7 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
     if (userAsync.isLoading || userAsync.value == null) {
       return Container(
         padding: const EdgeInsets.all(16),
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           border: Border(
             top: BorderSide(
               color: AppColors.glassBorder,
@@ -302,7 +322,7 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
               Container(
                 key: _settingsIconKey,
                 child: IconButton(
-                  icon: const Icon(Icons.settings, color: AppColors.textMuted, size: 20),
+                  icon: Icon(Icons.settings, color: AppColors.textMuted, size: 20),
                   onPressed: () => _showSettingsPopover(context),
                 ),
               ),

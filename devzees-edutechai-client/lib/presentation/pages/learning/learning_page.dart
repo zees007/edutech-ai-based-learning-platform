@@ -13,6 +13,8 @@ import 'widgets/main_content/learning_main_content.dart';
 import 'widgets/gamification/level_up_celebration.dart';
 import 'widgets/gamification/journey_complete_celebration.dart';
 import 'package:devzees_edutechai_client/core/providers/active_session_provider.dart';
+import 'package:devzees_edutechai_client/presentation/widgets/theme_toggle_button.dart';
+import 'package:devzees_edutechai_client/core/providers/theme_provider.dart';
 
 class LearningPage extends ConsumerStatefulWidget {
   const LearningPage({super.key});
@@ -101,6 +103,7 @@ class _LearningPageState extends ConsumerState<LearningPage> {
 
   @override
   Widget build(BuildContext context) {
+    final themeMode = ref.watch(themeModeProvider);
     final isAuthInitial = ref.watch(authProvider.select((s) => s.isInitial));
 
     ref.listen<GamificationEvent?>(gamificationEventProvider, (previous, next) {
@@ -127,7 +130,7 @@ class _LearningPageState extends ConsumerState<LearningPage> {
       child: isAuthInitial
           ? const ShimmerAppShell(key: ValueKey('shimmer_skeleton'))
           : KeyedSubtree(
-              key: const ValueKey('learning_content'),
+              key: ValueKey('learning_content_${themeMode.name}'),
               child: _buildScaffold(context),
             ),
     );
@@ -144,10 +147,14 @@ class _LearningPageState extends ConsumerState<LearningPage> {
           elevation: 0,
           leading: Builder(
             builder: (context) => IconButton(
-              icon: const Icon(Icons.menu, color: AppColors.textSecondary),
+              icon: Icon(Icons.menu, color: AppColors.textSecondary),
               onPressed: () => Scaffold.of(context).openDrawer(),
             ),
           ),
+          actions: const [
+            ThemeToggleButton(size: 32),
+            SizedBox(width: 8),
+          ],
         ),
         drawer: Drawer(
           backgroundColor: AppColors.background,

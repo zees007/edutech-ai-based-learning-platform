@@ -202,7 +202,7 @@ class SubscriptionModal extends ConsumerWidget {
                   ),
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.close,
                       color: AppColors.textSecondary,
                     ),

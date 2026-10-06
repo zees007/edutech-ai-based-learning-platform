@@ -101,7 +101,7 @@ class GlassLoaderOverlay extends StatelessWidget {
           Text(
             subtitle,
             style: AppTextStyles.body2.copyWith(
-              color: AppColors.lavender.withValues(alpha: 0.7),
+              color: AppColors.textSecondary,
             ),
             textAlign: TextAlign.center,
           ),

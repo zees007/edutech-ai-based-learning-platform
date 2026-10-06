@@ -69,50 +69,11 @@ class _AuthPageState extends ConsumerState<AuthPage>
       body: GlassLoaderOverlay(
         isLoading: authState.isLoading,
         title: authState.loadingMessage ?? 'Authenticating',
-        child: Stack(
-          children: [
-            if (isMobile)
-              Container(
-                width: double.infinity,
-                height: double.infinity,
-                decoration: const BoxDecoration(
-                  color: AppColors.mobileBackground,
-                ),
-              )
-            else ...[
-              // Web/Desktop Glow Orbs
-              Positioned(
-                top: -100,
-                left: -100,
-                child: _buildGlowOrb(
-                  AppColors.primary.withValues(alpha: 0.12),
-                  400,
-                ),
-              ),
-              Positioned(
-                bottom: -50,
-                right: -100,
-                child: _buildGlowOrb(
-                  AppColors.accentPink.withValues(alpha: 0.08),
-                  350,
-                ),
-              ),
-              Positioned(
-                bottom: -150,
-                left: MediaQuery.of(context).size.width * 0.3,
-                child: _buildGlowOrb(
-                  AppColors.accentBlue.withValues(alpha: 0.06),
-                  300,
-                ),
-              ),
-            ],
-
-            // Main Content Area
-            SafeArea(
-              child: Column(
-                children: [
-                  AuthTopNavbar(isMobile: isMobile),
-                  Expanded(
+        child: SafeArea(
+          child: Column(
+            children: [
+              AuthTopNavbar(isMobile: isMobile),
+              Expanded(
                     child: SingleChildScrollView(
                       padding: EdgeInsets.symmetric(
                         horizontal: isMobile ? 16 : 32,
@@ -141,11 +102,9 @@ class _AuthPageState extends ConsumerState<AuthPage>
                 ],
               ),
             ),
-          ],
-        ),
-      ),
-    );
-  }
+          ),
+        );
+      }
 
   Widget _buildDesktopLayout() {
     return Row(
@@ -254,17 +213,6 @@ class _AuthPageState extends ConsumerState<AuthPage>
               : const SizedBox(width: double.infinity),
         ),
       ],
-    );
-  }
-
-  Widget _buildGlowOrb(Color color, double size) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: RadialGradient(colors: [color, color.withValues(alpha: 0.0)]),
-      ),
     );
   }
 }

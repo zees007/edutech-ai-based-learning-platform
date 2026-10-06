@@ -262,8 +262,10 @@ class _ChevronStepItemState extends State<_ChevronStepItem> {
           : (isCompleted
               ? Colors.white
               : (isLocked
-                  ? Colors.white.withValues(alpha: 0.35)
-                  : AppColors.purpleLight)),
+                  ? (AppColors.isDark
+                      ? Colors.white.withValues(alpha: 0.35)
+                      : AppColors.textSecondary.withValues(alpha: 0.6))
+                  : AppColors.primaryViolet)),
     );
 
     // Primary Text Color
@@ -272,22 +274,26 @@ class _ChevronStepItemState extends State<_ChevronStepItem> {
         : (isCompleted
             ? AppColors.greenMint
             : (isLocked
-                ? Colors.white.withValues(alpha: 0.4)
-                : AppColors.purpleLight));
+                ? (AppColors.isDark
+                    ? Colors.white.withValues(alpha: 0.4)
+                    : AppColors.textSecondary.withValues(alpha: 0.6))
+                : AppColors.primaryViolet));
 
     final Color titleColor = isActive
         ? Colors.white
         : (isCompleted
             ? Colors.white
             : (isLocked
-                ? Colors.white.withValues(alpha: 0.35)
-                : AppColors.slate200));
+                ? (AppColors.isDark
+                    ? Colors.white.withValues(alpha: 0.35)
+                    : AppColors.textSecondary.withValues(alpha: 0.6))
+                : (AppColors.isDark ? AppColors.slate200 : AppColors.textPrimary)));
 
     // Background decoration
     Decoration backgroundDecoration;
     if (isActive) {
       backgroundDecoration = BoxDecoration(
-        gradient: AppColors.royalBlueIndigoGradient,
+        gradient: AppColors.primaryGradient,
         boxShadow: [
           BoxShadow(
             color: AppColors.accentBlue.withValues(alpha: 0.45),
@@ -297,7 +303,7 @@ class _ChevronStepItemState extends State<_ChevronStepItem> {
         ],
       );
     } else if (isCompleted) {
-      // Vibrant Glassy Green (solid emerald base that does not let dark background bleed through)
+      // Vibrant Glassy Green
       backgroundDecoration = BoxDecoration(
         gradient: AppColors.emeraldGradient,
         boxShadow: [
@@ -311,13 +317,13 @@ class _ChevronStepItemState extends State<_ChevronStepItem> {
     } else if (!isLocked) {
       backgroundDecoration = BoxDecoration(
         color: _isHovered
-            ? AppColors.surfaceMid.withValues(alpha: 0.85)
-            : AppColors.surfaceMid.withValues(alpha: 0.50),
+            ? (AppColors.isDark ? AppColors.surfaceMid.withValues(alpha: 0.85) : AppColors.surfaceSubtle)
+            : (AppColors.isDark ? AppColors.surfaceMid.withValues(alpha: 0.50) : AppColors.surface),
       );
     } else {
       backgroundDecoration = BoxDecoration(
         color: _isHovered
-            ? AppColors.surfaceDark.withValues(alpha: 0.6)
+            ? (AppColors.isDark ? AppColors.surfaceDark.withValues(alpha: 0.6) : AppColors.surfaceSubtle.withValues(alpha: 0.5))
             : Colors.transparent,
       );
     }
@@ -327,7 +333,7 @@ class _ChevronStepItemState extends State<_ChevronStepItem> {
         ? AppColors.blueSoft.withValues(alpha: 0.8)
         : (isCompleted
             ? AppColors.greenMint.withValues(alpha: 0.75)
-            : Colors.white.withValues(alpha: 0.15));
+            : AppColors.glassBorder);
 
     // Operational status label & badge styling
     final String statusLabel;
@@ -347,14 +353,14 @@ class _ChevronStepItemState extends State<_ChevronStepItem> {
       statusBadgeText = Colors.white;
     } else if (isLocked) {
       statusLabel = 'LOCKED';
-      statusBadgeBg = Colors.white.withValues(alpha: 0.06);
-      statusBadgeBorder = Colors.white.withValues(alpha: 0.15);
-      statusBadgeText = Colors.white.withValues(alpha: 0.45);
+      statusBadgeBg = AppColors.isDark ? Colors.white.withValues(alpha: 0.06) : AppColors.surfaceSubtle;
+      statusBadgeBorder = AppColors.isDark ? Colors.white.withValues(alpha: 0.15) : AppColors.border;
+      statusBadgeText = AppColors.isDark ? Colors.white.withValues(alpha: 0.45) : AppColors.textSecondary;
     } else {
       statusLabel = 'PENDING';
       statusBadgeBg = AppColors.purpleLight.withValues(alpha: 0.15);
       statusBadgeBorder = AppColors.purpleLight.withValues(alpha: 0.35);
-      statusBadgeText = AppColors.lavender;
+      statusBadgeText = AppColors.isDark ? AppColors.lavender : AppColors.primaryViolet;
     }
 
     final clipper = _ChevronClipper(

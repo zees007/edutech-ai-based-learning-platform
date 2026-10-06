@@ -71,39 +71,6 @@ class _N8nCanvasState extends State<N8nCanvas>
             borderRadius: BorderRadius.circular(20),
             child: Stack(
               children: [
-                // Web/Desktop Glow Orbs
-                if (!Responsive.isMobile(context)) ...[
-                  Positioned.fill(
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: RadialGradient(
-                          center: const FractionalOffset(0.2, 0.3),
-                          radius: 0.8,
-                          colors: [
-                            AppColors.accentCyan.withValues(alpha: 0.12),
-                            Colors.transparent,
-                          ],
-                          stops: const [0.0, 0.8],
-                        ),
-                      ),
-                    ),
-                  ),
-                  Positioned.fill(
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: RadialGradient(
-                          center: const FractionalOffset(0.8, 0.7),
-                          radius: 0.8,
-                          colors: [
-                            AppColors.primary.withValues(alpha: 0.12),
-                            Colors.transparent,
-                          ],
-                          stops: const [0.0, 0.8],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
                 Positioned.fill(child: CustomPaint(painter: _DotGridPainter())),
                 Padding(
                   padding: const EdgeInsets.only(
@@ -137,7 +104,7 @@ class _N8nCanvasState extends State<N8nCanvas>
                 ),
               ],
             ),
-            child: const Text(
+            child: Text(
               '⚡ EDUTECH AI — AUTONOMOUS MULTI-AGENT FLOW',
               style: TextStyle(
                 color: AppColors.lavender,
@@ -243,12 +210,12 @@ class _N8nCanvasState extends State<N8nCanvas>
             ),
           ),
           const SizedBox(width: 10),
-          const SizedBox(
+          SizedBox(
             width: 110,
             child: Text(
               "On 'Topic Selection' submission",
               style: TextStyle(
-                color: Colors.white,
+                color: AppColors.textPrimary,
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
                 height: 1.3,
@@ -308,20 +275,20 @@ class _N8nCanvasState extends State<N8nCanvas>
                     ),
                   ),
                   const SizedBox(width: 10),
-                  const Column(
+                  Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         'AI Orchestrator',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: AppColors.textPrimary,
                           fontSize: 14,
                           fontWeight: FontWeight.w800,
                         ),
                       ),
                       Text(
                         'Multi-Agent Supervisor',
-                        style: TextStyle(color: Colors.white54, fontSize: 11),
+                        style: TextStyle(color: AppColors.textSecondary, fontSize: 11),
                       ),
                     ],
                   ),
@@ -333,25 +300,25 @@ class _N8nCanvasState extends State<N8nCanvas>
                 decoration: BoxDecoration(
                   border: Border(
                     top: BorderSide(
-                      color: Colors.white.withValues(alpha: 0.15),
+                      color: AppColors.border,
                       width: 1,
                     ),
                   ),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     Text(
                       'Model*',
-                      style: TextStyle(color: Colors.white54, fontSize: 9),
+                      style: TextStyle(color: AppColors.textSecondary, fontSize: 9),
                     ),
                     Text(
                       'Memory',
-                      style: TextStyle(color: Colors.white54, fontSize: 9),
+                      style: TextStyle(color: AppColors.textSecondary, fontSize: 9),
                     ),
                     Text(
                       'Tools',
-                      style: TextStyle(color: Colors.white54, fontSize: 9),
+                      style: TextStyle(color: AppColors.textSecondary, fontSize: 9),
                     ),
                   ],
                 ),
@@ -418,8 +385,8 @@ class _N8nCanvasState extends State<N8nCanvas>
         const SizedBox(height: 6),
         Text(
           label,
-          style: const TextStyle(
-            color: Colors.white70,
+          style: TextStyle(
+            color: AppColors.textSecondary,
             fontSize: 10,
             fontWeight: FontWeight.bold,
           ),
@@ -469,20 +436,20 @@ class _N8nCanvasState extends State<N8nCanvas>
             ),
           ),
           const SizedBox(width: 10),
-          const Column(
+          Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 'Task Router',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                   fontSize: 14,
                   fontWeight: FontWeight.w800,
                 ),
               ),
               Text(
                 'Check Step Type',
-                style: TextStyle(color: Colors.white54, fontSize: 11),
+                style: TextStyle(color: AppColors.textSecondary, fontSize: 11),
               ),
             ],
           ),
@@ -572,15 +539,15 @@ class _N8nCanvasState extends State<N8nCanvas>
             children: [
               Text(
                 title,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: AppColors.textPrimary,
                   fontSize: 12,
                   fontWeight: FontWeight.w800,
                 ),
               ),
               Text(
                 sub,
-                style: const TextStyle(color: Colors.white54, fontSize: 10),
+                style: TextStyle(color: AppColors.textSecondary, fontSize: 10),
               ),
             ],
           ),
@@ -625,7 +592,7 @@ class _Wire extends StatelessWidget {
         color: AppColors.purpleLight,
         shape: BoxShape.circle,
         border: Border.all(color: AppColors.surfaceDark, width: 2),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(color: AppColors.purpleLight, blurRadius: 8),
         ],
       ),
@@ -636,7 +603,10 @@ class _Wire extends StatelessWidget {
 class _DotGridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = Colors.white.withValues(alpha: 0.08);
+    final paint = Paint()
+      ..color = AppColors.isDark
+          ? Colors.white.withValues(alpha: 0.08)
+          : Colors.black.withValues(alpha: 0.05);
     const double spacing = 20.0;
     const double radius = 1.2;
 

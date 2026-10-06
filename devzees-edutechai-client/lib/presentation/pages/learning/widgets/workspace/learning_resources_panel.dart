@@ -508,7 +508,7 @@ class _LearningResourcesPanelState
                                   shape: BoxShape.circle,
                                   border: Border.all(color: AppColors.glassBorder),
                                 ),
-                                child: const Icon(
+                                child: Icon(
                                   Icons.close_rounded,
                                   size: 18,
                                   color: AppColors.textMuted,
@@ -565,7 +565,7 @@ class _LearningResourcesPanelState
                               child: Text(
                                 'Interactive questions are waiting in the Quiz tab.',
                                 style: AppTextStyles.caption.copyWith(
-                                  color: AppColors.lavender,
+                                  color: AppColors.textPrimary,
                                   fontSize: 11.5,
                                 ),
                               ),

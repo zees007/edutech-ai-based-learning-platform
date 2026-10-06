@@ -53,8 +53,11 @@ class AuthIntroHeader extends StatelessWidget {
             "EduTech AI is an autonomous, multi-agent academic ecosystem. Log in or create a new student account to instantiate your personal supervisor-worker agent swarm.",
             style: AppTextStyles.bodyPrimary.copyWith(
               fontSize: isMobile ? 16 : 18,
-              color: AppColors.lavender.withValues(alpha: 0.8),
+              color: AppColors.isDark
+                  ? AppColors.lavender.withValues(alpha: 0.8)
+                  : AppColors.textSecondary,
               height: 1.5,
+              fontWeight: FontWeight.w500,
             ),
             textAlign: TextAlign.center,
           ),

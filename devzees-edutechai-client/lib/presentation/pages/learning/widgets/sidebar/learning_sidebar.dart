@@ -144,8 +144,8 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
             children: [
               Text(
                 'Learning History ($total)',
-                style: const TextStyle(
-                  color: Colors.white70,
+                style: TextStyle(
+                  color: AppColors.textPrimary,
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                   letterSpacing: 0.5,
@@ -154,7 +154,7 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
               const Spacer(),
               Icon(
                 _isHistoryExpanded ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_right,
-                color: Colors.white.withValues(alpha: 0.5),
+                color: AppColors.textSecondary,
                 size: 20,
               ),
             ],
@@ -326,14 +326,16 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
                     child: Text(
                       label,
                       style: TextStyle(
-                        color: isHovered || isSelected ? Colors.white : Colors.white70,
+                        color: isSelected
+                            ? AppColors.primary
+                            : (isHovered ? AppColors.textPrimary : AppColors.textSecondary),
                         fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                         fontSize: 13,
                       ),
                     ),
                   ),
                   if (isSelected)
-                    const Icon(Icons.check, color: AppColors.primary, size: 16),
+                    Icon(Icons.check, color: AppColors.primary, size: 16),
                 ],
               ),
             ),

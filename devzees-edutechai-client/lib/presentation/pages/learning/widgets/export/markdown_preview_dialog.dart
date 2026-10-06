@@ -87,7 +87,7 @@ class MarkdownPreviewDialog extends StatelessWidget {
                     horizontal: isMobile ? 14 : 20,
                     vertical: isMobile ? 10 : 14,
                   ),
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     color: AppColors.surfaceSolidHeader,
                     border: Border(
                       bottom: BorderSide(color: AppColors.glassBorder, width: 1),
@@ -211,30 +211,30 @@ class MarkdownPreviewDialog extends StatelessWidget {
                         ),
                         h1: AppTextStyles.h1.copyWith(
                           fontSize: 20,
-                          color: Colors.white,
+                          color: AppColors.textPrimary,
                           fontWeight: FontWeight.w900,
                         ),
                         h1Padding: const EdgeInsets.only(bottom: 12, top: 8),
                         h2: AppTextStyles.h2.copyWith(
                           fontSize: 17,
-                          color: AppColors.purpleLight,
+                          color: AppColors.adaptivePurpleLight,
                           fontWeight: FontWeight.bold,
                         ),
                         h2Padding: const EdgeInsets.only(bottom: 10, top: 12),
                         h3: AppTextStyles.h3.copyWith(
                           fontSize: 15,
-                          color: AppColors.cyanLight,
+                          color: AppColors.adaptiveCyanLight,
                           fontWeight: FontWeight.w700,
                         ),
                         h3Padding: const EdgeInsets.only(bottom: 8, top: 10),
                         h4: AppTextStyles.label.copyWith(
                           fontSize: 13.5,
-                          color: Colors.white,
+                          color: AppColors.textPrimary,
                           fontWeight: FontWeight.w600,
                         ),
                         h4Padding: const EdgeInsets.only(bottom: 6, top: 8),
                         blockquote: AppTextStyles.body2.copyWith(
-                          color: AppColors.lavender,
+                          color: AppColors.isDark ? AppColors.lavender : AppColors.primaryViolet,
                           fontStyle: FontStyle.italic,
                         ),
                         blockquoteDecoration: BoxDecoration(
@@ -263,7 +263,7 @@ class MarkdownPreviewDialog extends StatelessWidget {
                         ),
                         tableHead: AppTextStyles.label.copyWith(
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: AppColors.textPrimary,
                         ),
                         tableBody: AppTextStyles.body2.copyWith(
                           fontSize: 12.5,
@@ -288,7 +288,7 @@ class MarkdownPreviewDialog extends StatelessWidget {
                     horizontal: isMobile ? 14 : 20,
                     vertical: isMobile ? 10 : 12,
                   ),
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     color: AppColors.surfaceSolidHeader,
                     border: Border(
                       top: BorderSide(color: AppColors.glassBorder, width: 1),
@@ -482,10 +482,10 @@ class _MarkdownPreviewCodeBuilder extends MarkdownElementBuilder {
       return Math.tex(
         cleanTex,
         mathStyle: MathStyle.text,
-        textStyle: preferredStyle?.copyWith(color: Colors.white, fontSize: 14),
+        textStyle: preferredStyle?.copyWith(color: AppColors.textPrimary, fontSize: 14),
         onErrorFallback: (err) => Text(
           cleanTex,
-          style: preferredStyle?.copyWith(color: AppColors.lavender),
+          style: preferredStyle?.copyWith(color: AppColors.textPrimary),
         ),
       );
     }
@@ -586,9 +586,9 @@ Widget _buildMathCard(String tex) {
     margin: const EdgeInsets.symmetric(vertical: 8),
     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
     decoration: BoxDecoration(
-      color: AppColors.surfaceDark.withValues(alpha: 0.8),
+      color: AppColors.isDark ? AppColors.surfaceDark.withValues(alpha: 0.8) : AppColors.surfaceSubtle,
       borderRadius: BorderRadius.circular(12),
-      border: Border.all(color: AppColors.glassBorderSubtle),
+      border: Border.all(color: AppColors.border),
     ),
     child: SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -596,11 +596,11 @@ Widget _buildMathCard(String tex) {
       child: Math.tex(
         cleanTex,
         mathStyle: MathStyle.display,
-        textStyle: const TextStyle(color: Colors.white, fontSize: 15),
+        textStyle: TextStyle(color: AppColors.textPrimary, fontSize: 15),
         onErrorFallback: (err) => Text(
           cleanTex,
           style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.85),
+            color: AppColors.textPrimary.withValues(alpha: 0.85),
             fontFamily: 'monospace',
             fontSize: 13,
           ),
@@ -656,9 +656,9 @@ class _CodeSnippetCardState extends State<_CodeSnippetCard> {
       margin: const EdgeInsets.symmetric(vertical: 8),
       constraints: const BoxConstraints(maxHeight: 380),
       decoration: BoxDecoration(
-        color: AppColors.surfaceDark.withValues(alpha: 0.85),
+        color: AppColors.isDark ? const Color(0xFF181A20) : const Color(0xFF1E212B),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.glassBorderSubtle),
+        border: Border.all(color: AppColors.border),
       ),
       clipBehavior: Clip.antiAlias,
       child: Stack(

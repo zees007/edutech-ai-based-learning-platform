@@ -376,7 +376,7 @@ class _MermaidWebViewState extends State<MermaidWebView>
         ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
-          side: const BorderSide(color: AppColors.glassBorder),
+          side: BorderSide(color: AppColors.glassBorder),
         ),
         duration: const Duration(seconds: 3),
         elevation: 0,
@@ -673,7 +673,7 @@ class _HoverIconButtonState extends State<_HoverIconButton> {
             ),
           ),
           child: widget.isLoading
-              ? const SizedBox(
+              ? SizedBox(
                   width: 16,
                   height: 16,
                   child: CircularProgressIndicator(
@@ -734,7 +734,7 @@ class _MermaidFullscreenViewState extends State<_MermaidFullscreenView> {
         backgroundColor: AppColors.surfaceMid,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.close_rounded, color: AppColors.textPrimary),
+          icon: Icon(Icons.close_rounded, color: AppColors.textPrimary),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
@@ -782,7 +782,7 @@ class _MermaidFullscreenViewState extends State<_MermaidFullscreenView> {
                   ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
-                    side: const BorderSide(color: AppColors.glassBorder),
+                    side: BorderSide(color: AppColors.glassBorder),
                   ),
                   duration: const Duration(seconds: 3),
                   elevation: 0,

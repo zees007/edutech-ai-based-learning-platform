@@ -32,7 +32,7 @@ class RecentJourneySkeletonCard extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 // Circular Progress Gauge Skeleton
-                const ShimmerBox(
+                ShimmerBox(
                   width: 28,
                   height: 28,
                   shape: BoxShape.circle,
@@ -47,7 +47,7 @@ class RecentJourneySkeletonCard extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       // Topic line
-                      const ShimmerBox(
+                      ShimmerBox(
                         width: 130,
                         height: 13,
                         color: AppColors.shimmerBoxLight,
@@ -56,7 +56,7 @@ class RecentJourneySkeletonCard extends StatelessWidget {
                       // Badges line (XP & steps)
                       Row(
                         children: [
-                          const ShimmerBox(
+                          ShimmerBox(
                             width: 38,
                             height: 10,
                             color: AppColors.shimmerBoxMid,
@@ -71,7 +71,7 @@ class RecentJourneySkeletonCard extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(width: 8),
-                          const ShimmerBox(
+                          ShimmerBox(
                             width: 56,
                             height: 10,
                             color: AppColors.shimmerBoxMid,
@@ -88,7 +88,7 @@ class RecentJourneySkeletonCard extends StatelessWidget {
                 Container(
                   width: 14,
                   height: 14,
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     color: AppColors.glassHover,
                     shape: BoxShape.circle,
                   ),

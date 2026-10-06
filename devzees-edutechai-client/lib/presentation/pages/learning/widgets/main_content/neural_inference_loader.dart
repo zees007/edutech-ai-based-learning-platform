@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../../../core/theme/app_colors.dart';
 import '../../../../widgets/animated_tutor_icon.dart';
 import '../../../../../core/constants/responsive.dart';
 
@@ -480,7 +481,7 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
         ),
         
         const SizedBox(height: 24),
-        const Divider(color: Colors.white12, height: 1),
+        Divider(color: AppColors.border, height: 1),
         const SizedBox(height: 24),
 
         // Neural Network Canvas

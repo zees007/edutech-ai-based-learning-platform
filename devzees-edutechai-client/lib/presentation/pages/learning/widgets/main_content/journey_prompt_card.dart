@@ -248,7 +248,7 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
                     isExpanded: true,
                     borderRadius: BorderRadius.circular(16),
                     dropdownColor: AppColors.secondaryBackground,
-                    icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.textSecondary),
+                    icon: Icon(Icons.keyboard_arrow_down, color: AppColors.textSecondary),
                     style: AppTextStyles.bodyPrimary,
                     items: items.map((String item) {
                       final isLocked = lockedItems.contains(item);
@@ -392,15 +392,15 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
         contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: AppColors.glassBorder),
+          borderSide: BorderSide(color: AppColors.glassBorder),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: AppColors.glassBorder),
+          borderSide: BorderSide(color: AppColors.glassBorder),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: AppColors.primary),
+          borderSide: BorderSide(color: AppColors.primary),
         ),
       ),
     );

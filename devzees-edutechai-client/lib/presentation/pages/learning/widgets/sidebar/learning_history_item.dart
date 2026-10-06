@@ -91,17 +91,17 @@ class _LearningHistoryItemState extends ConsumerState<LearningHistoryItem> {
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                         child: Row(
                           children: [
-                            const Icon(Icons.ios_share_rounded, color: AppColors.purpleLight, size: 18),
+                            Icon(Icons.ios_share_rounded, color: AppColors.purpleLight, size: 18),
                             const SizedBox(width: 12),
                             Text(
                               'Export',
-                              style: AppTextStyles.label.copyWith(color: Colors.white),
+                              style: AppTextStyles.label.copyWith(color: AppColors.textPrimary),
                             ),
                           ],
                         ),
                       ),
                     ),
-                    const Divider(color: AppColors.glassBorder, height: 1),
+                    Divider(color: AppColors.glassBorder, height: 1),
                     InkWell(
                       onTap: () {
                         Navigator.of(context).pop();

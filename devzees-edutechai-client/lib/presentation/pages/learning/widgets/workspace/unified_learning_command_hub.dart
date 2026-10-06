@@ -58,26 +58,50 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
             curve: Curves.easeOutCubic,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(18),
-              boxShadow: [
-                if (!isMobile) ...[
-                  BoxShadow(
-                    color: AppColors.purpleLight.withValues(alpha: _isHovered ? 0.16 : 0.08),
-                    blurRadius: _isHovered ? 28 : 20,
-                    spreadRadius: 0,
-                    offset: const Offset(0, 4),
-                  ),
-                  BoxShadow(
-                    color: AppColors.purple.withValues(alpha: 0.08),
-                    blurRadius: 20,
-                    spreadRadius: 0,
-                  ),
-                ],
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.35),
-                  blurRadius: 30,
-                  offset: const Offset(0, 10),
-                ),
-              ],
+              border: Border.all(
+                color: AppColors.isDark
+                    ? AppColors.cardGlowBorder.withValues(alpha: _isHovered ? 0.6 : 0.3)
+                    : (_isHovered
+                        ? AppColors.accentBlue.withValues(alpha: 0.5)
+                        : AppColors.glassBorder),
+                width: 1.0,
+              ),
+              boxShadow: AppColors.isDark
+                  ? [
+                      if (!isMobile) ...[
+                        BoxShadow(
+                          color: AppColors.purpleLight.withValues(alpha: _isHovered ? 0.16 : 0.08),
+                          blurRadius: _isHovered ? 28 : 20,
+                          spreadRadius: 0,
+                          offset: const Offset(0, 4),
+                        ),
+                        BoxShadow(
+                          color: AppColors.purple.withValues(alpha: 0.08),
+                          blurRadius: 20,
+                          spreadRadius: 0,
+                        ),
+                      ],
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.35),
+                        blurRadius: 30,
+                        offset: const Offset(0, 10),
+                      ),
+                    ]
+                  : [
+                      BoxShadow(
+                        color: const Color(0x14000000), // 0.08 opacity
+                        blurRadius: _isHovered ? 28 : 24,
+                        spreadRadius: 0,
+                        offset: Offset(0, _isHovered ? 10 : 8),
+                      ),
+                      if (_isHovered)
+                        BoxShadow(
+                          color: AppColors.accentBlue.withValues(alpha: 0.10),
+                          blurRadius: 16,
+                          spreadRadius: 0,
+                          offset: const Offset(0, 4),
+                        ),
+                    ],
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(18),

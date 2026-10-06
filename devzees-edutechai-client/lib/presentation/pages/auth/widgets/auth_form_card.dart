@@ -154,12 +154,16 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
             gradient: AppColors.cardGradientOpaque,
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
-              color: AppColors.accentPurple.withValues(alpha: 0.45),
+              color: AppColors.isDark
+                  ? AppColors.accentPurple.withValues(alpha: 0.45)
+                  : AppColors.border,
               width: 1.5,
             ),
             boxShadow: [
               BoxShadow(
-                color: AppColors.accentPurple.withValues(alpha: 0.35),
+                color: AppColors.isDark
+                    ? AppColors.accentPurple.withValues(alpha: 0.35)
+                    : Colors.black.withValues(alpha: 0.06),
                 blurRadius: 65,
                 spreadRadius: -15,
                 offset: const Offset(0, 25),
@@ -244,7 +248,7 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
           "Enter your credentials to resume your personalized curriculum session.",
           style: AppTextStyles.bodyPrimary.copyWith(
             fontSize: isMobile ? 14 : 16,
-            color: AppColors.lavender.withValues(alpha: 0.75),
+            color: AppColors.textSecondary,
             height: 1.5,
           ),
           textAlign: TextAlign.center,
@@ -292,7 +296,7 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
           "Instantiate your personal autonomous AI agent squad in seconds.",
           style: AppTextStyles.bodyPrimary.copyWith(
             fontSize: isMobile ? 14 : 16,
-            color: AppColors.lavender.withValues(alpha: 0.75),
+            color: AppColors.textSecondary,
             height: 1.5,
           ),
           textAlign: TextAlign.center,
@@ -305,16 +309,25 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       decoration: BoxDecoration(
-          color: AppColors.accentPurple.withValues(alpha: 0.15),
+          color: AppColors.isDark
+              ? AppColors.accentPurple.withValues(alpha: 0.15)
+              : AppColors.primaryViolet.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppColors.accentPurple.withValues(alpha: 0.4)),
+          border: Border.all(
+              color: AppColors.isDark
+                  ? AppColors.accentPurple.withValues(alpha: 0.4)
+                  : AppColors.primaryViolet.withValues(alpha: 0.3)),
           boxShadow: [
-            BoxShadow(color: AppColors.accentPurple.withValues(alpha: 0.3), blurRadius: 16),
+            BoxShadow(
+                color: AppColors.isDark
+                    ? AppColors.accentPurple.withValues(alpha: 0.3)
+                    : Colors.transparent,
+                blurRadius: 16),
           ]),
       child: Text(
         text,
         style: AppTextStyles.badge.copyWith(
-          color: AppColors.lavender,
+          color: AppColors.isDark ? AppColors.lavender : AppColors.primaryViolet,
           fontSize: 12,
           fontWeight: FontWeight.w800,
           letterSpacing: 1.5,
@@ -357,8 +370,10 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
             child: Text(
               "Don't have an account? Sign Up",
               style: AppTextStyles.subtitle2.copyWith(
-                color: AppColors.lavender.withValues(alpha: 0.9),
-                fontWeight: FontWeight.w600,
+                color: AppColors.isDark
+                    ? AppColors.lavender.withValues(alpha: 0.9)
+                    : AppColors.primaryViolet,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ),
@@ -496,8 +511,10 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
             child: Text(
               "Already have an account? Sign In",
               style: AppTextStyles.subtitle2.copyWith(
-                color: AppColors.lavender.withValues(alpha: 0.9),
-                fontWeight: FontWeight.w600,
+                color: AppColors.isDark
+                    ? AppColors.lavender.withValues(alpha: 0.9)
+                    : AppColors.primaryViolet,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ),
@@ -522,7 +539,7 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
         Text(
           label,
           style: AppTextStyles.label.copyWith(
-            color: AppColors.lavender.withValues(alpha: 0.92),
+            color: AppColors.textPrimary,
             fontSize: 14,
             fontWeight: FontWeight.w700,
             letterSpacing: 0.3,
@@ -544,29 +561,35 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: AppTextStyles.bodyPrimary.copyWith(
-              color: AppColors.lavender.withValues(alpha: 0.38),
+              color: AppColors.textSecondary.withValues(alpha: 0.6),
             ),
             filled: true,
-            fillColor: AppColors.surfaceDark.withValues(alpha: 0.75),
+            fillColor: AppColors.isDark
+                ? AppColors.surfaceDark.withValues(alpha: 0.75)
+                : AppColors.surfaceSubtle,
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
               borderSide: BorderSide(
-                color: AppColors.accentPurple.withValues(alpha: 0.35),
+                color: AppColors.isDark
+                    ? AppColors.accentPurple.withValues(alpha: 0.35)
+                    : AppColors.border,
                 width: 1.5,
               ),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
               borderSide: BorderSide(
-                color: AppColors.accentPurple.withValues(alpha: 0.35),
+                color: AppColors.isDark
+                    ? AppColors.accentPurple.withValues(alpha: 0.35)
+                    : AppColors.border,
                 width: 1.5,
               ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide: BorderSide(
-                color: AppColors.accentPurple.withValues(alpha: 0.95),
+              borderSide: const BorderSide(
+                color: AppColors.accentPurple,
                 width: 1.5,
               ),
             ),
