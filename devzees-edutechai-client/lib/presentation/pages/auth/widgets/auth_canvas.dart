@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
 import 'package:devzees_edutechai_client/core/theme/text_styles.dart';
-import 'package:devzees_edutechai_client/core/constants/responsive.dart';
 
 class AuthCanvas extends StatefulWidget {
   final bool isLogin;
@@ -19,327 +18,411 @@ class AuthCanvas extends StatefulWidget {
 
 class _AuthCanvasState extends State<AuthCanvas>
     with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _glowAnimation;
+  late AnimationController _pulseController;
+  late Animation<double> _pulseAnimation;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
+    _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 2),
     )..repeat(reverse: true);
 
-    _glowAnimation = CurvedAnimation(
-      parent: _controller,
+    _pulseAnimation = CurvedAnimation(
+      parent: _pulseController,
       curve: Curves.easeInOut,
     );
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _pulseController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _glowAnimation,
-      builder: (context, child) {
-        final t = _glowAnimation.value;
-        final borderColor = Color.lerp(
-          AppColors.primary.withValues(alpha: 0.35),
-          AppColors.primary.withValues(alpha: 0.5),
-          t,
-        )!;
+    final isDark = AppColors.isDark;
 
-        return Container(
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: AppColors.canvasBackground,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: borderColor, width: 1.5),
-            boxShadow: Responsive.isMobile(context) ? null : [
-              BoxShadow(
-                color: AppColors.primary.withValues(alpha: 0.15 + (0.1 * t)),
-                blurRadius: 40 + (10 * t),
-                spreadRadius: -10,
-              ),
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: Stack(
-              children: [
-                // Background Dots
-                Positioned.fill(child: CustomPaint(painter: _DotGridPainter())),
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.canvasBackground : Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: isDark
+              ? AppColors.primary.withValues(alpha: 0.45)
+              : const Color(0xFFC7D2FE).withValues(alpha: 0.6),
+          width: 1.5,
+        ),
+        boxShadow: isDark
+            ? [
+                BoxShadow(
+                  color: AppColors.primary.withValues(alpha: 0.20),
+                  blurRadius: 40,
+                  spreadRadius: -8,
+                ),
+              ]
+            : const [
+                BoxShadow(
+                  color: Color(0x0F0F172A),
+                  blurRadius: 30,
+                  spreadRadius: -4,
+                  offset: Offset(0, 12),
+                ),
+                BoxShadow(
+                  color: Color(0x060F172A),
+                  blurRadius: 8,
+                  offset: Offset(0, 2),
+                ),
+              ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: Stack(
+          children: [
+            // Ambient Dot Matrix Background
+            Positioned.fill(child: CustomPaint(painter: _DotGridPainter(isDark: isDark))),
 
-                // Content Flowchart
-                SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 32,
-                    horizontal: 16,
-                  ),
+            // Flowchart Content (Centered horizontally and vertically)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 370),
                   child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.accentPurple.withValues(alpha: 0.1),
-                          border: Border.all(
-                            color: AppColors.accentPurple.withValues(
-                              alpha: 0.3,
-                            ),
-                          ),
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                        child: Text(
-                          '⚡ EduTech AI — Providing Access Flowchart',
-                          style: AppTextStyles.badge.copyWith(
-                            color: AppColors.isDark ? AppColors.lavender : AppColors.primaryViolet,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 32),
+                      // Flowchart Header Badge
+                      Center(child: _buildHeaderBadge(isDark)),
+                      const SizedBox(height: 18),
 
-                      // Step 1
-                      _buildFlowNode(
-                        icon: '👤',
+                      // Step 01: Intake
+                      _buildWorkflowCard(
+                        iconWidget: _buildStepIcon(
+                          icon: Icons.person_outline_rounded,
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF60A5FA), Color(0xFF4F46E5)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          shadowColor: const Color(0x333B82F6),
+                        ),
                         tag: 'STEP 01 • INTAKE',
+                        tagTextColor: isDark ? AppColors.accentBlue : const Color(0xFF2563EB),
+                        tagBgColor: isDark
+                            ? AppColors.accentBlue.withValues(alpha: 0.15)
+                            : const Color(0xFFEFF6FF),
+                        tagBorderColor: isDark
+                            ? AppColors.accentBlue.withValues(alpha: 0.35)
+                            : const Color(0xFFBFDBFE),
                         title: 'User Arrival',
                         subtitle: 'Initiates secure session request',
                         baseColor: AppColors.accentBlue,
-                        isGradientText: true,
+                        isDark: isDark,
                       ),
-                      _buildArrow(),
+                      _buildConnectorArrow(isDark),
 
-                      // Step 2
-                      _buildFlowNode(
-                        icon: '🛡️',
+                      // Step 02: AI Evaluation
+                      _buildWorkflowCard(
+                        iconWidget: _buildStepIcon(
+                          icon: Icons.shield_outlined,
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF6366F1), Color(0xFF9333EA)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          shadowColor: const Color(0x339333EA),
+                        ),
                         tag: 'STEP 02 • AI EVALUATION',
+                        tagTextColor: isDark ? AppColors.accentPurple : const Color(0xFF9333EA),
+                        tagBgColor: isDark
+                            ? AppColors.accentPurple.withValues(alpha: 0.15)
+                            : const Color(0xFFFAF5FF),
+                        tagBorderColor: isDark
+                            ? AppColors.accentPurple.withValues(alpha: 0.35)
+                            : const Color(0xFFE9D5FF),
                         title: 'AI Identity Guard',
                         subtitle: 'Inspects credentials & privileges',
                         baseColor: AppColors.accentPurple,
-                        isGradientText: true,
+                        isDark: isDark,
                       ),
-                      _buildArrow(),
+                      _buildConnectorArrow(isDark),
 
-                      // Step 3
-                      _buildFlowNode(
-                        icon: '❓',
+                      // Step 03: Routing Gateway
+                      _buildWorkflowCard(
+                        iconWidget: _buildStepIcon(
+                          icon: Icons.help_outline_rounded,
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFFA855F7), Color(0xFFEC4899)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          shadowColor: const Color(0x33EC4899),
+                        ),
                         tag: 'STEP 03 • ROUTING GATEWAY',
+                        tagTextColor: isDark ? AppColors.accentPink : const Color(0xFFDB2777),
+                        tagBgColor: isDark
+                            ? AppColors.accentPink.withValues(alpha: 0.15)
+                            : const Color(0xFFFDF2F8),
+                        tagBorderColor: isDark
+                            ? AppColors.accentPink.withValues(alpha: 0.35)
+                            : const Color(0xFFFBCFE8),
                         title: 'Account Verification',
                         subtitle: 'Determines authentication pathway',
                         baseColor: AppColors.accentPink,
-                        isGradientText: true,
+                        isDark: isDark,
                       ),
+                      const SizedBox(height: 10),
 
-                      const SizedBox(height: 16),
-                      // Branches
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildBranch(
-                              label: 'YES • EXISTING USER (✓)',
-                              color: AppColors.accentGreen,
-                            ),
-                          ),
-                          Expanded(
-                            child: _buildBranch(
-                              label: 'NO • NEW STUDENT (✨)',
-                              color: AppColors.roseLight,
-                            ),
-                          ),
-                        ],
-                      ),
+                      // Branch Indicators (Split Logic)
+                      _buildBranchIndicators(isDark),
+                      const SizedBox(height: 6),
 
-                      // Step 4 Actions (The Buttons)
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: _buildActionNode(
-                              icon: '🔐',
-                              tag: 'STEP 04A • LOGIN',
-                              title: 'Sign In',
-                              subtitle: 'Existing Account Access',
-                              isActive: widget.isLogin,
-                              baseColor: AppColors.accentGreen,
-                              isGradientText: true,
-                              onTap: () => widget.onAuthModeChanged(true),
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: _buildActionNode(
-                              icon: '✨',
-                              tag: 'STEP 04B • REGISTER',
-                              title: 'Create Account',
-                              subtitle: 'Instant Free Setup',
-                              isActive: !widget.isLogin,
-                              baseColor: AppColors.roseLight,
-                              isGradientText: true,
-                              onTap: () => widget.onAuthModeChanged(false),
-                            ),
-                          ),
-                        ],
-                      ),
+                      // Dual Pathway Cards: Step 04A & Step 04B
+                      _buildDualPathwayCards(isDark),
+                      const SizedBox(height: 8),
 
-                      // Merge arrows
-                      _buildMergeArrows(),
+                      // Convergence Connector
+                      _buildConvergenceArrow(isDark),
+                      const SizedBox(height: 2),
 
-                      // Step 5
-                      _buildFlowNode(
-                        icon: '🧠',
+                      // Step 05: Dispatch & Unlock
+                      _buildWorkflowCard(
+                        iconWidget: _buildStepIcon(
+                          emoji: '🧠',
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF22D3EE), Color(0xFF0284C7)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          shadowColor: const Color(0x330284C7),
+                        ),
                         tag: 'STEP 05 • DISPATCH & UNLOCK',
+                        tagTextColor: isDark ? AppColors.accentCyan : const Color(0xFF0284C7),
+                        tagBgColor: isDark
+                            ? AppColors.accentCyan.withValues(alpha: 0.15)
+                            : const Color(0xFFF0F9FF),
+                        tagBorderColor: isDark
+                            ? AppColors.accentCyan.withValues(alpha: 0.35)
+                            : const Color(0xFFBAE6FD),
                         title: 'Spawn AI Agent Squad',
                         subtitle: 'Instant Autonomous Workspace Access',
                         baseColor: AppColors.accentCyan,
-                        isGradientText: true,
+                        isDark: isDark,
                       ),
                     ],
                   ),
                 ),
-              ],
+              ),
             ),
-          ),
-        );
-      },
+          ],
+        ),
+      ),
     );
   }
 
-  Widget _buildFlowNode({
-    required String icon,
-    required String tag,
-    required String title,
-    required String subtitle,
-    required Color baseColor,
-    bool isGradientText = false,
-  }) {
+  Widget _buildHeaderBadge(bool isDark) {
     return Container(
-      width: 250, // Reduced from 280
-      padding: const EdgeInsets.all(12), // Reduced from 16
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       decoration: BoxDecoration(
-        color: AppColors.surfaceMid.withValues(alpha: 0.8),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: baseColor.withValues(alpha: 0.3)),
-        boxShadow: Responsive.isMobile(context) ? null : [
-          BoxShadow(
-            color: baseColor.withValues(alpha: 0.25),
-            blurRadius: 30,
-            spreadRadius: -5,
-            offset: const Offset(0, 10),
+        color: isDark
+            ? AppColors.accentPurple.withValues(alpha: 0.15)
+            : const Color(0xFFEEF2FF),
+        border: Border.all(
+          color: isDark
+              ? AppColors.accentPurple.withValues(alpha: 0.4)
+              : const Color(0xFFC7D2FE).withValues(alpha: 0.8),
+        ),
+        borderRadius: BorderRadius.circular(30),
+        boxShadow: isDark
+            ? [
+                BoxShadow(
+                  color: AppColors.accentPurple.withValues(alpha: 0.25),
+                  blurRadius: 10,
+                ),
+              ]
+            : const [
+                BoxShadow(
+                  color: Color(0x060F172A),
+                  blurRadius: 6,
+                  offset: Offset(0, 2),
+                ),
+              ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(
+            Icons.bolt_rounded,
+            color: Color(0xFFF59E0B),
+            size: 16,
+          ),
+          const SizedBox(width: 6),
+          Text(
+            'EduTech AI — Providing Access Flowchart',
+            style: AppTextStyles.labelSmall.copyWith(
+              color: isDark ? AppColors.lavender : const Color(0xFF4F46E5),
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.3,
+            ),
           ),
         ],
       ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10), // Reduced from 12
-            decoration: BoxDecoration(
-              color: baseColor.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: baseColor.withValues(alpha: 0.4)),
-              boxShadow: Responsive.isMobile(context) ? null : [
+    );
+  }
+
+  Widget _buildStepIcon({
+    IconData? icon,
+    String? emoji,
+    required Gradient gradient,
+    required Color shadowColor,
+  }) {
+    return Container(
+      width: 42,
+      height: 42,
+      decoration: BoxDecoration(
+        gradient: gradient,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: shadowColor,
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Center(
+        child: emoji != null
+            ? Text(emoji, style: const TextStyle(fontSize: 19))
+            : Icon(icon, color: Colors.white, size: 21),
+      ),
+    );
+  }
+
+  Widget _buildWorkflowCard({
+    required Widget iconWidget,
+    required String tag,
+    required Color tagTextColor,
+    required Color tagBgColor,
+    required Color tagBorderColor,
+    required String title,
+    required String subtitle,
+    required Color baseColor,
+    required bool isDark,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: isDark
+            ? AppColors.surfaceMid.withValues(alpha: 0.85)
+            : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark
+              ? baseColor.withValues(alpha: 0.35)
+              : const Color(0xFFE2E8F0),
+        ),
+        boxShadow: isDark
+            ? [
                 BoxShadow(
-                  color: baseColor.withValues(alpha: 0.6),
-                  blurRadius: 15,
+                  color: baseColor.withValues(alpha: 0.20),
+                  blurRadius: 20,
+                  spreadRadius: -4,
+                  offset: const Offset(0, 6),
+                ),
+              ]
+            : const [
+                BoxShadow(
+                  color: Color(0x060F172A),
+                  blurRadius: 8,
+                  offset: Offset(0, 2),
                 ),
               ],
-            ),
-            child: Text(
-              icon,
-              style: const TextStyle(fontSize: 18),
-            ), // Reduced from 20
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
+      ),
+      child: Center(
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            iconWidget,
+            const SizedBox(width: 14),
+            Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 6,
-                    vertical: 2,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                   decoration: BoxDecoration(
-                    color: baseColor.withValues(alpha: 0.15),
+                    color: isDark
+                        ? tagTextColor.withValues(alpha: 0.15)
+                        : tagBgColor,
                     borderRadius: BorderRadius.circular(4),
+                    border: Border.all(
+                      color: isDark
+                          ? tagTextColor.withValues(alpha: 0.35)
+                          : tagBorderColor,
+                    ),
                   ),
                   child: Text(
                     tag,
-                    style: AppTextStyles.labelSmall.copyWith(
-                      color: baseColor.withValues(alpha: 0.9),
-                      fontSize: 8,
+                    style: TextStyle(
+                      color: isDark ? tagTextColor.withValues(alpha: 0.95) : tagTextColor,
+                      fontSize: 9.5,
                       fontWeight: FontWeight.w800,
                       letterSpacing: 0.5,
                     ),
                   ),
                 ),
-                const SizedBox(height: 4),
-                if (isGradientText)
-                  ShaderMask(
-                    blendMode: BlendMode.srcIn,
-                    shaderCallback: (bounds) =>
-                        AppColors.pinkPurpleGradient.createShader(bounds),
-                    child: Text(
-                      title,
-                      style: AppTextStyles.subtitle2.copyWith(
-                        color: AppColors.textPrimary,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  )
-                else
-                  Text(
-                    title,
-                    style: AppTextStyles.subtitle2.copyWith(
-                      color: AppColors.textPrimary,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w800,
-                    ),
+                const SizedBox(height: 3),
+                Text(
+                  title,
+                  style: AppTextStyles.subtitle2.copyWith(
+                    color: AppColors.textPrimary,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
                   ),
-                const SizedBox(height: 2),
+                ),
                 Text(
                   subtitle,
                   style: AppTextStyles.caption.copyWith(
-                    color: AppColors.textSecondary,
-                    fontSize: 10,
+                    color: isDark ? AppColors.textSecondary : const Color(0xFF64748B),
+                    fontSize: 10.5,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildArrow() {
+  Widget _buildConnectorArrow(bool isDark) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(vertical: 3),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Container(
             width: 2,
-            height: 20,
-            color: AppColors.isDark
+            height: 16,
+            color: isDark
                 ? Colors.white.withValues(alpha: 0.15)
-                : AppColors.textSecondary.withValues(alpha: 0.35),
+                : const Color(0xFFCBD5E1),
           ),
           Icon(
-            Icons.keyboard_arrow_down,
-            color: AppColors.isDark
-                ? Colors.white.withValues(alpha: 0.3)
-                : AppColors.textSecondary.withValues(alpha: 0.6),
+            Icons.arrow_drop_down,
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.4)
+                : const Color(0xFF94A3B8),
             size: 16,
           ),
         ],
@@ -347,155 +430,267 @@ class _AuthCanvasState extends State<AuthCanvas>
     );
   }
 
-  Widget _buildBranch({required String label, required Color color}) {
+  Widget _buildBranchIndicators(bool isDark) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Text(
-          label,
-          style: AppTextStyles.labelSmall.copyWith(
-            color: color,
-            fontSize: 10,
-            fontWeight: FontWeight.w700,
-          ),
-          textAlign: TextAlign.center,
+        Row(
+          children: [
+            Expanded(
+              child: Center(
+                child: Text(
+                  'YES • EXISTING USER (✓)',
+                  style: TextStyle(
+                    color: isDark ? AppColors.accentGreen : const Color(0xFF059669),
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.2,
+                  ),
+                ),
+              ),
+            ),
+            Expanded(
+              child: Center(
+                child: Text(
+                  'NO • NEW STUDENT (✨)',
+                  style: TextStyle(
+                    color: isDark ? AppColors.roseLight : const Color(0xFFD97706),
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.2,
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 4),
-        Container(width: 2, height: 16, color: color.withValues(alpha: 0.4)),
-        Icon(Icons.keyboard_arrow_down, color: color, size: 16),
+        const SizedBox(height: 3),
+        Row(
+          children: [
+            Expanded(
+              child: Center(
+                child: Icon(
+                  Icons.arrow_drop_down,
+                  color: isDark ? AppColors.accentGreen : const Color(0xFF10B981),
+                  size: 16,
+                ),
+              ),
+            ),
+            Expanded(
+              child: Center(
+                child: Icon(
+                  Icons.arrow_drop_down,
+                  color: isDark ? AppColors.roseLight : const Color(0xFFF59E0B),
+                  size: 16,
+                ),
+              ),
+            ),
+          ],
+        ),
       ],
     );
   }
 
-  Widget _buildActionNode({
-    required String icon,
-    required String tag,
+  Widget _buildDualPathwayCards(bool isDark) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // STEP 04A (Login)
+        Expanded(
+          child: _buildActionRouteCard(
+            isActive: widget.isLogin,
+            stepTag: 'STEP 04A • LOGIN',
+            title: 'Sign In',
+            subtitle: 'Existing Account Access',
+            iconText: '🔐',
+            activeBorderColor: isDark ? AppColors.accentGreen : const Color(0xFF34D399),
+            activeBgGradient: isDark
+                ? null
+                : const LinearGradient(
+                    colors: [Color(0xFFECFDF5), Color(0xFFF0FDFA)],
+                  ),
+            activeShadowColor: isDark
+                ? AppColors.accentGreen.withValues(alpha: 0.35)
+                : const Color(0x3810B981),
+            tagTextColor: isDark ? AppColors.accentGreen : const Color(0xFF047857),
+            pulseDotColor: isDark ? AppColors.accentGreen : const Color(0xFF10B981),
+            isDark: isDark,
+            onTap: () => widget.onAuthModeChanged(true),
+          ),
+        ),
+        const SizedBox(width: 10),
+        // STEP 04B (Register)
+        Expanded(
+          child: _buildActionRouteCard(
+            isActive: !widget.isLogin,
+            stepTag: 'STEP 04B • REGISTER',
+            title: 'Create Account',
+            subtitle: 'Instant Free Setup',
+            iconText: '✨',
+            activeBorderColor: isDark ? AppColors.accentAmber : const Color(0xFFFBBF24),
+            activeBgGradient: isDark
+                ? null
+                : const LinearGradient(
+                    colors: [Color(0xFFFFFBEB), Color(0xFFFEF3C7)],
+                  ),
+            activeShadowColor: isDark
+                ? AppColors.accentAmber.withValues(alpha: 0.35)
+                : const Color(0x38F59E0B),
+            tagTextColor: isDark ? AppColors.accentAmber : const Color(0xFFB45309),
+            pulseDotColor: isDark ? AppColors.accentAmber : const Color(0xFFF59E0B),
+            isDark: isDark,
+            onTap: () => widget.onAuthModeChanged(false),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionRouteCard({
+    required bool isActive,
+    required String stepTag,
     required String title,
     required String subtitle,
-    required bool isActive,
-    required Color baseColor,
+    required String iconText,
+    required Color activeBorderColor,
+    required Gradient? activeBgGradient,
+    required Color activeShadowColor,
+    required Color tagTextColor,
+    required Color pulseDotColor,
+    required bool isDark,
     required VoidCallback onTap,
-    bool isGradientText = false,
   }) {
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
         onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.all(12), // Reduced from 16
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
             color: isActive
-                ? baseColor.withValues(alpha: 0.15)
-                : AppColors.surfaceMid.withValues(alpha: 0.8),
+                ? (isDark
+                    ? pulseDotColor.withValues(alpha: 0.15)
+                    : (activeBgGradient == null
+                        ? pulseDotColor.withValues(alpha: 0.15)
+                        : null))
+                : (isDark
+                    ? AppColors.surfaceMid.withValues(alpha: 0.8)
+                    : Colors.white),
+            gradient: isActive && !isDark ? activeBgGradient : null,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: isActive
-                  ? baseColor.withValues(alpha: 0.6)
-                  : baseColor.withValues(alpha: 0.3),
+                  ? activeBorderColor
+                  : (isDark
+                      ? activeBorderColor.withValues(alpha: 0.3)
+                      : const Color(0xFFE2E8F0)),
               width: isActive ? 1.5 : 1.0,
             ),
             boxShadow: isActive
                 ? [
                     BoxShadow(
-                      color: baseColor.withValues(alpha: 0.35),
-                      blurRadius: 35,
-                      spreadRadius: -2,
-                      offset: const Offset(0, 10),
+                      color: activeShadowColor,
+                      blurRadius: isDark ? 25 : 18,
+                      offset: const Offset(0, 6),
                     ),
                   ]
                 : [
                     BoxShadow(
-                      color: baseColor.withValues(alpha: 0.1),
-                      blurRadius: 15,
-                      spreadRadius: 1,
+                      color: isDark
+                          ? Colors.black.withValues(alpha: 0.2)
+                          : const Color(0x060F172A),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
                     ),
                   ],
           ),
-          child: Row(
+          child: Stack(
             children: [
-              Container(
-                padding: const EdgeInsets.all(10), // Reduced from 12
-                decoration: BoxDecoration(
-                  color: baseColor.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: baseColor.withValues(alpha: 0.4)),
-                  boxShadow: Responsive.isMobile(context) ? null : [
-                    BoxShadow(
-                      color: baseColor.withValues(alpha: 0.6),
-                      blurRadius: 15,
-                    ),
-                  ],
-                ),
-                child: Text(
-                  icon,
-                  style: const TextStyle(fontSize: 18),
-                ), // Reduced from 20
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: baseColor.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        tag,
-                        style: AppTextStyles.labelSmall.copyWith(
-                          color: isActive
-                              ? baseColor
-                              : baseColor.withValues(alpha: 0.9),
-                          fontSize: 8,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 0.5,
+              if (isActive)
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: AnimatedBuilder(
+                    animation: _pulseAnimation,
+                    builder: (context, _) {
+                      return Container(
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: pulseDotColor,
+                          boxShadow: [
+                            BoxShadow(
+                              color: pulseDotColor.withValues(
+                                alpha: 0.4 + (0.5 * _pulseAnimation.value),
+                              ),
+                              blurRadius: 6 + (4 * _pulseAnimation.value),
+                              spreadRadius: 2 * _pulseAnimation.value,
+                            ),
+                          ],
                         ),
+                      );
+                    },
+                  ),
+                ),
+              Row(
+                children: [
+                  Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: pulseDotColor.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(9),
+                      border: Border.all(
+                        color: pulseDotColor.withValues(alpha: 0.35),
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    if (isGradientText)
-                      ShaderMask(
-                        blendMode: BlendMode.srcIn,
-                        shaderCallback: (bounds) =>
-                            AppColors.pinkPurpleGradient.createShader(bounds),
-                        child: Text(
-                          title,
-                          style: AppTextStyles.subtitle2.copyWith(
-                            color: isActive
-                                ? AppColors.textPrimary
-                                : AppColors.textSecondary,
-                            fontSize: 13,
+                    child: Center(
+                      child: Text(
+                        iconText,
+                        style: const TextStyle(fontSize: 15),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          stepTag,
+                          style: TextStyle(
+                            color: tagTextColor,
+                            fontSize: 8.5,
                             fontWeight: FontWeight.w800,
+                            letterSpacing: 0.4,
                           ),
                         ),
-                      )
-                    else
-                      Text(
-                        title,
-                        style: AppTextStyles.subtitle2.copyWith(
-                          color: isActive
-                              ? AppColors.textPrimary
-                              : AppColors.textSecondary,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w800,
+                        const SizedBox(height: 2),
+                        Text(
+                          title,
+                          style: AppTextStyles.subtitle2.copyWith(
+                            color: AppColors.textPrimary,
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
-                      ),
-                    const SizedBox(height: 2),
-                    Text(
-                      subtitle,
-                      style: AppTextStyles.caption.copyWith(
-                        color: isActive
-                            ? AppColors.textPrimary.withValues(alpha: 0.7)
-                            : AppColors.textSecondary,
-                        fontSize: 10,
-                      ),
+                        Text(
+                          subtitle,
+                          style: AppTextStyles.caption.copyWith(
+                            color: isDark
+                                ? AppColors.textSecondary
+                                : const Color(0xFF64748B),
+                            fontSize: 9,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -504,89 +699,47 @@ class _AuthCanvasState extends State<AuthCanvas>
     );
   }
 
-  Widget _buildMergeArrows() {
+  Widget _buildConvergenceArrow(bool isDark) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: SizedBox(
-        height: 30,
-        child: Stack(
-          alignment: Alignment.bottomCenter,
-          children: [
-            CustomPaint(
-              size: const Size(double.infinity, 30),
-              painter: _MergeArrowPainter(),
-            ),
-            const Icon(
-              Icons.keyboard_arrow_down,
-              color: AppColors.accentCyan,
-              size: 16,
-            ),
-          ],
-        ),
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 2,
+            height: 14,
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.15)
+                : const Color(0xFFCBD5E1),
+          ),
+          Icon(
+            Icons.arrow_drop_down,
+            color: isDark
+                ? AppColors.accentCyan
+                : const Color(0xFF94A3B8),
+            size: 16,
+          ),
+        ],
       ),
     );
   }
 }
 
-class _MergeArrowPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint1 = Paint()
-      ..color = AppColors.accentGreen.withValues(alpha: 0.6)
-      ..strokeWidth = 2
-      ..style = PaintingStyle.stroke;
-
-    final paint2 = Paint()
-      ..color = AppColors.roseLight.withValues(alpha: 0.6)
-      ..strokeWidth = 2
-      ..style = PaintingStyle.stroke;
-
-    final paintMerge = Paint()
-      ..color = AppColors.accentCyan.withValues(alpha: 0.6)
-      ..strokeWidth = 2
-      ..style = PaintingStyle.stroke;
-
-    // Left branch down
-    canvas.drawLine(
-      Offset(size.width * 0.25, 0),
-      Offset(size.width * 0.25, size.height * 0.5),
-      paint1,
-    );
-    // Right branch down
-    canvas.drawLine(
-      Offset(size.width * 0.75, 0),
-      Offset(size.width * 0.75, size.height * 0.5),
-      paint2,
-    );
-    // Horizontal merge
-    canvas.drawLine(
-      Offset(size.width * 0.25, size.height * 0.5),
-      Offset(size.width * 0.75, size.height * 0.5),
-      paintMerge, // Using cyan for the merge line
-    );
-    // Center down
-    canvas.drawLine(
-      Offset(size.width * 0.5, size.height * 0.5),
-      Offset(size.width * 0.5, size.height - 5),
-      paintMerge,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
 class _DotGridPainter extends CustomPainter {
+  final bool isDark;
+
+  const _DotGridPainter({required this.isDark});
+
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = AppColors.isDark
+      ..color = isDark
           ? Colors.white.withValues(alpha: 0.05)
-          : Colors.black.withValues(alpha: 0.04)
+          : const Color(0xFFCBD5E1).withValues(alpha: 0.65)
       ..style = PaintingStyle.fill;
 
-    const spacing = 15.0;
-    const radius = 1.0;
+    const spacing = 18.0;
+    const radius = 1.1;
 
     for (double x = 0; x < size.width; x += spacing) {
       for (double y = 0; y < size.height; y += spacing) {
@@ -596,5 +749,6 @@ class _DotGridPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _DotGridPainter oldDelegate) =>
+      oldDelegate.isDark != isDark;
 }

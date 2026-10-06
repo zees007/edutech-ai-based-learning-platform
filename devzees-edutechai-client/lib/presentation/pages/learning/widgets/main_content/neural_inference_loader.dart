@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../../core/theme/app_colors.dart';
@@ -56,9 +55,7 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
         return SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
           child: ConstrainedBox(
-            constraints: BoxConstraints(
-              minHeight: constraints.maxHeight,
-            ),
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
             child: Center(
               child: Container(
                 constraints: const BoxConstraints(maxWidth: 850),
@@ -69,10 +66,14 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
                 ),
                 padding: EdgeInsets.all(isMobile ? 18 : 24),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1C1A30).withValues(alpha: 0.85), // Purple/blue glass background
+                  color: const Color(
+                    0xFF1C1A30,
+                  ).withValues(alpha: 0.85), // Purple/blue glass background
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(
-                    color: const Color(0xFFA855F7).withValues(alpha: 0.65), // Illuminated neon border
+                    color: const Color(
+                      0xFFA855F7,
+                    ).withValues(alpha: 0.65), // Illuminated neon border
                     width: 1.5,
                   ),
                   boxShadow: [
@@ -104,7 +105,9 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
                     ],
                   ],
                 ),
-                child: isMobile ? _buildMobileContent() : _buildDesktopContent(),
+                child: isMobile
+                    ? _buildMobileContent()
+                    : _buildDesktopContent(),
               ),
             ),
           ),
@@ -217,7 +220,7 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
                                 blurRadius: 32,
                                 spreadRadius: 1,
                               ),
-                            ]
+                            ],
                           ],
                         ),
                       );
@@ -226,10 +229,7 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
                   // Rotating Gradient Spinner Ring
                   const GradientSpinner(size: 52),
                   // Inner Socratic Tutor Animated Icon
-                  const AnimatedTutorIcon(
-                    size: 34,
-                    showHalo: false,
-                  ),
+                  const AnimatedTutorIcon(size: 34, showHalo: false),
                 ],
               ),
             ),
@@ -254,7 +254,11 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10),
                   gradient: const LinearGradient(
-                    colors: [Color(0xFFEC4899), Color(0xFFA855F7), Color(0xFF06B6D4)],
+                    colors: [
+                      Color(0xFFEC4899),
+                      Color(0xFFA855F7),
+                      Color(0xFF06B6D4),
+                    ],
                   ),
                 ),
               ),
@@ -377,7 +381,9 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
               decoration: BoxDecoration(
                 color: const Color(0xFF10B981).withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(6),
-                border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.4)),
+                border: Border.all(
+                  color: const Color(0xFF10B981).withValues(alpha: 0.4),
+                ),
               ),
               child: Text(
                 '✓ Done',
@@ -394,7 +400,9 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
               decoration: BoxDecoration(
                 color: const Color(0xFFA855F7).withValues(alpha: 0.18),
                 borderRadius: BorderRadius.circular(6),
-                border: Border.all(color: const Color(0xFFA855F7).withValues(alpha: 0.45)),
+                border: Border.all(
+                  color: const Color(0xFFA855F7).withValues(alpha: 0.45),
+                ),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -479,7 +487,7 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
             ),
           ],
         ),
-        
+
         const SizedBox(height: 24),
         Divider(color: AppColors.border, height: 1),
         const SizedBox(height: 24),
@@ -502,7 +510,10 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(16),
                 child: AnimatedBuilder(
-                  animation: Listenable.merge([_pulseController, _pulseDotController]),
+                  animation: Listenable.merge([
+                    _pulseController,
+                    _pulseDotController,
+                  ]),
                   builder: (context, child) => Transform.scale(
                     scale: 0.97 + (_pulseDotController.value * 0.03),
                     child: CustomPaint(
@@ -536,7 +547,11 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10),
                   gradient: const LinearGradient(
-                    colors: [Color(0xFFEC4899), Color(0xFFA855F7), Color(0xFF06B6D4)],
+                    colors: [
+                      Color(0xFFEC4899),
+                      Color(0xFFA855F7),
+                      Color(0xFF06B6D4),
+                    ],
                   ),
                 ),
               ),
@@ -550,7 +565,7 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
           builder: (context, constraints) {
             final double availableWidth = constraints.maxWidth;
             final double cardWidth = (availableWidth - 12) / 2;
-            
+
             return Wrap(
               spacing: 12,
               runSpacing: 12,
@@ -558,35 +573,40 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
               children: [
                 _buildAgentCard(
                   name: '🧠 Orchestrator Agent',
-                  desc: 'Decomposing topic into structured, age-appropriate milestone roadmap.',
+                  desc:
+                      'Decomposing topic into structured, age-appropriate milestone roadmap.',
                   status: 'completed',
                   width: cardWidth,
                   isMobile: false,
                 ),
                 _buildAgentCard(
                   name: '💬 Socratic Tutor',
-                  desc: 'Crafting deep intuitive explanations & interactive guiding questions.',
+                  desc:
+                      'Crafting deep intuitive explanations & interactive guiding questions.',
                   status: 'active',
                   width: cardWidth,
                   isMobile: false,
                 ),
                 _buildAgentCard(
                   name: '📺 YouTube Curator',
-                  desc: 'Filtering high-yield educational videos with precise timestamp deep-linking.',
+                  desc:
+                      'Filtering high-yield educational videos with precise timestamp deep-linking.',
                   status: 'active',
                   width: cardWidth,
                   isMobile: false,
                 ),
                 _buildAgentCard(
                   name: '📚 Academic Researcher',
-                  desc: 'Indexing peer-reviewed open access papers from OpenAlex & Semantic Scholar.',
+                  desc:
+                      'Indexing peer-reviewed open access papers from OpenAlex & Semantic Scholar.',
                   status: 'active',
                   width: cardWidth,
                   isMobile: false,
                 ),
                 _buildAgentCard(
                   name: '📝 Quiz Agent',
-                  desc: 'Structuring adaptive comprehension questions & XP reward multipliers.',
+                  desc:
+                      'Structuring adaptive comprehension questions & XP reward multipliers.',
                   status: 'active',
                   width: cardWidth,
                   isMobile: false,
@@ -608,7 +628,9 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
       decoration: BoxDecoration(
         color: const Color(0xFF10B981).withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.45)),
+        border: Border.all(
+          color: const Color(0xFF10B981).withValues(alpha: 0.45),
+        ),
         boxShadow: [
           BoxShadow(
             color: const Color(0xFF10B981).withValues(alpha: 0.18),
@@ -632,8 +654,10 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
                   boxShadow: [
                     BoxShadow(
                       color: const Color(0xFF10B981),
-                      blurRadius: (isMobile ? 6 : 8) * _pulseDotController.value,
-                      spreadRadius: (isMobile ? 1.5 : 2) * _pulseDotController.value,
+                      blurRadius:
+                          (isMobile ? 6 : 8) * _pulseDotController.value,
+                      spreadRadius:
+                          (isMobile ? 1.5 : 2) * _pulseDotController.value,
                     ),
                   ],
                 ),
@@ -744,7 +768,9 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
         decoration: BoxDecoration(
           color: const Color(0xFF10B981).withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.4)),
+          border: Border.all(
+            color: const Color(0xFF10B981).withValues(alpha: 0.4),
+          ),
         ),
         child: Text(
           '✓ COMPLETED',
@@ -764,7 +790,9 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
         decoration: BoxDecoration(
           color: const Color(0xFFA855F7).withValues(alpha: 0.18),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFA855F7).withValues(alpha: 0.45)),
+          border: Border.all(
+            color: const Color(0xFFA855F7).withValues(alpha: 0.45),
+          ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -853,7 +881,7 @@ class NeuralNetworkPainter extends CustomPainter {
     // Scale X and Y to fit available size
     final scaleX = size.width / 800;
     final scaleY = size.height / 190;
-    
+
     Offset getPt(double x, double y) {
       return Offset(x * scaleX, y * scaleY);
     }
@@ -861,19 +889,21 @@ class NeuralNetworkPainter extends CustomPainter {
     // Nodes with comfortable vertical clearance (Y range: 32 -> 140)
     final topic = getPt(80, 48);
     final contextNode = getPt(80, 136);
-    
+
     final orchestrator = getPt(280, 32);
     final roadmap = getPt(280, 92);
     final vectorRag = getPt(280, 152);
-    
+
     final socratic = getPt(520, 32);
     final youtube = getPt(520, 92);
     final academic = getPt(520, 152);
-    
+
     final workspace = getPt(720, 92);
 
     // Draw lines
-    final paintLine = Paint()..style = PaintingStyle.stroke..strokeWidth = 2;
+    final paintLine = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2;
 
     void drawLine(Offset p1, Offset p2, Color color) {
       paintLine.color = color;
@@ -906,7 +936,7 @@ class NeuralNetworkPainter extends CustomPainter {
 
     // Draw traveling pulses (interpolate between x1 and x2)
     final pulsePaint = Paint()..style = PaintingStyle.fill;
-    
+
     Offset lerp(Offset p1, Offset p2, double t) {
       return Offset(p1.dx + (p2.dx - p1.dx) * t, p1.dy + (p2.dy - p1.dy) * t);
     }
@@ -914,80 +944,136 @@ class NeuralNetworkPainter extends CustomPainter {
     // Flow from left to middle
     pulsePaint.color = const Color(0xFFEC4899);
     canvas.drawCircle(lerp(topic, orchestrator, animationValue), 4, pulsePaint);
-    canvas.drawCircle(lerp(contextNode, vectorRag, (animationValue + 0.2) % 1.0), 4, pulsePaint);
-    canvas.drawCircle(lerp(topic, roadmap, (animationValue + 0.5) % 1.0), 4, pulsePaint);
-    canvas.drawCircle(lerp(contextNode, roadmap, (animationValue + 0.8) % 1.0), 4, pulsePaint);
-    
+    canvas.drawCircle(
+      lerp(contextNode, vectorRag, (animationValue + 0.2) % 1.0),
+      4,
+      pulsePaint,
+    );
+    canvas.drawCircle(
+      lerp(topic, roadmap, (animationValue + 0.5) % 1.0),
+      4,
+      pulsePaint,
+    );
+    canvas.drawCircle(
+      lerp(contextNode, roadmap, (animationValue + 0.8) % 1.0),
+      4,
+      pulsePaint,
+    );
+
     // Flow from middle to right
     pulsePaint.color = const Color(0xFFA855F7);
-    canvas.drawCircle(lerp(orchestrator, socratic, (animationValue + 0.1) % 1.0), 4, pulsePaint);
-    canvas.drawCircle(lerp(roadmap, youtube, (animationValue + 0.4) % 1.0), 4, pulsePaint);
-    canvas.drawCircle(lerp(vectorRag, academic, (animationValue + 0.7) % 1.0), 4, pulsePaint);
+    canvas.drawCircle(
+      lerp(orchestrator, socratic, (animationValue + 0.1) % 1.0),
+      4,
+      pulsePaint,
+    );
+    canvas.drawCircle(
+      lerp(roadmap, youtube, (animationValue + 0.4) % 1.0),
+      4,
+      pulsePaint,
+    );
+    canvas.drawCircle(
+      lerp(vectorRag, academic, (animationValue + 0.7) % 1.0),
+      4,
+      pulsePaint,
+    );
 
     // Flow from right to Workspace
     pulsePaint.color = const Color(0xFF3B82F6);
-    canvas.drawCircle(lerp(socratic, workspace, (animationValue + 0.3) % 1.0), 4, pulsePaint);
-    canvas.drawCircle(lerp(youtube, workspace, (animationValue + 0.6) % 1.0), 4, pulsePaint);
-    canvas.drawCircle(lerp(academic, workspace, (animationValue + 0.9) % 1.0), 4, pulsePaint);
+    canvas.drawCircle(
+      lerp(socratic, workspace, (animationValue + 0.3) % 1.0),
+      4,
+      pulsePaint,
+    );
+    canvas.drawCircle(
+      lerp(youtube, workspace, (animationValue + 0.6) % 1.0),
+      4,
+      pulsePaint,
+    );
+    canvas.drawCircle(
+      lerp(academic, workspace, (animationValue + 0.9) % 1.0),
+      4,
+      pulsePaint,
+    );
 
     // Draw Nodes with luminous aura
     void drawNode(
-      Offset pt, 
-      double r, 
-      Color strokeColor, 
-      String emoji, 
-      String label, 
-      double strokeW, 
-      {bool isCore = false}
-    ) {
+      Offset pt,
+      double r,
+      Color strokeColor,
+      String emoji,
+      String label,
+      double strokeW, {
+      bool isCore = false,
+    }) {
       // Ambient glow ring behind node
       final glowPaint = Paint()
         ..style = PaintingStyle.stroke
         ..color = strokeColor.withValues(alpha: isCore ? 0.45 : 0.22)
         ..strokeWidth = isCore ? 4 + 2 * animationValue : 3
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);
-      canvas.drawCircle(pt, r + (isCore ? 3 + 2 * animationValue : 2), glowPaint);
+      canvas.drawCircle(
+        pt,
+        r + (isCore ? 3 + 2 * animationValue : 2),
+        glowPaint,
+      );
 
-      final fillPaint = Paint()..style = PaintingStyle.fill..color = const Color(0xFF0F172A);
-      final borderPaint = Paint()..style = PaintingStyle.stroke..color = strokeColor..strokeWidth = strokeW;
-      
+      final fillPaint = Paint()
+        ..style = PaintingStyle.fill
+        ..color = const Color(0xFF0F172A);
+      final borderPaint = Paint()
+        ..style = PaintingStyle.stroke
+        ..color = strokeColor
+        ..strokeWidth = strokeW;
+
       canvas.drawCircle(pt, r, fillPaint);
       canvas.drawCircle(pt, r, borderPaint);
 
       // Emoji in center of node
       final emojiPainter = TextPainter(
-        text: TextSpan(text: emoji, style: TextStyle(fontSize: isCore ? 14 : 12)),
+        text: TextSpan(
+          text: emoji,
+          style: TextStyle(fontSize: isCore ? 14 : 12),
+        ),
         textDirection: TextDirection.ltr,
       )..layout();
-      
+
       emojiPainter.paint(
-        canvas, 
-        Offset(pt.dx - emojiPainter.width / 2, pt.dy - emojiPainter.height / 2)
+        canvas,
+        Offset(pt.dx - emojiPainter.width / 2, pt.dy - emojiPainter.height / 2),
       );
 
       // Label below node with guaranteed bottom margin
       final labelPainter = TextPainter(
         text: TextSpan(
-          text: label, 
+          text: label,
           style: GoogleFonts.inter(
-            fontSize: 10, 
+            fontSize: 10,
             fontWeight: FontWeight.w700,
             color: strokeColor,
-          )
+          ),
         ),
         textDirection: TextDirection.ltr,
       )..layout();
-      
+
       labelPainter.paint(
-        canvas, 
-        Offset(pt.dx - labelPainter.width / 2, pt.dy + r + 4)
+        canvas,
+        Offset(pt.dx - labelPainter.width / 2, pt.dy + r + 4),
       );
     }
 
     drawNode(topic, 16, const Color(0xFFEC4899), '🎯', 'Topic', 3);
     drawNode(contextNode, 16, const Color(0xFFF43F5E), '👤', 'Context', 3);
-    
-    drawNode(orchestrator, 18, const Color(0xFFA855F7), '🧠', 'Orchestrator', 3, isCore: true);
+
+    drawNode(
+      orchestrator,
+      18,
+      const Color(0xFFA855F7),
+      '🧠',
+      'Orchestrator',
+      3,
+      isCore: true,
+    );
     drawNode(roadmap, 15, const Color(0xFF8B5CF6), '⚡', 'Roadmap', 3);
     drawNode(vectorRag, 15, const Color(0xFF7C3AED), '📊', 'Vector RAG', 3);
 
@@ -995,7 +1081,15 @@ class NeuralNetworkPainter extends CustomPainter {
     drawNode(youtube, 16, const Color(0xFF06B6D4), '📺', 'YouTube', 3);
     drawNode(academic, 16, const Color(0xFF10B981), '📚', 'Academic', 3);
 
-    drawNode(workspace, 22, const Color(0xFFEC4899), '🎓', 'Workspace', 4, isCore: true);
+    drawNode(
+      workspace,
+      22,
+      const Color(0xFFEC4899),
+      '🎓',
+      'Workspace',
+      4,
+      isCore: true,
+    );
   }
 
   @override
