@@ -23,6 +23,7 @@ class MilestoneRoadmapStepper extends StatefulWidget {
   static const double _arrowWidth = 14.0;
   static const double _stepperHeight = 52.0;
   static const double _minItemWidth = 145.0;
+  static const double _itemGap = 4.0;
 
   @override
   State<MilestoneRoadmapStepper> createState() => _MilestoneRoadmapStepperState();
@@ -54,7 +55,7 @@ class _MilestoneRoadmapStepperState extends State<MilestoneRoadmapStepper> {
 
     final int index = widget.activeIndex;
     final double effectiveItemWidth = _lastEffectiveItemWidth;
-    final double stepPitch = effectiveItemWidth - MilestoneRoadmapStepper._arrowWidth;
+    final double stepPitch = effectiveItemWidth - MilestoneRoadmapStepper._arrowWidth + MilestoneRoadmapStepper._itemGap;
 
     // Center the active step horizontally in the available viewport
     final double itemCenter = index * stepPitch + (effectiveItemWidth / 2);
@@ -95,17 +96,18 @@ class _MilestoneRoadmapStepperState extends State<MilestoneRoadmapStepper> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final double availableWidth = constraints.maxWidth;
-        // Total formula: totalWidth = N * itemWidth - (N - 1) * arrowWidth
-        // => itemWidth = (totalWidth + (N - 1) * arrowWidth) / N
+        // Total formula: totalWidth = N * itemWidth - (N - 1) * (arrowWidth - itemGap)
+        // => itemWidth = (totalWidth + (N - 1) * (arrowWidth - itemGap)) / N
+        const double arrowDiff = MilestoneRoadmapStepper._arrowWidth - MilestoneRoadmapStepper._itemGap;
         final double calculatedItemWidth = count > 1
-            ? (availableWidth + (count - 1) * MilestoneRoadmapStepper._arrowWidth) / count
+            ? (availableWidth + (count - 1) * arrowDiff) / count
             : availableWidth;
 
         final bool fitsInAvailableWidth = calculatedItemWidth >= MilestoneRoadmapStepper._minItemWidth;
         final double effectiveItemWidth =
             fitsInAvailableWidth ? calculatedItemWidth : 165.0;
         final double totalContentWidth = count > 1
-            ? (count * effectiveItemWidth - (count - 1) * MilestoneRoadmapStepper._arrowWidth)
+            ? (count * effectiveItemWidth - (count - 1) * arrowDiff)
             : effectiveItemWidth;
 
         _lastAvailableWidth = availableWidth;
@@ -128,7 +130,7 @@ class _MilestoneRoadmapStepperState extends State<MilestoneRoadmapStepper> {
               final bool isLast = index == count - 1;
 
               final double leftPos =
-                  index * (effectiveItemWidth - MilestoneRoadmapStepper._arrowWidth);
+                  index * (effectiveItemWidth - arrowDiff);
 
               return Positioned(
                 left: leftPos,
@@ -155,10 +157,10 @@ class _MilestoneRoadmapStepperState extends State<MilestoneRoadmapStepper> {
         return Container(
           height: MilestoneRoadmapStepper._stepperHeight,
           decoration: BoxDecoration(
-            color: AppColors.surfaceDeep,
+            color: AppColors.isDark ? const Color(0xFF10111D) : AppColors.surfaceDeep,
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
-              color: AppColors.glassBorder,
+              color: AppColors.isDark ? const Color(0x1FFFFFFF) : AppColors.glassBorder,
               width: 1.0,
             ),
             boxShadow: [

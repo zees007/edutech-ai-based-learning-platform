@@ -57,10 +57,11 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
             duration: const Duration(milliseconds: 250),
             curve: Curves.easeOutCubic,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(18),
+              color: AppColors.isDark ? const Color(0xFF11121D) : Colors.white,
+              borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: AppColors.isDark
-                    ? AppColors.cardGlowBorder.withValues(alpha: _isHovered ? 0.6 : 0.3)
+                    ? const Color(0x1FFFFFFF)
                     : (_isHovered
                         ? AppColors.accentBlue.withValues(alpha: 0.5)
                         : AppColors.glassBorder),
@@ -68,65 +69,53 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
               ),
               boxShadow: AppColors.isDark
                   ? [
-                      if (!isMobile) ...[
-                        BoxShadow(
-                          color: AppColors.purpleLight.withValues(alpha: _isHovered ? 0.16 : 0.08),
-                          blurRadius: _isHovered ? 28 : 20,
-                          spreadRadius: 0,
-                          offset: const Offset(0, 4),
-                        ),
-                        BoxShadow(
-                          color: AppColors.purple.withValues(alpha: 0.08),
-                          blurRadius: 20,
-                          spreadRadius: 0,
-                        ),
-                      ],
                       BoxShadow(
                         color: Colors.black.withValues(alpha: 0.35),
-                        blurRadius: 30,
-                        offset: const Offset(0, 10),
+                        blurRadius: 25,
+                        offset: const Offset(0, 8),
                       ),
                     ]
                   : [
                       BoxShadow(
-                        color: const Color(0x14000000), // 0.08 opacity
+                        color: const Color(0x14000000),
                         blurRadius: _isHovered ? 28 : 24,
-                        spreadRadius: 0,
                         offset: Offset(0, _isHovered ? 10 : 8),
                       ),
-                      if (_isHovered)
-                        BoxShadow(
-                          color: AppColors.accentBlue.withValues(alpha: 0.10),
-                          blurRadius: 16,
-                          spreadRadius: 0,
-                          offset: const Offset(0, 4),
-                        ),
                     ],
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(16),
               child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
+                filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
                 child: Container(
                   clipBehavior: Clip.antiAlias,
                   decoration: BoxDecoration(
-                    color: isMobile ? AppColors.mobileCommandHubSolid : null,
-                    gradient: isMobile ? null : AppColors.commandHubGradient,
-                    borderRadius: const BorderRadius.all(Radius.circular(18)),
+                    color: AppColors.isDark ? const Color(0xFF11121D) : Colors.white,
+                    borderRadius: const BorderRadius.all(Radius.circular(16)),
                   ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // ─── TIER 1: Solid Header (Matching Socratic Tutor Toolbar) ───
+                      // ─── TIER 1: Command Hub Header Bar ───
                       Container(
                         width: double.infinity,
                         padding: EdgeInsets.symmetric(
-                          horizontal: isMobile ? 14 : 20,
-                          vertical: isMobile ? 12 : 14,
+                          horizontal: isMobile ? 14 : 16,
+                          vertical: isMobile ? 10 : 12,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.surfaceSolidHeader,
+                          color: AppColors.isDark
+                              ? const Color(0xFF11121D)
+                              : AppColors.surfaceSolidHeader,
+                          border: Border(
+                            bottom: BorderSide(
+                              color: AppColors.isDark
+                                  ? const Color(0x14FFFFFF)
+                                  : const Color(0xFFE2E8F0),
+                              width: 1.0,
+                            ),
+                          ),
                         ),
                         child: isDesktop
                             ? _buildDesktopTier1(
@@ -155,12 +144,17 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
 
                       // ─── TIER 2: Milestone Learning Roadmap Stepper ─────────
                       if (session.steps.isNotEmpty)
-                        Padding(
+                        Container(
                           padding: EdgeInsets.fromLTRB(
-                            isMobile ? 14 : 20,
-                            12,
-                            isMobile ? 14 : 20,
-                            16,
+                            isMobile ? 14 : 16,
+                            10,
+                            isMobile ? 14 : 16,
+                            14,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.isDark
+                                ? const Color(0xFF10111D)
+                                : Colors.transparent,
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -291,6 +285,17 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
     );
   }
 
+  BoxDecoration _buildPillDecoration() {
+    return BoxDecoration(
+      color: AppColors.isDark ? const Color(0xFF191B2B) : const Color(0xFFF1F5F9),
+      borderRadius: BorderRadius.circular(8),
+      border: Border.all(
+        color: AppColors.isDark ? const Color(0x1FFFFFFF) : const Color(0xFFE2E8F0),
+        width: 1.0,
+      ),
+    );
+  }
+
   // ─── GOAL & CONTEXT CLUSTER ──────────────────────────────────────────────────
   Widget _buildGoalContextBlock(SessionResponse session, {bool isMobile = false}) {
     return Row(
@@ -298,35 +303,25 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
       children: [
         // Goal Icon Accent Box
         Container(
-          width: isMobile ? 32 : 36,
-          height: isMobile ? 32 : 36,
+          width: isMobile ? 30 : 34,
+          height: isMobile ? 30 : 34,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                AppColors.purple.withValues(alpha: 0.25),
-                AppColors.indigo.withValues(alpha: 0.15),
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(10),
+            color: AppColors.isDark
+                ? const Color(0xFF2E1065).withValues(alpha: 0.7)
+                : const Color(0xFFEEF2FF),
+            borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: AppColors.purple.withValues(alpha: 0.40),
+              color: AppColors.isDark
+                  ? const Color(0xFF7C3AED).withValues(alpha: 0.5)
+                  : const Color(0xFFC7D2FE),
               width: 1.0,
             ),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.purple.withValues(alpha: 0.22),
-                blurRadius: 10,
-                offset: const Offset(0, 2),
-              ),
-            ],
           ),
           child: Icon(
-            Icons.track_changes_rounded,
-            color: AppColors.lavender,
-            size: isMobile ? 18 : 20,
+            Icons.explore_outlined,
+            color: AppColors.isDark ? const Color(0xFFC4B5FD) : const Color(0xFF4F46E5),
+            size: isMobile ? 16 : 18,
           ),
         ),
         const SizedBox(width: 10),
@@ -343,23 +338,22 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
                 children: [
                   Text(
                     'YOUR GOAL',
-                    style: AppTextStyles.badge.copyWith(
-                      color: AppColors.purpleLight,
-                      fontWeight: FontWeight.w900,
+                    style: TextStyle(
+                      color: AppColors.isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
                       letterSpacing: 0.6,
                     ),
                   ),
-                  // Micro Mode Chip
                   _buildMicroChip(
                     label: _formatMode(session.learningMode),
-                    color: AppColors.purpleLight,
-                    icon: Icons.psychology_rounded,
+                    isViolet: true,
+                    icon: Icons.visibility_outlined,
                   ),
-                  // Micro Audience Chip
                   _buildMicroChip(
                     label: _formatLevel(session.studentLevel),
-                    color: AppColors.cyanLight,
-                    icon: Icons.school_rounded,
+                    isViolet: false,
+                    icon: Icons.school_outlined,
                   ),
                 ],
               ),
@@ -381,12 +375,13 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
                       alignment: Alignment.topCenter,
                       child: Text(
                         session.topic,
-                        maxLines: _isTopicExpanded ? null : (isMobile ? 3 : 2),
+                        maxLines: _isTopicExpanded ? null : (isMobile ? 2 : 1),
                         overflow: _isTopicExpanded ? null : TextOverflow.ellipsis,
-                        style: AppTextStyles.h3.copyWith(
-                          fontSize: isMobile ? 13 : 15,
-                          color: AppColors.textPrimary,
-                          letterSpacing: 0.1,
+                        style: TextStyle(
+                          fontSize: isMobile ? 12.5 : 13.5,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.isDark ? Colors.white : AppColors.textPrimary,
+                          letterSpacing: -0.2,
                         ),
                       ),
                     ),
@@ -403,43 +398,33 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
   // ─── MICRO METRIC PILL 1: CURRENT LEVEL ──────────────────────────────────────
   Widget _buildLevelPill(Map<String, dynamic> levelData) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-      decoration: BoxDecoration(
-        color: AppColors.purpleLight.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.purpleLight.withValues(alpha: 0.25)),
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: _buildPillDecoration(),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            padding: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              color: AppColors.purpleLight.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: const Text('🏆', style: TextStyle(fontSize: 12)),
+          const Icon(
+            Icons.military_tech_rounded,
+            color: Color(0xFFFBBF24),
+            size: 15,
           ),
-          const SizedBox(width: 8),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Lvl ${levelData['level']}',
-                style: AppTextStyles.label.copyWith(
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              Text(
-                (levelData['title'] as String),
-                style: AppTextStyles.badge.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.purpleLight,
-                ),
-              ),
-            ],
+          const SizedBox(width: 5),
+          Text(
+            'Lvl ${levelData['level']}',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: AppColors.isDark ? Colors.white : AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(width: 6),
+          Text(
+            (levelData['title'] as String),
+            style: TextStyle(
+              fontSize: 10.5,
+              fontWeight: FontWeight.w500,
+              color: AppColors.isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+            ),
           ),
         ],
       ),
@@ -449,50 +434,48 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
   // ─── MICRO METRIC PILL 2: TOTAL XP & STREAK ─────────────────────────────────
   Widget _buildXpStreakPill(int xpEarned) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-      decoration: BoxDecoration(
-        color: AppColors.cyanLight.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.cyanLight.withValues(alpha: 0.25)),
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: _buildPillDecoration(),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            padding: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              color: AppColors.cyanLight.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(6),
+          const Icon(
+            Icons.star_rounded,
+            color: Color(0xFFFBBF24),
+            size: 15,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            '$xpEarned XP',
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFFFDE68A),
             ),
-            child: const Text('⭐', style: TextStyle(fontSize: 12)),
           ),
           const SizedBox(width: 8),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                '$xpEarned XP',
-                style: AppTextStyles.label.copyWith(
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text('🔥', style: TextStyle(fontSize: 10)),
-                  const SizedBox(width: 2),
-                  Text(
-                    'Streak: 0',
-                    style: AppTextStyles.badge.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.cyanLight,
-                    ),
-                  ),
-                ],
-              ),
-            ],
+          Text(
+            '|',
+            style: TextStyle(
+              fontSize: 11,
+              color: AppColors.isDark ? const Color(0xFF475569) : const Color(0xFFCBD5E1),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            '🔥 Streak: ',
+            style: TextStyle(
+              fontSize: 11,
+              color: AppColors.isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+            ),
+          ),
+          Text(
+            '0',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: AppColors.isDark ? Colors.white : AppColors.textPrimary,
+            ),
           ),
         ],
       ),
@@ -507,72 +490,48 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
       curve: Curves.easeOutCubic,
       builder: (context, animatedLvlPct, child) {
         return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-          decoration: BoxDecoration(
-            color: AppColors.glassSurface.withValues(alpha: 0.03),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.fuchsia.withValues(alpha: 0.25)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          decoration: _buildPillDecoration(),
+          child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Lvl ${levelData['level']} → ${(levelData['level'] as int) + 1}',
-                    style: AppTextStyles.caption.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.slate400,
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    '${(animatedLvlPct * 100).toStringAsFixed(0)}%',
-                    style: AppTextStyles.captionBold.copyWith(
-                      color: AppColors.fuchsia,
-                    ),
-                  ),
-                ],
+              Text(
+                'Lvl ${levelData['level']} → ${(levelData['level'] as int) + 1}',
+                style: TextStyle(
+                  fontSize: 10.5,
+                  color: AppColors.isDark ? const Color(0xFFCBD5E1) : const Color(0xFF475569),
+                ),
               ),
-              const SizedBox(height: 4),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 52,
-                    height: 5,
-                    decoration: BoxDecoration(
-                      color: AppColors.glassSurface.withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(3),
-                    ),
-                    child: FractionallySizedBox(
-                      alignment: Alignment.centerLeft,
-                      widthFactor: animatedLvlPct,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: AppColors.pinkPurpleGradient,
-                          borderRadius: BorderRadius.circular(3),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.fuchsia.withValues(alpha: 0.5),
-                              blurRadius: 4,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
+              const SizedBox(width: 5),
+              Text(
+                '${(animatedLvlPct * 100).toStringAsFixed(0)}%',
+                style: const TextStyle(
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFFA78BFA),
+                ),
+              ),
+              const SizedBox(width: 8),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(999),
+                child: Container(
+                  width: 56,
+                  height: 6,
+                  color: AppColors.isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
+                  child: FractionallySizedBox(
+                    alignment: Alignment.centerLeft,
+                    widthFactor: animatedLvlPct,
+                    child: Container(color: const Color(0xFF8B5CF6)),
                   ),
-                  const SizedBox(width: 6),
-                  Text(
-                    '${levelData['xp_in_level']}/${levelData['xp_needed_for_next']}',
-                    style: AppTextStyles.badge.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textMuted,
-                    ),
-                  ),
-                ],
+                ),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                '${levelData['xp_in_level']}/${levelData['xp_needed_for_next']}',
+                style: TextStyle(
+                  fontSize: 9.5,
+                  color: AppColors.isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                ),
               ),
             ],
           ),
@@ -581,76 +540,51 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
     );
   }
 
-
   // ─── MICRO METRIC PILL 4: TOPIC COMPLETION BAR ──────────────────────────────
   Widget _buildTopicProgressPill(int completedSteps, int totalSteps, double topicPct) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-      decoration: BoxDecoration(
-        color: AppColors.glassSurface.withValues(alpha: 0.03),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.greenMint.withValues(alpha: 0.25)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: _buildPillDecoration(),
+      child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Roadmap',
-                style: AppTextStyles.caption.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.slate400,
-                ),
-              ),
-              const SizedBox(width: 6),
-              Text(
-                '${(topicPct * 100).toStringAsFixed(0)}%',
-                style: AppTextStyles.captionBold.copyWith(
-                  color: AppColors.greenMint,
-                ),
-              ),
-            ],
+          Text(
+            'Roadmap',
+            style: TextStyle(
+              fontSize: 10.5,
+              color: AppColors.isDark ? const Color(0xFFCBD5E1) : const Color(0xFF475569),
+            ),
           ),
-          const SizedBox(height: 4),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 52,
-                height: 5,
-                decoration: BoxDecoration(
-                  color: AppColors.glassSurface.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(3),
-                ),
-                child: FractionallySizedBox(
-                  alignment: Alignment.centerLeft,
-                  widthFactor: topicPct,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: AppColors.emeraldGradient,
-                      borderRadius: BorderRadius.circular(3),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.greenMint.withValues(alpha: 0.5),
-                          blurRadius: 4,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+          const SizedBox(width: 5),
+          Text(
+            '${(topicPct * 100).toStringAsFixed(0)}%',
+            style: const TextStyle(
+              fontSize: 10.5,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF34D399),
+            ),
+          ),
+          const SizedBox(width: 8),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(999),
+            child: Container(
+              width: 40,
+              height: 6,
+              color: AppColors.isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
+              child: FractionallySizedBox(
+                alignment: Alignment.centerLeft,
+                widthFactor: topicPct,
+                child: Container(color: const Color(0xFF10B981)),
               ),
-              const SizedBox(width: 6),
-              Text(
-                '$completedSteps/$totalSteps',
-                style: AppTextStyles.badge.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textMuted,
-                ),
-              ),
-            ],
+            ),
+          ),
+          const SizedBox(width: 6),
+          Text(
+            '$completedSteps/$totalSteps',
+            style: TextStyle(
+              fontSize: 9.5,
+              color: AppColors.isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+            ),
           ),
         ],
       ),
@@ -677,44 +611,29 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
             isCompleted: isCompleted,
           );
         },
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(8),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-          decoration: BoxDecoration(
-            color: isCompleted
-                ? AppColors.primary.withValues(alpha: 0.20)
-                : Colors.white.withValues(alpha: 0.04),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: isCompleted
-                  ? AppColors.primary.withValues(alpha: 0.55)
-                  : Colors.white.withValues(alpha: 0.12),
-              width: 1.0,
-            ),
-            boxShadow: isCompleted
-                ? [
-                    BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.25),
-                      blurRadius: 8,
-                    ),
-                  ]
-                : null,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          decoration: _buildPillDecoration(),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
-                Icons.ios_share_rounded,
-                size: 15,
-                color: isCompleted ? AppColors.purpleLight : AppColors.textMuted,
+                Icons.download_rounded,
+                size: 14,
+                color: isCompleted
+                    ? const Color(0xFFA78BFA)
+                    : (AppColors.isDark ? const Color(0xFFCBD5E1) : const Color(0xFF64748B)),
               ),
-              const SizedBox(width: 6),
+              const SizedBox(width: 5),
               Text(
                 'Export',
-                style: AppTextStyles.label.copyWith(
+                style: TextStyle(
                   fontSize: 12,
-                  fontWeight: isCompleted ? FontWeight.bold : FontWeight.w500,
-                  color: isCompleted ? Colors.white : AppColors.textMuted,
+                  fontWeight: FontWeight.w500,
+                  color: isCompleted
+                      ? Colors.white
+                      : (AppColors.isDark ? const Color(0xFFCBD5E1) : const Color(0xFF475569)),
                 ),
               ),
             ],
@@ -769,30 +688,40 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
     );
   }
 
-
   // ─── MICRO CHIP HELPER ──────────────────────────────────────────────────────
   Widget _buildMicroChip({
     required String label,
-    required Color color,
+    required bool isViolet,
     required IconData icon,
   }) {
+    final bgColor = isViolet
+        ? (AppColors.isDark ? const Color(0x994C1D95) : const Color(0xFFEDE9FE))
+        : (AppColors.isDark ? const Color(0x801E3A8A) : const Color(0xFFEFF6FF));
+    final borderColor = isViolet
+        ? (AppColors.isDark ? const Color(0x668B5CF6) : const Color(0xFFC4B5FD))
+        : (AppColors.isDark ? const Color(0x663B82F6) : const Color(0xFFBFDBFE));
+    final textColor = isViolet
+        ? (AppColors.isDark ? const Color(0xFFDDD6FE) : const Color(0xFF6D28D9))
+        : (AppColors.isDark ? const Color(0xFF93C5FD) : const Color(0xFF1D4ED8));
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withValues(alpha: 0.35), width: 0.8),
+        color: bgColor,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: borderColor, width: 0.9),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 10, color: color),
+          Icon(icon, size: 10, color: textColor),
           const SizedBox(width: 3.5),
           Text(
             label,
-            style: AppTextStyles.badge.copyWith(
+            style: TextStyle(
               fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
+              fontSize: 9.5,
+              color: textColor,
               letterSpacing: 0.3,
             ),
           ),
