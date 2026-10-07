@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../widgets/shimmer_loading.dart';
@@ -13,21 +12,37 @@ class RecentJourneySkeletonCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = AppColors.isDark;
+
     return ShimmerLoading(
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(100),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: AppColors.glassBase,
-              border: Border.all(
-                color: AppColors.primary.withValues(alpha: 0.3),
-                width: 1.5,
-              ),
-              borderRadius: BorderRadius.circular(100),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.canvasBackground : Colors.white,
+          border: Border.all(
+            color: AppColors.primary.withValues(
+              alpha: isDark ? 0.35 : 0.30,
             ),
+            width: 1.5,
+          ),
+          borderRadius: BorderRadius.circular(100),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withValues(
+                alpha: isDark ? 0.14 : 0.10,
+              ),
+              blurRadius: 16,
+              offset: Offset.zero,
+            ),
+            if (!isDark)
+              const BoxShadow(
+                color: Color(0x060F172A),
+                blurRadius: 8,
+                spreadRadius: -2,
+                offset: Offset(0, 4),
+              ),
+          ],
+        ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -62,18 +77,10 @@ class RecentJourneySkeletonCard extends StatelessWidget {
                             color: AppColors.shimmerBoxMid,
                           ),
                           const SizedBox(width: 8),
-                          Container(
-                            width: 3,
-                            height: 3,
-                            decoration: BoxDecoration(
-                              color: AppColors.glassBorder,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
                           ShimmerBox(
-                            width: 56,
-                            height: 10,
+                            width: 58,
+                            height: 14,
+                            borderRadius: BorderRadius.circular(6),
                             color: AppColors.shimmerBoxMid,
                           ),
                         ],
@@ -96,8 +103,6 @@ class RecentJourneySkeletonCard extends StatelessWidget {
               ],
             ),
           ),
-        ),
-      ),
     );
   }
 }

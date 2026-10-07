@@ -23,6 +23,11 @@ class GradientCircularProgress extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final resolvedTrackColor = trackColor ??
+        (AppColors.isDark
+            ? Colors.white.withValues(alpha: 0.12)
+            : const Color(0xFFCBD5E1));
+
     return SizedBox(
       width: size,
       height: size,
@@ -30,7 +35,7 @@ class GradientCircularProgress extends StatelessWidget {
         painter: _GradientCircularProgressPainter(
           progress: progress,
           strokeWidth: strokeWidth,
-          trackColor: trackColor ?? Colors.white.withValues(alpha: 0.08),
+          trackColor: resolvedTrackColor,
           gradient: gradient,
         ),
       ),
