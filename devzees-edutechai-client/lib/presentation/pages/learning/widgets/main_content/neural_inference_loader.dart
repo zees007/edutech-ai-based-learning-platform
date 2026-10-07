@@ -73,7 +73,7 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(
                     color: isDark
-                        ? const Color(0xFFA855F7).withValues(alpha: 0.65)
+                        ? AppColors.primary.withValues(alpha: 0.65)
                         : const Color(0xFFA855F7).withValues(alpha: 0.35),
                     width: 1.5,
                   ),
@@ -88,19 +88,19 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
                       if (!isMobile) ...[
                         // Vibrant neon border rim glow
                         BoxShadow(
-                          color: const Color(0xFFA855F7).withValues(alpha: 0.38),
+                          color: AppColors.primary.withValues(alpha: 0.38),
                           blurRadius: 18,
                           spreadRadius: 2,
                         ),
-                        // Broad ambient violet glow
+                        // Broad ambient primary glow
                         BoxShadow(
-                          color: const Color(0xFF8B5CF6).withValues(alpha: 0.25),
+                          color: AppColors.primary.withValues(alpha: 0.25),
                           blurRadius: 45,
                           spreadRadius: 6,
                         ),
                         // Deep neon atmospheric halo
                         BoxShadow(
-                          color: const Color(0xFF6366F1).withValues(alpha: 0.15),
+                          color: const Color(0xFF1D4ED8).withValues(alpha: 0.15),
                           blurRadius: 80,
                           spreadRadius: 12,
                         ),
@@ -243,7 +243,7 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
                           boxShadow: [
                             if (!Responsive.isMobile(context)) ...[
                               BoxShadow(
-                                color: const Color(0xFFA855F7).withValues(
+                                color: (isDark ? AppColors.primary : const Color(0xFFA855F7)).withValues(
                                   alpha: isDark
                                       ? (0.35 + 0.20 * _pulseController.value)
                                       : (0.16 + 0.10 * _pulseController.value),
@@ -393,13 +393,15 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
     List<BoxShadow> shadows = [];
 
     if (isActive) {
-      borderColor = const Color(0xFFA855F7).withValues(alpha: isDark ? 0.45 : 0.50);
+      borderColor = (isDark ? AppColors.primary : const Color(0xFFA855F7))
+          .withValues(alpha: isDark ? 0.45 : 0.50);
       bgColor = isDark
-          ? const Color(0xFFA855F7).withValues(alpha: 0.08)
+          ? AppColors.primary.withValues(alpha: 0.08)
           : const Color(0xFFF5F3FF);
       shadows = [
         BoxShadow(
-          color: const Color(0xFFA855F7).withValues(alpha: isDark ? 0.12 : 0.10),
+          color: (isDark ? AppColors.primary : const Color(0xFFA855F7))
+              .withValues(alpha: isDark ? 0.16 : 0.10),
           blurRadius: 8,
         ),
       ];
@@ -465,10 +467,12 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
               decoration: BoxDecoration(
-                color: const Color(0xFFA855F7).withValues(alpha: isDark ? 0.18 : 0.12),
+                color: (isDark ? AppColors.primary : const Color(0xFFA855F7))
+                    .withValues(alpha: isDark ? 0.18 : 0.12),
                 borderRadius: BorderRadius.circular(6),
                 border: Border.all(
-                  color: const Color(0xFFA855F7).withValues(alpha: isDark ? 0.45 : 0.40),
+                  color: (isDark ? AppColors.primary : const Color(0xFFA855F7))
+                      .withValues(alpha: isDark ? 0.45 : 0.40),
                 ),
               ),
               child: Row(
@@ -486,7 +490,7 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
                     style: GoogleFonts.inter(
                       fontSize: 9,
                       fontWeight: FontWeight.w700,
-                      color: isDark ? const Color(0xFFE879F9) : const Color(0xFF7C3AED),
+                      color: isDark ? const Color(0xFF60A5FA) : const Color(0xFF7C3AED),
                     ),
                   ),
                 ],
@@ -805,12 +809,14 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
 
     if (isActive) {
       bgColor = isDark
-          ? const Color(0xFFA855F7).withValues(alpha: 0.05)
+          ? AppColors.primary.withValues(alpha: 0.06)
           : const Color(0xFFF5F3FF);
-      borderColor = const Color(0xFFA855F7).withValues(alpha: isDark ? 0.4 : 0.45);
+      borderColor = (isDark ? AppColors.primary : const Color(0xFFA855F7))
+          .withValues(alpha: isDark ? 0.45 : 0.45);
       shadows = [
         BoxShadow(
-          color: const Color(0xFFA855F7).withValues(alpha: isDark ? 0.15 : 0.10),
+          color: (isDark ? AppColors.primary : const Color(0xFFA855F7))
+              .withValues(alpha: isDark ? 0.18 : 0.10),
           blurRadius: 12,
           spreadRadius: 1,
         ),
@@ -915,10 +921,12 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
           vertical: isMobile ? 3 : 4,
         ),
         decoration: BoxDecoration(
-          color: const Color(0xFFA855F7).withValues(alpha: isDark ? 0.18 : 0.12),
+          color: (isDark ? AppColors.primary : const Color(0xFFA855F7))
+              .withValues(alpha: isDark ? 0.18 : 0.12),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: const Color(0xFFA855F7).withValues(alpha: isDark ? 0.45 : 0.40),
+            color: (isDark ? AppColors.primary : const Color(0xFFA855F7))
+                .withValues(alpha: isDark ? 0.45 : 0.40),
           ),
         ),
         child: Row(
@@ -936,7 +944,7 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
               style: GoogleFonts.inter(
                 fontSize: isMobile ? 9 : 10,
                 fontWeight: FontWeight.w700,
-                color: isDark ? const Color(0xFFE879F9) : const Color(0xFF7C3AED),
+                color: isDark ? const Color(0xFF60A5FA) : const Color(0xFF7C3AED),
               ),
             ),
           ],
