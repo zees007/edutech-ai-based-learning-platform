@@ -142,7 +142,7 @@ class _AcademicPapersState extends ConsumerState<AcademicPapers> {
           ),
           child: Row(
             children: [
-              Icon(Icons.search_rounded, size: 18, color: AppColors.blueSoft),
+              Icon(Icons.search_rounded, size: 18, color: AppColors.adaptiveBlueSoft),
               const SizedBox(width: 10),
               Expanded(
                 child: TextField(
@@ -178,16 +178,20 @@ class _AcademicPapersState extends ConsumerState<AcademicPapers> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
-                    color: AppColors.accentBlue.withValues(alpha: 0.3),
+                    color: AppColors.isDark
+                        ? AppColors.accentBlue.withValues(alpha: 0.3)
+                        : AppColors.primary.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
-                      color: AppColors.blueLight.withValues(alpha: 0.4),
+                      color: AppColors.isDark
+                          ? AppColors.blueLight.withValues(alpha: 0.4)
+                          : AppColors.primary.withValues(alpha: 0.35),
                     ),
                   ),
                   child: Text(
                     'Search',
                     style: AppTextStyles.label.copyWith(
-                      color: AppColors.blueSoft,
+                      color: AppColors.adaptiveBlueSoft,
                       fontWeight: FontWeight.w700,
                     ),
                   ),

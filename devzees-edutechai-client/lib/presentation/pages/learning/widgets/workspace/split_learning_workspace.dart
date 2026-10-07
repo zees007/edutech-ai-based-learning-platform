@@ -232,8 +232,8 @@ class _SplitLearningWorkspaceState
 
   Widget _buildChatPanel(dynamic currentStep) {
     return Container(
-      decoration: BoxDecoration(
-        color: AppColors.surfaceDark.withValues(alpha: 0.3),
+      decoration: const BoxDecoration(
+        color: AppColors.surfaceDark,
       ),
       child: (currentStep.tutorExplanation != null ||
               (currentStep.socraticQuestions != null &&
@@ -419,8 +419,8 @@ class _FullscreenPanelOverlay extends ConsumerWidget {
 
   Widget _buildFullscreenChat() {
     return Container(
-      decoration: BoxDecoration(
-        color: AppColors.surfaceDark.withValues(alpha: 0.3),
+      decoration: const BoxDecoration(
+        color: AppColors.surfaceDark,
       ),
       child: (currentStep.tutorExplanation != null ||
               (currentStep.socraticQuestions != null &&

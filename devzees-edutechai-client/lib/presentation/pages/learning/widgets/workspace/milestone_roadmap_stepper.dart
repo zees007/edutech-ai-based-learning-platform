@@ -157,7 +157,7 @@ class _MilestoneRoadmapStepperState extends State<MilestoneRoadmapStepper> {
         return Container(
           height: MilestoneRoadmapStepper._stepperHeight,
           decoration: BoxDecoration(
-            color: AppColors.isDark ? const Color(0xFF10111D) : AppColors.surfaceDeep,
+            color: AppColors.isDark ? const Color(0xFF11121D) : AppColors.surfaceDeep,
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
               color: AppColors.isDark ? const Color(0x1FFFFFFF) : AppColors.glassBorder,

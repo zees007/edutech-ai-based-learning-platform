@@ -26,15 +26,15 @@ class AppColors {
 
   // ─── Base Backgrounds & Surfaces (Dynamic) ───
   static Color get background => _current.scaffoldBackground;
-  static Color get secondaryBackground => isDark ? const Color(0xFF1B1728) : _current.surfaceSubtle;
+  static Color get secondaryBackground => isDark ? const Color(0xFF151624) : _current.surfaceSubtle;
   static Color get surfaceDark => _current.surface;
-  static Color get surfaceMid => isDark ? const Color(0xFF1E293B) : const Color(0xFFF8F9FA);
-  static Color get surfaceDeep => isDark ? const Color(0xFF1A112E) : _current.surface;
-  static Color get surfaceSolidHeader => isDark ? const Color(0xCC140D21) : const Color(0xF2FFFFFF);
-  static Color get sidebarBackground => isDark ? const Color(0xFF130D21) : _current.surface;
+  static Color get surfaceMid => isDark ? const Color(0xFF141523) : const Color(0xFFF8F9FA);
+  static Color get surfaceDeep => isDark ? const Color(0xFF0B0C14) : _current.surface;
+  static Color get surfaceSolidHeader => isDark ? const Color(0xCC11121D) : const Color(0xF2FFFFFF);
+  static Color get sidebarBackground => isDark ? const Color(0xFF0E0F18) : _current.surface;
   static Color get canvasBackground => _current.scaffoldBackground;
-  static Color get popoverBackground => _current.surface;
-  static Color get surfaceIndigo => isDark ? const Color(0xFF1E1B4B) : _current.surfaceSubtle;
+  static Color get popoverBackground => isDark ? const Color(0xFF11121D) : _current.surface;
+  static Color get surfaceIndigo => isDark ? const Color(0xFF1A1B2D) : _current.surfaceSubtle;
 
   static Color get surface => _current.surface;
   static Color get surfaceSubtle => _current.surfaceSubtle;
@@ -110,12 +110,12 @@ class AppColors {
   static Color get glassBorderSubtle => isDark ? const Color(0x0DFFFFFF) : const Color(0x0F000000);
 
   // ─── Shimmer & Skeleton Tokens (Dynamic) ───
-  static Color get shimmerBase => isDark ? const Color(0xFF1C1E24) : const Color(0xFFE5E7EB);
-  static Color get shimmerHighlight => isDark ? const Color(0xFF272A33) : const Color(0xFFF3F3F5);
-  static Color get shimmerBox => isDark ? const Color(0xFF261D3D) : const Color(0xFFEDE9F2);
-  static Color get shimmerBoxDark => isDark ? const Color(0xFF2E2248) : const Color(0xFFE5E0EE);
-  static Color get shimmerBoxMid => isDark ? const Color(0xFF281D40) : const Color(0xFFEAE4F0);
-  static Color get shimmerBoxLight => isDark ? const Color(0xFF332750) : const Color(0xFFF0EBF5);
+  static Color get shimmerBase => isDark ? const Color(0xFF11121D) : const Color(0xFFE5E7EB);
+  static Color get shimmerHighlight => isDark ? const Color(0xFF151624) : const Color(0xFFF3F3F5);
+  static Color get shimmerBox => isDark ? const Color(0xFF1A1B2D) : const Color(0xFFEDE9F2);
+  static Color get shimmerBoxDark => isDark ? const Color(0xFF151624) : const Color(0xFFE5E0EE);
+  static Color get shimmerBoxMid => isDark ? const Color(0xFF1A1B2D) : const Color(0xFFEAE4F0);
+  static Color get shimmerBoxLight => isDark ? const Color(0xFF212338) : const Color(0xFFF0EBF5);
 
   // ─── Centralized Gradients ───
   // Primary Gradient: 135deg, #1F6CFA 0%, #C839F6 100%
@@ -130,7 +130,7 @@ class AppColors {
 
   static LinearGradient get cardGradient => isDark
       ? const LinearGradient(
-          colors: [Color(0xFF1C1E24), Color(0xFF17191E)],
+          colors: [Color(0xFF11121D), Color(0xFF0E0F18)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         )
@@ -142,7 +142,7 @@ class AppColors {
 
   static LinearGradient get cardGradientOpaque => isDark
       ? const LinearGradient(
-          colors: [Color(0xF51C1E24), Color(0xEE17191E)],
+          colors: [Color(0xF511121D), Color(0xEE0E0F18)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         )
@@ -154,7 +154,7 @@ class AppColors {
 
   static LinearGradient get commandHubGradient => isDark
       ? const LinearGradient(
-          colors: [Color(0xCC1C1E24), Color(0xE6121316)],
+          colors: [Color(0xCC11121D), Color(0xE60B0C13)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         )
@@ -166,7 +166,7 @@ class AppColors {
 
   static LinearGradient get socraticTutorGradient => isDark
       ? const LinearGradient(
-          colors: [Color(0xD91C1E24), Color(0xF2121316)],
+          colors: [Color(0xD911121D), Color(0xF20B0C13)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         )
@@ -178,8 +178,8 @@ class AppColors {
 
   // Solid color equivalents for mobile to prevent color banding
   static Color get mobileCardSolid => _current.surface;
-  static Color get mobileCommandHubSolid => isDark ? const Color(0xFF1C1E24) : const Color(0xFFFFFFFF);
-  static Color get mobileSocraticTutorSolid => isDark ? const Color(0xFF17191E) : const Color(0xFFFFFFFF);
+  static Color get mobileCommandHubSolid => isDark ? const Color(0xFF11121D) : const Color(0xFFFFFFFF);
+  static Color get mobileSocraticTutorSolid => isDark ? const Color(0xFF0E0F18) : const Color(0xFFFFFFFF);
 
   static const LinearGradient pinkPurpleGradient = LinearGradient(
     colors: [Color(0xFFC839F6), Color(0xFF6B47EB)],
@@ -215,7 +215,7 @@ class AppColors {
       ? const RadialGradient(
           center: Alignment(0.0, -0.3),
           radius: 1.2,
-          colors: [Color(0xFF1C1E24), Color(0xFF17191E), Color(0xFF121316)],
+          colors: [Color(0xFF151624), Color(0xFF0E0F18), Color(0xFF0B0C13)],
           stops: [0.0, 0.5, 1.0],
         )
       : const RadialGradient(
@@ -227,16 +227,16 @@ class AppColors {
 
   // ─── Mobile Specific Colors ───
   static Color get mobileBackground => _current.scaffoldBackground;
-  static Color get mobileSurfaceDeep => isDark ? const Color(0xFF0D0E11) : const Color(0xFFFFFFFF);
+  static Color get mobileSurfaceDeep => isDark ? const Color(0xFF0B0C14) : const Color(0xFFFFFFFF);
 
   static LinearGradient get mobileWorkspaceBackgroundGradient => isDark
       ? const LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Color(0xFF1C1E24),
-            Color(0xFF121316),
-            Color(0xFF0D0E11),
+            Color(0xFF11121D),
+            Color(0xFF0E0F18),
+            Color(0xFF0B0C13),
           ],
           stops: [0.0, 0.5, 1.0],
         )

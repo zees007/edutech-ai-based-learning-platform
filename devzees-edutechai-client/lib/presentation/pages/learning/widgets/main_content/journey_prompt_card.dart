@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../core/providers/permission_provider.dart';
@@ -45,111 +44,43 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
+        duration: const Duration(milliseconds: 250),
         curve: Curves.easeOutCubic,
         transform: Matrix4.translationValues(0, _isHovered ? -2.0 : 0, 0),
         constraints: const BoxConstraints(maxWidth: 840),
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-        child: Stack(
-          clipBehavior: Clip.none,
-          alignment: Alignment.topCenter,
+        padding: const EdgeInsets.fromLTRB(32, 26, 32, 22),
+        decoration: BoxDecoration(
+          color: AppColors.isDark ? AppColors.surfaceDark : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: _isHovered
+                ? AppColors.purple
+                : AppColors.border,
+            width: _isHovered ? 1.5 : 1.0,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.purple.withValues(
+                alpha: _isHovered ? 0.35 : 0.12,
+              ),
+              blurRadius: _isHovered ? 24 : 14,
+              spreadRadius: _isHovered ? 1 : 0,
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            // Main Glass Container
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.purple.withValues(
-                      alpha: _isHovered ? 0.55 : 0.35,
-                    ),
-                    offset: _isHovered ? const Offset(0, 30) : const Offset(0, 25),
-                    blurRadius: _isHovered ? 75 : 65,
-                    spreadRadius: _isHovered ? -10 : -15,
-                  ),
-                ],
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(24),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    padding: const EdgeInsets.fromLTRB(35, 28, 35, 22),
-                    decoration: BoxDecoration(
-                      gradient: AppColors.cardGradientOpaque,
-                      border: Border.all(
-                        color: AppColors.purple.withValues(
-                          alpha: _isHovered ? 0.85 : 0.45,
-                        ),
-                        width: 1.5,
-                      ),
-                      borderRadius: BorderRadius.circular(24),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.purple.withValues(
-                            alpha: _isHovered ? 0.20 : 0.12,
-                          ),
-                          blurRadius: _isHovered ? 45 : 35,
-                          blurStyle: BlurStyle.inner,
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // Row 1: Dropdowns
-                        _buildDropdownRow(),
-                        const SizedBox(height: 16),
-                        // Row 2: Chat Input and Button
-                        _buildInputRow(),
-                        const SizedBox(height: 16),
-                        // Row 3: Suggested Topics
-                        _buildSuggestedTopics(),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            // Top Glowing Neon Bar (The ::before pseudo-element)
-            Positioned(
-              top: 0,
-              left: 40,
-              right: 40,
-              child: AnimatedOpacity(
-                duration: const Duration(milliseconds: 300),
-                opacity: _isHovered ? 1.0 : 0.8,
-                child: Container(
-                  height: 3,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(3),
-                    gradient: const LinearGradient(
-                      colors: [
-                        Colors.transparent,
-                        AppColors.accentPink,
-                        AppColors.purple,
-                        AppColors.accentBlue,
-                        Colors.transparent,
-                      ],
-                      stops: [0.0, 0.25, 0.5, 0.75, 1.0],
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.accentPink,
-                        blurRadius: _isHovered ? 22 : 15,
-                      ),
-                      BoxShadow(
-                        color: AppColors.purple,
-                        blurRadius: _isHovered ? 30 : 20,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
+            // Row 1: Dropdowns
+            _buildDropdownRow(),
+            const SizedBox(height: 16),
+            // Row 2: Chat Input and Button
+            _buildInputRow(),
+            const SizedBox(height: 16),
+            // Row 3: Suggested Topics
+            _buildSuggestedTopics(),
           ],
         ),
       ),
@@ -229,25 +160,25 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
-            color: AppColors.glassBase,
+            color: AppColors.isDark ? const Color(0xFF151624) : AppColors.surfaceSubtle,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.glassBorder),
+            border: Border.all(color: AppColors.border),
           ),
           child: Builder(
             builder: (context) {
               return Theme(
                 data: Theme.of(context).copyWith(
-                  hoverColor: AppColors.primary.withValues(alpha: 0.15),
-                  focusColor: AppColors.primary.withValues(alpha: 0.2),
-                  splashColor: AppColors.primary.withValues(alpha: 0.1),
-                  highlightColor: AppColors.primary.withValues(alpha: 0.1),
+                  hoverColor: AppColors.purple.withValues(alpha: 0.12),
+                  focusColor: AppColors.purple.withValues(alpha: 0.15),
+                  splashColor: AppColors.purple.withValues(alpha: 0.1),
+                  highlightColor: AppColors.purple.withValues(alpha: 0.1),
                 ),
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<String>(
                     value: value,
                     isExpanded: true,
                     borderRadius: BorderRadius.circular(16),
-                    dropdownColor: AppColors.secondaryBackground,
+                    dropdownColor: AppColors.isDark ? const Color(0xFF151624) : AppColors.surface,
                     icon: Icon(Icons.keyboard_arrow_down, color: AppColors.textSecondary),
                     style: AppTextStyles.bodyPrimary,
                     items: items.map((String item) {
@@ -385,22 +316,22 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
       decoration: InputDecoration(
         hintText: 'Ask EduTechAI anything... (e.g., I want to learn Python programming from zero)',
         hintStyle: AppTextStyles.body2.copyWith(
-          color: AppColors.textMuted,
+          color: AppColors.textSecondary.withValues(alpha: 0.6),
         ),
         filled: true,
-        fillColor: AppColors.glassBase,
+        fillColor: AppColors.isDark ? const Color(0xFF151624) : AppColors.surfaceSubtle,
         contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: AppColors.glassBorder),
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: AppColors.border),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: AppColors.glassBorder),
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: AppColors.border),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: AppColors.primary),
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: AppColors.purple, width: 1.5),
         ),
       ),
     );

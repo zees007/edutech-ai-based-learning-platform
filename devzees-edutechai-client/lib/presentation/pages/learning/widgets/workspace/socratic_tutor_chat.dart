@@ -1043,25 +1043,41 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
         ? 'Follow-up limit ($limit) reached. Upgrade for more.'
         : 'Ask Socratic Tutor a follow-up question...';
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.isDark ? AppColors.surfaceDark : AppColors.surface,
+        border: Border(
+          top: BorderSide(
+            color: AppColors.border,
+            width: 1,
+          ),
+        ),
+      ),
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 250),
+        duration: const Duration(milliseconds: 200),
         curve: Curves.easeOutCubic,
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
         decoration: BoxDecoration(
-          color: _isInputFocused
-              ? (AppColors.isDark
-                    ? AppColors.surfaceDeep.withValues(alpha: 0.9)
-                    : AppColors.surface)
-              : (AppColors.isDark
-                    ? Colors.white.withValues(alpha: 0.05)
-                    : AppColors.surfaceSubtle),
-          borderRadius: BorderRadius.circular(16),
+          color: AppColors.isDark
+              ? const Color(0xFF151624)
+              : AppColors.surfaceSubtle,
+          borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: _isInputFocused ? AppColors.primary : AppColors.border,
-            width: 1,
+            color: _isInputFocused ? AppColors.purple : AppColors.border,
+            width: _isInputFocused ? 1.5 : 1.0,
           ),
+          boxShadow: _isInputFocused
+              ? [
+                  BoxShadow(
+                    color: AppColors.purple.withValues(
+                      alpha: AppColors.isDark ? 0.35 : 0.20,
+                    ),
+                    blurRadius: 12,
+                    spreadRadius: 1,
+                  ),
+                ]
+              : null,
         ),
         child: Row(
           children: [
@@ -1069,34 +1085,19 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: AppColors.surfaceDeep.withValues(alpha: 0.9),
+                color: AppColors.isDark
+                    ? const Color(0xFF1B1C2E)
+                    : AppColors.purpleLight.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(
                   color: AppColors.purple.withValues(alpha: 0.35),
                   width: 1,
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.purple.withValues(alpha: 0.25),
-                    blurRadius: 8,
-                  ),
-                ],
               ),
-              child: ShaderMask(
-                shaderCallback: (bounds) => const LinearGradient(
-                  colors: [
-                    AppColors.accentPink,
-                    AppColors.purple,
-                    AppColors.blueLight,
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ).createShader(bounds),
-                child: const Icon(
-                  Icons.auto_awesome_rounded,
-                  color: Colors.white,
-                  size: 16,
-                ),
+              child: const Icon(
+                Icons.auto_awesome_rounded,
+                color: AppColors.purple,
+                size: 16,
               ),
             ),
             const SizedBox(width: 12),

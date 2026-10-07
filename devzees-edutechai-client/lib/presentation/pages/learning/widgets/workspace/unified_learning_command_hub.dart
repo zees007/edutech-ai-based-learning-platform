@@ -153,7 +153,7 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
                           ),
                           decoration: BoxDecoration(
                             color: AppColors.isDark
-                                ? const Color(0xFF10111D)
+                                ? const Color(0xFF11121D)
                                 : Colors.transparent,
                           ),
                           child: Column(

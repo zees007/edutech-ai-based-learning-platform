@@ -91,14 +91,14 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
 
   // ─── Dark Theme Palette ───
   static const AppThemeColors dark = AppThemeColors(
-    scaffoldBackground: Color(0xFF121316),
-    surface: Color(0xFF1C1E24),
-    surfaceSubtle: Color(0xFF272A33),
-    border: Color(0xFF333742),
+    scaffoldBackground: Color(0xFF0B0C13), // Match code.html bg-[#0b0c13] / workspace '#0a0a10'
+    surface: Color(0xFF11121D),            // Match code.html panel '#11121d'
+    surfaceSubtle: Color(0xFF151624),      // Match code.html '#151624'
+    border: Color(0x1FFFFFFF),             // Match code.html 'rgba(255, 255, 255, 0.08)' / panel-border
     textPrimary: Color(0xFFFFFFFF),
-    textSecondary: Color(0xFF8F94A6),
-    trackNeutral: Color(0xFF2C2F3A),
-    shadowColor: Color(0x73000000), // rgba(0, 0, 0, 0.45)
+    textSecondary: Color(0xFF94A3B8),      // Match code.html text-slate-400
+    trackNeutral: Color(0xFF1A1B2D),       // Match code.html '#1a1b2d'
+    shadowColor: Color(0x73000000),        // rgba(0, 0, 0, 0.45)
     cardShadow: [
       BoxShadow(
         color: Color(0x40000000), // 0.25 opacity
