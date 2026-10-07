@@ -190,11 +190,11 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
 
         // Compact Gradient Title
         ShaderMask(
-          shaderCallback: (bounds) => LinearGradient(
-            colors: isDark
-                ? const [Color(0xFFEC4899), Color(0xFFA855F7)]
-                : const [Color(0xFFBE185D), Color(0xFF7C3AED)],
-          ).createShader(bounds),
+          shaderCallback: (bounds) => (isDark
+              ? AppColors.primaryGradient
+              : const LinearGradient(
+                  colors: [Color(0xFFBE185D), Color(0xFF7C3AED)],
+                )).createShader(bounds),
           child: Text(
             widget.title,
             textAlign: TextAlign.center,
@@ -252,7 +252,7 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
                                 spreadRadius: 3,
                               ),
                               BoxShadow(
-                                color: const Color(0xFFEC4899).withValues(
+                                color: (isDark ? AppColors.accentPink : const Color(0xFFEC4899)).withValues(
                                   alpha: isDark
                                       ? (0.20 + 0.15 * _pulseController.value)
                                       : (0.10 + 0.08 * _pulseController.value),
@@ -303,8 +303,8 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
                   gradient: LinearGradient(
                     colors: isDark
                         ? const [
-                            Color(0xFFEC4899),
-                            Color(0xFFA855F7),
+                            Color(0xFF1F6CFA),
+                            Color(0xFFC839F6),
                             Color(0xFF06B6D4),
                           ]
                         : const [
@@ -538,11 +538,11 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
                 ),
                 const SizedBox(height: 12),
                 ShaderMask(
-                  shaderCallback: (bounds) => LinearGradient(
-                    colors: isDark
-                        ? const [Color(0xFFEC4899), Color(0xFFA855F7)]
-                        : const [Color(0xFFBE185D), Color(0xFF7C3AED)],
-                  ).createShader(bounds),
+                  shaderCallback: (bounds) => (isDark
+                      ? AppColors.primaryGradient
+                      : const LinearGradient(
+                          colors: [Color(0xFFBE185D), Color(0xFF7C3AED)],
+                        )).createShader(bounds),
                   child: Text(
                     widget.title,
                     textAlign: TextAlign.center,
@@ -645,8 +645,8 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
                   gradient: LinearGradient(
                     colors: isDark
                         ? const [
-                            Color(0xFFEC4899),
-                            Color(0xFFA855F7),
+                            Color(0xFF1F6CFA),
+                            Color(0xFFC839F6),
                             Color(0xFF06B6D4),
                           ]
                         : const [
@@ -998,11 +998,17 @@ class _GradientSpinnerState extends State<GradientSpinner>
       child: Container(
         width: widget.size,
         height: widget.size,
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           shape: BoxShape.circle,
           gradient: SweepGradient(
-            colors: [Color(0xFF3B82F6), Color(0xFFEC4899), Colors.transparent],
-            stops: [0.0, 0.5, 1.0],
+            colors: isDark
+                ? const [
+                    Color(0xFF1F6CFA),
+                    Color(0xFFC839F6),
+                    Colors.transparent,
+                  ]
+                : const [Color(0xFF3B82F6), Color(0xFFEC4899), Colors.transparent],
+            stops: const [0.0, 0.5, 1.0],
           ),
         ),
         child: Padding(
