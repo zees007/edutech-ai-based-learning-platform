@@ -386,21 +386,11 @@ class LearningMainContent extends ConsumerWidget {
                     ],
                   ),
 
-                  // Pinned Bottom Section
-                  Container(
+                  // Bottom Section
+                  Padding(
                     padding: EdgeInsets.symmetric(
                       horizontal: isMobile ? 16.0 : 32.0,
                       vertical: isMobile ? 8.0 : 16.0,
-                    ),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.transparent,
-                          AppColors.background.withValues(alpha: 0.6),
-                        ],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                      ),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
