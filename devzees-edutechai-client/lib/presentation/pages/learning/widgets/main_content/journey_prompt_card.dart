@@ -40,6 +40,8 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = AppColors.isDark;
+
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
@@ -51,23 +53,39 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
         padding: const EdgeInsets.fromLTRB(32, 26, 32, 22),
         decoration: BoxDecoration(
-          color: AppColors.isDark ? AppColors.surfaceDark : Colors.white,
-          borderRadius: BorderRadius.circular(20),
+          color: isDark ? AppColors.canvasBackground : Colors.white,
+          borderRadius: BorderRadius.circular(24),
           border: Border.all(
-            color: _isHovered
-                ? AppColors.purple
-                : AppColors.border,
-            width: _isHovered ? 1.5 : 1.0,
+            color: isDark
+                ? AppColors.primary.withValues(alpha: _isHovered ? 0.70 : 0.45)
+                : (_isHovered
+                    ? const Color(0xFFC7D2FE)
+                    : const Color(0xFFC7D2FE).withValues(alpha: 0.6)),
+            width: 1.5,
           ),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.purple.withValues(
-                alpha: _isHovered ? 0.35 : 0.12,
-              ),
-              blurRadius: _isHovered ? 24 : 14,
-              spreadRadius: _isHovered ? 1 : 0,
-            ),
-          ],
+          boxShadow: isDark
+              ? [
+                  BoxShadow(
+                    color: AppColors.primary.withValues(
+                      alpha: _isHovered ? 0.32 : 0.20,
+                    ),
+                    blurRadius: _isHovered ? 48 : 40,
+                    spreadRadius: _isHovered ? -4 : -8,
+                  ),
+                ]
+              : [
+                  BoxShadow(
+                    color: const Color(0x0F0F172A),
+                    blurRadius: _isHovered ? 36 : 30,
+                    spreadRadius: -4,
+                    offset: const Offset(0, 12),
+                  ),
+                  const BoxShadow(
+                    color: Color(0x060F172A),
+                    blurRadius: 8,
+                    offset: Offset(0, 2),
+                  ),
+                ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -168,10 +186,10 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
             builder: (context) {
               return Theme(
                 data: Theme.of(context).copyWith(
-                  hoverColor: AppColors.purple.withValues(alpha: 0.12),
-                  focusColor: AppColors.purple.withValues(alpha: 0.15),
-                  splashColor: AppColors.purple.withValues(alpha: 0.1),
-                  highlightColor: AppColors.purple.withValues(alpha: 0.1),
+                  hoverColor: AppColors.primary.withValues(alpha: 0.12),
+                  focusColor: AppColors.primary.withValues(alpha: 0.15),
+                  splashColor: AppColors.primary.withValues(alpha: 0.1),
+                  highlightColor: AppColors.primary.withValues(alpha: 0.1),
                 ),
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<String>(
@@ -331,7 +349,7 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppColors.purple, width: 1.5),
+          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
         ),
       ),
     );
@@ -350,22 +368,22 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
+              Icon(
                 Icons.lightbulb_outline,
-                color: AppColors.lavender,
+                color: AppColors.adaptiveLavender,
                 size: 16,
               ),
               const SizedBox(width: 8),
               Text(
                 'Browse Suggested Topics',
                 style: AppTextStyles.captionBold.copyWith(
-                  color: AppColors.lavender,
+                  color: AppColors.adaptiveLavender,
                 ),
               ),
               const SizedBox(width: 4),
-              const Icon(
+              Icon(
                 Icons.keyboard_arrow_down,
-                color: AppColors.lavender,
+                color: AppColors.adaptiveLavender,
                 size: 16,
               ),
             ],

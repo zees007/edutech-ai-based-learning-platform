@@ -232,7 +232,7 @@ class _SplitLearningWorkspaceState
 
   Widget _buildChatPanel(dynamic currentStep) {
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppColors.surfaceDark,
       ),
       child: (currentStep.tutorExplanation != null ||
@@ -419,7 +419,7 @@ class _FullscreenPanelOverlay extends ConsumerWidget {
 
   Widget _buildFullscreenChat() {
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppColors.surfaceDark,
       ),
       child: (currentStep.tutorExplanation != null ||
