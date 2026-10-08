@@ -872,17 +872,11 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
             : const Color(0xFFF1F5F9),
       ),
 
-      // Code blocks
-      codeblockDecoration: BoxDecoration(
-        color: const Color(0xFF181A20),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: AppColors.isDark
-              ? const Color(0x1FFFFFFF)
-              : const Color(0xFFE2E8F0),
-        ),
+      // Code blocks (transparent wrapper with zero padding so custom code cards, math cards, and flowcharts render with a single clean border)
+      codeblockDecoration: const BoxDecoration(
+        color: Colors.transparent,
       ),
-      codeblockPadding: const EdgeInsets.all(12),
+      codeblockPadding: EdgeInsets.zero,
 
       // Blockquote
       blockquote: baseTextStyle.copyWith(

@@ -583,190 +583,192 @@ class _TutorPanelHeaderState extends State<_TutorPanelHeader> {
           ),
           const Spacer(),
 
-          // ─── Step Nav: Prev + Step pill + Status + Prerequisite + Next ───
+          // ─── Step Nav + Zoom cluster intact together on the right ───
           Flexible(
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Previous Step
-                  if (canGoBack) ...[
-                    _StepNavButton(
-                      icon: Icons.arrow_back_ios_new_rounded,
-                      label: 'Prev',
-                      tooltip: 'Go back to previous step (${widget.currentIndex})',
-                      onTap: () => widget.onStepChange(widget.currentIndex - 1),
-                      useGradient: true,
-                    ),
-                    const SizedBox(width: 6),
-                  ],
-                  // Step pill
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: AppColors.isDark
-                          ? (isReviewing
-                              ? AppColors.cyanLight.withValues(alpha: 0.15)
-                              : AppColors.primary.withValues(alpha: 0.15))
-                          : (isReviewing
-                              ? const Color(0xFFE0F2FE)
-                              : const Color(0xFFF3E8FF)),
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Previous Step
+                    if (canGoBack) ...[
+                      _StepNavButton(
+                        icon: Icons.arrow_back_ios_new_rounded,
+                        label: 'Prev',
+                        tooltip: 'Go back to previous step (${widget.currentIndex})',
+                        onTap: () => widget.onStepChange(widget.currentIndex - 1),
+                        useGradient: true,
+                      ),
+                      const SizedBox(width: 6),
+                    ],
+                    // Step pill
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
                         color: AppColors.isDark
                             ? (isReviewing
-                                ? AppColors.cyanLight.withValues(alpha: 0.45)
-                                : AppColors.primary.withValues(alpha: 0.45))
+                                ? AppColors.cyanLight.withValues(alpha: 0.15)
+                                : AppColors.primary.withValues(alpha: 0.15))
                             : (isReviewing
-                                ? const Color(0xFFBAE6FD)
-                                : const Color(0xFFDDD6FE)),
+                                ? const Color(0xFFE0F2FE)
+                                : const Color(0xFFF3E8FF)),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(
+                          color: AppColors.isDark
+                              ? (isReviewing
+                                  ? AppColors.cyanLight.withValues(alpha: 0.45)
+                                  : AppColors.primary.withValues(alpha: 0.45))
+                              : (isReviewing
+                                  ? const Color(0xFFBAE6FD)
+                                  : const Color(0xFFDDD6FE)),
+                        ),
                       ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          'Step ${widget.currentIndex + 1}/${widget.totalSteps}',
-                          style: AppTextStyles.badge.copyWith(
-                            fontSize: 10.5,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.isDark
-                                ? (isReviewing ? AppColors.cyanLight : AppColors.purpleLight)
-                                : (isReviewing ? const Color(0xFF0284C7) : AppColors.primaryViolet),
-                          ),
-                        ),
-                        if (isReviewing) ...[
-                          const SizedBox(width: 5),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                            decoration: BoxDecoration(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Step ${widget.currentIndex + 1}/${widget.totalSteps}',
+                            style: AppTextStyles.badge.copyWith(
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w700,
                               color: AppColors.isDark
-                                  ? AppColors.cyanLight.withValues(alpha: 0.25)
-                                  : const Color(0xFF0284C7),
-                              borderRadius: BorderRadius.circular(3),
-                            ),
-                            child: Text(
-                              'Review',
-                              style: AppTextStyles.badge.copyWith(fontSize: 8, color: Colors.white),
+                                  ? (isReviewing ? AppColors.cyanLight : AppColors.purpleLight)
+                                  : (isReviewing ? const Color(0xFF0284C7) : AppColors.primaryViolet),
                             ),
                           ),
-                        ],
-                      ],
-                    ),
-                  ),
-                  // Prerequisite badge
-                  if (widget.isPrerequisite) ...[
-                    const SizedBox(width: 6),
-                    Tooltip(
-                      message: widget.prerequisiteNote != null &&
-                              widget.prerequisiteNote!.trim().isNotEmpty
-                          ? 'Prerequisite: ${widget.prerequisiteNote}'
-                          : 'Foundational prerequisite step',
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
-                        decoration: BoxDecoration(
-                          gradient: AppColors.amberGradient,
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.school_rounded, size: 10, color: Colors.white),
-                            const SizedBox(width: 4),
-                            Text(
-                              'Prereq',
-                              style: AppTextStyles.badge.copyWith(
-                                fontSize: 9.5,
-                                color: Colors.white,
+                          if (isReviewing) ...[
+                            const SizedBox(width: 5),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                              decoration: BoxDecoration(
+                                color: AppColors.isDark
+                                    ? AppColors.cyanLight.withValues(alpha: 0.25)
+                                    : const Color(0xFF0284C7),
+                                borderRadius: BorderRadius.circular(3),
+                              ),
+                              child: Text(
+                                'Review',
+                                style: AppTextStyles.badge.copyWith(fontSize: 8, color: Colors.white),
                               ),
                             ),
                           ],
+                        ],
+                      ),
+                    ),
+                    // Prerequisite badge
+                    if (widget.isPrerequisite) ...[
+                      const SizedBox(width: 6),
+                      Tooltip(
+                        message: widget.prerequisiteNote != null &&
+                                widget.prerequisiteNote!.trim().isNotEmpty
+                            ? 'Prerequisite: ${widget.prerequisiteNote}'
+                            : 'Foundational prerequisite step',
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+                          decoration: BoxDecoration(
+                            gradient: AppColors.amberGradient,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.school_rounded, size: 10, color: Colors.white),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Prereq',
+                                style: AppTextStyles.badge.copyWith(
+                                  fontSize: 9.5,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                    // Next Step button (only displayed when reviewing previous completed steps; hidden on final step or in process step)
+                    if (isReviewing &&
+                        widget.status.toLowerCase() != 'in_progress' &&
+                        widget.currentIndex < widget.totalSteps - 1 &&
+                        widget.currentIndex < widget.maxUnlockedIndex) ...[
+                      const SizedBox(width: 6),
+                      _StepNavButton(
+                        icon: Icons.arrow_forward_ios_rounded,
+                        label: 'Next',
+                        tooltip: 'Go to Step ${widget.currentIndex + 2}',
+                        onTap: () => widget.onStepChange(widget.currentIndex + 1),
+                        iconAfterLabel: true,
+                        useGradient: true,
+                      ),
+                    ],
+                    // Regenerate Step button
+                    if (widget.onRegenerateStep != null && !isReviewing) ...[
+                      const SizedBox(width: 6),
+                      _StepNavButton(
+                        icon: Icons.refresh_rounded,
+                        label: 'Regen',
+                        tooltip: 'Regenerate Step ${widget.currentIndex + 1}',
+                        onTap: widget.onRegenerateStep,
+                        useGradient: true,
+                      ),
+                    ],
+                    const SizedBox(width: 8),
+                    // Maximize / Restore button (Zoom icon intact in right cluster)
+                    MouseRegion(
+                      cursor: SystemMouseCursors.click,
+                      onEnter: (_) => setState(() => _isMaxHovered = true),
+                      onExit: (_) => setState(() => _isMaxHovered = false),
+                      child: GestureDetector(
+                        onTap: widget.onToggleFullscreen,
+                        child: Tooltip(
+                          message: widget.isFullscreen ? 'Exit Fullscreen' : 'Fullscreen',
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            padding: const EdgeInsets.all(5),
+                            decoration: BoxDecoration(
+                              color: _isMaxHovered
+                                  ? (AppColors.isDark
+                                      ? AppColors.primary.withValues(alpha: 0.16)
+                                      : const Color(0xFFF3E8FF))
+                                  : (AppColors.isDark
+                                      ? AppColors.primary.withValues(alpha: 0.08)
+                                      : Colors.transparent),
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(
+                                color: _isMaxHovered
+                                    ? (AppColors.isDark
+                                        ? AppColors.primary.withValues(alpha: 0.50)
+                                        : const Color(0xFFDDD6FE))
+                                    : (AppColors.isDark
+                                        ? AppColors.primary.withValues(alpha: 0.25)
+                                        : const Color(0xFFE2E8F0)),
+                                width: 1,
+                              ),
+                              boxShadow: _isMaxHovered && AppColors.isDark
+                                  ? [
+                                      BoxShadow(
+                                        color: AppColors.primary.withValues(alpha: 0.30),
+                                        blurRadius: 8,
+                                      ),
+                                    ]
+                                  : null,
+                            ),
+                            child: Icon(
+                              widget.isFullscreen
+                                  ? Icons.close_fullscreen_rounded
+                                  : Icons.open_in_full_rounded,
+                              size: 13,
+                              color: _isMaxHovered
+                                  ? (AppColors.isDark ? AppColors.purpleLight : AppColors.primaryViolet)
+                                  : (AppColors.isDark ? AppColors.primary : const Color(0xFF64748B)),
+                            ),
+                          ),
                         ),
                       ),
                     ),
                   ],
-                  // Next Step button (only displayed when reviewing previous completed steps; hidden on final step or in process step)
-                  if (isReviewing &&
-                      widget.status.toLowerCase() != 'in_progress' &&
-                      widget.currentIndex < widget.totalSteps - 1 &&
-                      widget.currentIndex < widget.maxUnlockedIndex) ...[
-                    const SizedBox(width: 6),
-                    _StepNavButton(
-                      icon: Icons.arrow_forward_ios_rounded,
-                      label: 'Next',
-                      tooltip: 'Go to Step ${widget.currentIndex + 2}',
-                      onTap: () => widget.onStepChange(widget.currentIndex + 1),
-                      iconAfterLabel: true,
-                      useGradient: true,
-                    ),
-                  ],
-                  // Regenerate Step button
-                  if (widget.onRegenerateStep != null && !isReviewing) ...[
-                    const SizedBox(width: 6),
-                    _StepNavButton(
-                      icon: Icons.refresh_rounded,
-                      label: 'Regen',
-                      tooltip: 'Regenerate Step ${widget.currentIndex + 1}',
-                      onTap: widget.onRegenerateStep,
-                      useGradient: true,
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ),
-
-          const SizedBox(width: 8),
-          // ─── Maximize / Restore button ───
-          MouseRegion(
-            cursor: SystemMouseCursors.click,
-            onEnter: (_) => setState(() => _isMaxHovered = true),
-            onExit: (_) => setState(() => _isMaxHovered = false),
-            child: GestureDetector(
-              onTap: widget.onToggleFullscreen,
-              child: Tooltip(
-                message: widget.isFullscreen ? 'Exit Fullscreen' : 'Fullscreen',
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.all(5),
-                  decoration: BoxDecoration(
-                    color: _isMaxHovered
-                        ? (AppColors.isDark
-                            ? AppColors.primary.withValues(alpha: 0.16)
-                            : const Color(0xFFF3E8FF))
-                        : (AppColors.isDark
-                            ? AppColors.primary.withValues(alpha: 0.08)
-                            : Colors.transparent),
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(
-                      color: _isMaxHovered
-                          ? (AppColors.isDark
-                              ? AppColors.primary.withValues(alpha: 0.50)
-                              : const Color(0xFFDDD6FE))
-                          : (AppColors.isDark
-                              ? AppColors.primary.withValues(alpha: 0.25)
-                              : const Color(0xFFE2E8F0)),
-                      width: 1,
-                    ),
-                    boxShadow: _isMaxHovered && AppColors.isDark
-                        ? [
-                            BoxShadow(
-                              color: AppColors.primary.withValues(alpha: 0.30),
-                              blurRadius: 8,
-                            ),
-                          ]
-                        : null,
-                  ),
-                  child: Icon(
-                    widget.isFullscreen
-                        ? Icons.close_fullscreen_rounded
-                        : Icons.open_in_full_rounded,
-                    size: 13,
-                    color: _isMaxHovered
-                        ? (AppColors.isDark ? AppColors.purpleLight : AppColors.primaryViolet)
-                        : (AppColors.isDark ? AppColors.primary : const Color(0xFF64748B)),
-                  ),
                 ),
               ),
             ),
