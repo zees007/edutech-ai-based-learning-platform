@@ -1521,7 +1521,7 @@ class _OptionTileState extends State<_OptionTile> {
       letterBg = AppColors.primary;
       letterTextColor = Colors.white;
       trailingIcon = Icons.check_circle_rounded;
-      trailingIconColor = AppColors.purpleLight;
+      trailingIconColor = AppColors.primary;
     }
 
     if (widget.isSubmitted) {
