@@ -1089,21 +1089,31 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
         color: AppColors.isDark
             ? const Color(0xFF0B0C13)
             : const Color(0xFFF8F9FA),
+        border: Border(
+          top: BorderSide(
+            color: AppColors.isDark
+                ? const Color(0x14FFFFFF)
+                : const Color(0xFFE2E8F0),
+            width: 1.0,
+          ),
+        ),
       ),
-      padding: const EdgeInsets.fromLTRB(14, 8, 14, 10),
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeOutCubic,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        padding: const EdgeInsets.fromLTRB(8, 4, 6, 4),
         decoration: BoxDecoration(
           color: AppColors.isDark
-              ? const Color(0xFF151624)
+              ? const Color(0xFF141624)
               : Colors.white,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: _isInputFocused
                 ? AppColors.purple
-                : (AppColors.isDark ? AppColors.border : const Color(0xFFE2E8F0)),
+                : (AppColors.isDark
+                    ? const Color(0x22FFFFFF)
+                    : const Color(0xFFE2E8F0)),
             width: _isInputFocused ? 1.5 : 1.0,
           ),
           boxShadow: _isInputFocused
@@ -1112,32 +1122,38 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
                     color: AppColors.purple.withValues(
                       alpha: AppColors.isDark ? 0.35 : 0.15,
                     ),
-                    blurRadius: 12,
+                    blurRadius: 14,
                     spreadRadius: 1,
                   ),
                 ]
               : [
                   if (!AppColors.isDark)
                     const BoxShadow(
-                      color: Color(0x08000000),
-                      blurRadius: 6,
+                      color: Color(0x0A000000),
+                      blurRadius: 8,
                       offset: Offset(0, 2),
                     ),
                 ],
         ),
         child: Row(
           children: [
-            // AI sparkle badge icon inside input field without border
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 4),
-              child: Icon(
+            // AI sparkle badge chip
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: AppColors.isDark
+                    ? AppColors.purple.withValues(alpha: 0.15)
+                    : const Color(0xFFF3E8FF),
+                borderRadius: BorderRadius.circular(9),
+              ),
+              child: const Icon(
                 Icons.auto_awesome_rounded,
                 color: AppColors.purple,
-                size: 18,
+                size: 15,
               ),
             ),
-            const SizedBox(width: 8),
-            // Input TextField
+            const SizedBox(width: 10),
+            // Input TextField (completely borderless and transparent to eliminate the inner double border)
             Expanded(
               child: TextField(
                 controller: _controller,
@@ -1159,7 +1175,7 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
                       : (AppColors.isDark
                             ? AppColors.textPrimary
                             : const Color(0xFF0F172A)),
-                  fontSize: 14,
+                  fontSize: 13.5,
                   fontWeight: FontWeight.w400,
                 ),
                 cursorColor: AppColors.primary,
@@ -1176,6 +1192,13 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
                     fontSize: 13.5,
                   ),
                   border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                  disabledBorder: InputBorder.none,
+                  errorBorder: InputBorder.none,
+                  focusedErrorBorder: InputBorder.none,
+                  filled: false,
+                  fillColor: Colors.transparent,
                   isDense: true,
                   contentPadding: const EdgeInsets.symmetric(vertical: 10),
                 ),
