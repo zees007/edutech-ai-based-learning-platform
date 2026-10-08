@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../data/models/learning/session_response.dart';
@@ -30,7 +29,6 @@ class UnifiedLearningCommandHub extends ConsumerStatefulWidget {
 }
 
 class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningCommandHub> {
-  bool _isHovered = false;
   bool _isTopicExpanded = false;
 
   Map<String, dynamic> _calculateLevel(int totalXp) =>
@@ -50,132 +48,84 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
         final isTablet = constraints.maxWidth >= 650 && constraints.maxWidth < 1050;
         final isMobile = constraints.maxWidth < 650;
 
-        return MouseRegion(
-          onEnter: (_) => setState(() => _isHovered = true),
-          onExit: (_) => setState(() => _isHovered = false),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 250),
-            curve: Curves.easeOutCubic,
-            decoration: BoxDecoration(
-              color: AppColors.isDark ? const Color(0xFF11121D) : Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: AppColors.isDark
-                    ? const Color(0x1FFFFFFF)
-                    : (_isHovered
-                        ? AppColors.accentBlue.withValues(alpha: 0.5)
-                        : AppColors.glassBorder),
-                width: 1.0,
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // ─── TIER 1: Command Hub Header Bar ───
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.symmetric(
+                horizontal: isMobile ? 14 : 24,
+                vertical: isMobile ? 10 : 12,
               ),
-              boxShadow: AppColors.isDark
-                  ? [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.35),
-                        blurRadius: 25,
-                        offset: const Offset(0, 8),
-                      ),
-                    ]
-                  : [
-                      BoxShadow(
-                        color: const Color(0x14000000),
-                        blurRadius: _isHovered ? 28 : 24,
-                        offset: Offset(0, _isHovered ? 10 : 8),
-                      ),
-                    ],
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                child: Container(
-                  clipBehavior: Clip.antiAlias,
-                  decoration: BoxDecoration(
-                    color: AppColors.isDark ? const Color(0xFF11121D) : Colors.white,
-                    borderRadius: const BorderRadius.all(Radius.circular(16)),
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // ─── TIER 1: Command Hub Header Bar ───
-                      Container(
-                        width: double.infinity,
-                        padding: EdgeInsets.symmetric(
-                          horizontal: isMobile ? 14 : 16,
-                          vertical: isMobile ? 10 : 12,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.isDark
-                              ? const Color(0xFF11121D)
-                              : AppColors.surfaceSolidHeader,
-                          border: Border(
-                            bottom: BorderSide(
-                              color: AppColors.isDark
-                                  ? const Color(0x14FFFFFF)
-                                  : const Color(0xFFE2E8F0),
-                              width: 1.0,
-                            ),
-                          ),
-                        ),
-                        child: isDesktop
-                            ? _buildDesktopTier1(
-                                session: session,
-                                levelData: levelData,
-                                lvlPct: lvlPct,
-                                topicPct: topicPct,
-                                totalSteps: totalSteps,
-                              )
-                            : isTablet
-                                ? _buildTabletTier1(
-                                    session: session,
-                                    levelData: levelData,
-                                    lvlPct: lvlPct,
-                                    topicPct: topicPct,
-                                    totalSteps: totalSteps,
-                                  )
-                                : _buildMobileTier1(
-                                    session: session,
-                                    levelData: levelData,
-                                    lvlPct: lvlPct,
-                                    topicPct: topicPct,
-                                    totalSteps: totalSteps,
-                                  ),
-                      ),
-
-                      // ─── TIER 2: Milestone Learning Roadmap Stepper ─────────
-                      if (session.steps.isNotEmpty)
-                        Container(
-                          padding: EdgeInsets.fromLTRB(
-                            isMobile ? 14 : 16,
-                            10,
-                            isMobile ? 14 : 16,
-                            14,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.isDark
-                                ? const Color(0xFF11121D)
-                                : Colors.transparent,
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              _buildRoadmapHeader(totalSteps),
-                              const SizedBox(height: 8),
-                              MilestoneRoadmapStepper(
-                                steps: session.steps,
-                                activeIndex: widget.activeIndex,
-                                maxUnlockedIndex: widget.maxUnlockedIndex,
-                                onStepTapped: widget.onStepTapped,
-                              ),
-                            ],
-                          ),
-                        ),
-                    ],
+              decoration: BoxDecoration(
+                color: AppColors.isDark
+                    ? const Color(0xFF11121D)
+                    : AppColors.surfaceSolidHeader,
+                border: Border(
+                  bottom: BorderSide(
+                    color: AppColors.isDark
+                        ? const Color(0x14FFFFFF)
+                        : const Color(0xFFE2E8F0),
+                    width: 1.0,
                   ),
                 ),
               ),
+              child: isDesktop
+                  ? _buildDesktopTier1(
+                      session: session,
+                      levelData: levelData,
+                      lvlPct: lvlPct,
+                      topicPct: topicPct,
+                      totalSteps: totalSteps,
+                    )
+                  : isTablet
+                      ? _buildTabletTier1(
+                          session: session,
+                          levelData: levelData,
+                          lvlPct: lvlPct,
+                          topicPct: topicPct,
+                          totalSteps: totalSteps,
+                        )
+                      : _buildMobileTier1(
+                          session: session,
+                          levelData: levelData,
+                          lvlPct: lvlPct,
+                          topicPct: topicPct,
+                          totalSteps: totalSteps,
+                        ),
             ),
-          ),
+
+            // ─── TIER 2: Milestone Learning Roadmap Stepper ─────────
+            if (session.steps.isNotEmpty)
+              Container(
+                padding: EdgeInsets.fromLTRB(
+                  isMobile ? 12 : 24,
+                  10,
+                  isMobile ? 12 : 24,
+                  12,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.isDark
+                      ? const Color(0xFF11121D)
+                      : Colors.transparent,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _buildRoadmapHeader(totalSteps),
+                    const SizedBox(height: 8),
+                    MilestoneRoadmapStepper(
+                      steps: session.steps,
+                      activeIndex: widget.activeIndex,
+                      maxUnlockedIndex: widget.maxUnlockedIndex,
+                      onStepTapped: widget.onStepTapped,
+                    ),
+                  ],
+                ),
+              ),
+          ],
         );
       },
     );

@@ -23,24 +23,17 @@ class ActiveLearningWorkspace extends ConsumerWidget {
             : session.stepsCompleted)
         .clamp(0, session.steps.isNotEmpty ? session.steps.length - 1 : 0);
 
-    final isMobile = MediaQuery.of(context).size.width < 800;
-
     return NestedScrollView(
       headerSliverBuilder: (context, innerBoxIsScrolled) {
         return [
           SliverToBoxAdapter(
-            child: Padding(
-              padding: isMobile
-                  ? const EdgeInsets.fromLTRB(12.0, 10.0, 12.0, 6.0)
-                  : const EdgeInsets.fromLTRB(20.0, 16.0, 20.0, 10.0),
-              child: UnifiedLearningCommandHub(
-                session: session,
-                activeIndex: activeState.activeStepIndex,
-                maxUnlockedIndex: maxUnlockedIndex,
-                onStepTapped: (index) {
-                  ref.read(activeSessionProvider.notifier).setActiveStep(index);
-                },
-              ),
+            child: UnifiedLearningCommandHub(
+              session: session,
+              activeIndex: activeState.activeStepIndex,
+              maxUnlockedIndex: maxUnlockedIndex,
+              onStepTapped: (index) {
+                ref.read(activeSessionProvider.notifier).setActiveStep(index);
+              },
             ),
           ),
         ];
