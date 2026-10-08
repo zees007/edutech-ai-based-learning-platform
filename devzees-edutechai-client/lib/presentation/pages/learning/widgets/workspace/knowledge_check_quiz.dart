@@ -749,7 +749,9 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: AppColors.surfaceDark.withValues(alpha: 0.6),
+        color: AppColors.isDark
+            ? AppColors.surfaceDark.withValues(alpha: 0.6)
+            : Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: _submitted
@@ -761,13 +763,21 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
                   : AppColors.glassBorder),
           width: 1,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.25),
-            blurRadius: 14,
-            offset: const Offset(0, 3),
-          ),
-        ],
+        boxShadow: AppColors.isDark
+            ? [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.25),
+                  blurRadius: 14,
+                  offset: const Offset(0, 3),
+                ),
+              ]
+            : [
+                const BoxShadow(
+                  color: Color(0x0A000000),
+                  blurRadius: 10,
+                  offset: Offset(0, 2),
+                ),
+              ],
       ),
       padding: const EdgeInsets.all(18),
       child: Column(
