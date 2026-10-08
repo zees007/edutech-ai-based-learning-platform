@@ -130,6 +130,14 @@ class _MermaidWebViewState extends State<MermaidWebView>
 
   String _buildHtml() {
     final safeCode = jsonEncode(widget.code);
+    final isDark = AppColors.isDark;
+    final mermaidTheme = isDark ? 'dark' : 'default';
+    final primaryColor = isDark ? '#1E293B' : '#EFF6FF';
+    final primaryTextColor = isDark ? '#F8FAFC' : '#1E293B';
+    final primaryBorderColor = isDark ? '#3B82F6' : '#60A5FA';
+    final lineColor = isDark ? '#94A3B8' : '#64748B';
+    final secondaryColor = isDark ? '#0F172A' : '#F1F5F9';
+    final bodyTextColor = isDark ? '#F8FAFC' : '#1E293B';
 
     final html = '''
 <!DOCTYPE html>
@@ -149,7 +157,7 @@ class _MermaidWebViewState extends State<MermaidWebView>
     }
     body {
       display: block;
-      color: #F8FAFC;
+      color: $bodyTextColor;
     }
     #graphDiv {
       display: inline-block;
@@ -254,13 +262,13 @@ class _MermaidWebViewState extends State<MermaidWebView>
       try {
         mermaid.initialize({
           startOnLoad: false,
-          theme: 'dark',
+          theme: '$mermaidTheme',
           themeVariables: {
-            primaryColor: '#1E293B',
-            primaryTextColor: '#F8FAFC',
-            primaryBorderColor: '#3B82F6',
-            lineColor: '#94A3B8',
-            secondaryColor: '#0F172A',
+            primaryColor: '$primaryColor',
+            primaryTextColor: '$primaryTextColor',
+            primaryBorderColor: '$primaryBorderColor',
+            lineColor: '$lineColor',
+            secondaryColor: '$secondaryColor',
             tertiaryColor: '#C084FC',
             background: 'transparent'
           },
@@ -568,7 +576,17 @@ class _MermaidWebViewState extends State<MermaidWebView>
       onEnter: (_) => setState(() => _isCardHovered = true),
       onExit: (_) => setState(() => _isCardHovered = false),
       child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 8),
+        margin: const EdgeInsets.symmetric(vertical: 10),
+        decoration: BoxDecoration(
+          color: const Color(0xFF181A20),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: AppColors.isDark
+                ? const Color(0x22FFFFFF)
+                : const Color(0xFFE2E8F0),
+          ),
+        ),
+        clipBehavior: Clip.antiAlias,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -580,8 +598,13 @@ class _MermaidWebViewState extends State<MermaidWebView>
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                 alignment: Alignment.centerRight,
                 decoration: BoxDecoration(
+                  color: const Color(0xFF20232B),
                   border: Border(
-                    bottom: BorderSide(color: AppColors.glassBorderSubtle),
+                    bottom: BorderSide(
+                      color: AppColors.isDark
+                          ? const Color(0x1FFFFFFF)
+                          : const Color(0xFF2D3139),
+                    ),
                   ),
                 ),
                 child: Row(

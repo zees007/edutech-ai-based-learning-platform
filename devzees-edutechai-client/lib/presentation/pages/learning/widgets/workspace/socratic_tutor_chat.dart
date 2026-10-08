@@ -563,7 +563,7 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
         child: ListView.builder(
           controller: _scrollController,
           physics: const ClampingScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
           itemCount: totalCount,
           itemBuilder: (context, index) {
             if (index < _messages.length) {
@@ -586,138 +586,121 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
   Widget _buildChatBubble(_ChatMessage msg) {
     final isTutor = msg.sender == _Sender.tutor;
 
+    if (isTutor) {
+      // Tutor Explanation: Clean Document Canvas (No nested card/border/shadow, full available width)
+      return FadeTransition(
+        opacity: CurvedAnimation(
+          parent: msg.animController,
+          curve: Curves.easeOut,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildMarkdownContent(msg.text),
+              const SizedBox(height: 6),
+              Padding(
+                padding: const EdgeInsets.only(left: 2),
+                child: Text(
+                  _formatBubbleTime(msg.timestamp),
+                  style: GoogleFonts.inter(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w400,
+                    color: AppColors.isDark
+                        ? AppColors.textMuted.withValues(alpha: 0.7)
+                        : const Color(0xFF94A3B8),
+                    letterSpacing: 0.2,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // User Message: Sleek right-aligned gradient pill
     return FadeTransition(
       opacity: CurvedAnimation(
         parent: msg.animController,
         curve: Curves.easeOut,
       ),
       child: SlideTransition(
-        position:
-            Tween<Offset>(
-              begin: Offset(isTutor ? -0.15 : 0.15, 0),
-              end: Offset.zero,
-            ).animate(
-              CurvedAnimation(
-                parent: msg.animController,
-                curve: Curves.easeOutCubic,
-              ),
-            ),
+        position: Tween<Offset>(
+          begin: const Offset(0.15, 0),
+          end: Offset.zero,
+        ).animate(
+          CurvedAnimation(
+            parent: msg.animController,
+            curve: Curves.easeOutCubic,
+          ),
+        ),
         child: Padding(
           padding: const EdgeInsets.only(bottom: 16),
           child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: isTutor
-                ? MainAxisAlignment.start
-                : MainAxisAlignment.end,
             children: [
-              if (isTutor) ...[_buildTutorAvatar(), const SizedBox(width: 10)],
-              // Bubble & Timestamp
               Flexible(
                 child: Column(
-                  crossAxisAlignment: isTutor
-                      ? CrossAxisAlignment.start
-                      : CrossAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Container(
                       constraints: BoxConstraints(
-                        maxWidth: MediaQuery.of(context).size.width * 0.72,
+                        maxWidth: MediaQuery.of(context).size.width * 0.70,
                       ),
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 16,
+                        horizontal: 16,
+                        vertical: 11,
                       ),
                       decoration: BoxDecoration(
-                        gradient: isTutor && !Responsive.isMobile(context)
-                            ? (AppColors.isDark
-                                  ? LinearGradient(
-                                      colors: [
-                                        AppColors.surfaceMid.withValues(
-                                          alpha: 0.75,
-                                        ),
-                                        AppColors.surfaceDark.withValues(
-                                          alpha: 0.85,
-                                        ),
-                                      ],
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                    )
-                                  : const LinearGradient(
-                                      colors: [
-                                        Color(0xFFFFFFFF),
-                                        Color(0xFFF3F3F5),
-                                      ],
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                    ))
-                            : null,
-                        color: isTutor
-                            ? (Responsive.isMobile(context)
-                                  ? AppColors.mobileSocraticTutorSolid
-                                  : null)
-                            : (AppColors.isDark
-                                  ? AppColors.accentBlue.withValues(alpha: 0.14)
-                                  : AppColors.surfaceSubtle),
-                        border: Border.all(
-                          color: isTutor
-                              ? (AppColors.isDark
-                                    ? AppColors.glassBorder
-                                    : AppColors.border)
-                              : (AppColors.isDark
-                                    ? AppColors.accentBlue.withValues(
-                                        alpha: 0.35,
-                                      )
-                                    : AppColors.primary.withValues(
-                                        alpha: 0.35,
-                                      )),
-                          width: 1,
-                        ),
-                        borderRadius: isTutor
-                            ? BorderRadius.circular(16)
-                            : const BorderRadius.only(
-                                topLeft: Radius.circular(20),
-                                topRight: Radius.circular(4),
-                                bottomLeft: Radius.circular(20),
-                                bottomRight: Radius.circular(20),
+                        gradient: AppColors.isDark
+                            ? null
+                            : const LinearGradient(
+                                colors: [
+                                  Color(0xFF6B47EB),
+                                  Color(0xFF7C3AED),
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
                               ),
-
-                        boxShadow: isTutor
-                            ? [
-                                if (!Responsive.isMobile(context))
-                                  BoxShadow(
-                                    color: AppColors.isDark
-                                        ? Colors.black.withValues(alpha: 0.3)
-                                        : const Color(0x14000000),
-                                    blurRadius: 20,
-                                    offset: const Offset(0, 6),
-                                  ),
-                              ]
-                            : [
-                                BoxShadow(
-                                  color: AppColors.accentBlue.withValues(
-                                    alpha: 0.08,
-                                  ),
-                                  blurRadius: 16,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
+                        color: AppColors.isDark
+                            ? const Color(0xFF172033)
+                            : null,
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(16),
+                          topRight: Radius.circular(4),
+                          bottomLeft: Radius.circular(16),
+                          bottomRight: Radius.circular(16),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.isDark
+                                ? Colors.black.withValues(alpha: 0.25)
+                                : const Color(0x336B47EB),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
-                      child: isTutor
-                          ? _buildMarkdownContent(msg.text)
-                          : _buildPlainText(msg.text),
+                      child: _buildPlainText(
+                        msg.text,
+                        isUserInLightMode: !AppColors.isDark,
+                      ),
                     ),
                     const SizedBox(height: 5),
                     Padding(
-                      padding: EdgeInsets.only(
-                        left: isTutor ? 4 : 0,
-                        right: isTutor ? 0 : 4,
-                      ),
+                      padding: const EdgeInsets.only(right: 4),
                       child: Text(
                         _formatBubbleTime(msg.timestamp),
                         style: GoogleFonts.inter(
                           fontSize: 11,
                           fontWeight: FontWeight.w400,
-                          color: AppColors.textMuted.withValues(alpha: 0.7),
+                          color: AppColors.isDark
+                              ? AppColors.textMuted.withValues(alpha: 0.7)
+                              : const Color(0xFF94A3B8),
                           letterSpacing: 0.2,
                         ),
                       ),
@@ -725,36 +708,34 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
                   ],
                 ),
               ),
-              if (!isTutor) ...[
-                const SizedBox(width: 10),
-                // User avatar
-                Container(
-                  width: 32,
-                  height: 32,
-                  margin: const EdgeInsets.only(top: 4),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: AppColors.surfaceDeep,
-                    border: Border.all(
-                      color: AppColors.accentBlue.withValues(alpha: 0.55),
-                      width: 1.2,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.accentBlue.withValues(alpha: 0.28),
-                        blurRadius: 8,
-                      ),
-                    ],
-                  ),
-                  child: const Center(
-                    child: Icon(
-                      Icons.person_rounded,
-                      size: 16,
-                      color: AppColors.blueLight,
-                    ),
+              const SizedBox(width: 8),
+              // User avatar
+              Container(
+                width: 26,
+                height: 26,
+                margin: const EdgeInsets.only(top: 2),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.isDark
+                      ? const Color(0xFF1E2640)
+                      : const Color(0xFFEEF2FF),
+                  border: Border.all(
+                    color: AppColors.isDark
+                        ? AppColors.accentBlue.withValues(alpha: 0.5)
+                        : AppColors.primaryViolet.withValues(alpha: 0.4),
+                    width: 1.0,
                   ),
                 ),
-              ],
+                child: Center(
+                  child: Icon(
+                    Icons.person_rounded,
+                    size: 14,
+                    color: AppColors.isDark
+                        ? AppColors.blueLight
+                        : AppColors.primaryViolet,
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -780,53 +761,67 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
 
   MarkdownStyleSheet _buildMarkdownStyleSheet() {
     final baseTextStyle = GoogleFonts.inter(
-      color: AppColors.textPrimary.withValues(alpha: 0.92),
-      fontSize: 14,
-      height: 1.55,
+      color: AppColors.isDark
+          ? AppColors.textPrimary.withValues(alpha: 0.92)
+          : const Color(0xFF1E293B),
+      fontSize: 13,
+      height: 1.5,
     );
 
     return MarkdownStyleSheet(
       // Body text
       p: baseTextStyle,
-      pPadding: const EdgeInsets.only(bottom: 8),
+      pPadding: const EdgeInsets.only(bottom: 6),
 
       // Headers
       h1: GoogleFonts.inter(
-        color: AppColors.textPrimary,
-        fontSize: 20,
-        fontWeight: FontWeight.w700,
-        height: 1.3,
-      ),
-      h1Padding: const EdgeInsets.only(bottom: 12, top: 4),
-      h2: GoogleFonts.inter(
-        color: AppColors.textPrimary,
+        color: AppColors.isDark
+            ? AppColors.textPrimary
+            : const Color(0xFF0F172A),
         fontSize: 17,
         fontWeight: FontWeight.w700,
         height: 1.3,
       ),
-      h2Padding: const EdgeInsets.only(bottom: 10, top: 8),
-      h3: GoogleFonts.inter(
-        color: AppColors.textPrimary,
-        fontSize: 15,
-        fontWeight: FontWeight.w600,
+      h1Padding: const EdgeInsets.only(bottom: 8, top: 4),
+      h2: GoogleFonts.inter(
+        color: AppColors.isDark
+            ? AppColors.textPrimary
+            : const Color(0xFF0F172A),
+        fontSize: 15.5,
+        fontWeight: FontWeight.w700,
         height: 1.3,
       ),
-      h3Padding: const EdgeInsets.only(bottom: 8, top: 6),
-      h4: GoogleFonts.inter(
-        color: AppColors.textPrimary,
+      h2Padding: const EdgeInsets.only(bottom: 6, top: 6),
+      h3: GoogleFonts.inter(
+        color: AppColors.isDark
+            ? AppColors.textPrimary
+            : const Color(0xFF0F172A),
         fontSize: 14,
         fontWeight: FontWeight.w600,
         height: 1.3,
       ),
-      h4Padding: const EdgeInsets.only(bottom: 6, top: 4),
-      h5: GoogleFonts.inter(
-        color: AppColors.textPrimary,
+      h3Padding: const EdgeInsets.only(bottom: 6, top: 4),
+      h4: GoogleFonts.inter(
+        color: AppColors.isDark
+            ? AppColors.textPrimary
+            : const Color(0xFF1E293B),
         fontSize: 13,
         fontWeight: FontWeight.w600,
         height: 1.3,
       ),
+      h4Padding: const EdgeInsets.only(bottom: 4, top: 2),
+      h5: GoogleFonts.inter(
+        color: AppColors.isDark
+            ? AppColors.textPrimary
+            : const Color(0xFF1E293B),
+        fontSize: 12.5,
+        fontWeight: FontWeight.w600,
+        height: 1.3,
+      ),
       h6: GoogleFonts.inter(
-        color: AppColors.textPrimary,
+        color: AppColors.isDark
+            ? AppColors.textPrimary
+            : const Color(0xFF1E293B),
         fontSize: 12,
         fontWeight: FontWeight.w600,
         height: 1.3,
@@ -834,67 +829,102 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
 
       // Bold & emphasis
       strong: GoogleFonts.inter(
-        color: AppColors.textPrimary,
+        color: AppColors.isDark
+            ? AppColors.textPrimary
+            : const Color(0xFF0F172A),
         fontWeight: FontWeight.w700,
       ),
       em: GoogleFonts.inter(
-        color: AppColors.textPrimary.withValues(alpha: 0.85),
+        color: AppColors.isDark
+            ? AppColors.textPrimary.withValues(alpha: 0.85)
+            : const Color(0xFF334155),
         fontStyle: FontStyle.italic,
       ),
 
       // Links
       a: GoogleFonts.inter(
-        color: AppColors.accentCyan,
+        color: AppColors.isDark
+            ? AppColors.accentCyan
+            : const Color(0xFF2563EB),
         decoration: TextDecoration.underline,
-        decorationColor: AppColors.accentCyan.withValues(alpha: 0.4),
+        decorationColor: AppColors.isDark
+            ? AppColors.accentCyan.withValues(alpha: 0.4)
+            : const Color(0x662563EB),
       ),
 
       // Lists
-      listBullet: baseTextStyle.copyWith(color: AppColors.textPrimary),
+      listBullet: baseTextStyle.copyWith(
+        color: AppColors.isDark
+            ? AppColors.textPrimary
+            : const Color(0xFF475569),
+      ),
       listBulletPadding: const EdgeInsets.only(right: 8),
       listIndent: 20,
 
       // Inline code
       code: GoogleFonts.firaCode(
-        color: AppColors.greenMint, // Vibrant green
-
-        fontSize: 13,
-        backgroundColor: AppColors.textPrimary.withValues(alpha: 0.08),
+        color: AppColors.isDark
+            ? AppColors.greenMint
+            : const Color(0xFF6B47EB),
+        fontSize: 12,
+        backgroundColor: AppColors.isDark
+            ? AppColors.textPrimary.withValues(alpha: 0.08)
+            : const Color(0xFFF1F5F9),
       ),
 
       // Code blocks
       codeblockDecoration: BoxDecoration(
-        color: AppColors.surfaceDark.withValues(alpha: 0.8),
+        color: const Color(0xFF181A20),
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: AppColors.isDark
+              ? const Color(0x1FFFFFFF)
+              : const Color(0xFFE2E8F0),
+        ),
       ),
-      codeblockPadding: const EdgeInsets.all(14),
+      codeblockPadding: const EdgeInsets.all(12),
 
       // Blockquote
       blockquote: baseTextStyle.copyWith(
-        color: AppColors.textSlate.withValues(alpha: 0.85),
+        color: AppColors.isDark
+            ? AppColors.textSlate.withValues(alpha: 0.85)
+            : const Color(0xFF475569),
         fontStyle: FontStyle.italic,
       ),
       blockquoteDecoration: BoxDecoration(
+        color: AppColors.isDark ? null : const Color(0xFFF8FAFC),
+        borderRadius: AppColors.isDark ? null : BorderRadius.circular(6),
         border: Border(
           left: BorderSide(
-            color: AppColors.accentCyan.withValues(alpha: 0.5),
+            color: AppColors.isDark
+                ? AppColors.accentCyan.withValues(alpha: 0.5)
+                : const Color(0xFF6B47EB),
             width: 3,
           ),
         ),
       ),
-      blockquotePadding: const EdgeInsets.only(left: 14, top: 6, bottom: 6),
+      blockquotePadding: const EdgeInsets.only(left: 12, top: 4, bottom: 4),
 
       // Table
       tableHead: GoogleFonts.inter(
-        color: AppColors.textPrimary,
+        color: AppColors.isDark
+            ? AppColors.textPrimary
+            : const Color(0xFF0F172A),
         fontWeight: FontWeight.w700,
-        fontSize: 13,
+        fontSize: 12.5,
       ),
       tableBody: GoogleFonts.inter(
-        color: AppColors.textPrimary.withValues(alpha: 0.88),
-        fontSize: 13,
+        color: AppColors.isDark
+            ? AppColors.textPrimary.withValues(alpha: 0.88)
+            : const Color(0xFF334155),
+        fontSize: 12.5,
       ),
-      tableBorder: TableBorder.all(color: AppColors.border, width: 1),
+      tableBorder: TableBorder.all(
+        color: AppColors.isDark
+            ? AppColors.border
+            : const Color(0xFFE2E8F0),
+        width: 1,
+      ),
       tableHeadAlign: TextAlign.left,
       tableCellsPadding: const EdgeInsets.symmetric(
         horizontal: 10,
@@ -903,26 +933,34 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
 
       // Horizontal rule
       horizontalRuleDecoration: BoxDecoration(
-        border: Border(top: BorderSide(color: AppColors.border, width: 1)),
+        border: Border(
+          top: BorderSide(
+            color: AppColors.isDark
+                ? AppColors.border
+                : const Color(0xFFE2E8F0),
+            width: 1,
+          ),
+        ),
       ),
     );
   }
 
-  Widget _buildPlainText(String text) {
+  Widget _buildPlainText(String text, {bool isUserInLightMode = false}) {
     return Text(
       text,
       style: GoogleFonts.inter(
-        color: AppColors.textPrimary,
-        fontSize: 14,
-        height: 1.5,
+        color: isUserInLightMode ? Colors.white : AppColors.textPrimary,
+        fontSize: 13,
+        fontWeight: isUserInLightMode ? FontWeight.w500 : FontWeight.w400,
+        height: 1.45,
       ),
     );
   }
 
   Widget _buildTutorAvatar() {
     return const Padding(
-      padding: EdgeInsets.only(top: 4),
-      child: AnimatedTutorIcon(size: 32),
+      padding: EdgeInsets.only(top: 2),
+      child: AnimatedTutorIcon(size: 24),
     );
   }
 
@@ -939,10 +977,12 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             decoration: BoxDecoration(
-              color: Responsive.isMobile(context)
-                  ? AppColors.mobileSocraticTutorSolid
-                  : null,
-              gradient: Responsive.isMobile(context)
+              color: AppColors.isDark
+                  ? (Responsive.isMobile(context)
+                        ? AppColors.mobileSocraticTutorSolid
+                        : null)
+                  : Colors.white,
+              gradient: (!AppColors.isDark || Responsive.isMobile(context))
                   ? null
                   : LinearGradient(
                       colors: [
@@ -953,12 +993,17 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
                       end: Alignment.bottomRight,
                     ),
               borderRadius: BorderRadius.circular(16),
+              border: AppColors.isDark
+                  ? null
+                  : Border.all(color: const Color(0xFFE2E8F0), width: 1.0),
               boxShadow: [
                 if (!Responsive.isMobile(context))
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.3),
-                    blurRadius: 20,
-                    offset: const Offset(0, 6),
+                    color: AppColors.isDark
+                        ? Colors.black.withValues(alpha: 0.3)
+                        : const Color(0x0C000000),
+                    blurRadius: AppColors.isDark ? 20 : 10,
+                    offset: const Offset(0, 2),
                   ),
               ],
             ),
@@ -992,7 +1037,7 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
               gradient: LinearGradient(
                 colors: [
                   Colors.transparent,
-                  AppColors.border,
+                  AppColors.isDark ? AppColors.border : const Color(0xFFE2E8F0),
                   Colors.transparent,
                 ],
               ),
@@ -1008,7 +1053,9 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
                 Text(
                   'Suggested follow up questions',
                   style: GoogleFonts.inter(
-                    color: AppColors.textSecondary,
+                    color: AppColors.isDark
+                        ? AppColors.textSecondary
+                        : const Color(0xFF64748B),
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     letterSpacing: 0.3,
@@ -1045,62 +1092,57 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
 
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.isDark ? AppColors.surfaceDark : AppColors.surface,
-        border: Border(
-          top: BorderSide(
-            color: AppColors.border,
-            width: 1,
-          ),
-        ),
+        color: AppColors.isDark
+            ? const Color(0xFF0B0C13)
+            : const Color(0xFFF8F9FA),
       ),
-      padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
+      padding: const EdgeInsets.fromLTRB(14, 8, 14, 10),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeOutCubic,
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
         decoration: BoxDecoration(
           color: AppColors.isDark
               ? const Color(0xFF151624)
-              : AppColors.surfaceSubtle,
+              : Colors.white,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: _isInputFocused ? AppColors.purple : AppColors.border,
+            color: _isInputFocused
+                ? AppColors.purple
+                : (AppColors.isDark ? AppColors.border : const Color(0xFFE2E8F0)),
             width: _isInputFocused ? 1.5 : 1.0,
           ),
           boxShadow: _isInputFocused
               ? [
                   BoxShadow(
                     color: AppColors.purple.withValues(
-                      alpha: AppColors.isDark ? 0.35 : 0.20,
+                      alpha: AppColors.isDark ? 0.35 : 0.15,
                     ),
                     blurRadius: 12,
                     spreadRadius: 1,
                   ),
                 ]
-              : null,
+              : [
+                  if (!AppColors.isDark)
+                    const BoxShadow(
+                      color: Color(0x08000000),
+                      blurRadius: 6,
+                      offset: Offset(0, 2),
+                    ),
+                ],
         ),
         child: Row(
           children: [
-            // AI sparkle badge icon
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: AppColors.isDark
-                    ? const Color(0xFF1B1C2E)
-                    : AppColors.purpleLight.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(
-                  color: AppColors.purple.withValues(alpha: 0.35),
-                  width: 1,
-                ),
-              ),
-              child: const Icon(
+            // AI sparkle badge icon inside input field without border
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 4),
+              child: Icon(
                 Icons.auto_awesome_rounded,
                 color: AppColors.purple,
-                size: 16,
+                size: 18,
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 8),
             // Input TextField
             Expanded(
               child: TextField(
@@ -1117,8 +1159,12 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
                     : null,
                 style: GoogleFonts.inter(
                   color: limitReached
-                      ? AppColors.textSecondary.withValues(alpha: 0.5)
-                      : AppColors.textPrimary,
+                      ? (AppColors.isDark
+                            ? AppColors.textSecondary.withValues(alpha: 0.5)
+                            : const Color(0xFF94A3B8))
+                      : (AppColors.isDark
+                            ? AppColors.textPrimary
+                            : const Color(0xFF0F172A)),
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
                 ),
@@ -1130,7 +1176,9 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
                   hintStyle: GoogleFonts.inter(
                     color: limitReached
                         ? AppColors.accentAmber.withValues(alpha: 0.8)
-                        : AppColors.textSecondary.withValues(alpha: 0.6),
+                        : (AppColors.isDark
+                              ? AppColors.textSecondary.withValues(alpha: 0.6)
+                              : const Color(0xFF94A3B8)),
                     fontSize: 13.5,
                   ),
                   border: InputBorder.none,
@@ -1181,10 +1229,15 @@ class _SendActionButtonState extends State<_SendActionButton> {
           decoration: BoxDecoration(
             gradient: widget.isTyping
                 ? LinearGradient(
-                    colors: [
-                      Colors.white.withValues(alpha: 0.08),
-                      Colors.white.withValues(alpha: 0.04),
-                    ],
+                    colors: AppColors.isDark
+                        ? [
+                            Colors.white.withValues(alpha: 0.08),
+                            Colors.white.withValues(alpha: 0.04),
+                          ]
+                        : [
+                            const Color(0xFFE2E8F0),
+                            const Color(0xFFCBD5E1),
+                          ],
                   )
                 : AppColors.primaryGradient,
             borderRadius: BorderRadius.circular(12),
@@ -1208,7 +1261,9 @@ class _SendActionButtonState extends State<_SendActionButton> {
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
                       valueColor: AlwaysStoppedAnimation<Color>(
-                        Colors.white.withValues(alpha: 0.6),
+                        AppColors.isDark
+                            ? Colors.white.withValues(alpha: 0.6)
+                            : const Color(0xFF64748B),
                       ),
                     ),
                   )
@@ -1272,9 +1327,10 @@ class _TypingDotsState extends State<_TypingDots>
                   height: 8,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: const Color(
-                      0xFFC084FC,
-                    ).withValues(alpha: 0.4 + 0.5 * bounce),
+                    color: (AppColors.isDark
+                            ? const Color(0xFFC084FC)
+                            : AppColors.primaryViolet)
+                        .withValues(alpha: 0.4 + 0.5 * bounce),
                   ),
                 ),
               ),
@@ -1322,42 +1378,27 @@ class _SuggestedQuestionChipState extends State<_SuggestedQuestionChip> {
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(12),
             color: AppColors.isDark
-                ? null
-                : (_isHovered ? AppColors.surface : AppColors.surfaceSubtle),
-            gradient: AppColors.isDark
-                ? LinearGradient(
-                    colors: [
-                      AppColors.accentPink.withValues(
-                        alpha: _isHovered ? 0.12 : 0.06,
-                      ),
-                      AppColors.primary.withValues(
-                        alpha: _isHovered ? 0.12 : 0.06,
-                      ),
-                      AppColors.accentBlue.withValues(
-                        alpha: _isHovered ? 0.12 : 0.06,
-                      ),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  )
-                : null,
+                ? (_isHovered ? const Color(0xFF1E1F36) : const Color(0xFF151624))
+                : (_isHovered ? const Color(0xFFF5F3FF) : Colors.white),
             border: Border.all(
-              color: AppColors.primary.withValues(
-                alpha: _isHovered ? 0.55 : 0.25,
-              ),
+              color: AppColors.isDark
+                  ? AppColors.primary.withValues(alpha: _isHovered ? 0.50 : 0.20)
+                  : (_isHovered
+                      ? AppColors.primaryViolet.withValues(alpha: 0.6)
+                      : const Color(0xFFE2E8F0)),
               width: 1,
             ),
-            boxShadow: !AppColors.isDark && _isHovered
-                ? [
-                    BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.10),
-                      blurRadius: 10,
-                      offset: const Offset(0, 2),
-                    ),
-                  ]
-                : null,
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.isDark
+                    ? Colors.black.withValues(alpha: 0.2)
+                    : const Color(0x0A000000),
+                blurRadius: _isHovered ? 8 : 2,
+                offset: const Offset(0, 1),
+              ),
+            ],
           ),
           child: Opacity(
             opacity: opacity,
@@ -1369,7 +1410,9 @@ class _SuggestedQuestionChipState extends State<_SuggestedQuestionChip> {
                   child: Text(
                     widget.question,
                     style: GoogleFonts.inter(
-                      color: AppColors.textPrimary,
+                      color: AppColors.isDark
+                          ? AppColors.textPrimary
+                          : const Color(0xFF1E293B),
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
                       height: 1.35,
@@ -1381,7 +1424,9 @@ class _SuggestedQuestionChipState extends State<_SuggestedQuestionChip> {
                 const SizedBox(width: 8),
                 Icon(
                   Icons.arrow_forward_ios_rounded,
-                  color: AppColors.primary.withValues(alpha: 0.5),
+                  color: AppColors.isDark
+                      ? AppColors.primary.withValues(alpha: 0.5)
+                      : AppColors.primaryViolet.withValues(alpha: 0.7),
                   size: 13,
                 ),
               ],
@@ -1609,10 +1654,12 @@ Widget _buildMathCard(String tex) {
     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
     decoration: BoxDecoration(
       color: AppColors.isDark
-          ? AppColors.surfaceDark.withValues(alpha: 0.8)
-          : AppColors.surfaceSubtle,
+          ? const Color(0xFF151624)
+          : const Color(0xFFF8FAFC),
       borderRadius: BorderRadius.circular(12),
-      border: Border.all(color: AppColors.border),
+      border: Border.all(
+        color: AppColors.isDark ? AppColors.border : const Color(0xFFE2E8F0),
+      ),
     ),
     child: SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -1620,13 +1667,18 @@ Widget _buildMathCard(String tex) {
       child: Math.tex(
         cleanTex,
         mathStyle: MathStyle.display,
-        textStyle: TextStyle(color: AppColors.textPrimary, fontSize: 15),
+        textStyle: TextStyle(
+          color: AppColors.isDark ? AppColors.textPrimary : const Color(0xFF0F172A),
+          fontSize: 14,
+        ),
         onErrorFallback: (err) => Text(
           cleanTex,
           style: TextStyle(
-            color: AppColors.textPrimary.withValues(alpha: 0.85),
+            color: AppColors.isDark
+                ? AppColors.textPrimary.withValues(alpha: 0.85)
+                : const Color(0xFF334155),
             fontFamily: 'monospace',
-            fontSize: 13,
+            fontSize: 12.5,
           ),
         ),
       ),
@@ -1681,11 +1733,13 @@ class _CodeSnippetCardState extends State<_CodeSnippetCard> {
         margin: const EdgeInsets.symmetric(vertical: 8),
         constraints: const BoxConstraints(maxHeight: 380),
         decoration: BoxDecoration(
-          color: AppColors.isDark
-              ? const Color(0xFF181A20)
-              : const Color(0xFF1E212B),
+          color: const Color(0xFF181A20),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(
+            color: AppColors.isDark
+                ? const Color(0x22FFFFFF)
+                : const Color(0xFFE2E8F0),
+          ),
         ),
         clipBehavior: Clip.antiAlias,
         child: Stack(
@@ -1716,7 +1770,7 @@ class _CodeSnippetCardState extends State<_CodeSnippetCard> {
                 child: Scrollbar(
                   controller: _horizontalController,
                   notificationPredicate: (notif) =>
-                      notif.metrics.axis == Axis.horizontal,
+                    notif.metrics.axis == Axis.horizontal,
                   thumbVisibility: false,
                   child: SingleChildScrollView(
                     controller: _verticalController,
@@ -1731,7 +1785,7 @@ class _CodeSnippetCardState extends State<_CodeSnippetCard> {
                         child: SelectableText(
                           widget.code,
                           style: GoogleFonts.firaCode(
-                            fontSize: 13,
+                            fontSize: 12.5,
                             height: 1.5,
                             color: const Color(0xFFF1F5F9),
                           ),
@@ -1746,7 +1800,7 @@ class _CodeSnippetCardState extends State<_CodeSnippetCard> {
               top: 6,
               right: 12,
               child: Material(
-                color: AppColors.surfaceDark.withValues(alpha: 0.85),
+                color: const Color(0xFF262833).withValues(alpha: 0.90),
                 borderRadius: BorderRadius.circular(6),
                 child: Tooltip(
                   message: _copied ? 'Copied!' : 'Copy code',
@@ -1765,11 +1819,11 @@ class _CodeSnippetCardState extends State<_CodeSnippetCard> {
                                 size: 16,
                                 color: AppColors.greenMint,
                               )
-                            : Icon(
+                            : const Icon(
                                 Icons.copy_rounded,
-                                key: const ValueKey('copy'),
+                                key: ValueKey('copy'),
                                 size: 16,
-                                color: Colors.white.withValues(alpha: 0.65),
+                                color: Colors.white70,
                               ),
                       ),
                     ),

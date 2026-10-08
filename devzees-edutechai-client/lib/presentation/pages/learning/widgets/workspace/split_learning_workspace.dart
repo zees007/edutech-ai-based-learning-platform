@@ -233,7 +233,9 @@ class _SplitLearningWorkspaceState
   Widget _buildChatPanel(dynamic currentStep) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surfaceDark,
+        color: AppColors.isDark
+            ? const Color(0xFF0B0C13)
+            : const Color(0xFFF8F9FA),
       ),
       child: (currentStep.tutorExplanation != null ||
               (currentStep.socraticQuestions != null &&
@@ -260,20 +262,28 @@ class _SplitLearningWorkspaceState
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            AppColors.surfaceMid.withValues(alpha: 0.75),
-                            AppColors.surfaceDark.withValues(alpha: 0.85),
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
+                        color: AppColors.isDark ? null : Colors.white,
+                        gradient: AppColors.isDark
+                            ? LinearGradient(
+                                colors: [
+                                  AppColors.surfaceMid.withValues(alpha: 0.75),
+                                  AppColors.surfaceDark.withValues(alpha: 0.85),
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              )
+                            : null,
                         borderRadius: BorderRadius.circular(16),
+                        border: AppColors.isDark
+                            ? null
+                            : Border.all(color: const Color(0xFFE2E8F0)),
                         boxShadow: Responsive.isMobile(context) ? null : [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.3),
-                            blurRadius: 20,
-                            offset: const Offset(0, 6),
+                            color: AppColors.isDark
+                                ? Colors.black.withValues(alpha: 0.3)
+                                : const Color(0x0C000000),
+                            blurRadius: AppColors.isDark ? 20 : 10,
+                            offset: const Offset(0, 2),
                           ),
                         ],
                       ),
@@ -286,7 +296,9 @@ class _SplitLearningWorkspaceState
                           Text(
                             'Socratic tutor is preparing and regenerating the step...',
                             style: AppTextStyles.bodyPrimary.copyWith(
-                              color: Colors.white.withValues(alpha: 0.9),
+                              color: AppColors.isDark
+                                  ? Colors.white.withValues(alpha: 0.9)
+                                  : const Color(0xFF1E293B),
                               height: 1.5,
                             ),
                           ),
@@ -303,7 +315,9 @@ class _SplitLearningWorkspaceState
   Widget _buildResourcesPanel(dynamic currentStep) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surfaceDark.withValues(alpha: 0.3),
+        color: AppColors.isDark
+            ? AppColors.surfaceDark.withValues(alpha: 0.3)
+            : const Color(0xFFF8F9FA),
       ),
       child: LearningResourcesPanel(
         key: ValueKey('resources_step_${currentStep.index}'),
@@ -420,7 +434,9 @@ class _FullscreenPanelOverlay extends ConsumerWidget {
   Widget _buildFullscreenChat() {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surfaceDark,
+        color: AppColors.isDark
+            ? const Color(0xFF0B0C13)
+            : const Color(0xFFF8F9FA),
       ),
       child: (currentStep.tutorExplanation != null ||
               (currentStep.socraticQuestions != null &&
@@ -454,7 +470,9 @@ class _FullscreenPanelOverlay extends ConsumerWidget {
   Widget _buildFullscreenResources(WidgetRef ref) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surfaceDark.withValues(alpha: 0.3),
+        color: AppColors.isDark
+            ? AppColors.surfaceDark.withValues(alpha: 0.3)
+            : const Color(0xFFF8F9FA),
       ),
       child: LearningResourcesPanel(
         key: ValueKey('fullscreen_resources_${currentStep.index}'),
@@ -515,9 +533,17 @@ class _TutorPanelHeaderState extends State<_TutorPanelHeader> {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
       decoration: BoxDecoration(
-        color: AppColors.surfaceSolidHeader,
+        color: AppColors.isDark ? const Color(0xFF11121D) : AppColors.surface,
+        border: Border(
+          bottom: BorderSide(
+            color: AppColors.isDark
+                ? const Color(0x14FFFFFF)
+                : const Color(0xFFE2E8F0),
+            width: 1.0,
+          ),
+        ),
       ),
       child: Row(
         children: [
@@ -551,10 +577,10 @@ class _TutorPanelHeaderState extends State<_TutorPanelHeader> {
               fontSize: 10,
             ),
           ),
-          const SizedBox(width: 12),
+          const Spacer(),
 
           // ─── Step Nav: Prev + Step pill + Status + Prerequisite + Next ───
-          Expanded(
+          Flexible(
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
@@ -575,14 +601,22 @@ class _TutorPanelHeaderState extends State<_TutorPanelHeader> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: isReviewing
-                          ? AppColors.cyanLight.withValues(alpha: 0.15)
-                          : AppColors.primary.withValues(alpha: 0.15),
+                      color: AppColors.isDark
+                          ? (isReviewing
+                              ? AppColors.cyanLight.withValues(alpha: 0.15)
+                              : AppColors.primary.withValues(alpha: 0.15))
+                          : (isReviewing
+                              ? const Color(0xFFE0F2FE)
+                              : const Color(0xFFF3E8FF)),
                       borderRadius: BorderRadius.circular(6),
                       border: Border.all(
-                        color: isReviewing
-                            ? AppColors.cyanLight.withValues(alpha: 0.45)
-                            : AppColors.primary.withValues(alpha: 0.45),
+                        color: AppColors.isDark
+                            ? (isReviewing
+                                ? AppColors.cyanLight.withValues(alpha: 0.45)
+                                : AppColors.primary.withValues(alpha: 0.45))
+                            : (isReviewing
+                                ? const Color(0xFFBAE6FD)
+                                : const Color(0xFFDDD6FE)),
                       ),
                     ),
                     child: Row(
@@ -593,7 +627,9 @@ class _TutorPanelHeaderState extends State<_TutorPanelHeader> {
                           style: AppTextStyles.badge.copyWith(
                             fontSize: 10.5,
                             fontWeight: FontWeight.w700,
-                            color: isReviewing ? AppColors.cyanLight : AppColors.purpleLight,
+                            color: AppColors.isDark
+                                ? (isReviewing ? AppColors.cyanLight : AppColors.purpleLight)
+                                : (isReviewing ? const Color(0xFF0284C7) : AppColors.primaryViolet),
                           ),
                         ),
                         if (isReviewing) ...[
@@ -601,7 +637,9 @@ class _TutorPanelHeaderState extends State<_TutorPanelHeader> {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
                             decoration: BoxDecoration(
-                              color: AppColors.cyanLight.withValues(alpha: 0.25),
+                              color: AppColors.isDark
+                                  ? AppColors.cyanLight.withValues(alpha: 0.25)
+                                  : const Color(0xFF0284C7),
                               borderRadius: BorderRadius.circular(3),
                             ),
                             child: Text(
@@ -690,16 +728,24 @@ class _TutorPanelHeaderState extends State<_TutorPanelHeader> {
                   padding: const EdgeInsets.all(5),
                   decoration: BoxDecoration(
                     color: _isMaxHovered
-                        ? AppColors.primary.withValues(alpha: 0.16)
-                        : AppColors.primary.withValues(alpha: 0.08),
+                        ? (AppColors.isDark
+                            ? AppColors.primary.withValues(alpha: 0.16)
+                            : const Color(0xFFF3E8FF))
+                        : (AppColors.isDark
+                            ? AppColors.primary.withValues(alpha: 0.08)
+                            : Colors.transparent),
                     borderRadius: BorderRadius.circular(6),
                     border: Border.all(
                       color: _isMaxHovered
-                          ? AppColors.primary.withValues(alpha: 0.50)
-                          : AppColors.primary.withValues(alpha: 0.25),
+                          ? (AppColors.isDark
+                              ? AppColors.primary.withValues(alpha: 0.50)
+                              : const Color(0xFFDDD6FE))
+                          : (AppColors.isDark
+                              ? AppColors.primary.withValues(alpha: 0.25)
+                              : const Color(0xFFE2E8F0)),
                       width: 1,
                     ),
-                    boxShadow: _isMaxHovered
+                    boxShadow: _isMaxHovered && AppColors.isDark
                         ? [
                             BoxShadow(
                               color: AppColors.primary.withValues(alpha: 0.30),
@@ -714,8 +760,8 @@ class _TutorPanelHeaderState extends State<_TutorPanelHeader> {
                         : Icons.open_in_full_rounded,
                     size: 13,
                     color: _isMaxHovered
-                        ? AppColors.purpleLight
-                        : AppColors.primary,
+                        ? (AppColors.isDark ? AppColors.purpleLight : AppColors.primaryViolet)
+                        : (AppColors.isDark ? AppColors.primary : const Color(0xFF64748B)),
                   ),
                 ),
               ),
@@ -750,9 +796,17 @@ class _ResourcesPanelHeaderState extends State<_ResourcesPanelHeader> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
       decoration: BoxDecoration(
-        color: AppColors.surfaceSolidHeader,
+        color: AppColors.isDark ? const Color(0xFF11121D) : AppColors.surface,
+        border: Border(
+          bottom: BorderSide(
+            color: AppColors.isDark
+                ? const Color(0x14FFFFFF)
+                : const Color(0xFFE2E8F0),
+            width: 1.0,
+          ),
+        ),
       ),
       child: Row(
         children: [
@@ -788,16 +842,24 @@ class _ResourcesPanelHeaderState extends State<_ResourcesPanelHeader> {
                   padding: const EdgeInsets.all(5),
                   decoration: BoxDecoration(
                     color: _isMaxHovered
-                        ? AppColors.primary.withValues(alpha: 0.16)
-                        : AppColors.primary.withValues(alpha: 0.08),
+                        ? (AppColors.isDark
+                            ? AppColors.primary.withValues(alpha: 0.16)
+                            : const Color(0xFFF3E8FF))
+                        : (AppColors.isDark
+                            ? AppColors.primary.withValues(alpha: 0.08)
+                            : Colors.transparent),
                     borderRadius: BorderRadius.circular(6),
                     border: Border.all(
                       color: _isMaxHovered
-                          ? AppColors.primary.withValues(alpha: 0.50)
-                          : AppColors.primary.withValues(alpha: 0.25),
+                          ? (AppColors.isDark
+                              ? AppColors.primary.withValues(alpha: 0.50)
+                              : const Color(0xFFDDD6FE))
+                          : (AppColors.isDark
+                              ? AppColors.primary.withValues(alpha: 0.25)
+                              : const Color(0xFFE2E8F0)),
                       width: 1,
                     ),
-                    boxShadow: _isMaxHovered
+                    boxShadow: _isMaxHovered && AppColors.isDark
                         ? [
                             BoxShadow(
                               color: AppColors.primary.withValues(alpha: 0.30),
@@ -812,8 +874,8 @@ class _ResourcesPanelHeaderState extends State<_ResourcesPanelHeader> {
                         : Icons.open_in_full_rounded,
                     size: 13,
                     color: _isMaxHovered
-                        ? AppColors.purpleLight
-                        : AppColors.primary,
+                        ? (AppColors.isDark ? AppColors.purpleLight : AppColors.primaryViolet)
+                        : (AppColors.isDark ? AppColors.primary : const Color(0xFF64748B)),
                   ),
                 ),
               ),
@@ -1933,20 +1995,28 @@ class _MobileTabbedWorkspaceState
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    AppColors.surfaceMid.withValues(alpha: 0.75),
-                    AppColors.surfaceDark.withValues(alpha: 0.85),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
+                color: AppColors.isDark ? null : Colors.white,
+                gradient: AppColors.isDark
+                    ? LinearGradient(
+                        colors: [
+                          AppColors.surfaceMid.withValues(alpha: 0.75),
+                          AppColors.surfaceDark.withValues(alpha: 0.85),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      )
+                    : null,
                 borderRadius: BorderRadius.circular(16),
+                border: AppColors.isDark
+                    ? null
+                    : Border.all(color: const Color(0xFFE2E8F0)),
                 boxShadow: Responsive.isMobile(context) ? null : [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.3),
-                    blurRadius: 20,
-                    offset: const Offset(0, 6),
+                    color: AppColors.isDark
+                        ? Colors.black.withValues(alpha: 0.3)
+                        : const Color(0x0C000000),
+                    blurRadius: AppColors.isDark ? 20 : 10,
+                    offset: const Offset(0, 2),
                   ),
                 ],
               ),
@@ -1959,7 +2029,9 @@ class _MobileTabbedWorkspaceState
                   Text(
                     'Socratic tutor is preparing and regenerating the step...',
                     style: AppTextStyles.bodyPrimary.copyWith(
-                      color: Colors.white.withValues(alpha: 0.9),
+                      color: AppColors.isDark
+                          ? Colors.white.withValues(alpha: 0.9)
+                          : const Color(0xFF1E293B),
                       height: 1.5,
                       fontSize: 13.5,
                     ),
@@ -2256,9 +2328,10 @@ class _RegeneratingDotsState extends State<_RegeneratingDots>
                   height: 8,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: const Color(
-                      0xFFC084FC,
-                    ).withValues(alpha: 0.4 + 0.5 * bounce),
+                    color: (AppColors.isDark
+                            ? const Color(0xFFC084FC)
+                            : AppColors.primaryViolet)
+                        .withValues(alpha: 0.4 + 0.5 * bounce),
                   ),
                 ),
               ),
