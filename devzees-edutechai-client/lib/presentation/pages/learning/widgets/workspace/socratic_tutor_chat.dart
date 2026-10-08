@@ -627,15 +627,13 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
         curve: Curves.easeOut,
       ),
       child: SlideTransition(
-        position: Tween<Offset>(
-          begin: const Offset(0.15, 0),
-          end: Offset.zero,
-        ).animate(
-          CurvedAnimation(
-            parent: msg.animController,
-            curve: Curves.easeOutCubic,
-          ),
-        ),
+        position: Tween<Offset>(begin: const Offset(0.15, 0), end: Offset.zero)
+            .animate(
+              CurvedAnimation(
+                parent: msg.animController,
+                curve: Curves.easeOutCubic,
+              ),
+            ),
         child: Padding(
           padding: const EdgeInsets.only(bottom: 16),
           child: Row(
@@ -659,10 +657,7 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
                         gradient: AppColors.isDark
                             ? null
                             : const LinearGradient(
-                                colors: [
-                                  Color(0xFF6B47EB),
-                                  Color(0xFF7C3AED),
-                                ],
+                                colors: [Color(0xFF6B47EB), Color(0xFF7C3AED)],
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
                               ),
@@ -863,9 +858,7 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
 
       // Inline code
       code: GoogleFonts.firaCode(
-        color: AppColors.isDark
-            ? AppColors.greenMint
-            : const Color(0xFF6B47EB),
+        color: AppColors.isDark ? AppColors.greenMint : const Color(0xFF6B47EB),
         fontSize: 12,
         backgroundColor: AppColors.isDark
             ? AppColors.textPrimary.withValues(alpha: 0.08)
@@ -873,9 +866,7 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
       ),
 
       // Code blocks (transparent wrapper with zero padding so custom code cards, math cards, and flowcharts render with a single clean border)
-      codeblockDecoration: const BoxDecoration(
-        color: Colors.transparent,
-      ),
+      codeblockDecoration: const BoxDecoration(color: Colors.transparent),
       codeblockPadding: EdgeInsets.zero,
 
       // Blockquote
@@ -914,9 +905,7 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
         fontSize: 12.5,
       ),
       tableBorder: TableBorder.all(
-        color: AppColors.isDark
-            ? AppColors.border
-            : const Color(0xFFE2E8F0),
+        color: AppColors.isDark ? AppColors.border : const Color(0xFFE2E8F0),
         width: 1,
       ),
       tableHeadAlign: TextAlign.left,
@@ -1104,16 +1093,14 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
         curve: Curves.easeOutCubic,
         padding: const EdgeInsets.fromLTRB(8, 4, 6, 4),
         decoration: BoxDecoration(
-          color: AppColors.isDark
-              ? const Color(0xFF141624)
-              : Colors.white,
+          color: AppColors.isDark ? const Color(0xFF141624) : Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: _isInputFocused
                 ? AppColors.purple
                 : (AppColors.isDark
-                    ? const Color(0x22FFFFFF)
-                    : const Color(0xFFE2E8F0)),
+                      ? const Color(0x22FFFFFF)
+                      : const Color(0xFFE2E8F0)),
             width: _isInputFocused ? 1.5 : 1.0,
           ),
           boxShadow: _isInputFocused
@@ -1251,10 +1238,7 @@ class _SendActionButtonState extends State<_SendActionButton> {
                             Colors.white.withValues(alpha: 0.08),
                             Colors.white.withValues(alpha: 0.04),
                           ]
-                        : [
-                            const Color(0xFFE2E8F0),
-                            const Color(0xFFCBD5E1),
-                          ],
+                        : [const Color(0xFFE2E8F0), const Color(0xFFCBD5E1)],
                   )
                 : AppColors.primaryGradient,
             borderRadius: BorderRadius.circular(12),
@@ -1344,10 +1328,11 @@ class _TypingDotsState extends State<_TypingDots>
                   height: 8,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: (AppColors.isDark
-                            ? const Color(0xFFC084FC)
-                            : AppColors.primaryViolet)
-                        .withValues(alpha: 0.4 + 0.5 * bounce),
+                    color:
+                        (AppColors.isDark
+                                ? const Color(0xFFC084FC)
+                                : AppColors.primaryViolet)
+                            .withValues(alpha: 0.4 + 0.5 * bounce),
                   ),
                 ),
               ),
@@ -1397,14 +1382,18 @@ class _SuggestedQuestionChipState extends State<_SuggestedQuestionChip> {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
             color: AppColors.isDark
-                ? (_isHovered ? const Color(0xFF1E1F36) : const Color(0xFF151624))
+                ? (_isHovered
+                      ? const Color(0xFF1E1F36)
+                      : const Color(0xFF151624))
                 : (_isHovered ? const Color(0xFFF5F3FF) : Colors.white),
             border: Border.all(
               color: AppColors.isDark
-                  ? AppColors.primary.withValues(alpha: _isHovered ? 0.50 : 0.20)
+                  ? AppColors.primary.withValues(
+                      alpha: _isHovered ? 0.50 : 0.20,
+                    )
                   : (_isHovered
-                      ? AppColors.primaryViolet.withValues(alpha: 0.6)
-                      : const Color(0xFFE2E8F0)),
+                        ? AppColors.primaryViolet.withValues(alpha: 0.6)
+                        : const Color(0xFFE2E8F0)),
               width: 1,
             ),
             boxShadow: [
@@ -1685,7 +1674,9 @@ Widget _buildMathCard(String tex) {
         cleanTex,
         mathStyle: MathStyle.display,
         textStyle: TextStyle(
-          color: AppColors.isDark ? AppColors.textPrimary : const Color(0xFF0F172A),
+          color: AppColors.isDark
+              ? AppColors.textPrimary
+              : const Color(0xFF0F172A),
           fontSize: 14,
         ),
         onErrorFallback: (err) => Text(
@@ -1787,7 +1778,7 @@ class _CodeSnippetCardState extends State<_CodeSnippetCard> {
                 child: Scrollbar(
                   controller: _horizontalController,
                   notificationPredicate: (notif) =>
-                    notif.metrics.axis == Axis.horizontal,
+                      notif.metrics.axis == Axis.horizontal,
                   thumbVisibility: false,
                   child: SingleChildScrollView(
                     controller: _verticalController,
