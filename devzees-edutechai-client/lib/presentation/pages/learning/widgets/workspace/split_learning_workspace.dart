@@ -152,6 +152,7 @@ class _SplitLearningWorkspaceState
         final rightWidth = availableWidth - leftWidth;
 
         return Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             _buildPanel(
               width: leftWidth,
@@ -346,7 +347,10 @@ class _SplitLearningWorkspaceState
           child: Center(
             child: Container(
               width: 1,
-              color: AppColors.glassBorder,
+              height: double.infinity,
+              color: AppColors.isDark
+                  ? const Color(0x14FFFFFF)
+                  : const Color(0xFFE2E8F0),
             ),
           ),
         ),

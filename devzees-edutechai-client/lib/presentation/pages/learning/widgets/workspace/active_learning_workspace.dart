@@ -81,32 +81,9 @@ class _StepContentContainerState extends ConsumerState<_StepContentContainer> {
                 (v) => v != null && v.toString().trim().isNotEmpty));
     final isQuizGated = hasQuiz && !isQuizDone;
 
-    final isMobile = MediaQuery.of(context).size.width < 800;
-
     return Container(
       width: double.infinity,
-      margin: isMobile
-          ? const EdgeInsets.fromLTRB(10, 0, 10, 6)
-          : const EdgeInsets.fromLTRB(24, 0, 24, 24),
-      clipBehavior: Clip.hardEdge,
-      decoration: BoxDecoration(
-        color: isMobile ? AppColors.mobileCommandHubSolid : null,
-        gradient: isMobile ? null : AppColors.commandHubGradient,
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.35),
-            blurRadius: 30,
-            offset: const Offset(0, 10),
-          ),
-          if (!isMobile)
-            BoxShadow(
-              color: AppColors.purple.withValues(alpha: 0.08),
-              blurRadius: 20,
-              spreadRadius: 0,
-            ),
-        ],
-      ),
+      color: AppColors.isDark ? const Color(0xFF0B0C13) : AppColors.surface,
       child: widget.activeState.isLoading
         ? const Padding(
             padding: EdgeInsets.all(48),
