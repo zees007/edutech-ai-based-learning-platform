@@ -30,6 +30,32 @@ class LearningSidebar extends ConsumerStatefulWidget {
 class _LearningSidebarState extends ConsumerState<LearningSidebar> {
   bool _isHistoryExpanded = true;
   final GlobalKey _filterIconKey = GlobalKey();
+  late final FocusNode _searchFocusNode;
+  bool _isSearchHovered = false;
+  bool _isSearchFocused = false;
+  bool _isFilterHovered = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _searchFocusNode = FocusNode();
+    _searchFocusNode.addListener(_onSearchFocusChanged);
+  }
+
+  void _onSearchFocusChanged() {
+    if (mounted) {
+      setState(() {
+        _isSearchFocused = _searchFocusNode.hasFocus;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _searchFocusNode.removeListener(_onSearchFocusChanged);
+    _searchFocusNode.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -186,84 +212,154 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
       child: Row(
         children: [
           Expanded(
-            child: Container(
-              height: 36,
-              decoration: BoxDecoration(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.05)
-                    : AppColors.surfaceSubtle,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: isDark
-                      ? Colors.white.withValues(alpha: 0.08)
-                      : AppColors.border,
-                  width: 1,
+            child: MouseRegion(
+              onEnter: (_) => setState(() => _isSearchHovered = true),
+              onExit: (_) => setState(() => _isSearchHovered = false),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 150),
+                height: 36,
+                decoration: BoxDecoration(
+                  color: (_isSearchFocused || _isSearchHovered)
+                      ? (isDark
+                          ? Colors.white.withValues(alpha: 0.08)
+                          : AppColors.surface)
+                      : (isDark
+                          ? Colors.white.withValues(alpha: 0.05)
+                          : AppColors.surfaceSubtle),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: (_isSearchFocused || _isSearchHovered)
+                        ? (isDark ? AppColors.primary.withValues(alpha: 0.6) : AppColors.primary)
+                        : (isDark
+                            ? Colors.white.withValues(alpha: 0.08)
+                            : AppColors.border),
+                    width: 1,
+                  ),
+                  boxShadow: (_isSearchFocused || _isSearchHovered)
+                      ? [
+                          BoxShadow(
+                            color: AppColors.primary.withValues(alpha: isDark ? 0.15 : 0.08),
+                            blurRadius: 6,
+                            spreadRadius: 0,
+                          ),
+                        ]
+                      : null,
                 ),
-              ),
-              child: TextField(
-                textAlignVertical: TextAlignVertical.center,
-                onChanged: (value) {
-                  ref.read(sessionsProvider.notifier).updateSearch(value);
-                },
-                style: TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 13,
-                ),
-                decoration: InputDecoration(
-                  isDense: true,
-                  hintText: 'Search topics or levels...',
-                  hintStyle: TextStyle(
-                    color: AppColors.textMuted,
+                child: TextField(
+                  focusNode: _searchFocusNode,
+                  textAlignVertical: TextAlignVertical.center,
+                  onChanged: (value) {
+                    ref.read(sessionsProvider.notifier).updateSearch(value);
+                  },
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
                     fontSize: 13,
                   ),
-                  prefixIcon: Icon(
-                    Icons.search,
-                    color: isDark
-                        ? Colors.white.withValues(alpha: 0.5)
-                        : AppColors.textSecondary,
-                    size: 18,
+                  cursorColor: AppColors.primary,
+                  decoration: InputDecoration(
+                    isDense: true,
+                    hintText: 'Search topics or levels...',
+                    hintStyle: TextStyle(
+                      color: AppColors.textMuted,
+                      fontSize: 13,
+                    ),
+                    prefixIcon: Icon(
+                      Icons.search,
+                      color: (_isSearchFocused || _isSearchHovered)
+                          ? AppColors.primary
+                          : (isDark
+                              ? Colors.white.withValues(alpha: 0.5)
+                              : AppColors.textSecondary),
+                      size: 18,
+                    ),
+                    prefixIconConstraints: const BoxConstraints(
+                      minWidth: 40,
+                      minHeight: 36,
+                    ),
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    disabledBorder: InputBorder.none,
+                    errorBorder: InputBorder.none,
+                    focusedErrorBorder: InputBorder.none,
+                    filled: false,
+                    fillColor: Colors.transparent,
+                    contentPadding: EdgeInsets.zero,
                   ),
-                  prefixIconConstraints: const BoxConstraints(
-                    minWidth: 40,
-                    minHeight: 36,
-                  ),
-                  border: InputBorder.none,
-                  contentPadding: EdgeInsets.zero,
                 ),
               ),
             ),
           ),
           const SizedBox(width: 8),
-          Container(
-            key: _filterIconKey,
-            height: 36,
-            width: 36,
-            decoration: BoxDecoration(
-              color: isDark
-                  ? Colors.white.withValues(alpha: 0.05)
-                  : AppColors.surfaceSubtle,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.08)
-                    : AppColors.border,
-                width: 1,
+          MouseRegion(
+            onEnter: (_) => setState(() => _isFilterHovered = true),
+            onExit: (_) => setState(() => _isFilterHovered = false),
+            cursor: SystemMouseCursors.click,
+            child: Tooltip(
+              message: 'Filter sessions',
+              child: AnimatedContainer(
+                key: _filterIconKey,
+                duration: const Duration(milliseconds: 150),
+                height: 36,
+                width: 36,
+                decoration: BoxDecoration(
+                  color: (_isFilterHovered || statusFilter != 'all')
+                      ? (isDark
+                          ? (statusFilter != 'all'
+                              ? AppColors.primary.withValues(alpha: 0.15)
+                              : Colors.white.withValues(alpha: 0.08))
+                          : (statusFilter != 'all'
+                              ? AppColors.primary.withValues(alpha: 0.12)
+                              : AppColors.surface))
+                      : (isDark
+                          ? Colors.white.withValues(alpha: 0.05)
+                          : AppColors.surfaceSubtle),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: (_isFilterHovered || statusFilter != 'all')
+                        ? (isDark
+                            ? AppColors.primary.withValues(alpha: 0.6)
+                            : AppColors.primary)
+                        : (isDark
+                            ? Colors.white.withValues(alpha: 0.08)
+                            : AppColors.border),
+                    width: 1,
+                  ),
+                  boxShadow: (_isFilterHovered || statusFilter != 'all')
+                      ? [
+                          BoxShadow(
+                            color: AppColors.primary.withValues(alpha: isDark ? 0.15 : 0.08),
+                            blurRadius: 6,
+                            spreadRadius: 0,
+                          ),
+                        ]
+                      : null,
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  borderRadius: BorderRadius.circular(8),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(8),
+                    hoverColor: Colors.transparent,
+                    splashColor: AppColors.primary.withValues(alpha: 0.15),
+                    highlightColor: Colors.transparent,
+                    onTap: () {
+                      _showFilterDialog(context, statusFilter);
+                    },
+                    child: Center(
+                      child: Icon(
+                        Icons.filter_list,
+                        color: (statusFilter != 'all' || _isFilterHovered)
+                            ? AppColors.primary
+                            : (isDark
+                                ? Colors.white.withValues(alpha: 0.7)
+                                : AppColors.textSecondary),
+                        size: 18,
+                      ),
+                    ),
+                  ),
+                ),
               ),
-            ),
-            child: IconButton(
-              padding: EdgeInsets.zero,
-              icon: Icon(
-                Icons.filter_list,
-                color: statusFilter != 'all'
-                    ? AppColors.primary
-                    : (isDark
-                        ? Colors.white.withValues(alpha: 0.7)
-                        : AppColors.textSecondary),
-                size: 18,
-              ),
-              onPressed: () {
-                _showFilterDialog(context, statusFilter);
-              },
             ),
           ),
         ],
