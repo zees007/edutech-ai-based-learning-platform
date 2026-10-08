@@ -14,6 +14,7 @@ import '../subscription/subscription_modal.dart';
 import 'mermaid_web_view.dart';
 import '../../../../../../core/constants/responsive.dart';
 import '../../../../widgets/animated_tutor_icon.dart';
+import '../../../../../../core/providers/theme_provider.dart';
 
 // ═══════════════════════════════════════════════════════════════════
 // Socratic Tutor Chat — Premium Chat Bubble UI
@@ -199,14 +200,15 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
   String _formatBubbleTime(DateTime dt) {
     final local = dt.toLocal();
     final now = DateTime.now();
-    
+
     // Create date-only DateTime objects for comparison
     final today = DateTime(now.year, now.month, now.day);
     final yesterday = today.subtract(const Duration(days: 1));
     final msgDate = DateTime(local.year, local.month, local.day);
 
-    final hour =
-        local.hour == 0 ? 12 : (local.hour > 12 ? local.hour - 12 : local.hour);
+    final hour = local.hour == 0
+        ? 12
+        : (local.hour > 12 ? local.hour - 12 : local.hour);
     final minute = local.minute.toString().padLeft(2, '0');
     final period = local.hour >= 12 ? 'PM' : 'AM';
     final timeString = '$hour:$minute $period';
@@ -217,8 +219,18 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
       return 'Yesterday, $timeString';
     } else {
       final months = [
-        'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'May',
+        'Jun',
+        'Jul',
+        'Aug',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dec',
       ];
       final monthStr = months[local.month - 1];
       if (local.year == now.year) {
@@ -236,7 +248,7 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
 
     DateTime initialTimestamp =
         ref.read(activeSessionProvider).session?.createdAt.toLocal() ??
-            DateTime.now();
+        DateTime.now();
 
     if (widget.conversationHistory != null) {
       for (final rawTurn in widget.conversationHistory!) {
@@ -505,6 +517,7 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
 
   @override
   Widget build(BuildContext context) {
+    ref.watch(themeModeProvider);
     return Column(
       children: [
         Expanded(child: _buildChatArea()),
@@ -548,27 +561,27 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
       child: Scrollbar(
         controller: _scrollController,
         child: ListView.builder(
-        controller: _scrollController,
-        physics: const ClampingScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-        itemCount: totalCount,
-        itemBuilder: (context, index) {
-          if (index < _messages.length) {
-            final msg = _messages[index];
-            return _buildChatBubble(msg);
-          }
+          controller: _scrollController,
+          physics: const ClampingScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+          itemCount: totalCount,
+          itemBuilder: (context, index) {
+            if (index < _messages.length) {
+              final msg = _messages[index];
+              return _buildChatBubble(msg);
+            }
 
-          final extraIndex = index - _messages.length;
-          if (_isTyping && extraIndex == 0) {
-            return _buildTypingIndicator();
-          }
+            final extraIndex = index - _messages.length;
+            if (_isTyping && extraIndex == 0) {
+              return _buildTypingIndicator();
+            }
 
-          return _buildSuggestedQuestions();
-        },
+            return _buildSuggestedQuestions();
+          },
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   Widget _buildChatBubble(_ChatMessage msg) {
     final isTutor = msg.sender == _Sender.tutor;
@@ -616,18 +629,49 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
                       ),
                       decoration: BoxDecoration(
                         gradient: isTutor && !Responsive.isMobile(context)
-                            ? LinearGradient(
-                                colors: [
-                                  AppColors.surfaceMid.withValues(alpha: 0.75),
-                                  AppColors.surfaceDark.withValues(alpha: 0.85),
-                                ],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              )
+                            ? (AppColors.isDark
+                                  ? LinearGradient(
+                                      colors: [
+                                        AppColors.surfaceMid.withValues(
+                                          alpha: 0.75,
+                                        ),
+                                        AppColors.surfaceDark.withValues(
+                                          alpha: 0.85,
+                                        ),
+                                      ],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    )
+                                  : const LinearGradient(
+                                      colors: [
+                                        Color(0xFFFFFFFF),
+                                        Color(0xFFF3F3F5),
+                                      ],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ))
                             : null,
                         color: isTutor
-                            ? (Responsive.isMobile(context) ? AppColors.mobileSocraticTutorSolid : null)
-                            : AppColors.accentBlue.withValues(alpha: 0.12),
+                            ? (Responsive.isMobile(context)
+                                  ? AppColors.mobileSocraticTutorSolid
+                                  : null)
+                            : (AppColors.isDark
+                                  ? AppColors.accentBlue.withValues(alpha: 0.14)
+                                  : AppColors.surfaceSubtle),
+                        border: Border.all(
+                          color: isTutor
+                              ? (AppColors.isDark
+                                    ? AppColors.glassBorder
+                                    : AppColors.border)
+                              : (AppColors.isDark
+                                    ? AppColors.accentBlue.withValues(
+                                        alpha: 0.35,
+                                      )
+                                    : AppColors.primary.withValues(
+                                        alpha: 0.35,
+                                      )),
+                          width: 1,
+                        ),
                         borderRadius: isTutor
                             ? BorderRadius.circular(16)
                             : const BorderRadius.only(
@@ -641,16 +685,18 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
                             ? [
                                 if (!Responsive.isMobile(context))
                                   BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.3),
+                                    color: AppColors.isDark
+                                        ? Colors.black.withValues(alpha: 0.3)
+                                        : const Color(0x14000000),
                                     blurRadius: 20,
                                     offset: const Offset(0, 6),
                                   ),
                               ]
                             : [
                                 BoxShadow(
-                                  color: const Color(
-                                    0xFF3B82F6,
-                                  ).withValues(alpha: 0.06),
+                                  color: AppColors.accentBlue.withValues(
+                                    alpha: 0.08,
+                                  ),
                                   blurRadius: 16,
                                   offset: const Offset(0, 4),
                                 ),
@@ -840,18 +886,15 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
 
       // Table
       tableHead: GoogleFonts.inter(
-        color: Colors.white,
+        color: AppColors.textPrimary,
         fontWeight: FontWeight.w700,
         fontSize: 13,
       ),
       tableBody: GoogleFonts.inter(
-        color: Colors.white.withValues(alpha: 0.85),
+        color: AppColors.textPrimary.withValues(alpha: 0.88),
         fontSize: 13,
       ),
-      tableBorder: TableBorder.all(
-        color: Colors.white.withValues(alpha: 0.12),
-        width: 1,
-      ),
+      tableBorder: TableBorder.all(color: AppColors.border, width: 1),
       tableHeadAlign: TextAlign.left,
       tableCellsPadding: const EdgeInsets.symmetric(
         horizontal: 10,
@@ -860,9 +903,7 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
 
       // Horizontal rule
       horizontalRuleDecoration: BoxDecoration(
-        border: Border(
-          top: BorderSide(color: Colors.white.withValues(alpha: 0.1), width: 1),
-        ),
+        border: Border(top: BorderSide(color: AppColors.border, width: 1)),
       ),
     );
   }
@@ -871,7 +912,7 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
     return Text(
       text,
       style: GoogleFonts.inter(
-        color: Colors.white.withValues(alpha: 0.92),
+        color: AppColors.textPrimary,
         fontSize: 14,
         height: 1.5,
       ),
@@ -898,15 +939,19 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             decoration: BoxDecoration(
-              color: Responsive.isMobile(context) ? AppColors.mobileSocraticTutorSolid : null,
-              gradient: Responsive.isMobile(context) ? null : LinearGradient(
-                colors: [
-                  AppColors.surfaceMid.withValues(alpha: 0.75),
-                  AppColors.surfaceDark.withValues(alpha: 0.85),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
+              color: Responsive.isMobile(context)
+                  ? AppColors.mobileSocraticTutorSolid
+                  : null,
+              gradient: Responsive.isMobile(context)
+                  ? null
+                  : LinearGradient(
+                      colors: [
+                        AppColors.surfaceMid.withValues(alpha: 0.75),
+                        AppColors.surfaceDark.withValues(alpha: 0.85),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 if (!Responsive.isMobile(context))
@@ -930,7 +975,9 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
     final questions = _suggestedQuestions;
     if (questions.isEmpty) return const SizedBox.shrink();
 
-    final limitReached = ref.watch(permissionProvider).isFollowUpLimitReached(_followUpCount);
+    final limitReached = ref
+        .watch(permissionProvider)
+        .isFollowUpLimitReached(_followUpCount);
 
     return Padding(
       padding: const EdgeInsets.only(top: 8, bottom: 8),
@@ -945,7 +992,7 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
               gradient: LinearGradient(
                 colors: [
                   Colors.transparent,
-                  Colors.white.withValues(alpha: 0.08),
+                  AppColors.border,
                   Colors.transparent,
                 ],
               ),
@@ -961,7 +1008,7 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
                 Text(
                   'Suggested follow up questions',
                   style: GoogleFonts.inter(
-                    color: Colors.white.withValues(alpha: 0.5),
+                    color: AppColors.textSecondary,
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     letterSpacing: 0.3,
@@ -992,19 +1039,45 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
     final perms = ref.watch(permissionProvider);
     final limitReached = perms.isFollowUpLimitReached(_followUpCount);
     final limit = perms.followUpLimitPerStep;
-    final hint = limitReached ? 'Follow-up limit ($limit) reached. Upgrade for more.' : 'Ask Socratic Tutor a follow-up question...';
+    final hint = limitReached
+        ? 'Follow-up limit ($limit) reached. Upgrade for more.'
+        : 'Ask Socratic Tutor a follow-up question...';
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.isDark ? AppColors.surfaceDark : AppColors.surface,
+        border: Border(
+          top: BorderSide(
+            color: AppColors.border,
+            width: 1,
+          ),
+        ),
+      ),
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 250),
+        duration: const Duration(milliseconds: 200),
         curve: Curves.easeOutCubic,
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
         decoration: BoxDecoration(
-          color: _isInputFocused
-              ? AppColors.surfaceDeep.withValues(alpha: 0.9)
-              : Colors.white.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(16),
+          color: AppColors.isDark
+              ? const Color(0xFF151624)
+              : AppColors.surfaceSubtle,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: _isInputFocused ? AppColors.purple : AppColors.border,
+            width: _isInputFocused ? 1.5 : 1.0,
+          ),
+          boxShadow: _isInputFocused
+              ? [
+                  BoxShadow(
+                    color: AppColors.purple.withValues(
+                      alpha: AppColors.isDark ? 0.35 : 0.20,
+                    ),
+                    blurRadius: 12,
+                    spreadRadius: 1,
+                  ),
+                ]
+              : null,
         ),
         child: Row(
           children: [
@@ -1012,34 +1085,19 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: AppColors.surfaceDeep.withValues(alpha: 0.9),
+                color: AppColors.isDark
+                    ? const Color(0xFF1B1C2E)
+                    : AppColors.purpleLight.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(
                   color: AppColors.purple.withValues(alpha: 0.35),
                   width: 1,
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.purple.withValues(alpha: 0.25),
-                    blurRadius: 8,
-                  ),
-                ],
               ),
-              child: ShaderMask(
-                shaderCallback: (bounds) => const LinearGradient(
-                  colors: [
-                    AppColors.accentPink,
-                    AppColors.purple,
-                    AppColors.blueLight,
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ).createShader(bounds),
-                child: const Icon(
-                  Icons.auto_awesome_rounded,
-                  color: Colors.white,
-                  size: 16,
-                ),
+              child: const Icon(
+                Icons.auto_awesome_rounded,
+                color: AppColors.purple,
+                size: 16,
               ),
             ),
             const SizedBox(width: 12),
@@ -1049,11 +1107,18 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
                 controller: _controller,
                 focusNode: _inputFocusNode,
                 readOnly: limitReached,
-                onTap: limitReached ? () {
-                  showDialog(context: context, builder: (_) => const SubscriptionModal());
-                } : null,
+                onTap: limitReached
+                    ? () {
+                        showDialog(
+                          context: context,
+                          builder: (_) => const SubscriptionModal(),
+                        );
+                      }
+                    : null,
                 style: GoogleFonts.inter(
-                  color: limitReached ? Colors.white.withValues(alpha: 0.5) : Colors.white,
+                  color: limitReached
+                      ? AppColors.textSecondary.withValues(alpha: 0.5)
+                      : AppColors.textPrimary,
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
                 ),
@@ -1063,7 +1128,9 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
                 decoration: InputDecoration(
                   hintText: hint,
                   hintStyle: GoogleFonts.inter(
-                    color: limitReached ? AppColors.accentAmber.withValues(alpha: 0.8) : Colors.white.withValues(alpha: 0.38),
+                    color: limitReached
+                        ? AppColors.accentAmber.withValues(alpha: 0.8)
+                        : AppColors.textSecondary.withValues(alpha: 0.6),
                     fontSize: 13.5,
                   ),
                   border: InputBorder.none,
@@ -1256,25 +1323,41 @@ class _SuggestedQuestionChipState extends State<_SuggestedQuestionChip> {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(14),
-            gradient: LinearGradient(
-              colors: [
-                AppColors.accentPink.withValues(
-                  alpha: _isHovered ? 0.12 : 0.06,
-                ),
-                AppColors.primary.withValues(alpha: _isHovered ? 0.12 : 0.06),
-                AppColors.accentBlue.withValues(
-                  alpha: _isHovered ? 0.12 : 0.06,
-                ),
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
+            color: AppColors.isDark
+                ? null
+                : (_isHovered ? AppColors.surface : AppColors.surfaceSubtle),
+            gradient: AppColors.isDark
+                ? LinearGradient(
+                    colors: [
+                      AppColors.accentPink.withValues(
+                        alpha: _isHovered ? 0.12 : 0.06,
+                      ),
+                      AppColors.primary.withValues(
+                        alpha: _isHovered ? 0.12 : 0.06,
+                      ),
+                      AppColors.accentBlue.withValues(
+                        alpha: _isHovered ? 0.12 : 0.06,
+                      ),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  )
+                : null,
             border: Border.all(
               color: AppColors.primary.withValues(
-                alpha: _isHovered ? 0.45 : 0.25,
+                alpha: _isHovered ? 0.55 : 0.25,
               ),
               width: 1,
             ),
+            boxShadow: !AppColors.isDark && _isHovered
+                ? [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.10),
+                      blurRadius: 10,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : null,
           ),
           child: Opacity(
             opacity: opacity,
@@ -1286,7 +1369,7 @@ class _SuggestedQuestionChipState extends State<_SuggestedQuestionChip> {
                   child: Text(
                     widget.question,
                     style: GoogleFonts.inter(
-                      color: Colors.white.withValues(alpha: 0.85),
+                      color: AppColors.textPrimary,
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
                       height: 1.35,
@@ -1328,10 +1411,13 @@ class _CustomCodeBlockBuilder extends MarkdownElementBuilder {
         child: Math.tex(
           _sanitizeMathTex(mathTex),
           mathStyle: MathStyle.text,
-          textStyle: preferredStyle?.copyWith(color: Colors.white, fontSize: 14),
+          textStyle: preferredStyle?.copyWith(
+            color: AppColors.textPrimary,
+            fontSize: 14,
+          ),
           onErrorFallback: (err) => Text(
             mathTex,
-            style: preferredStyle?.copyWith(color: AppColors.lavender),
+            style: preferredStyle?.copyWith(color: AppColors.textPrimary),
           ),
         ),
       );
@@ -1483,16 +1569,22 @@ String _sanitizeMathTex(String rawTex) {
   // Strip wrapping block delimiters if present
   if (clean.startsWith(r'\[') && clean.endsWith(r'\]')) {
     clean = clean.substring(2, clean.length - 2).trim();
-  } else if (clean.startsWith(r'$$') && clean.endsWith(r'$$') && clean.length >= 4) {
+  } else if (clean.startsWith(r'$$') &&
+      clean.endsWith(r'$$') &&
+      clean.length >= 4) {
     clean = clean.substring(2, clean.length - 2).trim();
   } else if (clean.startsWith(r'\(') && clean.endsWith(r'\)')) {
     clean = clean.substring(2, clean.length - 2).trim();
-  } else if (clean.startsWith(r'$') && clean.endsWith(r'$') && clean.length >= 2) {
+  } else if (clean.startsWith(r'$') &&
+      clean.endsWith(r'$') &&
+      clean.length >= 2) {
     clean = clean.substring(1, clean.length - 1).trim();
   }
 
   // Strip outer [ ... ] wrapper around \begin{...}...\end{...} blocks
-  if (clean.startsWith('[') && clean.endsWith(']') && clean.contains(r'\begin{')) {
+  if (clean.startsWith('[') &&
+      clean.endsWith(']') &&
+      clean.contains(r'\begin{')) {
     clean = clean.substring(1, clean.length - 1).trim();
   }
 
@@ -1516,8 +1608,11 @@ Widget _buildMathCard(String tex) {
     margin: const EdgeInsets.symmetric(vertical: 8),
     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
     decoration: BoxDecoration(
-      color: AppColors.surfaceDark.withValues(alpha: 0.8),
+      color: AppColors.isDark
+          ? AppColors.surfaceDark.withValues(alpha: 0.8)
+          : AppColors.surfaceSubtle,
       borderRadius: BorderRadius.circular(12),
+      border: Border.all(color: AppColors.border),
     ),
     child: SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -1525,11 +1620,11 @@ Widget _buildMathCard(String tex) {
       child: Math.tex(
         cleanTex,
         mathStyle: MathStyle.display,
-        textStyle: const TextStyle(color: Colors.white, fontSize: 15),
+        textStyle: TextStyle(color: AppColors.textPrimary, fontSize: 15),
         onErrorFallback: (err) => Text(
           cleanTex,
           style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.85),
+            color: AppColors.textPrimary.withValues(alpha: 0.85),
             fontFamily: 'monospace',
             fontSize: 13,
           ),
@@ -1584,12 +1679,13 @@ class _CodeSnippetCardState extends State<_CodeSnippetCard> {
       child: Container(
         width: double.infinity,
         margin: const EdgeInsets.symmetric(vertical: 8),
-        constraints: const BoxConstraints(
-          maxHeight: 380,
-        ),
+        constraints: const BoxConstraints(maxHeight: 380),
         decoration: BoxDecoration(
-          color: AppColors.surfaceDark.withValues(alpha: 0.8),
+          color: AppColors.isDark
+              ? const Color(0xFF181A20)
+              : const Color(0xFF1E212B),
           borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.border),
         ),
         clipBehavior: Clip.antiAlias,
         child: Stack(

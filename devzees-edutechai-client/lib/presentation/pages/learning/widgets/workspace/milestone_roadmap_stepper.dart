@@ -23,6 +23,7 @@ class MilestoneRoadmapStepper extends StatefulWidget {
   static const double _arrowWidth = 14.0;
   static const double _stepperHeight = 52.0;
   static const double _minItemWidth = 145.0;
+  static const double _itemGap = 4.0;
 
   @override
   State<MilestoneRoadmapStepper> createState() => _MilestoneRoadmapStepperState();
@@ -54,7 +55,7 @@ class _MilestoneRoadmapStepperState extends State<MilestoneRoadmapStepper> {
 
     final int index = widget.activeIndex;
     final double effectiveItemWidth = _lastEffectiveItemWidth;
-    final double stepPitch = effectiveItemWidth - MilestoneRoadmapStepper._arrowWidth;
+    final double stepPitch = effectiveItemWidth - MilestoneRoadmapStepper._arrowWidth + MilestoneRoadmapStepper._itemGap;
 
     // Center the active step horizontally in the available viewport
     final double itemCenter = index * stepPitch + (effectiveItemWidth / 2);
@@ -95,17 +96,18 @@ class _MilestoneRoadmapStepperState extends State<MilestoneRoadmapStepper> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final double availableWidth = constraints.maxWidth;
-        // Total formula: totalWidth = N * itemWidth - (N - 1) * arrowWidth
-        // => itemWidth = (totalWidth + (N - 1) * arrowWidth) / N
+        // Total formula: totalWidth = N * itemWidth - (N - 1) * (arrowWidth - itemGap)
+        // => itemWidth = (totalWidth + (N - 1) * (arrowWidth - itemGap)) / N
+        const double arrowDiff = MilestoneRoadmapStepper._arrowWidth - MilestoneRoadmapStepper._itemGap;
         final double calculatedItemWidth = count > 1
-            ? (availableWidth + (count - 1) * MilestoneRoadmapStepper._arrowWidth) / count
+            ? (availableWidth + (count - 1) * arrowDiff) / count
             : availableWidth;
 
         final bool fitsInAvailableWidth = calculatedItemWidth >= MilestoneRoadmapStepper._minItemWidth;
         final double effectiveItemWidth =
             fitsInAvailableWidth ? calculatedItemWidth : 165.0;
         final double totalContentWidth = count > 1
-            ? (count * effectiveItemWidth - (count - 1) * MilestoneRoadmapStepper._arrowWidth)
+            ? (count * effectiveItemWidth - (count - 1) * arrowDiff)
             : effectiveItemWidth;
 
         _lastAvailableWidth = availableWidth;
@@ -128,7 +130,7 @@ class _MilestoneRoadmapStepperState extends State<MilestoneRoadmapStepper> {
               final bool isLast = index == count - 1;
 
               final double leftPos =
-                  index * (effectiveItemWidth - MilestoneRoadmapStepper._arrowWidth);
+                  index * (effectiveItemWidth - arrowDiff);
 
               return Positioned(
                 left: leftPos,
@@ -155,10 +157,10 @@ class _MilestoneRoadmapStepperState extends State<MilestoneRoadmapStepper> {
         return Container(
           height: MilestoneRoadmapStepper._stepperHeight,
           decoration: BoxDecoration(
-            color: AppColors.surfaceDeep,
+            color: AppColors.isDark ? const Color(0xFF11121D) : AppColors.surfaceDeep,
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
-              color: AppColors.glassBorder,
+              color: AppColors.isDark ? const Color(0x1FFFFFFF) : AppColors.glassBorder,
               width: 1.0,
             ),
             boxShadow: [
@@ -262,8 +264,10 @@ class _ChevronStepItemState extends State<_ChevronStepItem> {
           : (isCompleted
               ? Colors.white
               : (isLocked
-                  ? Colors.white.withValues(alpha: 0.35)
-                  : AppColors.purpleLight)),
+                  ? (AppColors.isDark
+                      ? Colors.white.withValues(alpha: 0.35)
+                      : AppColors.textSecondary.withValues(alpha: 0.6))
+                  : AppColors.primaryViolet)),
     );
 
     // Primary Text Color
@@ -272,22 +276,26 @@ class _ChevronStepItemState extends State<_ChevronStepItem> {
         : (isCompleted
             ? AppColors.greenMint
             : (isLocked
-                ? Colors.white.withValues(alpha: 0.4)
-                : AppColors.purpleLight));
+                ? (AppColors.isDark
+                    ? Colors.white.withValues(alpha: 0.4)
+                    : AppColors.textSecondary.withValues(alpha: 0.6))
+                : AppColors.primaryViolet));
 
     final Color titleColor = isActive
         ? Colors.white
         : (isCompleted
             ? Colors.white
             : (isLocked
-                ? Colors.white.withValues(alpha: 0.35)
-                : AppColors.slate200));
+                ? (AppColors.isDark
+                    ? Colors.white.withValues(alpha: 0.35)
+                    : AppColors.textSecondary.withValues(alpha: 0.6))
+                : (AppColors.isDark ? AppColors.slate200 : AppColors.textPrimary)));
 
     // Background decoration
     Decoration backgroundDecoration;
     if (isActive) {
       backgroundDecoration = BoxDecoration(
-        gradient: AppColors.royalBlueIndigoGradient,
+        gradient: AppColors.primaryGradient,
         boxShadow: [
           BoxShadow(
             color: AppColors.accentBlue.withValues(alpha: 0.45),
@@ -297,7 +305,7 @@ class _ChevronStepItemState extends State<_ChevronStepItem> {
         ],
       );
     } else if (isCompleted) {
-      // Vibrant Glassy Green (solid emerald base that does not let dark background bleed through)
+      // Vibrant Glassy Green
       backgroundDecoration = BoxDecoration(
         gradient: AppColors.emeraldGradient,
         boxShadow: [
@@ -311,13 +319,13 @@ class _ChevronStepItemState extends State<_ChevronStepItem> {
     } else if (!isLocked) {
       backgroundDecoration = BoxDecoration(
         color: _isHovered
-            ? AppColors.surfaceMid.withValues(alpha: 0.85)
-            : AppColors.surfaceMid.withValues(alpha: 0.50),
+            ? (AppColors.isDark ? AppColors.surfaceMid.withValues(alpha: 0.85) : AppColors.surfaceSubtle)
+            : (AppColors.isDark ? AppColors.surfaceMid.withValues(alpha: 0.50) : AppColors.surface),
       );
     } else {
       backgroundDecoration = BoxDecoration(
         color: _isHovered
-            ? AppColors.surfaceDark.withValues(alpha: 0.6)
+            ? (AppColors.isDark ? AppColors.surfaceDark.withValues(alpha: 0.6) : AppColors.surfaceSubtle.withValues(alpha: 0.5))
             : Colors.transparent,
       );
     }
@@ -327,7 +335,7 @@ class _ChevronStepItemState extends State<_ChevronStepItem> {
         ? AppColors.blueSoft.withValues(alpha: 0.8)
         : (isCompleted
             ? AppColors.greenMint.withValues(alpha: 0.75)
-            : Colors.white.withValues(alpha: 0.15));
+            : AppColors.glassBorder);
 
     // Operational status label & badge styling
     final String statusLabel;
@@ -347,14 +355,14 @@ class _ChevronStepItemState extends State<_ChevronStepItem> {
       statusBadgeText = Colors.white;
     } else if (isLocked) {
       statusLabel = 'LOCKED';
-      statusBadgeBg = Colors.white.withValues(alpha: 0.06);
-      statusBadgeBorder = Colors.white.withValues(alpha: 0.15);
-      statusBadgeText = Colors.white.withValues(alpha: 0.45);
+      statusBadgeBg = AppColors.isDark ? Colors.white.withValues(alpha: 0.06) : AppColors.surfaceSubtle;
+      statusBadgeBorder = AppColors.isDark ? Colors.white.withValues(alpha: 0.15) : AppColors.border;
+      statusBadgeText = AppColors.isDark ? Colors.white.withValues(alpha: 0.45) : AppColors.textSecondary;
     } else {
       statusLabel = 'PENDING';
       statusBadgeBg = AppColors.purpleLight.withValues(alpha: 0.15);
       statusBadgeBorder = AppColors.purpleLight.withValues(alpha: 0.35);
-      statusBadgeText = AppColors.lavender;
+      statusBadgeText = AppColors.isDark ? AppColors.lavender : AppColors.primaryViolet;
     }
 
     final clipper = _ChevronClipper(

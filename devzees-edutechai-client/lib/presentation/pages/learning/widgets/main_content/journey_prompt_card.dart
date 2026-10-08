@@ -1,17 +1,14 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../core/providers/permission_provider.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/text_styles.dart';
 import '../../../../widgets/gradient_button.dart';
+
 class JourneyPromptCard extends ConsumerStatefulWidget {
   final void Function(String topic, String mode, String level) onStartJourney;
 
-  const JourneyPromptCard({
-    super.key,
-    required this.onStartJourney,
-  });
+  const JourneyPromptCard({super.key, required this.onStartJourney});
 
   @override
   ConsumerState<JourneyPromptCard> createState() => _JourneyPromptCardState();
@@ -30,7 +27,7 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
     'High School 🎒',
     'Undergraduate 🏛️',
     'Graduate 🎓',
-    'General Curious 💡'
+    'General Curious 💡',
   ];
 
   @override
@@ -41,115 +38,61 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = AppColors.isDark;
+
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
+        duration: const Duration(milliseconds: 250),
         curve: Curves.easeOutCubic,
         transform: Matrix4.translationValues(0, _isHovered ? -2.0 : 0, 0),
         constraints: const BoxConstraints(maxWidth: 840),
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-        child: Stack(
-          clipBehavior: Clip.none,
-          alignment: Alignment.topCenter,
+        padding: const EdgeInsets.fromLTRB(32, 26, 32, 22),
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.canvasBackground : Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: AppColors.primary.withValues(
+              alpha: isDark
+                  ? (_isHovered ? 0.70 : 0.45)
+                  : (_isHovered ? 0.70 : 0.40),
+            ),
+            width: 1.5,
+          ),
+          boxShadow: [
+            // Symmetrical neon primary glow (illuminates in both dark & light themes)
+            BoxShadow(
+              color: AppColors.primary.withValues(
+                alpha: isDark
+                    ? (_isHovered ? 0.32 : 0.20)
+                    : (_isHovered ? 0.30 : 0.16),
+              ),
+              blurRadius: _isHovered ? 48 : 40,
+              spreadRadius: _isHovered ? 2 : 0,
+            ),
+            if (!isDark)
+              BoxShadow(
+                color: const Color(0x0A0F172A),
+                blurRadius: _isHovered ? 20 : 12,
+                spreadRadius: -2,
+                offset: const Offset(0, 6),
+              ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            // Main Glass Container
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.purple.withValues(
-                      alpha: _isHovered ? 0.55 : 0.35,
-                    ),
-                    offset: _isHovered ? const Offset(0, 30) : const Offset(0, 25),
-                    blurRadius: _isHovered ? 75 : 65,
-                    spreadRadius: _isHovered ? -10 : -15,
-                  ),
-                ],
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(24),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    padding: const EdgeInsets.fromLTRB(35, 28, 35, 22),
-                    decoration: BoxDecoration(
-                      gradient: AppColors.cardGradientOpaque,
-                      border: Border.all(
-                        color: AppColors.purple.withValues(
-                          alpha: _isHovered ? 0.85 : 0.45,
-                        ),
-                        width: 1.5,
-                      ),
-                      borderRadius: BorderRadius.circular(24),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.purple.withValues(
-                            alpha: _isHovered ? 0.20 : 0.12,
-                          ),
-                          blurRadius: _isHovered ? 45 : 35,
-                          blurStyle: BlurStyle.inner,
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // Row 1: Dropdowns
-                        _buildDropdownRow(),
-                        const SizedBox(height: 16),
-                        // Row 2: Chat Input and Button
-                        _buildInputRow(),
-                        const SizedBox(height: 16),
-                        // Row 3: Suggested Topics
-                        _buildSuggestedTopics(),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            // Top Glowing Neon Bar (The ::before pseudo-element)
-            Positioned(
-              top: 0,
-              left: 40,
-              right: 40,
-              child: AnimatedOpacity(
-                duration: const Duration(milliseconds: 300),
-                opacity: _isHovered ? 1.0 : 0.8,
-                child: Container(
-                  height: 3,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(3),
-                    gradient: const LinearGradient(
-                      colors: [
-                        Colors.transparent,
-                        AppColors.accentPink,
-                        AppColors.purple,
-                        AppColors.accentBlue,
-                        Colors.transparent,
-                      ],
-                      stops: [0.0, 0.25, 0.5, 0.75, 1.0],
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.accentPink,
-                        blurRadius: _isHovered ? 22 : 15,
-                      ),
-                      BoxShadow(
-                        color: AppColors.purple,
-                        blurRadius: _isHovered ? 30 : 20,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
+            // Row 1: Dropdowns
+            _buildDropdownRow(),
+            const SizedBox(height: 16),
+            // Row 2: Chat Input and Button
+            _buildInputRow(),
+            const SizedBox(height: 16),
+            // Row 3: Suggested Topics
+            _buildSuggestedTopics(),
           ],
         ),
       ),
@@ -158,7 +101,9 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
 
   Widget _buildDropdownRow() {
     final perms = ref.watch(permissionProvider);
-    final Set<String> lockedModes = perms.canAccessDeepDiveMode ? {} : {_deepDiveMode};
+    final Set<String> lockedModes = perms.canAccessDeepDiveMode
+        ? {}
+        : {_deepDiveMode};
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -221,24 +166,23 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: AppTextStyles.label,
-        ),
+        Text(label, style: AppTextStyles.label),
         const SizedBox(height: 8),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
-            color: AppColors.glassBase,
+            color: AppColors.isDark
+                ? const Color(0xFF151624)
+                : AppColors.surfaceSubtle,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.glassBorder),
+            border: Border.all(color: AppColors.border),
           ),
           child: Builder(
             builder: (context) {
               return Theme(
                 data: Theme.of(context).copyWith(
-                  hoverColor: AppColors.primary.withValues(alpha: 0.15),
-                  focusColor: AppColors.primary.withValues(alpha: 0.2),
+                  hoverColor: AppColors.primary.withValues(alpha: 0.12),
+                  focusColor: AppColors.primary.withValues(alpha: 0.15),
                   splashColor: AppColors.primary.withValues(alpha: 0.1),
                   highlightColor: AppColors.primary.withValues(alpha: 0.1),
                 ),
@@ -247,8 +191,13 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
                     value: value,
                     isExpanded: true,
                     borderRadius: BorderRadius.circular(16),
-                    dropdownColor: AppColors.secondaryBackground,
-                    icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.textSecondary),
+                    dropdownColor: AppColors.isDark
+                        ? const Color(0xFF151624)
+                        : AppColors.surface,
+                    icon: Icon(
+                      Icons.keyboard_arrow_down,
+                      color: AppColors.textSecondary,
+                    ),
                     style: AppTextStyles.bodyPrimary,
                     items: items.map((String item) {
                       final isLocked = lockedItems.contains(item);
@@ -261,23 +210,38 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
                               child: Text(
                                 item,
                                 style: isLocked
-                                    ? AppTextStyles.bodyPrimary.copyWith(color: AppColors.textMuted)
+                                    ? AppTextStyles.bodyPrimary.copyWith(
+                                        color: AppColors.textMuted,
+                                      )
                                     : null,
                               ),
                             ),
                             if (isLocked) ...[
                               const SizedBox(width: 8),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                  vertical: 2,
+                                ),
                                 decoration: BoxDecoration(
-                                  color: AppColors.accentAmber.withValues(alpha: 0.15),
+                                  color: AppColors.accentAmber.withValues(
+                                    alpha: 0.15,
+                                  ),
                                   borderRadius: BorderRadius.circular(6),
-                                  border: Border.all(color: AppColors.accentAmber.withValues(alpha: 0.3)),
+                                  border: Border.all(
+                                    color: AppColors.accentAmber.withValues(
+                                      alpha: 0.3,
+                                    ),
+                                  ),
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    const Icon(Icons.lock_rounded, size: 10, color: AppColors.accentAmber),
+                                    const Icon(
+                                      Icons.lock_rounded,
+                                      size: 10,
+                                      color: AppColors.accentAmber,
+                                    ),
                                     const SizedBox(width: 3),
                                     Text(
                                       'PRO',
@@ -299,10 +263,14 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
                       if (val != null && lockedItems.contains(val)) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: const Text('🔬 Deep Dive mode unlocks with Pro plan — go deeper into any topic!'),
+                            content: const Text(
+                              '🔬 Deep Dive mode unlocks with Pro plan — go deeper into any topic!',
+                            ),
                             backgroundColor: AppColors.surfaceDark,
                             behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                           ),
                         );
                         return;
@@ -350,10 +318,7 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
         return Row(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Expanded(
-              flex: 5,
-              child: _buildTextField(),
-            ),
+            Expanded(flex: 5, child: _buildTextField()),
             const SizedBox(width: 12),
             Expanded(
               flex: 2,
@@ -383,24 +348,30 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
       style: AppTextStyles.bodyPrimary.copyWith(fontSize: 15),
       maxLines: 1,
       decoration: InputDecoration(
-        hintText: 'Ask EduTechAI anything... (e.g., I want to learn Python programming from zero)',
+        hintText:
+            'Ask EduTechAI anything... (e.g., I want to learn Python programming from zero)',
         hintStyle: AppTextStyles.body2.copyWith(
-          color: AppColors.textMuted,
+          color: AppColors.textSecondary.withValues(alpha: 0.6),
         ),
         filled: true,
-        fillColor: AppColors.glassBase,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        fillColor: AppColors.isDark
+            ? const Color(0xFF151624)
+            : AppColors.surfaceSubtle,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 20,
+          vertical: 16,
+        ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: AppColors.glassBorder),
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: AppColors.border),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: AppColors.glassBorder),
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: AppColors.border),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: AppColors.primary),
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
         ),
       ),
     );
@@ -419,22 +390,22 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
+              Icon(
                 Icons.lightbulb_outline,
-                color: AppColors.lavender,
+                color: AppColors.adaptiveLavender,
                 size: 16,
               ),
               const SizedBox(width: 8),
               Text(
                 'Browse Suggested Topics',
                 style: AppTextStyles.captionBold.copyWith(
-                  color: AppColors.lavender,
+                  color: AppColors.adaptiveLavender,
                 ),
               ),
               const SizedBox(width: 4),
-              const Icon(
+              Icon(
                 Icons.keyboard_arrow_down,
-                color: AppColors.lavender,
+                color: AppColors.adaptiveLavender,
                 size: 16,
               ),
             ],

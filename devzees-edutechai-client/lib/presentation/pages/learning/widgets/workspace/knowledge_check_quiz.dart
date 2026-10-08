@@ -566,7 +566,7 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surfaceDark.withValues(alpha: 0.65),
+        color: AppColors.isDark ? AppColors.surfaceDark.withValues(alpha: 0.65) : AppColors.surfaceDark,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: _submitted
@@ -574,13 +574,21 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
               : AppColors.glassBorder,
           width: 1,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.25),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        boxShadow: AppColors.isDark
+            ? [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.25),
+                  blurRadius: 16,
+                  offset: const Offset(0, 4),
+                ),
+              ]
+            : [
+                BoxShadow(
+                  color: const Color(0x14000000),
+                  blurRadius: 16,
+                  offset: const Offset(0, 4),
+                ),
+              ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1500,10 +1508,10 @@ class _OptionTileState extends State<_OptionTile> {
       }
     }
 
-    Color bgColor = AppColors.glassSurface.withValues(alpha: 0.04);
-    Color borderColor = AppColors.glassBorder;
-    Color letterBg = AppColors.surfaceMid.withValues(alpha: 0.6);
-    Color letterTextColor = AppColors.textSecondary;
+    Color bgColor = AppColors.isDark ? AppColors.glassSurface.withValues(alpha: 0.04) : AppColors.surfaceSubtle;
+    Color borderColor = AppColors.border;
+    Color letterBg = AppColors.isDark ? AppColors.surfaceMid.withValues(alpha: 0.6) : AppColors.trackNeutral;
+    Color letterTextColor = AppColors.isDark ? AppColors.textSecondary : AppColors.textPrimary;
     IconData? trailingIcon;
     Color? trailingIconColor;
 
@@ -1513,7 +1521,7 @@ class _OptionTileState extends State<_OptionTile> {
       letterBg = AppColors.primary;
       letterTextColor = Colors.white;
       trailingIcon = Icons.check_circle_rounded;
-      trailingIconColor = AppColors.purpleLight;
+      trailingIconColor = AppColors.primary;
     }
 
     if (widget.isSubmitted) {
@@ -1533,8 +1541,8 @@ class _OptionTileState extends State<_OptionTile> {
         trailingIconColor = AppColors.accentRose;
       }
     } else if (_isHovered && !widget.isSelected) {
-      bgColor = AppColors.primary.withValues(alpha: 0.07);
-      borderColor = AppColors.primary.withValues(alpha: 0.4);
+      bgColor = AppColors.isDark ? AppColors.primary.withValues(alpha: 0.07) : AppColors.surface;
+      borderColor = AppColors.primary.withValues(alpha: 0.45);
     }
 
     return MouseRegion(
@@ -1568,7 +1576,15 @@ class _OptionTileState extends State<_OptionTile> {
                       offset: const Offset(0, 2),
                     ),
                   ]
-                : null,
+                : (!AppColors.isDark && _isHovered && !widget.isSubmitted
+                    ? [
+                        const BoxShadow(
+                          color: Color(0x0F000000),
+                          blurRadius: 6,
+                          offset: Offset(0, 2),
+                        ),
+                      ]
+                    : null),
           ),
           child: Row(
             children: [

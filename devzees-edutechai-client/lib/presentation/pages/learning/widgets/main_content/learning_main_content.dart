@@ -38,6 +38,7 @@ class LearningMainContent extends ConsumerWidget {
       if (activeState.isLoading) {
         // When switching session from learning history, display the theme gradient spinner in a card
         if (!activeState.isSynthesizing) {
+          final isDark = AppColors.isDark;
           return Center(
             child: Container(
               width: 320,
@@ -45,7 +46,7 @@ class LearningMainContent extends ConsumerWidget {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(24),
                 border: Border.all(
-                  color: AppColors.purple.withValues(alpha: 0.45),
+                  color: (isDark ? AppColors.primary : AppColors.purple).withValues(alpha: 0.45),
                   width: 1.5,
                 ),
                 color: isMobile ? AppColors.mobileCardSolid : null,
@@ -53,12 +54,12 @@ class LearningMainContent extends ConsumerWidget {
                 boxShadow: [
                   if (!isMobile) ...[
                     BoxShadow(
-                      color: AppColors.purple.withValues(alpha: 0.3),
+                      color: (isDark ? AppColors.primary : AppColors.purple).withValues(alpha: 0.3),
                       blurRadius: 40,
                       spreadRadius: -10,
                     ),
                     BoxShadow(
-                      color: AppColors.accentPink.withValues(alpha: 0.2),
+                      color: (isDark ? AppColors.primary.withValues(alpha: 0.2) : AppColors.accentPink.withValues(alpha: 0.2)),
                       blurRadius: 30,
                       spreadRadius: -5,
                     ),
@@ -86,7 +87,7 @@ class LearningMainContent extends ConsumerWidget {
                   Text(
                     'Restoring your learning journey...',
                     style: AppTextStyles.body2.copyWith(
-                      color: AppColors.lavender.withValues(alpha: 0.7),
+                      color: AppColors.textSecondary,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -386,21 +387,11 @@ class LearningMainContent extends ConsumerWidget {
                     ],
                   ),
 
-                  // Pinned Bottom Section
-                  Container(
+                  // Bottom Section
+                  Padding(
                     padding: EdgeInsets.symmetric(
                       horizontal: isMobile ? 16.0 : 32.0,
                       vertical: isMobile ? 8.0 : 16.0,
-                    ),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.transparent,
-                          AppColors.background.withValues(alpha: 0.6),
-                        ],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                      ),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,

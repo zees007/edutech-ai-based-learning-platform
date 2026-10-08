@@ -11,6 +11,7 @@ import 'socratic_tutor_chat.dart';
 import 'keep_alive_wrapper.dart';
 import '../../../../widgets/animated_tutor_icon.dart';
 import '../../../../../core/constants/responsive.dart';
+import '../../../../../core/providers/theme_provider.dart';
 
 /// A dual-panel layout that splits the learning workspace into:
 ///   • Left Panel (55%): Socratic Tutor Chat
@@ -117,6 +118,7 @@ class _SplitLearningWorkspaceState
 
   @override
   Widget build(BuildContext context) {
+    ref.watch(themeModeProvider);
     final currentStep = widget.session.steps[widget.currentStepIndex];
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 800;
@@ -231,7 +233,7 @@ class _SplitLearningWorkspaceState
   Widget _buildChatPanel(dynamic currentStep) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surfaceDark.withValues(alpha: 0.3),
+        color: AppColors.surfaceDark,
       ),
       child: (currentStep.tutorExplanation != null ||
               (currentStep.socraticQuestions != null &&
@@ -418,7 +420,7 @@ class _FullscreenPanelOverlay extends ConsumerWidget {
   Widget _buildFullscreenChat() {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surfaceDark.withValues(alpha: 0.3),
+        color: AppColors.surfaceDark,
       ),
       child: (currentStep.tutorExplanation != null ||
               (currentStep.socraticQuestions != null &&
@@ -514,7 +516,7 @@ class _TutorPanelHeaderState extends State<_TutorPanelHeader> {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppColors.surfaceSolidHeader,
       ),
       child: Row(
@@ -749,7 +751,7 @@ class _ResourcesPanelHeaderState extends State<_ResourcesPanelHeader> {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppColors.surfaceSolidHeader,
       ),
       child: Row(
@@ -1114,7 +1116,7 @@ class _MobileTabbedWorkspaceState
                                   shape: BoxShape.circle,
                                   border: Border.all(color: AppColors.glassBorder),
                                 ),
-                                child: const Icon(
+                                child: Icon(
                                   Icons.close_rounded,
                                   size: 18,
                                   color: AppColors.textMuted,
@@ -1171,7 +1173,7 @@ class _MobileTabbedWorkspaceState
                               child: Text(
                                 'Interactive questions are waiting in the Quiz tab.',
                                 style: AppTextStyles.caption.copyWith(
-                                  color: AppColors.lavender,
+                                  color: AppColors.textPrimary,
                                   fontSize: 11.5,
                                 ),
                               ),
@@ -1302,7 +1304,7 @@ class _MobileTabbedWorkspaceState
                     borderRadius: BorderRadius.circular(6),
                     border: Border.all(color: AppColors.glassBorder),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.arrow_back_ios_new_rounded,
                     size: 12,
                     color: AppColors.textSecondary,
@@ -1420,7 +1422,7 @@ class _MobileTabbedWorkspaceState
                     borderRadius: BorderRadius.circular(6),
                     border: Border.all(color: AppColors.glassBorder),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.arrow_forward_ios_rounded,
                     size: 12,
                     color: AppColors.textSecondary,

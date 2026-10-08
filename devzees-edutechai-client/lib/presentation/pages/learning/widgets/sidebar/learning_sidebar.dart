@@ -74,10 +74,23 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
                       width: 48,
                       height: 48,
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.05),
+                        color: AppColors.isDark
+                            ? Colors.white.withValues(alpha: 0.05)
+                            : AppColors.surfaceSubtle,
                         borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: AppColors.isDark
+                              ? Colors.white.withValues(alpha: 0.08)
+                              : AppColors.border,
+                          width: 1,
+                        ),
                       ),
-                      child: Icon(Icons.history, color: Colors.white.withValues(alpha: 0.7)),
+                      child: Icon(
+                        Icons.history,
+                        color: AppColors.isDark
+                            ? Colors.white.withValues(alpha: 0.7)
+                            : AppColors.textSecondary,
+                      ),
                     ),
                   ),
                   const Spacer(),
@@ -144,8 +157,8 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
             children: [
               Text(
                 'Learning History ($total)',
-                style: const TextStyle(
-                  color: Colors.white70,
+                style: TextStyle(
+                  color: AppColors.textPrimary,
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                   letterSpacing: 0.5,
@@ -154,7 +167,7 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
               const Spacer(),
               Icon(
                 _isHistoryExpanded ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_right,
-                color: Colors.white.withValues(alpha: 0.5),
+                color: AppColors.textSecondary,
                 size: 20,
               ),
             ],
@@ -166,6 +179,7 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
 
   Widget _buildSearchAndFilter() {
     final statusFilter = ref.watch(sessionsProvider).statusFilter;
+    final bool isDark = AppColors.isDark;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -175,25 +189,38 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
             child: Container(
               height: 36,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.05),
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.05)
+                    : AppColors.surfaceSubtle,
                 borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.08)
+                      : AppColors.border,
+                  width: 1,
+                ),
               ),
               child: TextField(
                 textAlignVertical: TextAlignVertical.center,
                 onChanged: (value) {
                   ref.read(sessionsProvider.notifier).updateSearch(value);
                 },
-                style: const TextStyle(color: Colors.white, fontSize: 13),
+                style: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 13,
+                ),
                 decoration: InputDecoration(
                   isDense: true,
                   hintText: 'Search topics or levels...',
                   hintStyle: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.3),
+                    color: AppColors.textMuted,
                     fontSize: 13,
                   ),
                   prefixIcon: Icon(
                     Icons.search,
-                    color: Colors.white.withValues(alpha: 0.5),
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.5)
+                        : AppColors.textSecondary,
                     size: 18,
                   ),
                   prefixIconConstraints: const BoxConstraints(
@@ -212,14 +239,26 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
             height: 36,
             width: 36,
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.05),
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.05)
+                  : AppColors.surfaceSubtle,
               borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.08)
+                    : AppColors.border,
+                width: 1,
+              ),
             ),
             child: IconButton(
               padding: EdgeInsets.zero,
               icon: Icon(
                 Icons.filter_list,
-                color: Colors.white.withValues(alpha: 0.7),
+                color: statusFilter != 'all'
+                    ? AppColors.primary
+                    : (isDark
+                        ? Colors.white.withValues(alpha: 0.7)
+                        : AppColors.textSecondary),
                 size: 18,
               ),
               onPressed: () {
@@ -231,10 +270,12 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
       ),
     );
   }
+
   void _showFilterDialog(BuildContext context, String currentFilter) {
     final RenderBox renderBox = _filterIconKey.currentContext!.findRenderObject() as RenderBox;
     final size = renderBox.size;
     final offset = renderBox.localToGlobal(Offset.zero);
+    final bool isDark = AppColors.isDark;
 
     showMenu<String>(
       context: context,
@@ -262,11 +303,21 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
                 width: 140,
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 decoration: BoxDecoration(
-                  color: AppColors.popoverBackground.withValues(alpha: 0.6),
+                  color: isDark
+                      ? AppColors.popoverBackground.withValues(alpha: 0.8)
+                      : AppColors.surface,
                   borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.08)
+                        : AppColors.border,
+                    width: 1,
+                  ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.3),
+                      color: isDark
+                          ? Colors.black.withValues(alpha: 0.3)
+                          : const Color(0x14000000),
                       blurRadius: 24,
                       offset: const Offset(0, 8),
                     ),
@@ -326,14 +377,16 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
                     child: Text(
                       label,
                       style: TextStyle(
-                        color: isHovered || isSelected ? Colors.white : Colors.white70,
+                        color: isSelected
+                            ? AppColors.primary
+                            : (isHovered ? AppColors.textPrimary : AppColors.textSecondary),
                         fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                         fontSize: 13,
                       ),
                     ),
                   ),
                   if (isSelected)
-                    const Icon(Icons.check, color: AppColors.primary, size: 16),
+                    Icon(Icons.check, color: AppColors.primary, size: 16),
                 ],
               ),
             ),

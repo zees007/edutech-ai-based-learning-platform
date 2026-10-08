@@ -32,7 +32,7 @@ void main() {
         home: Scaffold(
           body: Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               color: AppColors.surfaceSolidHeader,
             ),
             child: Row(
@@ -45,7 +45,7 @@ void main() {
                       onTap: () => onStepChange(stepIndex - 1),
                       child: Container(
                         padding: const EdgeInsets.all(4),
-                        child: const Icon(
+                        child: Icon(
                           Icons.arrow_back_ios_new_rounded,
                           size: 12,
                           color: AppColors.textSecondary,
@@ -101,7 +101,7 @@ void main() {
                           color: AppColors.glassBase,
                           borderRadius: BorderRadius.circular(6),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.arrow_forward_ios_rounded,
                           size: 12,
                           color: AppColors.textSecondary,

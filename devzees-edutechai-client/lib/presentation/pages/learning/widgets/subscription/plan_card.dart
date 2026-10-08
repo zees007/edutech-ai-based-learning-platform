@@ -62,13 +62,13 @@ class PlanCard extends StatelessWidget {
           textBaseline: TextBaseline.alphabetic,
           children: [
             Text(price, style: AppTextStyles.h1),
-            Text('/$billingCycle', style: const TextStyle(color: AppColors.textSecondary, fontSize: 16)),
+            Text('/$billingCycle', style: TextStyle(color: AppColors.textSecondary, fontSize: 16)),
           ],
         ),
         const SizedBox(height: 16),
         Text(description, style: AppTextStyles.body2),
         const SizedBox(height: 24),
-        const Divider(color: AppColors.glassBorder),
+        Divider(color: AppColors.glassBorder),
         const SizedBox(height: 24),
         ...features.map((f) => Padding(
           padding: const EdgeInsets.only(bottom: 12),

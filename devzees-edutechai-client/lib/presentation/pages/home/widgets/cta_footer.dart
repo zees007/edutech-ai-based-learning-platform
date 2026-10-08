@@ -49,7 +49,7 @@ class CtaFooter extends StatelessWidget {
         // Footer Links
         Container(
           padding: const EdgeInsets.only(top: 40, bottom: 20),
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             border: Border(top: BorderSide(color: AppColors.glassBorder)),
           ),
           child: Flex(
@@ -59,7 +59,7 @@ class CtaFooter extends StatelessWidget {
               Column(
                 crossAxisAlignment: isMobile ? CrossAxisAlignment.center : CrossAxisAlignment.start,
                 children: [
-                  const Text('EduTech AI', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
+                  Text('EduTech AI', style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 18)),
                   const SizedBox(height: 8),
                   Text('© 2024 EduTech AI. Empowering cognitive research through education.', style: AppTextStyles.body2.copyWith(fontSize: 12)),
                 ],
@@ -106,7 +106,7 @@ class _FooterLinkState extends State<_FooterLink> {
         child: Text(
           widget.text,
           style: TextStyle(
-            color: _isHovered ? Colors.white : AppColors.textSecondary,
+            color: _isHovered ? AppColors.primary : AppColors.textSecondary,
             fontSize: 14,
             fontWeight: FontWeight.w500,
           ),

@@ -1,6 +1,6 @@
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../../../core/theme/app_colors.dart';
 import '../../../../widgets/animated_tutor_icon.dart';
 import '../../../../../core/constants/responsive.dart';
 
@@ -48,6 +48,7 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final isMobile = MediaQuery.of(context).size.width < 650;
 
     return LayoutBuilder(
@@ -55,9 +56,7 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
         return SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
           child: ConstrainedBox(
-            constraints: BoxConstraints(
-              minHeight: constraints.maxHeight,
-            ),
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
             child: Center(
               child: Container(
                 constraints: const BoxConstraints(maxWidth: 850),
@@ -68,42 +67,74 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
                 ),
                 padding: EdgeInsets.all(isMobile ? 18 : 24),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1C1A30).withValues(alpha: 0.85), // Purple/blue glass background
+                  color: isDark
+                      ? const Color(0xFF11121D).withValues(alpha: 0.95)
+                      : Colors.white.withValues(alpha: 0.95),
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(
-                    color: const Color(0xFFA855F7).withValues(alpha: 0.65), // Illuminated neon border
+                    color: isDark
+                        ? AppColors.primary.withValues(alpha: 0.65)
+                        : const Color(0xFFA855F7).withValues(alpha: 0.35),
                     width: 1.5,
                   ),
                   boxShadow: [
-                    // Deep background drop shadow
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.55),
-                      blurRadius: 36,
-                      offset: const Offset(0, 18),
-                    ),
-                    if (!isMobile) ...[
-                      // Vibrant neon border rim glow
+                    if (isDark) ...[
+                      // Deep background drop shadow
                       BoxShadow(
-                        color: const Color(0xFFA855F7).withValues(alpha: 0.38),
-                        blurRadius: 18,
-                        spreadRadius: 2,
+                        color: Colors.black.withValues(alpha: 0.55),
+                        blurRadius: 36,
+                        offset: const Offset(0, 18),
                       ),
-                      // Broad ambient violet glow
+                      if (!isMobile) ...[
+                        // Vibrant neon border rim glow
+                        BoxShadow(
+                          color: AppColors.primary.withValues(alpha: 0.38),
+                          blurRadius: 18,
+                          spreadRadius: 2,
+                        ),
+                        // Broad ambient primary glow
+                        BoxShadow(
+                          color: AppColors.primary.withValues(alpha: 0.25),
+                          blurRadius: 45,
+                          spreadRadius: 6,
+                        ),
+                        // Deep neon atmospheric halo
+                        BoxShadow(
+                          color: const Color(0xFF1D4ED8).withValues(alpha: 0.15),
+                          blurRadius: 80,
+                          spreadRadius: 12,
+                        ),
+                      ],
+                    ] else ...[
+                      // Light mode refined shadows & luminous violet atmospheric aura
                       BoxShadow(
-                        color: const Color(0xFF8B5CF6).withValues(alpha: 0.25),
-                        blurRadius: 45,
-                        spreadRadius: 6,
+                        color: const Color(0x1A000000),
+                        blurRadius: 32,
+                        offset: const Offset(0, 12),
                       ),
-                      // Deep neon atmospheric halo
-                      BoxShadow(
-                        color: const Color(0xFF6366F1).withValues(alpha: 0.15),
-                        blurRadius: 80,
-                        spreadRadius: 12,
-                      ),
+                      if (!isMobile) ...[
+                        BoxShadow(
+                          color: const Color(0xFFA855F7).withValues(alpha: 0.12),
+                          blurRadius: 20,
+                          spreadRadius: 2,
+                        ),
+                        BoxShadow(
+                          color: const Color(0xFF8B5CF6).withValues(alpha: 0.08),
+                          blurRadius: 36,
+                          spreadRadius: 4,
+                        ),
+                        BoxShadow(
+                          color: const Color(0xFF6366F1).withValues(alpha: 0.05),
+                          blurRadius: 60,
+                          spreadRadius: 8,
+                        ),
+                      ],
                     ],
                   ],
                 ),
-                child: isMobile ? _buildMobileContent() : _buildDesktopContent(),
+                child: isMobile
+                    ? _buildMobileContent(isDark: isDark)
+                    : _buildDesktopContent(isDark: isDark),
               ),
             ),
           ),
@@ -113,7 +144,7 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
   }
 
   /// Mobile Compact View: Fits comfortably in a single screen (<400px height) without scrolling
-  Widget _buildMobileContent() {
+  Widget _buildMobileContent({required bool isDark}) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -126,7 +157,12 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const GradientSpinner(size: 11),
+                  GradientSpinner(
+                    size: 11,
+                    backgroundColor: isDark
+                        ? const Color(0xFF11121D)
+                        : Colors.white,
+                  ),
                   const SizedBox(width: 6),
                   Flexible(
                     child: Text(
@@ -137,7 +173,9 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
                         fontSize: 9.5,
                         fontWeight: FontWeight.w700,
                         letterSpacing: 1.0,
-                        color: const Color(0xFF9CA3AF),
+                        color: isDark
+                            ? const Color(0xFF9CA3AF)
+                            : AppColors.slate500,
                       ),
                     ),
                   ),
@@ -145,16 +183,18 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
               ),
             ),
             const SizedBox(width: 6),
-            _buildLiveInferenceBadge(isMobile: true),
+            _buildLiveInferenceBadge(isMobile: true, isDark: isDark),
           ],
         ),
         const SizedBox(height: 12),
 
         // Compact Gradient Title
         ShaderMask(
-          shaderCallback: (bounds) => const LinearGradient(
-            colors: [Color(0xFFEC4899), Color(0xFFA855F7)],
-          ).createShader(bounds),
+          shaderCallback: (bounds) => (isDark
+              ? AppColors.primaryGradient
+              : const LinearGradient(
+                  colors: [Color(0xFFBE185D), Color(0xFF7C3AED)],
+                )).createShader(bounds),
           child: Text(
             widget.title,
             textAlign: TextAlign.center,
@@ -176,7 +216,7 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
           overflow: TextOverflow.ellipsis,
           style: GoogleFonts.inter(
             fontSize: 11,
-            color: const Color(0xFF9CA3AF),
+            color: isDark ? const Color(0xFF9CA3AF) : AppColors.textSecondary,
           ),
         ),
         const SizedBox(height: 20),
@@ -203,32 +243,38 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
                           boxShadow: [
                             if (!Responsive.isMobile(context)) ...[
                               BoxShadow(
-                                color: const Color(0xFFA855F7).withValues(
-                                  alpha: 0.35 + 0.20 * _pulseController.value,
+                                color: (isDark ? AppColors.primary : const Color(0xFFA855F7)).withValues(
+                                  alpha: isDark
+                                      ? (0.35 + 0.20 * _pulseController.value)
+                                      : (0.16 + 0.10 * _pulseController.value),
                                 ),
                                 blurRadius: 22,
                                 spreadRadius: 3,
                               ),
                               BoxShadow(
-                                color: const Color(0xFFEC4899).withValues(
-                                  alpha: 0.20 + 0.15 * _pulseController.value,
+                                color: (isDark ? AppColors.accentPink : const Color(0xFFEC4899)).withValues(
+                                  alpha: isDark
+                                      ? (0.20 + 0.15 * _pulseController.value)
+                                      : (0.10 + 0.08 * _pulseController.value),
                                 ),
                                 blurRadius: 32,
                                 spreadRadius: 1,
                               ),
-                            ]
+                            ],
                           ],
                         ),
                       );
                     },
                   ),
                   // Rotating Gradient Spinner Ring
-                  const GradientSpinner(size: 52),
-                  // Inner Socratic Tutor Animated Icon
-                  const AnimatedTutorIcon(
-                    size: 34,
-                    showHalo: false,
+                  GradientSpinner(
+                    size: 52,
+                    backgroundColor: isDark
+                        ? const Color(0xFF11121D)
+                        : Colors.white,
                   ),
+                  // Inner Socratic Tutor Animated Icon
+                  const AnimatedTutorIcon(size: 34, showHalo: false),
                 ],
               ),
             ),
@@ -242,7 +288,9 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
             return Container(
               height: 6,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.06),
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.06)
+                    : const Color(0xFFE2E8F0),
                 borderRadius: BorderRadius.circular(10),
               ),
               alignment: Alignment.centerLeft,
@@ -252,8 +300,18 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
                 height: 6,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10),
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFEC4899), Color(0xFFA855F7), Color(0xFF06B6D4)],
+                  gradient: LinearGradient(
+                    colors: isDark
+                        ? const [
+                            Color(0xFF1F6CFA),
+                            Color(0xFFC839F6),
+                            Color(0xFF06B6D4),
+                          ]
+                        : const [
+                            Color(0xFFDB2777),
+                            Color(0xFF7C3AED),
+                            Color(0xFF0284C7),
+                          ],
                   ),
                 ),
               ),
@@ -278,30 +336,35 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
                   name: 'Orchestrator',
                   status: 'completed',
                   width: chipWidth,
+                  isDark: isDark,
                 ),
                 _buildMobileAgentChip(
                   icon: '💬',
                   name: 'Socratic Tutor',
                   status: 'active',
                   width: chipWidth,
+                  isDark: isDark,
                 ),
                 _buildMobileAgentChip(
                   icon: '📺',
                   name: 'YouTube Curator',
                   status: 'active',
                   width: chipWidth,
+                  isDark: isDark,
                 ),
                 _buildMobileAgentChip(
                   icon: '📚',
                   name: 'Researcher',
                   status: 'active',
                   width: chipWidth,
+                  isDark: isDark,
                 ),
                 _buildMobileAgentChip(
                   icon: '📝',
                   name: 'Quiz Agent',
                   status: 'active',
                   width: chipWidth,
+                  isDark: isDark,
                 ),
               ],
             );
@@ -316,29 +379,40 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
     required String name,
     required String status,
     required double width,
+    required bool isDark,
   }) {
     final bool isCompleted = status == 'completed';
     final bool isActive = status == 'active';
 
-    Color borderColor = Colors.white.withValues(alpha: 0.08);
-    Color bgColor = const Color(0xFF151426).withValues(alpha: 0.7);
+    Color borderColor = isDark
+        ? Colors.white.withValues(alpha: 0.08)
+        : const Color(0xFFE2E8F0);
+    Color bgColor = isDark
+        ? const Color(0xFF151624).withValues(alpha: 0.7)
+        : const Color(0xFFF8FAFC);
     List<BoxShadow> shadows = [];
 
     if (isActive) {
-      borderColor = const Color(0xFFA855F7).withValues(alpha: 0.45);
-      bgColor = const Color(0xFFA855F7).withValues(alpha: 0.08);
+      borderColor = (isDark ? AppColors.primary : const Color(0xFFA855F7))
+          .withValues(alpha: isDark ? 0.45 : 0.50);
+      bgColor = isDark
+          ? AppColors.primary.withValues(alpha: 0.08)
+          : const Color(0xFFF5F3FF);
       shadows = [
         BoxShadow(
-          color: const Color(0xFFA855F7).withValues(alpha: 0.12),
+          color: (isDark ? AppColors.primary : const Color(0xFFA855F7))
+              .withValues(alpha: isDark ? 0.16 : 0.10),
           blurRadius: 8,
         ),
       ];
     } else if (isCompleted) {
-      borderColor = const Color(0xFF10B981).withValues(alpha: 0.45);
-      bgColor = const Color(0xFF10B981).withValues(alpha: 0.08);
+      borderColor = const Color(0xFF10B981).withValues(alpha: isDark ? 0.45 : 0.50);
+      bgColor = isDark
+          ? const Color(0xFF10B981).withValues(alpha: 0.08)
+          : const Color(0xFFF0FDF4);
       shadows = [
         BoxShadow(
-          color: const Color(0xFF10B981).withValues(alpha: 0.12),
+          color: const Color(0xFF10B981).withValues(alpha: isDark ? 0.12 : 0.10),
           blurRadius: 8,
         ),
       ];
@@ -365,7 +439,7 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
               style: GoogleFonts.inter(
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
-                color: Colors.white,
+                color: isDark ? Colors.white : AppColors.textPrimary,
               ),
             ),
           ),
@@ -374,16 +448,18 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
               decoration: BoxDecoration(
-                color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                color: const Color(0xFF10B981).withValues(alpha: isDark ? 0.15 : 0.12),
                 borderRadius: BorderRadius.circular(6),
-                border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.4)),
+                border: Border.all(
+                  color: const Color(0xFF10B981).withValues(alpha: isDark ? 0.4 : 0.35),
+                ),
               ),
               child: Text(
                 '✓ Done',
                 style: GoogleFonts.inter(
                   fontSize: 9,
                   fontWeight: FontWeight.w700,
-                  color: const Color(0xFF34D399),
+                  color: isDark ? const Color(0xFF34D399) : const Color(0xFF059669),
                 ),
               ),
             )
@@ -391,21 +467,30 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
               decoration: BoxDecoration(
-                color: const Color(0xFFA855F7).withValues(alpha: 0.18),
+                color: (isDark ? AppColors.primary : const Color(0xFFA855F7))
+                    .withValues(alpha: isDark ? 0.18 : 0.12),
                 borderRadius: BorderRadius.circular(6),
-                border: Border.all(color: const Color(0xFFA855F7).withValues(alpha: 0.45)),
+                border: Border.all(
+                  color: (isDark ? AppColors.primary : const Color(0xFFA855F7))
+                      .withValues(alpha: isDark ? 0.45 : 0.40),
+                ),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const GradientSpinner(size: 8),
+                  GradientSpinner(
+                    size: 8,
+                    backgroundColor: isDark
+                        ? const Color(0xFF151624)
+                        : const Color(0xFFF5F3FF),
+                  ),
                   const SizedBox(width: 4),
                   Text(
                     'Active',
                     style: GoogleFonts.inter(
                       fontSize: 9,
                       fontWeight: FontWeight.w700,
-                      color: const Color(0xFFE879F9),
+                      color: isDark ? const Color(0xFF60A5FA) : const Color(0xFF7C3AED),
                     ),
                   ),
                 ],
@@ -417,7 +502,7 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
   }
 
   /// Desktop / Tablet View: Full expansive Compute Cluster Dashboard
-  Widget _buildDesktopContent() {
+  Widget _buildDesktopContent({required bool isDark}) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -431,7 +516,12 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const GradientSpinner(size: 14),
+                    GradientSpinner(
+                      size: 14,
+                      backgroundColor: isDark
+                          ? const Color(0xFF11121D)
+                          : Colors.white,
+                    ),
                     const SizedBox(width: 8),
                     Text(
                       'EDU-TECH AI COMPUTE CLUSTER  •  NEURAL INFERENCE',
@@ -439,16 +529,20 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
                         letterSpacing: 1.5,
-                        color: const Color(0xFF9CA3AF),
+                        color: isDark
+                            ? const Color(0xFF9CA3AF)
+                            : AppColors.slate500,
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 12),
                 ShaderMask(
-                  shaderCallback: (bounds) => const LinearGradient(
-                    colors: [Color(0xFFEC4899), Color(0xFFA855F7)],
-                  ).createShader(bounds),
+                  shaderCallback: (bounds) => (isDark
+                      ? AppColors.primaryGradient
+                      : const LinearGradient(
+                          colors: [Color(0xFFBE185D), Color(0xFF7C3AED)],
+                        )).createShader(bounds),
                   child: Text(
                     widget.title,
                     textAlign: TextAlign.center,
@@ -466,7 +560,9 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
                   textAlign: TextAlign.center,
                   style: GoogleFonts.inter(
                     fontSize: 12,
-                    color: const Color(0xFF9CA3AF),
+                    color: isDark
+                        ? const Color(0xFF9CA3AF)
+                        : AppColors.textSecondary,
                   ),
                 ),
               ],
@@ -474,13 +570,13 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
             Positioned(
               right: 0,
               top: 0,
-              child: _buildLiveInferenceBadge(isMobile: false),
+              child: _buildLiveInferenceBadge(isMobile: false, isDark: isDark),
             ),
           ],
         ),
-        
+
         const SizedBox(height: 24),
-        const Divider(color: Colors.white12, height: 1),
+        Divider(color: AppColors.border, height: 1),
         const SizedBox(height: 24),
 
         // Neural Network Canvas
@@ -494,20 +590,30 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
               height: canvasHeight + 36,
               padding: const EdgeInsets.fromLTRB(16, 14, 16, 22),
               decoration: BoxDecoration(
-                color: const Color(0xFF151426),
+                color: isDark
+                    ? const Color(0xFF151624)
+                    : const Color(0xFFF8FAFC),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+                border: Border.all(
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.05)
+                      : const Color(0xFFE2E8F0),
+                ),
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(16),
                 child: AnimatedBuilder(
-                  animation: Listenable.merge([_pulseController, _pulseDotController]),
+                  animation: Listenable.merge([
+                    _pulseController,
+                    _pulseDotController,
+                  ]),
                   builder: (context, child) => Transform.scale(
                     scale: 0.97 + (_pulseDotController.value * 0.03),
                     child: CustomPaint(
                       size: Size(canvasWidth, canvasHeight),
                       painter: NeuralNetworkPainter(
                         animationValue: _pulseController.value,
+                        isDark: isDark,
                       ),
                     ),
                   ),
@@ -524,7 +630,9 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
             return Container(
               height: 8,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.06),
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.06)
+                    : const Color(0xFFE2E8F0),
                 borderRadius: BorderRadius.circular(10),
               ),
               alignment: Alignment.centerLeft,
@@ -534,8 +642,18 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
                 height: 8,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10),
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFEC4899), Color(0xFFA855F7), Color(0xFF06B6D4)],
+                  gradient: LinearGradient(
+                    colors: isDark
+                        ? const [
+                            Color(0xFF1F6CFA),
+                            Color(0xFFC839F6),
+                            Color(0xFF06B6D4),
+                          ]
+                        : const [
+                            Color(0xFFDB2777),
+                            Color(0xFF7C3AED),
+                            Color(0xFF0284C7),
+                          ],
                   ),
                 ),
               ),
@@ -549,7 +667,7 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
           builder: (context, constraints) {
             final double availableWidth = constraints.maxWidth;
             final double cardWidth = (availableWidth - 12) / 2;
-            
+
             return Wrap(
               spacing: 12,
               runSpacing: 12,
@@ -557,38 +675,48 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
               children: [
                 _buildAgentCard(
                   name: '🧠 Orchestrator Agent',
-                  desc: 'Decomposing topic into structured, age-appropriate milestone roadmap.',
+                  desc:
+                      'Decomposing topic into structured, age-appropriate milestone roadmap.',
                   status: 'completed',
                   width: cardWidth,
                   isMobile: false,
+                  isDark: isDark,
                 ),
                 _buildAgentCard(
                   name: '💬 Socratic Tutor',
-                  desc: 'Crafting deep intuitive explanations & interactive guiding questions.',
+                  desc:
+                      'Crafting deep intuitive explanations & interactive guiding questions.',
                   status: 'active',
                   width: cardWidth,
                   isMobile: false,
+                  isDark: isDark,
                 ),
                 _buildAgentCard(
                   name: '📺 YouTube Curator',
-                  desc: 'Filtering high-yield educational videos with precise timestamp deep-linking.',
+                  desc:
+                      'Filtering high-yield educational videos with precise timestamp deep-linking.',
                   status: 'active',
                   width: cardWidth,
                   isMobile: false,
+                  isDark: isDark,
                 ),
                 _buildAgentCard(
                   name: '📚 Academic Researcher',
-                  desc: 'Indexing peer-reviewed open access papers from OpenAlex & Semantic Scholar.',
+                  desc:
+                      'Indexing peer-reviewed open access papers from OpenAlex & Semantic Scholar.',
                   status: 'active',
                   width: cardWidth,
                   isMobile: false,
+                  isDark: isDark,
                 ),
                 _buildAgentCard(
                   name: '📝 Quiz Agent',
-                  desc: 'Structuring adaptive comprehension questions & XP reward multipliers.',
+                  desc:
+                      'Structuring adaptive comprehension questions & XP reward multipliers.',
                   status: 'active',
                   width: cardWidth,
                   isMobile: false,
+                  isDark: isDark,
                 ),
               ],
             );
@@ -598,19 +726,24 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
     );
   }
 
-  Widget _buildLiveInferenceBadge({required bool isMobile}) {
+  Widget _buildLiveInferenceBadge({
+    required bool isMobile,
+    required bool isDark,
+  }) {
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: isMobile ? 8 : 10,
         vertical: isMobile ? 3 : 4,
       ),
       decoration: BoxDecoration(
-        color: const Color(0xFF10B981).withValues(alpha: 0.12),
+        color: const Color(0xFF10B981).withValues(alpha: isDark ? 0.12 : 0.10),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.45)),
+        border: Border.all(
+          color: const Color(0xFF10B981).withValues(alpha: isDark ? 0.45 : 0.40),
+        ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF10B981).withValues(alpha: 0.18),
+            color: const Color(0xFF10B981).withValues(alpha: isDark ? 0.18 : 0.12),
             blurRadius: 10,
             spreadRadius: 1,
           ),
@@ -631,8 +764,10 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
                   boxShadow: [
                     BoxShadow(
                       color: const Color(0xFF10B981),
-                      blurRadius: (isMobile ? 6 : 8) * _pulseDotController.value,
-                      spreadRadius: (isMobile ? 1.5 : 2) * _pulseDotController.value,
+                      blurRadius:
+                          (isMobile ? 6 : 8) * _pulseDotController.value,
+                      spreadRadius:
+                          (isMobile ? 1.5 : 2) * _pulseDotController.value,
                     ),
                   ],
                 ),
@@ -645,7 +780,7 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
             style: GoogleFonts.inter(
               fontSize: isMobile ? 9 : 10,
               fontWeight: FontWeight.w700,
-              color: const Color(0xFF10B981),
+              color: isDark ? const Color(0xFF10B981) : const Color(0xFF047857),
             ),
           ),
         ],
@@ -659,32 +794,51 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
     required String status,
     required double width,
     required bool isMobile,
+    required bool isDark,
   }) {
     final bool isActive = status == 'active';
     final bool isCompleted = status == 'completed';
 
-    Color bgColor = Colors.white.withValues(alpha: 0.03);
-    Color borderColor = Colors.white.withValues(alpha: 0.08);
+    Color bgColor = isDark
+        ? Colors.white.withValues(alpha: 0.03)
+        : const Color(0xFFF8FAFC);
+    Color borderColor = isDark
+        ? Colors.white.withValues(alpha: 0.08)
+        : const Color(0xFFE2E8F0);
     List<BoxShadow> shadows = [];
 
     if (isActive) {
-      bgColor = const Color(0xFFA855F7).withValues(alpha: 0.05);
-      borderColor = const Color(0xFFA855F7).withValues(alpha: 0.4);
+      bgColor = isDark
+          ? AppColors.primary.withValues(alpha: 0.06)
+          : const Color(0xFFF5F3FF);
+      borderColor = (isDark ? AppColors.primary : const Color(0xFFA855F7))
+          .withValues(alpha: isDark ? 0.45 : 0.45);
       shadows = [
         BoxShadow(
-          color: const Color(0xFFA855F7).withValues(alpha: 0.15),
+          color: (isDark ? AppColors.primary : const Color(0xFFA855F7))
+              .withValues(alpha: isDark ? 0.18 : 0.10),
           blurRadius: 12,
           spreadRadius: 1,
         ),
       ];
     } else if (isCompleted) {
-      bgColor = const Color(0xFF10B981).withValues(alpha: 0.05);
-      borderColor = const Color(0xFF10B981).withValues(alpha: 0.4);
+      bgColor = isDark
+          ? const Color(0xFF10B981).withValues(alpha: 0.05)
+          : const Color(0xFFF0FDF4);
+      borderColor = const Color(0xFF10B981).withValues(alpha: isDark ? 0.4 : 0.45);
       shadows = [
         BoxShadow(
-          color: const Color(0xFF10B981).withValues(alpha: 0.12),
+          color: const Color(0xFF10B981).withValues(alpha: isDark ? 0.12 : 0.10),
           blurRadius: 12,
           spreadRadius: 1,
+        ),
+      ];
+    } else if (!isDark) {
+      shadows = [
+        BoxShadow(
+          color: const Color(0x06000000),
+          blurRadius: 8,
+          offset: const Offset(0, 2),
         ),
       ];
     }
@@ -711,12 +865,12 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
                   style: GoogleFonts.inter(
                     fontSize: isMobile ? 13 : 14,
                     fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                    color: isDark ? Colors.white : AppColors.textPrimary,
                   ),
                 ),
               ),
               const SizedBox(width: 8),
-              _buildStatusTag(status, isMobile: isMobile),
+              _buildStatusTag(status, isMobile: isMobile, isDark: isDark),
             ],
           ),
           const SizedBox(height: 8),
@@ -724,7 +878,7 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
             desc,
             style: GoogleFonts.inter(
               fontSize: isMobile ? 11 : 12,
-              color: const Color(0xFF9CA3AF),
+              color: isDark ? const Color(0xFF9CA3AF) : AppColors.textSecondary,
               height: 1.4,
             ),
           ),
@@ -733,7 +887,11 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
     );
   }
 
-  Widget _buildStatusTag(String status, {required bool isMobile}) {
+  Widget _buildStatusTag(
+    String status, {
+    required bool isMobile,
+    required bool isDark,
+  }) {
     if (status == 'completed') {
       return Container(
         padding: EdgeInsets.symmetric(
@@ -741,16 +899,18 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
           vertical: isMobile ? 3 : 4,
         ),
         decoration: BoxDecoration(
-          color: const Color(0xFF10B981).withValues(alpha: 0.15),
+          color: const Color(0xFF10B981).withValues(alpha: isDark ? 0.15 : 0.12),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.4)),
+          border: Border.all(
+            color: const Color(0xFF10B981).withValues(alpha: isDark ? 0.4 : 0.35),
+          ),
         ),
         child: Text(
           '✓ COMPLETED',
           style: GoogleFonts.inter(
             fontSize: isMobile ? 9 : 10,
             fontWeight: FontWeight.w700,
-            color: const Color(0xFF34D399),
+            color: isDark ? const Color(0xFF34D399) : const Color(0xFF059669),
           ),
         ),
       );
@@ -761,21 +921,30 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
           vertical: isMobile ? 3 : 4,
         ),
         decoration: BoxDecoration(
-          color: const Color(0xFFA855F7).withValues(alpha: 0.18),
+          color: (isDark ? AppColors.primary : const Color(0xFFA855F7))
+              .withValues(alpha: isDark ? 0.18 : 0.12),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFA855F7).withValues(alpha: 0.45)),
+          border: Border.all(
+            color: (isDark ? AppColors.primary : const Color(0xFFA855F7))
+                .withValues(alpha: isDark ? 0.45 : 0.40),
+          ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            GradientSpinner(size: isMobile ? 9 : 10),
+            GradientSpinner(
+              size: isMobile ? 9 : 10,
+              backgroundColor: isDark
+                  ? const Color(0xFF11121D)
+                  : const Color(0xFFF5F3FF),
+            ),
             SizedBox(width: isMobile ? 4 : 6),
             Text(
               'EXECUTING...',
               style: GoogleFonts.inter(
                 fontSize: isMobile ? 9 : 10,
                 fontWeight: FontWeight.w700,
-                color: const Color(0xFFE879F9),
+                color: isDark ? const Color(0xFF60A5FA) : const Color(0xFF7C3AED),
               ),
             ),
           ],
@@ -788,7 +957,13 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
 
 class GradientSpinner extends StatefulWidget {
   final double size;
-  const GradientSpinner({super.key, required this.size});
+  final Color? backgroundColor;
+
+  const GradientSpinner({
+    super.key,
+    required this.size,
+    this.backgroundColor,
+  });
 
   @override
   State<GradientSpinner> createState() => _GradientSpinnerState();
@@ -815,6 +990,9 @@ class _GradientSpinnerState extends State<GradientSpinner>
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final defaultBg = isDark ? const Color(0xFF11121D) : Colors.white;
+
     return RotationTransition(
       turns: _controller,
       child: Container(
@@ -822,17 +1000,23 @@ class _GradientSpinnerState extends State<GradientSpinner>
         height: widget.size,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          gradient: const SweepGradient(
-            colors: [Color(0xFF3B82F6), Color(0xFFEC4899), Colors.transparent],
-            stops: [0.0, 0.5, 1.0],
+          gradient: SweepGradient(
+            colors: isDark
+                ? const [
+                    Color(0xFF1F6CFA),
+                    Color(0xFFC839F6),
+                    Colors.transparent,
+                  ]
+                : const [Color(0xFF3B82F6), Color(0xFFEC4899), Colors.transparent],
+            stops: const [0.0, 0.5, 1.0],
           ),
         ),
         child: Padding(
           padding: const EdgeInsets.all(2.0),
           child: Container(
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: Color(0xFF1C1A30), // Match new container background
+              color: widget.backgroundColor ?? defaultBg,
             ),
           ),
         ),
@@ -843,8 +1027,12 @@ class _GradientSpinnerState extends State<GradientSpinner>
 
 class NeuralNetworkPainter extends CustomPainter {
   final double animationValue;
+  final bool isDark;
 
-  NeuralNetworkPainter({required this.animationValue});
+  NeuralNetworkPainter({
+    required this.animationValue,
+    this.isDark = true,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -852,7 +1040,7 @@ class NeuralNetworkPainter extends CustomPainter {
     // Scale X and Y to fit available size
     final scaleX = size.width / 800;
     final scaleY = size.height / 190;
-    
+
     Offset getPt(double x, double y) {
       return Offset(x * scaleX, y * scaleY);
     }
@@ -860,30 +1048,37 @@ class NeuralNetworkPainter extends CustomPainter {
     // Nodes with comfortable vertical clearance (Y range: 32 -> 140)
     final topic = getPt(80, 48);
     final contextNode = getPt(80, 136);
-    
+
     final orchestrator = getPt(280, 32);
     final roadmap = getPt(280, 92);
     final vectorRag = getPt(280, 152);
-    
+
     final socratic = getPt(520, 32);
     final youtube = getPt(520, 92);
     final academic = getPt(520, 152);
-    
+
     final workspace = getPt(720, 92);
 
     // Draw lines
-    final paintLine = Paint()..style = PaintingStyle.stroke..strokeWidth = 2;
+    final paintLine = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2;
 
     void drawLine(Offset p1, Offset p2, Color color) {
       paintLine.color = color;
       canvas.drawLine(p1, p2, paintLine);
     }
 
-    final pinkLine = const Color(0xFFEC4899).withValues(alpha: 0.35);
-    final purpleLine = const Color(0xFFA855F7).withValues(alpha: 0.4);
-    final blueLine = const Color(0xFF3B82F6).withValues(alpha: 0.4);
-    final cyanLine = const Color(0xFF06B6D4).withValues(alpha: 0.4);
-    final greenLine = const Color(0xFF10B981).withValues(alpha: 0.4);
+    final pinkLine = (isDark ? const Color(0xFFEC4899) : const Color(0xFFDB2777))
+        .withValues(alpha: isDark ? 0.35 : 0.45);
+    final purpleLine = (isDark ? const Color(0xFFA855F7) : const Color(0xFF7C3AED))
+        .withValues(alpha: isDark ? 0.40 : 0.45);
+    final blueLine = (isDark ? const Color(0xFF3B82F6) : const Color(0xFF2563EB))
+        .withValues(alpha: isDark ? 0.40 : 0.45);
+    final cyanLine = (isDark ? const Color(0xFF06B6D4) : const Color(0xFF0891B2))
+        .withValues(alpha: isDark ? 0.40 : 0.45);
+    final greenLine = (isDark ? const Color(0xFF10B981) : const Color(0xFF059669))
+        .withValues(alpha: isDark ? 0.40 : 0.45);
 
     drawLine(topic, orchestrator, pinkLine);
     drawLine(topic, roadmap, pinkLine);
@@ -905,100 +1100,226 @@ class NeuralNetworkPainter extends CustomPainter {
 
     // Draw traveling pulses (interpolate between x1 and x2)
     final pulsePaint = Paint()..style = PaintingStyle.fill;
-    
+
     Offset lerp(Offset p1, Offset p2, double t) {
       return Offset(p1.dx + (p2.dx - p1.dx) * t, p1.dy + (p2.dy - p1.dy) * t);
     }
 
     // Flow from left to middle
-    pulsePaint.color = const Color(0xFFEC4899);
+    pulsePaint.color = isDark ? const Color(0xFFEC4899) : const Color(0xFFDB2777);
     canvas.drawCircle(lerp(topic, orchestrator, animationValue), 4, pulsePaint);
-    canvas.drawCircle(lerp(contextNode, vectorRag, (animationValue + 0.2) % 1.0), 4, pulsePaint);
-    canvas.drawCircle(lerp(topic, roadmap, (animationValue + 0.5) % 1.0), 4, pulsePaint);
-    canvas.drawCircle(lerp(contextNode, roadmap, (animationValue + 0.8) % 1.0), 4, pulsePaint);
-    
+    canvas.drawCircle(
+      lerp(contextNode, vectorRag, (animationValue + 0.2) % 1.0),
+      4,
+      pulsePaint,
+    );
+    canvas.drawCircle(
+      lerp(topic, roadmap, (animationValue + 0.5) % 1.0),
+      4,
+      pulsePaint,
+    );
+    canvas.drawCircle(
+      lerp(contextNode, roadmap, (animationValue + 0.8) % 1.0),
+      4,
+      pulsePaint,
+    );
+
     // Flow from middle to right
-    pulsePaint.color = const Color(0xFFA855F7);
-    canvas.drawCircle(lerp(orchestrator, socratic, (animationValue + 0.1) % 1.0), 4, pulsePaint);
-    canvas.drawCircle(lerp(roadmap, youtube, (animationValue + 0.4) % 1.0), 4, pulsePaint);
-    canvas.drawCircle(lerp(vectorRag, academic, (animationValue + 0.7) % 1.0), 4, pulsePaint);
+    pulsePaint.color = isDark ? const Color(0xFFA855F7) : const Color(0xFF7C3AED);
+    canvas.drawCircle(
+      lerp(orchestrator, socratic, (animationValue + 0.1) % 1.0),
+      4,
+      pulsePaint,
+    );
+    canvas.drawCircle(
+      lerp(roadmap, youtube, (animationValue + 0.4) % 1.0),
+      4,
+      pulsePaint,
+    );
+    canvas.drawCircle(
+      lerp(vectorRag, academic, (animationValue + 0.7) % 1.0),
+      4,
+      pulsePaint,
+    );
 
     // Flow from right to Workspace
-    pulsePaint.color = const Color(0xFF3B82F6);
-    canvas.drawCircle(lerp(socratic, workspace, (animationValue + 0.3) % 1.0), 4, pulsePaint);
-    canvas.drawCircle(lerp(youtube, workspace, (animationValue + 0.6) % 1.0), 4, pulsePaint);
-    canvas.drawCircle(lerp(academic, workspace, (animationValue + 0.9) % 1.0), 4, pulsePaint);
+    pulsePaint.color = isDark ? const Color(0xFF3B82F6) : const Color(0xFF2563EB);
+    canvas.drawCircle(
+      lerp(socratic, workspace, (animationValue + 0.3) % 1.0),
+      4,
+      pulsePaint,
+    );
+    canvas.drawCircle(
+      lerp(youtube, workspace, (animationValue + 0.6) % 1.0),
+      4,
+      pulsePaint,
+    );
+    canvas.drawCircle(
+      lerp(academic, workspace, (animationValue + 0.9) % 1.0),
+      4,
+      pulsePaint,
+    );
 
     // Draw Nodes with luminous aura
     void drawNode(
-      Offset pt, 
-      double r, 
-      Color strokeColor, 
-      String emoji, 
-      String label, 
-      double strokeW, 
-      {bool isCore = false}
-    ) {
+      Offset pt,
+      double r,
+      Color strokeColor,
+      Color labelColor,
+      String emoji,
+      String label,
+      double strokeW, {
+      bool isCore = false,
+    }) {
       // Ambient glow ring behind node
       final glowPaint = Paint()
         ..style = PaintingStyle.stroke
-        ..color = strokeColor.withValues(alpha: isCore ? 0.45 : 0.22)
+        ..color = strokeColor.withValues(
+          alpha: isCore ? (isDark ? 0.45 : 0.25) : (isDark ? 0.22 : 0.15),
+        )
         ..strokeWidth = isCore ? 4 + 2 * animationValue : 3
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);
-      canvas.drawCircle(pt, r + (isCore ? 3 + 2 * animationValue : 2), glowPaint);
+      canvas.drawCircle(
+        pt,
+        r + (isCore ? 3 + 2 * animationValue : 2),
+        glowPaint,
+      );
 
-      final fillPaint = Paint()..style = PaintingStyle.fill..color = const Color(0xFF0F172A);
-      final borderPaint = Paint()..style = PaintingStyle.stroke..color = strokeColor..strokeWidth = strokeW;
-      
+      final fillPaint = Paint()
+        ..style = PaintingStyle.fill
+        ..color = isDark ? const Color(0xFF0B0C14) : Colors.white;
+      final borderPaint = Paint()
+        ..style = PaintingStyle.stroke
+        ..color = strokeColor
+        ..strokeWidth = strokeW;
+
       canvas.drawCircle(pt, r, fillPaint);
       canvas.drawCircle(pt, r, borderPaint);
 
       // Emoji in center of node
       final emojiPainter = TextPainter(
-        text: TextSpan(text: emoji, style: TextStyle(fontSize: isCore ? 14 : 12)),
+        text: TextSpan(
+          text: emoji,
+          style: TextStyle(fontSize: isCore ? 14 : 12),
+        ),
         textDirection: TextDirection.ltr,
       )..layout();
-      
+
       emojiPainter.paint(
-        canvas, 
-        Offset(pt.dx - emojiPainter.width / 2, pt.dy - emojiPainter.height / 2)
+        canvas,
+        Offset(pt.dx - emojiPainter.width / 2, pt.dy - emojiPainter.height / 2),
       );
 
       // Label below node with guaranteed bottom margin
       final labelPainter = TextPainter(
         text: TextSpan(
-          text: label, 
+          text: label,
           style: GoogleFonts.inter(
-            fontSize: 10, 
+            fontSize: 10,
             fontWeight: FontWeight.w700,
-            color: strokeColor,
-          )
+            color: labelColor,
+          ),
         ),
         textDirection: TextDirection.ltr,
       )..layout();
-      
+
       labelPainter.paint(
-        canvas, 
-        Offset(pt.dx - labelPainter.width / 2, pt.dy + r + 4)
+        canvas,
+        Offset(pt.dx - labelPainter.width / 2, pt.dy + r + 4),
       );
     }
 
-    drawNode(topic, 16, const Color(0xFFEC4899), '🎯', 'Topic', 3);
-    drawNode(contextNode, 16, const Color(0xFFF43F5E), '👤', 'Context', 3);
-    
-    drawNode(orchestrator, 18, const Color(0xFFA855F7), '🧠', 'Orchestrator', 3, isCore: true);
-    drawNode(roadmap, 15, const Color(0xFF8B5CF6), '⚡', 'Roadmap', 3);
-    drawNode(vectorRag, 15, const Color(0xFF7C3AED), '📊', 'Vector RAG', 3);
+    drawNode(
+      topic,
+      16,
+      const Color(0xFFEC4899),
+      isDark ? const Color(0xFFEC4899) : const Color(0xFFBE185D),
+      '🎯',
+      'Topic',
+      3,
+    );
+    drawNode(
+      contextNode,
+      16,
+      const Color(0xFFF43F5E),
+      isDark ? const Color(0xFFF43F5E) : const Color(0xFFE11D48),
+      '👤',
+      'Context',
+      3,
+    );
 
-    drawNode(socratic, 16, const Color(0xFF3B82F6), '💬', 'Socratic', 3);
-    drawNode(youtube, 16, const Color(0xFF06B6D4), '📺', 'YouTube', 3);
-    drawNode(academic, 16, const Color(0xFF10B981), '📚', 'Academic', 3);
+    drawNode(
+      orchestrator,
+      18,
+      const Color(0xFFA855F7),
+      isDark ? const Color(0xFFA855F7) : const Color(0xFF7C3AED),
+      '🧠',
+      'Orchestrator',
+      3,
+      isCore: true,
+    );
+    drawNode(
+      roadmap,
+      15,
+      const Color(0xFF8B5CF6),
+      isDark ? const Color(0xFF8B5CF6) : const Color(0xFF6D28D9),
+      '⚡',
+      'Roadmap',
+      3,
+    );
+    drawNode(
+      vectorRag,
+      15,
+      const Color(0xFF7C3AED),
+      isDark ? const Color(0xFF7C3AED) : const Color(0xFF5B21B6),
+      '📊',
+      'Vector RAG',
+      3,
+    );
 
-    drawNode(workspace, 22, const Color(0xFFEC4899), '🎓', 'Workspace', 4, isCore: true);
+    drawNode(
+      socratic,
+      16,
+      const Color(0xFF3B82F6),
+      isDark ? const Color(0xFF3B82F6) : const Color(0xFF1D4ED8),
+      '💬',
+      'Socratic',
+      3,
+    );
+    drawNode(
+      youtube,
+      16,
+      const Color(0xFF06B6D4),
+      isDark ? const Color(0xFF06B6D4) : const Color(0xFF0E7490),
+      '📺',
+      'YouTube',
+      3,
+    );
+    drawNode(
+      academic,
+      16,
+      const Color(0xFF10B981),
+      isDark ? const Color(0xFF10B981) : const Color(0xFF047857),
+      '📚',
+      'Academic',
+      3,
+    );
+
+    drawNode(
+      workspace,
+      22,
+      const Color(0xFFEC4899),
+      isDark ? const Color(0xFFEC4899) : const Color(0xFFBE185D),
+      '🎓',
+      'Workspace',
+      4,
+      isCore: true,
+    );
   }
 
   @override
   bool shouldRepaint(covariant NeuralNetworkPainter oldDelegate) {
-    return oldDelegate.animationValue != animationValue;
+    return oldDelegate.animationValue != animationValue ||
+        oldDelegate.isDark != isDark;
   }
 }

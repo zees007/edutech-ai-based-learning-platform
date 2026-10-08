@@ -1,12 +1,12 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/providers/auth_provider.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/text_styles.dart';
-import '../../../widgets/gradient_button.dart';
+import 'package:devzees_edutechai_client/core/providers/auth_provider.dart';
+import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
+import 'package:devzees_edutechai_client/core/theme/text_styles.dart';
+import 'package:devzees_edutechai_client/presentation/widgets/gradient_button.dart';
+import 'package:devzees_edutechai_client/presentation/widgets/gradient_text.dart';
 
 class AuthFormCard extends ConsumerStatefulWidget {
   final bool isLogin;
@@ -27,11 +27,13 @@ class AuthFormCard extends ConsumerStatefulWidget {
 class _AuthFormCardState extends ConsumerState<AuthFormCard> {
   final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
-  
+
   final _firstNameCtrl = TextEditingController();
   final _lastNameCtrl = TextEditingController();
   final _mobileCtrl = TextEditingController();
   final _countryCtrl = TextEditingController();
+
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
@@ -47,7 +49,7 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
   void _handleLogin() async {
     final email = _emailCtrl.text.trim();
     final password = _passwordCtrl.text;
-    
+
     if (email.isEmpty || password.isEmpty) {
       _showSnackBar('Please enter email and password');
       return;
@@ -124,393 +126,502 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
 
   @override
   Widget build(BuildContext context) {
-    return _buildGlassCard(
+    final isDark = AppColors.isDark;
+
+    return _buildContainerCard(
+      isDark: isDark,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
         children: [
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
-            child: widget.isLogin ? _buildSignInHeader(widget.isMobile) : _buildSignUpHeader(widget.isMobile),
+          // Step Indicator Badge
+          Center(
+            child: _buildStepBadge(
+              widget.isLogin ? '🚀  Step 04A • Login' : '✨  Step 04B • Register',
+              isDark,
+            ),
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 16),
+
+          // Header & Title
+          _buildHeader(widget.isMobile, isDark),
+          const SizedBox(height: 20),
+
+          // Segmented Tab Switcher (Sign In vs Create Account)
+          _buildSegmentedTabSwitcher(isDark),
+          const SizedBox(height: 24),
+
+          // Forms (Sign In vs Sign Up)
           AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
-            child: widget.isLogin ? _buildSignInForm() : _buildSignUpForm(widget.isMobile),
+            duration: const Duration(milliseconds: 250),
+            child: widget.isLogin
+                ? _buildSignInForm(isDark)
+                : _buildSignUpForm(widget.isMobile, isDark),
+          ),
+          const SizedBox(height: 20),
+
+          // Alternative Link
+          _buildAlternativeLink(isDark),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContainerCard({required bool isDark, required Widget child}) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: isDark ? null : Colors.white,
+        gradient: isDark ? AppColors.cardGradientOpaque : null,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: isDark
+              ? AppColors.accentPurple.withValues(alpha: 0.45)
+              : const Color(0xFFE2E8F0),
+          width: 1.5,
+        ),
+        boxShadow: isDark
+            ? [
+                BoxShadow(
+                  color: AppColors.accentPurple.withValues(alpha: 0.35),
+                  blurRadius: 65,
+                  spreadRadius: -15,
+                  offset: const Offset(0, 25),
+                ),
+              ]
+            : const [
+                BoxShadow(
+                  color: Color(0x0F0F172A),
+                  blurRadius: 30,
+                  spreadRadius: -4,
+                  offset: Offset(0, 12),
+                ),
+                BoxShadow(
+                  color: Color(0x060F172A),
+                  blurRadius: 8,
+                  offset: Offset(0, 2),
+                ),
+              ],
+      ),
+      padding: EdgeInsets.symmetric(
+        horizontal: widget.isMobile ? 20 : 36,
+        vertical: widget.isMobile ? 24 : 32,
+      ),
+      child: child,
+    );
+  }
+
+  Widget _buildStepBadge(String text, bool isDark) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+      decoration: BoxDecoration(
+        color: isDark
+            ? AppColors.accentPurple.withValues(alpha: 0.15)
+            : const Color(0xFFF5F3FF),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isDark
+              ? AppColors.accentPurple.withValues(alpha: 0.4)
+              : const Color(0xFFDDD6FE),
+        ),
+        boxShadow: isDark
+            ? [
+                BoxShadow(
+                  color: AppColors.accentPurple.withValues(alpha: 0.3),
+                  blurRadius: 16,
+                ),
+              ]
+            : const [
+                BoxShadow(
+                  color: Color(0x060F172A),
+                  blurRadius: 6,
+                  offset: Offset(0, 1),
+                ),
+              ],
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: isDark ? AppColors.lavender : const Color(0xFF6D28D9),
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.8,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader(bool isMobile, bool isDark) {
+    return Column(
+      children: [
+        Wrap(
+          alignment: WrapAlignment.center,
+          children: [
+            Text(
+              widget.isLogin ? "Sign In to " : "Create Your ",
+              style: AppTextStyles.h2.copyWith(
+                fontSize: isMobile ? 23 : 27,
+                fontWeight: FontWeight.w800,
+                color: AppColors.textPrimary,
+                letterSpacing: -0.5,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            GradientText(
+              widget.isLogin ? "AI Workspace" : "Learning Account",
+              gradient: AppColors.pinkPurpleGradient,
+              style: AppTextStyles.h2.copyWith(
+                fontSize: isMobile ? 23 : 27,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.5,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 380),
+          child: Text(
+            widget.isLogin
+                ? "Enter your credentials to resume your personalized curriculum session."
+                : "Instantiate your personal autonomous AI agent squad in seconds.",
+            style: AppTextStyles.bodyPrimary.copyWith(
+              fontSize: 13.5,
+              color: isDark ? AppColors.textSecondary : const Color(0xFF64748B),
+              height: 1.45,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSegmentedTabSwitcher(bool isDark) {
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.surfaceSubtle : const Color(0xFFF1F5F9),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark
+              ? AppColors.accentPurple.withValues(alpha: 0.3)
+              : const Color(0xFFE2E8F0),
+        ),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: _buildTabItem(
+              title: "Sign In",
+              isSelected: widget.isLogin,
+              isDark: isDark,
+              onTap: () {
+                if (!widget.isLogin) widget.onToggleMode();
+              },
+            ),
+          ),
+          Expanded(
+            child: _buildTabItem(
+              title: "Create Account",
+              isSelected: !widget.isLogin,
+              isDark: isDark,
+              onTap: () {
+                if (widget.isLogin) widget.onToggleMode();
+              },
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildGlassCard({required Widget child}) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(24),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-        child: Container(
-          width: double.infinity,
+  Widget _buildTabItem({
+    required String title,
+    required bool isSelected,
+    required bool isDark,
+    required VoidCallback onTap,
+  }) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 8.5),
           decoration: BoxDecoration(
-            gradient: AppColors.cardGradientOpaque,
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: AppColors.accentPurple.withValues(alpha: 0.45),
-              width: 1.5,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.accentPurple.withValues(alpha: 0.35),
-                blurRadius: 65,
-                spreadRadius: -15,
-                offset: const Offset(0, 25),
-              ),
-            ],
-          ),
-          child: Stack(
-            children: [
-              // Top Gradient Line
-              Positioned(
-                top: 0,
-                left: 40,
-                right: 40,
-                height: 3,
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(3),
-                    gradient: LinearGradient(
-                      colors: [
-                        Colors.transparent,
-                        AppColors.accentPink,
-                        AppColors.accentPurple,
-                        AppColors.accentBlue,
-                        Colors.transparent,
-                      ],
-                      stops: const [0.0, 0.25, 0.5, 0.75, 1.0],
+            color: isSelected
+                ? (isDark
+                    ? AppColors.accentPurple.withValues(alpha: 0.25)
+                    : Colors.white)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(12),
+            border: isSelected && isDark
+                ? Border.all(
+                    color: AppColors.accentPurple.withValues(alpha: 0.5),
+                  )
+                : null,
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: isDark
+                          ? AppColors.accentPurple.withValues(alpha: 0.2)
+                          : const Color(0x10000000),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
                     ),
-                    boxShadow: [
-                      BoxShadow(color: AppColors.accentPink, blurRadius: 15),
-                      BoxShadow(color: AppColors.accentPurple, blurRadius: 20),
-                    ],
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-                child: child,
-              ),
-            ],
+                  ]
+                : null,
+          ),
+          child: Text(
+            title,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+              color: isSelected
+                  ? (isDark ? AppColors.lavender : const Color(0xFF6D28D9))
+                  : (isDark ? AppColors.textSecondary : const Color(0xFF64748B)),
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildSignInHeader(bool isMobile) {
-    return Column(
-      key: const ValueKey('signin_header'),
-      children: [
-        _buildStepBadge("🚀 STEP 04A   LOGIN"),
-        const SizedBox(height: 24),
-        Wrap(
-          alignment: WrapAlignment.center,
-          children: [
-            Text(
-              "Sign In to ",
-              style: AppTextStyles.h2.copyWith(
-                fontSize: isMobile ? 26 : 32,
-                fontWeight: FontWeight.w900,
-                color: AppColors.textPrimary,
-                letterSpacing: -0.5,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            ShaderMask(
-              shaderCallback: (bounds) => AppColors.pinkPurpleGradient.createShader(bounds),
-              child: Text(
-                "AI Workspace",
-                style: AppTextStyles.h2.copyWith(
-                  fontSize: isMobile ? 26 : 32,
-                  fontWeight: FontWeight.w900,
-                  color: AppColors.textPrimary,
-                  letterSpacing: -0.5,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Text(
-          "Enter your credentials to resume your personalized curriculum session.",
-          style: AppTextStyles.bodyPrimary.copyWith(
-            fontSize: isMobile ? 14 : 16,
-            color: AppColors.lavender.withValues(alpha: 0.75),
-            height: 1.5,
-          ),
-          textAlign: TextAlign.center,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSignUpHeader(bool isMobile) {
-    return Column(
-      key: const ValueKey('signup_header'),
-      children: [
-        _buildStepBadge("✨ STEP 04B   REGISTER"),
-        const SizedBox(height: 24),
-        Wrap(
-          alignment: WrapAlignment.center,
-          children: [
-            Text(
-              "Create Your ",
-              style: AppTextStyles.h2.copyWith(
-                fontSize: isMobile ? 26 : 32,
-                fontWeight: FontWeight.w900,
-                color: AppColors.textPrimary,
-                letterSpacing: -0.5,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            ShaderMask(
-              shaderCallback: (bounds) => AppColors.pinkPurpleGradient.createShader(bounds),
-              child: Text(
-                "Learning Account",
-                style: AppTextStyles.h2.copyWith(
-                  fontSize: isMobile ? 26 : 32,
-                  fontWeight: FontWeight.w900,
-                  color: AppColors.textPrimary,
-                  letterSpacing: -0.5,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Text(
-          "Instantiate your personal autonomous AI agent squad in seconds.",
-          style: AppTextStyles.bodyPrimary.copyWith(
-            fontSize: isMobile ? 14 : 16,
-            color: AppColors.lavender.withValues(alpha: 0.75),
-            height: 1.5,
-          ),
-          textAlign: TextAlign.center,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStepBadge(String text) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      decoration: BoxDecoration(
-          color: AppColors.accentPurple.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppColors.accentPurple.withValues(alpha: 0.4)),
-          boxShadow: [
-            BoxShadow(color: AppColors.accentPurple.withValues(alpha: 0.3), blurRadius: 16),
-          ]),
-      child: Text(
-        text,
-        style: AppTextStyles.badge.copyWith(
-          color: AppColors.lavender,
-          fontSize: 12,
-          fontWeight: FontWeight.w800,
-          letterSpacing: 1.5,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSignInForm() {
+  Widget _buildSignInForm(bool isDark) {
     return Column(
       key: const ValueKey('signin_form'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _buildTextField(
-          "Email Address",
-          "student@example.com",
-          false,
-          _emailCtrl,
+        _buildInputField(
+          label: "EMAIL ADDRESS",
+          hint: "student@example.com",
+          controller: _emailCtrl,
+          prefixIcon: Icons.alternate_email_rounded,
           keyboardType: TextInputType.emailAddress,
           textInputAction: TextInputAction.next,
           autofillHints: const [AutofillHints.email],
+          isDark: isDark,
           onFieldSubmitted: (_) => _handleLogin(),
         ),
-        const SizedBox(height: 20),
-        _buildTextField(
-          "Password",
-          "        ",
-          true,
-          _passwordCtrl,
+        const SizedBox(height: 18),
+        _buildInputField(
+          label: "PASSWORD",
+          hint: "••••••••••••",
+          controller: _passwordCtrl,
+          isObscure: _obscurePassword,
+          prefixIcon: Icons.lock_outline_rounded,
           textInputAction: TextInputAction.done,
           autofillHints: const [AutofillHints.password],
-          onFieldSubmitted: (_) => _handleLogin(),
-        ),
-        const SizedBox(height: 32),
-        _buildGradientButton("Sign In", _handleLogin),
-        const SizedBox(height: 24),
-        Center(
-          child: TextButton(
-            onPressed: widget.onToggleMode,
-            child: Text(
-              "Don't have an account? Sign Up",
-              style: AppTextStyles.subtitle2.copyWith(
-                color: AppColors.lavender.withValues(alpha: 0.9),
-                fontWeight: FontWeight.w600,
+          isDark: isDark,
+          trailingHeader: MouseRegion(
+            cursor: SystemMouseCursors.click,
+            child: GestureDetector(
+              onTap: () => _showSnackBar('Password reset instructions sent to your email.'),
+              child: Text(
+                'Forgot Password?',
+                style: TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? Colors.white : const Color(0xFF7C3AED),
+                ),
               ),
             ),
           ),
+          suffixIcon: IconButton(
+            icon: Icon(
+              _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+              size: 18,
+              color: isDark ? AppColors.textSecondary : const Color(0xFF94A3B8),
+            ),
+            onPressed: () {
+              setState(() {
+                _obscurePassword = !_obscurePassword;
+              });
+            },
+          ),
+          onFieldSubmitted: (_) => _handleLogin(),
+        ),
+        const SizedBox(height: 24),
+
+        // App Gradient Button
+        GradientButton(
+          text: "Sign In",
+          width: double.infinity,
+          height: 48,
+          isLoading: ref.watch(authProvider).isLoading,
+          onPressed: _handleLogin,
         ),
       ],
     );
   }
 
-  Widget _buildSignUpForm(bool isMobile) {
+  Widget _buildSignUpForm(bool isMobile, bool isDark) {
     return Column(
       key: const ValueKey('signup_form'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (isMobile) ...[
-          _buildTextField(
-            "First Name *",
-            "Jane",
-            false,
-            _firstNameCtrl,
+          _buildInputField(
+            label: "FIRST NAME *",
+            hint: "Jane",
+            controller: _firstNameCtrl,
+            prefixIcon: Icons.person_outline_rounded,
             textInputAction: TextInputAction.next,
             autofillHints: const [AutofillHints.givenName],
+            isDark: isDark,
           ),
-          const SizedBox(height: 20),
-          _buildTextField(
-            "Last Name *",
-            "Doe",
-            false,
-            _lastNameCtrl,
+          const SizedBox(height: 14),
+          _buildInputField(
+            label: "LAST NAME *",
+            hint: "Doe",
+            controller: _lastNameCtrl,
+            prefixIcon: Icons.person_outline_rounded,
             textInputAction: TextInputAction.next,
             autofillHints: const [AutofillHints.familyName],
+            isDark: isDark,
           ),
         ] else ...[
           Row(
             children: [
               Expanded(
-                child: _buildTextField(
-                  "First Name *",
-                  "Jane",
-                  false,
-                  _firstNameCtrl,
+                child: _buildInputField(
+                  label: "FIRST NAME *",
+                  hint: "Jane",
+                  controller: _firstNameCtrl,
+                  prefixIcon: Icons.person_outline_rounded,
                   textInputAction: TextInputAction.next,
                   autofillHints: const [AutofillHints.givenName],
+                  isDark: isDark,
                 ),
               ),
-              const SizedBox(width: 20),
+              const SizedBox(width: 14),
               Expanded(
-                child: _buildTextField(
-                  "Last Name *",
-                  "Doe",
-                  false,
-                  _lastNameCtrl,
+                child: _buildInputField(
+                  label: "LAST NAME *",
+                  hint: "Doe",
+                  controller: _lastNameCtrl,
+                  prefixIcon: Icons.person_outline_rounded,
                   textInputAction: TextInputAction.next,
                   autofillHints: const [AutofillHints.familyName],
+                  isDark: isDark,
                 ),
               ),
             ],
           ),
         ],
-        const SizedBox(height: 20),
-        _buildTextField(
-          "Email Address *",
-          "jane.doe@example.com",
-          false,
-          _emailCtrl,
+        const SizedBox(height: 14),
+        _buildInputField(
+          label: "EMAIL ADDRESS *",
+          hint: "jane.doe@example.com",
+          controller: _emailCtrl,
+          prefixIcon: Icons.alternate_email_rounded,
           keyboardType: TextInputType.emailAddress,
           textInputAction: TextInputAction.next,
           autofillHints: const [AutofillHints.email],
+          isDark: isDark,
         ),
-        const SizedBox(height: 20),
-        _buildTextField(
-          "Password * (min 6 characters)",
-          "        ",
-          true,
-          _passwordCtrl,
+        const SizedBox(height: 14),
+        _buildInputField(
+          label: "PASSWORD * (MIN 6 CHARACTERS)",
+          hint: "••••••••••••",
+          controller: _passwordCtrl,
+          isObscure: _obscurePassword,
+          prefixIcon: Icons.lock_outline_rounded,
           textInputAction: TextInputAction.next,
           autofillHints: const [AutofillHints.newPassword],
-          onFieldSubmitted: (_) => _handleSignUp(),
+          isDark: isDark,
+          suffixIcon: IconButton(
+            icon: Icon(
+              _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+              size: 18,
+              color: isDark ? AppColors.textSecondary : const Color(0xFF94A3B8),
+            ),
+            onPressed: () {
+              setState(() {
+                _obscurePassword = !_obscurePassword;
+              });
+            },
+          ),
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 14),
         if (isMobile) ...[
-          _buildTextField(
-            "Mobile Number",
-            "+1 555-0199",
-            false,
-            _mobileCtrl,
+          _buildInputField(
+            label: "MOBILE NUMBER",
+            hint: "+1 555-0199",
+            controller: _mobileCtrl,
+            prefixIcon: Icons.phone_outlined,
             keyboardType: TextInputType.phone,
             textInputAction: TextInputAction.next,
             autofillHints: const [AutofillHints.telephoneNumber],
+            isDark: isDark,
           ),
-          const SizedBox(height: 20),
-          _buildTextField(
-            "Country",
-            "United States",
-            false,
-            _countryCtrl,
+          const SizedBox(height: 14),
+          _buildInputField(
+            label: "COUNTRY",
+            hint: "United States",
+            controller: _countryCtrl,
+            prefixIcon: Icons.public_outlined,
             textInputAction: TextInputAction.done,
             autofillHints: const [AutofillHints.countryName],
+            isDark: isDark,
             onFieldSubmitted: (_) => _handleSignUp(),
           ),
         ] else ...[
           Row(
             children: [
               Expanded(
-                child: _buildTextField(
-                  "Mobile Number",
-                  "+1 555-0199",
-                  false,
-                  _mobileCtrl,
+                child: _buildInputField(
+                  label: "MOBILE NUMBER",
+                  hint: "+1 555-0199",
+                  controller: _mobileCtrl,
+                  prefixIcon: Icons.phone_outlined,
                   keyboardType: TextInputType.phone,
                   textInputAction: TextInputAction.next,
                   autofillHints: const [AutofillHints.telephoneNumber],
+                  isDark: isDark,
                 ),
               ),
-              const SizedBox(width: 20),
+              const SizedBox(width: 14),
               Expanded(
-                child: _buildTextField(
-                  "Country",
-                  "United States",
-                  false,
-                  _countryCtrl,
+                child: _buildInputField(
+                  label: "COUNTRY",
+                  hint: "United States",
+                  controller: _countryCtrl,
+                  prefixIcon: Icons.public_outlined,
                   textInputAction: TextInputAction.done,
                   autofillHints: const [AutofillHints.countryName],
+                  isDark: isDark,
                   onFieldSubmitted: (_) => _handleSignUp(),
                 ),
               ),
             ],
           ),
         ],
-        const SizedBox(height: 32),
-        _buildGradientButton("Sign Up", _handleSignUp),
         const SizedBox(height: 24),
-        Center(
-          child: TextButton(
-            onPressed: widget.onToggleMode,
-            child: Text(
-              "Already have an account? Sign In",
-              style: AppTextStyles.subtitle2.copyWith(
-                color: AppColors.lavender.withValues(alpha: 0.9),
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
+
+        // App Gradient Button
+        GradientButton(
+          text: "Create Account",
+          width: double.infinity,
+          height: 48,
+          isLoading: ref.watch(authProvider).isLoading,
+          onPressed: _handleSignUp,
         ),
       ],
     );
   }
 
-  Widget _buildTextField(
-    String label,
-    String hint,
-    bool isObscure,
-    TextEditingController controller, {
+  Widget _buildInputField({
+    required String label,
+    required String hint,
+    required TextEditingController controller,
+    required IconData prefixIcon,
+    required bool isDark,
+    bool isObscure = false,
+    Widget? trailingHeader,
+    Widget? suffixIcon,
     TextInputAction? textInputAction,
     ValueChanged<String>? onFieldSubmitted,
     TextInputType? keyboardType,
@@ -519,16 +630,22 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: AppTextStyles.label.copyWith(
-            color: AppColors.lavender.withValues(alpha: 0.92),
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 0.3,
-          ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                color: isDark ? AppColors.textPrimary : const Color(0xFF334155),
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.6,
+              ),
+            ),
+            ?trailingHeader,
+          ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         TextFormField(
           controller: controller,
           obscureText: isObscure,
@@ -536,37 +653,53 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
           onFieldSubmitted: onFieldSubmitted,
           keyboardType: keyboardType,
           autofillHints: autofillHints,
-          style: AppTextStyles.bodyPrimary.copyWith(
+          style: TextStyle(
             color: AppColors.textPrimary,
-            fontSize: 15,
+            fontSize: 14,
             fontWeight: FontWeight.w500,
           ),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: AppTextStyles.bodyPrimary.copyWith(
-              color: AppColors.lavender.withValues(alpha: 0.38),
+            hintStyle: TextStyle(
+              color: isDark
+                  ? AppColors.textSecondary.withValues(alpha: 0.6)
+                  : const Color(0xFF94A3B8),
+              fontSize: 13.5,
+              fontWeight: FontWeight.w400,
             ),
             filled: true,
-            fillColor: AppColors.surfaceDark.withValues(alpha: 0.75),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            fillColor: isDark
+                ? AppColors.surfaceDark.withValues(alpha: 0.75)
+                : const Color(0xFFF8FAFC),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            prefixIcon: Icon(
+              prefixIcon,
+              size: 18,
+              color: isDark
+                  ? AppColors.accentPurple.withValues(alpha: 0.7)
+                  : const Color(0xFF94A3B8),
+            ),
+            suffixIcon: suffixIcon,
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: AppColors.accentPurple.withValues(alpha: 0.35),
-                width: 1.5,
+                color: isDark
+                    ? AppColors.accentPurple.withValues(alpha: 0.35)
+                    : const Color(0xFFE2E8F0),
               ),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: AppColors.accentPurple.withValues(alpha: 0.35),
-                width: 1.5,
+                color: isDark
+                    ? AppColors.accentPurple.withValues(alpha: 0.35)
+                    : const Color(0xFFE2E8F0),
               ),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: AppColors.accentPurple.withValues(alpha: 0.95),
+                color: isDark ? AppColors.accentPurple : const Color(0xFF7C3AED),
                 width: 1.5,
               ),
             ),
@@ -576,14 +709,38 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
     );
   }
 
-  Widget _buildGradientButton(String text, VoidCallback onTap) {
-    final isLoading = ref.watch(authProvider).isLoading;
-    return GradientButton(
-      text: text,
-      width: double.infinity,
-      height: 48,
-      isLoading: isLoading,
-      onPressed: onTap,
+  Widget _buildAlternativeLink(bool isDark) {
+    return Center(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            widget.isLogin
+                ? "Don't have an account?"
+                : "Already have an account?",
+            style: TextStyle(
+              fontSize: 12.5,
+              color: isDark ? AppColors.textSecondary : const Color(0xFF64748B),
+            ),
+          ),
+          const SizedBox(width: 6),
+          MouseRegion(
+            cursor: SystemMouseCursors.click,
+            child: GestureDetector(
+              onTap: widget.onToggleMode,
+              child: Text(
+                widget.isLogin ? "Sign Up for Free" : "Sign In",
+                style: TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w700,
+                  color: isDark ? Colors.white : const Color(0xFF7C3AED),
+                  decoration: TextDecoration.underline,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

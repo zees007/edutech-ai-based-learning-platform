@@ -255,9 +255,9 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.05),
+                color: AppColors.isDark ? Colors.white.withValues(alpha: 0.05) : AppColors.surfaceSubtle,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                border: Border.all(color: AppColors.border),
               ),
               child: Row(
                 children: [
@@ -266,7 +266,7 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
                   Expanded(
                     child: Text(
                       'Upgrade to $requiredTier for unlimited exports, deep-dive academic search, and advanced AI models.',
-                      style: AppTextStyles.caption.copyWith(color: Colors.white70),
+                      style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
                     ),
                   ),
                 ],
@@ -277,7 +277,7 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dCtx).pop(),
-            child: const Text('Got it', style: TextStyle(color: AppColors.textMuted)),
+            child: Text('Got it', style: TextStyle(color: AppColors.textMuted)),
           ),
         ],
       ),
@@ -345,7 +345,7 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
                     isMobile ? 12 : 18,
                     isMobile ? 14 : 16,
                   ),
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     color: AppColors.surfaceSolidHeader,
                     border: Border(
                       bottom: BorderSide(color: AppColors.glassBorder, width: 1),
@@ -398,7 +398,7 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
                         ),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.close_rounded, color: AppColors.textMuted),
+                        icon: Icon(Icons.close_rounded, color: AppColors.textMuted),
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
                         onPressed: () => Navigator.of(context).pop(),
@@ -607,7 +607,7 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
                 Text(
                   message,
                   style: AppTextStyles.caption.copyWith(
-                    color: Colors.white.withValues(alpha: 0.9),
+                    color: AppColors.textPrimary,
                     fontSize: 12.5,
                     height: 1.4,
                   ),
@@ -617,7 +617,7 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
           ),
           const SizedBox(width: 8),
           IconButton(
-            icon: const Icon(Icons.close_rounded, size: 18, color: Colors.white60),
+            icon: Icon(Icons.close_rounded, size: 18, color: AppColors.textSecondary),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
             splashRadius: 16,
@@ -805,7 +805,7 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
               ),
             ] else if (isUnlocked && isEnabled) ...[
               const SizedBox(height: 10),
-              const Divider(color: AppColors.glassBorder, height: 1),
+              Divider(color: AppColors.glassBorder, height: 1),
               const SizedBox(height: 8),
               Align(
                 alignment: Alignment.centerRight,

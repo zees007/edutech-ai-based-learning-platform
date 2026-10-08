@@ -83,7 +83,7 @@ class _LearningHistoryListState extends ConsumerState<LearningHistoryList> {
           child: Text(
             'No sessions match. Start a new topic!',
             style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.6),
+              color: AppColors.textSecondary,
               fontSize: 12,
             ),
             textAlign: TextAlign.center,

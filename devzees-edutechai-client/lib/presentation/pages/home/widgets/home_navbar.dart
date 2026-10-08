@@ -7,6 +7,7 @@ import 'package:devzees_edutechai_client/presentation/widgets/gradient_button.da
 import 'package:devzees_edutechai_client/presentation/widgets/gradient_text.dart';
 import 'package:devzees_edutechai_client/core/constants/responsive.dart';
 import 'package:devzees_edutechai_client/core/providers/auth_provider.dart';
+import 'package:devzees_edutechai_client/presentation/widgets/theme_toggle_button.dart';
 import 'package:go_router/go_router.dart';
 
 class HomeNavbar extends ConsumerWidget {
@@ -90,6 +91,8 @@ class HomeNavbar extends ConsumerWidget {
           // Auth Buttons
           Row(
             children: [
+              const ThemeToggleButton(size: 34),
+              const SizedBox(width: 8),
               if (isAuthenticated) ...[
                 GradientButton(
                   text: 'Open Workspace',
@@ -229,7 +232,7 @@ class _MobileMenuButtonState extends State<_MobileMenuButton> {
               widget.onNavTap?.call(value);
             }
           },
-          icon: const Icon(Icons.menu, color: AppColors.textPrimary),
+          icon: Icon(Icons.menu, color: AppColors.textPrimary),
           color: Colors.transparent,
           elevation: 0,
           offset: const Offset(0, 56),

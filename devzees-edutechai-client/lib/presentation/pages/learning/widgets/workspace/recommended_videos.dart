@@ -167,11 +167,41 @@ class _VideoCardState extends State<_VideoCard> {
           margin: EdgeInsets.zero,
           transform: Matrix4.translationValues(0, _isHovered ? -3 : 0, 0),
           decoration: BoxDecoration(
-            color: _isHovered ? AppColors.glassSurface.withValues(alpha: 0.08) : AppColors.glassSurface.withValues(alpha: 0.03),
+            color: AppColors.isDark
+                ? (_isHovered ? AppColors.surfaceSubtle : AppColors.surface)
+                : AppColors.surface,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: _isHovered ? AppColors.primary.withValues(alpha: 0.5) : AppColors.glassBorder,
+              color: _isHovered ? AppColors.primary : AppColors.border,
+              width: _isHovered ? 1.4 : 1.0,
             ),
+            boxShadow: AppColors.isDark
+                ? [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.35),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                    if (_isHovered)
+                      BoxShadow(
+                        color: AppColors.accentBlue.withValues(alpha: 0.22),
+                        blurRadius: 18,
+                        offset: const Offset(0, 4),
+                      ),
+                  ]
+                : [
+                    BoxShadow(
+                      color: const Color(0x14000000),
+                      blurRadius: _isHovered ? 18 : 10,
+                      offset: Offset(0, _isHovered ? 6 : 4),
+                    ),
+                    if (_isHovered)
+                      BoxShadow(
+                        color: AppColors.primary.withValues(alpha: 0.16),
+                        blurRadius: 20,
+                        offset: const Offset(0, 4),
+                      ),
+                  ],
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(16),
@@ -289,9 +319,9 @@ class _VideoCardState extends State<_VideoCard> {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                           decoration: BoxDecoration(
-                            color: AppColors.glassBase,
+                            color: AppColors.isDark ? AppColors.glassBase : AppColors.surfaceSubtle,
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: AppColors.glassBorder),
+                            border: Border.all(color: AppColors.border),
                           ),
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,

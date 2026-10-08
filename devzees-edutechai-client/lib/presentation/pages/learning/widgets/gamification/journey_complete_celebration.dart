@@ -528,7 +528,7 @@ class _JourneyCompleteCelebrationState
                                         mainAxisAlignment:
                                             MainAxisAlignment.center,
                                         children: [
-                                          const Icon(
+                                          Icon(
                                             Icons.visibility_rounded,
                                             size: 15,
                                             color: AppColors.textSlate,
@@ -933,7 +933,7 @@ class _JourneyCompleteCelebrationState
                               ),
                               const SizedBox(width: 6),
                             ] else ...[
-                              const Icon(
+                              Icon(
                                 Icons.description_rounded,
                                 size: 14,
                                 color: AppColors.textSlate,

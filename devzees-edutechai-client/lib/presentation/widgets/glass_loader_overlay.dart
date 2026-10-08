@@ -51,13 +51,14 @@ class GlassLoaderOverlay extends StatelessWidget {
   }
 
   Widget _buildGlassLoaderBox(BuildContext context) {
+    final isDark = AppColors.isDark;
     return Container(
       width: 320,
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: AppColors.purple.withValues(alpha: 0.45),
+          color: (isDark ? AppColors.primary : AppColors.purple).withValues(alpha: 0.45),
           width: 1.5,
         ),
         color: Responsive.isMobile(context) ? AppColors.mobileCardSolid : null,
@@ -65,12 +66,12 @@ class GlassLoaderOverlay extends StatelessWidget {
         boxShadow: [
           if (!Responsive.isMobile(context)) ...[
             BoxShadow(
-              color: AppColors.purple.withValues(alpha: 0.3),
+              color: (isDark ? AppColors.primary : AppColors.purple).withValues(alpha: 0.3),
               blurRadius: 40,
               spreadRadius: -10,
             ),
             BoxShadow(
-              color: AppColors.accentPink.withValues(alpha: 0.2),
+              color: (isDark ? AppColors.primary.withValues(alpha: 0.2) : AppColors.accentPink.withValues(alpha: 0.2)),
               blurRadius: 30,
               spreadRadius: -5,
             ),
@@ -101,7 +102,7 @@ class GlassLoaderOverlay extends StatelessWidget {
           Text(
             subtitle,
             style: AppTextStyles.body2.copyWith(
-              color: AppColors.lavender.withValues(alpha: 0.7),
+              color: AppColors.textSecondary,
             ),
             textAlign: TextAlign.center,
           ),

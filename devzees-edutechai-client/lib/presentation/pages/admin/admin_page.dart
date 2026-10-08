@@ -11,6 +11,7 @@ import 'widgets/user_directory_tab.dart';
 import 'widgets/role_privilege_tab.dart';
 import 'widgets/subscription_manager_tab.dart';
 import 'widgets/analytics_tab.dart';
+import 'package:devzees_edutechai_client/presentation/widgets/theme_toggle_button.dart';
 
 /// Main Admin Console page with sidebar navigation and content area.
 class AdminPage extends ConsumerStatefulWidget {
@@ -67,7 +68,7 @@ class _AdminPageState extends ConsumerState<AdminPage> {
           elevation: 0,
           leading: Builder(
             builder: (context) => IconButton(
-              icon: const Icon(Icons.menu, color: AppColors.textSecondary),
+              icon: Icon(Icons.menu, color: AppColors.textSecondary),
               onPressed: () => Scaffold.of(context).openDrawer(),
             ),
           ),
@@ -75,6 +76,10 @@ class _AdminPageState extends ConsumerState<AdminPage> {
             _getSectionTitle(),
             style: AppTextStyles.subtitle2,
           ),
+          actions: const [
+            ThemeToggleButton(size: 32),
+            SizedBox(width: 8),
+          ],
         ),
         drawer: Drawer(
           backgroundColor: AppColors.sidebarBackground,
@@ -176,6 +181,8 @@ class _AdminPageState extends ConsumerState<AdminPage> {
                             color: AppColors.textMuted,
                           ),
                         ),
+                        const SizedBox(width: 16),
+                        const ThemeToggleButton(size: 34),
                       ],
                     ),
                   ),

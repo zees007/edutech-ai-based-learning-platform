@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
 import 'package:devzees_edutechai_client/core/theme/text_styles.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/gradient_text.dart';
+import 'package:devzees_edutechai_client/presentation/widgets/theme_toggle_button.dart';
 
 class AuthTopNavbar extends StatelessWidget {
   final bool isMobile;
@@ -11,15 +12,17 @@ class AuthTopNavbar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = AppColors.isDark;
+
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: isMobile ? 16 : 32,
-        vertical: isMobile ? 12 : 20,
+        vertical: isMobile ? 12 : 16,
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Logo
+          // Brand Logo (Preserved)
           Row(
             children: [
               Text(
@@ -48,7 +51,7 @@ class AuthTopNavbar extends StatelessWidget {
                 child: Text(
                   'AI',
                   style: AppTextStyles.labelSmall.copyWith(
-                    color: AppColors.lavender,
+                    color: isDark ? AppColors.lavender : AppColors.primaryViolet,
                     fontSize: 10,
                     fontWeight: FontWeight.w800,
                   ),
@@ -56,22 +59,45 @@ class AuthTopNavbar extends StatelessWidget {
               ),
             ],
           ),
-          // Back to Home Button
-          OutlinedButton.icon(
-            onPressed: () => context.go('/'),
-            icon: const Icon(Icons.arrow_back, size: 18, color: AppColors.textSecondary),
-            label: Text(
-              isMobile ? 'Back' : 'Back to Home',
-              style: const TextStyle(color: AppColors.textSecondary),
-            ),
-            style: OutlinedButton.styleFrom(
-              padding: EdgeInsets.symmetric(
-                horizontal: isMobile ? 12 : 16,
-                vertical: isMobile ? 8 : 12,
+          // Top Actions
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const ThemeToggleButton(size: 34),
+              const SizedBox(width: 10),
+              // Back to Home Button
+              OutlinedButton.icon(
+                onPressed: () => context.go('/'),
+                icon: Icon(
+                  Icons.arrow_back,
+                  size: 16,
+                  color: isDark ? AppColors.textPrimary : const Color(0xFF475569),
+                ),
+                label: Text(
+                  isMobile ? 'Back' : 'Back to Home',
+                  style: TextStyle(
+                    color: isDark ? AppColors.textPrimary : const Color(0xFF475569),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                style: OutlinedButton.styleFrom(
+                  backgroundColor: isDark ? Colors.transparent : Colors.white,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isMobile ? 12 : 16,
+                    vertical: isMobile ? 8 : 10,
+                  ),
+                  side: BorderSide(
+                    color: isDark ? AppColors.border : const Color(0xFFE2E8F0),
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  elevation: isDark ? 0 : 1,
+                  shadowColor: const Color(0x0A0F172A),
+                ),
               ),
-              side: const BorderSide(color: AppColors.glassBorder),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            ),
+            ],
           ),
         ],
       ),

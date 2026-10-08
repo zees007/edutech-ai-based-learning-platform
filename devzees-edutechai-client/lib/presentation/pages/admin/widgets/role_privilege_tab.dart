@@ -191,7 +191,7 @@ class _RolePrivilegeTabState extends ConsumerState<RolePrivilegeTab> {
                       _selectedPrivilegeIds = [];
                     });
                   },
-                  icon: const Icon(Icons.close, size: 16, color: AppColors.textSecondary),
+                  icon: Icon(Icons.close, size: 16, color: AppColors.textSecondary),
                   label: Text('Cancel Edit', style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary)),
                 )
             ],
@@ -213,15 +213,15 @@ class _RolePrivilegeTabState extends ConsumerState<RolePrivilegeTab> {
               fillColor: AppColors.glassBase,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: AppColors.glassBorder),
+                borderSide: BorderSide(color: AppColors.glassBorder),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: AppColors.glassBorder),
+                borderSide: BorderSide(color: AppColors.glassBorder),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+                borderSide: BorderSide(color: AppColors.primary, width: 1.5),
               ),
             ),
           ),
@@ -591,7 +591,7 @@ class _PrivilegeTreeViewState extends State<_PrivilegeTreeView> {
                   value: isSelected,
                   onChanged: (val) => _toggleSelection(node.id, val),
                   activeColor: AppColors.purple,
-                  side: const BorderSide(color: AppColors.glassBorder),
+                  side: BorderSide(color: AppColors.glassBorder),
                 ),
               ),
               const SizedBox(width: 8),

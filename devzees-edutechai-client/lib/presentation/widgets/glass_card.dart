@@ -1,6 +1,7 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/theme_palette.dart';
 
 class GlassCard extends StatefulWidget {
   final Widget child;
@@ -14,7 +15,7 @@ class GlassCard extends StatefulWidget {
   const GlassCard({
     super.key,
     required this.child,
-    this.borderRadius = 24.0, // Matches Streamlit CSS border-radius
+    this.borderRadius = 24.0,
     this.padding = const EdgeInsets.all(24.0),
     this.onTap,
     this.isGlowing = false,
@@ -31,6 +32,54 @@ class _GlassCardState extends State<GlassCard> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = context.isDarkMode;
+
+    final border = isDark
+        ? Border.all(
+            color: AppColors.purple.withValues(alpha: _isHovered ? 0.85 : 0.45),
+            width: 1.5,
+          )
+        : Border.all(
+            color: _isHovered
+                ? AppColors.accentBlue.withValues(alpha: 0.60)
+                : AppColors.glassBorder,
+            width: 1.0,
+          );
+
+    final shadows = isDark
+        ? [
+            // Dark Mode Drop Shadow
+            BoxShadow(
+              color: AppColors.purple.withValues(alpha: _isHovered ? 0.55 : 0.35),
+              blurRadius: _isHovered ? 75 : 65,
+              spreadRadius: _isHovered ? -10 : -15,
+              offset: Offset(0, _isHovered ? 30 : 25),
+            ),
+            // Dark Mode Inner / Neumorphic shadow (rgba(0,0,0,0.45))
+            BoxShadow(
+              color: Colors.black.withValues(alpha: _isHovered ? 0.45 : 0.30),
+              blurRadius: _isHovered ? 45 : 35,
+              spreadRadius: 0,
+              blurStyle: BlurStyle.inner,
+            ),
+          ]
+        : [
+            // Light Mode Drop Shadow: box-shadow: 0 8px 24px rgba(0,0,0,0.08)
+            BoxShadow(
+              color: const Color(0x14000000), // 0.08 opacity
+              blurRadius: _isHovered ? 28 : 24,
+              spreadRadius: 0,
+              offset: Offset(0, _isHovered ? 12 : 8),
+            ),
+            if (_isHovered)
+              BoxShadow(
+                color: AppColors.accentBlue.withValues(alpha: 0.12),
+                blurRadius: 18,
+                spreadRadius: 0,
+                offset: const Offset(0, 4),
+              ),
+          ];
+
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
@@ -44,26 +93,8 @@ class _GlassCardState extends State<GlassCard> {
           transform: Matrix4.translationValues(0, _isHovered ? -2.0 : 0, 0),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(widget.borderRadius),
-            border: Border.all(
-              color: AppColors.purple.withValues(alpha: _isHovered ? 0.85 : 0.45),
-              width: 1.5,
-            ),
-            boxShadow: [
-              // Outer drop shadow (matches Streamlit CSS 0 25px 65px -15px)
-              BoxShadow(
-                color: AppColors.purple.withValues(alpha: _isHovered ? 0.55 : 0.35),
-                blurRadius: _isHovered ? 75 : 65,
-                spreadRadius: _isHovered ? -10 : -15,
-                offset: Offset(0, _isHovered ? 30 : 25),
-              ),
-              // Inner shadow (matches Streamlit CSS inset 0 0 35px)
-              BoxShadow(
-                color: AppColors.purple.withValues(alpha: _isHovered ? 0.20 : 0.12),
-                blurRadius: _isHovered ? 45 : 35,
-                spreadRadius: 0,
-                blurStyle: BlurStyle.inner,
-              ),
-            ],
+            border: border,
+            boxShadow: shadows,
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(widget.borderRadius),
@@ -74,19 +105,19 @@ class _GlassCardState extends State<GlassCard> {
                   // Background Gradient
                   Positioned.fill(
                     child: Container(
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                         gradient: AppColors.cardGradientOpaque,
                       ),
                     ),
                   ),
-                  // Top Glowing Accent Line (::before in Streamlit CSS)
+                  // Top Glowing Accent Line
                   Positioned(
                     top: 0,
                     left: 0,
                     right: 0,
                     child: Center(
                       child: FractionallySizedBox(
-                        widthFactor: 0.8, // equivalent to left/right 10%
+                        widthFactor: 0.8,
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 300),
                           height: 3,
@@ -95,8 +126,8 @@ class _GlassCardState extends State<GlassCard> {
                             gradient: const LinearGradient(
                               colors: [
                                 Colors.transparent,
-                                AppColors.accentPink,
-                                AppColors.purple,
+                                AppColors.accentBlue,
+                                AppColors.accentMagenta,
                                 AppColors.accentBlue,
                                 Colors.transparent,
                               ],
@@ -104,11 +135,15 @@ class _GlassCardState extends State<GlassCard> {
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: AppColors.accentPink,
+                                color: AppColors.accentMagenta.withValues(
+                                  alpha: isDark ? (_isHovered ? 0.8 : 0.5) : (_isHovered ? 0.5 : 0.3),
+                                ),
                                 blurRadius: _isHovered ? 22 : 15,
                               ),
                               BoxShadow(
-                                color: AppColors.purple,
+                                color: AppColors.accentBlue.withValues(
+                                  alpha: isDark ? (_isHovered ? 0.7 : 0.4) : (_isHovered ? 0.4 : 0.2),
+                                ),
                                 blurRadius: _isHovered ? 30 : 20,
                               ),
                             ],

@@ -173,19 +173,19 @@ class _PricingCard extends StatelessWidget {
             textBaseline: TextBaseline.alphabetic,
             children: [
               Text(price, style: AppTextStyles.h1),
-              const Text('/mo', style: TextStyle(color: AppColors.textSecondary, fontSize: 16)),
+              Text('/mo', style: TextStyle(color: AppColors.textSecondary, fontSize: 16)),
             ],
           ),
           const SizedBox(height: 16),
           Text(description, style: AppTextStyles.body2),
           const SizedBox(height: 24),
-          const Divider(color: AppColors.glassBorder),
+          Divider(color: AppColors.glassBorder),
           const SizedBox(height: 24),
           ...features.map((f) => Padding(
             padding: const EdgeInsets.only(bottom: 12),
             child: Row(
               children: [
-                const Icon(Icons.check, color: AppColors.primary, size: 18),
+                Icon(Icons.check, color: AppColors.primary, size: 18),
                 const SizedBox(width: 12),
                 Expanded(child: Text(f, style: AppTextStyles.body2)),
               ],
@@ -211,7 +211,7 @@ class _PricingCard extends StatelessWidget {
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.glassBase,
-                  side: const BorderSide(color: AppColors.glassBorder),
+                  side: BorderSide(color: AppColors.glassBorder),
                 ),
                 child: Text(buttonText),
               ),
