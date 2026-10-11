@@ -263,14 +263,30 @@ class _VideoCardState extends State<_VideoCard> {
                                 bottom: 10,
                                 right: 10,
                                 child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
                                   decoration: BoxDecoration(
-                                    color: Colors.black.withValues(alpha: 0.8),
-                                    borderRadius: BorderRadius.circular(5),
+                                    color: Colors.black.withValues(alpha: 0.82),
+                                    borderRadius: BorderRadius.circular(6),
+                                    border: Border.all(
+                                      color: Colors.white.withValues(alpha: 0.18),
+                                      width: 0.5,
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withValues(alpha: 0.4),
+                                        blurRadius: 4,
+                                        offset: const Offset(0, 1),
+                                      ),
+                                    ],
                                   ),
                                   child: Text(
                                     duration,
-                                    style: AppTextStyles.badge,
+                                    style: AppTextStyles.badge.copyWith(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 11,
+                                      letterSpacing: 0.3,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -355,18 +371,20 @@ class _VideoCardState extends State<_VideoCard> {
   }
 
   Widget _buildTag(String time, Color color) {
+    final effectiveColor = AppColors.isDark ? color : const Color(0xFF9333EA);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.15),
+        color: effectiveColor.withValues(alpha: AppColors.isDark ? 0.15 : 0.12),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
+        border: Border.all(color: effectiveColor.withValues(alpha: AppColors.isDark ? 0.3 : 0.25)),
       ),
       child: Text(
         time,
         style: AppTextStyles.badge.copyWith(
-          color: color,
+          color: effectiveColor,
           fontSize: 11,
+          fontWeight: FontWeight.w700,
         ),
       ),
     );
@@ -390,7 +408,7 @@ class _SpeedControlState extends State<_SpeedControl> {
     return PopupMenuButton<double>(
       initialValue: _currentSpeed,
       tooltip: 'Playback Speed',
-      color: AppColors.surfaceMid,
+      color: AppColors.surface,
       elevation: 8,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       onSelected: (speed) {
@@ -410,18 +428,22 @@ class _SpeedControlState extends State<_SpeedControl> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
         decoration: BoxDecoration(
-          color: AppColors.glassSurface.withValues(alpha: 0.1),
+          color: AppColors.isDark
+              ? AppColors.glassSurface.withValues(alpha: 0.1)
+              : AppColors.surfaceSubtle,
           borderRadius: BorderRadius.circular(6),
-          border: Border.all(color: AppColors.glassBorder),
+          border: Border.all(color: AppColors.border),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.speed, size: 14, color: Colors.white),
+            Icon(Icons.speed, size: 14, color: AppColors.textSecondary),
             const SizedBox(width: 4),
             Text(
               _currentSpeed == 1.0 ? '1x' : '${_currentSpeed}x',
-              style: AppTextStyles.badge,
+              style: AppTextStyles.badge.copyWith(
+                color: AppColors.textPrimary,
+              ),
             ),
           ],
         ),
@@ -439,12 +461,12 @@ class _SpeedControlState extends State<_SpeedControl> {
           Text(
             text,
             style: AppTextStyles.label.copyWith(
-              color: Colors.white,
+              color: AppColors.textPrimary,
               fontWeight: _currentSpeed == value ? FontWeight.bold : FontWeight.normal,
             ),
           ),
           if (_currentSpeed == value)
-            const Icon(Icons.check, size: 14, color: Colors.white),
+            Icon(Icons.check, size: 14, color: AppColors.primary),
         ],
       ),
     );
