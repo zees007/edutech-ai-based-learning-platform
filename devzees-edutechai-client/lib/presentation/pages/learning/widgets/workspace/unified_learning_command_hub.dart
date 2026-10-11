@@ -264,21 +264,10 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
           width: isMobile ? 30 : 34,
           height: isMobile ? 30 : 34,
           alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: AppColors.isDark
-                ? const Color(0xFF2E1065).withValues(alpha: 0.7)
-                : const Color(0xFFEEF2FF),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: AppColors.isDark
-                  ? const Color(0xFF7C3AED).withValues(alpha: 0.5)
-                  : const Color(0xFFC7D2FE),
-              width: 1.0,
-            ),
-          ),
+          decoration: _buildPillDecoration(),
           child: Icon(
-            Icons.explore_outlined,
-            color: AppColors.isDark ? const Color(0xFFC4B5FD) : const Color(0xFF4F46E5),
+            Icons.track_changes_rounded,
+            color: AppColors.isDark ? const Color(0xFF60A5FA) : const Color(0xFF1D4ED8),
             size: isMobile ? 16 : 18,
           ),
         ),
@@ -306,12 +295,12 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
                   _buildMicroChip(
                     label: _formatMode(session.learningMode),
                     isViolet: true,
-                    icon: Icons.visibility_outlined,
+                    icon: Icons.psychology_rounded,
                   ),
                   _buildMicroChip(
                     label: _formatLevel(session.studentLevel),
                     isViolet: false,
-                    icon: Icons.school_outlined,
+                    icon: Icons.school_rounded,
                   ),
                 ],
               ),
@@ -361,9 +350,9 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(
+          Icon(
             Icons.military_tech_rounded,
-            color: Color(0xFFFBBF24),
+            color: AppColors.isDark ? const Color(0xFFFBBF24) : const Color(0xFFD97706),
             size: 15,
           ),
           const SizedBox(width: 5),
@@ -397,18 +386,18 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(
+          Icon(
             Icons.star_rounded,
-            color: Color(0xFFFBBF24),
+            color: AppColors.isDark ? const Color(0xFFFBBF24) : const Color(0xFFD97706),
             size: 15,
           ),
           const SizedBox(width: 4),
           Text(
             '$xpEarned XP',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFFFDE68A),
+              fontWeight: FontWeight.w700,
+              color: AppColors.isDark ? const Color(0xFFFDE68A) : const Color(0xFFB45309),
             ),
           ),
           const SizedBox(width: 8),
@@ -652,28 +641,20 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
     required bool isViolet,
     required IconData icon,
   }) {
-    final bgColor = isViolet
-        ? (AppColors.isDark ? const Color(0x994C1D95) : const Color(0xFFEDE9FE))
-        : (AppColors.isDark ? const Color(0x801E3A8A) : const Color(0xFFEFF6FF));
-    final borderColor = isViolet
-        ? (AppColors.isDark ? const Color(0x668B5CF6) : const Color(0xFFC4B5FD))
-        : (AppColors.isDark ? const Color(0x663B82F6) : const Color(0xFFBFDBFE));
     final textColor = isViolet
-        ? (AppColors.isDark ? const Color(0xFFDDD6FE) : const Color(0xFF6D28D9))
-        : (AppColors.isDark ? const Color(0xFF93C5FD) : const Color(0xFF1D4ED8));
+        ? (AppColors.isDark ? const Color(0xFFC084FC) : const Color(0xFF7C3AED))
+        : (AppColors.isDark ? const Color(0xFF60A5FA) : const Color(0xFF1D4ED8));
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: borderColor, width: 0.9),
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+      decoration: _buildPillDecoration().copyWith(
+        borderRadius: BorderRadius.circular(6),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 10, color: textColor),
-          const SizedBox(width: 3.5),
+          Icon(icon, size: 11, color: textColor),
+          const SizedBox(width: 4),
           Text(
             label,
             style: TextStyle(
