@@ -541,6 +541,12 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
   // ─── EXPORT ACTION BUTTON ───────────────────────────────────────────────────
   Widget _buildExportButton(SessionResponse session, int totalSteps) {
     final bool isCompleted = totalSteps > 0 && session.stepsCompleted >= totalSteps;
+    final Color iconColor = isCompleted
+        ? (AppColors.isDark ? const Color(0xFFC084FC) : const Color(0xFF7C3AED))
+        : (AppColors.isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B));
+    final Color textColor = isCompleted
+        ? (AppColors.isDark ? const Color(0xFFC084FC) : const Color(0xFF7C3AED))
+        : (AppColors.isDark ? Colors.white : AppColors.textPrimary);
 
     return Tooltip(
       message: isCompleted
@@ -558,29 +564,35 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
             isCompleted: isCompleted,
           );
         },
+        mouseCursor: SystemMouseCursors.click,
         borderRadius: BorderRadius.circular(8),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-          decoration: _buildPillDecoration(),
+          decoration: _buildPillDecoration().copyWith(
+            border: isCompleted
+                ? Border.all(
+                    color: AppColors.isDark
+                        ? const Color(0x66C084FC)
+                        : const Color(0x407C3AED),
+                    width: 1.0,
+                  )
+                : null,
+          ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
                 Icons.download_rounded,
                 size: 14,
-                color: isCompleted
-                    ? const Color(0xFFA78BFA)
-                    : (AppColors.isDark ? const Color(0xFFCBD5E1) : const Color(0xFF64748B)),
+                color: iconColor,
               ),
               const SizedBox(width: 5),
               Text(
                 'Export',
                 style: TextStyle(
                   fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: isCompleted
-                      ? Colors.white
-                      : (AppColors.isDark ? const Color(0xFFCBD5E1) : const Color(0xFF475569)),
+                  fontWeight: isCompleted ? FontWeight.w700 : FontWeight.w600,
+                  color: textColor,
                 ),
               ),
             ],
@@ -595,14 +607,15 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
     return Row(
       children: [
         Container(
-          padding: const EdgeInsets.all(4),
-          decoration: BoxDecoration(
-            color: AppColors.purpleLight.withValues(alpha: 0.15),
+          width: 26,
+          height: 26,
+          alignment: Alignment.center,
+          decoration: _buildPillDecoration().copyWith(
             borderRadius: BorderRadius.circular(6),
           ),
           child: Icon(
             Icons.alt_route_rounded,
-            color: AppColors.purpleLight,
+            color: AppColors.isDark ? const Color(0xFFC084FC) : const Color(0xFF7C3AED),
             size: 14,
           ),
         ),
@@ -617,17 +630,17 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
         ),
         const SizedBox(width: 8),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-          decoration: BoxDecoration(
-            color: AppColors.purpleLight.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: AppColors.purpleLight.withValues(alpha: 0.3)),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+          decoration: _buildPillDecoration().copyWith(
+            borderRadius: BorderRadius.circular(6),
           ),
           child: Text(
             'Step ${widget.activeIndex + 1} of $totalSteps',
-            style: AppTextStyles.badge.copyWith(
+            style: TextStyle(
               fontWeight: FontWeight.w700,
-              color: AppColors.lavender,
+              fontSize: 10,
+              color: AppColors.isDark ? const Color(0xFFC084FC) : const Color(0xFF7C3AED),
+              letterSpacing: 0.3,
             ),
           ),
         ),
