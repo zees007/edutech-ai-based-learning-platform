@@ -34,7 +34,7 @@ class _LearningHistoryItemState extends ConsumerState<LearningHistoryItem> {
     required String label,
     required IconData icon,
     required Color iconColor,
-    required Color textColor,
+    Color? textColor,
     required VoidCallback onTap,
   }) {
     bool isHovered = false;
@@ -46,13 +46,18 @@ class _LearningHistoryItemState extends ConsumerState<LearningHistoryItem> {
             ? Colors.white.withValues(alpha: 0.08)
             : AppColors.primary.withValues(alpha: 0.08);
 
-        final Color targetIconColor = isHovered
-            ? (isDark ? AppColors.textPrimary : iconColor)
-            : iconColor;
+        // Dark primary blue in light mode for crisp contrast against light blue hover background
+        final Color darkPrimary =
+            isDark ? AppColors.textPrimary : const Color(0xFF1D4ED8);
+
+        final Color activeHoverColor = textColor ?? darkPrimary;
+
+        final Color targetIconColor = isHovered ? activeHoverColor : iconColor;
 
         final Color targetTextColor = isHovered
-            ? (isDark ? AppColors.textPrimary : textColor)
-            : textColor;
+            ? activeHoverColor
+            : (textColor ??
+                (isDark ? const Color(0xFFCBD5E1) : const Color(0xFF334155)));
 
         return MouseRegion(
           onEnter: (_) => setActionState(() => isHovered = true),
@@ -171,8 +176,7 @@ class _LearningHistoryItemState extends ConsumerState<LearningHistoryItem> {
                       context: context,
                       label: 'Export',
                       icon: Icons.ios_share_rounded,
-                      iconColor: isDark ? AppColors.purpleLight : AppColors.adaptivePurpleLight,
-                      textColor: isDark ? AppColors.textPrimary : const Color(0xFF1E293B),
+                      iconColor: isDark ? AppColors.blueSoft : AppColors.primary,
                       onTap: () {
                         final total = widget.session.totalSteps ?? widget.session.stepsCompleted;
                         final bool isCompleted = total > 0 && widget.session.stepsCompleted >= total;
@@ -366,7 +370,7 @@ class _LearningHistoryItemState extends ConsumerState<LearningHistoryItem> {
                         child: Icon(
                           Icons.more_vert_rounded,
                           color: _isDotsHovered
-                              ? (AppColors.isDark ? AppColors.textPrimary : AppColors.primary)
+                              ? (AppColors.isDark ? AppColors.textPrimary : const Color(0xFF1D4ED8))
                               : ((isActive || _isHovered)
                                   ? AppColors.textSecondary
                                   : AppColors.textMuted.withValues(alpha: 0.4)),

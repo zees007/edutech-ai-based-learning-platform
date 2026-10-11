@@ -1371,6 +1371,9 @@ class _SuggestedQuestionChipState extends State<_SuggestedQuestionChip> {
     final opacity = widget.disabled ? 0.4 : (_isHovered ? 1.0 : 0.75);
 
     return MouseRegion(
+      cursor: widget.disabled
+          ? SystemMouseCursors.basic
+          : SystemMouseCursors.click,
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
       child: GestureDetector(
