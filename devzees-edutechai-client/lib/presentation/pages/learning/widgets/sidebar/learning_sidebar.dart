@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../presentation/widgets/gradient_button.dart';
 import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/theme/text_styles.dart';
 import '../../../../../core/providers/learning_provider.dart';
 import '../../../../../core/providers/active_session_provider.dart';
 import 'sidebar_header.dart';
@@ -307,10 +308,10 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
                       ? (isDark
                           ? (statusFilter != 'all'
                               ? AppColors.primary.withValues(alpha: 0.15)
-                              : Colors.white.withValues(alpha: 0.08))
+                              : Colors.white.withValues(alpha: 0.1))
                           : (statusFilter != 'all'
                               ? AppColors.primary.withValues(alpha: 0.12)
-                              : AppColors.surface))
+                              : AppColors.primary.withValues(alpha: 0.08)))
                       : (isDark
                           ? Colors.white.withValues(alpha: 0.05)
                           : AppColors.surfaceSubtle),
@@ -318,22 +319,13 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
                   border: Border.all(
                     color: (_isFilterHovered || statusFilter != 'all')
                         ? (isDark
-                            ? AppColors.primary.withValues(alpha: 0.6)
-                            : AppColors.primary)
+                            ? AppColors.primary.withValues(alpha: 0.4)
+                            : AppColors.primary.withValues(alpha: 0.5))
                         : (isDark
                             ? Colors.white.withValues(alpha: 0.08)
                             : AppColors.border),
                     width: 1,
                   ),
-                  boxShadow: (_isFilterHovered || statusFilter != 'all')
-                      ? [
-                          BoxShadow(
-                            color: AppColors.primary.withValues(alpha: isDark ? 0.15 : 0.08),
-                            blurRadius: 6,
-                            spreadRadius: 0,
-                          ),
-                        ]
-                      : null,
                 ),
                 child: Material(
                   color: Colors.transparent,
@@ -348,12 +340,14 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
                     },
                     child: Center(
                       child: Icon(
-                        Icons.filter_list,
-                        color: (statusFilter != 'all' || _isFilterHovered)
-                            ? AppColors.primary
-                            : (isDark
-                                ? Colors.white.withValues(alpha: 0.7)
-                                : AppColors.textSecondary),
+                        Icons.filter_list_rounded,
+                        color: _isFilterHovered
+                            ? (isDark ? AppColors.textPrimary : AppColors.primary)
+                            : (statusFilter != 'all'
+                                ? AppColors.primary
+                                : (isDark
+                                    ? AppColors.textSecondary
+                                    : const Color(0xFF475569))),
                         size: 18,
                       ),
                     ),
@@ -383,7 +377,7 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
       ),
       position: RelativeRect.fromLTRB(
         offset.dx,
-        offset.dy + size.height,
+        offset.dy + size.height + 4,
         MediaQuery.of(context).size.width - offset.dx - size.width,
         0,
       ),
@@ -391,33 +385,42 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
         PopupMenuItem<String>(
           enabled: false,
           padding: EdgeInsets.zero,
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(16),
-            child: BackdropFilter(
+          child: IconTheme(
+            data: const IconThemeData(opacity: 1.0),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
               child: Container(
-                width: 140,
-                padding: const EdgeInsets.symmetric(vertical: 8),
+                width: 150,
+                padding: const EdgeInsets.symmetric(vertical: 6),
                 decoration: BoxDecoration(
                   color: isDark
-                      ? AppColors.popoverBackground.withValues(alpha: 0.8)
-                      : AppColors.surface,
+                      ? AppColors.popoverBackground.withValues(alpha: 0.85)
+                      : Colors.white,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: isDark
-                        ? Colors.white.withValues(alpha: 0.08)
-                        : AppColors.border,
-                    width: 1,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: isDark
-                          ? Colors.black.withValues(alpha: 0.3)
-                          : const Color(0x14000000),
-                      blurRadius: 24,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
+                  boxShadow: isDark
+                      ? [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.4),
+                            blurRadius: 20,
+                            offset: const Offset(0, 6),
+                          ),
+                        ]
+                      : const [
+                          BoxShadow(
+                            color: Color(0x18000000),
+                            blurRadius: 20,
+                            offset: Offset(0, 8),
+                            spreadRadius: 0,
+                          ),
+                          BoxShadow(
+                            color: Color(0x0A000000),
+                            blurRadius: 6,
+                            offset: Offset(0, 2),
+                            spreadRadius: 0,
+                          ),
+                        ],
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -431,58 +434,71 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
             ),
           ),
         ),
-      ],
+      ),
+    ],
     );
   }
 
   Widget _buildDialogItem(BuildContext context, String value, String label, String currentFilter) {
     final isSelected = value == currentFilter;
     bool isHovered = false;
+    final bool isDark = AppColors.isDark;
 
     return StatefulBuilder(
-      builder: (context, setState) {
+      builder: (context, setItemState) {
+        final Color bg = isSelected
+            ? (isDark
+                ? AppColors.primary.withValues(alpha: 0.2)
+                : AppColors.primary.withValues(alpha: 0.12))
+            : (isHovered
+                ? (isDark
+                    ? Colors.white.withValues(alpha: 0.08)
+                    : AppColors.primary.withValues(alpha: 0.08))
+                : Colors.transparent);
+
+        final Color targetTextColor = isSelected
+            ? AppColors.primary
+            : (isHovered
+                ? (isDark ? AppColors.textPrimary : AppColors.primary)
+                : (isDark ? const Color(0xFFCBD5E1) : const Color(0xFF334155)));
+
         return MouseRegion(
-          onEnter: (_) => setState(() => isHovered = true),
-          onExit: (_) => setState(() => isHovered = false),
+          onEnter: (_) => setItemState(() => isHovered = true),
+          onExit: (_) => setItemState(() => isHovered = false),
           child: InkWell(
             onTap: () {
               ref.read(sessionsProvider.notifier).updateFilter(value);
               Navigator.of(context).pop();
             },
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            borderRadius: BorderRadius.circular(8),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              curve: Curves.easeOut,
+              margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
               decoration: BoxDecoration(
-                color: isSelected
-                    ? AppColors.primary.withValues(alpha: 0.15)
-                    : isHovered
-                        ? AppColors.primary.withValues(alpha: 0.1)
-                        : Colors.transparent,
-                boxShadow: isHovered
-                    ? [
-                        BoxShadow(
-                          color: AppColors.primary.withValues(alpha: 0.15),
-                          blurRadius: 12,
-                          spreadRadius: 2,
-                        )
-                      ]
-                    : null,
+                color: bg,
+                borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
                 children: [
                   Expanded(
-                    child: Text(
-                      label,
-                      style: TextStyle(
-                        color: isSelected
-                            ? AppColors.primary
-                            : (isHovered ? AppColors.textPrimary : AppColors.textSecondary),
-                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                        fontSize: 13,
+                    child: AnimatedDefaultTextStyle(
+                      duration: const Duration(milliseconds: 150),
+                      curve: Curves.easeOut,
+                      style: AppTextStyles.label.copyWith(
+                        color: targetTextColor,
+                        fontWeight: (isSelected || isHovered) ? FontWeight.w600 : FontWeight.w500,
+                      ),
+                      child: Text(
+                        label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ),
                   if (isSelected)
-                    Icon(Icons.check, color: AppColors.primary, size: 16),
+                    const Icon(Icons.check_rounded, color: AppColors.primary, size: 16),
                 ],
               ),
             ),
