@@ -26,12 +26,93 @@ class LearningHistoryItem extends ConsumerStatefulWidget {
 
 class _LearningHistoryItemState extends ConsumerState<LearningHistoryItem> {
   bool _isHovered = false;
+  bool _isDotsHovered = false;
   final GlobalKey _menuKey = GlobalKey();
+
+  Widget _buildPopoverAction({
+    required BuildContext context,
+    required String label,
+    required IconData icon,
+    required Color iconColor,
+    Color? textColor,
+    required VoidCallback onTap,
+  }) {
+    bool isHovered = false;
+    final bool isDark = AppColors.isDark;
+
+    return StatefulBuilder(
+      builder: (context, setActionState) {
+        final Color hoverBg = isDark
+            ? Colors.white.withValues(alpha: 0.08)
+            : AppColors.primary.withValues(alpha: 0.08);
+
+        // Dark primary blue in light mode for crisp contrast against light blue hover background
+        final Color darkPrimary =
+            isDark ? AppColors.textPrimary : const Color(0xFF1D4ED8);
+
+        final Color activeHoverColor = textColor ?? darkPrimary;
+
+        final Color targetIconColor = isHovered ? activeHoverColor : iconColor;
+
+        final Color targetTextColor = isHovered
+            ? activeHoverColor
+            : (textColor ??
+                (isDark ? const Color(0xFFCBD5E1) : const Color(0xFF334155)));
+
+        return MouseRegion(
+          onEnter: (_) => setActionState(() => isHovered = true),
+          onExit: (_) => setActionState(() => isHovered = false),
+          child: InkWell(
+            onTap: () {
+              Navigator.of(context).pop();
+              onTap();
+            },
+            borderRadius: BorderRadius.circular(8),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              curve: Curves.easeOut,
+              margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+              decoration: BoxDecoration(
+                color: isHovered ? hoverBg : Colors.transparent,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  IconTheme(
+                    data: const IconThemeData(opacity: 1.0),
+                    child: Icon(icon, color: targetIconColor, size: 18),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: AnimatedDefaultTextStyle(
+                      duration: const Duration(milliseconds: 150),
+                      curve: Curves.easeOut,
+                      style: AppTextStyles.label.copyWith(
+                        color: targetTextColor,
+                        fontWeight: isHovered ? FontWeight.w600 : FontWeight.w500,
+                      ),
+                      child: Text(
+                        label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
 
   void _showActionMenu() {
     final RenderBox renderBox = _menuKey.currentContext!.findRenderObject() as RenderBox;
     final size = renderBox.size;
     final offset = renderBox.localToGlobal(Offset.zero);
+    final bool isDark = AppColors.isDark;
 
     showMenu<String>(
       context: context,
@@ -43,7 +124,7 @@ class _LearningHistoryItemState extends ConsumerState<LearningHistoryItem> {
       ),
       position: RelativeRect.fromLTRB(
         offset.dx,
-        offset.dy + size.height,
+        offset.dy + size.height + 4,
         MediaQuery.of(context).size.width - offset.dx - size.width,
         0,
       ),
@@ -51,30 +132,52 @@ class _LearningHistoryItemState extends ConsumerState<LearningHistoryItem> {
         PopupMenuItem<String>(
           enabled: false,
           padding: EdgeInsets.zero,
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: BackdropFilter(
+          child: IconTheme(
+            data: const IconThemeData(opacity: 1.0),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
               child: Container(
-                width: 140,
-                padding: const EdgeInsets.symmetric(vertical: 4),
+                width: 145,
+                padding: const EdgeInsets.symmetric(vertical: 6),
                 decoration: BoxDecoration(
-                  color: AppColors.popoverBackground.withValues(alpha: 0.8),
+                  color: isDark
+                      ? AppColors.popoverBackground.withValues(alpha: 0.85)
+                      : Colors.white,
                   borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.3),
-                      blurRadius: 16,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
+                  boxShadow: isDark
+                      ? [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.4),
+                            blurRadius: 20,
+                            offset: const Offset(0, 6),
+                          ),
+                        ]
+                      : const [
+                          BoxShadow(
+                            color: Color(0x18000000),
+                            blurRadius: 20,
+                            offset: Offset(0, 8),
+                            spreadRadius: 0,
+                          ),
+                          BoxShadow(
+                            color: Color(0x0A000000),
+                            blurRadius: 6,
+                            offset: Offset(0, 2),
+                            spreadRadius: 0,
+                          ),
+                        ],
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    InkWell(
+                    _buildPopoverAction(
+                      context: context,
+                      label: 'Export',
+                      icon: Icons.ios_share_rounded,
+                      iconColor: isDark ? AppColors.blueSoft : AppColors.primary,
                       onTap: () {
-                        Navigator.of(context).pop();
                         final total = widget.session.totalSteps ?? widget.session.stepsCompleted;
                         final bool isCompleted = total > 0 && widget.session.stepsCompleted >= total;
                         ExportSessionModal.show(
@@ -87,39 +190,26 @@ class _LearningHistoryItemState extends ConsumerState<LearningHistoryItem> {
                           isCompleted: isCompleted,
                         );
                       },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                        child: Row(
-                          children: [
-                            Icon(Icons.ios_share_rounded, color: AppColors.purpleLight, size: 18),
-                            const SizedBox(width: 12),
-                            Text(
-                              'Export',
-                              style: AppTextStyles.label.copyWith(color: AppColors.textPrimary),
-                            ),
-                          ],
-                        ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      child: Divider(
+                        color: isDark
+                            ? AppColors.glassBorder
+                            : const Color(0xFFF1F5F9),
+                        height: 1,
+                        thickness: 1,
                       ),
                     ),
-                    Divider(color: AppColors.glassBorder, height: 1),
-                    InkWell(
+                    _buildPopoverAction(
+                      context: context,
+                      label: 'Delete',
+                      icon: Icons.delete_outline_rounded,
+                      iconColor: AppColors.rose,
+                      textColor: AppColors.rose,
                       onTap: () {
-                        Navigator.of(context).pop();
                         ref.read(sessionsProvider.notifier).deleteSession(widget.session.sessionId);
                       },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                        child: Row(
-                          children: [
-                            Icon(Icons.delete_outline, color: AppColors.rose, size: 18),
-                            const SizedBox(width: 12),
-                            Text(
-                              'Delete',
-                              style: AppTextStyles.label.copyWith(color: AppColors.rose),
-                            ),
-                          ],
-                        ),
-                      ),
                     ),
                   ],
                 ),
@@ -127,7 +217,8 @@ class _LearningHistoryItemState extends ConsumerState<LearningHistoryItem> {
             ),
           ),
         ),
-      ],
+      ),
+    ],
     );
   }
 
@@ -256,17 +347,35 @@ class _LearningHistoryItemState extends ConsumerState<LearningHistoryItem> {
                     ],
                   ),
                 ),
-                Container(
-                  key: _menuKey,
-                  child: InkWell(
-                    onTap: _showActionMenu,
-                    borderRadius: BorderRadius.circular(16),
-                    child: Padding(
-                      padding: const EdgeInsets.all(4.0),
-                      child: Icon(
-                        Icons.more_vert, 
-                        color: (isActive || _isHovered) ? AppColors.textSecondary : AppColors.textMuted.withValues(alpha: 0.4), 
-                        size: 16,
+                MouseRegion(
+                  onEnter: (_) => setState(() => _isDotsHovered = true),
+                  onExit: (_) => setState(() => _isDotsHovered = false),
+                  child: Container(
+                    key: _menuKey,
+                    child: InkWell(
+                      onTap: _showActionMenu,
+                      borderRadius: BorderRadius.circular(6),
+                      hoverColor: Colors.transparent,
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 150),
+                        padding: const EdgeInsets.all(4.0),
+                        decoration: BoxDecoration(
+                          color: _isDotsHovered
+                              ? (AppColors.isDark
+                                  ? Colors.white.withValues(alpha: 0.1)
+                                  : AppColors.primary.withValues(alpha: 0.1))
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Icon(
+                          Icons.more_vert_rounded,
+                          color: _isDotsHovered
+                              ? (AppColors.isDark ? AppColors.textPrimary : const Color(0xFF1D4ED8))
+                              : ((isActive || _isHovered)
+                                  ? AppColors.textSecondary
+                                  : AppColors.textMuted.withValues(alpha: 0.4)),
+                          size: 16,
+                        ),
                       ),
                     ),
                   ),

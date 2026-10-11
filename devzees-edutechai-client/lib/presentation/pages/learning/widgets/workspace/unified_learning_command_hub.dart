@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../data/models/learning/session_response.dart';
@@ -30,7 +29,6 @@ class UnifiedLearningCommandHub extends ConsumerStatefulWidget {
 }
 
 class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningCommandHub> {
-  bool _isHovered = false;
   bool _isTopicExpanded = false;
 
   Map<String, dynamic> _calculateLevel(int totalXp) =>
@@ -50,132 +48,92 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
         final isTablet = constraints.maxWidth >= 650 && constraints.maxWidth < 1050;
         final isMobile = constraints.maxWidth < 650;
 
-        return MouseRegion(
-          onEnter: (_) => setState(() => _isHovered = true),
-          onExit: (_) => setState(() => _isHovered = false),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 250),
-            curve: Curves.easeOutCubic,
-            decoration: BoxDecoration(
-              color: AppColors.isDark ? const Color(0xFF11121D) : Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: AppColors.isDark
-                    ? const Color(0x1FFFFFFF)
-                    : (_isHovered
-                        ? AppColors.accentBlue.withValues(alpha: 0.5)
-                        : AppColors.glassBorder),
-                width: 1.0,
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // ─── TIER 1: Command Hub Header Bar ───
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.symmetric(
+                horizontal: isMobile ? 14 : 24,
+                vertical: isMobile ? 10 : 12,
               ),
-              boxShadow: AppColors.isDark
-                  ? [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.35),
-                        blurRadius: 25,
-                        offset: const Offset(0, 8),
-                      ),
-                    ]
-                  : [
-                      BoxShadow(
-                        color: const Color(0x14000000),
-                        blurRadius: _isHovered ? 28 : 24,
-                        offset: Offset(0, _isHovered ? 10 : 8),
-                      ),
-                    ],
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                child: Container(
-                  clipBehavior: Clip.antiAlias,
-                  decoration: BoxDecoration(
-                    color: AppColors.isDark ? const Color(0xFF11121D) : Colors.white,
-                    borderRadius: const BorderRadius.all(Radius.circular(16)),
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // ─── TIER 1: Command Hub Header Bar ───
-                      Container(
-                        width: double.infinity,
-                        padding: EdgeInsets.symmetric(
-                          horizontal: isMobile ? 14 : 16,
-                          vertical: isMobile ? 10 : 12,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.isDark
-                              ? const Color(0xFF11121D)
-                              : AppColors.surfaceSolidHeader,
-                          border: Border(
-                            bottom: BorderSide(
-                              color: AppColors.isDark
-                                  ? const Color(0x14FFFFFF)
-                                  : const Color(0xFFE2E8F0),
-                              width: 1.0,
-                            ),
-                          ),
-                        ),
-                        child: isDesktop
-                            ? _buildDesktopTier1(
-                                session: session,
-                                levelData: levelData,
-                                lvlPct: lvlPct,
-                                topicPct: topicPct,
-                                totalSteps: totalSteps,
-                              )
-                            : isTablet
-                                ? _buildTabletTier1(
-                                    session: session,
-                                    levelData: levelData,
-                                    lvlPct: lvlPct,
-                                    topicPct: topicPct,
-                                    totalSteps: totalSteps,
-                                  )
-                                : _buildMobileTier1(
-                                    session: session,
-                                    levelData: levelData,
-                                    lvlPct: lvlPct,
-                                    topicPct: topicPct,
-                                    totalSteps: totalSteps,
-                                  ),
-                      ),
-
-                      // ─── TIER 2: Milestone Learning Roadmap Stepper ─────────
-                      if (session.steps.isNotEmpty)
-                        Container(
-                          padding: EdgeInsets.fromLTRB(
-                            isMobile ? 14 : 16,
-                            10,
-                            isMobile ? 14 : 16,
-                            14,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.isDark
-                                ? const Color(0xFF11121D)
-                                : Colors.transparent,
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              _buildRoadmapHeader(totalSteps),
-                              const SizedBox(height: 8),
-                              MilestoneRoadmapStepper(
-                                steps: session.steps,
-                                activeIndex: widget.activeIndex,
-                                maxUnlockedIndex: widget.maxUnlockedIndex,
-                                onStepTapped: widget.onStepTapped,
-                              ),
-                            ],
-                          ),
-                        ),
-                    ],
+              decoration: BoxDecoration(
+                color: AppColors.isDark
+                    ? const Color(0xFF11121D)
+                    : AppColors.surfaceSolidHeader,
+                border: Border(
+                  bottom: BorderSide(
+                    color: AppColors.isDark
+                        ? const Color(0x14FFFFFF)
+                        : const Color(0xFFE2E8F0),
+                    width: 1.0,
                   ),
                 ),
               ),
+              child: isDesktop
+                  ? _buildDesktopTier1(
+                      session: session,
+                      levelData: levelData,
+                      lvlPct: lvlPct,
+                      topicPct: topicPct,
+                      totalSteps: totalSteps,
+                    )
+                  : isTablet
+                      ? _buildTabletTier1(
+                          session: session,
+                          levelData: levelData,
+                          lvlPct: lvlPct,
+                          topicPct: topicPct,
+                          totalSteps: totalSteps,
+                        )
+                      : _buildMobileTier1(
+                          session: session,
+                          levelData: levelData,
+                          lvlPct: lvlPct,
+                          topicPct: topicPct,
+                          totalSteps: totalSteps,
+                        ),
             ),
-          ),
+
+            // ─── TIER 2: Milestone Learning Roadmap Stepper ─────────
+            if (session.steps.isNotEmpty)
+              Container(
+                padding: EdgeInsets.fromLTRB(
+                  isMobile ? 12 : 24,
+                  10,
+                  isMobile ? 12 : 24,
+                  12,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.isDark
+                      ? const Color(0xFF11121D)
+                      : AppColors.surfaceSolidHeader,
+                  border: Border(
+                    bottom: BorderSide(
+                      color: AppColors.isDark
+                          ? const Color(0x14FFFFFF)
+                          : const Color(0xFFE2E8F0),
+                      width: 1.0,
+                    ),
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _buildRoadmapHeader(totalSteps),
+                    const SizedBox(height: 8),
+                    MilestoneRoadmapStepper(
+                      steps: session.steps,
+                      activeIndex: widget.activeIndex,
+                      maxUnlockedIndex: widget.maxUnlockedIndex,
+                      onStepTapped: widget.onStepTapped,
+                    ),
+                  ],
+                ),
+              ),
+          ],
         );
       },
     );
@@ -306,21 +264,10 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
           width: isMobile ? 30 : 34,
           height: isMobile ? 30 : 34,
           alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: AppColors.isDark
-                ? const Color(0xFF2E1065).withValues(alpha: 0.7)
-                : const Color(0xFFEEF2FF),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: AppColors.isDark
-                  ? const Color(0xFF7C3AED).withValues(alpha: 0.5)
-                  : const Color(0xFFC7D2FE),
-              width: 1.0,
-            ),
-          ),
+          decoration: _buildPillDecoration(),
           child: Icon(
-            Icons.explore_outlined,
-            color: AppColors.isDark ? const Color(0xFFC4B5FD) : const Color(0xFF4F46E5),
+            Icons.track_changes_rounded,
+            color: AppColors.isDark ? const Color(0xFF60A5FA) : const Color(0xFF1D4ED8),
             size: isMobile ? 16 : 18,
           ),
         ),
@@ -348,12 +295,12 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
                   _buildMicroChip(
                     label: _formatMode(session.learningMode),
                     isViolet: true,
-                    icon: Icons.visibility_outlined,
+                    icon: Icons.psychology_rounded,
                   ),
                   _buildMicroChip(
                     label: _formatLevel(session.studentLevel),
                     isViolet: false,
-                    icon: Icons.school_outlined,
+                    icon: Icons.school_rounded,
                   ),
                 ],
               ),
@@ -403,9 +350,9 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(
+          Icon(
             Icons.military_tech_rounded,
-            color: Color(0xFFFBBF24),
+            color: AppColors.isDark ? const Color(0xFFFBBF24) : const Color(0xFFD97706),
             size: 15,
           ),
           const SizedBox(width: 5),
@@ -439,18 +386,18 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(
+          Icon(
             Icons.star_rounded,
-            color: Color(0xFFFBBF24),
+            color: AppColors.isDark ? const Color(0xFFFBBF24) : const Color(0xFFD97706),
             size: 15,
           ),
           const SizedBox(width: 4),
           Text(
             '$xpEarned XP',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFFFDE68A),
+              fontWeight: FontWeight.w700,
+              color: AppColors.isDark ? const Color(0xFFFDE68A) : const Color(0xFFB45309),
             ),
           ),
           const SizedBox(width: 8),
@@ -594,6 +541,12 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
   // ─── EXPORT ACTION BUTTON ───────────────────────────────────────────────────
   Widget _buildExportButton(SessionResponse session, int totalSteps) {
     final bool isCompleted = totalSteps > 0 && session.stepsCompleted >= totalSteps;
+    final Color iconColor = isCompleted
+        ? (AppColors.isDark ? const Color(0xFFC084FC) : const Color(0xFF7C3AED))
+        : (AppColors.isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B));
+    final Color textColor = isCompleted
+        ? (AppColors.isDark ? const Color(0xFFC084FC) : const Color(0xFF7C3AED))
+        : (AppColors.isDark ? Colors.white : AppColors.textPrimary);
 
     return Tooltip(
       message: isCompleted
@@ -611,29 +564,35 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
             isCompleted: isCompleted,
           );
         },
+        mouseCursor: SystemMouseCursors.click,
         borderRadius: BorderRadius.circular(8),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-          decoration: _buildPillDecoration(),
+          decoration: _buildPillDecoration().copyWith(
+            border: isCompleted
+                ? Border.all(
+                    color: AppColors.isDark
+                        ? const Color(0x66C084FC)
+                        : const Color(0x407C3AED),
+                    width: 1.0,
+                  )
+                : null,
+          ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
                 Icons.download_rounded,
                 size: 14,
-                color: isCompleted
-                    ? const Color(0xFFA78BFA)
-                    : (AppColors.isDark ? const Color(0xFFCBD5E1) : const Color(0xFF64748B)),
+                color: iconColor,
               ),
               const SizedBox(width: 5),
               Text(
                 'Export',
                 style: TextStyle(
                   fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: isCompleted
-                      ? Colors.white
-                      : (AppColors.isDark ? const Color(0xFFCBD5E1) : const Color(0xFF475569)),
+                  fontWeight: isCompleted ? FontWeight.w700 : FontWeight.w600,
+                  color: textColor,
                 ),
               ),
             ],
@@ -648,14 +607,15 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
     return Row(
       children: [
         Container(
-          padding: const EdgeInsets.all(4),
-          decoration: BoxDecoration(
-            color: AppColors.purpleLight.withValues(alpha: 0.15),
+          width: 26,
+          height: 26,
+          alignment: Alignment.center,
+          decoration: _buildPillDecoration().copyWith(
             borderRadius: BorderRadius.circular(6),
           ),
           child: Icon(
             Icons.alt_route_rounded,
-            color: AppColors.purpleLight,
+            color: AppColors.isDark ? const Color(0xFFC084FC) : const Color(0xFF7C3AED),
             size: 14,
           ),
         ),
@@ -670,17 +630,17 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
         ),
         const SizedBox(width: 8),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-          decoration: BoxDecoration(
-            color: AppColors.purpleLight.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: AppColors.purpleLight.withValues(alpha: 0.3)),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+          decoration: _buildPillDecoration().copyWith(
+            borderRadius: BorderRadius.circular(6),
           ),
           child: Text(
             'Step ${widget.activeIndex + 1} of $totalSteps',
-            style: AppTextStyles.badge.copyWith(
+            style: TextStyle(
               fontWeight: FontWeight.w700,
-              color: AppColors.lavender,
+              fontSize: 10,
+              color: AppColors.isDark ? const Color(0xFFC084FC) : const Color(0xFF7C3AED),
+              letterSpacing: 0.3,
             ),
           ),
         ),
@@ -694,28 +654,20 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
     required bool isViolet,
     required IconData icon,
   }) {
-    final bgColor = isViolet
-        ? (AppColors.isDark ? const Color(0x994C1D95) : const Color(0xFFEDE9FE))
-        : (AppColors.isDark ? const Color(0x801E3A8A) : const Color(0xFFEFF6FF));
-    final borderColor = isViolet
-        ? (AppColors.isDark ? const Color(0x668B5CF6) : const Color(0xFFC4B5FD))
-        : (AppColors.isDark ? const Color(0x663B82F6) : const Color(0xFFBFDBFE));
     final textColor = isViolet
-        ? (AppColors.isDark ? const Color(0xFFDDD6FE) : const Color(0xFF6D28D9))
-        : (AppColors.isDark ? const Color(0xFF93C5FD) : const Color(0xFF1D4ED8));
+        ? (AppColors.isDark ? const Color(0xFFC084FC) : const Color(0xFF7C3AED))
+        : (AppColors.isDark ? const Color(0xFF60A5FA) : const Color(0xFF1D4ED8));
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: borderColor, width: 0.9),
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+      decoration: _buildPillDecoration().copyWith(
+        borderRadius: BorderRadius.circular(6),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 10, color: textColor),
-          const SizedBox(width: 3.5),
+          Icon(icon, size: 11, color: textColor),
+          const SizedBox(width: 4),
           Text(
             label,
             style: TextStyle(

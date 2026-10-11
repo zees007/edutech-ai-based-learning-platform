@@ -13,10 +13,7 @@ import '../subscription/subscription_modal.dart';
 class SidebarFooter extends ConsumerStatefulWidget {
   final bool expanded;
 
-  const SidebarFooter({
-    super.key,
-    required this.expanded,
-  });
+  const SidebarFooter({super.key, required this.expanded});
 
   @override
   ConsumerState<SidebarFooter> createState() => _SidebarFooterState();
@@ -26,23 +23,30 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
   final GlobalKey _settingsIconKey = GlobalKey();
 
   void _showSettingsPopover(BuildContext context) {
-    final RenderBox renderBox = _settingsIconKey.currentContext!.findRenderObject() as RenderBox;
+    final RenderBox renderBox =
+        _settingsIconKey.currentContext!.findRenderObject() as RenderBox;
     final size = renderBox.size;
     final offset = renderBox.localToGlobal(Offset.zero);
+    final bool isDark = AppColors.isDark;
 
     final perms = ref.read(permissionProvider);
-    
+
     Widget? upgradeButton;
     if (perms.canUpgradeSubscription && !perms.isSuperAdmin) {
       // Determine label based on whether user can also downgrade (Pro → show "Upgrade to Ultra")
-      final label = perms.canDowngradeSubscription ? 'Upgrade to Ultra' : 'Upgrade to PRO';
+      final label = perms.canDowngradeSubscription
+          ? 'Upgrade to Ultra'
+          : 'Upgrade to PRO';
       upgradeButton = _buildMenuItem(
-        context, 
-        label, 
-        Icons.bolt, 
-        AppColors.purple,
+        context,
+        label,
+        Icons.bolt_rounded,
+        AppColors.accentAmber,
         onTap: () {
-          showDialog(context: context, builder: (_) => const SubscriptionModal());
+          showDialog(
+            context: context,
+            builder: (_) => const SubscriptionModal(),
+          );
         },
       );
     }
@@ -57,7 +61,7 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
       ),
       position: RelativeRect.fromLTRB(
         offset.dx,
-        offset.dy - 280,
+        offset.dy - 320,
         MediaQuery.of(context).size.width - offset.dx - size.width,
         0,
       ),
@@ -65,18 +69,21 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
         PopupMenuItem<String>(
           enabled: false,
           padding: EdgeInsets.zero,
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(16),
-            child: BackdropFilter(
+          child: IconTheme(
+            data: const IconThemeData(opacity: 1.0),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
               child: Container(
-                width: 220,
+                width: 230,
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 decoration: BoxDecoration(
-                  color: AppColors.popoverBackground,
+                  color: isDark
+                      ? AppColors.popoverBackground.withValues(alpha: 0.92)
+                      : Colors.white,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppColors.border, width: 1),
-                  boxShadow: AppColors.isDark
+                  boxShadow: isDark
                       ? [
                           BoxShadow(
                             color: Colors.black.withValues(alpha: 0.45),
@@ -84,11 +91,18 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
                             offset: const Offset(0, 8),
                           ),
                         ]
-                      : [
-                          const BoxShadow(
+                      : const [
+                          BoxShadow(
                             color: Color(0x18000000),
                             blurRadius: 24,
                             offset: Offset(0, 8),
+                            spreadRadius: 0,
+                          ),
+                          BoxShadow(
+                            color: Color(0x0A000000),
+                            blurRadius: 8,
+                            offset: Offset(0, 2),
+                            spreadRadius: 0,
                           ),
                         ],
                 ),
@@ -96,43 +110,73 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     _buildUserInfo(),
-                    Divider(color: AppColors.glassBorder, height: 16),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: Divider(
+                        color: isDark
+                            ? AppColors.glassBorder
+                            : const Color(0xFFF1F5F9),
+                        height: 12,
+                      ),
+                    ),
                     ?upgradeButton,
                     _buildMenuItem(
-                      context, 
-                      'Manage Subscription', 
-                      Icons.credit_card, 
-                      AppColors.textSecondary,
+                      context,
+                      'Manage Subscription',
+                      Icons.credit_card_rounded,
+                      isDark ? AppColors.blueSoft : AppColors.primary,
                       onTap: () {
-                        showDialog(context: context, builder: (_) => const SubscriptionModal());
+                        showDialog(
+                          context: context,
+                          builder: (_) => const SubscriptionModal(),
+                        );
                       },
                     ),
                     if (perms.isAdmin)
                       _buildMenuItem(
-                        context, 
-                        'Admin Console', 
-                        Icons.admin_panel_settings, 
-                        AppColors.textSecondary,
+                        context,
+                        'Admin Console',
+                        Icons.admin_panel_settings_rounded,
+                        isDark ? AppColors.blueSoft : AppColors.primary,
                         onTap: () {
                           context.go('/admin');
                         },
                       ),
-                    Divider(color: AppColors.glassBorder, height: 16),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: Divider(
+                        color: isDark
+                            ? AppColors.glassBorder
+                            : const Color(0xFFF1F5F9),
+                        height: 12,
+                      ),
+                    ),
                     _buildMenuItem(
                       context,
-                      AppColors.isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme',
-                      AppColors.isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
-                      AppColors.isDark ? AppColors.accentAmber : AppColors.accentViolet,
+                      isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme',
+                      isDark
+                          ? Icons.light_mode_rounded
+                          : Icons.dark_mode_rounded,
+                      isDark ? AppColors.accentAmber : AppColors.accentViolet,
                       onTap: () {
                         ref.read(themeModeProvider.notifier).toggleTheme();
                       },
                     ),
-                    Divider(color: AppColors.glassBorder, height: 16),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: Divider(
+                        color: isDark
+                            ? AppColors.glassBorder
+                            : const Color(0xFFF1F5F9),
+                        height: 12,
+                      ),
+                    ),
                     _buildMenuItem(
-                      context, 
-                      'Sign Out', 
-                      Icons.logout, 
-                      AppColors.rose.withValues(alpha: 0.8),
+                      context,
+                      'Sign Out',
+                      Icons.logout_rounded,
+                      AppColors.rose,
+                      textColor: AppColors.rose,
                       onTap: () async {
                         await ref.read(authProvider.notifier).logout();
                         if (context.mounted) {
@@ -141,10 +185,11 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
                       },
                     ),
                     _buildMenuItem(
-                      context, 
-                      'Sign Out of All Devices', 
-                      Icons.phonelink_erase, 
-                      AppColors.rose.withValues(alpha: 0.8),
+                      context,
+                      'Sign Out of All Devices',
+                      Icons.phonelink_erase_rounded,
+                      AppColors.rose,
+                      textColor: AppColors.rose,
                       onTap: () async {
                         await ref.read(authProvider.notifier).logoutAll();
                         if (context.mounted) {
@@ -158,13 +203,14 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
             ),
           ),
         ),
-      ],
+      ),
+    ],
     );
   }
 
   Widget _buildUserInfo() {
     final userAsync = ref.watch(userProvider);
-    
+
     if (userAsync.isLoading) {
       return const Padding(
         padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -173,16 +219,20 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
         ),
       );
     }
-    
+
     final user = userAsync.value;
     if (user == null) {
       return const SizedBox.shrink();
     }
-    
-    final initials = user.firstName.isNotEmpty ? user.firstName[0].toUpperCase() : '';
+
+    final initials = user.firstName.isNotEmpty
+        ? user.firstName[0].toUpperCase()
+        : '';
     final name = '${user.firstName} ${user.lastName}'.trim();
     final email = user.email;
-    final plan = user.subscription?.tier != null ? '${user.subscription!.tier.toUpperCase()} MEMBER' : 'FREE MEMBER';
+    final plan = user.subscription?.tier != null
+        ? '${user.subscription!.tier.toUpperCase()} MEMBER'
+        : 'FREE MEMBER';
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -219,7 +269,9 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             decoration: BoxDecoration(
               color: AppColors.accentGreen.withValues(alpha: 0.1),
-              border: Border.all(color: AppColors.accentGreen.withValues(alpha: 0.3)),
+              border: Border.all(
+                color: AppColors.accentGreen.withValues(alpha: 0.3),
+              ),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Row(
@@ -248,36 +300,78 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
     );
   }
 
-  Widget _buildMenuItem(BuildContext context, String label, IconData icon, Color color, {VoidCallback? onTap}) {
+  Widget _buildMenuItem(
+    BuildContext context,
+    String label,
+    IconData icon,
+    Color color, {
+    VoidCallback? onTap,
+    Color? textColor,
+  }) {
     bool isHovered = false;
+    final bool isDark = AppColors.isDark;
 
     return StatefulBuilder(
-      builder: (context, setState) {
+      builder: (context, setItemState) {
+        final Color hoverBg = isDark
+            ? Colors.white.withValues(alpha: 0.08)
+            : AppColors.primary.withValues(alpha: 0.08);
+
+        // Dark primary blue in light mode for crisp contrast against light blue hover background
+        final Color darkPrimary =
+            isDark ? AppColors.textPrimary : const Color(0xFF1D4ED8);
+
+        final Color activeHoverColor = textColor ?? darkPrimary;
+
+        final Color targetIconColor = isHovered ? activeHoverColor : color;
+
+        final Color targetTextColor = isHovered
+            ? activeHoverColor
+            : (textColor ??
+                (isDark ? const Color(0xFFCBD5E1) : const Color(0xFF334155)));
+
         return MouseRegion(
-          onEnter: (_) => setState(() => isHovered = true),
-          onExit: (_) => setState(() => isHovered = false),
+          onEnter: (_) => setItemState(() => isHovered = true),
+          onExit: (_) => setItemState(() => isHovered = false),
           child: InkWell(
             onTap: () {
               Navigator.of(context).pop();
               if (onTap != null) onTap();
             },
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            borderRadius: BorderRadius.circular(8),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              curve: Curves.easeOut,
+              margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               decoration: BoxDecoration(
-                color: isHovered
-                    ? (AppColors.isDark ? AppColors.glassHover : AppColors.surfaceSubtle)
-                    : Colors.transparent,
+                color: isHovered ? hoverBg : Colors.transparent,
+                borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
                 children: [
-                  Icon(icon, color: color, size: 18),
+                  IconTheme(
+                    data: const IconThemeData(opacity: 1.0),
+                    child: Icon(
+                      icon,
+                      color: targetIconColor,
+                      size: 18,
+                    ),
+                  ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: Text(
-                      label,
-                      style: isHovered
-                          ? AppTextStyles.label.copyWith(color: AppColors.textPrimary)
-                          : AppTextStyles.label.copyWith(color: AppColors.textSecondary),
+                    child: AnimatedDefaultTextStyle(
+                      duration: const Duration(milliseconds: 150),
+                      curve: Curves.easeOut,
+                      style: AppTextStyles.label.copyWith(
+                        color: targetTextColor,
+                        fontWeight: isHovered ? FontWeight.w600 : FontWeight.w500,
+                      ),
+                      child: Text(
+                        label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                   ),
                 ],
@@ -289,19 +383,70 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
     );
   }
 
+  Widget _buildSettingsButton(BuildContext context) {
+    bool isHovered = false;
+    final bool isDark = AppColors.isDark;
+
+    return StatefulBuilder(
+      builder: (context, setBtnState) {
+        return MouseRegion(
+          onEnter: (_) => setBtnState(() => isHovered = true),
+          onExit: (_) => setBtnState(() => isHovered = false),
+          child: Tooltip(
+            message: 'Settings & Profile',
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                key: _settingsIconKey,
+                onTap: () => _showSettingsPopover(context),
+                customBorder: const CircleBorder(),
+                hoverColor: Colors.transparent,
+                splashColor: (isDark ? Colors.white : AppColors.primary)
+                    .withValues(alpha: 0.12),
+                highlightColor: Colors.transparent,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 150),
+                  curve: Curves.easeOut,
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: isHovered
+                        ? (isDark
+                            ? Colors.white.withValues(alpha: 0.1)
+                            : AppColors.primary.withValues(alpha: 0.08))
+                        : Colors.transparent,
+                  ),
+                  child: Center(
+                    child: Icon(
+                      Icons.settings_rounded,
+                      color: isHovered
+                          ? (isDark ? AppColors.textPrimary : const Color(0xFF1D4ED8))
+                          : (isDark
+                              ? AppColors.textSecondary
+                              : const Color(0xFF475569)),
+                      size: 20,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final userAsync = ref.watch(userProvider);
-    
+
     if (userAsync.isLoading || userAsync.value == null) {
       return Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           border: Border(
-            top: BorderSide(
-              color: AppColors.glassBorder,
-              width: 1,
-            ),
+            top: BorderSide(color: AppColors.glassBorder, width: 1),
           ),
         ),
         child: Row(
@@ -318,34 +463,26 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
                   strokeWidth: 2,
                 ),
               ),
-            if (!widget.expanded)
-              Container(
-                key: _settingsIconKey,
-                child: IconButton(
-                  icon: Icon(Icons.settings, color: AppColors.textMuted, size: 20),
-                  onPressed: () => _showSettingsPopover(context),
-                ),
-              ),
+            if (!widget.expanded) _buildSettingsButton(context),
           ],
         ),
       );
     }
 
     final user = userAsync.value!;
-    final initials = user.firstName.isNotEmpty ? user.firstName[0].toUpperCase() : '';
+    final initials = user.firstName.isNotEmpty
+        ? user.firstName[0].toUpperCase()
+        : '';
     final name = '${user.firstName} ${user.lastName}'.trim();
     final plan = user.subscription?.tier ?? 'Free';
-    final planCapitalized = plan.isNotEmpty ? '${plan[0].toUpperCase()}${plan.substring(1).toLowerCase()} Plan' : 'Free Plan';
+    final planCapitalized = plan.isNotEmpty
+        ? '${plan[0].toUpperCase()}${plan.substring(1).toLowerCase()} Plan'
+        : 'Free Plan';
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        border: Border(
-          top: BorderSide(
-            color: AppColors.glassBorder,
-            width: 1,
-          ),
-        ),
+        border: Border(top: BorderSide(color: AppColors.glassBorder, width: 1)),
       ),
       child: Row(
         mainAxisAlignment: widget.expanded
@@ -379,19 +516,15 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
                   ),
                   Text(
                     planCapitalized,
-                    style: AppTextStyles.caption.copyWith(color: AppColors.textMuted),
+                    style: AppTextStyles.caption.copyWith(
+                      color: AppColors.textMuted,
+                    ),
                   ),
                 ],
               ),
             ),
           ],
-          Container(
-            key: _settingsIconKey,
-            child: IconButton(
-              icon: Icon(Icons.settings, color: AppColors.textMuted, size: 20),
-              onPressed: () => _showSettingsPopover(context),
-            ),
-          ),
+          _buildSettingsButton(context),
         ],
       ),
     );

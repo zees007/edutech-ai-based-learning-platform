@@ -247,9 +247,13 @@ class MarkdownPreviewDialog extends StatelessWidget {
                             ),
                           ),
                         ),
-                        code: const TextStyle(
-                          color: AppColors.cyanLight,
-                          backgroundColor: Color(0x33000000),
+                        code: TextStyle(
+                          color: AppColors.isDark
+                              ? const Color(0xFFC084FC)
+                              : const Color(0xFF7C3AED),
+                          backgroundColor: AppColors.isDark
+                              ? const Color(0x26C084FC)
+                              : const Color(0x187C3AED),
                           fontFamily: 'monospace',
                           fontSize: 12.5,
                         ),
@@ -651,14 +655,17 @@ class _CodeSnippetCardState extends State<_CodeSnippetCard> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDark = AppColors.isDark;
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.symmetric(vertical: 8),
       constraints: const BoxConstraints(maxHeight: 380),
       decoration: BoxDecoration(
-        color: AppColors.isDark ? const Color(0xFF181A20) : const Color(0xFF1E212B),
+        color: isDark ? const Color(0xFF181A20) : const Color(0xFFF8FAFC),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(
+          color: isDark ? AppColors.border : const Color(0xFFE2E8F0),
+        ),
       ),
       clipBehavior: Clip.antiAlias,
       child: Stack(
@@ -668,9 +675,13 @@ class _CodeSnippetCardState extends State<_CodeSnippetCard> {
               thumbColor: WidgetStateProperty.resolveWith((states) {
                 if (states.contains(WidgetState.dragged) ||
                     states.contains(WidgetState.hovered)) {
-                  return const Color(0xFF475569).withValues(alpha: 0.90);
+                  return isDark
+                      ? const Color(0xFF475569).withValues(alpha: 0.90)
+                      : const Color(0xFF94A3B8).withValues(alpha: 0.90);
                 }
-                return const Color(0xFF334155).withValues(alpha: 0.55);
+                return isDark
+                    ? const Color(0xFF334155).withValues(alpha: 0.55)
+                    : const Color(0xFFCBD5E1).withValues(alpha: 0.70);
               }),
               thickness: const WidgetStatePropertyAll(4),
               radius: const Radius.circular(3),
@@ -692,8 +703,10 @@ class _CodeSnippetCardState extends State<_CodeSnippetCard> {
                     physics: const ClampingScrollPhysics(),
                     child: SelectableText(
                       widget.code,
-                      style: const TextStyle(
-                        color: AppColors.cyanLight,
+                      style: TextStyle(
+                        color: isDark
+                            ? const Color(0xFFC084FC)
+                            : const Color(0xFF7C3AED),
                         fontFamily: 'monospace',
                         fontSize: 12.5,
                         height: 1.5,
@@ -713,14 +726,19 @@ class _CodeSnippetCardState extends State<_CodeSnippetCard> {
                 color: Colors.transparent,
                 child: InkWell(
                   onTap: _copy,
+                  mouseCursor: SystemMouseCursors.click,
                   borderRadius: BorderRadius.circular(6),
-                  hoverColor: Colors.white.withValues(alpha: 0.1),
+                  hoverColor: isDark
+                      ? Colors.white.withValues(alpha: 0.1)
+                      : Colors.black.withValues(alpha: 0.05),
                   child: Padding(
                     padding: const EdgeInsets.all(6),
                     child: Icon(
                       _copied ? Icons.check_rounded : Icons.copy_rounded,
                       size: 16,
-                      color: _copied ? AppColors.emerald : AppColors.textSlate,
+                      color: _copied
+                          ? AppColors.emerald
+                          : (isDark ? AppColors.textSlate : const Color(0xFF64748B)),
                     ),
                   ),
                 ),

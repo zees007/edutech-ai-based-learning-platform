@@ -23,10 +23,11 @@ class MilestoneRoadmapStepper extends StatefulWidget {
   static const double _arrowWidth = 14.0;
   static const double _stepperHeight = 52.0;
   static const double _minItemWidth = 145.0;
-  static const double _itemGap = 4.0;
+  static const double _itemGap = 5.0;
 
   @override
-  State<MilestoneRoadmapStepper> createState() => _MilestoneRoadmapStepperState();
+  State<MilestoneRoadmapStepper> createState() =>
+      _MilestoneRoadmapStepperState();
 }
 
 class _MilestoneRoadmapStepperState extends State<MilestoneRoadmapStepper> {
@@ -55,12 +56,17 @@ class _MilestoneRoadmapStepperState extends State<MilestoneRoadmapStepper> {
 
     final int index = widget.activeIndex;
     final double effectiveItemWidth = _lastEffectiveItemWidth;
-    final double stepPitch = effectiveItemWidth - MilestoneRoadmapStepper._arrowWidth + MilestoneRoadmapStepper._itemGap;
+    final double stepPitch =
+        effectiveItemWidth -
+        MilestoneRoadmapStepper._arrowWidth +
+        MilestoneRoadmapStepper._itemGap;
 
     // Center the active step horizontally in the available viewport
     final double itemCenter = index * stepPitch + (effectiveItemWidth / 2);
-    final double targetOffset = (itemCenter - (availableWidth / 2))
-        .clamp(0.0, _scrollController.position.maxScrollExtent);
+    final double targetOffset = (itemCenter - (availableWidth / 2)).clamp(
+      0.0,
+      _scrollController.position.maxScrollExtent,
+    );
 
     if (animate) {
       _scrollController.animateTo(
@@ -90,7 +96,10 @@ class _MilestoneRoadmapStepperState extends State<MilestoneRoadmapStepper> {
       return const SizedBox.shrink();
     }
 
-    final maxUnlocked = widget.maxUnlockedIndex.clamp(0, widget.steps.length - 1);
+    final maxUnlocked = widget.maxUnlockedIndex.clamp(
+      0,
+      widget.steps.length - 1,
+    );
     final int count = widget.steps.length;
 
     return LayoutBuilder(
@@ -98,14 +107,18 @@ class _MilestoneRoadmapStepperState extends State<MilestoneRoadmapStepper> {
         final double availableWidth = constraints.maxWidth;
         // Total formula: totalWidth = N * itemWidth - (N - 1) * (arrowWidth - itemGap)
         // => itemWidth = (totalWidth + (N - 1) * (arrowWidth - itemGap)) / N
-        const double arrowDiff = MilestoneRoadmapStepper._arrowWidth - MilestoneRoadmapStepper._itemGap;
+        const double arrowDiff =
+            MilestoneRoadmapStepper._arrowWidth -
+            MilestoneRoadmapStepper._itemGap;
         final double calculatedItemWidth = count > 1
             ? (availableWidth + (count - 1) * arrowDiff) / count
             : availableWidth;
 
-        final bool fitsInAvailableWidth = calculatedItemWidth >= MilestoneRoadmapStepper._minItemWidth;
-        final double effectiveItemWidth =
-            fitsInAvailableWidth ? calculatedItemWidth : 165.0;
+        final bool fitsInAvailableWidth =
+            calculatedItemWidth >= MilestoneRoadmapStepper._minItemWidth;
+        final double effectiveItemWidth = fitsInAvailableWidth
+            ? calculatedItemWidth
+            : 165.0;
         final double totalContentWidth = count > 1
             ? (count * effectiveItemWidth - (count - 1) * arrowDiff)
             : effectiveItemWidth;
@@ -122,15 +135,15 @@ class _MilestoneRoadmapStepperState extends State<MilestoneRoadmapStepper> {
               final bool isActive = index == widget.activeIndex;
               final bool isCompleted =
                   step.status == 'complete' || index < maxUnlocked;
-              final bool isUnlocked = index <= maxUnlocked ||
+              final bool isUnlocked =
+                  index <= maxUnlocked ||
                   isCompleted ||
                   step.status == 'in_progress';
               final bool isLocked = !isUnlocked;
               final bool isFirst = index == 0;
               final bool isLast = index == count - 1;
 
-              final double leftPos =
-                  index * (effectiveItemWidth - arrowDiff);
+              final double leftPos = index * (effectiveItemWidth - arrowDiff);
 
               return Positioned(
                 left: leftPos,
@@ -154,32 +167,19 @@ class _MilestoneRoadmapStepperState extends State<MilestoneRoadmapStepper> {
           ),
         );
 
-        return Container(
+        return SizedBox(
           height: MilestoneRoadmapStepper._stepperHeight,
-          decoration: BoxDecoration(
-            color: AppColors.isDark ? const Color(0xFF11121D) : AppColors.surfaceDeep,
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(
-              color: AppColors.isDark ? const Color(0x1FFFFFFF) : AppColors.glassBorder,
-              width: 1.0,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.25),
-                blurRadius: 10,
-                offset: const Offset(0, 3),
-              ),
-            ],
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: fitsInAvailableWidth
+                ? content
+                : SingleChildScrollView(
+                    controller: _scrollController,
+                    physics: const BouncingScrollPhysics(),
+                    scrollDirection: Axis.horizontal,
+                    child: content,
+                  ),
           ),
-          clipBehavior: Clip.antiAlias,
-          child: fitsInAvailableWidth
-              ? content
-              : SingleChildScrollView(
-                  controller: _scrollController,
-                  physics: const BouncingScrollPhysics(),
-                  scrollDirection: Axis.horizontal,
-                  child: content,
-                ),
         );
       },
     );
@@ -231,9 +231,15 @@ class _ChevronStepItemState extends State<_ChevronStepItem> {
     // Tooltip message
     final InlineSpan tooltipRichMsg;
     if (isLocked) {
-      tooltipRichMsg = TextSpan(text: '🔒 Step ${widget.index + 1}${widget.step.isPrerequisite ? " • Prerequisite" : ""}: Complete previous step to unlock\n${widget.step.title}');
+      tooltipRichMsg = TextSpan(
+        text:
+            '🔒 Step ${widget.index + 1}${widget.step.isPrerequisite ? " • Prerequisite" : ""}: Complete previous step to unlock\n${widget.step.title}',
+      );
     } else if (isActive) {
-      tooltipRichMsg = TextSpan(text: '⭐ Active (Step ${widget.index + 1}${widget.step.isPrerequisite ? " • Prerequisite" : ""})\n${widget.step.title}\n${widget.step.description}');
+      tooltipRichMsg = TextSpan(
+        text:
+            '⭐ Active (Step ${widget.index + 1}${widget.step.isPrerequisite ? " • Prerequisite" : ""})\n${widget.step.title}\n${widget.step.description}',
+      );
     } else if (isCompleted) {
       tooltipRichMsg = TextSpan(
         children: [
@@ -241,14 +247,24 @@ class _ChevronStepItemState extends State<_ChevronStepItem> {
             alignment: PlaceholderAlignment.middle,
             child: Padding(
               padding: EdgeInsets.only(right: 4.0),
-              child: Icon(Icons.check_circle_rounded, size: 14, color: AppColors.greenMint),
+              child: Icon(
+                Icons.check_circle_rounded,
+                size: 14,
+                color: AppColors.greenMint,
+              ),
             ),
           ),
-          TextSpan(text: 'Completed (Step ${widget.index + 1}${widget.step.isPrerequisite ? " • Prerequisite" : ""}) — Tap to review\n${widget.step.title}'),
+          TextSpan(
+            text:
+                'Completed (Step ${widget.index + 1}${widget.step.isPrerequisite ? " • Prerequisite" : ""}) — Tap to review\n${widget.step.title}',
+          ),
         ],
       );
     } else {
-      tooltipRichMsg = TextSpan(text: '⚡ Step ${widget.index + 1}${widget.step.isPrerequisite ? " • Prerequisite" : ""}\n${widget.step.title}\n${widget.step.description}');
+      tooltipRichMsg = TextSpan(
+        text:
+            '⚡ Step ${widget.index + 1}${widget.step.isPrerequisite ? " • Prerequisite" : ""}\n${widget.step.title}\n${widget.step.description}',
+      );
     }
 
     // Status icon
@@ -256,40 +272,42 @@ class _ChevronStepItemState extends State<_ChevronStepItem> {
       isCompleted
           ? Icons.check_circle_rounded
           : (isActive
-              ? Icons.explore_rounded
-              : (isLocked ? Icons.lock_rounded : Icons.bolt_rounded)),
+                ? Icons.explore_rounded
+                : (isLocked ? Icons.lock_rounded : Icons.bolt_rounded)),
       size: 13,
       color: isActive
           ? Colors.white
           : (isCompleted
-              ? Colors.white
-              : (isLocked
-                  ? (AppColors.isDark
-                      ? Colors.white.withValues(alpha: 0.35)
-                      : AppColors.textSecondary.withValues(alpha: 0.6))
-                  : AppColors.primaryViolet)),
+                ? Colors.white
+                : (isLocked
+                      ? (AppColors.isDark
+                            ? Colors.white.withValues(alpha: 0.35)
+                            : AppColors.textSecondary.withValues(alpha: 0.6))
+                      : AppColors.primaryViolet)),
     );
 
     // Primary Text Color
     final Color stepColor = isActive
         ? Colors.white
         : (isCompleted
-            ? AppColors.greenMint
-            : (isLocked
-                ? (AppColors.isDark
-                    ? Colors.white.withValues(alpha: 0.4)
-                    : AppColors.textSecondary.withValues(alpha: 0.6))
-                : AppColors.primaryViolet));
+              ? AppColors.greenMint
+              : (isLocked
+                    ? (AppColors.isDark
+                          ? Colors.white.withValues(alpha: 0.4)
+                          : AppColors.textSecondary.withValues(alpha: 0.6))
+                    : AppColors.primaryViolet));
 
     final Color titleColor = isActive
         ? Colors.white
         : (isCompleted
-            ? Colors.white
-            : (isLocked
-                ? (AppColors.isDark
-                    ? Colors.white.withValues(alpha: 0.35)
-                    : AppColors.textSecondary.withValues(alpha: 0.6))
-                : (AppColors.isDark ? AppColors.slate200 : AppColors.textPrimary)));
+              ? Colors.white
+              : (isLocked
+                    ? (AppColors.isDark
+                          ? Colors.white.withValues(alpha: 0.35)
+                          : AppColors.textSecondary.withValues(alpha: 0.6))
+                    : (AppColors.isDark
+                          ? AppColors.slate200
+                          : AppColors.textPrimary)));
 
     // Background decoration
     Decoration backgroundDecoration;
@@ -310,7 +328,9 @@ class _ChevronStepItemState extends State<_ChevronStepItem> {
         gradient: AppColors.emeraldGradient,
         boxShadow: [
           BoxShadow(
-            color: AppColors.accentGreen.withValues(alpha: _isHovered ? 0.45 : 0.28),
+            color: AppColors.accentGreen.withValues(
+              alpha: _isHovered ? 0.45 : 0.28,
+            ),
             blurRadius: 10,
             offset: const Offset(0, 1),
           ),
@@ -319,14 +339,22 @@ class _ChevronStepItemState extends State<_ChevronStepItem> {
     } else if (!isLocked) {
       backgroundDecoration = BoxDecoration(
         color: _isHovered
-            ? (AppColors.isDark ? AppColors.surfaceMid.withValues(alpha: 0.85) : AppColors.surfaceSubtle)
-            : (AppColors.isDark ? AppColors.surfaceMid.withValues(alpha: 0.50) : AppColors.surface),
+            ? (AppColors.isDark
+                  ? AppColors.surfaceMid.withValues(alpha: 0.85)
+                  : AppColors.surfaceSubtle)
+            : (AppColors.isDark
+                  ? AppColors.surfaceMid.withValues(alpha: 0.50)
+                  : AppColors.surface),
       );
     } else {
       backgroundDecoration = BoxDecoration(
         color: _isHovered
-            ? (AppColors.isDark ? AppColors.surfaceDark.withValues(alpha: 0.6) : AppColors.surfaceSubtle.withValues(alpha: 0.5))
-            : Colors.transparent,
+            ? (AppColors.isDark
+                  ? const Color(0xFF1E2135)
+                  : const Color(0xFFF1F5F9))
+            : (AppColors.isDark
+                  ? const Color(0xFF161828)
+                  : const Color(0xFFF8FAFC)),
       );
     }
 
@@ -334,8 +362,8 @@ class _ChevronStepItemState extends State<_ChevronStepItem> {
     final Color dividerColor = isActive
         ? AppColors.blueSoft.withValues(alpha: 0.8)
         : (isCompleted
-            ? AppColors.greenMint.withValues(alpha: 0.75)
-            : AppColors.glassBorder);
+              ? AppColors.greenMint.withValues(alpha: 0.75)
+              : AppColors.glassBorder);
 
     // Operational status label & badge styling
     final String statusLabel;
@@ -355,14 +383,22 @@ class _ChevronStepItemState extends State<_ChevronStepItem> {
       statusBadgeText = Colors.white;
     } else if (isLocked) {
       statusLabel = 'LOCKED';
-      statusBadgeBg = AppColors.isDark ? Colors.white.withValues(alpha: 0.06) : AppColors.surfaceSubtle;
-      statusBadgeBorder = AppColors.isDark ? Colors.white.withValues(alpha: 0.15) : AppColors.border;
-      statusBadgeText = AppColors.isDark ? Colors.white.withValues(alpha: 0.45) : AppColors.textSecondary;
+      statusBadgeBg = AppColors.isDark
+          ? Colors.white.withValues(alpha: 0.06)
+          : AppColors.surfaceSubtle;
+      statusBadgeBorder = AppColors.isDark
+          ? Colors.white.withValues(alpha: 0.15)
+          : AppColors.border;
+      statusBadgeText = AppColors.isDark
+          ? Colors.white.withValues(alpha: 0.45)
+          : AppColors.textSecondary;
     } else {
       statusLabel = 'PENDING';
       statusBadgeBg = AppColors.purpleLight.withValues(alpha: 0.15);
       statusBadgeBorder = AppColors.purpleLight.withValues(alpha: 0.35);
-      statusBadgeText = AppColors.isDark ? AppColors.lavender : AppColors.primaryViolet;
+      statusBadgeText = AppColors.isDark
+          ? AppColors.lavender
+          : AppColors.primaryViolet;
     }
 
     final clipper = _ChevronClipper(
@@ -374,7 +410,9 @@ class _ChevronStepItemState extends State<_ChevronStepItem> {
     return Tooltip(
       richMessage: tooltipRichMsg,
       child: MouseRegion(
-        cursor: isLocked ? SystemMouseCursors.forbidden : SystemMouseCursors.click,
+        cursor: isLocked
+            ? SystemMouseCursors.forbidden
+            : SystemMouseCursors.click,
         onEnter: (_) => setState(() => _isHovered = true),
         onExit: (_) => setState(() => _isHovered = false),
         child: GestureDetector(
@@ -385,14 +423,26 @@ class _ChevronStepItemState extends State<_ChevronStepItem> {
               Positioned.fill(
                 child: ClipPath(
                   clipper: clipper,
-                  child: Container(
-                    decoration: backgroundDecoration,
-                  ),
+                  child: Container(decoration: backgroundDecoration),
                 ),
               ),
 
-              // 2. Chevron Divider Line (on right edge if not last)
-              if (!isLast)
+              // 2. Chevron Border Outline or Divider Line
+              if (!isActive && !isCompleted)
+                Positioned.fill(
+                  child: CustomPaint(
+                    painter: _ChevronOutlinePainter(
+                      borderColor: AppColors.isDark
+                          ? const Color(0x26FFFFFF)
+                          : const Color(0xFFE2E8F0),
+                      arrowWidth: arrowWidth,
+                      isFirst: isFirst,
+                      isLast: isLast,
+                      strokeWidth: 1.0,
+                    ),
+                  ),
+                )
+              else if (!isLast)
                 Positioned.fill(
                   child: CustomPaint(
                     painter: _ChevronDividerPainter(
@@ -438,7 +488,9 @@ class _ChevronStepItemState extends State<_ChevronStepItem> {
                               const SizedBox(width: 4),
                               Container(
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 4, vertical: 1),
+                                  horizontal: 4,
+                                  vertical: 1,
+                                ),
                                 decoration: BoxDecoration(
                                   gradient: AppColors.amberGradient,
                                   borderRadius: BorderRadius.circular(3),
@@ -456,12 +508,16 @@ class _ChevronStepItemState extends State<_ChevronStepItem> {
                             const SizedBox(width: 4),
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 4.5, vertical: 1),
+                                horizontal: 4.5,
+                                vertical: 1,
+                              ),
                               decoration: BoxDecoration(
                                 color: statusBadgeBg,
                                 borderRadius: BorderRadius.circular(3),
                                 border: Border.all(
-                                    color: statusBadgeBorder, width: 0.6),
+                                  color: statusBadgeBorder,
+                                  width: 0.6,
+                                ),
                               ),
                               child: Text(
                                 statusLabel,
@@ -484,7 +540,9 @@ class _ChevronStepItemState extends State<_ChevronStepItem> {
                         overflow: TextOverflow.ellipsis,
                         style: AppTextStyles.label.copyWith(
                           fontSize: 11.5,
-                          fontWeight: isActive ? FontWeight.w700 : FontWeight.w600,
+                          fontWeight: isActive
+                              ? FontWeight.w700
+                              : FontWeight.w600,
                           color: titleColor,
                           letterSpacing: 0.1,
                         ),
@@ -583,5 +641,48 @@ class _ChevronDividerPainter extends CustomPainter {
   bool shouldRepaint(covariant _ChevronDividerPainter oldDelegate) =>
       oldDelegate.dividerColor != dividerColor ||
       oldDelegate.arrowWidth != arrowWidth ||
+      oldDelegate.strokeWidth != strokeWidth;
+}
+
+/// Paints a clean 1px border stroke around the full perimeter of the chevron shape.
+class _ChevronOutlinePainter extends CustomPainter {
+  final Color borderColor;
+  final double arrowWidth;
+  final bool isFirst;
+  final bool isLast;
+  final double strokeWidth;
+
+  const _ChevronOutlinePainter({
+    required this.borderColor,
+    required this.arrowWidth,
+    required this.isFirst,
+    required this.isLast,
+    this.strokeWidth = 1.0,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = borderColor
+      ..strokeWidth = strokeWidth
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    final path = _ChevronClipper(
+      isFirst: isFirst,
+      isLast: isLast,
+      arrowWidth: arrowWidth,
+    ).getClip(size);
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _ChevronOutlinePainter oldDelegate) =>
+      oldDelegate.borderColor != borderColor ||
+      oldDelegate.arrowWidth != arrowWidth ||
+      oldDelegate.isFirst != isFirst ||
+      oldDelegate.isLast != isLast ||
       oldDelegate.strokeWidth != strokeWidth;
 }

@@ -149,18 +149,23 @@ class _AcademicPapersState extends ConsumerState<AcademicPapers> {
                   controller: _searchController,
                   style: AppTextStyles.bodyPrimary,
                   decoration: InputDecoration(
-                    hintText: 'Search scholarly papers, arXiv, Semantic Scholar...',
+                    hintText: ' Search scholarly papers, arXiv, Semantic Scholar...',
                     hintStyle: AppTextStyles.bodyPrimary.copyWith(
                       color: AppColors.textMuted,
                     ),
                     border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    disabledBorder: InputBorder.none,
+                    filled: false,
+                    fillColor: Colors.transparent,
                     isDense: true,
                     contentPadding: const EdgeInsets.symmetric(vertical: 10),
                   ),
                   onSubmitted: (val) => _searchLive(val),
                 ),
               ),
-              if (_searchController.text.isNotEmpty)
+              if (_searchController.text.isNotEmpty) ...[
                 IconButton(
                   icon: Icon(Icons.clear, size: 16, color: AppColors.textMuted),
                   onPressed: () {
@@ -172,6 +177,9 @@ class _AcademicPapersState extends ConsumerState<AcademicPapers> {
                   },
                   tooltip: 'Clear',
                 ),
+                const SizedBox(width: 4),
+              ],
+              const SizedBox(width: 10),
               InkWell(
                 onTap: () => _searchLive(_searchController.text),
                 borderRadius: BorderRadius.circular(8),
