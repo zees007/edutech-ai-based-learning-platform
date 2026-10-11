@@ -26,7 +26,7 @@ class LearningPage extends ConsumerStatefulWidget {
 class _LearningPageState extends ConsumerState<LearningPage> {
   bool isExpanded = true;
   OverlayEntry? _levelUpOverlay;
-  OverlayEntry? _journeyCompleteOverlay;
+  bool _isJourneyCompleteDialogOpen = false;
 
   @override
   void initState() {
@@ -39,7 +39,6 @@ class _LearningPageState extends ConsumerState<LearningPage> {
   @override
   void dispose() {
     _levelUpOverlay?.remove();
-    _journeyCompleteOverlay?.remove();
     super.dispose();
   }
 
@@ -74,31 +73,42 @@ class _LearningPageState extends ConsumerState<LearningPage> {
   }
 
   void _showJourneyCompleteCelebration(JourneyCompleteEvent event) {
-    if (_journeyCompleteOverlay != null) return;
-    
-    _journeyCompleteOverlay = OverlayEntry(
-      builder: (context) => JourneyCompleteCelebration(
-        sessionId: event.sessionId,
-        topic: event.topic,
-        totalSteps: event.totalSteps,
-        totalXp: event.totalXp,
-        bonusXp: event.bonusXp,
-        averageQuizScore: event.averageQuizScore,
-        onReview: () {
-          _journeyCompleteOverlay?.remove();
-          _journeyCompleteOverlay = null;
-          ref.read(journeyCompleteProvider.notifier).dismiss();
-          ref.read(activeSessionProvider.notifier).ensureJourneyCompleted();
-        },
-        onNewTopic: () {
-          _journeyCompleteOverlay?.remove();
-          _journeyCompleteOverlay = null;
-          ref.read(journeyCompleteProvider.notifier).dismiss();
-          ref.read(activeSessionProvider.notifier).clearSession();
-        },
-      ),
-    );
-    Overlay.of(context).insert(_journeyCompleteOverlay!);
+    if (_isJourneyCompleteDialogOpen || !mounted) return;
+    _isJourneyCompleteDialogOpen = true;
+
+    showGeneralDialog(
+      context: context,
+      useRootNavigator: true,
+      barrierDismissible: false,
+      barrierColor: Colors.transparent,
+      pageBuilder: (dialogContext, animation, secondaryAnimation) {
+        return JourneyCompleteCelebration(
+          sessionId: event.sessionId,
+          topic: event.topic,
+          totalSteps: event.totalSteps,
+          totalXp: event.totalXp,
+          bonusXp: event.bonusXp,
+          averageQuizScore: event.averageQuizScore,
+          onReview: () {
+            ref.read(activeSessionProvider.notifier).ensureJourneyCompleted();
+            if (Navigator.of(dialogContext, rootNavigator: true).canPop()) {
+              Navigator.of(dialogContext, rootNavigator: true).pop();
+            }
+          },
+          onNewTopic: () {
+            ref.read(activeSessionProvider.notifier).ensureJourneyCompleted();
+            ref.read(activeSessionProvider.notifier).clearSession();
+            if (Navigator.of(dialogContext, rootNavigator: true).canPop()) {
+              Navigator.of(dialogContext, rootNavigator: true).pop();
+            }
+          },
+        );
+      },
+    ).then((_) {
+      _isJourneyCompleteDialogOpen = false;
+      ref.read(journeyCompleteProvider.notifier).dismiss();
+      ref.read(activeSessionProvider.notifier).ensureJourneyCompleted();
+    });
   }
 
   @override
