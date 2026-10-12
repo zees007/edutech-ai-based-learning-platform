@@ -138,7 +138,7 @@ class MobileLearningTopBar extends StatelessWidget implements PreferredSizeWidge
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4.5),
         decoration: BoxDecoration(
-          color: AppColors.chipBackground,
+          color: AppColors.sidebarBackground,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: AppColors.glassBorder,
@@ -205,7 +205,7 @@ class MobileLearningTopBar extends StatelessWidget implements PreferredSizeWidge
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4.5),
         decoration: BoxDecoration(
-          color: AppColors.chipBackground,
+          color: AppColors.sidebarBackground,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: AppColors.glassBorder,

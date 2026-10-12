@@ -204,7 +204,7 @@ class _MobileCommandHubSheetState extends State<MobileCommandHubSheet> {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.cardBackground,
+        color: AppColors.chipBackground,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: AppColors.glassBorder,
@@ -266,7 +266,7 @@ class _MobileCommandHubSheetState extends State<MobileCommandHubSheet> {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.cardBackground,
+        color: AppColors.chipBackground,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: AppColors.glassBorder,
@@ -500,7 +500,7 @@ class _MobileCommandHubSheetState extends State<MobileCommandHubSheet> {
       bgColor = AppColors.accentGreen.withValues(alpha: 0.08);
     } else {
       borderColor = AppColors.glassBorder;
-      bgColor = AppColors.cardBackground;
+      bgColor = AppColors.chipBackground;
     }
 
     return GestureDetector(
@@ -586,7 +586,7 @@ class _MobileCommandHubSheetState extends State<MobileCommandHubSheet> {
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: const Text(
-                            'CURRENT',
+                            'IN PROCESS',
                             style: TextStyle(
                               fontSize: 8.5,
                               fontWeight: FontWeight.w800,
