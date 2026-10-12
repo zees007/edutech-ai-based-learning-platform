@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
 import 'package:devzees_edutechai_client/data/models/learning/milestone_step.dart';
+import 'package:devzees_edutechai_client/data/models/learning/session_response.dart';
 import 'package:devzees_edutechai_client/presentation/pages/learning/widgets/main_content/neural_inference_loader.dart';
 import 'package:devzees_edutechai_client/presentation/pages/learning/widgets/workspace/milestone_roadmap_stepper.dart';
+import 'package:devzees_edutechai_client/presentation/pages/learning/widgets/mobile/mobile_learning_top_bar.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/animated_tutor_icon.dart';
 
 void main() {
@@ -356,6 +359,59 @@ void main() {
       final inProcessTextWidget = tester.widget<Text>(find.text('IN PROCESS'));
       expect(inProcessTextWidget.style?.color, equals(AppColors.primaryViolet));
       expect(inProcessTextWidget.style?.color, isNot(equals(Colors.white)));
+    });
+
+    testWidgets('MobileLearningTopBar displays centered unified command hub capsule with step pill and XP', (tester) async {
+      bool hubOpened = false;
+
+      final session = SessionResponse(
+        sessionId: 'test-session-1',
+        topic: 'Machine Learning Basics',
+        learningMode: 'interactive',
+        studentLevel: 'intermediate',
+        createdAt: DateTime.now(),
+        steps: List.generate(
+          5,
+          (i) => MilestoneStep(
+            index: i,
+            title: 'Step ${i + 1}',
+            description: 'Desc ${i + 1}',
+            status: i == 0 ? 'complete' : 'pending',
+          ),
+        ),
+        currentStepIndex: 1,
+        xpEarned: 240,
+        stepsCompleted: 1,
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              appBar: MobileLearningTopBar(
+                session: session,
+                activeStepIndex: 1,
+                onOpenCommandHub: () => hubOpened = true,
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Verify app logo on left
+      expect(find.text('EduTech'), findsOneWidget);
+      expect(find.text('AI'), findsOneWidget);
+
+      // Verify unified capsule in center displays StepPill (2/5) and XP (240)
+      expect(find.text('2/5'), findsOneWidget);
+      expect(find.text('240'), findsOneWidget);
+      expect(find.byIcon(Icons.track_changes_rounded), findsOneWidget);
+      expect(find.byIcon(Icons.star_rounded), findsOneWidget);
+
+      // Tap unified capsule to open Command Hub
+      await tester.tap(find.text('2/5'));
+      expect(hubOpened, isTrue);
     });
   });
 }
