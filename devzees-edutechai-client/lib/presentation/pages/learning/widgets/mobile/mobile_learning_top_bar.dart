@@ -36,55 +36,50 @@ class MobileLearningTopBar extends StatelessWidget implements PreferredSizeWidge
       titleSpacing: 0,
       title: SizedBox(
         height: kToolbarHeight,
-        child: Stack(
-          alignment: Alignment.center,
+        child: Row(
           children: [
             // 1. Left: Hamburger Menu Icon + App Logo
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Padding(
-                padding: const EdgeInsets.only(left: 6),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Builder(
-                      builder: (ctx) => IconButton(
-                        icon: Icon(
-                          Icons.menu_rounded,
-                          color: AppColors.textSecondary,
-                          size: 21,
-                        ),
-                        onPressed: () => Scaffold.of(ctx).openDrawer(),
-                        tooltip: 'Open menu',
-                        constraints: const BoxConstraints(
-                          minWidth: 36,
-                          minHeight: 36,
-                        ),
-                        padding: const EdgeInsets.all(6),
+            Padding(
+              padding: const EdgeInsets.only(left: 6),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Builder(
+                    builder: (ctx) => IconButton(
+                      icon: Icon(
+                        Icons.menu_rounded,
+                        color: AppColors.textSecondary,
+                        size: 21,
                       ),
+                      onPressed: () => Scaffold.of(ctx).openDrawer(),
+                      tooltip: 'Open menu',
+                      constraints: const BoxConstraints(
+                        minWidth: 36,
+                        minHeight: 36,
+                      ),
+                      padding: const EdgeInsets.all(6),
                     ),
-                    const SizedBox(width: 2),
-                    _buildAppLogo(isCompact: hasSession),
-                  ],
-                ),
+                  ),
+                  const SizedBox(width: 2),
+                  _buildAppLogo(isCompact: hasSession),
+                ],
               ),
             ),
 
             // 2. Center: Unified Command Hub Capsule (Only when session is active)
             if (hasSession)
-              Positioned.fill(
+              Expanded(
                 child: Center(
                   child: _buildUnifiedCommandHubCapsule(context),
                 ),
-              ),
+              )
+            else
+              const Spacer(),
 
             // 3. Right: Theme Toggle Button
-            Align(
-              alignment: Alignment.centerRight,
-              child: Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: const ThemeToggleButton(size: 30),
-              ),
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: const ThemeToggleButton(size: 30),
             ),
           ],
         ),
@@ -151,12 +146,12 @@ class MobileLearningTopBar extends StatelessWidget implements PreferredSizeWidge
     final currentStepNum = (activeStepIndex + 1).clamp(1, totalSteps);
 
     return Tooltip(
-      message: 'Milestone Roadmap & Progress',
+      message: 'Milestone Roadmap: ${s.topic}',
       child: GestureDetector(
         onTap: onOpenCommandHub,
         behavior: HitTestBehavior.opaque,
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4.5),
+          padding: const EdgeInsets.symmetric(horizontal: 7.5, vertical: 4.5),
           decoration: BoxDecoration(
             color: AppColors.sidebarBackground,
             borderRadius: BorderRadius.circular(16),
@@ -181,17 +176,36 @@ class MobileLearningTopBar extends StatelessWidget implements PreferredSizeWidge
                 size: 13,
                 color: AppColors.adaptiveBlueLight,
               ),
-              const SizedBox(width: 4.5),
+              const SizedBox(width: 4),
 
-              // 2. Standardized Glowing Green Step Pill (e.g. 2/5)
+              // 2. Topic Name
+              Flexible(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 85),
+                  child: Text(
+                    s.topic,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
+                      letterSpacing: -0.2,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 5),
+
+              // 3. Standardized Glowing Green Step Pill (e.g. 2/5)
               StepPill(
                 currentStep: currentStepNum,
                 totalSteps: totalSteps,
                 isCompact: true,
               ),
-              const SizedBox(width: 6),
+              const SizedBox(width: 5),
 
-              // 3. Elegant vertical hairline separator
+              // 4. Elegant vertical hairline separator
               Container(
                 width: 1.0,
                 height: 10,
@@ -199,9 +213,9 @@ class MobileLearningTopBar extends StatelessWidget implements PreferredSizeWidge
                     ? Colors.white.withValues(alpha: 0.15)
                     : Colors.black.withValues(alpha: 0.12),
               ),
-              const SizedBox(width: 6),
+              const SizedBox(width: 5),
 
-              // 4. XP Counter
+              // 5. XP Counter
               const Icon(
                 Icons.star_rounded,
                 size: 13,
@@ -218,7 +232,7 @@ class MobileLearningTopBar extends StatelessWidget implements PreferredSizeWidge
               ),
               const SizedBox(width: 3),
 
-              // 5. Down Chevron Indicator
+              // 6. Down Chevron Indicator
               Icon(
                 Icons.keyboard_arrow_down_rounded,
                 size: 13,

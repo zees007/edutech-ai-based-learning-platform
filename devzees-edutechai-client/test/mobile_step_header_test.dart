@@ -403,14 +403,15 @@ void main() {
       expect(find.text('EduTech'), findsOneWidget);
       expect(find.text('AI'), findsOneWidget);
 
-      // Verify unified capsule in center displays StepPill (2/5) and XP (240)
+      // Verify unified capsule in center displays Topic, StepPill (2/5) and XP (240)
+      expect(find.text('Machine Learning Basics'), findsOneWidget);
       expect(find.text('2/5'), findsOneWidget);
       expect(find.text('240'), findsOneWidget);
       expect(find.byIcon(Icons.track_changes_rounded), findsOneWidget);
       expect(find.byIcon(Icons.star_rounded), findsOneWidget);
 
       // Tap unified capsule to open Command Hub
-      await tester.tap(find.text('2/5'));
+      await tester.tap(find.text('Machine Learning Basics'));
       expect(hubOpened, isTrue);
     });
   });
