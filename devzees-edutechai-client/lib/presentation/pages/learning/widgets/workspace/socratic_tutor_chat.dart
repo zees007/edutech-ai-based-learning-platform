@@ -680,9 +680,11 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
                           ),
                         ],
                       ),
-                      child: _buildPlainText(
-                        msg.text,
-                        isUserInLightMode: !AppColors.isDark,
+                      child: SelectionArea(
+                        child: _buildPlainText(
+                          msg.text,
+                          isUserInLightMode: !AppColors.isDark,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 5),
@@ -743,14 +745,16 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
   Widget _buildMarkdownContent(String text) {
     final preprocessedText = _preprocessMathToMarkdown(text);
 
-    return MarkdownBody(
-      data: preprocessedText,
-      selectable: true,
-      onTapLink: (text, href, title) {
-        if (href != null) launchUrl(Uri.parse(href));
-      },
-      styleSheet: _buildMarkdownStyleSheet(),
-      builders: {'code': _CustomCodeBlockBuilder()},
+    return SelectionArea(
+      child: MarkdownBody(
+        data: preprocessedText,
+        selectable: false,
+        onTapLink: (text, href, title) {
+          if (href != null) launchUrl(Uri.parse(href));
+        },
+        styleSheet: _buildMarkdownStyleSheet(),
+        builders: {'code': _CustomCodeBlockBuilder()},
+      ),
     );
   }
 
@@ -1793,7 +1797,7 @@ class _CodeSnippetCardState extends State<_CodeSnippetCard> {
                       physics: const ClampingScrollPhysics(),
                       child: Padding(
                         padding: const EdgeInsets.fromLTRB(16, 14, 46, 14),
-                        child: SelectableText(
+                        child: Text(
                           widget.code,
                           style: GoogleFonts.firaCode(
                             fontSize: 12.5,
