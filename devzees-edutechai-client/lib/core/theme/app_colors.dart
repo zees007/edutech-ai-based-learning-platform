@@ -36,7 +36,7 @@ class AppColors {
   static Color get cardBackground => _current.cardBackground;
   static Color get chipBackground => _current.chipBackground;
   static Color get canvasBackground => _current.scaffoldBackground;
-  static Color get popoverBackground => isDark ? _current.cardBackground : _current.surface;
+  static Color get popoverBackground => _current.popoverBackground;
   static Color get surfaceIndigo => isDark ? const Color(0xFF1A1B2D) : _current.surfaceSubtle;
 
   static Color get surface => _current.surface;

@@ -127,10 +127,10 @@ class _AcademicPapersState extends ConsumerState<AcademicPapers> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
           decoration: BoxDecoration(
-            color: AppColors.isDark ? AppColors.glassSurface.withValues(alpha: 0.04) : AppColors.surface,
+            color: AppColors.chipBackground,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: AppColors.border,
+              color: AppColors.glassBorder,
             ),
             boxShadow: AppColors.isDark ? null : [
               const BoxShadow(
@@ -531,10 +531,10 @@ class _PaperCardState extends State<_PaperCard> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
                         decoration: BoxDecoration(
-                          color: AppColors.isDark ? AppColors.glassSurface.withValues(alpha: 0.06) : AppColors.surfaceSubtle,
+                          color: AppColors.chipBackground,
                           borderRadius: BorderRadius.circular(6),
                           border: Border.all(
-                            color: AppColors.border,
+                            color: AppColors.glassBorder,
                           ),
                         ),
                         child: Row(
@@ -632,10 +632,10 @@ class _PaperCardState extends State<_PaperCard> {
                   height: 20,
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: AppColors.isDark ? AppColors.glassSurface.withValues(alpha: 0.08) : AppColors.surfaceSubtle,
+                    color: AppColors.chipBackground,
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: AppColors.border,
+                      color: AppColors.glassBorder,
                     ),
                   ),
                   child: Text(

@@ -19,6 +19,7 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
   final Color topBarBackground;
   final Color cardBackground;
   final Color chipBackground;
+  final Color popoverBackground;
 
   // ─── Elevation & Shadows ───
   final List<BoxShadow> cardShadow;
@@ -45,6 +46,7 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
     required this.topBarBackground,
     required this.cardBackground,
     required this.chipBackground,
+    required this.popoverBackground,
     required this.cardShadow,
     required this.shadowColor,
     required this.primaryGradient,
@@ -61,7 +63,7 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
     colors: [
-      Color(0xFF1F6CFA), // Vibrant Royal Blue
+      Color(0xFF1F6CFA), // Royal Blue
       Color(0xFFC839F6), // Electric Fuchsia / Magenta
     ],
   );
@@ -79,6 +81,7 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
     topBarBackground: Color(0xFFFFFFFF),
     cardBackground: Color(0xFFF8FAFC),
     chipBackground: Color(0xFFF1F5F9),
+    popoverBackground: Color(0xFFFFFFFF),
     shadowColor: Color(0x14000000), // rgba(0, 0, 0, 0.08)
     cardShadow: [
       BoxShadow(
@@ -116,6 +119,7 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
     topBarBackground: Color(0xFF0B0C13),  // Unified Mobile Top Bar Base #0B0C13
     cardBackground: Color(0xFF11121D),    // Unified Elevated Card Surface #11121D
     chipBackground: Color(0xFF151726),    // Step-up Interactive Chip Surface #151726
+    popoverBackground: Color(0xFF151726), // Elevated Popover/Dropdown Menu Surface #151726
     shadowColor: Color(0x73000000),        // rgba(0, 0, 0, 0.45)
     cardShadow: [
       BoxShadow(
@@ -153,6 +157,7 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
     Color? topBarBackground,
     Color? cardBackground,
     Color? chipBackground,
+    Color? popoverBackground,
     List<BoxShadow>? cardShadow,
     Color? shadowColor,
     LinearGradient? primaryGradient,
@@ -175,6 +180,7 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
       topBarBackground: topBarBackground ?? this.topBarBackground,
       cardBackground: cardBackground ?? this.cardBackground,
       chipBackground: chipBackground ?? this.chipBackground,
+      popoverBackground: popoverBackground ?? this.popoverBackground,
       cardShadow: cardShadow ?? this.cardShadow,
       shadowColor: shadowColor ?? this.shadowColor,
       primaryGradient: primaryGradient ?? this.primaryGradient,
@@ -217,6 +223,9 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
       chipBackground:
           Color.lerp(chipBackground, other.chipBackground, t) ??
           chipBackground,
+      popoverBackground:
+          Color.lerp(popoverBackground, other.popoverBackground, t) ??
+          popoverBackground,
       cardShadow: t < 0.5 ? cardShadow : other.cardShadow,
       shadowColor: Color.lerp(shadowColor, other.shadowColor, t) ?? shadowColor,
       primaryGradient: LinearGradient.lerp(
