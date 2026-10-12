@@ -314,5 +314,49 @@ void main() {
       final scrollable = tester.widget<SingleChildScrollView>(find.byType(SingleChildScrollView));
       expect(scrollable.controller!.offset, greaterThan(200.0));
     });
+
+    testWidgets('MilestoneRoadmapStepper in light theme: reviewing step 0 shows REVIEWING, in-process step 1 shows high-contrast IN PROCESS pill', (tester) async {
+      AppColors.setBrightness(Brightness.light); // Force Light Theme
+
+      final testSteps = List.generate(
+        3,
+        (i) => MilestoneStep(
+          index: i,
+          title: 'Step ${i + 1} Title',
+          description: 'Step ${i + 1} Desc',
+          status: i == 0 ? 'complete' : (i == 1 ? 'in_progress' : 'pending'),
+        ),
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: ThemeData.light(),
+          home: Scaffold(
+            body: SizedBox(
+              width: 500,
+              child: MilestoneRoadmapStepper(
+                steps: testSteps,
+                activeIndex: 0, // Reviewing step 0
+                maxUnlockedIndex: 1, // Step 1 is in progress
+                onStepTapped: (_) {},
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Active completed step 0 displays REVIEWING
+      expect(find.text('REVIEWING'), findsOneWidget);
+
+      // In-process step 1 displays IN PROCESS
+      expect(find.text('IN PROCESS'), findsOneWidget);
+
+      // Verify the IN PROCESS text is rendered with visible AppColors.primaryViolet, NOT invisible white
+      final inProcessTextWidget = tester.widget<Text>(find.text('IN PROCESS'));
+      expect(inProcessTextWidget.style?.color, equals(AppColors.primaryViolet));
+      expect(inProcessTextWidget.style?.color, isNot(equals(Colors.white)));
+    });
   });
 }
+
