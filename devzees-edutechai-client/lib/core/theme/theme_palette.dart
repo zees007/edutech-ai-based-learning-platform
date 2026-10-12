@@ -107,15 +107,15 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
   static const AppThemeColors dark = AppThemeColors(
     scaffoldBackground: Color(0xFF0B0C13), // Unified Deep Canvas Base #0B0C13
     surface: Color(0xFF11121D),            // Desktop Panel Surface #11121d
-    surfaceSubtle: Color(0xFF151624),      // Subtle Card / Dialog Surface #151624
-    border: Color(0x1FFFFFFF),             // Subtle Hairline Border rgba(255, 255, 255, 0.08)
+    surfaceSubtle: Color(0xFF11121D),      // Unified with surface #11121d
+    border: Color(0x0DFFFFFF),             // Feathered Hairline Border rgba(255, 255, 255, 0.045)
     textPrimary: Color(0xFFFFFFFF),
     textSecondary: Color(0xFF94A3B8),      // Slate 400
     trackNeutral: Color(0xFF1A1B2D),
     sidebarBackground: Color(0xFF0B0C13), // Unified Sidebar Base #0B0C13
     topBarBackground: Color(0xFF0B0C13),  // Unified Mobile Top Bar Base #0B0C13
-    cardBackground: Color(0xFF151624),    // Elevated Card Surface #151624
-    chipBackground: Color(0xFF1A1D2E),    // Interactive Chip / Pill Surface
+    cardBackground: Color(0xFF11121D),    // Unified Elevated Card Surface #11121D
+    chipBackground: Color(0xFF151726),    // Step-up Interactive Chip Surface #151726
     shadowColor: Color(0x73000000),        // rgba(0, 0, 0, 0.45)
     cardShadow: [
       BoxShadow(

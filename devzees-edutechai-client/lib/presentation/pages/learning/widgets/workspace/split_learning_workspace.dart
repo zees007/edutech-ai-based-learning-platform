@@ -1349,7 +1349,7 @@ class _MobileTabbedWorkspaceState
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
-        color: AppColors.surfaceSolidHeader,
+        color: AppColors.topBarBackground,
         border: Border(
           bottom: BorderSide(
             color: AppColors.glassBorder,
@@ -1836,7 +1836,7 @@ class _MobileTabbedWorkspaceState
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
           decoration: BoxDecoration(
-            color: AppColors.surfaceSolidHeader.withValues(alpha: 0.65),
+            color: AppColors.topBarBackground,
             border: Border(
               bottom: BorderSide(color: AppColors.glassBorder, width: 0.8),
             ),

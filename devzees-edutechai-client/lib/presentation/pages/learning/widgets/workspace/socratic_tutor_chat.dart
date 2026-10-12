@@ -1387,7 +1387,7 @@ class _SuggestedQuestionChipState extends State<_SuggestedQuestionChip> {
             color: AppColors.isDark
                 ? (_isHovered
                       ? const Color(0xFF1E1F36)
-                      : const Color(0xFF151624))
+                      : AppColors.cardBackground)
                 : (_isHovered ? const Color(0xFFF5F3FF) : Colors.white),
             border: Border.all(
               color: AppColors.isDark
@@ -1663,7 +1663,7 @@ Widget _buildMathCard(String tex) {
     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
     decoration: BoxDecoration(
       color: AppColors.isDark
-          ? const Color(0xFF151624)
+          ? AppColors.cardBackground
           : const Color(0xFFF8FAFC),
       borderRadius: BorderRadius.circular(12),
       border: Border.all(

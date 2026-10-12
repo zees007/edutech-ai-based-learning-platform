@@ -33,7 +33,7 @@ void main() {
           body: Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             decoration: BoxDecoration(
-              color: AppColors.surfaceSolidHeader,
+              color: AppColors.topBarBackground,
             ),
             child: Row(
               children: [

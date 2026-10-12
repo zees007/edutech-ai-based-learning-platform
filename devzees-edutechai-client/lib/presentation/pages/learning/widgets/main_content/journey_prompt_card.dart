@@ -171,9 +171,7 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
-            color: AppColors.isDark
-                ? const Color(0xFF151624)
-                : AppColors.surfaceSubtle,
+            color: AppColors.chipBackground,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: AppColors.border),
           ),
@@ -191,9 +189,7 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
                     value: value,
                     isExpanded: true,
                     borderRadius: BorderRadius.circular(16),
-                    dropdownColor: AppColors.isDark
-                        ? const Color(0xFF151624)
-                        : AppColors.surface,
+                    dropdownColor: AppColors.cardBackground,
                     icon: Icon(
                       Icons.keyboard_arrow_down,
                       color: AppColors.textSecondary,
@@ -354,9 +350,7 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
           color: AppColors.textSecondary.withValues(alpha: 0.6),
         ),
         filled: true,
-        fillColor: AppColors.isDark
-            ? const Color(0xFF151624)
-            : AppColors.surfaceSubtle,
+        fillColor: AppColors.chipBackground,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 20,
           vertical: 16,

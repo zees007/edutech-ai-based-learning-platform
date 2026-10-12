@@ -113,11 +113,11 @@ class AppColors {
   static Color get glassBorderSubtle => isDark ? const Color(0x0DFFFFFF) : const Color(0x0F000000);
 
   // ─── Shimmer & Skeleton Tokens (Dynamic) ───
-  static Color get shimmerBase => isDark ? const Color(0xFF11121D) : const Color(0xFFE5E7EB);
-  static Color get shimmerHighlight => isDark ? const Color(0xFF151624) : const Color(0xFFF3F3F5);
-  static Color get shimmerBox => isDark ? const Color(0xFF1A1B2D) : const Color(0xFFEDE9F2);
-  static Color get shimmerBoxDark => isDark ? const Color(0xFF151624) : const Color(0xFFE5E0EE);
-  static Color get shimmerBoxMid => isDark ? const Color(0xFF1A1B2D) : const Color(0xFFEAE4F0);
+  static Color get shimmerBase => isDark ? _current.surface : const Color(0xFFE5E7EB);
+  static Color get shimmerHighlight => isDark ? _current.chipBackground : const Color(0xFFF3F3F5);
+  static Color get shimmerBox => isDark ? _current.chipBackground : const Color(0xFFEDE9F2);
+  static Color get shimmerBoxDark => isDark ? _current.cardBackground : const Color(0xFFE5E0EE);
+  static Color get shimmerBoxMid => isDark ? _current.chipBackground : const Color(0xFFEAE4F0);
   static Color get shimmerBoxLight => isDark ? const Color(0xFF212338) : const Color(0xFFF0EBF5);
 
   // ─── Centralized Gradients ───
