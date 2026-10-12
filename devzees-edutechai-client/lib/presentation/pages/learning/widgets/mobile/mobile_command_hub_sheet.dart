@@ -468,6 +468,11 @@ class _MobileCommandHubSheetState extends State<MobileCommandHubSheet> {
             final isCompleted =
                 index < session.stepsCompleted || step.status == 'complete';
             final isUnlocked = index <= widget.maxUnlockedIndex;
+            final bool isJourneyComplete = totalSteps > 0 && session.stepsCompleted >= totalSteps;
+            final int inProcessIndex = session.stepsCompleted.clamp(0, totalSteps - 1);
+            final bool isCurrentJourneyStep = !isJourneyComplete &&
+                !isCompleted &&
+                (index == inProcessIndex || step.status == 'in_progress');
 
             return _buildTimelineStepItem(
               step: step,
@@ -475,6 +480,7 @@ class _MobileCommandHubSheetState extends State<MobileCommandHubSheet> {
               isActive: isActive,
               isCompleted: isCompleted,
               isUnlocked: isUnlocked,
+              isCurrentJourneyStep: isCurrentJourneyStep,
             );
           },
         ),
@@ -488,13 +494,22 @@ class _MobileCommandHubSheetState extends State<MobileCommandHubSheet> {
     required bool isActive,
     required bool isCompleted,
     required bool isUnlocked,
+    required bool isCurrentJourneyStep,
   }) {
+    final bool isReviewing = isActive && isCompleted;
+
     Color borderColor;
     Color bgColor;
 
-    if (isActive) {
+    if (isReviewing) {
+      borderColor = AppColors.cyanLight.withValues(alpha: 0.50);
+      bgColor = AppColors.cyanLight.withValues(alpha: 0.12);
+    } else if (isActive) {
       borderColor = AppColors.primary.withValues(alpha: 0.45);
       bgColor = AppColors.primary.withValues(alpha: 0.12);
+    } else if (isCurrentJourneyStep) {
+      borderColor = AppColors.primary.withValues(alpha: 0.35);
+      bgColor = AppColors.primary.withValues(alpha: 0.06);
     } else if (isCompleted) {
       borderColor = AppColors.accentGreen.withValues(alpha: 0.35);
       bgColor = AppColors.accentGreen.withValues(alpha: 0.08);
@@ -528,12 +543,12 @@ class _MobileCommandHubSheetState extends State<MobileCommandHubSheet> {
                 shape: BoxShape.circle,
                 color: isCompleted
                     ? AppColors.accentGreen
-                    : isActive
+                    : (isActive || isCurrentJourneyStep)
                         ? AppColors.primary
                         : (isUnlocked
                             ? AppColors.textSecondary.withValues(alpha: 0.2)
                             : Colors.transparent),
-                border: isUnlocked && !isCompleted && !isActive
+                border: isUnlocked && !isCompleted && !isActive && !isCurrentJourneyStep
                     ? Border.all(color: AppColors.textMuted, width: 1.2)
                     : (!isUnlocked
                         ? Border.all(color: AppColors.textMuted.withValues(alpha: 0.4), width: 1.0)
@@ -541,7 +556,7 @@ class _MobileCommandHubSheetState extends State<MobileCommandHubSheet> {
               ),
               child: isCompleted
                   ? const Icon(Icons.check_rounded, size: 15, color: Colors.white)
-                  : isActive
+                  : (isActive || isCurrentJourneyStep)
                       ? const Icon(Icons.play_arrow_rounded, size: 16, color: Colors.white)
                       : !isUnlocked
                           ? Icon(Icons.lock_outline_rounded,
@@ -570,20 +585,48 @@ class _MobileCommandHubSheetState extends State<MobileCommandHubSheet> {
                           fontSize: 9.5,
                           fontWeight: FontWeight.w800,
                           letterSpacing: 0.5,
-                          color: isActive
-                              ? AppColors.primary
-                              : isCompleted
-                                  ? AppColors.accentGreen
-                                  : AppColors.textSecondary,
+                          color: isReviewing
+                              ? AppColors.cyanLight
+                              : (isActive || isCurrentJourneyStep)
+                                  ? AppColors.primary
+                                  : isCompleted
+                                      ? AppColors.accentGreen
+                                      : AppColors.textSecondary,
                         ),
                       ),
                       const SizedBox(width: 6),
-                      if (isActive)
+                      if (isReviewing)
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                           decoration: BoxDecoration(
-                            color: AppColors.primary.withValues(alpha: 0.2),
+                            color: AppColors.cyanLight.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(4),
+                            border: Border.all(
+                              color: AppColors.cyanLight.withValues(alpha: 0.45),
+                              width: 0.8,
+                            ),
+                          ),
+                          child: const Text(
+                            'REVIEWING',
+                            style: TextStyle(
+                              fontSize: 8.5,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.cyanLight,
+                            ),
+                          ),
+                        )
+                      else if (isActive || isCurrentJourneyStep)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withValues(alpha: isActive ? 0.2 : 0.14),
+                            borderRadius: BorderRadius.circular(4),
+                            border: !isActive
+                                ? Border.all(
+                                    color: AppColors.primary.withValues(alpha: 0.35),
+                                    width: 0.8,
+                                  )
+                                : null,
                           ),
                           child: const Text(
                             'IN PROCESS',
@@ -623,10 +666,28 @@ class _MobileCommandHubSheetState extends State<MobileCommandHubSheet> {
             ),
 
             if (isUnlocked && !isActive)
-              Icon(
-                Icons.arrow_forward_ios_rounded,
-                size: 12,
-                color: AppColors.textMuted,
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (isCurrentJourneyStep) ...[
+                    Text(
+                      'Resume',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                    const SizedBox(width: 3),
+                  ],
+                  Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 12,
+                    color: isCurrentJourneyStep
+                        ? AppColors.primary
+                        : AppColors.textMuted,
+                  ),
+                ],
               ),
           ],
         ),
