@@ -13,8 +13,9 @@ import 'widgets/main_content/learning_main_content.dart';
 import 'widgets/gamification/level_up_celebration.dart';
 import 'widgets/gamification/journey_complete_celebration.dart';
 import 'package:devzees_edutechai_client/core/providers/active_session_provider.dart';
-import 'package:devzees_edutechai_client/presentation/widgets/theme_toggle_button.dart';
 import 'package:devzees_edutechai_client/core/providers/theme_provider.dart';
+import 'widgets/mobile/mobile_learning_top_bar.dart';
+import 'widgets/mobile/mobile_command_hub_sheet.dart';
 
 class LearningPage extends ConsumerStatefulWidget {
   const LearningPage({super.key});
@@ -150,24 +151,36 @@ class _LearningPageState extends ConsumerState<LearningPage> {
     final bool isMobile = Responsive.isMobile(context);
 
     if (isMobile) {
+      final activeState = ref.watch(activeSessionProvider);
+      final session = activeState.session;
+      final int maxUnlockedIndex = session != null
+          ? (session.currentStepIndex > session.stepsCompleted
+                  ? session.currentStepIndex
+                  : session.stepsCompleted)
+              .clamp(0, session.steps.isNotEmpty ? session.steps.length - 1 : 0)
+          : 0;
+
       return Scaffold(
         backgroundColor: AppColors.background,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          leading: Builder(
-            builder: (context) => IconButton(
-              icon: Icon(Icons.menu, color: AppColors.textSecondary),
-              onPressed: () => Scaffold.of(context).openDrawer(),
-            ),
-          ),
-          actions: const [
-            ThemeToggleButton(size: 32),
-            SizedBox(width: 8),
-          ],
+        appBar: MobileLearningTopBar(
+          session: session,
+          activeStepIndex: activeState.activeStepIndex,
+          onOpenCommandHub: session != null
+              ? () {
+                  MobileCommandHubSheet.show(
+                    context,
+                    session: session,
+                    activeIndex: activeState.activeStepIndex,
+                    maxUnlockedIndex: maxUnlockedIndex,
+                    onStepTapped: (index) {
+                      ref.read(activeSessionProvider.notifier).setActiveStep(index);
+                    },
+                  );
+                }
+              : null,
         ),
         drawer: Drawer(
-          backgroundColor: AppColors.background,
+          backgroundColor: AppColors.sidebarBackground,
           child: LearningSidebar(
             expanded: true,
             isMobile: true,

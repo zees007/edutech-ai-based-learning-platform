@@ -31,9 +31,12 @@ class AppColors {
   static Color get surfaceMid => isDark ? const Color(0xFF141523) : const Color(0xFFF8F9FA);
   static Color get surfaceDeep => isDark ? const Color(0xFF0B0C14) : _current.surface;
   static Color get surfaceSolidHeader => isDark ? const Color(0xCC11121D) : const Color(0xF2FFFFFF);
-  static Color get sidebarBackground => isDark ? const Color(0xFF0E0F18) : _current.surface;
+  static Color get sidebarBackground => _current.sidebarBackground;
+  static Color get topBarBackground => _current.topBarBackground;
+  static Color get cardBackground => _current.cardBackground;
+  static Color get chipBackground => _current.chipBackground;
   static Color get canvasBackground => _current.scaffoldBackground;
-  static Color get popoverBackground => isDark ? const Color(0xFF11121D) : _current.surface;
+  static Color get popoverBackground => isDark ? _current.cardBackground : _current.surface;
   static Color get surfaceIndigo => isDark ? const Color(0xFF1A1B2D) : _current.surfaceSubtle;
 
   static Color get surface => _current.surface;
