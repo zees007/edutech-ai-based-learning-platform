@@ -4,6 +4,7 @@ import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
 import 'package:devzees_edutechai_client/core/theme/text_styles.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/gradient_text.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/theme_toggle_button.dart';
+import 'package:devzees_edutechai_client/presentation/widgets/step_pill.dart';
 
 /// A high-density, ultra-sleek Mobile Top Bar.
 /// Features the official EduTechAI logo immediately following the hamburger icon
@@ -176,21 +177,11 @@ class MobileLearningTopBar extends StatelessWidget implements PreferredSizeWidge
                 ),
               ),
             ),
-            const SizedBox(width: 4),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-              decoration: BoxDecoration(
-                color: AppColors.primaryViolet.withValues(alpha: 0.16),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                '$currentStepNum/$totalSteps',
-                style: TextStyle(
-                  fontSize: 9.5,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.adaptivePurpleLight,
-                ),
-              ),
+            const SizedBox(width: 5),
+            StepPill(
+              currentStep: currentStepNum,
+              totalSteps: totalSteps,
+              isCompact: true,
             ),
             const SizedBox(width: 2),
             Icon(

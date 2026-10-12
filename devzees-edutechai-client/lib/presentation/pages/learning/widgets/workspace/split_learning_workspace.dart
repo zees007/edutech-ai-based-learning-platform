@@ -10,6 +10,7 @@ import 'learning_resources_panel.dart';
 import 'socratic_tutor_chat.dart';
 import 'keep_alive_wrapper.dart';
 import '../../../../widgets/animated_tutor_icon.dart';
+import '../../../../widgets/step_pill.dart';
 import '../../../../../core/constants/responsive.dart';
 import '../../../../../core/providers/theme_provider.dart';
 
@@ -604,58 +605,10 @@ class _TutorPanelHeaderState extends State<_TutorPanelHeader> {
                       const SizedBox(width: 6),
                     ],
                     // Step pill
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: AppColors.isDark
-                            ? (isReviewing
-                                ? AppColors.cyanLight.withValues(alpha: 0.15)
-                                : AppColors.primary.withValues(alpha: 0.15))
-                            : (isReviewing
-                                ? const Color(0xFFE0F2FE)
-                                : const Color(0xFFF3E8FF)),
-                        borderRadius: BorderRadius.circular(6),
-                        border: Border.all(
-                          color: AppColors.isDark
-                              ? (isReviewing
-                                  ? AppColors.cyanLight.withValues(alpha: 0.45)
-                                  : AppColors.primary.withValues(alpha: 0.45))
-                              : (isReviewing
-                                  ? const Color(0xFFBAE6FD)
-                                  : const Color(0xFFDDD6FE)),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            'Step ${widget.currentIndex + 1}/${widget.totalSteps}',
-                            style: AppTextStyles.badge.copyWith(
-                              fontSize: 10.5,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.isDark
-                                  ? (isReviewing ? AppColors.cyanLight : AppColors.purpleLight)
-                                  : (isReviewing ? const Color(0xFF0284C7) : AppColors.primaryViolet),
-                            ),
-                          ),
-                          if (isReviewing) ...[
-                            const SizedBox(width: 5),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                              decoration: BoxDecoration(
-                                color: AppColors.isDark
-                                    ? AppColors.cyanLight.withValues(alpha: 0.25)
-                                    : const Color(0xFF0284C7),
-                                borderRadius: BorderRadius.circular(3),
-                              ),
-                              child: Text(
-                                'Review',
-                                style: AppTextStyles.badge.copyWith(fontSize: 8, color: Colors.white),
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
+                    StepPill(
+                      currentStep: widget.currentIndex + 1,
+                      totalSteps: widget.totalSteps,
+                      isReviewing: isReviewing,
                     ),
                     // Prerequisite badge
                     if (widget.isPrerequisite) ...[
@@ -1383,46 +1336,10 @@ class _MobileTabbedWorkspaceState
             const SizedBox(width: 8),
           ],
           // Step pill
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-            decoration: BoxDecoration(
-              color: isReviewing
-                  ? AppColors.cyanLight.withValues(alpha: 0.15)
-                  : AppColors.primary.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(6),
-              border: Border.all(
-                color: isReviewing
-                    ? AppColors.cyanLight.withValues(alpha: 0.45)
-                    : AppColors.primary.withValues(alpha: 0.4),
-              ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Step ${widget.stepIndex + 1}/${widget.totalSteps}',
-                  style: AppTextStyles.badge.copyWith(
-                    fontSize: 10.5,
-                    fontWeight: FontWeight.w700,
-                    color: isReviewing ? AppColors.cyanLight : AppColors.purpleLight,
-                  ),
-                ),
-                if (isReviewing) ...[
-                  const SizedBox(width: 4),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 1),
-                    decoration: BoxDecoration(
-                      color: AppColors.cyanLight.withValues(alpha: 0.25),
-                      borderRadius: BorderRadius.circular(3),
-                    ),
-                    child: Text(
-                      'Review',
-                      style: AppTextStyles.badge.copyWith(fontSize: 7.5, color: Colors.white),
-                    ),
-                  ),
-                ],
-              ],
-            ),
+          StepPill(
+            currentStep: widget.stepIndex + 1,
+            totalSteps: widget.totalSteps,
+            isReviewing: isReviewing,
           ),
           const SizedBox(width: 10),
           // Step Title (Middle)

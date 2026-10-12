@@ -591,22 +591,6 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
             letterSpacing: 0.2,
           ),
         ),
-        const SizedBox(width: 8),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-          decoration: _buildPillDecoration().copyWith(
-            borderRadius: BorderRadius.circular(6),
-          ),
-          child: Text(
-            'Step ${widget.activeIndex + 1} of $totalSteps',
-            style: TextStyle(
-              fontWeight: FontWeight.w700,
-              fontSize: 10,
-              color: AppColors.isDark ? const Color(0xFFC084FC) : const Color(0xFF7C3AED),
-              letterSpacing: 0.3,
-            ),
-          ),
-        ),
       ],
     );
   }

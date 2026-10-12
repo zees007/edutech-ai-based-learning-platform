@@ -437,39 +437,19 @@ class _MobileCommandHubSheetState extends State<MobileCommandHubSheet> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Row(
-              children: [
-                Icon(
-                  Icons.alt_route_rounded,
-                  size: 16,
-                  color: AppColors.adaptivePurpleLight,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  'Milestone Learning Roadmap',
-                  style: TextStyle(
-                    fontSize: 13.5,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-              ],
+            Icon(
+              Icons.alt_route_rounded,
+              size: 16,
+              color: AppColors.adaptivePurpleLight,
             ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
-              decoration: BoxDecoration(
-                color: AppColors.primaryViolet.withValues(alpha: 0.16),
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: Text(
-                'Step ${widget.activeIndex + 1} of $totalSteps',
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.adaptivePurpleLight,
-                ),
+            const SizedBox(width: 6),
+            Text(
+              'Milestone Learning Roadmap',
+              style: TextStyle(
+                fontSize: 13.5,
+                fontWeight: FontWeight.w800,
+                color: AppColors.textPrimary,
               ),
             ),
           ],
