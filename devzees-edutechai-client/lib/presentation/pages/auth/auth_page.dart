@@ -39,8 +39,11 @@ class _AuthPageState extends ConsumerState<AuthPage> {
   Widget build(BuildContext context) {
     final isMobile = Responsive.isMobile(context);
     final authState = ref.watch(authProvider);
-    ref.watch(themeModeProvider);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final themeMode = ref.watch(themeModeProvider);
+    final platformBrightness = MediaQuery.platformBrightnessOf(context);
+    final isDark = themeMode == ThemeMode.dark ||
+        (themeMode == ThemeMode.system && platformBrightness == Brightness.dark);
+    AppColors.setBrightness(isDark ? Brightness.dark : Brightness.light);
 
     return Scaffold(
       backgroundColor: isDark ? AppColors.background : const Color(0xFFF6F8FC),
