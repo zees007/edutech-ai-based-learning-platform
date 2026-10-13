@@ -171,8 +171,12 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: isDark ? null : Colors.white,
-        gradient: isDark ? AppColors.cardGradientOpaque : null,
+        color: isDark
+            ? (widget.isMobile ? AppColors.mobileCardSolid : null)
+            : Colors.white,
+        gradient: isDark
+            ? (widget.isMobile ? null : AppColors.cardGradientOpaque)
+            : null,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
           color: isDark
@@ -181,14 +185,28 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
           width: 1.5,
         ),
         boxShadow: isDark
-            ? [
-                BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.25),
-                  blurRadius: 65,
-                  spreadRadius: -15,
-                  offset: const Offset(0, 25),
-                ),
-              ]
+            ? (widget.isMobile
+                ? const [
+                    BoxShadow(
+                      color: Color(0x33000000),
+                      blurRadius: 24,
+                      spreadRadius: -4,
+                      offset: Offset(0, 10),
+                    ),
+                    BoxShadow(
+                      color: Color(0x1A000000),
+                      blurRadius: 8,
+                      offset: Offset(0, 2),
+                    ),
+                  ]
+                : [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.25),
+                      blurRadius: 65,
+                      spreadRadius: -15,
+                      offset: const Offset(0, 25),
+                    ),
+                  ])
             : const [
                 BoxShadow(
                   color: Color(0x0F0F172A),
@@ -225,12 +243,20 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
               : const Color(0xFFBFDBFE),
         ),
         boxShadow: isDark
-            ? [
-                BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.25),
-                  blurRadius: 16,
-                ),
-              ]
+            ? (widget.isMobile
+                ? const [
+                    BoxShadow(
+                      color: Color(0x1A000000),
+                      blurRadius: 6,
+                      offset: Offset(0, 1),
+                    ),
+                  ]
+                : [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.25),
+                      blurRadius: 16,
+                    ),
+                  ])
             : const [
                 BoxShadow(
                   color: Color(0x060F172A),
