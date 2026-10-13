@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../../../../presentation/widgets/gradient_text.dart';
-import '../../../../../presentation/widgets/theme_toggle_button.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/text_styles.dart';
 
@@ -23,16 +22,9 @@ class SidebarHeader extends StatelessWidget {
     if (!expanded && !isMobile) {
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton(
-              onPressed: onToggle,
-              icon: Icon(Icons.menu, color: AppColors.textSecondary),
-            ),
-            const SizedBox(height: 8),
-            const ThemeToggleButton(size: 32),
-          ],
+        child: IconButton(
+          onPressed: onToggle,
+          icon: Icon(Icons.menu, color: AppColors.textSecondary),
         ),
       );
     }
@@ -77,26 +69,19 @@ class SidebarHeader extends StatelessWidget {
               ),
             ],
           ),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const ThemeToggleButton(size: 32),
-              const SizedBox(width: 4),
-              if (!isMobile)
-                IconButton(
-                  onPressed: onToggle,
-                  icon: Icon(
-                    expanded ? Icons.menu_open : Icons.menu,
-                    color: AppColors.textSecondary,
-                  ),
-                )
-              else
-                IconButton(
-                  onPressed: onClose,
-                  icon: Icon(Icons.menu_open, color: AppColors.textSecondary),
-                ),
-            ],
-          ),
+          if (!isMobile)
+            IconButton(
+              onPressed: onToggle,
+              icon: Icon(
+                expanded ? Icons.menu_open : Icons.menu,
+                color: AppColors.textSecondary,
+              ),
+            )
+          else
+            IconButton(
+              onPressed: onClose,
+              icon: Icon(Icons.menu_open, color: AppColors.textSecondary),
+            ),
         ],
       ),
     );

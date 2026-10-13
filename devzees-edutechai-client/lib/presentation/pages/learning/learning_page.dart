@@ -115,6 +115,10 @@ class _LearningPageState extends ConsumerState<LearningPage> {
   @override
   Widget build(BuildContext context) {
     final themeMode = ref.watch(themeModeProvider);
+    final platformBrightness = MediaQuery.platformBrightnessOf(context);
+    final isDark = themeMode == ThemeMode.dark ||
+        (themeMode == ThemeMode.system && platformBrightness == Brightness.dark);
+    AppColors.setBrightness(isDark ? Brightness.dark : Brightness.light);
     final isAuthInitial = ref.watch(authProvider.select((s) => s.isInitial));
 
     ref.listen<GamificationEvent?>(gamificationEventProvider, (previous, next) {
@@ -196,6 +200,7 @@ class _LearningPageState extends ConsumerState<LearningPage> {
       backgroundColor: AppColors.background,
       body: GlowBackground(
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Sidebar
             Container(

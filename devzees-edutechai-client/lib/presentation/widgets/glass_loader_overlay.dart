@@ -61,8 +61,12 @@ class GlassLoaderOverlay extends StatelessWidget {
           color: (isDark ? AppColors.primary : AppColors.purple).withValues(alpha: 0.45),
           width: 1.5,
         ),
-        color: Responsive.isMobile(context) ? AppColors.mobileCardSolid : null,
-        gradient: Responsive.isMobile(context) ? null : AppColors.cardGradientOpaque,
+        color: Responsive.isMobile(context)
+            ? (isDark ? AppColors.canvasBackground : Colors.white)
+            : null,
+        gradient: Responsive.isMobile(context)
+            ? null
+            : AppColors.cardGradientOpaque,
         boxShadow: [
           if (!Responsive.isMobile(context)) ...[
             BoxShadow(

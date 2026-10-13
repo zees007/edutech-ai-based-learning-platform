@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -49,6 +50,11 @@ class AppRouterNotifier extends ChangeNotifier {
         return '/learning';
       }
 
+      // On mobile (!kIsWeb), web marketing home page is bypassed
+      if (!kIsWeb && isHomeRoute) {
+        return '/learning';
+      }
+
       // 2b. Admin route privilege guard — redirect non-admins to /learning
       if (isAdminRoute) {
         // If user profile is not yet available, keep route pending rehydration
@@ -66,6 +72,11 @@ class AppRouterNotifier extends ChangeNotifier {
 
     // 3. Unauthenticated user accessing protected routes -> send to /auth
     if (!isAuthenticated) {
+      // On mobile (!kIsWeb), HomePage ('/') is not accessible; redirect directly to /auth
+      if (!kIsWeb && isHomeRoute) {
+        return '/auth';
+      }
+
       if (!isAuthRoute && !isHomeRoute) {
         return '/auth';
       }
@@ -83,7 +94,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   final notifier = ref.watch(appRouterNotifierProvider);
 
   return GoRouter(
-    initialLocation: '/',
+    initialLocation: kIsWeb ? '/' : '/auth',
     refreshListenable: notifier,
     redirect: notifier.redirect,
     routes: [

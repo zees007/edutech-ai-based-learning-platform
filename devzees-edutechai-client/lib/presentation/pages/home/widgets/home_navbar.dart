@@ -7,7 +7,6 @@ import 'package:devzees_edutechai_client/presentation/widgets/gradient_button.da
 import 'package:devzees_edutechai_client/presentation/widgets/gradient_text.dart';
 import 'package:devzees_edutechai_client/core/constants/responsive.dart';
 import 'package:devzees_edutechai_client/core/providers/auth_provider.dart';
-import 'package:devzees_edutechai_client/presentation/widgets/theme_toggle_button.dart';
 import 'package:go_router/go_router.dart';
 
 class HomeNavbar extends ConsumerWidget {
@@ -22,10 +21,19 @@ class HomeNavbar extends ConsumerWidget {
       decoration: BoxDecoration(
         color: AppColors.surfaceDark.withValues(alpha: 0.85),
         borderRadius: BorderRadius.circular(50),
-        border: Border.all(color: AppColors.accentPurple.withValues(alpha: 0.45)),
+        border: Border.all(
+          color: AppColors.accentPurple.withValues(alpha: 0.45),
+        ),
         boxShadow: [
-          BoxShadow(color: AppColors.accentPurple.withValues(alpha: 0.25), blurRadius: 30),
-          BoxShadow(color: Colors.black.withValues(alpha: 0.5), blurRadius: 30, offset: const Offset(0, 10)),
+          BoxShadow(
+            color: AppColors.accentPurple.withValues(alpha: 0.25),
+            blurRadius: 30,
+          ),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.5),
+            blurRadius: 30,
+            offset: const Offset(0, 8),
+          ),
         ],
       ),
       child: ClipRRect(
@@ -36,7 +44,10 @@ class HomeNavbar extends ConsumerWidget {
             // Approximating inset shadow with an inner border
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(50),
-              border: Border.all(color: AppColors.accentPurple.withValues(alpha: 0.15), width: 1.5),
+              border: Border.all(
+                color: AppColors.accentPurple.withValues(alpha: 0.15),
+                width: 1.5,
+              ),
             ),
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
             child: Row(
@@ -91,8 +102,6 @@ class HomeNavbar extends ConsumerWidget {
           // Auth Buttons
           Row(
             children: [
-              const ThemeToggleButton(size: 34),
-              const SizedBox(width: 8),
               if (isAuthenticated) ...[
                 GradientButton(
                   text: 'Open Workspace',

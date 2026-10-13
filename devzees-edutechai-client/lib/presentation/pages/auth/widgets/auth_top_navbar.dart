@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
@@ -12,7 +13,7 @@ class AuthTopNavbar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = AppColors.isDark;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       padding: EdgeInsets.symmetric(
@@ -64,39 +65,41 @@ class AuthTopNavbar extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               const ThemeToggleButton(size: 34),
-              const SizedBox(width: 10),
-              // Back to Home Button
-              OutlinedButton.icon(
-                onPressed: () => context.go('/'),
-                icon: Icon(
-                  Icons.arrow_back,
-                  size: 16,
-                  color: isDark ? AppColors.textPrimary : const Color(0xFF475569),
-                ),
-                label: Text(
-                  isMobile ? 'Back' : 'Back to Home',
-                  style: TextStyle(
+              // Back to Home Button (Web Only)
+              if (kIsWeb) ...[
+                const SizedBox(width: 10),
+                OutlinedButton.icon(
+                  onPressed: () => context.go('/'),
+                  icon: Icon(
+                    Icons.arrow_back,
+                    size: 16,
                     color: isDark ? AppColors.textPrimary : const Color(0xFF475569),
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
+                  ),
+                  label: Text(
+                    isMobile ? 'Back' : 'Back to Home',
+                    style: TextStyle(
+                      color: isDark ? AppColors.textPrimary : const Color(0xFF475569),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    backgroundColor: isDark ? Colors.transparent : Colors.white,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isMobile ? 12 : 16,
+                      vertical: isMobile ? 8 : 10,
+                    ),
+                    side: BorderSide(
+                      color: isDark ? AppColors.border : const Color(0xFFE2E8F0),
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: isDark ? 0 : 1,
+                    shadowColor: const Color(0x0A0F172A),
                   ),
                 ),
-                style: OutlinedButton.styleFrom(
-                  backgroundColor: isDark ? Colors.transparent : Colors.white,
-                  padding: EdgeInsets.symmetric(
-                    horizontal: isMobile ? 12 : 16,
-                    vertical: isMobile ? 8 : 10,
-                  ),
-                  side: BorderSide(
-                    color: isDark ? AppColors.border : const Color(0xFFE2E8F0),
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  elevation: isDark ? 0 : 1,
-                  shadowColor: const Color(0x0A0F172A),
-                ),
-              ),
+              ],
             ],
           ),
         ],

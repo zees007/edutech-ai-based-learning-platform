@@ -118,7 +118,7 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
-          side: BorderSide(color: AppColors.accentPurple.withValues(alpha: 0.5)),
+          side: BorderSide(color: AppColors.primary.withValues(alpha: 0.5)),
         ),
       ),
     );
@@ -126,7 +126,7 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = AppColors.isDark;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return _buildContainerCard(
       isDark: isDark,
@@ -171,24 +171,42 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: isDark ? null : Colors.white,
-        gradient: isDark ? AppColors.cardGradientOpaque : null,
+        color: isDark
+            ? (widget.isMobile ? AppColors.canvasBackground : null)
+            : Colors.white,
+        gradient: isDark
+            ? (widget.isMobile ? null : AppColors.cardGradientOpaque)
+            : null,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
           color: isDark
-              ? AppColors.accentPurple.withValues(alpha: 0.45)
+              ? AppColors.primary.withValues(alpha: 0.45)
               : const Color(0xFFE2E8F0),
           width: 1.5,
         ),
         boxShadow: isDark
-            ? [
-                BoxShadow(
-                  color: AppColors.accentPurple.withValues(alpha: 0.35),
-                  blurRadius: 65,
-                  spreadRadius: -15,
-                  offset: const Offset(0, 25),
-                ),
-              ]
+            ? (widget.isMobile
+                ? const [
+                    BoxShadow(
+                      color: Color(0x33000000),
+                      blurRadius: 24,
+                      spreadRadius: -4,
+                      offset: Offset(0, 10),
+                    ),
+                    BoxShadow(
+                      color: Color(0x1A000000),
+                      blurRadius: 8,
+                      offset: Offset(0, 2),
+                    ),
+                  ]
+                : [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.25),
+                      blurRadius: 65,
+                      spreadRadius: -15,
+                      offset: const Offset(0, 25),
+                    ),
+                  ])
             : const [
                 BoxShadow(
                   color: Color(0x0F0F172A),
@@ -216,21 +234,29 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
       decoration: BoxDecoration(
         color: isDark
-            ? AppColors.accentPurple.withValues(alpha: 0.15)
-            : const Color(0xFFF5F3FF),
+            ? AppColors.primary.withValues(alpha: 0.15)
+            : const Color(0xFFEFF6FF),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: isDark
-              ? AppColors.accentPurple.withValues(alpha: 0.4)
-              : const Color(0xFFDDD6FE),
+              ? AppColors.primary.withValues(alpha: 0.4)
+              : const Color(0xFFBFDBFE),
         ),
         boxShadow: isDark
-            ? [
-                BoxShadow(
-                  color: AppColors.accentPurple.withValues(alpha: 0.3),
-                  blurRadius: 16,
-                ),
-              ]
+            ? (widget.isMobile
+                ? const [
+                    BoxShadow(
+                      color: Color(0x1A000000),
+                      blurRadius: 6,
+                      offset: Offset(0, 1),
+                    ),
+                  ]
+                : [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.25),
+                      blurRadius: 16,
+                    ),
+                  ])
             : const [
                 BoxShadow(
                   color: Color(0x060F172A),
@@ -242,7 +268,7 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
       child: Text(
         text,
         style: TextStyle(
-          color: isDark ? AppColors.lavender : const Color(0xFF6D28D9),
+          color: isDark ? AppColors.blueSoft : const Color(0xFF1D4ED8),
           fontSize: 11,
           fontWeight: FontWeight.w700,
           letterSpacing: 0.8,
@@ -305,7 +331,7 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isDark
-              ? AppColors.accentPurple.withValues(alpha: 0.3)
+              ? AppColors.primary.withValues(alpha: 0.3)
               : const Color(0xFFE2E8F0),
         ),
       ),
@@ -352,20 +378,20 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
           decoration: BoxDecoration(
             color: isSelected
                 ? (isDark
-                    ? AppColors.accentPurple.withValues(alpha: 0.25)
+                    ? AppColors.primary.withValues(alpha: 0.25)
                     : Colors.white)
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(12),
             border: isSelected && isDark
                 ? Border.all(
-                    color: AppColors.accentPurple.withValues(alpha: 0.5),
+                    color: AppColors.primary.withValues(alpha: 0.5),
                   )
                 : null,
             boxShadow: isSelected
                 ? [
                     BoxShadow(
                       color: isDark
-                          ? AppColors.accentPurple.withValues(alpha: 0.2)
+                          ? AppColors.primary.withValues(alpha: 0.2)
                           : const Color(0x10000000),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
@@ -424,7 +450,7 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
                 style: TextStyle(
                   fontSize: 11.5,
                   fontWeight: FontWeight.w600,
-                  color: isDark ? Colors.white : const Color(0xFF7C3AED),
+                  color: isDark ? Colors.white : AppColors.primary,
                 ),
               ),
             ),
@@ -676,15 +702,15 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
               prefixIcon,
               size: 18,
               color: isDark
-                  ? AppColors.accentPurple.withValues(alpha: 0.7)
-                  : const Color(0xFF94A3B8),
+                  ? AppColors.primary.withValues(alpha: 0.8)
+                  : const Color(0xFF64748B),
             ),
             suffixIcon: suffixIcon,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
                 color: isDark
-                    ? AppColors.accentPurple.withValues(alpha: 0.35)
+                    ? AppColors.primary.withValues(alpha: 0.35)
                     : const Color(0xFFE2E8F0),
               ),
             ),
@@ -692,14 +718,14 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
                 color: isDark
-                    ? AppColors.accentPurple.withValues(alpha: 0.35)
+                    ? AppColors.primary.withValues(alpha: 0.35)
                     : const Color(0xFFE2E8F0),
               ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: isDark ? AppColors.accentPurple : const Color(0xFF7C3AED),
+                color: AppColors.primary,
                 width: 1.5,
               ),
             ),
@@ -733,7 +759,7 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
                 style: TextStyle(
                   fontSize: 12.5,
                   fontWeight: FontWeight.w700,
-                  color: isDark ? Colors.white : const Color(0xFF7C3AED),
+                  color: isDark ? Colors.white : AppColors.primary,
                   decoration: TextDecoration.underline,
                 ),
               ),

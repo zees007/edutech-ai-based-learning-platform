@@ -43,12 +43,14 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 250),
-        curve: Curves.easeOutCubic,
-        transform: Matrix4.translationValues(0, _isHovered ? -2.0 : 0, 0),
-        constraints: const BoxConstraints(maxWidth: 840),
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      child: Center(
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeOutCubic,
+          transform: Matrix4.translationValues(0, _isHovered ? -2.0 : 0, 0),
+          constraints: const BoxConstraints(maxWidth: 840),
+          width: double.infinity,
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
         padding: const EdgeInsets.fromLTRB(32, 26, 32, 22),
         decoration: BoxDecoration(
           color: isDark ? AppColors.canvasBackground : Colors.white,
@@ -96,7 +98,8 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
           ],
         ),
       ),
-    );
+    ),
+  );
   }
 
   Widget _buildDropdownRow() {

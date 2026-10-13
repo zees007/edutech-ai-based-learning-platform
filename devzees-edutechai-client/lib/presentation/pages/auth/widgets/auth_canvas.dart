@@ -43,7 +43,7 @@ class _AuthCanvasState extends State<AuthCanvas>
 
   @override
   Widget build(BuildContext context) {
-    final isDark = AppColors.isDark;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       width: double.infinity,

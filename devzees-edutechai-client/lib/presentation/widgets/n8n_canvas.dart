@@ -47,7 +47,9 @@ class _N8nCanvasState extends State<N8nCanvas>
         )!;
 
         final outerShadow = BoxShadow(
-          color: AppColors.purpleDeep.withValues(alpha: 0.3 + (0.2 * t)),
+          color: AppColors.isDark
+              ? AppColors.purpleDeep.withValues(alpha: 0.3 + (0.2 * t))
+              : AppColors.primary.withValues(alpha: 0.08 + (0.05 * t)),
           blurRadius: 60 + (10 * t),
           spreadRadius: -15 + (5 * t),
           offset: const Offset(0, 20),
@@ -107,7 +109,7 @@ class _N8nCanvasState extends State<N8nCanvas>
             child: Text(
               '⚡ EDUTECH AI — AUTONOMOUS MULTI-AGENT FLOW',
               style: TextStyle(
-                color: AppColors.lavender,
+                color: AppColors.adaptiveLavender,
                 fontSize: 12,
                 fontWeight: FontWeight.w800,
                 letterSpacing: 1.5,
@@ -368,7 +370,9 @@ class _N8nCanvasState extends State<N8nCanvas>
             ),
             boxShadow: Responsive.isMobile(context) ? null : [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.4),
+                color: AppColors.isDark
+                    ? Colors.black.withValues(alpha: 0.4)
+                    : const Color(0x14000000),
                 blurRadius: 15,
                 offset: const Offset(0, 4),
               ),
@@ -497,12 +501,18 @@ class _N8nCanvasState extends State<N8nCanvas>
       decoration: BoxDecoration(
         color: AppColors.canvasBackground,
         borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        border: Border.all(
+          color: AppColors.isDark
+              ? Colors.white.withValues(alpha: 0.1)
+              : AppColors.border,
+        ),
       ),
       child: Text(
         text,
         style: TextStyle(
-          color: Colors.white.withValues(alpha: 0.45),
+          color: AppColors.isDark
+              ? Colors.white.withValues(alpha: 0.45)
+              : AppColors.textSecondary,
           fontSize: 10,
           fontWeight: FontWeight.bold,
         ),

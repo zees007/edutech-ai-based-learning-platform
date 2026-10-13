@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:devzees_edutechai_client/core/constants/responsive.dart';
 import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
 import 'package:devzees_edutechai_client/core/theme/text_styles.dart';
+import 'package:devzees_edutechai_client/core/providers/theme_provider.dart';
 import '../../../core/providers/auth_provider.dart';
 import '../../widgets/glass_loader_overlay.dart';
 
@@ -38,7 +39,11 @@ class _AuthPageState extends ConsumerState<AuthPage> {
   Widget build(BuildContext context) {
     final isMobile = Responsive.isMobile(context);
     final authState = ref.watch(authProvider);
-    final isDark = AppColors.isDark;
+    final themeMode = ref.watch(themeModeProvider);
+    final platformBrightness = MediaQuery.platformBrightnessOf(context);
+    final isDark = themeMode == ThemeMode.dark ||
+        (themeMode == ThemeMode.system && platformBrightness == Brightness.dark);
+    AppColors.setBrightness(isDark ? Brightness.dark : Brightness.light);
 
     return Scaffold(
       backgroundColor: isDark ? AppColors.background : const Color(0xFFF6F8FC),
@@ -160,12 +165,12 @@ class _AuthPageState extends ConsumerState<AuthPage> {
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
               side: BorderSide(
-                color: AppColors.accentPurple.withValues(alpha: 0.4),
+                color: AppColors.primary.withValues(alpha: 0.4),
               ),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(30),
               ),
-              backgroundColor: AppColors.accentPurple.withValues(alpha: 0.08),
+              backgroundColor: AppColors.primary.withValues(alpha: 0.08),
             ),
           ),
         ),
@@ -178,7 +183,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
           child: _isFlowchartExpanded
               ? Column(
                   children: [
-                    const AuthInstructionsCard(isMobile: true),
+                    AuthInstructionsCard(isMobile: true),
                     const SizedBox(height: 20),
                     AuthCanvas(
                       isLogin: _isLogin,
