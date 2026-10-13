@@ -162,12 +162,12 @@ class _AuthPageState extends ConsumerState<AuthPage> {
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
               side: BorderSide(
-                color: AppColors.accentPurple.withValues(alpha: 0.4),
+                color: AppColors.primary.withValues(alpha: 0.4),
               ),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(30),
               ),
-              backgroundColor: AppColors.accentPurple.withValues(alpha: 0.08),
+              backgroundColor: AppColors.primary.withValues(alpha: 0.08),
             ),
           ),
         ),
