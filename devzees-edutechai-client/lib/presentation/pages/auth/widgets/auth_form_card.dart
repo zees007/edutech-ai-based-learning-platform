@@ -126,7 +126,7 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = AppColors.isDark;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return _buildContainerCard(
       isDark: isDark,

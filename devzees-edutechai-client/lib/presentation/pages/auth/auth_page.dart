@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:devzees_edutechai_client/core/constants/responsive.dart';
 import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
 import 'package:devzees_edutechai_client/core/theme/text_styles.dart';
+import 'package:devzees_edutechai_client/core/providers/theme_provider.dart';
 import '../../../core/providers/auth_provider.dart';
 import '../../widgets/glass_loader_overlay.dart';
 
@@ -38,7 +39,8 @@ class _AuthPageState extends ConsumerState<AuthPage> {
   Widget build(BuildContext context) {
     final isMobile = Responsive.isMobile(context);
     final authState = ref.watch(authProvider);
-    final isDark = AppColors.isDark;
+    ref.watch(themeModeProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       backgroundColor: isDark ? AppColors.background : const Color(0xFFF6F8FC),
@@ -178,7 +180,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
           child: _isFlowchartExpanded
               ? Column(
                   children: [
-                    const AuthInstructionsCard(isMobile: true),
+                    AuthInstructionsCard(isMobile: true),
                     const SizedBox(height: 20),
                     AuthCanvas(
                       isLogin: _isLogin,
