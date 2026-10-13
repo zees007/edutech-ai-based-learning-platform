@@ -33,14 +33,15 @@ class _GlassCardState extends State<GlassCard> {
   @override
   Widget build(BuildContext context) {
     final isDark = context.isDarkMode;
+    final isGlow = widget.isGlowing || _isHovered;
 
     final border = isDark
         ? Border.all(
-            color: AppColors.purple.withValues(alpha: _isHovered ? 0.85 : 0.45),
+            color: AppColors.purple.withValues(alpha: isGlow ? 0.85 : 0.45),
             width: 1.5,
           )
         : Border.all(
-            color: _isHovered
+            color: isGlow
                 ? AppColors.accentBlue.withValues(alpha: 0.60)
                 : AppColors.glassBorder,
             width: 1.0,
@@ -50,15 +51,15 @@ class _GlassCardState extends State<GlassCard> {
         ? [
             // Dark Mode Drop Shadow
             BoxShadow(
-              color: AppColors.purple.withValues(alpha: _isHovered ? 0.55 : 0.35),
-              blurRadius: _isHovered ? 75 : 65,
-              spreadRadius: _isHovered ? -10 : -15,
-              offset: Offset(0, _isHovered ? 30 : 25),
+              color: AppColors.purple.withValues(alpha: isGlow ? 0.55 : 0.35),
+              blurRadius: isGlow ? 75 : 65,
+              spreadRadius: isGlow ? -10 : -15,
+              offset: Offset(0, isGlow ? 30 : 25),
             ),
             // Dark Mode Inner / Neumorphic shadow (rgba(0,0,0,0.45))
             BoxShadow(
-              color: Colors.black.withValues(alpha: _isHovered ? 0.45 : 0.30),
-              blurRadius: _isHovered ? 45 : 35,
+              color: Colors.black.withValues(alpha: isGlow ? 0.45 : 0.30),
+              blurRadius: isGlow ? 45 : 35,
               spreadRadius: 0,
               blurStyle: BlurStyle.inner,
             ),
@@ -67,11 +68,11 @@ class _GlassCardState extends State<GlassCard> {
             // Light Mode Drop Shadow: box-shadow: 0 8px 24px rgba(0,0,0,0.08)
             BoxShadow(
               color: const Color(0x14000000), // 0.08 opacity
-              blurRadius: _isHovered ? 28 : 24,
+              blurRadius: isGlow ? 28 : 24,
               spreadRadius: 0,
-              offset: Offset(0, _isHovered ? 12 : 8),
+              offset: Offset(0, isGlow ? 12 : 8),
             ),
-            if (_isHovered)
+            if (isGlow)
               BoxShadow(
                 color: AppColors.accentBlue.withValues(alpha: 0.12),
                 blurRadius: 18,
@@ -136,15 +137,15 @@ class _GlassCardState extends State<GlassCard> {
                             boxShadow: [
                               BoxShadow(
                                 color: AppColors.accentMagenta.withValues(
-                                  alpha: isDark ? (_isHovered ? 0.8 : 0.5) : (_isHovered ? 0.5 : 0.3),
+                                  alpha: isDark ? (isGlow ? 0.8 : 0.5) : (isGlow ? 0.5 : 0.3),
                                 ),
-                                blurRadius: _isHovered ? 22 : 15,
+                                blurRadius: isGlow ? 22 : 15,
                               ),
                               BoxShadow(
                                 color: AppColors.accentBlue.withValues(
-                                  alpha: isDark ? (_isHovered ? 0.7 : 0.4) : (_isHovered ? 0.4 : 0.2),
+                                  alpha: isDark ? (isGlow ? 0.7 : 0.4) : (isGlow ? 0.4 : 0.2),
                                 ),
-                                blurRadius: _isHovered ? 30 : 20,
+                                blurRadius: isGlow ? 30 : 20,
                               ),
                             ],
                           ),

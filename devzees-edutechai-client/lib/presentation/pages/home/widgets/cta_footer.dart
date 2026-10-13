@@ -61,7 +61,7 @@ class CtaFooter extends StatelessWidget {
                 children: [
                   Text('EduTech AI', style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 18)),
                   const SizedBox(height: 8),
-                  Text('© 2024 EduTech AI. Empowering cognitive research through education.', style: AppTextStyles.body2.copyWith(fontSize: 12)),
+                  Text('© ${DateTime.now().year} EduTech AI. Empowering cognitive research through education.', style: AppTextStyles.body2.copyWith(fontSize: 12)),
                 ],
               ),
               if (isMobile) const SizedBox(height: 24),

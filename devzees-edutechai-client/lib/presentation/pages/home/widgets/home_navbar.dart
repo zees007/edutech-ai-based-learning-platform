@@ -22,10 +22,21 @@ class HomeNavbar extends ConsumerWidget {
       decoration: BoxDecoration(
         color: AppColors.surfaceDark.withValues(alpha: 0.85),
         borderRadius: BorderRadius.circular(50),
-        border: Border.all(color: AppColors.accentPurple.withValues(alpha: 0.45)),
+        border: Border.all(
+          color: AppColors.isDark
+              ? AppColors.accentPurple.withValues(alpha: 0.45)
+              : AppColors.border,
+        ),
         boxShadow: [
-          BoxShadow(color: AppColors.accentPurple.withValues(alpha: 0.25), blurRadius: 30),
-          BoxShadow(color: Colors.black.withValues(alpha: 0.5), blurRadius: 30, offset: const Offset(0, 10)),
+          if (AppColors.isDark)
+            BoxShadow(color: AppColors.accentPurple.withValues(alpha: 0.25), blurRadius: 30),
+          BoxShadow(
+            color: AppColors.isDark
+                ? Colors.black.withValues(alpha: 0.5)
+                : const Color(0x14000000),
+            blurRadius: AppColors.isDark ? 30 : 20,
+            offset: const Offset(0, 8),
+          ),
         ],
       ),
       child: ClipRRect(
@@ -36,7 +47,12 @@ class HomeNavbar extends ConsumerWidget {
             // Approximating inset shadow with an inner border
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(50),
-              border: Border.all(color: AppColors.accentPurple.withValues(alpha: 0.15), width: 1.5),
+              border: Border.all(
+                color: AppColors.isDark
+                    ? AppColors.accentPurple.withValues(alpha: 0.15)
+                    : Colors.transparent,
+                width: 1.5,
+              ),
             ),
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
             child: Row(
@@ -68,7 +84,7 @@ class HomeNavbar extends ConsumerWidget {
                       child: Text(
                         'AI',
                         style: AppTextStyles.labelSmall.copyWith(
-                          color: AppColors.lavender,
+                          color: AppColors.adaptiveLavender,
                           fontSize: 10,
                           fontWeight: FontWeight.w800,
                         ),

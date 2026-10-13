@@ -130,12 +130,16 @@ class _HomePageState extends State<HomePage> {
               height: 56,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppColors.primary.withValues(alpha: 0.15),
-                border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+                gradient: AppColors.isDark ? null : AppColors.primaryGradient,
+                color: AppColors.isDark ? AppColors.primary.withValues(alpha: 0.15) : null,
+                border: Border.all(
+                  color: AppColors.isDark ? AppColors.primary.withValues(alpha: 0.3) : Colors.transparent,
+                ),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.2),
+                    color: AppColors.primary.withValues(alpha: AppColors.isDark ? 0.2 : 0.35),
                     blurRadius: 15,
+                    offset: const Offset(0, 4),
                   ),
                 ],
               ),

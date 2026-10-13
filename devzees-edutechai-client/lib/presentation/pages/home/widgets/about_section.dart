@@ -56,46 +56,53 @@ class AboutSection extends StatelessWidget {
         // Unified Mission & Technology Card
         GlassCard(
           padding: EdgeInsets.all(isMobile ? 24 : 48),
-          child: Flex(
-            direction: isMobile ? Axis.vertical : Axis.horizontal,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                flex: isMobile ? 0 : 1,
-                child: Column(
+          child: isMobile
+              ? Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('🚀 Our Mission', style: AppTextStyles.h3),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Traditional online learning often relies on passive video watching and static, one-size-fits-all quizzes. EduTech AI was built to pioneer a new paradigm: Interactive Multi-Agent Learning.\n\nWe combine autonomous LLM supervisor orchestrators with specialized worker agents that act as your personal 24/7 tutor—breaking down complex subjects into bite-sized milestones and testing your understanding with Socratic questioning.',
-                      style: AppTextStyles.body1,
-                    ),
+                    _buildMissionContent(),
+                    const SizedBox(height: 32),
+                    _buildMasteryContent(),
                   ],
-                ),
-              ),
-              if (!isMobile) ...[
-                const SizedBox(width: 48),
-                Container(width: 1, height: 200, color: AppColors.glassBorder),
-                const SizedBox(width: 48),
-              ],
-              if (isMobile) const SizedBox(height: 32),
-              Expanded(
-                flex: isMobile ? 0 : 1,
-                child: Column(
+                )
+              : Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('🧠 Engineered for Deep Mastery', style: AppTextStyles.h3),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Built on top of a state-persisted supervisor-worker architecture, EduTech AI connects directly to leading academic databases (arXiv, OpenAlex, Semantic Scholar) and curated video timestamps.\n\nWhether you are a high school student grasping basic physics or a researcher analyzing machine learning papers, our system adapts to your cognitive level in real time.',
-                      style: AppTextStyles.body1,
-                    ),
+                    Expanded(child: _buildMissionContent()),
+                    const SizedBox(width: 48),
+                    Container(width: 1, height: 200, color: AppColors.glassBorder),
+                    const SizedBox(width: 48),
+                    Expanded(child: _buildMasteryContent()),
                   ],
                 ),
-              ),
-            ],
-          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMissionContent() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('🚀 Our Mission', style: AppTextStyles.h3),
+        const SizedBox(height: 16),
+        Text(
+          'Traditional online learning often relies on passive video watching and static, one-size-fits-all quizzes. EduTech AI was built to pioneer a new paradigm: Interactive Multi-Agent Learning.\n\nWe combine autonomous LLM supervisor orchestrators with specialized worker agents that act as your personal 24/7 tutor—breaking down complex subjects into bite-sized milestones and testing your understanding with Socratic questioning.',
+          style: AppTextStyles.body1,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMasteryContent() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('🧠 Engineered for Deep Mastery', style: AppTextStyles.h3),
+        const SizedBox(height: 16),
+        Text(
+          'Built on top of a state-persisted supervisor-worker architecture, EduTech AI connects directly to leading academic databases (arXiv, OpenAlex, Semantic Scholar) and curated video timestamps.\n\nWhether you are a high school student grasping basic physics or a researcher analyzing machine learning papers, our system adapts to your cognitive level in real time.',
+          style: AppTextStyles.body1,
         ),
       ],
     );

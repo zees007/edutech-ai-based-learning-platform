@@ -16,6 +16,7 @@ class PricingSection extends StatefulWidget {
 
 class _PricingSectionState extends State<PricingSection> {
   final PageController _pageController = PageController(viewportFraction: 0.88);
+  int _currentPage = 0;
 
   @override
   void dispose() {
@@ -90,18 +91,42 @@ class _PricingSectionState extends State<PricingSection> {
         const SizedBox(height: 48),
         
         if (isMobile)
-          SizedBox(
-            height: 720, // Tall enough for the Ultra card on mobile
-            child: PageView.builder(
-              controller: _pageController,
-              itemCount: cards.length,
-              itemBuilder: (context, index) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                  child: cards[index],
-                );
-              },
-            ),
+          Column(
+            children: [
+              SizedBox(
+                height: 720, // Tall enough for the Ultra card on mobile
+                child: PageView.builder(
+                  controller: _pageController,
+                  itemCount: cards.length,
+                  onPageChanged: (index) => setState(() => _currentPage = index),
+                  itemBuilder: (context, index) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                      child: cards[index],
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(cards.length, (index) {
+                  final isSelected = _currentPage == index;
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 250),
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    width: isSelected ? 24 : 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? AppColors.primary
+                          : AppColors.border,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  );
+                }),
+              ),
+            ],
           )
         else
           IntrinsicHeight(
@@ -211,7 +236,15 @@ class _PricingCard extends StatelessWidget {
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.glassBase,
-                  side: BorderSide(color: AppColors.glassBorder),
+                  foregroundColor: AppColors.textPrimary,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24),
+                    side: BorderSide(color: AppColors.glassBorder),
+                  ),
+                  elevation: 0,
+                  textStyle: AppTextStyles.button.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 child: Text(buttonText),
               ),
