@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
 import 'package:devzees_edutechai_client/data/models/learning/milestone_step.dart';
+import 'package:devzees_edutechai_client/data/models/learning/session_response.dart';
 import 'package:devzees_edutechai_client/presentation/pages/learning/widgets/main_content/neural_inference_loader.dart';
 import 'package:devzees_edutechai_client/presentation/pages/learning/widgets/workspace/milestone_roadmap_stepper.dart';
+import 'package:devzees_edutechai_client/presentation/pages/learning/widgets/mobile/mobile_learning_top_bar.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/animated_tutor_icon.dart';
 
 void main() {
@@ -33,7 +36,7 @@ void main() {
           body: Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             decoration: BoxDecoration(
-              color: AppColors.surfaceSolidHeader,
+              color: AppColors.topBarBackground,
             ),
             child: Row(
               children: [
@@ -314,5 +317,103 @@ void main() {
       final scrollable = tester.widget<SingleChildScrollView>(find.byType(SingleChildScrollView));
       expect(scrollable.controller!.offset, greaterThan(200.0));
     });
+
+    testWidgets('MilestoneRoadmapStepper in light theme: reviewing step 0 shows REVIEWING, in-process step 1 shows high-contrast IN PROCESS pill', (tester) async {
+      AppColors.setBrightness(Brightness.light); // Force Light Theme
+
+      final testSteps = List.generate(
+        3,
+        (i) => MilestoneStep(
+          index: i,
+          title: 'Step ${i + 1} Title',
+          description: 'Step ${i + 1} Desc',
+          status: i == 0 ? 'complete' : (i == 1 ? 'in_progress' : 'pending'),
+        ),
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: ThemeData.light(),
+          home: Scaffold(
+            body: SizedBox(
+              width: 500,
+              child: MilestoneRoadmapStepper(
+                steps: testSteps,
+                activeIndex: 0, // Reviewing step 0
+                maxUnlockedIndex: 1, // Step 1 is in progress
+                onStepTapped: (_) {},
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Active completed step 0 displays REVIEWING
+      expect(find.text('REVIEWING'), findsOneWidget);
+
+      // In-process step 1 displays IN PROCESS
+      expect(find.text('IN PROCESS'), findsOneWidget);
+
+      // Verify the IN PROCESS text is rendered with visible AppColors.primaryViolet, NOT invisible white
+      final inProcessTextWidget = tester.widget<Text>(find.text('IN PROCESS'));
+      expect(inProcessTextWidget.style?.color, equals(AppColors.primaryViolet));
+      expect(inProcessTextWidget.style?.color, isNot(equals(Colors.white)));
+    });
+
+    testWidgets('MobileLearningTopBar displays centered unified command hub capsule with step pill and XP', (tester) async {
+      bool hubOpened = false;
+
+      final session = SessionResponse(
+        sessionId: 'test-session-1',
+        topic: 'Machine Learning Basics',
+        learningMode: 'interactive',
+        studentLevel: 'intermediate',
+        createdAt: DateTime.now(),
+        steps: List.generate(
+          5,
+          (i) => MilestoneStep(
+            index: i,
+            title: 'Step ${i + 1}',
+            description: 'Desc ${i + 1}',
+            status: i == 0 ? 'complete' : 'pending',
+          ),
+        ),
+        currentStepIndex: 1,
+        xpEarned: 240,
+        stepsCompleted: 1,
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              appBar: MobileLearningTopBar(
+                session: session,
+                activeStepIndex: 1,
+                onOpenCommandHub: () => hubOpened = true,
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Verify app logo on left
+      expect(find.text('EduTech'), findsOneWidget);
+      expect(find.text('AI'), findsOneWidget);
+
+      // Verify unified capsule in center displays Topic, StepPill (2/5) and XP (240)
+      expect(find.text('Machine Learning Basics'), findsOneWidget);
+      expect(find.text('2/5'), findsOneWidget);
+      expect(find.text('240'), findsOneWidget);
+      expect(find.byIcon(Icons.track_changes_rounded), findsOneWidget);
+      expect(find.byIcon(Icons.star_rounded), findsOneWidget);
+
+      // Tap unified capsule to open Command Hub
+      await tester.tap(find.text('Machine Learning Basics'));
+      expect(hubOpened, isTrue);
+    });
   });
 }
+

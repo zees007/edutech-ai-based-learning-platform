@@ -45,57 +45,49 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
     return LayoutBuilder(
       builder: (context, constraints) {
         final isDesktop = constraints.maxWidth >= 1050;
-        final isTablet = constraints.maxWidth >= 650 && constraints.maxWidth < 1050;
         final isMobile = constraints.maxWidth < 650;
 
         return Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // ─── TIER 1: Command Hub Header Bar ───
-            Container(
-              width: double.infinity,
-              padding: EdgeInsets.symmetric(
-                horizontal: isMobile ? 14 : 24,
-                vertical: isMobile ? 10 : 12,
-              ),
-              decoration: BoxDecoration(
-                color: AppColors.isDark
-                    ? const Color(0xFF11121D)
-                    : AppColors.surfaceSolidHeader,
-                border: Border(
-                  bottom: BorderSide(
-                    color: AppColors.isDark
-                        ? const Color(0x14FFFFFF)
-                        : const Color(0xFFE2E8F0),
-                    width: 1.0,
+            // ─── TIER 1: Command Hub Header Bar (Desktop & Tablet only) ───
+            if (!isMobile)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.isDark
+                      ? const Color(0xFF11121D)
+                      : AppColors.surfaceSolidHeader,
+                  border: Border(
+                    bottom: BorderSide(
+                      color: AppColors.isDark
+                          ? const Color(0x14FFFFFF)
+                          : const Color(0xFFE2E8F0),
+                      width: 1.0,
+                    ),
                   ),
                 ),
+                child: isDesktop
+                    ? _buildDesktopTier1(
+                        session: session,
+                        levelData: levelData,
+                        lvlPct: lvlPct,
+                        topicPct: topicPct,
+                        totalSteps: totalSteps,
+                      )
+                    : _buildTabletTier1(
+                        session: session,
+                        levelData: levelData,
+                        lvlPct: lvlPct,
+                        topicPct: topicPct,
+                        totalSteps: totalSteps,
+                      ),
               ),
-              child: isDesktop
-                  ? _buildDesktopTier1(
-                      session: session,
-                      levelData: levelData,
-                      lvlPct: lvlPct,
-                      topicPct: topicPct,
-                      totalSteps: totalSteps,
-                    )
-                  : isTablet
-                      ? _buildTabletTier1(
-                          session: session,
-                          levelData: levelData,
-                          lvlPct: lvlPct,
-                          topicPct: topicPct,
-                          totalSteps: totalSteps,
-                        )
-                      : _buildMobileTier1(
-                          session: session,
-                          levelData: levelData,
-                          lvlPct: lvlPct,
-                          topicPct: topicPct,
-                          totalSteps: totalSteps,
-                        ),
-            ),
 
             // ─── TIER 2: Milestone Learning Roadmap Stepper ─────────
             if (session.steps.isNotEmpty)
@@ -107,14 +99,18 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
                   12,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.isDark
-                      ? const Color(0xFF11121D)
-                      : AppColors.surfaceSolidHeader,
+                  color: isMobile
+                      ? AppColors.topBarBackground
+                      : (AppColors.isDark
+                          ? const Color(0xFF11121D)
+                          : AppColors.surfaceSolidHeader),
                   border: Border(
                     bottom: BorderSide(
-                      color: AppColors.isDark
-                          ? const Color(0x14FFFFFF)
-                          : const Color(0xFFE2E8F0),
+                      color: isMobile
+                          ? AppColors.glassBorder
+                          : (AppColors.isDark
+                              ? const Color(0x14FFFFFF)
+                              : const Color(0xFFE2E8F0)),
                       width: 1.0,
                     ),
                   ),
@@ -209,39 +205,6 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
     );
   }
 
-  // ─── MOBILE TIER 1 (Goal Block + Horizontal Scrollable Metrics) ──────────────
-  Widget _buildMobileTier1({
-    required SessionResponse session,
-    required Map<String, dynamic> levelData,
-    required double lvlPct,
-    required double topicPct,
-    required int totalSteps,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildGoalContextBlock(session, isMobile: true),
-        const SizedBox(height: 10),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          clipBehavior: Clip.none,
-          child: Row(
-            children: [
-              _buildLevelPill(levelData),
-              const SizedBox(width: 8),
-              _buildXpStreakPill(session.xpEarned),
-              const SizedBox(width: 8),
-              _buildLevelProgressPill(levelData, lvlPct),
-              const SizedBox(width: 8),
-              _buildTopicProgressPill(session.stepsCompleted, totalSteps, topicPct),
-              const SizedBox(width: 8),
-              _buildExportButton(session, totalSteps),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
 
   BoxDecoration _buildPillDecoration() {
     return BoxDecoration(
@@ -626,22 +589,6 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
             fontWeight: FontWeight.w800,
             color: AppColors.textPrimary,
             letterSpacing: 0.2,
-          ),
-        ),
-        const SizedBox(width: 8),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-          decoration: _buildPillDecoration().copyWith(
-            borderRadius: BorderRadius.circular(6),
-          ),
-          child: Text(
-            'Step ${widget.activeIndex + 1} of $totalSteps',
-            style: TextStyle(
-              fontWeight: FontWeight.w700,
-              fontSize: 10,
-              color: AppColors.isDark ? const Color(0xFFC084FC) : const Color(0xFF7C3AED),
-              letterSpacing: 0.3,
-            ),
           ),
         ),
       ],

@@ -133,8 +133,13 @@ class _MilestoneRoadmapStepperState extends State<MilestoneRoadmapStepper> {
             children: List.generate(count, (index) {
               final step = widget.steps[index];
               final bool isActive = index == widget.activeIndex;
+              final bool isJourneyComplete =
+                  count > 0 && widget.steps.every((s) => s.status == 'complete');
               final bool isCompleted =
                   step.status == 'complete' || index < maxUnlocked;
+              final bool isInProgress = !isJourneyComplete &&
+                  !isCompleted &&
+                  (index == maxUnlocked || step.status == 'in_progress');
               final bool isUnlocked =
                   index <= maxUnlocked ||
                   isCompleted ||
@@ -155,6 +160,7 @@ class _MilestoneRoadmapStepperState extends State<MilestoneRoadmapStepper> {
                   step: step,
                   isActive: isActive,
                   isCompleted: isCompleted,
+                  isInProgress: isInProgress,
                   isUnlocked: isUnlocked,
                   isLocked: isLocked,
                   isFirst: isFirst,
@@ -192,6 +198,7 @@ class _ChevronStepItem extends StatefulWidget {
   final MilestoneStep step;
   final bool isActive;
   final bool isCompleted;
+  final bool isInProgress;
   final bool isUnlocked;
   final bool isLocked;
   final bool isFirst;
@@ -204,6 +211,7 @@ class _ChevronStepItem extends StatefulWidget {
     required this.step,
     required this.isActive,
     required this.isCompleted,
+    required this.isInProgress,
     required this.isUnlocked,
     required this.isLocked,
     required this.isFirst,
@@ -223,6 +231,8 @@ class _ChevronStepItemState extends State<_ChevronStepItem> {
   Widget build(BuildContext context) {
     final bool isActive = widget.isActive;
     final bool isCompleted = widget.isCompleted;
+    final bool isInProgress = widget.isInProgress;
+    final bool isReviewing = isActive && isCompleted;
     final bool isLocked = widget.isLocked;
     final bool isFirst = widget.isFirst;
     final bool isLast = widget.isLast;
@@ -235,10 +245,25 @@ class _ChevronStepItemState extends State<_ChevronStepItem> {
         text:
             '🔒 Step ${widget.index + 1}${widget.step.isPrerequisite ? " • Prerequisite" : ""}: Complete previous step to unlock\n${widget.step.title}',
       );
-    } else if (isActive) {
+    } else if (isReviewing) {
       tooltipRichMsg = TextSpan(
-        text:
-            '⭐ Active (Step ${widget.index + 1}${widget.step.isPrerequisite ? " • Prerequisite" : ""})\n${widget.step.title}\n${widget.step.description}',
+        children: [
+          const WidgetSpan(
+            alignment: PlaceholderAlignment.middle,
+            child: Padding(
+              padding: EdgeInsets.only(right: 4.0),
+              child: Icon(
+                Icons.history_rounded,
+                size: 14,
+                color: Colors.white,
+              ),
+            ),
+          ),
+          TextSpan(
+            text:
+                'Reviewing Completed Step (Step ${widget.index + 1}${widget.step.isPrerequisite ? " • Prerequisite" : ""})\n${widget.step.title}\n${widget.step.description}',
+          ),
+        ],
       );
     } else if (isCompleted) {
       tooltipRichMsg = TextSpan(
@@ -260,6 +285,16 @@ class _ChevronStepItemState extends State<_ChevronStepItem> {
           ),
         ],
       );
+    } else if (isActive) {
+      tooltipRichMsg = TextSpan(
+        text:
+            '⭐ Active (Step ${widget.index + 1}${widget.step.isPrerequisite ? " • Prerequisite" : ""})\n${widget.step.title}\n${widget.step.description}',
+      );
+    } else if (isInProgress) {
+      tooltipRichMsg = TextSpan(
+        text:
+            '⚡ In Process (Step ${widget.index + 1}${widget.step.isPrerequisite ? " • Prerequisite" : ""}) — Tap to resume\n${widget.step.title}\n${widget.step.description}',
+      );
     } else {
       tooltipRichMsg = TextSpan(
         text:
@@ -270,10 +305,12 @@ class _ChevronStepItemState extends State<_ChevronStepItem> {
     // Status icon
     final Widget statusIcon = Icon(
       isCompleted
-          ? Icons.check_circle_rounded
+          ? (isReviewing ? Icons.history_rounded : Icons.check_circle_rounded)
           : (isActive
                 ? Icons.explore_rounded
-                : (isLocked ? Icons.lock_rounded : Icons.bolt_rounded)),
+                : (isInProgress
+                      ? Icons.play_arrow_rounded
+                      : (isLocked ? Icons.lock_rounded : Icons.bolt_rounded))),
       size: 13,
       color: isActive
           ? Colors.white
@@ -283,7 +320,11 @@ class _ChevronStepItemState extends State<_ChevronStepItem> {
                       ? (AppColors.isDark
                             ? Colors.white.withValues(alpha: 0.35)
                             : AppColors.textSecondary.withValues(alpha: 0.6))
-                      : AppColors.primaryViolet)),
+                      : (isInProgress
+                            ? (AppColors.isDark
+                                  ? AppColors.purpleLight
+                                  : AppColors.primaryViolet)
+                            : AppColors.primaryViolet))),
     );
 
     // Primary Text Color
@@ -295,7 +336,11 @@ class _ChevronStepItemState extends State<_ChevronStepItem> {
                     ? (AppColors.isDark
                           ? Colors.white.withValues(alpha: 0.4)
                           : AppColors.textSecondary.withValues(alpha: 0.6))
-                    : AppColors.primaryViolet));
+                    : (isInProgress
+                          ? (AppColors.isDark
+                                ? AppColors.purpleLight
+                                : AppColors.primaryViolet)
+                          : AppColors.primaryViolet)));
 
     final Color titleColor = isActive
         ? Colors.white
@@ -305,9 +350,13 @@ class _ChevronStepItemState extends State<_ChevronStepItem> {
                     ? (AppColors.isDark
                           ? Colors.white.withValues(alpha: 0.35)
                           : AppColors.textSecondary.withValues(alpha: 0.6))
-                    : (AppColors.isDark
-                          ? AppColors.slate200
-                          : AppColors.textPrimary)));
+                    : (isInProgress
+                          ? (AppColors.isDark
+                                ? AppColors.slate200
+                                : AppColors.textPrimary)
+                          : (AppColors.isDark
+                                ? AppColors.slate200
+                                : AppColors.textPrimary))));
 
     // Background decoration
     Decoration backgroundDecoration;
@@ -332,6 +381,25 @@ class _ChevronStepItemState extends State<_ChevronStepItem> {
               alpha: _isHovered ? 0.45 : 0.28,
             ),
             blurRadius: 10,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      );
+    } else if (isInProgress) {
+      // In-process step when reviewing another step (not on primaryGradient)
+      backgroundDecoration = BoxDecoration(
+        color: _isHovered
+            ? (AppColors.isDark
+                  ? AppColors.primary.withValues(alpha: 0.22)
+                  : const Color(0xFFEDE9FE))
+            : (AppColors.isDark
+                  ? AppColors.primary.withValues(alpha: 0.10)
+                  : const Color(0xFFF5F3FF)),
+        boxShadow: [
+          BoxShadow(
+            color: (AppColors.isDark ? AppColors.primary : AppColors.primaryViolet)
+                .withValues(alpha: _isHovered ? 0.22 : 0.10),
+            blurRadius: 8,
             offset: const Offset(0, 1),
           ),
         ],
@@ -372,15 +440,28 @@ class _ChevronStepItemState extends State<_ChevronStepItem> {
     final Color statusBadgeText;
 
     if (isCompleted) {
-      statusLabel = 'COMPLETED';
+      statusLabel = isReviewing ? 'REVIEWING' : 'COMPLETED';
       statusBadgeBg = Colors.white.withValues(alpha: 0.20);
       statusBadgeBorder = Colors.white.withValues(alpha: 0.40);
       statusBadgeText = Colors.white;
-    } else if (isActive || widget.step.status == 'in_progress') {
-      statusLabel = 'IN PROGRESS';
+    } else if (isActive) {
+      // Actively selected in-process step (on primaryGradient)
+      statusLabel = 'IN PROCESS';
       statusBadgeBg = Colors.white.withValues(alpha: 0.22);
       statusBadgeBorder = Colors.white.withValues(alpha: 0.45);
       statusBadgeText = Colors.white;
+    } else if (isInProgress) {
+      // In-process step when reviewing another step (NOT on primaryGradient)
+      statusLabel = 'IN PROCESS';
+      statusBadgeBg = AppColors.isDark
+          ? AppColors.primary.withValues(alpha: 0.22)
+          : const Color(0xFFEDE9FE);
+      statusBadgeBorder = AppColors.isDark
+          ? AppColors.primary.withValues(alpha: 0.45)
+          : const Color(0xFFC4B5FD);
+      statusBadgeText = AppColors.isDark
+          ? AppColors.purpleLight
+          : AppColors.primaryViolet;
     } else if (isLocked) {
       statusLabel = 'LOCKED';
       statusBadgeBg = AppColors.isDark
@@ -432,13 +513,17 @@ class _ChevronStepItemState extends State<_ChevronStepItem> {
                 Positioned.fill(
                   child: CustomPaint(
                     painter: _ChevronOutlinePainter(
-                      borderColor: AppColors.isDark
-                          ? const Color(0x26FFFFFF)
-                          : const Color(0xFFE2E8F0),
+                      borderColor: isInProgress
+                          ? (AppColors.isDark
+                              ? AppColors.primary.withValues(alpha: 0.55)
+                              : const Color(0xFFC4B5FD))
+                          : (AppColors.isDark
+                              ? const Color(0x26FFFFFF)
+                              : const Color(0xFFE2E8F0)),
                       arrowWidth: arrowWidth,
                       isFirst: isFirst,
                       isLast: isLast,
-                      strokeWidth: 1.0,
+                      strokeWidth: isInProgress ? 1.4 : 1.0,
                     ),
                   ),
                 )

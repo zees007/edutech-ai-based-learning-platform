@@ -79,10 +79,12 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
                 width: 230,
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 decoration: BoxDecoration(
-                  color: isDark
-                      ? AppColors.popoverBackground.withValues(alpha: 0.92)
-                      : Colors.white,
+                  color: AppColors.popoverBackground,
                   borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: AppColors.glassBorder,
+                    width: 1.0,
+                  ),
                   boxShadow: isDark
                       ? [
                           BoxShadow(

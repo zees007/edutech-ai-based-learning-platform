@@ -142,10 +142,12 @@ class _LearningHistoryItemState extends ConsumerState<LearningHistoryItem> {
                 width: 145,
                 padding: const EdgeInsets.symmetric(vertical: 6),
                 decoration: BoxDecoration(
-                  color: isDark
-                      ? AppColors.popoverBackground.withValues(alpha: 0.85)
-                      : Colors.white,
+                  color: AppColors.popoverBackground,
                   borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppColors.glassBorder,
+                    width: 1.0,
+                  ),
                   boxShadow: isDark
                       ? [
                           BoxShadow(

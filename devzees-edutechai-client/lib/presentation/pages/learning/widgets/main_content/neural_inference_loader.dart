@@ -388,7 +388,7 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
         ? Colors.white.withValues(alpha: 0.08)
         : const Color(0xFFE2E8F0);
     Color bgColor = isDark
-        ? const Color(0xFF151624).withValues(alpha: 0.7)
+        ? AppColors.cardBackground.withValues(alpha: 0.7)
         : const Color(0xFFF8FAFC);
     List<BoxShadow> shadows = [];
 
@@ -481,7 +481,7 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
                   GradientSpinner(
                     size: 8,
                     backgroundColor: isDark
-                        ? const Color(0xFF151624)
+                        ? AppColors.cardBackground
                         : const Color(0xFFF5F3FF),
                   ),
                   const SizedBox(width: 4),
@@ -591,7 +591,7 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
               padding: const EdgeInsets.fromLTRB(16, 14, 16, 22),
               decoration: BoxDecoration(
                 color: isDark
-                    ? const Color(0xFF151624)
+                    ? AppColors.cardBackground
                     : const Color(0xFFF8FAFC),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(

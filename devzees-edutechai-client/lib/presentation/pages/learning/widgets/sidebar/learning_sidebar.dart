@@ -395,10 +395,12 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
                 width: 150,
                 padding: const EdgeInsets.symmetric(vertical: 6),
                 decoration: BoxDecoration(
-                  color: isDark
-                      ? AppColors.popoverBackground.withValues(alpha: 0.85)
-                      : Colors.white,
+                  color: AppColors.popoverBackground,
                   borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: AppColors.glassBorder,
+                    width: 1.0,
+                  ),
                   boxShadow: isDark
                       ? [
                           BoxShadow(

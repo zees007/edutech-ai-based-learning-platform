@@ -14,6 +14,13 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
   final Color textSecondary;
   final Color trackNeutral;
 
+  // ─── Semantic Surface Elevations (Mobile & Core) ───
+  final Color sidebarBackground;
+  final Color topBarBackground;
+  final Color cardBackground;
+  final Color chipBackground;
+  final Color popoverBackground;
+
   // ─── Elevation & Shadows ───
   final List<BoxShadow> cardShadow;
   final Color shadowColor;
@@ -35,6 +42,11 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
     required this.textPrimary,
     required this.textSecondary,
     required this.trackNeutral,
+    required this.sidebarBackground,
+    required this.topBarBackground,
+    required this.cardBackground,
+    required this.chipBackground,
+    required this.popoverBackground,
     required this.cardShadow,
     required this.shadowColor,
     required this.primaryGradient,
@@ -51,7 +63,7 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
     colors: [
-      Color(0xFF1F6CFA), // Vibrant Royal Blue
+      Color(0xFF1F6CFA), // Royal Blue
       Color(0xFFC839F6), // Electric Fuchsia / Magenta
     ],
   );
@@ -65,6 +77,11 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
     textPrimary: Color(0xFF2B2D42),
     textSecondary: Color(0xFF8E92A4),
     trackNeutral: Color(0xFFD9DBE9),
+    sidebarBackground: Color(0xFFFFFFFF),
+    topBarBackground: Color(0xFFFFFFFF),
+    cardBackground: Color(0xFFF8FAFC),
+    chipBackground: Color(0xFFF1F5F9),
+    popoverBackground: Color(0xFFFFFFFF),
     shadowColor: Color(0x14000000), // rgba(0, 0, 0, 0.08)
     cardShadow: [
       BoxShadow(
@@ -91,13 +108,18 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
 
   // ─── Dark Theme Palette ───
   static const AppThemeColors dark = AppThemeColors(
-    scaffoldBackground: Color(0xFF0B0C13), // Match code.html bg-[#0b0c13] / workspace '#0a0a10'
-    surface: Color(0xFF11121D),            // Match code.html panel '#11121d'
-    surfaceSubtle: Color(0xFF151624),      // Match code.html '#151624'
-    border: Color(0x1FFFFFFF),             // Match code.html 'rgba(255, 255, 255, 0.08)' / panel-border
+    scaffoldBackground: Color(0xFF0B0C13), // Unified Deep Canvas Base #0B0C13
+    surface: Color(0xFF11121D),            // Desktop Panel Surface #11121d
+    surfaceSubtle: Color(0xFF11121D),      // Unified with surface #11121d
+    border: Color(0x0DFFFFFF),             // Feathered Hairline Border rgba(255, 255, 255, 0.045)
     textPrimary: Color(0xFFFFFFFF),
-    textSecondary: Color(0xFF94A3B8),      // Match code.html text-slate-400
-    trackNeutral: Color(0xFF1A1B2D),       // Match code.html '#1a1b2d'
+    textSecondary: Color(0xFF94A3B8),      // Slate 400
+    trackNeutral: Color(0xFF1A1B2D),
+    sidebarBackground: Color(0xFF0B0C13), // Unified Sidebar Base #0B0C13
+    topBarBackground: Color(0xFF0B0C13),  // Unified Mobile Top Bar Base #0B0C13
+    cardBackground: Color(0xFF11121D),    // Unified Elevated Card Surface #11121D
+    chipBackground: Color(0xFF151726),    // Step-up Interactive Chip Surface #151726
+    popoverBackground: Color(0xFF151726), // Elevated Popover/Dropdown Menu Surface #151726
     shadowColor: Color(0x73000000),        // rgba(0, 0, 0, 0.45)
     cardShadow: [
       BoxShadow(
@@ -131,6 +153,11 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
     Color? textPrimary,
     Color? textSecondary,
     Color? trackNeutral,
+    Color? sidebarBackground,
+    Color? topBarBackground,
+    Color? cardBackground,
+    Color? chipBackground,
+    Color? popoverBackground,
     List<BoxShadow>? cardShadow,
     Color? shadowColor,
     LinearGradient? primaryGradient,
@@ -149,6 +176,11 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
       textPrimary: textPrimary ?? this.textPrimary,
       textSecondary: textSecondary ?? this.textSecondary,
       trackNeutral: trackNeutral ?? this.trackNeutral,
+      sidebarBackground: sidebarBackground ?? this.sidebarBackground,
+      topBarBackground: topBarBackground ?? this.topBarBackground,
+      cardBackground: cardBackground ?? this.cardBackground,
+      chipBackground: chipBackground ?? this.chipBackground,
+      popoverBackground: popoverBackground ?? this.popoverBackground,
       cardShadow: cardShadow ?? this.cardShadow,
       shadowColor: shadowColor ?? this.shadowColor,
       primaryGradient: primaryGradient ?? this.primaryGradient,
@@ -179,6 +211,21 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
           Color.lerp(textSecondary, other.textSecondary, t) ?? textSecondary,
       trackNeutral:
           Color.lerp(trackNeutral, other.trackNeutral, t) ?? trackNeutral,
+      sidebarBackground:
+          Color.lerp(sidebarBackground, other.sidebarBackground, t) ??
+          sidebarBackground,
+      topBarBackground:
+          Color.lerp(topBarBackground, other.topBarBackground, t) ??
+          topBarBackground,
+      cardBackground:
+          Color.lerp(cardBackground, other.cardBackground, t) ??
+          cardBackground,
+      chipBackground:
+          Color.lerp(chipBackground, other.chipBackground, t) ??
+          chipBackground,
+      popoverBackground:
+          Color.lerp(popoverBackground, other.popoverBackground, t) ??
+          popoverBackground,
       cardShadow: t < 0.5 ? cardShadow : other.cardShadow,
       shadowColor: Color.lerp(shadowColor, other.shadowColor, t) ?? shadowColor,
       primaryGradient: LinearGradient.lerp(
