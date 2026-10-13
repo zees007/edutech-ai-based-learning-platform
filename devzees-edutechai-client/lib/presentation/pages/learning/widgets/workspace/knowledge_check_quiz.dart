@@ -1121,34 +1121,35 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
         (isLastStep && isSessionComplete);
 
     final bool isPassed = scorePct >= 70;
+    final bool isDark = AppColors.isDark;
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppColors.surfaceDark.withValues(alpha: 0.95),
-            AppColors.surfaceDeep.withValues(alpha: 0.90),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: isDark ? AppColors.canvasBackground : Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isPassed
-              ? AppColors.accentGreen.withValues(alpha: 0.4)
-              : AppColors.primary.withValues(alpha: 0.35),
+              ? AppColors.accentGreen.withValues(alpha: isDark ? 0.5 : 0.4)
+              : AppColors.primary.withValues(alpha: isDark ? 0.45 : 0.35),
           width: 1.2,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: (isPassed ? AppColors.accentGreen : AppColors.primary)
-                .withValues(alpha: 0.15),
-            blurRadius: 20,
-            spreadRadius: 1,
-          ),
-        ],
+        boxShadow: isDark
+            ? const [
+                BoxShadow(
+                  color: Color(0x33000000),
+                  blurRadius: 16,
+                  offset: Offset(0, 4),
+                ),
+              ]
+            : const [
+                BoxShadow(
+                  color: Color(0x0A0F172A),
+                  blurRadius: 12,
+                  offset: Offset(0, 4),
+                ),
+              ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
