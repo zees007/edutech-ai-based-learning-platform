@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:devzees_edutechai_client/core/providers/onboarding_provider.dart';
 import 'package:devzees_edutechai_client/core/router/app_router.dart';
 import 'package:devzees_edutechai_client/core/services/api_client.dart';
 import 'package:devzees_edutechai_client/core/theme/app_theme.dart';
@@ -10,10 +12,14 @@ import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await ApiClient.instance.initCookieJar();
+  final sharedPrefs = await SharedPreferences.getInstance();
 
   runApp(
-    const ProviderScope(
-      child: MyApp(),
+    ProviderScope(
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(sharedPrefs),
+      ],
+      child: const MyApp(),
     ),
   );
 }
