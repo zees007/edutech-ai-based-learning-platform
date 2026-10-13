@@ -11,6 +11,7 @@ import 'recent_journey_card.dart';
 import 'recent_journey_skeleton.dart';
 import '../workspace/active_learning_workspace.dart';
 import 'neural_inference_loader.dart';
+import '../../../../../presentation/widgets/theme_toggle_button.dart';
 
 class LearningMainContent extends ConsumerWidget {
   final bool isMobile;
@@ -123,8 +124,10 @@ class LearningMainContent extends ConsumerWidget {
             ? null 
             : AppColors.workspaceBackgroundRadial,
       ),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
+      child: Stack(
+        children: [
+          LayoutBuilder(
+            builder: (context, constraints) {
           return SingleChildScrollView(
             child: ConstrainedBox(
               constraints: BoxConstraints(minHeight: constraints.maxHeight),
@@ -460,6 +463,14 @@ class LearningMainContent extends ConsumerWidget {
           );
         },
       ),
-    );
+      if (!isMobile)
+        const Positioned(
+          top: 16,
+          right: 24,
+          child: ThemeToggleButton(size: 32),
+        ),
+    ],
+  ),
+);
   }
 }

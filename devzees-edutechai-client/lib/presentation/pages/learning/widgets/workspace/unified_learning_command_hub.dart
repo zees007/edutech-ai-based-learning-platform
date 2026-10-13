@@ -6,6 +6,7 @@ import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/text_styles.dart';
 import 'milestone_roadmap_stepper.dart';
 import '../export/export_session_modal.dart';
+import '../../../../../presentation/widgets/theme_toggle_button.dart';
 
 /// A consolidated, ultra-premium Glassmorphic Command & Mastery Hub.
 /// Merges Mastery Gamification, 4 Key Metrics, Your Goal, and the Milestone Roadmap
@@ -152,7 +153,7 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
           child: _buildGoalContextBlock(session),
         ),
         const SizedBox(width: 16),
-        // 4 High-Density HUD Metrics
+        // 4 High-Density HUD Metrics + Export + Theme Switcher
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -165,6 +166,8 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
             _buildTopicProgressPill(session.stepsCompleted, totalSteps, topicPct),
             const SizedBox(width: 8),
             _buildExportButton(session, totalSteps),
+            const SizedBox(width: 8),
+            const ThemeToggleButton(size: 30),
           ],
         ),
       ],
@@ -198,6 +201,8 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
               _buildTopicProgressPill(session.stepsCompleted, totalSteps, topicPct),
               const SizedBox(width: 8),
               _buildExportButton(session, totalSteps),
+              const SizedBox(width: 8),
+              const ThemeToggleButton(size: 30),
             ],
           ),
         ),
