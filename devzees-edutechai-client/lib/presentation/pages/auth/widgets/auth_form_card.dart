@@ -172,7 +172,7 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
       width: double.infinity,
       decoration: BoxDecoration(
         color: isDark
-            ? (widget.isMobile ? AppColors.mobileCardSolid : null)
+            ? (widget.isMobile ? AppColors.canvasBackground : null)
             : Colors.white,
         gradient: isDark
             ? (widget.isMobile ? null : AppColors.cardGradientOpaque)
