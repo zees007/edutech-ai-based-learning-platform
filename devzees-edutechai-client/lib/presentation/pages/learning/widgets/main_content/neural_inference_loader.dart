@@ -68,8 +68,12 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
                 padding: EdgeInsets.all(isMobile ? 18 : 24),
                 decoration: BoxDecoration(
                   color: isDark
-                      ? const Color(0xFF11121D).withValues(alpha: 0.95)
-                      : Colors.white.withValues(alpha: 0.95),
+                      ? (isMobile
+                          ? AppColors.canvasBackground
+                          : const Color(0xFF11121D).withValues(alpha: 0.95))
+                      : (isMobile
+                          ? Colors.white
+                          : Colors.white.withValues(alpha: 0.95)),
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(
                     color: isDark
@@ -160,7 +164,7 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
                   GradientSpinner(
                     size: 11,
                     backgroundColor: isDark
-                        ? const Color(0xFF11121D)
+                        ? AppColors.canvasBackground
                         : Colors.white,
                   ),
                   const SizedBox(width: 6),
@@ -270,7 +274,7 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
                   GradientSpinner(
                     size: 52,
                     backgroundColor: isDark
-                        ? const Color(0xFF11121D)
+                        ? AppColors.canvasBackground
                         : Colors.white,
                   ),
                   // Inner Socratic Tutor Animated Icon

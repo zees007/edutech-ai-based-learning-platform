@@ -50,7 +50,9 @@ class LearningMainContent extends ConsumerWidget {
                   color: (isDark ? AppColors.primary : AppColors.purple).withValues(alpha: 0.45),
                   width: 1.5,
                 ),
-                color: isMobile ? AppColors.mobileCardSolid : null,
+                color: isMobile
+                    ? (isDark ? AppColors.canvasBackground : Colors.white)
+                    : null,
                 gradient: isMobile ? null : AppColors.cardGradientOpaque,
                 boxShadow: [
                   if (!isMobile) ...[
