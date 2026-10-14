@@ -7,6 +7,7 @@ import 'package:devzees_edutechai_client/presentation/pages/onboarding/models/on
 import 'package:devzees_edutechai_client/presentation/pages/onboarding/widgets/onboarding_dots_indicator.dart';
 import 'package:devzees_edutechai_client/presentation/pages/onboarding/widgets/onboarding_feature_card.dart';
 import 'package:devzees_edutechai_client/presentation/pages/onboarding/widgets/onboarding_gradient_button.dart';
+import 'package:devzees_edutechai_client/presentation/pages/onboarding/widgets/onboarding_slide.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -155,6 +156,39 @@ void main() {
       expect(find.text('Get Started'), findsOneWidget);
       await tester.tap(find.text('Get Started'));
       expect(tapped, isTrue);
+    });
+
+    testWidgets('OnboardingSlide renders full-width image with fade overlays and no horizontal padding',
+        (tester) async {
+      final slide = OnboardingSlideData.slides[0];
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: SizedBox(
+              width: 390,
+              height: 844,
+              child: OnboardingSlide(data: slide),
+            ),
+          ),
+        ),
+      );
+
+      // Verify copy text
+      expect(find.text(slide.eyebrow), findsOneWidget);
+      expect(find.text(slide.titleLine1), findsOneWidget);
+      expect(find.text(slide.subtitle), findsOneWidget);
+
+      // Verify Image is rendered with BoxFit.cover and double.infinity width
+      final imageFinder = find.byType(Image);
+      expect(imageFinder, findsOneWidget);
+
+      final imageWidget = tester.widget<Image>(imageFinder);
+      expect(imageWidget.fit, BoxFit.cover);
+      expect(imageWidget.width, double.infinity);
+
+      // Verify ShaderMask exists for the fade effect
+      expect(find.byType(ShaderMask), findsWidgets);
     });
   });
 }

@@ -91,37 +91,103 @@ class OnboardingSlide extends StatelessWidget {
           ),
         ),
 
-        // ── Hero Image Area (Solid background, clean illustration) ──
+        // ── Hero Image Area (Full-width edge-to-edge with top/bottom fade) ──
         Expanded(
-          child: Center(
-            child: Transform.translate(
-              offset: Offset(pageOffset * 25, 0), // Subtle parallax
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(20),
+          child: ClipRect(
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                // Full-width illustration with alpha gradient mask at top & bottom
+                ShaderMask(
+                  blendMode: BlendMode.dstIn,
+                  shaderCallback: (Rect bounds) {
+                    if (bounds.width <= 0 || bounds.height <= 0) {
+                      return const LinearGradient(
+                        colors: [Colors.transparent, Colors.transparent],
+                      ).createShader(const Rect.fromLTWH(0, 0, 1, 1));
+                    }
+                    return const LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        Colors.black,
+                        Colors.black,
+                        Colors.transparent,
+                      ],
+                      stops: [0.0, 0.12, 0.88, 1.0],
+                    ).createShader(bounds);
+                  },
                   child: Image.asset(
                     data.imagePath,
-                    fit: BoxFit.contain,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    alignment: Alignment.center,
                     errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        width: 280,
-                        height: 280,
-                        decoration: BoxDecoration(
-                          color: AppColors.cardBackground,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: AppColors.border),
-                        ),
-                        child: Icon(
-                          Icons.image_outlined,
-                          color: AppColors.textMuted,
-                          size: 48,
+                      return Center(
+                        child: Container(
+                          width: 280,
+                          height: 280,
+                          decoration: BoxDecoration(
+                            color: AppColors.cardBackground,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: AppColors.border),
+                          ),
+                          child: Icon(
+                            Icons.image_outlined,
+                            color: AppColors.textMuted,
+                            size: 48,
+                          ),
                         ),
                       );
                     },
                   ),
                 ),
-              ),
+
+                // Top fade overlay (seamless dissolution into background)
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: 52,
+                  child: IgnorePointer(
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            AppColors.background,
+                            AppColors.background.withValues(alpha: 0.0),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+                // Bottom fade overlay (seamless dissolution into background)
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  height: 52,
+                  child: IgnorePointer(
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.bottomCenter,
+                          end: Alignment.topCenter,
+                          colors: [
+                            AppColors.background,
+                            AppColors.background.withValues(alpha: 0.0),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
