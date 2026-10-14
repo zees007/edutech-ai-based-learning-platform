@@ -1595,3 +1595,9 @@ Webhook endpoint for payment gateways (Paddle, Razorpay, etc.).
 
 ---
 
+#Build the flutter client
+cd "devzees-edutechai-client"
+flutter build apk --dart-define=API_BASE_URL=http://192.168.0.107:8000/api/v1
+
+
+
