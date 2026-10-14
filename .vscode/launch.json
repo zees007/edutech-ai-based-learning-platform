@@ -31,18 +31,18 @@
       "cwd": "${workspaceFolder}/devzees-edutechai-client"
     },
     {
-      "name": "Flutter Client office (Physical Phone - Wi-Fi)",
+      "name": "Flutter Client home (Physical Phone - Wi-Fi)",
       "request": "launch",
       "type": "dart",
       "program": "${workspaceFolder}/devzees-edutechai-client/lib/main.dart",
       "cwd": "${workspaceFolder}/devzees-edutechai-client",
       "toolArgs": [
         "--dart-define",
-        "API_BASE_URL=http://[IP_ADDRESS]/api/v1"
+        "API_BASE_URL=http://192.168.0.107:8000/api/v1"
       ]
     },
     {
-      "name": "Flutter Client office (Physical Phone - USB adb reverse)",
+      "name": "Flutter Client home (Physical Phone - USB adb reverse)",
       "request": "launch",
       "type": "dart",
       "program": "${workspaceFolder}/devzees-edutechai-client/lib/main.dart",
@@ -104,7 +104,7 @@
       "name": "DEV - ALL (Server + Physical Phone Wi-Fi)",
       "configurations": [
         "DEV-Server",
-        "Flutter Client (Physical Phone - Wi-Fi)"
+        "Flutter Client home (Physical Phone - Wi-Fi)"
       ],
       "stopAll": true
     }
