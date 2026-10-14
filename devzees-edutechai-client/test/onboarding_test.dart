@@ -158,7 +158,7 @@ void main() {
       expect(tapped, isTrue);
     });
 
-    testWidgets('OnboardingSlide renders full-width image with fade overlays and no horizontal padding',
+    testWidgets('OnboardingSlide renders edge-to-edge image with BoxFit.cover and fade overlays',
         (tester) async {
       final slide = OnboardingSlideData.slides[0];
 
@@ -179,7 +179,7 @@ void main() {
       expect(find.text(slide.titleLine1), findsOneWidget);
       expect(find.text(slide.subtitle), findsOneWidget);
 
-      // Verify Image is rendered with BoxFit.cover and double.infinity width
+      // Verify Image is rendered with BoxFit.cover for edge-to-edge display
       final imageFinder = find.byType(Image);
       expect(imageFinder, findsOneWidget);
 
@@ -187,7 +187,7 @@ void main() {
       expect(imageWidget.fit, BoxFit.cover);
       expect(imageWidget.width, double.infinity);
 
-      // Verify ShaderMask exists for the fade effect
+      // Verify ShaderMask exists for the title gradient
       expect(find.byType(ShaderMask), findsWidgets);
     });
   });

@@ -91,65 +91,44 @@ class OnboardingSlide extends StatelessWidget {
           ),
         ),
 
-        // ── Hero Image Area (Full-width edge-to-edge with top/bottom fade) ──
+        // ── Hero Image Area (Edge-to-edge with top/bottom fade) ──
         Expanded(
           child: ClipRect(
             child: Stack(
               fit: StackFit.expand,
               children: [
-                // Full-width illustration with alpha gradient mask at top & bottom
-                ShaderMask(
-                  blendMode: BlendMode.dstIn,
-                  shaderCallback: (Rect bounds) {
-                    if (bounds.width <= 0 || bounds.height <= 0) {
-                      return const LinearGradient(
-                        colors: [Colors.transparent, Colors.transparent],
-                      ).createShader(const Rect.fromLTWH(0, 0, 1, 1));
-                    }
-                    return const LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.transparent,
-                        Colors.black,
-                        Colors.black,
-                        Colors.transparent,
-                      ],
-                      stops: [0.0, 0.12, 0.88, 1.0],
-                    ).createShader(bounds);
-                  },
-                  child: Image.asset(
-                    data.imagePath,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    alignment: Alignment.center,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Center(
-                        child: Container(
-                          width: 280,
-                          height: 280,
-                          decoration: BoxDecoration(
-                            color: AppColors.cardBackground,
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: AppColors.border),
-                          ),
-                          child: Icon(
-                            Icons.image_outlined,
-                            color: AppColors.textMuted,
-                            size: 48,
-                          ),
+                // Full-width illustration filling edge-to-edge
+                Image.asset(
+                  data.imagePath,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  alignment: Alignment.center,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Center(
+                      child: Container(
+                        width: 280,
+                        height: 280,
+                        decoration: BoxDecoration(
+                          color: AppColors.cardBackground,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: AppColors.border),
                         ),
-                      );
-                    },
-                  ),
+                        child: Icon(
+                          Icons.image_outlined,
+                          color: AppColors.textMuted,
+                          size: 48,
+                        ),
+                      ),
+                    );
+                  },
                 ),
 
-                // Top fade overlay (seamless dissolution into background)
+                // Top fade overlay
                 Positioned(
                   top: 0,
                   left: 0,
                   right: 0,
-                  height: 52,
+                  height: 40,
                   child: IgnorePointer(
                     child: DecoratedBox(
                       decoration: BoxDecoration(
@@ -166,12 +145,12 @@ class OnboardingSlide extends StatelessWidget {
                   ),
                 ),
 
-                // Bottom fade overlay (seamless dissolution into background)
+                // Bottom fade overlay
                 Positioned(
                   bottom: 0,
                   left: 0,
                   right: 0,
-                  height: 52,
+                  height: 40,
                   child: IgnorePointer(
                     child: DecoratedBox(
                       decoration: BoxDecoration(

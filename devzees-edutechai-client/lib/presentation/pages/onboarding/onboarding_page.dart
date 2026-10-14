@@ -261,49 +261,54 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage>
 
   /// Slides 1 & 2: pagination dots on the left, circular next button on the right.
   Widget _buildDotAndArrowControls() {
-    return Padding(
+    return SizedBox(
       key: const ValueKey('dot-arrow-controls'),
-      padding: const EdgeInsets.symmetric(horizontal: 4),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          OnboardingDotsIndicator(
-            currentPage: _currentPage,
-            totalPages: OnboardingSlideData.slides.length,
-          ),
-          OnboardingNextButton(onPressed: _goToNextPage),
-        ],
+      height: 112,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            OnboardingDotsIndicator(
+              currentPage: _currentPage,
+              totalPages: OnboardingSlideData.slides.length,
+            ),
+            OnboardingNextButton(onPressed: _goToNextPage),
+          ],
+        ),
       ),
     );
   }
 
   /// Slide 3: dots centered above the "Get Started" button + "I already have an account".
   Widget _buildLastSlideControls() {
-    return Column(
+    return SizedBox(
       key: const ValueKey('last-slide-controls'),
-      children: [
-        // Centered dots
-        OnboardingDotsIndicator(
-          currentPage: _currentPage,
-          totalPages: OnboardingSlideData.slides.length,
-        ),
-        const SizedBox(height: 16),
-        // Full-width Get Started button
-        OnboardingGetStartedButton(onPressed: _completeOnboarding),
-        const SizedBox(height: 14),
-        // "I already have an account" link
-        GestureDetector(
-          onTap: _completeOnboarding,
-          child: Text(
-            'I already have an account',
-            style: TextStyle(
-              color: AppColors.textMuted,
-              fontSize: 13,
-              fontWeight: FontWeight.w400,
+      height: 112,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          // Centered dots
+          OnboardingDotsIndicator(
+            currentPage: _currentPage,
+            totalPages: OnboardingSlideData.slides.length,
+          ),
+          // Full-width Get Started button
+          OnboardingGetStartedButton(onPressed: _completeOnboarding),
+          // "I already have an account" link
+          GestureDetector(
+            onTap: _completeOnboarding,
+            child: Text(
+              'I already have an account',
+              style: TextStyle(
+                color: AppColors.textMuted,
+                fontSize: 13,
+                fontWeight: FontWeight.w400,
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
