@@ -7,7 +7,6 @@ import 'package:devzees_edutechai_client/core/theme/text_styles.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/gradient_text.dart';
 
 import 'models/onboarding_slide_data.dart';
-import 'theme/onboarding_colors.dart';
 import 'widgets/onboarding_slide.dart';
 import 'widgets/onboarding_feature_card.dart';
 import 'widgets/onboarding_dots_indicator.dart';
@@ -35,6 +34,9 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage>
   @override
   void initState() {
     super.initState();
+    // Enforce dark palette for onboarding screens to ensure solid deep canvas
+    AppColors.setBrightness(Brightness.dark);
+
     _pageController = PageController()
       ..addListener(() {
         final page = _pageController.page ?? 0;
@@ -98,76 +100,48 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage>
     final bottomPadding = MediaQuery.of(context).padding.bottom;
 
     return Scaffold(
-      backgroundColor: OnboardingColors.scaffoldBg,
-      body: Stack(
-        children: [
-          // ── Top ambient radial glow ──
-          Positioned(
-            top: -60,
-            left: 0,
-            right: 0,
-            height: 250,
-            child: Center(
-              child: Container(
-                width: 320,
-                height: 200,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [
-                      OnboardingColors.vividPurple.withValues(alpha: 0.18),
-                      Colors.transparent,
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: FadeTransition(
+          opacity: _fadeIn,
+          child: SlideTransition(
+            position: _slideUp,
+            child: Column(
+              children: [
+                // ── Top Navigation Bar ──
+                _buildTopNav(isLastSlide),
 
-          // ── Main Content ──
-          SafeArea(
-            child: FadeTransition(
-              opacity: _fadeIn,
-              child: SlideTransition(
-                position: _slideUp,
-                child: Column(
-                  children: [
-                    // ── Top Navigation Bar ──
-                    _buildTopNav(isLastSlide),
-
-                    // ── PageView Slides ──
-                    Expanded(
-                      child: PageView.builder(
-                        controller: _pageController,
-                        physics: const ClampingScrollPhysics(),
-                        itemCount: slides.length,
-                        itemBuilder: (context, index) {
-                          return AnimatedBuilder(
-                            animation: _pageController,
-                            builder: (context, child) {
-                              double pageOffset = 0.0;
-                              if (_pageController.hasClients &&
-                                  _pageController.position.haveDimensions) {
-                                pageOffset = (_pageController.page ?? 0) - index;
-                              }
-                              return OnboardingSlide(
-                                data: slides[index],
-                                pageOffset: pageOffset,
-                              );
-                            },
+                // ── PageView Slides ──
+                Expanded(
+                  child: PageView.builder(
+                    controller: _pageController,
+                    physics: const ClampingScrollPhysics(),
+                    itemCount: slides.length,
+                    itemBuilder: (context, index) {
+                      return AnimatedBuilder(
+                        animation: _pageController,
+                        builder: (context, child) {
+                          double pageOffset = 0.0;
+                          if (_pageController.hasClients &&
+                              _pageController.position.haveDimensions) {
+                            pageOffset = (_pageController.page ?? 0) - index;
+                          }
+                          return OnboardingSlide(
+                            data: slides[index],
+                            pageOffset: pageOffset,
                           );
                         },
-                      ),
-                    ),
-
-                    // ── Bottom Interactive Area ──
-                    _buildBottomArea(slides, isLastSlide, bottomPadding),
-                  ],
+                      );
+                    },
+                  ),
                 ),
-              ),
+
+                // ── Bottom Interactive Area ──
+                _buildBottomArea(slides, isLastSlide, bottomPadding),
+              ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }
@@ -225,12 +199,12 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage>
             duration: const Duration(milliseconds: 200),
             child: GestureDetector(
               onTap: isLastSlide ? null : _completeOnboarding,
-              child: const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
                 child: Text(
                   'Skip',
                   style: TextStyle(
-                    color: OnboardingColors.textMuted,
+                    color: AppColors.textMuted,
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
                   ),
@@ -320,10 +294,10 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage>
         // "I already have an account" link
         GestureDetector(
           onTap: _completeOnboarding,
-          child: const Text(
+          child: Text(
             'I already have an account',
             style: TextStyle(
-              color: OnboardingColors.textMuted,
+              color: AppColors.textMuted,
               fontSize: 13,
               fontWeight: FontWeight.w400,
             ),

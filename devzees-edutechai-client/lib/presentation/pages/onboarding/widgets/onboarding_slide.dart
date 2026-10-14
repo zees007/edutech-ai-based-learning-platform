@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../models/onboarding_slide_data.dart';
-import '../theme/onboarding_colors.dart';
 
 /// Renders a single onboarding slide with:
-/// - Eyebrow text (purple uppercase)
-/// - Two-line headline (white + gradient)
+/// - Eyebrow text (brand accent uppercase)
+/// - Two-line headline (solid white + signature primary gradient)
 /// - Subtitle paragraph
-/// - Hero image with radial mask + ambient glow
-/// - Top/bottom gradient overlays for seamless edge blending
+/// - Clean hero illustration with parallax translation against solid background
 class OnboardingSlide extends StatelessWidget {
   final OnboardingSlideData data;
   /// Normalized page offset for parallax effect (0.0 = perfectly centered)
@@ -21,8 +20,6 @@ class OnboardingSlide extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -36,25 +33,25 @@ class OnboardingSlide extends StatelessWidget {
               Text(
                 data.eyebrow,
                 style: const TextStyle(
-                  color: OnboardingColors.vividPurple,
+                  color: AppColors.purpleLight,
                   fontSize: 11,
                   fontWeight: FontWeight.w800,
                   letterSpacing: 2.0,
                 ),
               ),
               const SizedBox(height: 6),
-              // Title Line 1 (white)
+              // Title Line 1 (solid white)
               Text(
                 data.titleLine1,
-                style: const TextStyle(
-                  color: OnboardingColors.textPrimary,
+                style: TextStyle(
+                  color: AppColors.textPrimary,
                   fontSize: 30,
                   fontWeight: FontWeight.w800,
                   height: 1.18,
                   letterSpacing: -0.5,
                 ),
               ),
-              // Title Line 2 (gradient)
+              // Title Line 2 (signature primary gradient)
               ShaderMask(
                 blendMode: BlendMode.srcIn,
                 shaderCallback: (bounds) {
@@ -63,7 +60,7 @@ class OnboardingSlide extends StatelessWidget {
                       colors: [Colors.transparent, Colors.transparent],
                     ).createShader(const Rect.fromLTWH(0, 0, 1, 1));
                   }
-                  return OnboardingColors.textGradient.createShader(
+                  return AppColors.primaryGradient.createShader(
                     Rect.fromLTWH(0, 0, bounds.width, bounds.height),
                   );
                 },
@@ -82,8 +79,8 @@ class OnboardingSlide extends StatelessWidget {
               // Subtitle
               Text(
                 data.subtitle,
-                style: const TextStyle(
-                  color: OnboardingColors.textSubtle,
+                style: TextStyle(
+                  color: AppColors.textSecondary,
                   fontSize: 13.5,
                   fontWeight: FontWeight.w400,
                   height: 1.45,
@@ -94,112 +91,38 @@ class OnboardingSlide extends StatelessWidget {
           ),
         ),
 
-        // ── Hero Image Area ──
+        // ── Hero Image Area (Solid background, clean illustration) ──
         Expanded(
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              // Ambient purple glow behind image
-              Positioned(
-                top: screenHeight * 0.04,
-                child: Container(
-                  width: 280,
-                  height: 280,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: RadialGradient(
-                      colors: [
-                        const Color(0xFF7C3AED).withValues(alpha: 0.20),
-                        Colors.transparent,
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              // Hero image with radial mask and subtle parallax
-              Transform.translate(
-                offset: Offset(pageOffset * 30, 0), // Parallax effect
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: ShaderMask(
-                    blendMode: BlendMode.dstIn,
-                    shaderCallback: (bounds) {
-                      return RadialGradient(
-                        center: Alignment.center,
-                        radius: 0.85,
-                        colors: [
-                          Colors.black,
-                          Colors.black.withValues(alpha: 0.8),
-                          Colors.transparent,
-                        ],
-                        stops: const [0.0, 0.65, 1.0],
-                      ).createShader(bounds);
+          child: Center(
+            child: Transform.translate(
+              offset: Offset(pageOffset * 25, 0), // Subtle parallax
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: Image.asset(
+                    data.imagePath,
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        width: 280,
+                        height: 280,
+                        decoration: BoxDecoration(
+                          color: AppColors.cardBackground,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: AppColors.border),
+                        ),
+                        child: Icon(
+                          Icons.image_outlined,
+                          color: AppColors.textMuted,
+                          size: 48,
+                        ),
+                      );
                     },
-                    child: Image.asset(
-                      data.imagePath,
-                      fit: BoxFit.contain,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          width: 280,
-                          height: 280,
-                          decoration: BoxDecoration(
-                            color: OnboardingColors.scaffoldBg,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: const Icon(
-                            Icons.image_outlined,
-                            color: OnboardingColors.textMuted,
-                            size: 48,
-                          ),
-                        );
-                      },
-                    ),
                   ),
                 ),
               ),
-              // Top gradient overlay for seamless blend
-              Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                height: 80,
-                child: IgnorePointer(
-                  child: Container(
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          OnboardingColors.scaffoldBg,
-                          Color(0x00060814),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              // Bottom gradient overlay for seamless blend
-              Positioned(
-                bottom: 0,
-                left: 0,
-                right: 0,
-                height: 100,
-                child: IgnorePointer(
-                  child: Container(
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.bottomCenter,
-                        end: Alignment.topCenter,
-                        colors: [
-                          OnboardingColors.scaffoldBg,
-                          Color(0x00060814),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ],

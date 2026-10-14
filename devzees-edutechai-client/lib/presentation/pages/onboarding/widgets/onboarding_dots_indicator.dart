@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../theme/onboarding_colors.dart';
+import '../../../../core/theme/app_colors.dart';
 
 /// Animated pagination dots indicator for onboarding slides.
 /// Active dot renders as an elongated gradient pill with glow shadow;
@@ -28,16 +28,8 @@ class OnboardingDotsIndicator extends StatelessWidget {
           height: 8,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(4),
-            gradient: isActive ? OnboardingColors.activeDotGradient : null,
-            color: isActive ? null : OnboardingColors.dotInactive,
-            boxShadow: isActive
-                ? [
-                    BoxShadow(
-                      color: OnboardingColors.vividPurple.withValues(alpha: 0.7),
-                      blurRadius: 10,
-                    ),
-                  ]
-                : null,
+            gradient: isActive ? AppColors.primaryGradient : null,
+            color: isActive ? null : AppColors.slate700,
           ),
         );
       }),

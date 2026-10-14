@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../theme/onboarding_colors.dart';
+import '../../../../core/theme/app_colors.dart';
 
-/// Glass-morphic feature highlight card displayed at the bottom of each onboarding slide.
-/// Matches the "glass-card" / "feature-glass-card" pattern from the reference designs.
+/// Feature highlight card displayed at the bottom of each onboarding slide.
+/// Built with the central AppColors design system for dark theme consistency.
 class OnboardingFeatureCard extends StatelessWidget {
   final IconData icon;
   final String title;
@@ -20,15 +20,15 @@ class OnboardingFeatureCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: OnboardingColors.glassCardBg,
+        color: AppColors.cardBackground,
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: OnboardingColors.glassCardBorder),
+        border: Border.all(color: AppColors.cardGlowBorder.withValues(alpha: 0.3)),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x99000000), // rgba(0, 0, 0, 0.6)
-            blurRadius: 36,
-            offset: Offset(0, 16),
-            spreadRadius: -10,
+            color: Color(0x66000000),
+            blurRadius: 24,
+            offset: Offset(0, 10),
+            spreadRadius: -4,
           ),
         ],
       ),
@@ -39,20 +39,16 @@ class OnboardingFeatureCard extends StatelessWidget {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: OnboardingColors.iconContainerBg,
+              color: AppColors.chipBackground,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: OnboardingColors.iconContainerBorder),
-              boxShadow: const [
-                BoxShadow(
-                  color: Color(0x599D4EDD), // purple glow
-                  blurRadius: 12,
-                ),
-              ],
+              border: Border.all(
+                color: AppColors.cardGlowBorder.withValues(alpha: 0.35),
+              ),
             ),
             child: Icon(
               icon,
               size: 24,
-              color: OnboardingColors.purpleLight,
+              color: AppColors.purpleLight,
             ),
           ),
           const SizedBox(width: 14),
@@ -63,8 +59,8 @@ class OnboardingFeatureCard extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
-                    color: OnboardingColors.textPrimary,
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
                     fontSize: 14.5,
                     fontWeight: FontWeight.w700,
                     letterSpacing: -0.2,
@@ -73,8 +69,8 @@ class OnboardingFeatureCard extends StatelessWidget {
                 const SizedBox(height: 3),
                 Text(
                   description,
-                  style: const TextStyle(
-                    color: OnboardingColors.textSubtle,
+                  style: TextStyle(
+                    color: AppColors.textSecondary,
                     fontSize: 12,
                     fontWeight: FontWeight.w400,
                     height: 1.3,
