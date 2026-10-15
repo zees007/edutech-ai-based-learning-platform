@@ -17,6 +17,7 @@ class PricingSection extends StatefulWidget {
 class _PricingSectionState extends State<PricingSection> {
   final PageController _pageController = PageController(viewportFraction: 0.88);
   int _currentPage = 0;
+  bool _isAnnual = true; // Annual billing by default
 
   @override
   void dispose() {
@@ -29,24 +30,27 @@ class _PricingSectionState extends State<PricingSection> {
     final bool isMobile = Responsive.isMobile(context);
 
     final cards = [
-      const _PricingCard(
+      _PricingCard(
         name: 'Free',
         price: '\$0',
-        description: 'Essential AI tutoring for curious learners starting out.',
+        billingCycle: 'forever free',
+        description: 'Essential multi-agent tutoring for curious learners starting out.',
         features: [
           '10 AI Sessions / month',
           '1 Follow-Up Question / step',
-          '1 YouTube Video / step',
-          'Bite-Sized Learning Mode',
+          '1 YouTube Video / step (Clips)',
+          'Bite-Sized & Visual Modes',
           'Milestone Quizzes & XP',
           'All 5 Education Levels',
           'Session History & Recovery',
         ],
-        buttonText: 'Start Free',
+        buttonText: 'Start Free Now',
       ),
-      const _PricingCard(
+      _PricingCard(
         name: 'Pro',
-        price: '\$19',
+        price: _isAnnual ? '\$15' : '\$19',
+        billingCycle: _isAnnual ? '/mo (billed annually)' : '/month',
+        originalPrice: _isAnnual ? '\$19/mo' : null,
         description: 'Full agent squad, visual modes, research preprints & Markdown export.',
         features: [
           'Unlimited AI Sessions',
@@ -55,24 +59,26 @@ class _PricingSectionState extends State<PricingSection> {
           'Visual & Deep-Dive Modes',
           'Academic Preprints & AI TL;DR',
           'Step Content Regeneration',
-          'Markdown (.md) Export',
-          '1.5x XP Multiplier',
+          'Markdown (.md) Export (Mermaid)',
+          '1.5x XP Multiplier Boost',
         ],
         buttonText: 'Upgrade to Pro ⚡',
         isPopular: true,
       ),
-      const _PricingCard(
+      _PricingCard(
         name: 'Ultra',
-        price: '\$49',
+        price: _isAnnual ? '\$39' : '\$49',
+        billingCycle: _isAnnual ? '/mo (billed annually)' : '/month',
+        originalPrice: _isAnnual ? '\$49/mo' : null,
         description: 'Unrestricted multi-agent squad, full research, PDF export & 2x XP.',
         features: [
           'Everything in Pro +',
-          'Unlimited Follow-Up Chat',
+          'Unlimited Follow-Up Chat Turns',
           '5 YouTube Videos / step',
-          'Full-Text Academic Research',
-          'Markdown + PDF (.pdf) Export',
-          'Priority Multi-Agent Exec',
-          '2x XP Boost & Fast Leveling',
+          'Full-Text Academic Research (PDF)',
+          'Executive Styled PDF (.pdf) Export',
+          'Priority Multi-Agent Exec & Low Latency',
+          '2x XP Boost & Accelerated Levels',
           '24/7 Priority Support',
         ],
         buttonText: 'Select Ultra ✨',
@@ -81,20 +87,139 @@ class _PricingSectionState extends State<PricingSection> {
 
     return Column(
       children: [
-        GradientText('Choose Your Path', style: AppTextStyles.h2),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+          decoration: BoxDecoration(
+            color: AppColors.accentPink.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: AppColors.accentPink.withValues(alpha: 0.35)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('💎', style: TextStyle(fontSize: 14)),
+              const SizedBox(width: 8),
+              Text(
+                'TRANSPARENT TIERED PLANS',
+                style: TextStyle(
+                  color: AppColors.accentPink,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1.5,
+                ),
+              ),
+            ],
+          ),
+        ),
         const SizedBox(height: 16),
-        Text(
-          'Flexible plans designed for every type of learner.',
-          textAlign: TextAlign.center,
-          style: AppTextStyles.body1,
+        GradientText('Choose Your Learning Path', style: AppTextStyles.h2),
+        const SizedBox(height: 16),
+        ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 720),
+          child: Text(
+            'Start free with 10 sessions every month. Upgrade as your curiosity and academic needs expand.',
+            textAlign: TextAlign.center,
+            style: AppTextStyles.body1,
+          ),
+        ),
+        const SizedBox(height: 32),
+
+        // Monthly / Annual Toggle
+        Container(
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceMid,
+            borderRadius: BorderRadius.circular(30),
+            border: Border.all(color: AppColors.border),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              InkWell(
+                onTap: () => setState(() => _isAnnual = false),
+                borderRadius: BorderRadius.circular(24),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: !_isAnnual ? AppColors.primary : Colors.transparent,
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  child: Text(
+                    'Monthly',
+                    style: TextStyle(
+                      color: !_isAnnual ? Colors.white : AppColors.textSecondary,
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+              InkWell(
+                onTap: () => setState(() => _isAnnual = true),
+                borderRadius: BorderRadius.circular(24),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: _isAnnual ? AppColors.primary : Colors.transparent,
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  child: Row(
+                    children: [
+                      Text(
+                        'Annual',
+                        style: TextStyle(
+                          color: _isAnnual ? Colors.white : AppColors.textSecondary,
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: _isAnnual ? Colors.white : AppColors.accentGreen.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          'SAVE 20%',
+                          style: TextStyle(
+                            color: _isAnnual ? AppColors.primary : AppColors.accentGreen,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
+
+        // Risk-reversal assurance
+        Wrap(
+          spacing: 16,
+          runSpacing: 8,
+          alignment: WrapAlignment.center,
+          children: const [
+            Text('✓ 10 Free Sessions Monthly', style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600)),
+            Text('•', style: TextStyle(color: Colors.white38)),
+            Text('✓ No Credit Card Required', style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600)),
+            Text('•', style: TextStyle(color: Colors.white38)),
+            Text('✓ Cancel Anytime', style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600)),
+          ],
         ),
         const SizedBox(height: 48),
-        
+
         if (isMobile)
           Column(
             children: [
               SizedBox(
-                height: 720, // Tall enough for the Ultra card on mobile
+                height: 780,
                 child: PageView.builder(
                   controller: _pageController,
                   itemCount: cards.length,
@@ -118,9 +243,7 @@ class _PricingSectionState extends State<PricingSection> {
                     width: isSelected ? 24 : 8,
                     height: 8,
                     decoration: BoxDecoration(
-                      color: isSelected
-                          ? AppColors.primary
-                          : AppColors.border,
+                      color: isSelected ? AppColors.primary : AppColors.border,
                       borderRadius: BorderRadius.circular(4),
                     ),
                   );
@@ -142,6 +265,62 @@ class _PricingSectionState extends State<PricingSection> {
               ],
             ),
           ),
+
+        const SizedBox(height: 56),
+
+        // Enterprise & University Callout Banner
+        GlassCard(
+          padding: EdgeInsets.all(isMobile ? 24 : 32),
+          child: Flex(
+            direction: isMobile ? Axis.vertical : Axis.horizontal,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Flexible(
+                child: Column(
+                  crossAxisAlignment: isMobile ? CrossAxisAlignment.center : CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisSize: isMobile ? MainAxisSize.min : MainAxisSize.max,
+                      children: [
+                        const Text('🏫', style: TextStyle(fontSize: 20)),
+                        const SizedBox(width: 10),
+                        Text(
+                          'EduTech AI for Universities & Research Labs',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: isMobile ? 16 : 18,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Campus-wide seat licensing, dedicated LMS/Canvas LTI integration, private model endpoints, and departmental analytics.',
+                      textAlign: isMobile ? TextAlign.center : TextAlign.start,
+                      style: AppTextStyles.body2.copyWith(color: AppColors.textSlate),
+                    ),
+                  ],
+                ),
+              ),
+              if (isMobile) const SizedBox(height: 20),
+              OutlinedButton.icon(
+                onPressed: () {
+                  context.go('/auth');
+                },
+                icon: const Icon(Icons.business_center_outlined, size: 16),
+                label: const Text('Contact Solutions Architect', style: TextStyle(fontWeight: FontWeight.bold)),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  side: BorderSide(color: AppColors.primary),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                ),
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }
@@ -150,6 +329,8 @@ class _PricingSectionState extends State<PricingSection> {
 class _PricingCard extends StatelessWidget {
   final String name;
   final String price;
+  final String billingCycle;
+  final String? originalPrice;
   final String description;
   final List<String> features;
   final String buttonText;
@@ -158,6 +339,8 @@ class _PricingCard extends StatelessWidget {
   const _PricingCard({
     required this.name,
     required this.price,
+    required this.billingCycle,
+    this.originalPrice,
     required this.description,
     required this.features,
     required this.buttonText,
@@ -198,26 +381,40 @@ class _PricingCard extends StatelessWidget {
             textBaseline: TextBaseline.alphabetic,
             children: [
               Text(price, style: AppTextStyles.h1),
-              Text('/mo', style: TextStyle(color: AppColors.textSecondary, fontSize: 16)),
+              const SizedBox(width: 6),
+              Flexible(
+                child: Text(billingCycle, style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+              ),
             ],
           ),
-          const SizedBox(height: 16),
+          if (originalPrice != null) ...[
+            const SizedBox(height: 2),
+            Text(
+              'Regular $originalPrice',
+              style: TextStyle(
+                color: AppColors.textMuted,
+                fontSize: 11,
+                decoration: TextDecoration.lineThrough,
+              ),
+            ),
+          ],
+          const SizedBox(height: 14),
           Text(description, style: AppTextStyles.body2),
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
           Divider(color: AppColors.glassBorder),
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
           ...features.map((f) => Padding(
-            padding: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.only(bottom: 10),
             child: Row(
               children: [
                 Icon(Icons.check, color: AppColors.primary, size: 18),
-                const SizedBox(width: 12),
+                const SizedBox(width: 10),
                 Expanded(child: Text(f, style: AppTextStyles.body2)),
               ],
             ),
           )),
           const Spacer(),
-          const SizedBox(height: 32),
+          const SizedBox(height: 24),
           if (isPopular)
             GradientButton(
               text: buttonText,

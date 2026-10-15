@@ -92,10 +92,13 @@ class HomeNavbar extends ConsumerWidget {
           if (!Responsive.isMobile(context))
             Row(
               children: [
-                _NavPill(title: 'About', onTap: () => onNavTap?.call('about')),
+                _NavPill(title: 'Workspace', onTap: () => onNavTap?.call('preview')),
                 _NavPill(title: 'Features', onTap: () => onNavTap?.call('features')),
+                _NavPill(title: 'Modes', onTap: () => onNavTap?.call('modes')),
+                _NavPill(title: 'Compare', onTap: () => onNavTap?.call('comparison')),
                 _NavPill(title: 'Agents', onTap: () => onNavTap?.call('agents')),
                 _NavPill(title: 'Pricing', onTap: () => onNavTap?.call('pricing')),
+                _NavPill(title: 'FAQ', onTap: () => onNavTap?.call('faq')),
               ],
             ),
             
@@ -264,10 +267,13 @@ class _MobileMenuButtonState extends State<_MobileMenuButton> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        _buildMenuItem('About', 'about'),
+                        _buildMenuItem('Workspace Preview', 'preview'),
                         _buildMenuItem('Features', 'features'),
-                        _buildMenuItem('Agents', 'agents'),
+                        _buildMenuItem('Learning Modes', 'modes'),
+                        _buildMenuItem('Why Us vs Chatbots', 'comparison'),
+                        _buildMenuItem('AI Agents', 'agents'),
                         _buildMenuItem('Pricing', 'pricing'),
+                        _buildMenuItem('FAQ', 'faq'),
                         Divider(color: AppColors.primary.withValues(alpha: 0.2), height: 1),
                         widget.isAuthenticated
                             ? _buildMenuItem('Open Workspace', 'workspace')
