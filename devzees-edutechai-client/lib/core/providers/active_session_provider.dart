@@ -285,7 +285,17 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     _stepTotalStopwatch.start();
     _currentTrackingStepIndex = 0;
 
-    state = state.copyWith(isLoading: true, isSynthesizing: true, clearError: true);
+    _wsService.disconnect();
+    _isStepGenerationActive = false;
+    _isRegenerating = false;
+    state = state.copyWith(
+      isLoading: true,
+      isSynthesizing: true,
+      clearSession: true,
+      activeStepIndex: 0,
+      curatingVideoSteps: const {},
+      clearError: true,
+    );
     try {
       final journeyApiWatch = Stopwatch()..start();
       final response = await _service.startJourney(topic: topic, mode: mode, level: level);
@@ -655,12 +665,29 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     _apiFetchStopwatch.reset();
     _apiFetchStopwatch.start();
 
+    final isDifferentSession = state.session != null && state.session!.sessionId != sessionId;
+
     if (!silent) {
-      state = state.copyWith(
-        isLoading: true,
-        isSynthesizing: fromStepComplete,
-        clearError: true,
-      );
+      if (isDifferentSession) {
+        // Disconnect previous websocket so events don't cross sessions
+        _wsService.disconnect();
+        _isStepGenerationActive = false;
+        _isRegenerating = false;
+        state = state.copyWith(
+          isLoading: true,
+          isSynthesizing: false,
+          clearSession: true,
+          activeStepIndex: 0,
+          curatingVideoSteps: const {},
+          clearError: true,
+        );
+      } else {
+        state = state.copyWith(
+          isLoading: true,
+          isSynthesizing: fromStepComplete,
+          clearError: true,
+        );
+      }
     }
     try {
       var response = await _service.fetchSessionById(sessionId);
@@ -673,10 +700,12 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
         stepIndex = response.steps.length - 1;
       }
 
-      // Preserve quiz results from local state when the server response has
-      // empty quiz fields (prevents wiping submitted answers on session reload).
+      // Preserve quiz results from local state ONLY when reloading the EXACT SAME session
+      // and when the server response has empty quiz fields (prevents wiping submitted answers on session reload).
       final existingSession = state.session;
-      if (existingSession != null && existingSession.steps.isNotEmpty) {
+      final bool isSameSession = existingSession != null && existingSession.sessionId == response.sessionId;
+
+      if (isSameSession && existingSession.steps.isNotEmpty) {
         for (int i = 0; i < response.steps.length && i < existingSession.steps.length; i++) {
           final localStep = existingSession.steps[i];
           final serverStep = response.steps[i];
@@ -704,9 +733,9 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
         }
       }
 
-      // When loading after step_complete or silent sync, preserve the user's current view
-      // position instead of jumping to the server's currentStepIndex.
-      if ((fromStepComplete || silent) && existingSession != null) {
+      // When loading after step_complete or silent sync for the SAME session, preserve the user's
+      // current view position instead of jumping to the server's currentStepIndex.
+      if ((fromStepComplete || silent) && isSameSession) {
         stepIndex = state.activeStepIndex;
         // Ensure the index is still valid with the new response
         if (stepIndex >= response.steps.length) {

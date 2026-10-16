@@ -91,7 +91,7 @@ class _StepContentContainerState extends ConsumerState<_StepContentContainer> {
           )
         : widget.session.steps.isNotEmpty
           ? SplitLearningWorkspace(
-              key: ValueKey('split_step_$currentIndex'),
+              key: ValueKey('split_${widget.session.sessionId}_step_$currentIndex'),
               session: widget.session,
               activeState: widget.activeState,
               currentStepIndex: currentIndex,

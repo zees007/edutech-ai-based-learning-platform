@@ -127,6 +127,7 @@ class _SplitLearningWorkspaceState
 
     if (isMobile) {
       return _MobileTabbedWorkspace(
+        key: ValueKey('mobile_workspace_${widget.session.sessionId}'),
         session: widget.session,
         activeState: widget.activeState,
         currentStep: currentStep,
@@ -322,7 +323,7 @@ class _SplitLearningWorkspaceState
             : const Color(0xFFF8F9FA),
       ),
       child: LearningResourcesPanel(
-        key: ValueKey('resources_step_${currentStep.index}'),
+        key: ValueKey('resources_${widget.session.sessionId}_step_${currentStep.index}'),
         currentStep: currentStep,
         session: widget.session,
         stepIndex: widget.currentStepIndex,
@@ -480,7 +481,7 @@ class _FullscreenPanelOverlay extends ConsumerWidget {
             : const Color(0xFFF8F9FA),
       ),
       child: LearningResourcesPanel(
-        key: ValueKey('fullscreen_resources_${currentStep.index}'),
+        key: ValueKey('fullscreen_resources_${session.sessionId}_step_${currentStep.index}'),
         currentStep: currentStep,
         session: session,
         stepIndex: stepIndex,
@@ -1020,7 +1021,8 @@ class _MobileTabbedWorkspaceState
   @override
   void didUpdateWidget(covariant _MobileTabbedWorkspace oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.stepIndex != widget.stepIndex) {
+    final bool sessionChanged = oldWidget.session.sessionId != widget.session.sessionId;
+    if (oldWidget.stepIndex != widget.stepIndex || sessionChanged) {
       _isRegenerating = false;
       _quizSubmitted = false;
       if (_isQuizCompleted(widget.currentStep)) {
@@ -1861,17 +1863,17 @@ class _MobileTabbedWorkspaceState
               ),
               // Videos tab
               KeepAliveWrapper(
-                key: ValueKey('mobile_tab_videos_${step.index}'),
+                key: ValueKey('mobile_tab_videos_${widget.session.sessionId}_${step.index}'),
                 child: _buildVideosTab(step),
               ),
               // Papers tab
               KeepAliveWrapper(
-                key: ValueKey('mobile_tab_papers_${step.index}'),
+                key: ValueKey('mobile_tab_papers_${widget.session.sessionId}_${step.index}'),
                 child: _buildPapersTab(step),
               ),
               // Quiz tab
               KeepAliveWrapper(
-                key: ValueKey('mobile_tab_quiz_${step.index}'),
+                key: ValueKey('mobile_tab_quiz_${widget.session.sessionId}_${step.index}'),
                 child: _buildQuizTab(step),
               ),
             ],
@@ -1896,7 +1898,7 @@ class _MobileTabbedWorkspaceState
             (step.socraticQuestions != null &&
                 step.socraticQuestions!.isNotEmpty))) {
       return SocraticTutorChat(
-        key: ValueKey('mobile_socratic_${step.index}'),
+        key: ValueKey('mobile_socratic_${widget.session.sessionId}_${step.index}'),
         stepIndex: step.index,
         tutorExplanation: step.tutorExplanation,
         socraticQuestions: step.socraticQuestions,
@@ -1985,7 +1987,7 @@ class _MobileTabbedWorkspaceState
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 350),
       child: SingleChildScrollView(
-        key: ValueKey('mobile_videos_${step.index}_${step.videos!.length}'),
+        key: ValueKey('mobile_videos_${widget.session.sessionId}_${step.index}_${step.videos!.length}'),
         padding: const EdgeInsets.all(16),
         child: LearningResourcesPanel.buildVideosContent(step.videos),
       ),
@@ -2014,6 +2016,7 @@ class _MobileTabbedWorkspaceState
       quiz: step.quiz,
       stepIndex: stepIdx,
       step: step,
+      sessionId: widget.session.sessionId,
       onNextStep: () => _handleNextStep(context, true),
       onQuizSubmitted: () {
         setState(() {
