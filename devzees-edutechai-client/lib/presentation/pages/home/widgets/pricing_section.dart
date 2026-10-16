@@ -87,25 +87,42 @@ class _PricingSectionState extends State<PricingSection> {
 
     return Column(
       children: [
+        // Section Header Badge
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
           decoration: BoxDecoration(
-            color: AppColors.accentPink.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: AppColors.accentPink.withValues(alpha: 0.35)),
+            color: Colors.white.withValues(alpha: 0.05),
+            borderRadius: BorderRadius.circular(9999),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFFE879F9).withValues(alpha: 0.14),
+                blurRadius: 16,
+              ),
+            ],
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('💎', style: TextStyle(fontSize: 14)),
+              Container(
+                width: 6,
+                height: 6,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Color(0xFFE879F9),
+                  boxShadow: [
+                    BoxShadow(color: Color(0xFFE879F9), blurRadius: 6),
+                  ],
+                ),
+              ),
               const SizedBox(width: 8),
-              Text(
+              const Text(
                 'TRANSPARENT TIERED PLANS',
                 style: TextStyle(
-                  color: AppColors.accentPink,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 1.5,
+                  color: Color(0xFFD4D8E8),
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.4,
                 ),
               ),
             ],
@@ -128,66 +145,90 @@ class _PricingSectionState extends State<PricingSection> {
         Container(
           padding: const EdgeInsets.all(4),
           decoration: BoxDecoration(
-            color: AppColors.surfaceMid,
-            borderRadius: BorderRadius.circular(30),
-            border: Border.all(color: AppColors.border),
+            color: const Color(0xCC090A14),
+            borderRadius: BorderRadius.circular(9999),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.10)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.45),
+                blurRadius: 18,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               InkWell(
                 onTap: () => setState(() => _isAnnual = false),
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(9999),
                 child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
+                  duration: const Duration(milliseconds: 180),
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                   decoration: BoxDecoration(
-                    color: !_isAnnual ? AppColors.primary : Colors.transparent,
-                    borderRadius: BorderRadius.circular(24),
+                    color: !_isAnnual ? Colors.white : Colors.transparent,
+                    borderRadius: BorderRadius.circular(9999),
+                    boxShadow: !_isAnnual
+                        ? [
+                            BoxShadow(
+                              color: Colors.white.withValues(alpha: 0.25),
+                              blurRadius: 10,
+                            ),
+                          ]
+                        : null,
                   ),
                   child: Text(
                     'Monthly',
                     style: TextStyle(
-                      color: !_isAnnual ? Colors.white : AppColors.textSecondary,
+                      color: !_isAnnual ? const Color(0xFF04050C) : const Color(0xFFB9BECF),
                       fontSize: 13,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
               ),
               InkWell(
                 onTap: () => setState(() => _isAnnual = true),
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(9999),
                 child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
+                  duration: const Duration(milliseconds: 180),
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                   decoration: BoxDecoration(
-                    color: _isAnnual ? AppColors.primary : Colors.transparent,
-                    borderRadius: BorderRadius.circular(24),
+                    color: _isAnnual ? Colors.white : Colors.transparent,
+                    borderRadius: BorderRadius.circular(9999),
+                    boxShadow: _isAnnual
+                        ? [
+                            BoxShadow(
+                              color: Colors.white.withValues(alpha: 0.25),
+                              blurRadius: 10,
+                            ),
+                          ]
+                        : null,
                   ),
                   child: Row(
                     children: [
                       Text(
                         'Annual',
                         style: TextStyle(
-                          color: _isAnnual ? Colors.white : AppColors.textSecondary,
+                          color: _isAnnual ? const Color(0xFF04050C) : const Color(0xFFB9BECF),
                           fontSize: 13,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
-                      const SizedBox(width: 6),
+                      const SizedBox(width: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                         decoration: BoxDecoration(
-                          color: _isAnnual ? Colors.white : AppColors.accentGreen.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(10),
+                          color: _isAnnual ? const Color(0xFF10B981) : const Color(0xFF10B981).withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(9999),
                         ),
                         child: Text(
                           'SAVE 20%',
                           style: TextStyle(
-                            color: _isAnnual ? AppColors.primary : AppColors.accentGreen,
-                            fontSize: 10,
+                            color: _isAnnual ? Colors.white : const Color(0xFF10B981),
+                            fontSize: 9.5,
                             fontWeight: FontWeight.w900,
+                            letterSpacing: 0.5,
                           ),
                         ),
                       ),
@@ -202,15 +243,13 @@ class _PricingSectionState extends State<PricingSection> {
 
         // Risk-reversal assurance
         Wrap(
-          spacing: 16,
+          spacing: 12,
           runSpacing: 8,
           alignment: WrapAlignment.center,
           children: const [
-            Text('✓ 10 Free Sessions Monthly', style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600)),
-            Text('•', style: TextStyle(color: Colors.white38)),
-            Text('✓ No Credit Card Required', style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600)),
-            Text('•', style: TextStyle(color: Colors.white38)),
-            Text('✓ Cancel Anytime', style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600)),
+            _PricingTrustChip(text: '10 Free Sessions Monthly'),
+            _PricingTrustChip(text: 'No Credit Card Required'),
+            _PricingTrustChip(text: 'Cancel Anytime With 1-Click'),
           ],
         ),
         const SizedBox(height: 48),
@@ -451,3 +490,42 @@ class _PricingCard extends StatelessWidget {
     );
   }
 }
+
+class _PricingTrustChip extends StatelessWidget {
+  final String text;
+  const _PricingTrustChip({required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.04),
+        borderRadius: BorderRadius.circular(9999),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.08),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(
+            Icons.check_circle_rounded,
+            color: Color(0xFF10B981),
+            size: 13,
+          ),
+          const SizedBox(width: 6),
+          Text(
+            text,
+            style: const TextStyle(
+              color: Color(0xFFB9BECF),
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+

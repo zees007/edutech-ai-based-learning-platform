@@ -3,6 +3,7 @@ import 'package:devzees_edutechai_client/core/theme/text_styles.dart';
 import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/glass_card.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/gradient_text.dart';
+import 'package:devzees_edutechai_client/presentation/widgets/interactive_3d_card.dart';
 import 'package:devzees_edutechai_client/core/constants/responsive.dart';
 
 class WorkspacePreviewSection extends StatefulWidget {
@@ -23,26 +24,42 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
 
     return Column(
       children: [
-        // Section Header
+        // Section Header Badge
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
           decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: AppColors.primary.withValues(alpha: 0.35)),
+            color: Colors.white.withValues(alpha: 0.05),
+            borderRadius: BorderRadius.circular(9999),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withValues(alpha: 0.12),
+                blurRadius: 16,
+              ),
+            ],
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('✨', style: TextStyle(fontSize: 14)),
+              Container(
+                width: 6,
+                height: 6,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Color(0xFF00F5D4),
+                  boxShadow: [
+                    BoxShadow(color: Color(0xFF00F5D4), blurRadius: 6),
+                  ],
+                ),
+              ),
               const SizedBox(width: 8),
-              Text(
+              const Text(
                 'LIVE WORKSPACE PREVIEW',
                 style: TextStyle(
-                  color: AppColors.adaptiveLavender,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 1.5,
+                  color: Color(0xFFD4D8E8),
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.4,
                 ),
               ),
             ],
@@ -99,55 +116,63 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
         const SizedBox(height: 28),
 
         // Workspace Container Mockup
-        Container(
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: AppColors.surfaceMid.withValues(alpha: 0.8),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: AppColors.primary.withValues(alpha: 0.35),
-              width: 1.5,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primary.withValues(alpha: 0.15),
-                blurRadius: 40,
-                spreadRadius: -10,
-                offset: const Offset(0, 16),
+        Interactive3DCard(
+          maxTiltAngle: 0.045, // Subtle tilt for large workspace container
+          perspective: 0.0006,
+          hoverScale: 1.008,
+          glareColor: AppColors.primary,
+          maxGlareOpacity: 0.10,
+          borderRadius: BorderRadius.circular(20),
+          child: Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: const Color(0xEE090A14),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.12),
+                width: 1.0,
               ),
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.45),
-                blurRadius: 30,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: Column(
-              children: [
-                _buildMockWorkspaceHeader(isMobile),
-                Divider(height: 1, color: AppColors.border.withValues(alpha: 0.5)),
-                if (isMobile)
-                  Column(
-                    children: [
-                      _buildLeftTutorPanel(isMobile),
-                      Divider(height: 1, color: AppColors.border.withValues(alpha: 0.5)),
-                      _buildRightContextPanel(isMobile),
-                    ],
-                  )
-                else
-                  IntrinsicHeight(
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Expanded(flex: 6, child: _buildLeftTutorPanel(isMobile)),
-                        VerticalDivider(width: 1, color: AppColors.border.withValues(alpha: 0.5)),
-                        Expanded(flex: 5, child: _buildRightContextPanel(isMobile)),
-                      ],
-                    ),
-                  ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.65),
+                  blurRadius: 48,
+                  offset: const Offset(0, 16),
+                ),
+                BoxShadow(
+                  color: AppColors.primary.withValues(alpha: 0.15),
+                  blurRadius: 40,
+                  spreadRadius: -4,
+                  offset: const Offset(0, 4),
+                ),
               ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: Column(
+                children: [
+                  _buildMockWorkspaceHeader(isMobile),
+                  Divider(height: 1, color: AppColors.border.withValues(alpha: 0.5)),
+                  if (isMobile)
+                    Column(
+                      children: [
+                        _buildLeftTutorPanel(isMobile),
+                        Divider(height: 1, color: AppColors.border.withValues(alpha: 0.5)),
+                        _buildRightContextPanel(isMobile),
+                      ],
+                    )
+                  else
+                    IntrinsicHeight(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Expanded(flex: 6, child: _buildLeftTutorPanel(isMobile)),
+                          VerticalDivider(width: 1, color: AppColors.border.withValues(alpha: 0.5)),
+                          Expanded(flex: 5, child: _buildRightContextPanel(isMobile)),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
         ),

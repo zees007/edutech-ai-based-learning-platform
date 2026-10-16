@@ -14,25 +14,42 @@ class ExportEcosystemSection extends StatelessWidget {
 
     return Column(
       children: [
+        // Section Header Badge
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
           decoration: BoxDecoration(
-            color: AppColors.accentGreen.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: AppColors.accentGreen.withValues(alpha: 0.35)),
+            color: Colors.white.withValues(alpha: 0.05),
+            borderRadius: BorderRadius.circular(9999),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF10B981).withValues(alpha: 0.14),
+                blurRadius: 16,
+              ),
+            ],
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('📥', style: TextStyle(fontSize: 14)),
+              Container(
+                width: 6,
+                height: 6,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Color(0xFF10B981),
+                  boxShadow: [
+                    BoxShadow(color: Color(0xFF10B981), blurRadius: 6),
+                  ],
+                ),
+              ),
               const SizedBox(width: 8),
-              Text(
+              const Text(
                 'ZERO VENDOR LOCK-IN',
                 style: TextStyle(
-                  color: AppColors.accentGreen,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 1.5,
+                  color: Color(0xFFD4D8E8),
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.4,
                 ),
               ),
             ],

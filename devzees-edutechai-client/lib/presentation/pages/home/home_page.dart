@@ -73,6 +73,10 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 
   void _scrollToSection(String section) {
+    if (section == 'top') {
+      _scrollToTop();
+      return;
+    }
     BuildContext? targetContext;
     switch (section) {
       case 'preview':
@@ -177,31 +181,35 @@ class _HomePageState extends ConsumerState<HomePage> {
         ),
         floatingActionButton: _showScrollToTop 
             ? Container(
-                width: 56,
-                height: 56,
+                width: 50,
+                height: 50,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.primary.withValues(alpha: 0.15),
+                  color: const Color(0xCC080914),
                   border: Border.all(
-                    color: AppColors.primary.withValues(alpha: 0.3),
+                    color: Colors.white.withValues(alpha: 0.15),
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.2),
-                      blurRadius: 15,
+                      color: Colors.black.withValues(alpha: 0.5),
+                      blurRadius: 16,
                       offset: const Offset(0, 4),
+                    ),
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.2),
+                      blurRadius: 12,
                     ),
                   ],
                 ),
                 child: ClipOval(
                   child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                    filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
                     child: Material(
                       color: Colors.transparent,
                       child: InkWell(
                         onTap: _scrollToTop,
                         child: const Center(
-                          child: Icon(Icons.arrow_upward, color: Colors.white),
+                          child: Icon(Icons.arrow_upward_rounded, color: Color(0xFFEEF0F6), size: 20),
                         ),
                       ),
                     ),

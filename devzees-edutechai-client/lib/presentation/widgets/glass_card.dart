@@ -37,40 +37,40 @@ class _GlassCardState extends State<GlassCard> {
 
     final border = isDark
         ? Border.all(
-            color: AppColors.purple.withValues(alpha: isGlow ? 0.85 : 0.45),
-            width: 1.5,
+            color: Colors.white.withValues(alpha: isGlow ? 0.22 : 0.09),
+            width: 1.0,
           )
         : Border.all(
             color: isGlow
-                ? AppColors.accentBlue.withValues(alpha: 0.60)
+                ? AppColors.accentBlue.withValues(alpha: 0.50)
                 : AppColors.glassBorder,
             width: 1.0,
           );
 
     final shadows = isDark
         ? [
-            // Dark Mode Drop Shadow
+            // Deep Luxury SaaS Drop Shadow
             BoxShadow(
-              color: AppColors.purple.withValues(alpha: isGlow ? 0.55 : 0.35),
-              blurRadius: isGlow ? 75 : 65,
-              spreadRadius: isGlow ? -10 : -15,
-              offset: Offset(0, isGlow ? 30 : 25),
+              color: Colors.black.withValues(alpha: isGlow ? 0.65 : 0.45),
+              blurRadius: isGlow ? 40 : 26,
+              offset: Offset(0, isGlow ? 14 : 8),
             ),
-            // Dark Mode Inner / Neumorphic shadow (rgba(0,0,0,0.45))
-            BoxShadow(
-              color: Colors.black.withValues(alpha: isGlow ? 0.45 : 0.30),
-              blurRadius: isGlow ? 45 : 35,
-              spreadRadius: 0,
-              blurStyle: BlurStyle.inner,
-            ),
+            // Soft atmospheric ambient light
+            if (isGlow)
+              BoxShadow(
+                color: AppColors.primary.withValues(alpha: 0.18),
+                blurRadius: 32,
+                spreadRadius: 1,
+                offset: const Offset(0, 4),
+              ),
           ]
         : [
-            // Light Mode Drop Shadow: box-shadow: 0 8px 24px rgba(0,0,0,0.08)
+            // Light Mode Drop Shadow
             BoxShadow(
-              color: const Color(0x14000000), // 0.08 opacity
-              blurRadius: isGlow ? 28 : 24,
+              color: const Color(0x14000000),
+              blurRadius: isGlow ? 28 : 20,
               spreadRadius: 0,
-              offset: Offset(0, isGlow ? 12 : 8),
+              offset: Offset(0, isGlow ? 10 : 6),
             ),
             if (isGlow)
               BoxShadow(
@@ -87,11 +87,11 @@ class _GlassCardState extends State<GlassCard> {
       child: GestureDetector(
         onTap: widget.onTap,
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
+          duration: const Duration(milliseconds: 250),
           curve: Curves.easeOutCubic,
           width: widget.width,
           height: widget.height,
-          transform: Matrix4.translationValues(0, _isHovered ? -2.0 : 0, 0),
+          transform: Matrix4.translationValues(0, _isHovered ? -3.0 : 0, 0),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(widget.borderRadius),
             border: border,
@@ -100,54 +100,44 @@ class _GlassCardState extends State<GlassCard> {
           child: ClipRRect(
             borderRadius: BorderRadius.circular(widget.borderRadius),
             child: BackdropFilter(
-              filter: ui.ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+              filter: ui.ImageFilter.blur(sigmaX: 24, sigmaY: 24),
               child: Stack(
                 children: [
-                  // Background Gradient
+                  // Background Glass Tint
                   Positioned.fill(
                     child: Container(
                       decoration: BoxDecoration(
-                        gradient: AppColors.cardGradientOpaque,
+                        color: isDark
+                            ? const Color(0xE0090A14)
+                            : Colors.white.withValues(alpha: 0.85),
                       ),
                     ),
                   ),
-                  // Top Glowing Accent Line
+                  // Top Specular Light Catcher Line
                   Positioned(
                     top: 0,
                     left: 0,
                     right: 0,
                     child: Center(
                       child: FractionallySizedBox(
-                        widthFactor: 0.8,
+                        widthFactor: 0.75,
                         child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 300),
-                          height: 3,
+                          duration: const Duration(milliseconds: 250),
+                          height: 1.5,
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(3),
-                            gradient: const LinearGradient(
+                            gradient: LinearGradient(
                               colors: [
                                 Colors.transparent,
-                                AppColors.accentBlue,
-                                AppColors.accentMagenta,
-                                AppColors.accentBlue,
+                                Colors.white.withValues(
+                                  alpha: isDark
+                                      ? (isGlow ? 0.45 : 0.18)
+                                      : (isGlow ? 0.35 : 0.12),
+                                ),
+                                if (isGlow) const Color(0xFF00F5D4).withValues(alpha: 0.4),
                                 Colors.transparent,
                               ],
-                              stops: [0.0, 0.25, 0.5, 0.75, 1.0],
+                              stops: isGlow ? const [0.0, 0.4, 0.6, 1.0] : const [0.0, 0.5, 0.7, 1.0],
                             ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppColors.accentMagenta.withValues(
-                                  alpha: isDark ? (isGlow ? 0.8 : 0.5) : (isGlow ? 0.5 : 0.3),
-                                ),
-                                blurRadius: isGlow ? 22 : 15,
-                              ),
-                              BoxShadow(
-                                color: AppColors.accentBlue.withValues(
-                                  alpha: isDark ? (isGlow ? 0.7 : 0.4) : (isGlow ? 0.4 : 0.2),
-                                ),
-                                blurRadius: isGlow ? 30 : 20,
-                              ),
-                            ],
                           ),
                         ),
                       ),
