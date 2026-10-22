@@ -932,6 +932,7 @@ class _MobileTabbedWorkspace extends ConsumerStatefulWidget {
   final Future<void> Function()? onRegenerateStep;
 
   const _MobileTabbedWorkspace({
+    super.key,
     required this.session,
     required this.activeState,
     required this.currentStep,
