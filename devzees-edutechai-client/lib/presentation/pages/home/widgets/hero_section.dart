@@ -25,6 +25,7 @@ class HeroSection extends StatefulWidget {
 
 class _HeroSectionState extends State<HeroSection> {
   final TextEditingController _promptController = TextEditingController();
+  bool _showBlueprint = false;
 
   @override
   void dispose() {
@@ -268,16 +269,243 @@ class _HeroSectionState extends State<HeroSection> {
             ],
           ),
         ),
-        const SizedBox(height: 40),
+        const SizedBox(height: 36),
 
-        // ─── 6. Centerpiece: Interactive 3D AI Core (Delay 1800ms) ───
+        // ─── Centerpiece View Switcher (3D Gyroscope vs 8K Cinematic Core) ───
+        SpringEntranceBlock(
+          delayMs: 1750,
+          durationMs: 700,
+          fromOffset: const Offset(0, 16),
+          child: Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: const Color(0xEE080A14),
+              borderRadius: BorderRadius.circular(9999),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.14),
+                width: 1.0,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.5),
+                  blurRadius: 16,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildHeroModeToggle(
+                  isSelected: !_showBlueprint,
+                  icon: Icons.all_inclusive_rounded,
+                  label: '3D Gyroscope Engine',
+                  onTap: () => setState(() => _showBlueprint = false),
+                  isMobile: isMobile,
+                ),
+                const SizedBox(width: 4),
+                _buildHeroModeToggle(
+                  isSelected: _showBlueprint,
+                  icon: Icons.photo_size_select_actual_rounded,
+                  label: '8K Cinematic Core',
+                  badge: '16:9',
+                  onTap: () => setState(() => _showBlueprint = true),
+                  isMobile: isMobile,
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 28),
+
+        // ─── 6. Centerpiece: Interactive 3D AI Core or 8K Blueprint (Delay 1800ms) ───
         SpringEntranceBlock(
           delayMs: 1800,
           durationMs: 800,
           fromOffset: const Offset(0, 30),
-          child: const Hero3DAICore(),
+          child: _showBlueprint
+              ? _buildCinematicHeroBlueprint(isMobile)
+              : const Hero3DAICore(),
         ),
       ],
+    );
+  }
+
+  Widget _buildHeroModeToggle({
+    required bool isSelected,
+    required IconData icon,
+    required String label,
+    String? badge,
+    required VoidCallback onTap,
+    required bool isMobile,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: EdgeInsets.symmetric(
+          horizontal: isMobile ? 12 : 16,
+          vertical: isMobile ? 7 : 8,
+        ),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.primary : Colors.transparent,
+          borderRadius: BorderRadius.circular(9999),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: AppColors.primary.withValues(alpha: 0.45),
+                    blurRadius: 14,
+                  ),
+                ]
+              : null,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: isMobile ? 13 : 15,
+              color: isSelected ? Colors.white : const Color(0xFF94A3B8),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? Colors.white : const Color(0xFF94A3B8),
+                fontSize: isMobile ? 11 : 12.5,
+                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+              ),
+            ),
+            if (badge != null) ...[
+              const SizedBox(width: 6),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? Colors.white.withValues(alpha: 0.25)
+                      : const Color(0xFF00F5D4).withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  badge,
+                  style: TextStyle(
+                    color: isSelected ? Colors.white : const Color(0xFF00F5D4),
+                    fontSize: 8.5,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCinematicHeroBlueprint(bool isMobile) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: AppColors.primary.withValues(alpha: 0.45),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.30),
+            blurRadius: 55,
+            offset: const Offset(0, 12),
+          ),
+          BoxShadow(
+            color: const Color(0xFF00F5D4).withValues(alpha: 0.15),
+            blurRadius: 40,
+            spreadRadius: 2,
+          ),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.75),
+            blurRadius: 36,
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Stack(
+          children: [
+            AspectRatio(
+              aspectRatio: 16 / 9,
+              child: Image.asset(
+                'assets/images/home/hero_blackboard_core.jpg',
+                fit: BoxFit.cover,
+              ),
+            ),
+            Positioned(
+              top: isMobile ? 10 : 16,
+              left: isMobile ? 10 : 16,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: const Color(0xDD090A14),
+                  borderRadius: BorderRadius.circular(9999),
+                  border: Border.all(
+                    color: const Color(0xFF00F5D4).withValues(alpha: 0.5),
+                    width: 1.0,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 6,
+                      height: 6,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF00F5D4),
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(color: Color(0xFF00F5D4), blurRadius: 6),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'AUTONOMOUS BLACKBOARD SYNCHRONIZATION',
+                      style: TextStyle(
+                        color: const Color(0xFFEEF0F6),
+                        fontSize: isMobile ? 9 : 11,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Positioned(
+              bottom: isMobile ? 10 : 16,
+              right: isMobile ? 10 : 16,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: const Color(0xEE090A14),
+                  borderRadius: BorderRadius.circular(9999),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.15),
+                  ),
+                ),
+                child: Text(
+                  '6 ISOMETRIC AGENT SATELLITES • 60 FPS CONSENSUS',
+                  style: TextStyle(
+                    color: const Color(0xFF94A3B8),
+                    fontSize: isMobile ? 8 : 10,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1.0,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

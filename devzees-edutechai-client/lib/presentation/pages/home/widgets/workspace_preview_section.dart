@@ -17,6 +17,7 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
   int _activeContextTab = 0; // 0: Video Clip, 1: Academic Paper, 2: Formative Quiz
   int? _selectedQuizAnswer;
   bool _quizSubmitted = false;
+  bool _showStudioRender = false;
 
   @override
   Widget build(BuildContext context) {
@@ -85,98 +86,317 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
             ),
           ),
         ),
-        const SizedBox(height: 36),
-
-        // Interactive Context Tab Switcher
-        Wrap(
-          spacing: 12,
-          runSpacing: 10,
-          alignment: WrapAlignment.center,
-          children: [
-            _buildTabPill(
-              index: 0,
-              icon: '🎬',
-              label: 'Timestamped Video Clip',
-              badge: 'Semantic Vector Search',
-            ),
-            _buildTabPill(
-              index: 1,
-              icon: '📚',
-              label: 'Academic Preprints',
-              badge: 'arXiv & OpenAlex',
-            ),
-            _buildTabPill(
-              index: 2,
-              icon: '📝',
-              label: 'Dynamic Formative Quiz',
-              badge: 'Grounded Assessment',
-            ),
-          ],
-        ),
         const SizedBox(height: 28),
 
-        // Workspace Container Mockup
-        Interactive3DCard(
-          maxTiltAngle: 0.045, // Subtle tilt for large workspace container
-          perspective: 0.0006,
-          hoverScale: 1.008,
-          glareColor: AppColors.primary,
-          maxGlareOpacity: 0.10,
-          borderRadius: BorderRadius.circular(20),
-          child: Container(
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: const Color(0xEE090A14),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.12),
-                width: 1.0,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.65),
-                  blurRadius: 48,
-                  offset: const Offset(0, 16),
-                ),
-                BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.15),
-                  blurRadius: 40,
-                  spreadRadius: -4,
-                  offset: const Offset(0, 4),
-                ),
-              ],
+        // Dual-Mode View Switcher (Interactive Prototype vs 8K Studio Blueprint)
+        Container(
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: const Color(0xEE090A14),
+            borderRadius: BorderRadius.circular(9999),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.14),
+              width: 1.0,
             ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(20),
-              child: Column(
-                children: [
-                  _buildMockWorkspaceHeader(isMobile),
-                  Divider(height: 1, color: AppColors.border.withValues(alpha: 0.5)),
-                  if (isMobile)
-                    Column(
-                      children: [
-                        _buildLeftTutorPanel(isMobile),
-                        Divider(height: 1, color: AppColors.border.withValues(alpha: 0.5)),
-                        _buildRightContextPanel(isMobile),
-                      ],
-                    )
-                  else
-                    IntrinsicHeight(
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Expanded(flex: 6, child: _buildLeftTutorPanel(isMobile)),
-                          VerticalDivider(width: 1, color: AppColors.border.withValues(alpha: 0.5)),
-                          Expanded(flex: 5, child: _buildRightContextPanel(isMobile)),
-                        ],
-                      ),
-                    ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.5),
+                blurRadius: 16,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildViewModeToggle(
+                isSelected: !_showStudioRender,
+                icon: Icons.touch_app_rounded,
+                label: 'Interactive Simulator',
+                onTap: () => setState(() => _showStudioRender = false),
+                isMobile: isMobile,
+              ),
+              const SizedBox(width: 4),
+              _buildViewModeToggle(
+                isSelected: _showStudioRender,
+                icon: Icons.photo_library_rounded,
+                label: '8K Hi-Fi Blueprint',
+                badge: '16:9',
+                onTap: () => setState(() => _showStudioRender = true),
+                isMobile: isMobile,
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 32),
+
+        if (_showStudioRender)
+          _buildStudioBlueprintShowcase(isMobile)
+        else ...[
+          // Interactive Context Tab Switcher
+          Wrap(
+            spacing: 12,
+            runSpacing: 10,
+            alignment: WrapAlignment.center,
+            children: [
+              _buildTabPill(
+                index: 0,
+                icon: '🎬',
+                label: 'Timestamped Video Clip',
+                badge: 'Semantic Vector Search',
+              ),
+              _buildTabPill(
+                index: 1,
+                icon: '📚',
+                label: 'Academic Preprints',
+                badge: 'arXiv & OpenAlex',
+              ),
+              _buildTabPill(
+                index: 2,
+                icon: '📝',
+                label: 'Dynamic Formative Quiz',
+                badge: 'Grounded Assessment',
+              ),
+            ],
+          ),
+          const SizedBox(height: 28),
+
+          // Workspace Container Mockup
+          Interactive3DCard(
+            maxTiltAngle: 0.045, // Subtle tilt for large workspace container
+            perspective: 0.0006,
+            hoverScale: 1.008,
+            glareColor: AppColors.primary,
+            maxGlareOpacity: 0.10,
+            borderRadius: BorderRadius.circular(20),
+            child: Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: const Color(0xEE090A14),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.12),
+                  width: 1.0,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.65),
+                    blurRadius: 48,
+                    offset: const Offset(0, 16),
+                  ),
+                  BoxShadow(
+                    color: AppColors.primary.withValues(alpha: 0.15),
+                    blurRadius: 40,
+                    spreadRadius: -4,
+                    offset: const Offset(0, 4),
+                  ),
                 ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: Column(
+                  children: [
+                    _buildMockWorkspaceHeader(isMobile),
+                    Divider(height: 1, color: AppColors.border.withValues(alpha: 0.5)),
+                    if (isMobile)
+                      Column(
+                        children: [
+                          _buildLeftTutorPanel(isMobile),
+                          Divider(height: 1, color: AppColors.border.withValues(alpha: 0.5)),
+                          _buildRightContextPanel(isMobile),
+                        ],
+                      )
+                    else
+                      IntrinsicHeight(
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Expanded(flex: 6, child: _buildLeftTutorPanel(isMobile)),
+                            VerticalDivider(width: 1, color: AppColors.border.withValues(alpha: 0.5)),
+                            Expanded(flex: 5, child: _buildRightContextPanel(isMobile)),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
               ),
             ),
           ),
-        ),
+        ],
       ],
+    );
+  }
+
+  Widget _buildViewModeToggle({
+    required bool isSelected,
+    required IconData icon,
+    required String label,
+    String? badge,
+    required VoidCallback onTap,
+    required bool isMobile,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: EdgeInsets.symmetric(
+          horizontal: isMobile ? 12 : 16,
+          vertical: isMobile ? 7 : 8,
+        ),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.primary : Colors.transparent,
+          borderRadius: BorderRadius.circular(9999),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: AppColors.primary.withValues(alpha: 0.45),
+                    blurRadius: 14,
+                  ),
+                ]
+              : null,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: isMobile ? 13 : 15,
+              color: isSelected ? Colors.white : const Color(0xFF94A3B8),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? Colors.white : const Color(0xFF94A3B8),
+                fontSize: isMobile ? 11 : 12.5,
+                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+              ),
+            ),
+            if (badge != null) ...[
+              const SizedBox(width: 6),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? Colors.white.withValues(alpha: 0.25)
+                      : const Color(0xFF00F5D4).withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  badge,
+                  style: TextStyle(
+                    color: isSelected ? Colors.white : const Color(0xFF00F5D4),
+                    fontSize: 8.5,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStudioBlueprintShowcase(bool isMobile) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: AppColors.primary.withValues(alpha: 0.4),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.25),
+            blurRadius: 48,
+            offset: const Offset(0, 12),
+          ),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.7),
+            blurRadius: 36,
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Stack(
+          children: [
+            AspectRatio(
+              aspectRatio: 16 / 9,
+              child: Image.asset(
+                'assets/images/home/workspace_preview.jpg',
+                fit: BoxFit.cover,
+              ),
+            ),
+            Positioned(
+              top: isMobile ? 10 : 16,
+              left: isMobile ? 10 : 16,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: const Color(0xDD090A14),
+                  borderRadius: BorderRadius.circular(9999),
+                  border: Border.all(
+                    color: const Color(0xFF00F5D4).withValues(alpha: 0.5),
+                    width: 1.0,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 6,
+                      height: 6,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF00F5D4),
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(color: Color(0xFF00F5D4), blurRadius: 6),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'DUAL-PANEL COGNITIVE ARCHITECTURE',
+                      style: TextStyle(
+                        color: const Color(0xFFEEF0F6),
+                        fontSize: isMobile ? 9 : 11,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Positioned(
+              bottom: isMobile ? 10 : 16,
+              right: isMobile ? 10 : 16,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: const Color(0xEE090A14),
+                  borderRadius: BorderRadius.circular(9999),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.15),
+                  ),
+                ),
+                child: Text(
+                  'SOCRATIC TUTOR (55%) • MULTI-MODAL CURATION (45%)',
+                  style: TextStyle(
+                    color: const Color(0xFF94A3B8),
+                    fontSize: isMobile ? 8 : 10,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1.0,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

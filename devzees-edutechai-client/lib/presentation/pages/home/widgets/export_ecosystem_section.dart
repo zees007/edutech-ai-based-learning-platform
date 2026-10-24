@@ -75,6 +75,127 @@ class ExportEcosystemSection extends StatelessWidget {
             ),
           ),
         ),
+        const SizedBox(height: 36),
+
+        // ─── 16:9 Second Brain Ecosystem Visual Showcase ───
+        Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.14),
+              width: 1.0,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF10B981).withValues(alpha: 0.18),
+                blurRadius: 40,
+                offset: const Offset(0, 8),
+              ),
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.6),
+                blurRadius: 32,
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: Stack(
+              children: [
+                AspectRatio(
+                  aspectRatio: 16 / 9,
+                  child: Image.asset(
+                    'assets/images/home/second_brain_ecosystem.jpg',
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                // Subtle bottom gradient scrim
+                Positioned.fill(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.transparent,
+                          Colors.transparent,
+                          const Color(0xCC05060D),
+                        ],
+                        stops: const [0.0, 0.7, 1.0],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
+                    ),
+                  ),
+                ),
+                // Top-Left Status Pill
+                Positioned(
+                  top: isMobile ? 10 : 16,
+                  left: isMobile ? 10 : 16,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xDD090A14),
+                      borderRadius: BorderRadius.circular(9999),
+                      border: Border.all(
+                        color: const Color(0xFF10B981).withValues(alpha: 0.5),
+                        width: 1.0,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 6,
+                          height: 6,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF10B981),
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(color: Color(0xFF10B981), blurRadius: 6),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'KNOWLEDGE GRAPH SYNTHESIS',
+                          style: TextStyle(
+                            color: const Color(0xFFEEF0F6),
+                            fontSize: isMobile ? 9 : 11,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 1.2,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                // Bottom-Right Technology Pill
+                Positioned(
+                  bottom: isMobile ? 10 : 16,
+                  right: isMobile ? 10 : 16,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xEE090A14),
+                      borderRadius: BorderRadius.circular(9999),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.15),
+                      ),
+                    ),
+                    child: Text(
+                      'OBSIDIAN • NOTION • LOGSEQ • ANKI FLASHCARDS',
+                      style: TextStyle(
+                        color: const Color(0xFF94A3B8),
+                        fontSize: isMobile ? 8 : 10,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1.0,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
         const SizedBox(height: 48),
 
         if (isMobile)
