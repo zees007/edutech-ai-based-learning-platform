@@ -10,45 +10,16 @@ from enum import Enum
 from pathlib import Path
 from typing import Any
 
+from dotenv import load_dotenv
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-
-def sync_streamlit_secrets() -> None:
-    """
-    Safely synchronize Streamlit secrets (from secrets.toml or Streamlit Cloud Secrets)
-    into os.environ so Pydantic Settings and backend services can read them.
-
-    Catches StreamlitSecretNotFoundError and other exceptions gracefully
-    when no secrets file or cloud secrets are configured.
-    """
-    try:
-        import streamlit as st
-        secrets_obj = getattr(st, "secrets", None)
-        if secrets_obj is None:
-            return
-
-        def _flatten_secrets(data: Any, prefix: str = "") -> None:
-            if hasattr(data, "items"):
-                for k, v in data.items():
-                    key_str = str(k)
-                    flat_key = f"{prefix}{key_str}"
-                    if hasattr(v, "items"):
-                        _flatten_secrets(v, prefix=f"{flat_key}_")
-                    else:
-                        val_str = str(v)
-                        for candidate_key in (key_str, key_str.upper(), flat_key, flat_key.upper()):
-                            if candidate_key not in os.environ:
-                                os.environ[candidate_key] = val_str
-
-        _flatten_secrets(secrets_obj)
-    except Exception:
-        # Streamlit not running, no secrets.toml found, or empty secrets on Streamlit Cloud
-        pass
+# Load .env variables into os.environ
+load_dotenv()
 
 
-# Run safe secrets sync upon module import
-sync_streamlit_secrets()
+
+
 
 
 class LLMProvider(str, Enum):
@@ -83,21 +54,63 @@ class Settings(BaseSettings):
     llm_timeout: float = Field(default=120.0, description="Max timeout in seconds for LLM responses")
 
     # ─── Model Assignments (per agent) ──────────────────────────
-    orchestrator_model: str = "llama-3.1-8b-instant"
-    socratic_tutor_model: str = "llama-3.1-8b-instant"
-    quiz_agent_model: str = "llama-3.1-8b-instant"
+    orchestrator_model: str = ""
+    socratic_tutor_model: str = ""
+    quiz_agent_model: str = ""
 
     # ─── YouTube ─────────────────────────────────────────────────
     youtube_api_key: str = ""
     youtube_max_results: int = 5
-    youtube_daily_search_limit: int = 100
-    free_youtube_limit: int = 1
-    pro_youtube_limit: int = 3
-    ultra_youtube_limit: int = 5
+
+    @property
+    def youtube_daily_search_limit(self) -> int:
+        try:
+            from services.setting_service import SettingService
+            return int(SettingService.get_value("YOUTUBE_DAILY_SEARCH_LIMIT", "100"))
+        except Exception:
+            return int(os.environ.get("YOUTUBE_DAILY_SEARCH_LIMIT", "100"))
+
+    @property
+    def free_youtube_limit(self) -> int:
+        try:
+            from services.setting_service import SettingService
+            return int(SettingService.get_value("FREE_YOUTUBE_LIMIT", "1"))
+        except Exception:
+            return 1
+
+    @property
+    def pro_youtube_limit(self) -> int:
+        try:
+            from services.setting_service import SettingService
+            return int(SettingService.get_value("PRO_YOUTUBE_LIMIT", "3"))
+        except Exception:
+            return 3
+
+    @property
+    def ultra_youtube_limit(self) -> int:
+        try:
+            from services.setting_service import SettingService
+            return int(SettingService.get_value("ULTRA_YOUTUBE_LIMIT", "5"))
+        except Exception:
+            return 5
 
     # ─── Socratic Follow-up Limits ───────────────────────────────
-    free_followup_limit: int = 1
-    pro_followup_limit: int = 5
+    @property
+    def free_followup_limit(self) -> int:
+        try:
+            from services.setting_service import SettingService
+            return int(SettingService.get_value("FREE_FOLLOWUP_LIMIT", "1"))
+        except Exception:
+            return 1
+
+    @property
+    def pro_followup_limit(self) -> int:
+        try:
+            from services.setting_service import SettingService
+            return int(SettingService.get_value("PRO_FOLLOWUP_LIMIT", "5"))
+        except Exception:
+            return 5
+
 
     # ─── Academic APIs ───────────────────────────────────────────
     openalex_email: str = ""
@@ -156,13 +169,23 @@ class Settings(BaseSettings):
         return path
 
     def get_model_for_agent(self, agent_name: str) -> str:
-        """Get the configured model name for a specific agent."""
-        model_map = {
-            "orchestrator": self.orchestrator_model,
-            "socratic_tutor": self.socratic_tutor_model,
-            "quiz_agent": self.quiz_agent_model,
+        """Get the configured model name for a specific agent from SettingService or .env only."""
+        try:
+            from services.setting_service import SettingService
+            model = SettingService.get_agent_model(agent_name)
+            if model:
+                return model
+        except Exception:
+            pass
+
+        # Fallback strictly to .env setting
+        mapping = {
+            "orchestrator": self.orchestrator_model or os.environ.get("ORCHESTRATOR_MODEL", ""),
+            "socratic_tutor": self.socratic_tutor_model or os.environ.get("SOCRATIC_TUTOR_MODEL", ""),
+            "quiz_agent": self.quiz_agent_model or os.environ.get("QUIZ_AGENT_MODEL", ""),
         }
-        return model_map.get(agent_name, self.orchestrator_model)
+        return mapping.get(agent_name, "")
+
 
 
 # ─── Singleton ───────────────────────────────────────────────────
@@ -173,6 +196,5 @@ def get_settings() -> Settings:
     """Get or create the global settings instance."""
     global _settings
     if _settings is None:
-        sync_streamlit_secrets()
         _settings = Settings()
     return _settings

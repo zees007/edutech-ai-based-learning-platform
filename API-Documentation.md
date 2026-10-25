@@ -1595,6 +1595,79 @@ Webhook endpoint for payment gateways (Paddle, Razorpay, etc.).
 
 ---
 
+## Get All System Settings
+**Endpoint:** `GET /api/v1/admin/settings`
+**Privilege:** `ET_MANAGE_SYSTEM_SETTINGS`
+
+Retrieve all dynamic system configuration settings (ordered by order number).
+
+### Response
+**200 Successful Response**
+```json
+[
+  {
+    "id": 1,
+    "code": "ORCHESTRATOR_MODEL",
+    "value": "openai/gpt-oss-20b",
+    "order_number": 10,
+    "created_at": "2026-10-25T10:00:00Z",
+    "updated_at": "2026-10-25T10:00:00Z"
+  }
+]
+```
+
+---
+
+## Get System Setting by Code
+**Endpoint:** `GET /api/v1/admin/settings/{code}`
+**Privilege:** `ET_MANAGE_SYSTEM_SETTINGS`
+
+Retrieve a specific system setting by its code.
+
+### Response
+**200 Successful Response**
+```json
+{
+  "id": 1,
+  "code": "ORCHESTRATOR_MODEL",
+  "value": "openai/gpt-oss-20b",
+  "order_number": 10,
+  "created_at": "2026-10-25T10:00:00Z",
+  "updated_at": "2026-10-25T10:00:00Z"
+}
+```
+
+---
+
+## Update System Setting
+**Endpoint:** `PUT /api/v1/admin/settings/{code}`
+**Privilege:** `ET_MANAGE_SYSTEM_SETTINGS`
+
+Update the value and optional display order for a system setting.
+
+### Request Body (application/json)
+```json
+{
+  "value": "openai/gpt-oss-20b",
+  "order_number": 10
+}
+```
+
+### Response
+**200 Successful Response**
+```json
+{
+  "id": 1,
+  "code": "ORCHESTRATOR_MODEL",
+  "value": "openai/gpt-oss-20b",
+  "order_number": 10,
+  "created_at": "2026-10-25T10:00:00Z",
+  "updated_at": "2026-10-25T10:05:00Z"
+}
+```
+
+---
+
 #Build the flutter client
 cd "devzees-edutechai-client"
 flutter build apk --dart-define=API_BASE_URL=http://192.168.0.107:8000/api/v1

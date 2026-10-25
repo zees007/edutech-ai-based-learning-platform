@@ -321,3 +321,27 @@ class RefreshToken(Base):
 
     def __repr__(self) -> str:
         return f"<RefreshToken {self.id} for user={self.user_id}>"
+
+
+class SystemSetting(Base):
+    """
+    Dynamic system configuration key-value entity.
+    Stores agent LLM models, subscription prices, promotional coupons, etc.
+    """
+
+    __tablename__ = "settings"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    code: Mapped[str] = mapped_column(String(100), unique=True, nullable=False, index=True)
+    value: Mapped[str] = mapped_column(Text, nullable=False)
+    order_number: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, server_default=func.now()
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, server_default=func.now(), onupdate=func.now()
+    )
+
+    def __repr__(self) -> str:
+        return f"<SystemSetting {self.code}={self.value}>"
+

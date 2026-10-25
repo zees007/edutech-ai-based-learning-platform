@@ -8,6 +8,8 @@ import '../../data/models/admin/role_response.dart';
 import '../../data/models/admin/subscription_update_request.dart';
 import '../../data/models/admin/user_response.dart';
 import '../../data/models/admin/user_role_assign_request.dart';
+import '../../data/models/admin/system_setting_model.dart';
+import '../../data/models/admin/setting_update_request.dart';
 import '../../data/models/auth/subscription_response.dart';
 import '../constants/api_constants.dart';
 import 'api_client.dart';
@@ -179,6 +181,36 @@ class AdminService {
       return SubscriptionResponse.fromJson(response.data);
     } on DioException catch (e) {
       throw Exception(_parseError(e, 'Failed to update subscription'));
+    }
+  }
+
+  // ─── System Settings Management ───────────────────────────────
+
+  /// Fetch all system configuration settings ordered by order_number.
+  Future<List<SystemSettingModel>> getAllSettings() async {
+    try {
+      final response = await _dio.get(ApiConstants.adminSettings);
+      return (response.data as List)
+          .map((json) => SystemSettingModel.fromJson(json as Map<String, dynamic>))
+          .toList();
+    } on DioException catch (e) {
+      throw Exception(_parseError(e, 'Failed to fetch system settings'));
+    }
+  }
+
+  /// Update a system setting by code.
+  Future<SystemSettingModel> updateSetting(
+    String code,
+    SettingUpdateRequest request,
+  ) async {
+    try {
+      final response = await _dio.put(
+        ApiConstants.adminSettingByCode(code),
+        data: request.toJson(),
+      );
+      return SystemSettingModel.fromJson(response.data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      throw Exception(_parseError(e, 'Failed to update system setting'));
     }
   }
 }

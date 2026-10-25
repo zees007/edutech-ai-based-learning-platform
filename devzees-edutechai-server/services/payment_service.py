@@ -17,23 +17,13 @@ from services.payment_providers import (
     RazorpayPaymentProvider,
     SandboxPaymentProvider,
 )
+from services.setting_service import SettingService
 
 logger = logging.getLogger(__name__)
 
-# Standard Plan Base Pricing Structure
-PRICING_CATALOG: Dict[str, Dict[str, float]] = {
-    "free": {"monthly": 0.0, "annual": 0.0},
-    "pro": {"monthly": 19.0, "annual": 180.0},    # ~$15/mo billed annually (~20% off)
-    "ultra": {"monthly": 49.0, "annual": 470.0},   # ~$39/mo billed annually (~20% off)
-}
-
-# Promotional Coupons Registry
-VALID_COUPONS: Dict[str, float] = {
-    "EDU20": 20.0,       # 20% Off
-    "WELCOME50": 50.0,   # 50% Off First Month/Year
-    "STUDENT10": 10.0,   # 10% Off Student Discount
-    "EDUTECH100": 100.0, # 100% Off VIP
-}
+# Fallback definitions (dynamically populated from SettingService)
+PRICING_CATALOG: Dict[str, Dict[str, float]] = SettingService.get_pricing_catalog()
+VALID_COUPONS: Dict[str, float] = SettingService.get_valid_coupons()
 
 
 class PaymentService:
@@ -59,25 +49,26 @@ class PaymentService:
 
     @staticmethod
     def get_plan_price(tier: str, billing_cycle: str = "monthly") -> float:
-        """Returns standard catalog price for a tier and billing cycle."""
+        """Returns standard catalog price for a tier and billing cycle dynamically from settings."""
         tier_key = tier.lower().strip()
         cycle_key = billing_cycle.lower().strip()
+        catalog = SettingService.get_pricing_catalog()
 
-        if tier_key not in PRICING_CATALOG:
+        if tier_key not in catalog:
             raise BadRequestException(
                 error_code="INVALID_TIER",
-                errors=f"Invalid tier '{tier}'. Must be one of {list(PRICING_CATALOG.keys())}.",
+                errors=f"Invalid tier '{tier}'. Must be one of {list(catalog.keys())}.",
             )
 
         if cycle_key not in ["monthly", "annual"]:
             cycle_key = "monthly"
 
-        return PRICING_CATALOG[tier_key][cycle_key]
+        return catalog[tier_key][cycle_key]
 
     @staticmethod
     def validate_coupon(coupon_code: Optional[str], tier: str, billing_cycle: str = "monthly") -> Dict[str, float | str | bool]:
         """
-        Validates a promotional coupon code and computes final price.
+        Validates a promotional coupon code and computes final price dynamically from settings.
         """
         base_price = PaymentService.get_plan_price(tier, billing_cycle)
         if not coupon_code:
@@ -92,7 +83,8 @@ class PaymentService:
             }
 
         code_clean = coupon_code.upper().strip()
-        if code_clean not in VALID_COUPONS:
+        valid_coupons = SettingService.get_valid_coupons()
+        if code_clean not in valid_coupons:
             return {
                 "valid": False,
                 "coupon_code": code_clean,
@@ -103,7 +95,7 @@ class PaymentService:
                 "message": f"Invalid coupon code '{code_clean}'.",
             }
 
-        pct = VALID_COUPONS[code_clean]
+        pct = valid_coupons[code_clean]
         discount_amount = round(base_price * (pct / 100.0), 2)
         final_price = max(0.0, round(base_price - discount_amount, 2))
 
@@ -116,3 +108,4 @@ class PaymentService:
             "final_price": final_price,
             "message": f"Coupon '{code_clean}' applied! Saved {pct:.0f}% (${discount_amount:.2f}).",
         }
+

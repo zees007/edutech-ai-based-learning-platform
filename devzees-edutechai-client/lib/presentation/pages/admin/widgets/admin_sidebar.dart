@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/text_styles.dart';
 
-enum AdminSection { users, roles, subscriptions, analytics }
+enum AdminSection { users, roles, subscriptions, settings, analytics }
 
 /// Admin sidebar navigation with glassmorphic styling.
 class AdminSidebar extends StatelessWidget {
@@ -105,6 +105,12 @@ class AdminSidebar extends StatelessWidget {
             icon: Icons.credit_card_outlined,
             label: 'Subscriptions',
             section: AdminSection.subscriptions,
+          ),
+          _buildNavItem(
+            context,
+            icon: Icons.tune_outlined,
+            label: 'System Settings',
+            section: AdminSection.settings,
           ),
           _buildNavItem(
             context,

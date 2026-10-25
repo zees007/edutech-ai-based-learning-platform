@@ -51,6 +51,7 @@ def run_migrations_offline() -> None:
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
         version_table_schema=schema_name,
+        version_table_column_length=64,
         include_schemas=True if schema_name else False,
         include_object=include_object,
     )
@@ -64,12 +65,14 @@ def do_run_migrations(connection: Connection) -> None:
         connection=connection,
         target_metadata=target_metadata,
         version_table_schema=schema_name,
+        version_table_column_length=64,
         include_schemas=True if schema_name else False,
         include_object=include_object,
     )
 
     with context.begin_transaction():
          context.run_migrations()
+
 
 
 async def run_async_migrations() -> None:
