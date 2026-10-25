@@ -669,7 +669,10 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
+                      Wrap(
+                        spacing: 10,
+                        runSpacing: 6,
+                        crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
                           Container(
                             padding: const EdgeInsets.symmetric(
@@ -869,16 +872,20 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
               children: [
                 Icon(Icons.history, size: 14, color: AppColors.textMuted),
                 const SizedBox(width: 6),
-                Text(
-                  'Created: ${_formatDateTime(setting.createdAt)}   •   Last Updated: ${_formatDateTime(setting.updatedAt)}',
-                  style: AppTextStyles.caption.copyWith(color: AppColors.textMuted),
+                Expanded(
+                  child: Text(
+                    'Created: ${_formatDateTime(setting.createdAt)}   •   Last Updated: ${_formatDateTime(setting.updatedAt)}',
+                    style: AppTextStyles.caption.copyWith(color: AppColors.textMuted),
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 28),
 
             // Action Buttons
-            Row(
+            Wrap(
+              spacing: 12,
+              runSpacing: 10,
               children: [
                 OutlinedButton(
                   onPressed: state.isSaving

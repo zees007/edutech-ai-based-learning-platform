@@ -136,6 +136,8 @@ class _RolePrivilegeTabState extends ConsumerState<RolePrivilegeTab> {
               Text(
                 privNames,
                 style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
               Text(
                 _formatDate(r.createdAt),
@@ -465,43 +467,55 @@ class _PrivilegeExpandableCellState extends State<_PrivilegeExpandableCell> {
           ),
         ),
         if (_isExpanded)
-          Padding(
-            padding: const EdgeInsets.only(top: 12.0, bottom: 4.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: widget.privileges.map((p) {
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 8.0),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: AppColors.surfaceDark,
-                          borderRadius: BorderRadius.circular(6),
-                          border: Border.all(color: AppColors.glassBorder),
-                        ),
-                        child: Text(
+          Container(
+            constraints: const BoxConstraints(maxHeight: 220),
+            padding: const EdgeInsets.only(top: 10.0, bottom: 4.0),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: widget.privileges.map((p) {
+                  return Container(
+                    width: double.infinity,
+                    margin: const EdgeInsets.only(bottom: 6.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceDark.withValues(alpha: 0.6),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: AppColors.glassBorder.withValues(alpha: 0.5)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
                           p.code,
                           style: AppTextStyles.caption.copyWith(
                             color: AppColors.accentBlue,
                             fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            fontFamily: 'monospace',
                           ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Flexible(
-                        child: Text(
-                          p.name,
-                          style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+                          maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                      ),
-                    ],
-                  ),
-                );
-              }).toList(),
+                        if (p.name != null && p.name.toString().isNotEmpty) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            p.name,
+                            style: AppTextStyles.caption.copyWith(
+                              color: AppColors.textSecondary,
+                              fontSize: 10,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ],
+                    ),
+                  );
+                }).toList(),
+              ),
             ),
           ),
       ],
@@ -582,35 +596,67 @@ class _PrivilegeTreeViewState extends State<_PrivilegeTreeView> {
       children: [
         Padding(
           padding: EdgeInsets.only(left: depth * 24.0, top: 4, bottom: 4),
-          child: Row(
-            children: [
-              SizedBox(
-                width: 24,
-                height: 24,
-                child: Checkbox(
-                  value: isSelected,
-                  onChanged: (val) => _toggleSelection(node.id, val),
-                  activeColor: AppColors.purple,
-                  side: BorderSide(color: AppColors.glassBorder),
-                ),
+          child: InkWell(
+            onTap: () => _toggleSelection(node.id, !isSelected),
+            borderRadius: BorderRadius.circular(8),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 6),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 22,
+                    height: 22,
+                    child: Checkbox(
+                      value: isSelected,
+                      onChanged: (val) => _toggleSelection(node.id, val),
+                      activeColor: AppColors.purple,
+                      checkColor: Colors.white,
+                      fillColor: WidgetStateProperty.resolveWith<Color>((states) {
+                        if (states.contains(WidgetState.selected)) {
+                          return AppColors.purple;
+                        }
+                        return AppColors.isDark
+                            ? AppColors.surfaceDeep
+                            : Colors.white;
+                      }),
+                      side: BorderSide(
+                        color: isSelected
+                            ? AppColors.purple
+                            : (AppColors.isDark
+                                ? const Color(0xFF6B7280)
+                                : const Color(0xFF94A3B8)),
+                        width: 1.5,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    node.code,
+                    style: AppTextStyles.body2.copyWith(
+                      color: isSelected
+                          ? AppColors.textPrimary
+                          : AppColors.textSecondary,
+                      fontWeight: children.isNotEmpty
+                          ? FontWeight.w600
+                          : FontWeight.normal,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      node.name,
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.textMuted,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 8),
-              Text(
-                node.code,
-                style: AppTextStyles.body2.copyWith(
-                  color: isSelected ? AppColors.textPrimary : AppColors.textSecondary,
-                  fontWeight: children.isNotEmpty ? FontWeight.w600 : FontWeight.normal,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  node.name,
-                  style: AppTextStyles.caption.copyWith(color: AppColors.textMuted),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
+            ),
           ),
         ),
         if (children.isNotEmpty)

@@ -50,80 +50,103 @@ class AdminDataTable extends StatelessWidget {
           ),
           child: Column(
             children: [
-              // Header Row
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                decoration: BoxDecoration(
-                  color: AppColors.surfaceDeep.withValues(alpha: 0.8),
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(16),
-                    topRight: Radius.circular(16),
-                  ),
-                ),
-                child: Row(
-                  children: List.generate(columns.length, (i) {
-                    final colName = columns[i];
-                    final isSorted = sortBy?.toLowerCase() == colName.toLowerCase();
-                    
-                    Widget headerContent = Text(
-                      colName,
-                      style: AppTextStyles.captionBold.copyWith(
-                        color: AppColors.purple,
-                        letterSpacing: 0.8,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    );
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final double minTableWidth = (columns.length * 110.0).clamp(600.0, 1000.0);
+                  final bool needsScroll = constraints.maxWidth < minTableWidth;
+                  final double tableWidth = needsScroll ? minTableWidth : constraints.maxWidth;
 
-                    if (onSort != null) {
-                      headerContent = Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Flexible(child: headerContent),
-                          if (isSorted)
-                            Padding(
-                              padding: const EdgeInsets.only(left: 4.0),
-                              child: Icon(
-                                isDesc == true ? Icons.arrow_downward : Icons.arrow_upward,
-                                size: 14,
-                                color: AppColors.purple,
-                              ),
+                  Widget content = SizedBox(
+                    width: tableWidth,
+                    child: Column(
+                      children: [
+                        // Header Row
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          decoration: BoxDecoration(
+                            color: AppColors.surfaceDeep.withValues(alpha: 0.8),
+                            borderRadius: const BorderRadius.only(
+                              topLeft: Radius.circular(16),
+                              topRight: Radius.circular(16),
                             ),
-                        ],
-                      );
-                      
-                      headerContent = MouseRegion(
-                        cursor: SystemMouseCursors.click,
-                        child: GestureDetector(
-                          onTap: () => onSort!(colName),
-                          child: headerContent,
-                        ),
-                      );
-                    }
+                          ),
+                          child: Row(
+                            children: List.generate(columns.length, (i) {
+                              final colName = columns[i];
+                              final isSorted = sortBy?.toLowerCase() == colName.toLowerCase();
+                              
+                              Widget headerContent = Text(
+                                colName,
+                                style: AppTextStyles.captionBold.copyWith(
+                                  color: AppColors.purple,
+                                  letterSpacing: 0.8,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              );
 
-                    return Expanded(
-                      flex: columnWidths != null ? (columnWidths![i] * 10).round() : 1,
-                      child: headerContent,
-                    );
-                  }),
-                ),
-              ),
-              // Data Rows
-              if (rows.isEmpty)
-                Padding(
-                  padding: const EdgeInsets.all(32),
-                  child: Text(
-                    'No data available',
-                    style: AppTextStyles.body2.copyWith(color: AppColors.textMuted),
-                  ),
-                )
-              else
-                ...List.generate(rows.length, (rowIdx) {
-                  return _DataRow(
-                    cells: rows[rowIdx],
-                    isEven: rowIdx % 2 == 0,
-                    columnWidths: columnWidths,
+                              if (onSort != null) {
+                                headerContent = Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Flexible(child: headerContent),
+                                    if (isSorted)
+                                      Padding(
+                                        padding: const EdgeInsets.only(left: 4.0),
+                                        child: Icon(
+                                          isDesc == true ? Icons.arrow_downward : Icons.arrow_upward,
+                                          size: 14,
+                                          color: AppColors.purple,
+                                        ),
+                                      ),
+                                  ],
+                                );
+                                
+                                headerContent = MouseRegion(
+                                  cursor: SystemMouseCursors.click,
+                                  child: GestureDetector(
+                                    onTap: () => onSort!(colName),
+                                    child: headerContent,
+                                  ),
+                                );
+                              }
+
+                              return Expanded(
+                                flex: columnWidths != null ? (columnWidths![i] * 10).round() : 1,
+                                child: headerContent,
+                              );
+                            }),
+                          ),
+                        ),
+                        // Data Rows
+                        if (rows.isEmpty)
+                          Padding(
+                            padding: const EdgeInsets.all(32),
+                            child: Text(
+                              'No data available',
+                              style: AppTextStyles.body2.copyWith(color: AppColors.textMuted),
+                            ),
+                          )
+                        else
+                          ...List.generate(rows.length, (rowIdx) {
+                            return _DataRow(
+                              cells: rows[rowIdx],
+                              isEven: rowIdx % 2 == 0,
+                              columnWidths: columnWidths,
+                            );
+                          }),
+                      ],
+                    ),
                   );
-                }),
+
+                  if (needsScroll) {
+                    return SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: content,
+                    );
+                  }
+                  return content;
+                },
+              ),
               
               // Pagination Footer
               if (onPageChanged != null && currentPage != null && totalPages != null && totalPages! > 1)
