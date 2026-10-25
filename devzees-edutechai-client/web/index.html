@@ -112,6 +112,34 @@
       });
     };
   </script>
+  <!-- Razorpay Checkout SDK -->
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <script>
+    window.openRazorpayCheckout = function(optionsJson, successCallback, dismissCallback) {
+      try {
+        var options = typeof optionsJson === 'string' ? JSON.parse(optionsJson) : optionsJson;
+        options.handler = function(response) {
+          if (successCallback) {
+            successCallback(
+              response.razorpay_payment_id || '',
+              response.razorpay_order_id || '',
+              response.razorpay_signature || ''
+            );
+          }
+        };
+        options.modal = {
+          ondismiss: function() {
+            if (dismissCallback) dismissCallback();
+          }
+        };
+        var rzp = new Razorpay(options);
+        rzp.open();
+      } catch (e) {
+        console.error("Razorpay Checkout initialization error:", e);
+        if (dismissCallback) dismissCallback(e.toString());
+      }
+    };
+  </script>
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

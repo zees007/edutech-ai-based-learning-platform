@@ -25,6 +25,8 @@ from models.subscription_schemas import (
     CheckoutResponse,
     CouponValidateRequest,
     CouponValidateResponse,
+    CreateOrderRequest,
+    CreateOrderResponse,
     PaymentTransactionResponse,
     SubscriptionResponse,
     SubscriptionUpdateRequest,
@@ -69,6 +71,23 @@ async def update_user_subscription_tier(
 
 
 @router.post(
+    "/subscriptions/create-order",
+    response_model=CreateOrderResponse,
+)
+async def create_checkout_order(
+    request: CreateOrderRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Initiate a payment order with Razorpay (or other providers) for client popup checkout.
+    """
+    return await SubscriptionService.create_checkout_order(
+        db=db, user_id=current_user.id, dto=request
+    )
+
+
+@router.post(
     "/subscriptions/checkout",
     response_model=CheckoutResponse,
 )
@@ -78,7 +97,7 @@ async def checkout_subscription(
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Initiate or complete subscription upgrade via requested gateway (Paddle, Sandbox, Razorpay).
+    Complete subscription upgrade with Razorpay signature verification or direct Sandbox checkout.
     """
     return await SubscriptionService.process_checkout_and_upgrade(
         db=db, user_id=current_user.id, dto=request

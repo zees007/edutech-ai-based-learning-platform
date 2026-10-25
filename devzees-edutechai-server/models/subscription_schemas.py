@@ -43,13 +43,47 @@ class SubscriptionUpdateRequest(BaseModel):
     payment_gateway_ref: str | None = Field(default=None, description="Payment processor reference ID")
 
 
+class CreateOrderRequest(BaseModel):
+    """Payload to initiate a payment order with the gateway (Razorpay)."""
+
+    tier: str = Field(..., description="Target subscription tier: pro, ultra")
+    billing_cycle: str = Field(default="monthly", description="Billing cycle: monthly, annual")
+    gateway_provider: str = Field(default="razorpay", description="Selected provider: razorpay, paddle, sandbox")
+    coupon_code: str | None = Field(default=None, description="Promotional coupon code")
+    currency: str = Field(default="USD", description="Currency code (USD, INR)")
+
+
+class CreateOrderResponse(BaseModel):
+    """Order initialization result for client-side checkout popup."""
+
+    success: bool
+    order_id: str
+    key_id: str
+    amount: float
+    amount_subunits: int
+    currency: str
+    tier: str
+    billing_cycle: str
+    gateway_provider: str
+    user_name: str | None = None
+    user_email: str | None = None
+    user_mobile: str | None = None
+    message: str | None = None
+
+
 class CheckoutRequest(BaseModel):
     """Payload to initiate or complete a subscription upgrade checkout."""
 
     tier: str = Field(..., description="Target subscription tier: pro, ultra")
     billing_cycle: str = Field(default="monthly", description="Billing cycle: monthly, annual")
-    gateway_provider: str = Field(default="paddle", description="Selected provider: paddle, razorpay, sandbox")
+    gateway_provider: str = Field(default="razorpay", description="Selected provider: razorpay, paddle, sandbox")
     coupon_code: str | None = Field(default=None, description="Promotional coupon code")
+    currency: str = Field(default="USD", description="Payment currency: USD, INR")
+    # Razorpay payment verification fields
+    razorpay_order_id: str | None = Field(default=None, description="Razorpay order reference ID")
+    razorpay_payment_id: str | None = Field(default=None, description="Razorpay payment transaction ID")
+    razorpay_signature: str | None = Field(default=None, description="Razorpay HMAC SHA256 payment signature")
+    # Sandbox direct card test fields
     card_number: str | None = Field(default=None, description="Card number (Sandbox test mode)")
     exp_month: int | None = Field(default=None, description="Expiry month")
     exp_year: int | None = Field(default=None, description="Expiry year")
@@ -69,6 +103,8 @@ class CheckoutResponse(BaseModel):
     gateway_provider: str
     current_period_end: datetime | None = None
     receipt_url: str | None = None
+    order_id: str | None = None
+    key_id: str | None = None
 
 
 class CouponValidateRequest(BaseModel):

@@ -37,11 +37,13 @@ async def test_user_subscription_and_role_lifecycle(app):
 
         # Assign SuperAdmin role to test user so client has all privileges for test steps
         from models.db_models import Role, User
+        from sqlalchemy.orm import selectinload
         from services.database import get_db_session
         from sqlalchemy import select
         async with get_db_session() as db:
-            user_obj = (await db.execute(select(User).where(User.id == user_id))).scalar_one()
-            admin_role = (await db.execute(select(Role).where(Role.name == "SuperAdmin"))).scalar_one_or_none()
+            stmt = select(User).options(selectinload(User.roles)).where(User.id == user_id)
+            user_obj = (await db.execute(stmt)).scalar_one()
+            admin_role = (await db.execute(select(Role).where(Role.name.in_(["SuperAdmin", "Admin"])))).scalars().first()
             if admin_role:
                 user_obj.roles.append(admin_role)
                 await db.commit()

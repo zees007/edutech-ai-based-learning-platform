@@ -60,5 +60,13 @@ class ApiConstants {
   // Admin — System Settings
   static const String adminSettings = '/admin/settings';
   static String adminSettingByCode(String code) => '/admin/settings/$code';
+
+  // Subscription & Payment Endpoints
+  static const String subscriptionCreateOrder = '/subscriptions/create-order';
+  static const String subscriptionCheckout = '/subscriptions/checkout';
+  static const String subscriptionValidateCoupon = '/subscriptions/validate-coupon';
+  static String userSubscription(String userId) => '/subscriptions/users/$userId';
+  static String userSubscriptionTransactions(String userId) => '/subscriptions/users/$userId/transactions';
+  static String userSubscriptionCancel(String userId) => '/subscriptions/users/$userId/cancel';
 }
 

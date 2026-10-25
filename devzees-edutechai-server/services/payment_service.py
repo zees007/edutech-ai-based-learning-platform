@@ -8,6 +8,7 @@ coupon discount verification, pricing calculation, and webhook handling.
 from __future__ import annotations
 
 import logging
+import os
 from typing import Dict, Optional
 
 from app.exceptions import BadRequestException
@@ -36,15 +37,18 @@ class PaymentService:
     }
 
     @classmethod
-    def get_provider(cls, provider_name: str = "paddle") -> BasePaymentProvider:
+    def get_provider(cls, provider_name: Optional[str] = None) -> BasePaymentProvider:
         """
-        Retrieves the payment provider instance. Falls back to 'paddle' or 'sandbox'
-        if the requested provider is unsupported.
+        Retrieves the payment provider instance. Defaults to 'razorpay' (or DEFAULT_PAYMENT_GATEWAY)
+        if unspecified or unsupported.
         """
-        provider_key = provider_name.lower().strip()
+        default_provider = os.getenv("DEFAULT_PAYMENT_GATEWAY", "razorpay").lower().strip()
+        provider_key = (provider_name or default_provider).lower().strip()
         if provider_key not in cls._providers:
-            logger.warning(f"[PaymentService] Unknown provider '{provider_name}'. Defaulting to Paddle.")
-            provider_key = "paddle"
+            logger.warning(
+                f"[PaymentService] Unknown provider '{provider_name}'. Defaulting to {default_provider}."
+            )
+            provider_key = default_provider if default_provider in cls._providers else "razorpay"
         return cls._providers[provider_key]
 
     @staticmethod
