@@ -41,7 +41,7 @@ def _get_engine(settings: Settings | None = None) -> AsyncEngine:
     except RuntimeError:
         current_loop = None
 
-    # Reset engine singleton if active event loop has changed across Streamlit reruns
+    # Reset engine singleton if active event loop has changed across async tasks
     if _engine is not None and current_loop is not None and _engine_loop is not current_loop:
         _engine = None
         _session_factory = None
@@ -138,8 +138,17 @@ async def init_db(settings: Settings | None = None) -> None:
     # Automatically run pending Alembic migrations on server startup
     await run_auto_migrations()
 
+    # Pre-warm dynamic system settings in-memory cache
+    try:
+        from services.setting_service import SettingService
+        async with get_db_session() as session:
+            await SettingService.sync_cache_from_db(session)
+    except Exception as e:
+        logger.debug(f"Initial settings cache sync notice: {e}")
+
     _db_initialized = True
     logger.info(f"Database initialization complete in schema '{settings.database_schema}'. Future calls will be skipped.")
+
 
 
 

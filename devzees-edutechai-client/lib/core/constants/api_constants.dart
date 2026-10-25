@@ -56,4 +56,9 @@ class ApiConstants {
 
   // Admin — Metrics
   static const String adminMetrics = '/admin/metrics';
+
+  // Admin — System Settings
+  static const String adminSettings = '/admin/settings';
+  static String adminSettingByCode(String code) => '/admin/settings/$code';
 }
+

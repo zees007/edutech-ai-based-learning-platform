@@ -10,6 +10,7 @@ import 'widgets/admin_sidebar.dart';
 import 'widgets/user_directory_tab.dart';
 import 'widgets/role_privilege_tab.dart';
 import 'widgets/subscription_manager_tab.dart';
+import 'widgets/settings_tab.dart';
 import 'widgets/analytics_tab.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/theme_toggle_button.dart';
 
@@ -33,6 +34,8 @@ class _AdminPageState extends ConsumerState<AdminPage> {
         return const RolePrivilegeTab();
       case AdminSection.subscriptions:
         return const SubscriptionManagerTab();
+      case AdminSection.settings:
+        return const SettingsTab();
       case AdminSection.analytics:
         return const AnalyticsTab();
     }
@@ -46,6 +49,8 @@ class _AdminPageState extends ConsumerState<AdminPage> {
         return '🛡️ Roles & Privileges';
       case AdminSection.subscriptions:
         return '💳 Subscriptions';
+      case AdminSection.settings:
+        return '⚙️ System Settings';
       case AdminSection.analytics:
         return '📊 Analytics';
     }

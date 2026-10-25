@@ -22,6 +22,7 @@ class _RolePrivilegeTabState extends ConsumerState<RolePrivilegeTab> {
   List<int> _selectedPrivilegeIds = [];
   bool _isCreating = false;
   String? _editingRoleId;
+  bool _isPrivilegesExpanded = false;
 
   @override
   void initState() {
@@ -136,6 +137,8 @@ class _RolePrivilegeTabState extends ConsumerState<RolePrivilegeTab> {
               Text(
                 privNames,
                 style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
               Text(
                 _formatDate(r.createdAt),
@@ -182,18 +185,67 @@ class _RolePrivilegeTabState extends ConsumerState<RolePrivilegeTab> {
                 _editingRoleId == null ? 'Create New Role' : 'Edit Role',
                 style: AppTextStyles.subtitle1.copyWith(color: AppColors.textPrimary),
               ),
-              if (_editingRoleId != null)
-                TextButton.icon(
-                  onPressed: () {
-                    setState(() {
-                      _editingRoleId = null;
-                      _roleNameController.clear();
-                      _selectedPrivilegeIds = [];
-                    });
-                  },
-                  icon: Icon(Icons.close, size: 16, color: AppColors.textSecondary),
-                  label: Text('Cancel Edit', style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary)),
-                )
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (_editingRoleId != null) ...[
+                    TextButton.icon(
+                      onPressed: () {
+                        setState(() {
+                          _editingRoleId = null;
+                          _roleNameController.clear();
+                          _selectedPrivilegeIds = [];
+                        });
+                      },
+                      icon: Icon(Icons.close, size: 16, color: AppColors.textSecondary),
+                      label: Text('Cancel Edit', style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary)),
+                    ),
+                    const SizedBox(width: 8),
+                  ],
+                  // Zoom / Expand in-place icon
+                  IconButton(
+                    tooltip: _isPrivilegesExpanded ? 'Collapse Privileges' : 'Zoom / Expand Privileges',
+                    icon: Icon(
+                      _isPrivilegesExpanded ? Icons.close_fullscreen : Icons.open_in_full,
+                      size: 18,
+                      color: _isPrivilegesExpanded ? AppColors.accentViolet : AppColors.textSecondary,
+                    ),
+                    style: IconButton.styleFrom(
+                      backgroundColor: _isPrivilegesExpanded
+                          ? AppColors.accentViolet.withValues(alpha: 0.15)
+                          : AppColors.glassBase,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        side: BorderSide(
+                          color: _isPrivilegesExpanded
+                              ? AppColors.accentViolet.withValues(alpha: 0.4)
+                              : AppColors.glassBorder,
+                        ),
+                      ),
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _isPrivilegesExpanded = !_isPrivilegesExpanded;
+                      });
+                    },
+                  ),
+                  const SizedBox(width: 6),
+                  // Fullscreen dialog popup
+                  IconButton(
+                    tooltip: 'Open in Full Dialog Window',
+                    icon: const Icon(Icons.fullscreen, size: 20),
+                    color: AppColors.textSecondary,
+                    style: IconButton.styleFrom(
+                      backgroundColor: AppColors.glassBase,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        side: BorderSide(color: AppColors.glassBorder),
+                      ),
+                    ),
+                    onPressed: () => _openPrivilegeDialog(privilegesAsync),
+                  ),
+                ],
+              ),
             ],
           ),
           const SizedBox(height: 16),
@@ -227,19 +279,70 @@ class _RolePrivilegeTabState extends ConsumerState<RolePrivilegeTab> {
           ),
           const SizedBox(height: 16),
           // Privilege Selection
-          Text(
-            'Assign Privileges:',
-            style: AppTextStyles.label.copyWith(color: AppColors.textSecondary),
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 8,
+            runSpacing: 6,
+            children: [
+              Text(
+                'Assign Privileges (${_selectedPrivilegeIds.length} selected):',
+                style: AppTextStyles.label.copyWith(color: AppColors.textSecondary),
+              ),
+              if (privilegesAsync.hasValue)
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextButton(
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _selectedPrivilegeIds =
+                              privilegesAsync.value!.map((p) => p.id).toList();
+                        });
+                      },
+                      child: Text('Select All',
+                          style: AppTextStyles.caption.copyWith(color: AppColors.accentBlue)),
+                    ),
+                    const SizedBox(width: 8),
+                    TextButton(
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _selectedPrivilegeIds = [];
+                        });
+                      },
+                      child: Text('Clear',
+                          style: AppTextStyles.caption.copyWith(color: AppColors.textMuted)),
+                    ),
+                  ],
+                ),
+            ],
           ),
           const SizedBox(height: 8),
           privilegesAsync.when(
             data: (privileges) {
-              return Container(
-                constraints: const BoxConstraints(maxHeight: 300),
+              return AnimatedContainer(
+                duration: const Duration(milliseconds: 250),
+                constraints: BoxConstraints(
+                  maxHeight: _isPrivilegesExpanded ? 650 : 300,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.glassBase,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.glassBorder),
+                  border: Border.all(
+                    color: _isPrivilegesExpanded
+                        ? AppColors.accentViolet.withValues(alpha: 0.5)
+                        : AppColors.glassBorder,
+                  ),
                 ),
                 padding: const EdgeInsets.all(12),
                 child: SingleChildScrollView(
@@ -409,6 +512,125 @@ class _RolePrivilegeTabState extends ConsumerState<RolePrivilegeTab> {
   String _formatDate(DateTime date) {
     return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
   }
+
+  void _openPrivilegeDialog(AsyncValue<List<PrivilegeResponse>> privilegesAsync) {
+    if (!privilegesAsync.hasValue) return;
+    final allPrivs = privilegesAsync.value!;
+
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (dialogCtx, setDialogState) {
+            return AlertDialog(
+              backgroundColor: AppColors.cardBackground,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: BorderSide(color: AppColors.glassBorder),
+              ),
+              title: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.shield_outlined, color: AppColors.purple, size: 22),
+                      const SizedBox(width: 10),
+                      Text(
+                        'Assign Privileges (${_selectedPrivilegeIds.length} / ${allPrivs.length})',
+                        style: AppTextStyles.subtitle1.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                    ],
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.close, color: AppColors.textSecondary, size: 20),
+                    onPressed: () => Navigator.of(dialogCtx).pop(),
+                  ),
+                ],
+              ),
+              content: SizedBox(
+                width: MediaQuery.of(context).size.width > 700
+                    ? 650
+                    : double.maxFinite,
+                height: 520,
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        TextButton.icon(
+                          onPressed: () {
+                            setDialogState(() {
+                              setState(() {
+                                _selectedPrivilegeIds = allPrivs.map((p) => p.id).toList();
+                              });
+                            });
+                          },
+                          icon: const Icon(Icons.select_all, size: 16),
+                          label: const Text('Select All'),
+                          style: TextButton.styleFrom(foregroundColor: AppColors.accentBlue),
+                        ),
+                        TextButton.icon(
+                          onPressed: () {
+                            setDialogState(() {
+                              setState(() {
+                                _selectedPrivilegeIds = [];
+                              });
+                            });
+                          },
+                          icon: const Icon(Icons.clear_all, size: 16),
+                          label: const Text('Clear All'),
+                          style: TextButton.styleFrom(foregroundColor: AppColors.textMuted),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: AppColors.glassBase,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: AppColors.glassBorder),
+                        ),
+                        child: SingleChildScrollView(
+                          child: _PrivilegeTreeView(
+                            allPrivileges: allPrivs,
+                            selectedIds: _selectedPrivilegeIds,
+                            onChanged: (newSelections) {
+                              setDialogState(() {
+                                setState(() {
+                                  _selectedPrivilegeIds = newSelections;
+                                });
+                              });
+                            },
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                ElevatedButton(
+                  onPressed: () => Navigator.of(dialogCtx).pop(),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.purple,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  child: const Text('Done'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
 }
 
 class _PrivilegeExpandableCell extends StatefulWidget {
@@ -465,43 +687,55 @@ class _PrivilegeExpandableCellState extends State<_PrivilegeExpandableCell> {
           ),
         ),
         if (_isExpanded)
-          Padding(
-            padding: const EdgeInsets.only(top: 12.0, bottom: 4.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: widget.privileges.map((p) {
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 8.0),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: AppColors.surfaceDark,
-                          borderRadius: BorderRadius.circular(6),
-                          border: Border.all(color: AppColors.glassBorder),
-                        ),
-                        child: Text(
+          Container(
+            constraints: const BoxConstraints(maxHeight: 220),
+            padding: const EdgeInsets.only(top: 10.0, bottom: 4.0),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: widget.privileges.map((p) {
+                  return Container(
+                    width: double.infinity,
+                    margin: const EdgeInsets.only(bottom: 6.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceDark.withValues(alpha: 0.6),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: AppColors.glassBorder.withValues(alpha: 0.5)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
                           p.code,
                           style: AppTextStyles.caption.copyWith(
                             color: AppColors.accentBlue,
                             fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            fontFamily: 'monospace',
                           ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Flexible(
-                        child: Text(
-                          p.name,
-                          style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+                          maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                      ),
-                    ],
-                  ),
-                );
-              }).toList(),
+                        if (p.name != null && p.name.toString().isNotEmpty) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            p.name,
+                            style: AppTextStyles.caption.copyWith(
+                              color: AppColors.textSecondary,
+                              fontSize: 10,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ],
+                    ),
+                  );
+                }).toList(),
+              ),
             ),
           ),
       ],
@@ -581,36 +815,82 @@ class _PrivilegeTreeViewState extends State<_PrivilegeTreeView> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: EdgeInsets.only(left: depth * 24.0, top: 4, bottom: 4),
-          child: Row(
-            children: [
-              SizedBox(
-                width: 24,
-                height: 24,
-                child: Checkbox(
-                  value: isSelected,
-                  onChanged: (val) => _toggleSelection(node.id, val),
-                  activeColor: AppColors.purple,
-                  side: BorderSide(color: AppColors.glassBorder),
-                ),
+          padding: EdgeInsets.only(left: depth * 14.0, top: 3, bottom: 3),
+          child: InkWell(
+            onTap: () => _toggleSelection(node.id, !isSelected),
+            borderRadius: BorderRadius.circular(8),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: 22,
+                    height: 22,
+                    child: Checkbox(
+                      value: isSelected,
+                      onChanged: (val) => _toggleSelection(node.id, val),
+                      activeColor: AppColors.purple,
+                      checkColor: Colors.white,
+                      fillColor: WidgetStateProperty.resolveWith<Color>((states) {
+                        if (states.contains(WidgetState.selected)) {
+                          return AppColors.purple;
+                        }
+                        return AppColors.isDark
+                            ? AppColors.surfaceDeep
+                            : Colors.white;
+                      }),
+                      side: BorderSide(
+                        color: isSelected
+                            ? AppColors.purple
+                            : (AppColors.isDark
+                                ? const Color(0xFF6B7280)
+                                : const Color(0xFF94A3B8)),
+                        width: 1.5,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          node.code,
+                          style: AppTextStyles.body2.copyWith(
+                            color: isSelected
+                                ? AppColors.textPrimary
+                                : AppColors.textSecondary,
+                            fontWeight: children.isNotEmpty
+                                ? FontWeight.w700
+                                : FontWeight.w600,
+                            fontSize: 12,
+                            fontFamily: 'monospace',
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        if (node.name.isNotEmpty &&
+                            node.name.toLowerCase() != node.code.toLowerCase())
+                          Text(
+                            node.name,
+                            style: AppTextStyles.caption.copyWith(
+                              color: AppColors.textMuted,
+                              fontSize: 11,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 8),
-              Text(
-                node.code,
-                style: AppTextStyles.body2.copyWith(
-                  color: isSelected ? AppColors.textPrimary : AppColors.textSecondary,
-                  fontWeight: children.isNotEmpty ? FontWeight.w600 : FontWeight.normal,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  node.name,
-                  style: AppTextStyles.caption.copyWith(color: AppColors.textMuted),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
+            ),
           ),
         ),
         if (children.isNotEmpty)

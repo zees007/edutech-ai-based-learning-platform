@@ -84,8 +84,11 @@ class _UserDirectoryTabState extends ConsumerState<UserDirectoryTab> {
               color: AppColors.glassBorder,
             ),
             const SizedBox(height: 24),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 12,
+              runSpacing: 12,
               children: [
                 Text(
                   'Manage User Roles',

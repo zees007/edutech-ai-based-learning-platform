@@ -34,9 +34,6 @@ python-dotenv>=1.0.0
 # ─── Security & JWT Authentication ──────────────────────────────
 pyjwt>=2.8.0
 
-# ─── Streamlit Frontend UI ───────────────────────────────────────
-streamlit>=1.38.0
-
 # ─── Export Features ───────────────────────────────────────────────
 markdown>=3.10.0
 xhtml2pdf>=0.2.17

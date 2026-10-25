@@ -6,7 +6,8 @@ cd "d:\Projects\Python Projects\EduTechAI\devzees-edutechai-server"
 .\.venv\Scripts\python.exe scripts\seeder\01_reset_schema.py
 .\.venv\Scripts\python.exe scripts\seeder\02_seed_privileges_and_roles.py
 .\.venv\Scripts\python.exe scripts\seeder\03_seed_users_and_subscriptions.py
+.\.venv\Scripts\python.exe scripts\seeder\04_seed_settings.py
 
-Run all 3 in one line:
+Run all in one line:
 
-cd "d:\Projects\Python Projects\EduTechAI\devzees-edutechai-server"; .\.venv\Scripts\python.exe scripts\seeder\01_reset_schema.py; .\.venv\Scripts\python.exe scripts\seeder\02_seed_privileges_and_roles.py; .\.venv\Scripts\python.exe scripts\seeder\03_seed_users_and_subscriptions.py
+cd "d:\Projects\Python Projects\EduTechAI\devzees-edutechai-server"; .\.venv\Scripts\python.exe scripts\seeder\01_reset_schema.py; .\.venv\Scripts\python.exe scripts\seeder\02_seed_privileges_and_roles.py; .\.venv\Scripts\python.exe scripts\seeder\03_seed_users_and_subscriptions.py; .\.venv\Scripts\python.exe scripts\seeder\04_seed_settings.py

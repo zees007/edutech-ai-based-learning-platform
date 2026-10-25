@@ -6,6 +6,8 @@ import '../../data/models/admin/privilege_response.dart';
 import '../../data/models/admin/role_create_request.dart';
 import '../../data/models/admin/role_edit_request.dart';
 import '../../data/models/admin/subscription_update_request.dart';
+import '../../data/models/admin/system_setting_model.dart';
+import '../../data/models/admin/setting_update_request.dart';
 import '../services/admin_service.dart';
 
 // ─── Service Provider ─────────────────────────────────────────────
@@ -294,3 +296,138 @@ Future<void> updateUserSubscription(
 ) async {
   await service.updateSubscriptionTier(userId, request);
 }
+
+// ─── System Settings State & Notifier ─────────────────────────────
+
+class AdminSettingsState {
+  final List<SystemSettingModel> items;
+  final bool isLoading;
+  final bool isSaving;
+  final String? error;
+  final String? successMessage;
+  final SystemSettingModel? selectedSetting;
+  final String searchQuery;
+
+  AdminSettingsState({
+    this.items = const [],
+    this.isLoading = false,
+    this.isSaving = false,
+    this.error,
+    this.successMessage,
+    this.selectedSetting,
+    this.searchQuery = '',
+  });
+
+  AdminSettingsState copyWith({
+    List<SystemSettingModel>? items,
+    bool? isLoading,
+    bool? isSaving,
+    String? error,
+    String? successMessage,
+    SystemSettingModel? selectedSetting,
+    bool clearSelected = false,
+    String? searchQuery,
+  }) {
+    return AdminSettingsState(
+      items: items ?? this.items,
+      isLoading: isLoading ?? this.isLoading,
+      isSaving: isSaving ?? this.isSaving,
+      error: error,
+      successMessage: successMessage,
+      selectedSetting: clearSelected ? null : (selectedSetting ?? this.selectedSetting),
+      searchQuery: searchQuery ?? this.searchQuery,
+    );
+  }
+
+  List<SystemSettingModel> get filteredItems {
+    if (searchQuery.trim().isEmpty) return items;
+    final q = searchQuery.toLowerCase().trim();
+    return items.where((s) {
+      return s.code.toLowerCase().contains(q) ||
+          s.value.toLowerCase().contains(q);
+    }).toList();
+  }
+}
+
+class AdminSettingsNotifier extends Notifier<AdminSettingsState> {
+  @override
+  AdminSettingsState build() {
+    return AdminSettingsState();
+  }
+
+  Future<void> loadSettings() async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final service = ref.read(adminServiceProvider);
+      final items = await service.getAllSettings();
+      
+      SystemSettingModel? nextSelected;
+      if (state.selectedSetting != null) {
+        nextSelected = items.firstWhere(
+          (s) => s.code == state.selectedSetting!.code,
+          orElse: () => items.isNotEmpty ? items.first : state.selectedSetting!,
+        );
+      } else if (items.isNotEmpty) {
+        nextSelected = items.first;
+      }
+
+      state = state.copyWith(
+        items: items,
+        isLoading: false,
+        selectedSetting: nextSelected,
+      );
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: e.toString().replaceFirst('Exception: ', ''),
+      );
+    }
+  }
+
+  void selectSetting(SystemSettingModel setting) {
+    state = state.copyWith(
+      selectedSetting: setting,
+      error: null,
+      successMessage: null,
+    );
+  }
+
+  void updateSearch(String query) {
+    state = state.copyWith(searchQuery: query);
+  }
+
+  Future<bool> updateSetting(String code, String value, int? orderNumber) async {
+    state = state.copyWith(isSaving: true, error: null, successMessage: null);
+    try {
+      final service = ref.read(adminServiceProvider);
+      final updated = await service.updateSetting(
+        code,
+        SettingUpdateRequest(value: value, orderNumber: orderNumber),
+      );
+
+      final updatedList = state.items.map((s) {
+        return s.code == updated.code ? updated : s;
+      }).toList();
+
+      state = state.copyWith(
+        items: updatedList,
+        selectedSetting: updated,
+        isSaving: false,
+        successMessage: "Setting '$code' updated successfully!",
+      );
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isSaving: false,
+        error: e.toString().replaceFirst('Exception: ', ''),
+      );
+      return false;
+    }
+  }
+}
+
+final adminSettingsProvider =
+    NotifierProvider<AdminSettingsNotifier, AdminSettingsState>(() {
+  return AdminSettingsNotifier();
+});
+

@@ -86,7 +86,7 @@ EduTechAI uses a **supervisor–worker** agent pattern. There is **no direct age
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                         STUDENT                                 │
-│              (Streamlit UI / WebSocket Client)                  │
+│              (Flutter Client / WebSocket Client)                │
 └────────────────────────┬────────────────────────────────────────┘
                          │
                          ▼
@@ -559,7 +559,7 @@ To maximize speed and minimize API costs, **Regeneration is Smart**:
 
 | Component | Technology |
 |-----------|------------|
-| **Frontend** | Streamlit (interactive Python UI) |
+| **Frontend** | Flutter (cross-platform client in `devzees-edutechai-client`) |
 | **Backend API** | FastAPI (async REST + WebSocket) |
 | **LLM Inference** | Groq Cloud (default) / Ollama (local) / Any OpenAI-compatible API |
 | **Default Model** | Llama 3.1 8B Instant (configurable per agent) |
@@ -569,7 +569,7 @@ To maximize speed and minimize API costs, **Regeneration is Smart**:
 | **Academic Search** | OpenAlex API, Semantic Scholar API, arXiv API |
 | **Database** | SQLite (default) / PostgreSQL (production) via SQLAlchemy async ORM |
 | **Data Validation** | Pydantic v2 |
-| **Real-time Streaming** | WebSocket (FastAPI + Streamlit) |
+| **Real-time Streaming** | WebSocket (FastAPI + Flutter) |
 | **Python Version** | 3.12+ |
 
 ---
@@ -579,7 +579,6 @@ To maximize speed and minimize API costs, **Regeneration is Smart**:
 ```
 EduTechAI/
 ├── main.py                     # Entry point — starts uvicorn server
-├── ui.py                       # Streamlit frontend (552 lines)
 ├── config.py                   # Pydantic settings (reads from .env)
 ├── .env.example                # Environment variable template
 ├── pyproject.toml              # Project metadata & dependencies
@@ -695,18 +694,18 @@ EduTechAI/
 
 ### Running the Application
 
-**Option 1 — Streamlit Frontend (recommended for interactive use):**
-```bash
-streamlit run ui.py
-```
-Opens at `http://localhost:8501`
-
-**Option 2 — FastAPI Backend (for API/WebSocket access):**
+**Option 1 — FastAPI Backend Server:**
 ```bash
 python main.py
 ```
 Server starts at `http://127.0.0.1:8000`  
-API docs at `http://127.0.0.1:8000/docs`
+Interactive API docs at `http://127.0.0.1:8000/docs`
+
+**Option 2 — Flutter Client Application:**
+```bash
+cd devzees-edutechai-client
+flutter run -d chrome
+```
 
 **Option 3 — Using the project script:**
 ```bash
