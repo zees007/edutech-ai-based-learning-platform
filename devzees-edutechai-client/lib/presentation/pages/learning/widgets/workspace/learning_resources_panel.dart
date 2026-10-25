@@ -84,6 +84,7 @@ class LearningResourcesPanel extends ConsumerStatefulWidget {
     required Future<void> Function() onNextStep,
     required VoidCallback onQuizSubmitted,
     dynamic step,
+    String? sessionId,
   }) {
     if (quiz == null || quiz.isEmpty) {
       return Center(
@@ -115,12 +116,13 @@ class LearningResourcesPanel extends ConsumerStatefulWidget {
         primary: false,
         padding: const EdgeInsets.all(20),
         child: KnowledgeCheckQuiz(
-          key: ValueKey('quiz_step_$stepIndex'),
+          key: ValueKey('quiz_${sessionId ?? "session"}_step_$stepIndex'),
           quiz: quiz,
           stepIndex: stepIndex,
           onNextStep: onNextStep,
           onQuizSubmitted: onQuizSubmitted,
           step: step,
+          sessionId: sessionId,
         ),
       ),
     );
@@ -188,11 +190,14 @@ class _LearningResourcesPanelState
   @override
   void didUpdateWidget(covariant LearningResourcesPanel oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.stepIndex != widget.stepIndex || oldWidget.currentStep != widget.currentStep) {
+    final bool sessionChanged = oldWidget.session.sessionId != widget.session.sessionId;
+    if (oldWidget.stepIndex != widget.stepIndex ||
+        oldWidget.currentStep != widget.currentStep ||
+        sessionChanged) {
       final step = widget.currentStep;
       _quizSubmitted = _isQuizCompleted(step);
-      // Reset to first tab on step change
-      if (oldWidget.stepIndex != widget.stepIndex) {
+      // Reset to first tab on step change or session switch
+      if (oldWidget.stepIndex != widget.stepIndex || sessionChanged) {
         _tabController.animateTo(0);
         setState(() {
           _activeTabIndex = 0;
@@ -404,12 +409,13 @@ class _LearningResourcesPanelState
       controller: _quizScrollController,
       padding: const EdgeInsets.all(20),
       child: KnowledgeCheckQuiz(
-        key: ValueKey('quiz_step_${step.index}'),
+        key: ValueKey('quiz_${widget.session.sessionId}_step_${step.index}'),
         quiz: step.quiz,
         stepIndex: stepIdx,
         onNextStep: widget.onNextStep,
         onQuizSubmitted: _onQuizSubmitted,
         step: step,
+        sessionId: widget.session.sessionId,
       ),
     );
   }

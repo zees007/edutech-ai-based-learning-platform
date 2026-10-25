@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:devzees_edutechai_client/core/theme/text_styles.dart';
-import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/glass_card.dart';
-import 'package:devzees_edutechai_client/presentation/widgets/gradient_button.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/gradient_text.dart';
 import 'package:devzees_edutechai_client/core/constants/responsive.dart';
 import 'package:go_router/go_router.dart';
 
+/// Ultra-premium Terminal CTA & Minimalist SaaS Footer.
 class CtaFooter extends StatelessWidget {
   const CtaFooter({super.key});
 
@@ -16,60 +15,161 @@ class CtaFooter extends StatelessWidget {
 
     return Column(
       children: [
-        // CTA Banner
+        // ─── 1. Terminal CTA Banner ───
         GlassCard(
-          padding: EdgeInsets.all(isMobile ? 32 : 64),
+          padding: EdgeInsets.all(isMobile ? 32 : 56),
           isGlowing: true,
-          child: Column(
+          borderRadius: 28,
+          child: Stack(
+            alignment: Alignment.center,
             children: [
-              GradientText(
-                'Ready to Accelerate Your Learning?',
-                style: AppTextStyles.h2.copyWith(fontSize: isMobile ? 28 : 36),
+              // Ambient radial glow behind CTA
+              Positioned(
+                top: -80,
+                child: Container(
+                  width: 360,
+                  height: 200,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [
+                        const Color(0xFF2B68F6).withValues(alpha: 0.25),
+                        const Color(0xFF9061F9).withValues(alpha: 0.12),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                ),
               ),
-              const SizedBox(height: 16),
-              Text(
-                'Join thousands of students and professionals mastering complex topics faster with EduTech AI.',
-                textAlign: TextAlign.center,
-                style: AppTextStyles.body1,
-              ),
-              const SizedBox(height: 32),
-              GradientButton(
-                text: 'Get Started Free →',
-                width: isMobile ? 260 : 300,
-                onPressed: () {
-                  context.go('/auth');
-                },
+
+              Column(
+                children: [
+                  // Pre-header badge
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(9999),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+                    ),
+                    child: const Text(
+                      'START YOUR COGNITIVE JOURNEY TODAY',
+                      style: TextStyle(
+                        color: Color(0xFFD4D8E8),
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1.4,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  GradientText(
+                    'Ready to Master Any Subject with AI?',
+                    style: AppTextStyles.h2.copyWith(
+                      fontSize: isMobile ? 26 : 40,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -0.8,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 620),
+                    child: Text(
+                      'Join ambitious students, researchers, and engineers learning faster with an autonomous multi-agent squad.',
+                      textAlign: TextAlign.center,
+                      style: AppTextStyles.body1.copyWith(
+                        color: const Color(0xFFB9BECF),
+                        fontSize: isMobile ? 14.5 : 16.5,
+                        height: 1.55,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+
+                  // Dual CTA Action Pills
+                  Wrap(
+                    spacing: 16,
+                    runSpacing: 12,
+                    alignment: WrapAlignment.center,
+                    children: [
+                      _FooterWhiteActionPill(
+                        text: 'Get Started Free →',
+                        onTap: () => context.go('/auth'),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ],
           ),
         ),
-        
+
         const SizedBox(height: 80),
-        
-        // Footer Links
+
+        // ─── 2. Footer Bar ───
         Container(
-          padding: const EdgeInsets.only(top: 40, bottom: 20),
+          padding: const EdgeInsets.only(top: 36, bottom: 28),
           decoration: BoxDecoration(
-            border: Border(top: BorderSide(color: AppColors.glassBorder)),
+            border: Border(
+              top: BorderSide(
+                color: Colors.white.withValues(alpha: 0.08),
+                width: 1.0,
+              ),
+            ),
           ),
           child: Flex(
             direction: isMobile ? Axis.vertical : Axis.horizontal,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: isMobile ? CrossAxisAlignment.center : CrossAxisAlignment.center,
             children: [
               Column(
                 crossAxisAlignment: isMobile ? CrossAxisAlignment.center : CrossAxisAlignment.start,
                 children: [
-                  Text('EduTech AI', style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 18)),
-                  const SizedBox(height: 8),
-                  Text('© ${DateTime.now().year} EduTech AI. Empowering cognitive research through education.', style: AppTextStyles.body2.copyWith(fontSize: 12)),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Color(0xFF00F5D4),
+                          boxShadow: [
+                            BoxShadow(color: Color(0xFF00F5D4), blurRadius: 6),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      const Text(
+                        'EduTech AI',
+                        style: TextStyle(
+                          color: Color(0xFFEEF0F6),
+                          fontWeight: FontWeight.w800,
+                          fontSize: 16,
+                          letterSpacing: -0.2,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    '© ${DateTime.now().year} EduTech AI — engineered for autonomous deep work & mastery.',
+                    style: TextStyle(
+                      color: const Color(0xFF8E94A8),
+                      fontSize: isMobile ? 11.5 : 12.5,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
                 ],
               ),
               if (isMobile) const SizedBox(height: 24),
               Wrap(
                 spacing: 24,
-                runSpacing: 16,
+                runSpacing: 14,
                 alignment: isMobile ? WrapAlignment.center : WrapAlignment.end,
-                children: [
+                children: const [
                   _FooterLink('Terms of Service'),
                   _FooterLink('Privacy Policy'),
                   _FooterLink('Contact Support'),
@@ -80,6 +180,65 @@ class CtaFooter extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _FooterWhiteActionPill extends StatefulWidget {
+  final String text;
+  final VoidCallback onTap;
+
+  const _FooterWhiteActionPill({
+    required this.text,
+    required this.onTap,
+  });
+
+  @override
+  State<_FooterWhiteActionPill> createState() => _FooterWhiteActionPillState();
+}
+
+class _FooterWhiteActionPillState extends State<_FooterWhiteActionPill> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedScale(
+          scale: _isHovered ? 1.03 : 1.0,
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOutCubic,
+          child: Container(
+            height: 48,
+            padding: const EdgeInsets.symmetric(horizontal: 28),
+            decoration: BoxDecoration(
+              color: _isHovered ? const Color(0xFFF1F5F9) : Colors.white,
+              borderRadius: BorderRadius.circular(9999),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.white.withValues(alpha: _isHovered ? 0.35 : 0.20),
+                  blurRadius: _isHovered ? 20 : 12,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              widget.text,
+              style: const TextStyle(
+                color: Color(0xFF04050C),
+                fontSize: 14.5,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.2,
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -101,14 +260,16 @@ class _FooterLinkState extends State<_FooterLink> {
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
-      child: InkWell(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
         onTap: () {},
         child: Text(
           widget.text,
           style: TextStyle(
-            color: _isHovered ? AppColors.primary : AppColors.textSecondary,
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
+            color: _isHovered ? const Color(0xFFEEF0F6) : const Color(0xFF8E94A8),
+            fontSize: 13,
+            fontWeight: _isHovered ? FontWeight.w600 : FontWeight.w500,
+            letterSpacing: -0.1,
           ),
         ),
       ),

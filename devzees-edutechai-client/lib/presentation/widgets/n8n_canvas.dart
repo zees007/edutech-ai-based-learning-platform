@@ -76,9 +76,9 @@ class _N8nCanvasState extends State<N8nCanvas>
                 Positioned.fill(child: CustomPaint(painter: _DotGridPainter())),
                 Padding(
                   padding: const EdgeInsets.only(
-                    top: 48,
-                    left: 24,
-                    right: 24,
+                    top: 40,
+                    left: 20,
+                    right: 20,
                     bottom: 24,
                   ),
                   child: child,
@@ -90,7 +90,7 @@ class _N8nCanvasState extends State<N8nCanvas>
       },
       child: Column(
         children: [
-          // Header
+          // Header Badge
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
             decoration: BoxDecoration(
@@ -99,15 +99,17 @@ class _N8nCanvasState extends State<N8nCanvas>
                 color: AppColors.primary.withValues(alpha: 0.4),
               ),
               borderRadius: BorderRadius.circular(20),
-              boxShadow: Responsive.isMobile(context) ? null : [
-                BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.3),
-                  blurRadius: 16,
-                ),
-              ],
+              boxShadow: Responsive.isMobile(context)
+                  ? null
+                  : [
+                      BoxShadow(
+                        color: AppColors.primary.withValues(alpha: 0.3),
+                        blurRadius: 16,
+                      ),
+                    ],
             ),
             child: Text(
-              '⚡ EDUTECH AI — AUTONOMOUS MULTI-AGENT FLOW',
+              '⚡ AUTONOMOUS MULTI-AGENT BLACKBOARD ARCHITECTURE',
               style: TextStyle(
                 color: AppColors.adaptiveLavender,
                 fontSize: 12,
@@ -117,11 +119,17 @@ class _N8nCanvasState extends State<N8nCanvas>
               textAlign: TextAlign.center,
             ),
           ),
-          const SizedBox(height: 48),
+          const SizedBox(height: 12),
+          Text(
+            'Interactive DAG Pipeline: Topic Ingestion ➔ Supervisor Planning ➔ Shared Blackboard ➔ Parallel Workers ➔ Assessment ➔ Streaming',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+          ),
+          const SizedBox(height: 36),
 
-          // Diagram
+          // Interactive Diagram Canvas
           SizedBox(
-            height: 350,
+            height: 400,
             width: double.infinity,
             child: InteractiveViewer(
               constrained: false,
@@ -131,9 +139,9 @@ class _N8nCanvasState extends State<N8nCanvas>
               child: Padding(
                 padding: const EdgeInsets.only(
                   bottom: 120,
-                  left: 16,
-                  right: 16,
-                  top: 40,
+                  left: 24,
+                  right: 24,
+                  top: 30,
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -143,9 +151,13 @@ class _N8nCanvasState extends State<N8nCanvas>
                     const _Wire(),
                     _buildOrchestratorNode(),
                     const _Wire(),
-                    _buildDecisionNode(),
-                    const SizedBox(width: 8),
-                    _buildBranches(),
+                    _buildSharedMemoryNode(),
+                    const _Wire(),
+                    _buildWorkerBranches(),
+                    const _Wire(),
+                    _buildQuizNode(),
+                    const _Wire(),
+                    _buildSynthesizerNode(),
                   ],
                 ),
               ),
@@ -158,301 +170,52 @@ class _N8nCanvasState extends State<N8nCanvas>
 
   Widget _buildTriggerNode() {
     return Container(
-      padding: const EdgeInsets.only(left: 10, right: 18, top: 12, bottom: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        color: AppColors.surfaceMid.withValues(alpha: 0.7),
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(40),
-          bottomLeft: Radius.circular(40),
-          topRight: Radius.circular(14),
-          bottomRight: Radius.circular(14),
-        ),
+        color: AppColors.surfaceMid.withValues(alpha: 0.8),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: AppColors.accentCyan.withValues(alpha: 0.5),
           width: 1.5,
         ),
-        boxShadow: Responsive.isMobile(context) ? null : [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.4),
-            blurRadius: 20,
-            offset: const Offset(0, 4),
-          ),
-          BoxShadow(
-            color: AppColors.accentCyan.withValues(alpha: 0.25),
-            blurRadius: 15,
-          ),
-        ],
+        boxShadow: Responsive.isMobile(context)
+            ? null
+            : [
+                BoxShadow(
+                  color: AppColors.accentCyan.withValues(alpha: 0.2),
+                  blurRadius: 15,
+                ),
+              ],
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text(
-            '⚡',
-            style: TextStyle(color: Colors.redAccent, fontSize: 14),
-          ),
-          const SizedBox(width: 4),
           Container(
-            width: 44,
-            height: 44,
+            width: 40,
+            height: 40,
             decoration: BoxDecoration(
               color: AppColors.accentCyan.withValues(alpha: 0.2),
-              border: Border.all(
-                color: AppColors.accentCyan.withValues(alpha: 0.5),
-              ),
               shape: BoxShape.circle,
-              boxShadow: Responsive.isMobile(context) ? null : [
-                BoxShadow(
-                  color: AppColors.accentCyan.withValues(alpha: 0.3),
-                  blurRadius: 12,
-                ),
-              ],
+              border: Border.all(color: AppColors.accentCyan),
             ),
-            child: const Center(
-              child: Text('📝', style: TextStyle(fontSize: 20)),
-            ),
+            child: const Center(child: Text('🎯', style: TextStyle(fontSize: 18))),
           ),
-          const SizedBox(width: 10),
-          SizedBox(
-            width: 110,
-            child: Text(
-              "On 'Topic Selection' submission",
-              style: TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                height: 1.3,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildOrchestratorNode() {
-    return Stack(
-      clipBehavior: Clip.none,
-      alignment: Alignment.topCenter,
-      children: [
-        Container(
-          width: 220,
-          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 18),
-          decoration: BoxDecoration(
-            color: AppColors.surfaceMid.withValues(alpha: 0.75),
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: AppColors.primary.withValues(alpha: 0.5),
-              width: 1.5,
-            ),
-            boxShadow: Responsive.isMobile(context) ? null : [
-              BoxShadow(
-                color: AppColors.primary.withValues(alpha: 0.25),
-                blurRadius: 30,
-              ),
-            ],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.25),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                        color: AppColors.primary.withValues(alpha: 0.4),
-                      ),
-                      boxShadow: Responsive.isMobile(context) ? null : [
-                        BoxShadow(
-                          color: AppColors.primary.withValues(alpha: 0.3),
-                          blurRadius: 12,
-                        ),
-                      ],
-                    ),
-                    child: const Center(
-                      child: Text('🤖', style: TextStyle(fontSize: 18)),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'AI Orchestrator',
-                        style: TextStyle(
-                          color: AppColors.textPrimary,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      Text(
-                        'Multi-Agent Supervisor',
-                        style: TextStyle(color: AppColors.textSecondary, fontSize: 11),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              const SizedBox(height: 14),
-              Container(
-                padding: const EdgeInsets.only(top: 8),
-                decoration: BoxDecoration(
-                  border: Border(
-                    top: BorderSide(
-                      color: AppColors.border,
-                      width: 1,
-                    ),
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    Text(
-                      'Model*',
-                      style: TextStyle(color: AppColors.textSecondary, fontSize: 9),
-                    ),
-                    Text(
-                      'Memory',
-                      style: TextStyle(color: AppColors.textSecondary, fontSize: 9),
-                    ),
-                    Text(
-                      'Tools',
-                      style: TextStyle(color: AppColors.textSecondary, fontSize: 9),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-        // Sub-nodes group
-        Positioned(
-          top: 105,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildSubNode('✨', 'Google Gemini'),
-              const SizedBox(width: 16),
-              _buildSubNode('🐘', 'PostgreSQL DB'),
-              const SizedBox(width: 16),
-              _buildSubNode('📚', 'Academic APIs'),
-              const SizedBox(width: 16),
-              _buildSubNode('🎬', 'YouTube API'),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSubNode(String icon, String label) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // Dashed wire simulation (solid for simplicity)
-        Container(
-          width: 2,
-          height: 24,
-          color: AppColors.primary.withValues(alpha: 0.4),
-        ),
-        Container(
-          width: 52,
-          height: 52,
-          decoration: BoxDecoration(
-            color: AppColors.surfaceMid.withValues(alpha: 0.85),
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: AppColors.primary.withValues(alpha: 0.4),
-              width: 1.5,
-            ),
-            boxShadow: Responsive.isMobile(context) ? null : [
-              BoxShadow(
-                color: AppColors.isDark
-                    ? Colors.black.withValues(alpha: 0.4)
-                    : const Color(0x14000000),
-                blurRadius: 15,
-                offset: const Offset(0, 4),
-              ),
-              BoxShadow(
-                color: AppColors.primary.withValues(alpha: 0.25),
-                blurRadius: 12,
-              ),
-            ],
-          ),
-          child: Center(
-            child: Text(icon, style: const TextStyle(fontSize: 20)),
-          ),
-        ),
-        const SizedBox(height: 6),
-        Text(
-          label,
-          style: TextStyle(
-            color: AppColors.textSecondary,
-            fontSize: 10,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDecisionNode() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceMid.withValues(alpha: 0.75),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: AppColors.accentGreen.withValues(alpha: 0.5),
-          width: 1.5,
-        ),
-        boxShadow: Responsive.isMobile(context) ? null : [
-          BoxShadow(
-            color: AppColors.accentGreen.withValues(alpha: 0.2),
-            blurRadius: 25,
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: AppColors.accentGreen.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                color: AppColors.accentGreen.withValues(alpha: 0.4),
-              ),
-              boxShadow: Responsive.isMobile(context) ? null : [
-                BoxShadow(
-                  color: AppColors.accentGreen.withValues(alpha: 0.3),
-                  blurRadius: 12,
-                ),
-              ],
-            ),
-            child: const Center(
-              child: Text('🔀', style: TextStyle(fontSize: 18)),
-            ),
-          ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 12),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'Task Router',
+                'Student Ingestion',
                 style: TextStyle(
                   color: AppColors.textPrimary,
-                  fontSize: 14,
+                  fontSize: 13,
                   fontWeight: FontWeight.w800,
                 ),
               ),
+              const SizedBox(height: 2),
               Text(
-                'Check Step Type',
+                'Topic + Mode + Level',
                 style: TextStyle(color: AppColors.textSecondary, fontSize: 11),
               ),
             ],
@@ -462,104 +225,338 @@ class _N8nCanvasState extends State<N8nCanvas>
     );
   }
 
-  Widget _buildBranches() {
+  Widget _buildOrchestratorNode() {
+    return Container(
+      width: 220,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceMid.withValues(alpha: 0.8),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppColors.primary.withValues(alpha: 0.5),
+          width: 1.5,
+        ),
+        boxShadow: Responsive.isMobile(context)
+            ? null
+            : [
+                BoxShadow(
+                  color: AppColors.primary.withValues(alpha: 0.25),
+                  blurRadius: 25,
+                ),
+              ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  gradient: AppColors.primaryGradient,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Center(child: Text('🤖', style: TextStyle(fontSize: 18))),
+              ),
+              const SizedBox(width: 10),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'AI Orchestrator',
+                    style: TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  Text(
+                    'Supervisor Agent',
+                    style: TextStyle(color: AppColors.textSecondary, fontSize: 10),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceDark,
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(color: AppColors.border),
+            ),
+            child: const Text(
+              '• Decomposes 4-7 Milestones\n• Auto-Detects Prerequisite Gap\n• Writes Learning Plan',
+              style: TextStyle(color: Colors.white70, fontSize: 10, height: 1.4),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSharedMemoryNode() {
+    return Container(
+      width: 180,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceMid.withValues(alpha: 0.85),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppColors.accentPurple.withValues(alpha: 0.55),
+          width: 1.5,
+        ),
+        boxShadow: Responsive.isMobile(context)
+            ? null
+            : [
+                BoxShadow(
+                  color: AppColors.accentPurple.withValues(alpha: 0.25),
+                  blurRadius: 25,
+                ),
+              ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: AppColors.accentPurple.withValues(alpha: 0.2),
+              shape: BoxShape.circle,
+              border: Border.all(color: AppColors.accentPurple),
+            ),
+            child: const Center(child: Text('🧠', style: TextStyle(fontSize: 20))),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'SharedMemory',
+            style: TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          Text(
+            'Central Blackboard State',
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 10),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceDark,
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: const Text(
+              'Zero Agent-to-Agent Mesh',
+              style: TextStyle(color: AppColors.accentPurple, fontSize: 9, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWorkerBranches() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            _buildArmLabel('true'),
-            const _Wire(),
-            _buildBranchNode(
-              '💬',
-              'Socratic Tutor',
-              'Guided Dialogue & Clips',
-              AppColors.primary,
-            ),
-          ],
+        _buildWorkerCard(
+          icon: '💬',
+          title: 'Socratic Tutor',
+          subtitle: 'Pedagogy & Mermaid Diagrams',
+          color: AppColors.primary,
         ),
-        const SizedBox(height: 32),
-        Row(
-          children: [
-            _buildArmLabel('false'),
-            const _Wire(),
-            _buildBranchNode(
-              '🏆',
-              'Quiz & XP Engine',
-              'Assessment & Rewards',
-              AppColors.accentPink,
-            ),
-          ],
+        const SizedBox(height: 12),
+        _buildWorkerCard(
+          icon: '🎬',
+          title: 'YouTube Curator',
+          subtitle: 'Transcript Vector Deep-Linking',
+          color: AppColors.accentCyan,
+        ),
+        const SizedBox(height: 12),
+        _buildWorkerCard(
+          icon: '📚',
+          title: 'Academic Researcher',
+          subtitle: 'arXiv & OpenAlex Preprints',
+          color: AppColors.accentGreen,
         ),
       ],
     );
   }
 
-  Widget _buildArmLabel(String text) {
+  Widget _buildWorkerCard({
+    required String icon,
+    required String title,
+    required String subtitle,
+    required Color color,
+  }) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+      width: 220,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: AppColors.canvasBackground,
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(
-          color: AppColors.isDark
-              ? Colors.white.withValues(alpha: 0.1)
-              : AppColors.border,
-        ),
+        color: AppColors.surfaceMid.withValues(alpha: 0.75),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.4), width: 1.5),
       ),
-      child: Text(
-        text,
-        style: TextStyle(
-          color: AppColors.isDark
-              ? Colors.white.withValues(alpha: 0.45)
-              : AppColors.textSecondary,
-          fontSize: 10,
-          fontWeight: FontWeight.bold,
-        ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.15),
+              shape: BoxShape.circle,
+              border: Border.all(color: color.withValues(alpha: 0.3)),
+            ),
+            child: Center(child: Text(icon, style: const TextStyle(fontSize: 16))),
+          ),
+          const SizedBox(width: 10),
+          Flexible(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Text(
+                  subtitle,
+                  style: TextStyle(color: AppColors.textSecondary, fontSize: 9),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildBranchNode(String icon, String title, String sub, Color color) {
+  Widget _buildQuizNode() {
     return Container(
-      padding: const EdgeInsets.only(left: 6, right: 18, top: 12, bottom: 12),
+      width: 170,
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.surfaceMid.withValues(alpha: 0.7),
+        color: AppColors.surfaceMid.withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: color.withValues(alpha: 0.3), width: 1.5),
+        border: Border.all(
+          color: AppColors.accentAmber.withValues(alpha: 0.5),
+          width: 1.5,
+        ),
+        boxShadow: Responsive.isMobile(context)
+            ? null
+            : [
+                BoxShadow(
+                  color: AppColors.accentAmber.withValues(alpha: 0.2),
+                  blurRadius: 20,
+                ),
+              ],
       ),
-      child: Row(
+      child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.15),
+              color: AppColors.accentAmber.withValues(alpha: 0.2),
               shape: BoxShape.circle,
-              border: Border.all(color: color.withValues(alpha: 0.3)),
+              border: Border.all(color: AppColors.accentAmber),
             ),
-            child: Center(
-              child: Text(icon, style: const TextStyle(fontSize: 16)),
+            child: const Center(child: Text('📝', style: TextStyle(fontSize: 18))),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Quiz Agent',
+            style: TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
             ),
           ),
-          const SizedBox(width: 10),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w800,
+          Text(
+            'Grounded Assessment',
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 10),
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            'Derived from Tutor Output',
+            style: TextStyle(color: AppColors.accentAmber, fontSize: 9, fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSynthesizerNode() {
+    return Container(
+      width: 180,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceMid.withValues(alpha: 0.8),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: AppColors.accentPink.withValues(alpha: 0.5),
+          width: 1.5,
+        ),
+        boxShadow: Responsive.isMobile(context)
+            ? null
+            : [
+                BoxShadow(
+                  color: AppColors.accentPink.withValues(alpha: 0.25),
+                  blurRadius: 20,
                 ),
-              ),
-              Text(
-                sub,
-                style: TextStyle(color: AppColors.textSecondary, fontSize: 10),
-              ),
-            ],
+              ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: AppColors.accentPink.withValues(alpha: 0.2),
+              shape: BoxShape.circle,
+              border: Border.all(color: AppColors.accentPink),
+            ),
+            child: const Center(child: Text('⚡', style: TextStyle(fontSize: 18))),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Synthesizer Agent',
+            style: TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          Text(
+            'WebSocket Streamer',
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 10),
+          ),
+          const SizedBox(height: 6),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(
+              color: AppColors.accentPink.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: const Text(
+              'Sub-Second UI Reactive',
+              style: TextStyle(color: AppColors.accentPink, fontSize: 9, fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
@@ -577,16 +574,18 @@ class _Wire extends StatelessWidget {
       children: [
         _buildPort(),
         Container(
-          width: 32,
+          width: 28,
           height: 3,
           decoration: BoxDecoration(
             gradient: AppColors.primaryGradient,
-            boxShadow: Responsive.isMobile(context) ? null : [
-              BoxShadow(
-                color: AppColors.primary.withValues(alpha: 0.5),
-                blurRadius: 8,
-              ),
-            ],
+            boxShadow: Responsive.isMobile(context)
+                ? null
+                : [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.5),
+                      blurRadius: 8,
+                    ),
+                  ],
           ),
         ),
         _buildPort(),
@@ -596,14 +595,14 @@ class _Wire extends StatelessWidget {
 
   Widget _buildPort() {
     return Container(
-      width: 10,
-      height: 10,
+      width: 8,
+      height: 8,
       decoration: BoxDecoration(
         color: AppColors.purpleLight,
         shape: BoxShape.circle,
-        border: Border.all(color: AppColors.surfaceDark, width: 2),
-        boxShadow: [
-          BoxShadow(color: AppColors.purpleLight, blurRadius: 8),
+        border: Border.all(color: AppColors.surfaceDark, width: 1.5),
+        boxShadow: const [
+          BoxShadow(color: AppColors.purpleLight, blurRadius: 6),
         ],
       ),
     );

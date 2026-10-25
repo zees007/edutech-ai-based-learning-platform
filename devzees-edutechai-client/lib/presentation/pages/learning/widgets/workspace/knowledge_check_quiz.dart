@@ -56,6 +56,7 @@ class KnowledgeCheckQuiz extends ConsumerStatefulWidget {
   final int stepIndex;
   final VoidCallback? onQuizSubmitted;
   final dynamic step;
+  final String? sessionId;
 
   const KnowledgeCheckQuiz({
     super.key,
@@ -64,6 +65,7 @@ class KnowledgeCheckQuiz extends ConsumerStatefulWidget {
     required this.stepIndex,
     this.onQuizSubmitted,
     this.step,
+    this.sessionId,
   });
 
   @override
@@ -88,8 +90,10 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
   @override
   void didUpdateWidget(covariant KnowledgeCheckQuiz oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.stepIndex != widget.stepIndex || oldWidget.step != widget.step) {
-      _initFromStep(forceReset: oldWidget.stepIndex != widget.stepIndex);
+    final bool stepChanged = oldWidget.stepIndex != widget.stepIndex;
+    final bool sessionChanged = oldWidget.sessionId != widget.sessionId;
+    if (stepChanged || sessionChanged || oldWidget.step != widget.step) {
+      _initFromStep(forceReset: stepChanged || sessionChanged);
     }
   }
 
@@ -98,6 +102,9 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
       _submitted = false;
       _selectedAnswers.clear();
       _textAnswers.clear();
+      for (final controller in _controllers.values) {
+        controller.clear();
+      }
       _quizResult = null;
     }
 
@@ -128,6 +135,9 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
           _submitted = false;
           _selectedAnswers.clear();
           _textAnswers.clear();
+          for (final controller in _controllers.values) {
+            controller.clear();
+          }
           _quizResult = null;
         });
       }
@@ -202,6 +212,7 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
     try {
       final session = ref.read(activeSessionProvider).session;
       if (session != null &&
+          (widget.sessionId == null || session.sessionId == widget.sessionId) &&
           widget.stepIndex >= 0 &&
           widget.stepIndex < session.steps.length) {
         return session.steps[widget.stepIndex];
@@ -211,6 +222,9 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
   }
 
   String _getSessionId() {
+    if (widget.sessionId != null && widget.sessionId!.isNotEmpty) {
+      return widget.sessionId!;
+    }
     try {
       final session = ref.read(activeSessionProvider).session;
       if (session != null && session.sessionId.isNotEmpty) {

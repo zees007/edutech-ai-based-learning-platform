@@ -9,10 +9,15 @@ import 'package:devzees_edutechai_client/core/providers/theme_provider.dart';
 
 import 'widgets/home_navbar.dart';
 import 'widgets/hero_section.dart';
+import 'widgets/workspace_preview_section.dart';
+import 'widgets/comparison_section.dart';
+import 'widgets/modes_and_levels_section.dart';
+import 'widgets/export_ecosystem_section.dart';
 import 'widgets/features_section.dart';
 import 'widgets/agents_section.dart';
 import 'widgets/about_section.dart';
 import 'widgets/pricing_section.dart';
+import 'widgets/faq_section.dart';
 import 'widgets/cta_footer.dart';
 
 class HomePage extends ConsumerStatefulWidget {
@@ -26,10 +31,15 @@ class _HomePageState extends ConsumerState<HomePage> {
   final ScrollController _scrollController = ScrollController();
   bool _showScrollToTop = false;
 
-  final GlobalKey _aboutKey = GlobalKey();
+  final GlobalKey _previewKey = GlobalKey();
+  final GlobalKey _comparisonKey = GlobalKey();
+  final GlobalKey _modesKey = GlobalKey();
   final GlobalKey _featuresKey = GlobalKey();
   final GlobalKey _agentsKey = GlobalKey();
+  final GlobalKey _ecosystemKey = GlobalKey();
+  final GlobalKey _aboutKey = GlobalKey();
   final GlobalKey _pricingKey = GlobalKey();
+  final GlobalKey _faqKey = GlobalKey();
 
   @override
   void initState() {
@@ -63,10 +73,23 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 
   void _scrollToSection(String section) {
+    if (section == 'top') {
+      _scrollToTop();
+      return;
+    }
     BuildContext? targetContext;
     switch (section) {
-      case 'about':
-        targetContext = _aboutKey.currentContext;
+      case 'preview':
+        targetContext = _previewKey.currentContext;
+        break;
+      case 'comparison':
+        targetContext = _comparisonKey.currentContext;
+        break;
+      case 'modes':
+        targetContext = _modesKey.currentContext;
+        break;
+      case 'ecosystem':
+        targetContext = _ecosystemKey.currentContext;
         break;
       case 'features':
         targetContext = _featuresKey.currentContext;
@@ -74,8 +97,14 @@ class _HomePageState extends ConsumerState<HomePage> {
       case 'agents':
         targetContext = _agentsKey.currentContext;
         break;
+      case 'about':
+        targetContext = _aboutKey.currentContext;
+        break;
       case 'pricing':
         targetContext = _pricingKey.currentContext;
+        break;
+      case 'faq':
+        targetContext = _faqKey.currentContext;
         break;
     }
     
@@ -118,17 +147,27 @@ class _HomePageState extends ConsumerState<HomePage> {
                         children: [
                           HomeNavbar(onNavTap: _scrollToSection),
                           const SizedBox(height: 60),
-                          const HeroSection(),
+                          HeroSection(onExploreTap: () => _scrollToSection('preview')),
+                          const SizedBox(height: 100),
+                          WorkspacePreviewSection(key: _previewKey),
+                          const SizedBox(height: 120),
+                          ComparisonSection(key: _comparisonKey),
                           const SizedBox(height: 120),
                           const N8nCanvas(),
+                          const SizedBox(height: 120),
+                          ModesAndLevelsSection(key: _modesKey),
                           const SizedBox(height: 120),
                           FeaturesSection(key: _featuresKey),
                           const SizedBox(height: 120),
                           AgentsSection(key: _agentsKey),
                           const SizedBox(height: 120),
+                          ExportEcosystemSection(key: _ecosystemKey),
+                          const SizedBox(height: 120),
                           AboutSection(key: _aboutKey),
                           const SizedBox(height: 120),
                           PricingSection(key: _pricingKey),
+                          const SizedBox(height: 120),
+                          FaqSection(key: _faqKey),
                           const SizedBox(height: 120),
                           const CtaFooter(),
                         ],
@@ -142,31 +181,35 @@ class _HomePageState extends ConsumerState<HomePage> {
         ),
         floatingActionButton: _showScrollToTop 
             ? Container(
-                width: 56,
-                height: 56,
+                width: 50,
+                height: 50,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.primary.withValues(alpha: 0.15),
+                  color: const Color(0xCC080914),
                   border: Border.all(
-                    color: AppColors.primary.withValues(alpha: 0.3),
+                    color: Colors.white.withValues(alpha: 0.15),
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.2),
-                      blurRadius: 15,
+                      color: Colors.black.withValues(alpha: 0.5),
+                      blurRadius: 16,
                       offset: const Offset(0, 4),
+                    ),
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.2),
+                      blurRadius: 12,
                     ),
                   ],
                 ),
                 child: ClipOval(
                   child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                    filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
                     child: Material(
                       color: Colors.transparent,
                       child: InkWell(
                         onTap: _scrollToTop,
                         child: const Center(
-                          child: Icon(Icons.arrow_upward, color: Colors.white),
+                          child: Icon(Icons.arrow_upward_rounded, color: Color(0xFFEEF0F6), size: 20),
                         ),
                       ),
                     ),

@@ -3,6 +3,7 @@ import 'package:devzees_edutechai_client/core/theme/text_styles.dart';
 import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/glass_card.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/gradient_text.dart';
+import 'package:devzees_edutechai_client/presentation/widgets/interactive_3d_card.dart';
 import 'package:devzees_edutechai_client/core/constants/responsive.dart';
 
 class FeaturesSection extends StatelessWidget {
@@ -15,12 +16,60 @@ class FeaturesSection extends StatelessWidget {
 
     return Column(
       children: [
+        // Section Header Badge
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.05),
+            borderRadius: BorderRadius.circular(9999),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF2B68F6).withValues(alpha: 0.14),
+                blurRadius: 16,
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 6,
+                height: 6,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Color(0xFF2B68F6),
+                  boxShadow: [
+                    BoxShadow(color: Color(0xFF2B68F6), blurRadius: 6),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Text(
+                'SYSTEM CAPABILITIES',
+                style: TextStyle(
+                  color: Color(0xFFD4D8E8),
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.4,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
         GradientText('Why EduTech AI?', style: AppTextStyles.h2),
         const SizedBox(height: 16),
-        Text(
-          'Everything you need for an AI-powered learning experience, built from the ground up.',
-          textAlign: TextAlign.center,
-          style: AppTextStyles.body1,
+        ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 720),
+          child: Text(
+            'Everything you need for an AI-powered learning experience, built from the ground up.',
+            textAlign: TextAlign.center,
+            style: AppTextStyles.body1.copyWith(
+              color: const Color(0xFFB9BECF),
+              height: 1.55,
+            ),
+          ),
         ),
         const SizedBox(height: 48),
         GridView.count(
@@ -29,7 +78,7 @@ class FeaturesSection extends StatelessWidget {
           crossAxisCount: crossAxisCount,
           crossAxisSpacing: 24,
           mainAxisSpacing: 24,
-          childAspectRatio: isMobile ? 1.5 : 1.2,
+          childAspectRatio: isMobile ? 1.45 : 1.18,
           children: const [
             _FeatureCard(
               icon: '🧩',
@@ -89,25 +138,52 @@ class _FeatureCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GlassCard(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: iconColor.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: iconColor.withValues(alpha: 0.3)),
+    return Interactive3DCard(
+      maxTiltAngle: 0.08,
+      perspective: 0.001,
+      hoverScale: 1.02,
+      glareColor: iconColor,
+      maxGlareOpacity: 0.12,
+      borderRadius: BorderRadius.circular(24),
+      child: GlassCard(
+        padding: const EdgeInsets.all(26),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: iconColor.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: iconColor.withValues(alpha: 0.3)),
+                boxShadow: [
+                  BoxShadow(
+                    color: iconColor.withValues(alpha: 0.2),
+                    blurRadius: 12,
+                  ),
+                ],
+              ),
+              child: Text(icon, style: const TextStyle(fontSize: 24)),
             ),
-            child: Text(icon, style: const TextStyle(fontSize: 24)),
-          ),
-          const SizedBox(height: 16),
-          Text(title, style: AppTextStyles.h4),
-          const SizedBox(height: 8),
-          Text(description, style: AppTextStyles.body2),
-        ],
+            const SizedBox(height: 18),
+            Text(
+              title,
+              style: AppTextStyles.h4.copyWith(
+                color: const Color(0xFFEEF0F6),
+                fontWeight: FontWeight.w700,
+                letterSpacing: -0.2,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              description,
+              style: AppTextStyles.body2.copyWith(
+                color: const Color(0xFFB9BECF),
+                height: 1.5,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
