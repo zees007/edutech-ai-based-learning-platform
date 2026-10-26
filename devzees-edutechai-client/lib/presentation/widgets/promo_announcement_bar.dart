@@ -70,7 +70,7 @@ class _PromoAnnouncementBarState extends ConsumerState<PromoAnnouncementBar> {
     final catalog = catalogAsync.value;
     final banner = catalog?.promoBanner;
 
-    if (banner == null || !banner.enabled) {
+    if (banner == null || !banner.isActive) {
       return const SizedBox.shrink();
     }
 
@@ -79,6 +79,7 @@ class _PromoAnnouncementBarState extends ConsumerState<PromoAnnouncementBar> {
         ? banner.text
         : 'Limited Time Festive Offer: Upgrade today and save big!';
     final coupon = banner.couponCode;
+    final remainingTime = banner.remainingTimeLabel;
 
     return Container(
       margin: widget.margin ?? const EdgeInsets.only(bottom: 16),
@@ -129,8 +130,8 @@ class _PromoAnnouncementBarState extends ConsumerState<PromoAnnouncementBar> {
                 vertical: isMobile ? 10 : 10,
               ),
               child: isMobile
-                  ? _buildMobileLayout(context, text, coupon)
-                  : _buildDesktopLayout(context, text, coupon),
+                  ? _buildMobileLayout(context, text, coupon, remainingTime)
+                  : _buildDesktopLayout(context, text, coupon, remainingTime),
             ),
           ],
         ),
@@ -138,10 +139,15 @@ class _PromoAnnouncementBarState extends ConsumerState<PromoAnnouncementBar> {
     );
   }
 
-  Widget _buildDesktopLayout(BuildContext context, String text, String coupon) {
+  Widget _buildDesktopLayout(
+    BuildContext context,
+    String text,
+    String coupon,
+    String? remainingTime,
+  ) {
     return Row(
       children: [
-        // Festive Diya / Sparkle Icon
+        // Special Offer Sparkle Icon
         Container(
           padding: const EdgeInsets.all(7),
           decoration: BoxDecoration(
@@ -168,6 +174,37 @@ class _PromoAnnouncementBarState extends ConsumerState<PromoAnnouncementBar> {
         ),
         const SizedBox(width: 12),
 
+        // Countdown / Validity Chip
+        if (remainingTime != null) ...[
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.35),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: const Color(0xFFFBBF24).withValues(alpha: 0.45),
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.timer_outlined, size: 13, color: Color(0xFFFBBF24)),
+                const SizedBox(width: 5),
+                Text(
+                  'Ends in $remainingTime',
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFFFDE68A),
+                    letterSpacing: 0.3,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 10),
+        ],
+
         // Coupon Chip
         if (coupon.isNotEmpty) ...[
           InkWell(
@@ -186,12 +223,12 @@ class _PromoAnnouncementBarState extends ConsumerState<PromoAnnouncementBar> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
+                  const Text(
                     'USE CODE: ',
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
-                      color: const Color(0xFFFDE68A),
+                      color: Color(0xFFFDE68A),
                       letterSpacing: 0.5,
                     ),
                   ),
@@ -253,7 +290,12 @@ class _PromoAnnouncementBarState extends ConsumerState<PromoAnnouncementBar> {
     );
   }
 
-  Widget _buildMobileLayout(BuildContext context, String text, String coupon) {
+  Widget _buildMobileLayout(
+    BuildContext context,
+    String text,
+    String coupon,
+    String? remainingTime,
+  ) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -328,31 +370,64 @@ class _PromoAnnouncementBarState extends ConsumerState<PromoAnnouncementBar> {
               )
             else
               const SizedBox.shrink(),
-            InkWell(
-              onTap: () => _handleClaim(context),
-              borderRadius: BorderRadius.circular(6),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF59E0B),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: const [
-                    Text(
-                      'Claim Offer',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (remainingTime != null) ...[
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                    margin: const EdgeInsets.only(right: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.35),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(
+                        color: const Color(0xFFFBBF24).withValues(alpha: 0.45),
                       ),
                     ),
-                    SizedBox(width: 4),
-                    Icon(Icons.arrow_forward_rounded, size: 12, color: Colors.black),
-                  ],
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.timer_outlined, size: 10, color: Color(0xFFFBBF24)),
+                        const SizedBox(width: 3),
+                        Text(
+                          remainingTime,
+                          style: const TextStyle(
+                            fontSize: 9,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFFFDE68A),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+                InkWell(
+                  onTap: () => _handleClaim(context),
+                  borderRadius: BorderRadius.circular(6),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF59E0B),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: const [
+                        Text(
+                          'Claim Offer',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        ),
+                        SizedBox(width: 4),
+                        Icon(Icons.arrow_forward_rounded, size: 12, color: Colors.black),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
           ],
         ),

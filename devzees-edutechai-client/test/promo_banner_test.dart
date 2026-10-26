@@ -170,4 +170,102 @@ void main() {
       expect(extended, isTrue);
     });
   });
+
+  group('PROMO_VALIDITY tests', () {
+    test('PromoBannerModel correctly detects expired vs active validity', () {
+      final pastDate = DateTime.now().subtract(const Duration(hours: 2)).toIso8601String();
+      final futureDate = DateTime.now().add(const Duration(days: 3, hours: 4)).toIso8601String();
+
+      final expiredModel = PromoBannerModel.fromJson({
+        'enabled': true,
+        'valid_until': pastDate,
+      });
+      expect(expiredModel.isExpired, isTrue);
+      expect(expiredModel.isActive, isFalse);
+
+      final activeModel = PromoBannerModel.fromJson({
+        'enabled': true,
+        'valid_until': futureDate,
+      });
+      expect(activeModel.isExpired, isFalse);
+      expect(activeModel.isActive, isTrue);
+      expect(activeModel.remainingTimeLabel, contains('3d'));
+    });
+
+    testWidgets('renders countdown badge when valid_until is in the future', (tester) async {
+      tester.view.physicalSize = const Size(1200, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() => tester.view.resetPhysicalSize());
+
+      final futureDate = DateTime.now().add(const Duration(days: 2, hours: 5)).toIso8601String();
+
+      final mockCatalog = PricingCatalogModel(
+        currency: 'USD',
+        tiers: const {
+          'pro': TierPricingItem(monthly: 19.0, annual: 180.0),
+        },
+        promoBanner: PromoBannerModel(
+          enabled: true,
+          text: 'Weekend Flash Sale!',
+          couponCode: 'FLASH50',
+          discountPercent: 50.0,
+          validUntil: futureDate,
+        ),
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            pricingCatalogProvider.overrideWith((ref) => Future.value(mockCatalog)),
+          ],
+          child: const MaterialApp(
+            home: Scaffold(
+              body: PromoAnnouncementBar(),
+            ),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('Ends in'), findsOneWidget);
+      expect(find.text('Weekend Flash Sale!'), findsOneWidget);
+    });
+
+    testWidgets('automatically hides promo banner if valid_until has passed', (tester) async {
+      final pastDate = DateTime.now().subtract(const Duration(minutes: 10)).toIso8601String();
+
+      final mockCatalog = PricingCatalogModel(
+        currency: 'USD',
+        tiers: const {
+          'pro': TierPricingItem(monthly: 19.0, annual: 180.0),
+        },
+        promoBanner: PromoBannerModel(
+          enabled: true,
+          text: 'Expired Flash Sale',
+          couponCode: 'EXPIRED50',
+          discountPercent: 50.0,
+          validUntil: pastDate,
+        ),
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            pricingCatalogProvider.overrideWith((ref) => Future.value(mockCatalog)),
+          ],
+          child: const MaterialApp(
+            home: Scaffold(
+              body: PromoAnnouncementBar(),
+            ),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      expect(find.text('Expired Flash Sale'), findsNothing);
+      expect(find.text('Claim Offer'), findsNothing);
+    });
+  });
 }

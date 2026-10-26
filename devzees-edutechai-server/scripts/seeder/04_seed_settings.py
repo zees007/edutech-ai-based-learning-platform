@@ -60,13 +60,18 @@ DEFAULT_SETTINGS = [
     },
     {
         "code": "PROMO_BANNER_TEXT",
-        "value": "🪔 Diwali Special: Celebrate with 50% OFF on all Pro & Ultra plans! Use code DIWALI50 at checkout",
+        "value": "⚡ Special Offer: Celebrate with 50% OFF on all Pro & Ultra plans! Use code DIWALI50 at checkout",
         "order_number": 76,
     },
     {
         "code": "PROMO_BANNER_COUPON",
         "value": "DIWALI50",
         "order_number": 77,
+    },
+    {
+        "code": "PROMO_VALIDITY",
+        "value": "2026-11-15 23:59:59",
+        "order_number": 78,
     },
     {
         "code": "VALID_COUPONS",

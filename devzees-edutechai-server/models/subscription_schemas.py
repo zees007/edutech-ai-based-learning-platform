@@ -162,6 +162,8 @@ class PromoBannerInfo(BaseModel):
     text: str = ""
     coupon_code: str = ""
     discount_percent: float = 0.0
+    valid_until: Optional[str] = None
+    is_expired: bool = False
 
 
 class PricingCatalogResponse(BaseModel):

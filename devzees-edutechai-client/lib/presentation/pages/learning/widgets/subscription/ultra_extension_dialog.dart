@@ -103,7 +103,7 @@ class UltraExtensionDialog extends StatelessWidget {
                 const SizedBox(height: 16),
 
                 // Dynamic Campaign Badge (displays whatever text is active, e.g. Diwali / New Year)
-                if (promoBanner.text.isNotEmpty) ...[
+                if (promoBanner.text.isNotEmpty || promoBanner.remainingTimeLabel != null) ...[
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                     decoration: BoxDecoration(
@@ -113,13 +113,45 @@ class UltraExtensionDialog extends StatelessWidget {
                         color: const Color(0xFFF59E0B).withValues(alpha: 0.4),
                       ),
                     ),
-                    child: Text(
-                      promoBanner.text,
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: isDark ? const Color(0xFFFDE68A) : const Color(0xFFB45309),
-                      ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Flexible(
+                          child: Text(
+                            promoBanner.text.isNotEmpty ? promoBanner.text : 'Special Offer',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: isDark ? const Color(0xFFFDE68A) : const Color(0xFFB45309),
+                            ),
+                          ),
+                        ),
+                        if (promoBanner.remainingTimeLabel != null) ...[
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.25),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.timer_outlined, size: 11, color: Color(0xFFFBBF24)),
+                                const SizedBox(width: 3),
+                                Text(
+                                  'Ends in ${promoBanner.remainingTimeLabel}',
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFFFDE68A),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                   ),
                   const SizedBox(height: 12),

@@ -105,6 +105,17 @@ class PaymentService:
                 "message": f"Invalid coupon code '{code_clean}'.",
             }
 
+        if SettingService.is_promo_coupon_expired(code_clean):
+            return {
+                "valid": False,
+                "coupon_code": code_clean,
+                "discount_percent": 0.0,
+                "discount_amount": 0.0,
+                "original_price": base_price,
+                "final_price": base_price,
+                "message": f"The promotional offer for coupon '{code_clean}' has expired.",
+            }
+
         pct = valid_coupons[code_clean]
         discount_amount = round(base_price * (pct / 100.0), 2)
         final_price = max(0.0, round(base_price - discount_amount, 2))

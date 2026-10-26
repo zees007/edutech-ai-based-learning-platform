@@ -139,6 +139,8 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
         return 'Campaign headline displayed on the top banner (e.g. ⚡ Flash Sale: Get Flat 50% OFF Pro & Ultra!).';
       case 'PROMO_BANNER_COUPON':
         return 'Active promotional coupon code attached to the campaign banner (e.g. DIWALI50).';
+      case 'PROMO_VALIDITY':
+        return 'Expiration timestamp (UTC) for the promotional campaign (e.g. 2026-11-15 23:59:59 or 2026-11-15). Banner and coupon automatically deactivate once elapsed.';
       default:
         return 'Runtime configuration parameter directly loaded by backend services.';
     }

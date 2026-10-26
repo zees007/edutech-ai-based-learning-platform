@@ -257,12 +257,16 @@ class PromoBannerModel {
   final String text;
   final String couponCode;
   final double discountPercent;
+  final String? validUntil;
+  final bool isExpiredRaw;
 
   const PromoBannerModel({
     this.enabled = false,
     this.text = '',
     this.couponCode = '',
     this.discountPercent = 0.0,
+    this.validUntil,
+    this.isExpiredRaw = false,
   });
 
   factory PromoBannerModel.fromJson(Map<String, dynamic> json) {
@@ -271,7 +275,41 @@ class PromoBannerModel {
       text: json['text'] as String? ?? '',
       couponCode: json['coupon_code'] as String? ?? '',
       discountPercent: (json['discount_percent'] as num?)?.toDouble() ?? 0.0,
+      validUntil: json['valid_until'] as String?,
+      isExpiredRaw: json['is_expired'] as bool? ?? false,
     );
+  }
+
+  DateTime? get validUntilDate {
+    if (validUntil == null || validUntil!.isEmpty) return null;
+    return DateTime.tryParse(validUntil!);
+  }
+
+  bool get isExpired {
+    if (isExpiredRaw) return true;
+    final dt = validUntilDate;
+    if (dt == null) return false;
+    return DateTime.now().toUtc().isAfter(dt.toUtc());
+  }
+
+  /// True if active, enabled, and not expired
+  bool get isActive => enabled && !isExpired;
+
+  /// Human-readable time remaining string, e.g. "2d 14h", "5h 20m", "45m"
+  String? get remainingTimeLabel {
+    final dt = validUntilDate;
+    if (dt == null) return null;
+    final diff = dt.toUtc().difference(DateTime.now().toUtc());
+    if (diff.isNegative) return 'Expired';
+    if (diff.inDays > 0) {
+      final hours = diff.inHours % 24;
+      return hours > 0 ? '${diff.inDays}d ${hours}h' : '${diff.inDays}d';
+    }
+    if (diff.inHours > 0) {
+      final minutes = diff.inMinutes % 60;
+      return minutes > 0 ? '${diff.inHours}h ${minutes}m' : '${diff.inHours}h';
+    }
+    return '${diff.inMinutes.clamp(1, 60)}m';
   }
 
   Map<String, dynamic> toJson() => {
@@ -279,6 +317,8 @@ class PromoBannerModel {
         'text': text,
         'coupon_code': couponCode,
         'discount_percent': discountPercent,
+        'valid_until': validUntil,
+        'is_expired': isExpiredRaw,
       };
 }
 
