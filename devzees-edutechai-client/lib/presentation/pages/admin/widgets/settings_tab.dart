@@ -136,7 +136,7 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
       case 'PROMO_BANNER_ENABLED':
         return 'Controls whether the promotional campaign announcement banner is active across the app (true/false).';
       case 'PROMO_BANNER_TEXT':
-        return 'Festive campaign headline displayed on the top banner (e.g. 🪔 Diwali Mega Sale: Get Flat 50% OFF Pro & Ultra!).';
+        return 'Campaign headline displayed on the top banner (e.g. ⚡ Flash Sale: Get Flat 50% OFF Pro & Ultra!).';
       case 'PROMO_BANNER_COUPON':
         return 'Active promotional coupon code attached to the campaign banner (e.g. DIWALI50).';
       default:

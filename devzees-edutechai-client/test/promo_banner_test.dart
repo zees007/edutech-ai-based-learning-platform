@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:devzees_edutechai_client/data/models/subscription/payment_models.dart';
 import 'package:devzees_edutechai_client/core/services/subscription_service.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/promo_announcement_bar.dart';
+import 'package:devzees_edutechai_client/presentation/pages/learning/widgets/subscription/ultra_extension_dialog.dart';
 
 void main() {
   group('PromoBannerModel & PricingCatalogModel tests', () {
@@ -115,6 +116,58 @@ void main() {
 
       expect(find.text('Inactive Sale'), findsNothing);
       expect(find.text('Claim Offer'), findsNothing);
+    });
+  });
+
+  group('UltraExtensionDialog widget tests', () {
+    testWidgets('renders dynamic campaign text, discount percentage, and extension CTA', (tester) async {
+      tester.view.physicalSize = const Size(1200, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() => tester.view.resetPhysicalSize());
+
+      const banner = PromoBannerModel(
+        enabled: true,
+        text: 'New Year 2027 Mega Sale: 50% OFF Pro & Ultra!',
+        couponCode: 'NEWYEAR50',
+        discountPercent: 50.0,
+      );
+
+      const catalog = PricingCatalogModel(
+        currency: 'USD',
+        tiers: {
+          'ultra': TierPricingItem(monthly: 49.0, annual: 470.0),
+        },
+        promoBanner: banner,
+      );
+
+      bool extended = false;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: UltraExtensionDialog(
+              promoBanner: banner,
+              catalog: catalog,
+              user: null,
+              onExtend: () {
+                extended = true;
+              },
+            ),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      expect(find.text('Extend Your Ultra Plan (50% OFF)'), findsOneWidget);
+      expect(find.text('New Year 2027 Mega Sale: 50% OFF Pro & Ultra!'), findsOneWidget);
+      expect(find.textContaining('NEWYEAR50'), findsWidgets);
+      expect(find.text('Extend 1 Year (50% OFF)'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+
+      await tester.tap(find.text('Extend 1 Year (50% OFF)'));
+      await tester.pumpAndSettle();
+      expect(extended, isTrue);
     });
   });
 }

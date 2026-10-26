@@ -12,6 +12,7 @@ import 'recent_journey_skeleton.dart';
 import '../workspace/active_learning_workspace.dart';
 import 'neural_inference_loader.dart';
 import '../../../../../presentation/widgets/theme_toggle_button.dart';
+import '../../../../widgets/promo_announcement_bar.dart';
 
 class LearningMainContent extends ConsumerWidget {
   final bool isMobile;
@@ -151,14 +152,19 @@ class LearningMainContent extends ConsumerWidget {
                                 vertical: isMobile ? 24.0 : 48.0,
                               ),
                               child: Center(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Wrap(
-                                      alignment: WrapAlignment.center,
-                                      children: [
-                                        Text(
-                                          'EduTechAI ',
+                                child: ConstrainedBox(
+                                  constraints: const BoxConstraints(maxWidth: 900),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: [
+                                      const PromoAnnouncementBar(
+                                        margin: EdgeInsets.only(bottom: 24),
+                                      ),
+                                      Wrap(
+                                        alignment: WrapAlignment.center,
+                                        children: [
+                                          Text(
+                                            'EduTechAI ',
                                           style:
                                               (isMobile
                                                       ? AppTextStyles.h3
@@ -195,6 +201,7 @@ class LearningMainContent extends ConsumerWidget {
                                 ),
                               ),
                             ),
+                          ),
 
                             AnimatedSwitcher(
                               duration: const Duration(milliseconds: 300),

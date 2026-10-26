@@ -8,14 +8,18 @@ import '../../../core/services/subscription_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/text_styles.dart';
 import '../../../data/models/subscription/payment_models.dart';
+import '../../../data/models/auth/user_current_profile_response.dart';
 import '../../widgets/glass_card.dart';
 import '../learning/widgets/subscription/checkout_review_dialog.dart';
+import '../learning/widgets/subscription/ultra_extension_dialog.dart';
 import '../learning/widgets/subscription/plan_card.dart';
 import '../learning/widgets/subscription/mobile_plan_deck.dart';
 import '../../widgets/promo_announcement_bar.dart';
 
 class SubscriptionPage extends ConsumerStatefulWidget {
-  const SubscriptionPage({super.key});
+  final bool autoClaim;
+
+  const SubscriptionPage({super.key, this.autoClaim = false});
 
   @override
   ConsumerState<SubscriptionPage> createState() => _SubscriptionPageState();
@@ -26,11 +30,71 @@ class _SubscriptionPageState extends ConsumerState<SubscriptionPage>
   late TabController _tabController;
   String _billingCycle = 'monthly'; // 'monthly' or 'annual'
   bool _isCanceling = false;
+  bool _hasTriggeredAutoClaim = false;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+
+    if (widget.autoClaim) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _checkAndTriggerAutoClaim());
+    }
+  }
+
+  void _checkAndTriggerAutoClaim() {
+    if (_hasTriggeredAutoClaim || !mounted) return;
+    final catalogAsync = ref.read(pricingCatalogProvider);
+    final userAsync = ref.read(userProvider);
+
+    // If either catalog or user profile is still loading, wait for provider notification
+    if (catalogAsync.isLoading || userAsync.isLoading) return;
+
+    final catalog = catalogAsync.value;
+    final banner = catalog?.promoBanner;
+    final user = userAsync.value;
+
+    if (catalog != null && banner != null && banner.enabled) {
+      _hasTriggeredAutoClaim = true;
+      _handleClaimOffer(catalog, banner, user);
+    }
+  }
+
+  void _handleClaimOffer(PricingCatalogModel catalog, PromoBannerModel banner, UserCurrentProfileResponse? user) {
+    final tier = user?.subscription?.tier.toLowerCase() ?? 'free';
+    if (tier == 'ultra') {
+      showDialog(
+        context: context,
+        builder: (ctx) => UltraExtensionDialog(
+          promoBanner: banner,
+          catalog: catalog,
+          user: user,
+          onExtend: () {
+            final ultraAnnual = catalog.getPrice('ultra', 'annual');
+            _openCheckout(
+              'ultra',
+              ultraAnnual,
+              billingCycle: 'annual',
+              initialCoupon: banner.couponCode,
+            );
+          },
+        ),
+      );
+    } else if (tier == 'pro') {
+      final ultraPrice = catalog.getPrice('ultra', _billingCycle);
+      _openCheckout(
+        'ultra',
+        ultraPrice,
+        initialCoupon: banner.couponCode,
+      );
+    } else {
+      final proPrice = catalog.getPrice('pro', _billingCycle);
+      _openCheckout(
+        'pro',
+        proPrice,
+        initialCoupon: banner.couponCode,
+      );
+    }
   }
 
   @override
@@ -39,14 +103,20 @@ class _SubscriptionPageState extends ConsumerState<SubscriptionPage>
     super.dispose();
   }
 
-  Future<void> _openCheckout(String targetTier, double basePrice) async {
+  Future<void> _openCheckout(
+    String targetTier,
+    double basePrice, {
+    String? billingCycle,
+    String? initialCoupon,
+  }) async {
     final success = await showDialog<bool>(
       context: context,
       barrierDismissible: true,
       builder: (_) => CheckoutReviewDialog(
         targetTier: targetTier,
-        billingCycle: _billingCycle,
+        billingCycle: billingCycle ?? _billingCycle,
         basePrice: basePrice,
+        initialCoupon: initialCoupon,
       ),
     );
 
@@ -113,6 +183,25 @@ class _SubscriptionPageState extends ConsumerState<SubscriptionPage>
 
   @override
   Widget build(BuildContext context) {
+    if (widget.autoClaim && !_hasTriggeredAutoClaim) {
+      ref.listen<AsyncValue<PricingCatalogModel>>(pricingCatalogProvider, (_, next) {
+        if (next.hasValue && !_hasTriggeredAutoClaim) {
+          WidgetsBinding.instance.addPostFrameCallback((_) => _checkAndTriggerAutoClaim());
+        }
+      });
+      ref.listen<AsyncValue<UserCurrentProfileResponse?>>(userProvider, (_, next) {
+        if (next.hasValue && !_hasTriggeredAutoClaim) {
+          WidgetsBinding.instance.addPostFrameCallback((_) => _checkAndTriggerAutoClaim());
+        }
+      });
+
+      final catalogAsync = ref.watch(pricingCatalogProvider);
+      final userAsync = ref.watch(userProvider);
+      if (catalogAsync.hasValue && !userAsync.isLoading) {
+        WidgetsBinding.instance.addPostFrameCallback((_) => _checkAndTriggerAutoClaim());
+      }
+    }
+
     final userAsync = ref.watch(userProvider);
     final user = userAsync.value;
 
@@ -175,7 +264,15 @@ class _SubscriptionPageState extends ConsumerState<SubscriptionPage>
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            const PromoAnnouncementBar(),
+                            PromoAnnouncementBar(
+                              onClaim: () {
+                                final catalog = ref.read(pricingCatalogProvider).value;
+                                final banner = catalog?.promoBanner;
+                                if (catalog != null && banner != null && banner.enabled) {
+                                  _handleClaimOffer(catalog, banner, user);
+                                }
+                              },
+                            ),
                             // Hero Title & Subtitle
                             _buildHeroHeader(currentTier, formattedDate, price, gatewayProvider),
                             const SizedBox(height: 28),

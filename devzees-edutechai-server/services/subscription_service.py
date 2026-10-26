@@ -194,15 +194,20 @@ class SubscriptionService:
             err_msg = str(checkout_res.get("message", "Payment processing failed."))
             raise BadRequestException(error_code="PAYMENT_FAILED", errors=err_msg)
 
-        # 3. Expiry Calculation: Monthly (30d) vs Annual (365d)
-        now = datetime.now(timezone.utc).replace(tzinfo=None)
-        days = 365 if dto.billing_cycle.lower() == "annual" else 30
-        period_end = now + timedelta(days=days)
-
-        # 4. Get or Create Subscription Record
+        # 3. Get or Create Subscription Record
         sub_stmt = select(Subscription).where(Subscription.user_id == user_id)
         sub_res = await db.execute(sub_stmt)
         sub = sub_res.scalar_one_or_none()
+
+        # 4. Expiry Calculation (with Subscription Stacking support):
+        # If user is on the same tier with an active future period, stack the duration onto existing expiration date!
+        now = datetime.now(timezone.utc).replace(tzinfo=None)
+        days = 365 if dto.billing_cycle.lower() == "annual" else 30
+
+        if sub and sub.tier == target_tier and sub.current_period_end and sub.current_period_end > now:
+            period_end = sub.current_period_end + timedelta(days=days)
+        else:
+            period_end = now + timedelta(days=days)
 
         txn_id = str(checkout_res.get("transaction_id", f"txn_{now.timestamp()}"))
 

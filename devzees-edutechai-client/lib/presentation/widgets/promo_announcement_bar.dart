@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:devzees_edutechai_client/core/services/subscription_service.dart';
 import 'package:devzees_edutechai_client/core/theme/text_styles.dart';
 import 'package:devzees_edutechai_client/core/constants/responsive.dart';
+import 'package:devzees_edutechai_client/core/providers/auth_provider.dart';
 
 /// Top announcement banner for festive and promotional sales campaigns (e.g. Diwali Mega Sale).
 /// Controlled dynamically via backend system settings (PROMO_BANNER_ENABLED, PROMO_BANNER_TEXT, etc.).
@@ -24,6 +25,19 @@ class PromoAnnouncementBar extends ConsumerStatefulWidget {
 
 class _PromoAnnouncementBarState extends ConsumerState<PromoAnnouncementBar> {
   bool _dismissed = false;
+
+  void _handleClaim(BuildContext context) {
+    if (widget.onClaim != null) {
+      widget.onClaim!();
+      return;
+    }
+    final authState = ref.read(authProvider);
+    if (authState.isAuthenticated) {
+      context.push('/subscription?claim=true');
+    } else {
+      context.go('/auth?redirect=/subscription&claim=true');
+    }
+  }
 
   void _copyCoupon(BuildContext context, String code) {
     Clipboard.setData(ClipboardData(text: code));
@@ -135,7 +149,7 @@ class _PromoAnnouncementBarState extends ConsumerState<PromoAnnouncementBar> {
             shape: BoxShape.circle,
             border: Border.all(color: const Color(0xFFFCD34D).withValues(alpha: 0.4)),
           ),
-          child: const Text('🪔', style: TextStyle(fontSize: 16)),
+          child: const Icon(Icons.bolt_rounded, color: Color(0xFFFBBF24), size: 18),
         ),
         const SizedBox(width: 12),
 
@@ -205,13 +219,7 @@ class _PromoAnnouncementBarState extends ConsumerState<PromoAnnouncementBar> {
 
         // CTA Button
         ElevatedButton(
-          onPressed: () {
-            if (widget.onClaim != null) {
-              widget.onClaim!();
-            } else {
-              context.push('/subscription');
-            }
-          },
+          onPressed: () => _handleClaim(context),
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFFF59E0B),
             foregroundColor: Colors.black,
@@ -253,7 +261,7 @@ class _PromoAnnouncementBarState extends ConsumerState<PromoAnnouncementBar> {
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('🪔', style: TextStyle(fontSize: 16)),
+            const Icon(Icons.bolt_rounded, color: Color(0xFFFBBF24), size: 18),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
@@ -321,13 +329,7 @@ class _PromoAnnouncementBarState extends ConsumerState<PromoAnnouncementBar> {
             else
               const SizedBox.shrink(),
             InkWell(
-              onTap: () {
-                if (widget.onClaim != null) {
-                  widget.onClaim!();
-                } else {
-                  context.push('/subscription');
-                }
-              },
+              onTap: () => _handleClaim(context),
               borderRadius: BorderRadius.circular(6),
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),

@@ -55,10 +55,30 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
       return;
     }
 
+    // Capture destination parameters before login because state changes trigger router redirects
+    final routerState = GoRouterState.of(context);
+    final redirectUrl = routerState.uri.queryParameters['redirect'];
+    final claim = routerState.uri.queryParameters['claim'];
+
     final success = await ref.read(authProvider.notifier).login(email, password);
     if (success) {
       if (mounted) {
-        context.go('/learning');
+        // If router redirect already navigated away from /auth, do not override
+        final currentLoc = GoRouterState.of(context).matchedLocation;
+        if (currentLoc != '/auth') {
+          return;
+        }
+
+        if (redirectUrl != null && redirectUrl.isNotEmpty) {
+          if (claim == 'true' && !redirectUrl.contains('claim=')) {
+            final sep = redirectUrl.contains('?') ? '&' : '?';
+            context.go('$redirectUrl${sep}claim=true');
+          } else {
+            context.go(redirectUrl);
+          }
+        } else {
+          context.go('/learning');
+        }
       }
     } else {
       if (mounted) {

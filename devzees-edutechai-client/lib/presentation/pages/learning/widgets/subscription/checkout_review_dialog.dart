@@ -14,12 +14,14 @@ class CheckoutReviewDialog extends ConsumerStatefulWidget {
   final String targetTier; // 'pro' or 'ultra'
   final String billingCycle; // 'monthly' or 'annual'
   final double basePrice;
+  final String? initialCoupon;
 
   const CheckoutReviewDialog({
     super.key,
     required this.targetTier,
     required this.billingCycle,
     required this.basePrice,
+    this.initialCoupon,
   });
 
   @override
@@ -34,6 +36,19 @@ class _CheckoutReviewDialogState extends ConsumerState<CheckoutReviewDialog> {
   String? _paymentError;
   CouponValidationResult? _appliedCoupon;
   bool _paymentSuccess = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialCoupon != null && widget.initialCoupon!.trim().isNotEmpty) {
+      _couponController.text = widget.initialCoupon!.trim();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _applyCoupon();
+        }
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -417,11 +432,11 @@ class _CheckoutReviewDialogState extends ConsumerState<CheckoutReviewDialog> {
               ),
               child: Row(
                 children: [
-                  const Text('🪔', style: TextStyle(fontSize: 14)),
+                  const Icon(Icons.bolt_rounded, size: 16, color: Color(0xFFF59E0B)),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Festive Offer: Tap to apply ${promoBanner.couponCode} (${promoBanner.discountPercent.toInt()}% OFF)',
+                      'Special Offer: Tap to apply ${promoBanner.couponCode} (${promoBanner.discountPercent.toInt()}% OFF)',
                       style: AppTextStyles.caption.copyWith(
                         color: const Color(0xFFF59E0B),
                         fontWeight: FontWeight.bold,

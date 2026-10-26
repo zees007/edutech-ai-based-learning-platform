@@ -85,9 +85,18 @@ class AppRouterNotifier extends ChangeNotifier {
 
     final isAuthenticated = authState.isAuthenticated;
 
-    // 2. Authenticated user visiting /auth -> send to primary workspace
+    // 2. Authenticated user visiting /auth -> send to redirect destination or primary workspace
     if (isAuthenticated) {
       if (isAuthRoute) {
+        final redirectUrl = state.uri.queryParameters['redirect'];
+        if (redirectUrl != null && redirectUrl.isNotEmpty) {
+          final claim = state.uri.queryParameters['claim'];
+          if (claim == 'true' && !redirectUrl.contains('claim=')) {
+            final sep = redirectUrl.contains('?') ? '&' : '?';
+            return '$redirectUrl${sep}claim=true';
+          }
+          return redirectUrl;
+        }
         return '/learning';
       }
 
@@ -119,6 +128,14 @@ class AppRouterNotifier extends ChangeNotifier {
       }
 
       if (!isAuthRoute && !isHomeRoute) {
+        final targetPath = state.uri.path;
+        final claim = state.uri.queryParameters['claim'];
+        if (targetPath.isNotEmpty && targetPath != '/') {
+          if (claim == 'true') {
+            return '/auth?redirect=$targetPath&claim=true';
+          }
+          return '/auth?redirect=$targetPath';
+        }
         return '/auth';
       }
     }
@@ -170,7 +187,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/subscription',
         name: 'subscription',
-        builder: (context, state) => const SubscriptionPage(),
+        builder: (context, state) {
+          final autoClaim = state.uri.queryParameters['claim'] == 'true';
+          return SubscriptionPage(autoClaim: autoClaim);
+        },
       ),
     ],
   );
