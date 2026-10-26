@@ -480,7 +480,9 @@ class _SubscriptionPageState extends ConsumerState<SubscriptionPage>
       buttonText: currentTier == 'pro' ? 'Current Plan' : 'Upgrade to Pro ⚡',
       isCurrentPlan: currentTier == 'pro',
       isFeatured: true,
-      badgeText: 'MOST POPULAR',
+      badgeText: isAnnual
+          ? 'SAVE ${catalog.getAnnualSavingsPercent("pro")}% • MOST POPULAR'
+          : 'MOST POPULAR',
       onButtonTap: currentTier == 'pro'
           ? null
           : () => _openCheckout('pro', proRawPrice),
@@ -504,7 +506,9 @@ class _SubscriptionPageState extends ConsumerState<SubscriptionPage>
       ],
       buttonText: currentTier == 'ultra' ? 'Current Plan' : 'Select Ultra ✨',
       isCurrentPlan: currentTier == 'ultra',
-      badgeText: 'MAX POWER',
+      badgeText: isAnnual
+          ? 'SAVE ${catalog.getAnnualSavingsPercent("ultra")}% • MAX POWER'
+          : 'MAX POWER',
       onButtonTap: currentTier == 'ultra'
           ? null
           : () => _openCheckout('ultra', ultraRawPrice),
@@ -578,9 +582,9 @@ class _SubscriptionPageState extends ConsumerState<SubscriptionPage>
                           color: AppColors.accentAmber,
                           borderRadius: BorderRadius.circular(6),
                         ),
-                        child: const Text(
-                          '20% OFF',
-                          style: TextStyle(
+                        child: Text(
+                          catalog.getGlobalAnnualDiscountBadge(),
+                          style: const TextStyle(
                             color: Colors.black,
                             fontSize: 9,
                             fontWeight: FontWeight.w900,

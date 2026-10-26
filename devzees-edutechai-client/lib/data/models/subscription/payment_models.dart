@@ -296,5 +296,52 @@ class PricingCatalogModel {
     final t = getTier(tier);
     return billingCycle.toLowerCase() == 'annual' ? t.annual : t.monthly;
   }
+
+  /// Calculates the dynamic annual discount percentage compared to 12 monthly payments for any tier.
+  int getAnnualSavingsPercent([String tier = 'pro']) {
+    final monthly = getPrice(tier, 'monthly');
+    final annual = getPrice(tier, 'annual');
+    if (monthly <= 0 || annual <= 0) return 0;
+    final totalMonthly = monthly * 12.0;
+    if (annual >= totalMonthly) return 0;
+    final savings = ((totalMonthly - annual) / totalMonthly) * 100.0;
+    return savings.round();
+  }
+
+  /// Returns the savings label for a specific tier (e.g. 'SAVE 21%' for Pro, 'SAVE 20%' for Ultra).
+  String getAnnualSavingsLabel([String tier = 'pro']) {
+    final pct = getAnnualSavingsPercent(tier);
+    return pct > 0 ? 'SAVE $pct%' : 'ANNUAL';
+  }
+
+  /// Returns the discount badge for a specific tier (e.g. '21% OFF' for Pro, '20% OFF' for Ultra).
+  String getAnnualDiscountBadge([String tier = 'pro']) {
+    final pct = getAnnualSavingsPercent(tier);
+    return pct > 0 ? '$pct% OFF' : 'ANNUAL';
+  }
+
+  /// Returns a smart badge label for the global monthly/annual toggle switch.
+  /// If both Pro and Ultra offer the same discount, displays e.g. "20% OFF".
+  /// If they differ, displays e.g. "UP TO 21% OFF".
+  String getGlobalAnnualDiscountBadge() {
+    final pro = getAnnualSavingsPercent('pro');
+    final ultra = getAnnualSavingsPercent('ultra');
+    if (pro <= 0 && ultra <= 0) return 'ANNUAL';
+    if (pro == ultra) return '$pro% OFF';
+    final maxPct = pro > ultra ? pro : ultra;
+    return 'UP TO $maxPct% OFF';
+  }
+
+  /// Returns a smart savings label for the global monthly/annual toggle switch.
+  /// If both Pro and Ultra offer the same discount, displays e.g. "SAVE 20%".
+  /// If they differ, displays e.g. "SAVE UP TO 21%".
+  String getGlobalAnnualSavingsLabel() {
+    final pro = getAnnualSavingsPercent('pro');
+    final ultra = getAnnualSavingsPercent('ultra');
+    if (pro <= 0 && ultra <= 0) return 'ANNUAL';
+    if (pro == ultra) return 'SAVE $pro%';
+    final maxPct = pro > ultra ? pro : ultra;
+    return 'SAVE UP TO $maxPct%';
+  }
 }
 

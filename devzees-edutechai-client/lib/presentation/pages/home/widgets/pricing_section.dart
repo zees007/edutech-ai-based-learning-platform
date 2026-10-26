@@ -235,7 +235,7 @@ class _PricingSectionState extends ConsumerState<PricingSection> {
                           borderRadius: BorderRadius.circular(9999),
                         ),
                         child: Text(
-                          'SAVE 20%',
+                          catalog.getGlobalAnnualSavingsLabel(),
                           style: TextStyle(
                             color: _isAnnual ? Colors.white : const Color(0xFF10B981),
                             fontSize: 9.5,

@@ -349,6 +349,10 @@ class _SubscriptionModalState extends ConsumerState<SubscriptionModal>
         ],
         buttonText: currentTier == 'pro' ? 'Current Plan' : 'Upgrade to Pro ⚡',
         isCurrentPlan: currentTier == 'pro',
+        isFeatured: true,
+        badgeText: isAnnual
+            ? 'SAVE ${catalog.getAnnualSavingsPercent("pro")}% • MOST POPULAR'
+            : 'MOST POPULAR',
         onButtonTap: currentTier == 'pro'
             ? null
             : () => _openCheckout('pro', proRawPrice),
@@ -371,6 +375,9 @@ class _SubscriptionModalState extends ConsumerState<SubscriptionModal>
         ],
         buttonText: currentTier == 'ultra' ? 'Current Plan' : 'Select Ultra ✨',
         isCurrentPlan: currentTier == 'ultra',
+        badgeText: isAnnual
+            ? 'SAVE ${catalog.getAnnualSavingsPercent("ultra")}% • MAX POWER'
+            : 'MAX POWER',
         onButtonTap: currentTier == 'ultra'
             ? null
             : () => _openCheckout('ultra', ultraRawPrice),
@@ -431,9 +438,9 @@ class _SubscriptionModalState extends ConsumerState<SubscriptionModal>
                         color: AppColors.accentAmber,
                         borderRadius: BorderRadius.circular(6),
                       ),
-                      child: const Text(
-                        'SAVE 20%',
-                        style: TextStyle(color: Colors.black, fontSize: 9, fontWeight: FontWeight.bold),
+                      child: Text(
+                        catalog.getGlobalAnnualSavingsLabel(),
+                        style: const TextStyle(color: Colors.black, fontSize: 9, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ],
