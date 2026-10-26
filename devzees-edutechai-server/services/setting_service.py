@@ -265,5 +265,35 @@ class SettingService:
                 "WELCOME50": 50.0,
                 "STUDENT10": 10.0,
                 "EDUTECH100": 100.0,
+                "DIWALI50": 50.0,
             }
         return coupons_map
+
+    @classmethod
+    def get_promo_banner_info(cls) -> Dict[str, Any]:
+        """
+        Retrieves active promo campaign banner information dynamically from settings:
+        - PROMO_BANNER_ENABLED: 'true'/'false'
+        - PROMO_BANNER_TEXT: banner message
+        - PROMO_BANNER_COUPON: associated coupon code
+        """
+        enabled_raw = str(cls.get_value("PROMO_BANNER_ENABLED", default="true")).strip().lower()
+        enabled = enabled_raw in ("true", "1", "yes", "on")
+        text = str(
+            cls.get_value(
+                "PROMO_BANNER_TEXT",
+                default="🪔 Diwali Special: Celebrate with 50% OFF all plans! Use code DIWALI50 at checkout",
+            )
+        ).strip()
+        coupon = str(cls.get_value("PROMO_BANNER_COUPON", default="DIWALI50")).strip().upper()
+
+        coupons = cls.get_valid_coupons()
+        pct = float(coupons.get(coupon, 50.0))
+
+        return {
+            "enabled": enabled,
+            "text": text,
+            "coupon_code": coupon,
+            "discount_percent": pct,
+        }
+

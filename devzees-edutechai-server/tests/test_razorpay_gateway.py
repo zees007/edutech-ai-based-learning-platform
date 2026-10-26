@@ -11,7 +11,7 @@ from httpx import ASGITransport, AsyncClient
 
 from app.main import create_app
 from services.database import init_db
-from services.payment_providers.razorpay_provider import RazorpayPaymentProvider
+from services.payment_service import RazorpayPaymentProvider
 
 
 @pytest.fixture

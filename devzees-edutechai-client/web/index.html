@@ -118,6 +118,22 @@
     window.openRazorpayCheckout = function(optionsJson, successCallback, dismissCallback) {
       try {
         var options = typeof optionsJson === 'string' ? JSON.parse(optionsJson) : optionsJson;
+
+        // Dev / Mock simulation guard: avoid 401 from Razorpay CDN when test keys are not configured
+        if (!options.key || options.key === 'rzp_test_mock_key' || (options.order_id && options.order_id.startsWith('order_mock_'))) {
+          console.log("[Razorpay Interop] Mock Mode active — simulating payment approval.");
+          setTimeout(function() {
+            if (successCallback) {
+              successCallback(
+                'pay_mock_' + Date.now(),
+                options.order_id || 'order_mock_' + Date.now(),
+                'dev_mock_signature'
+              );
+            }
+          }, 700);
+          return;
+        }
+
         options.handler = function(response) {
           if (successCallback) {
             successCallback(

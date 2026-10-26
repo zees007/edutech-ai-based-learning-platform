@@ -252,13 +252,45 @@ class TierPricingItem {
       };
 }
 
+class PromoBannerModel {
+  final bool enabled;
+  final String text;
+  final String couponCode;
+  final double discountPercent;
+
+  const PromoBannerModel({
+    this.enabled = false,
+    this.text = '',
+    this.couponCode = '',
+    this.discountPercent = 0.0,
+  });
+
+  factory PromoBannerModel.fromJson(Map<String, dynamic> json) {
+    return PromoBannerModel(
+      enabled: json['enabled'] as bool? ?? false,
+      text: json['text'] as String? ?? '',
+      couponCode: json['coupon_code'] as String? ?? '',
+      discountPercent: (json['discount_percent'] as num?)?.toDouble() ?? 0.0,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'enabled': enabled,
+        'text': text,
+        'coupon_code': couponCode,
+        'discount_percent': discountPercent,
+      };
+}
+
 class PricingCatalogModel {
   final String currency;
   final Map<String, TierPricingItem> tiers;
+  final PromoBannerModel? promoBanner;
 
   const PricingCatalogModel({
     this.currency = 'USD',
     required this.tiers,
+    this.promoBanner,
   });
 
   factory PricingCatalogModel.fromJson(Map<String, dynamic> json) {
@@ -271,9 +303,15 @@ class PricingCatalogModel {
       }
     }
 
+    final promoJson = json['promo_banner'];
+    final promo = promoJson is Map<String, dynamic>
+        ? PromoBannerModel.fromJson(promoJson)
+        : null;
+
     return PricingCatalogModel(
       currency: json['currency'] as String? ?? 'USD',
       tiers: parsedTiers,
+      promoBanner: promo,
     );
   }
 

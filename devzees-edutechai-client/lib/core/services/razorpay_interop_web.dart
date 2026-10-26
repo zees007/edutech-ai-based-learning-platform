@@ -36,6 +36,21 @@ Future<RazorpayPaymentResult> launchRazorpayCheckout({
   required String userMobile,
   required String userName,
 }) async {
+  // Built-in local Dev/Mock simulation mode (Option 1)
+  final isMock = keyId.isEmpty ||
+      keyId == 'rzp_test_mock_key' ||
+      orderId.startsWith('order_mock_');
+
+  if (isMock) {
+    await Future.delayed(const Duration(milliseconds: 700));
+    return RazorpayPaymentResult(
+      success: true,
+      paymentId: 'pay_mock_${DateTime.now().millisecondsSinceEpoch}',
+      orderId: orderId,
+      signature: 'dev_mock_signature',
+    );
+  }
+
   final completer = Completer<RazorpayPaymentResult>();
 
   final options = {

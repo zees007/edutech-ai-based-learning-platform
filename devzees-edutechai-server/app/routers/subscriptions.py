@@ -29,6 +29,7 @@ from models.subscription_schemas import (
     CreateOrderResponse,
     PaymentTransactionResponse,
     PricingCatalogResponse,
+    PromoBannerInfo,
     SubscriptionResponse,
     SubscriptionUpdateRequest,
     TierPriceInfo,
@@ -49,8 +50,10 @@ async def get_pricing_catalog():
     """
     Public endpoint providing current catalog pricing for all tiers and billing cycles.
     Dynamically loads values from system settings (PRO_MONTHLY, PRO_ANNUALLY, etc.).
+    Includes active promotional campaign banner information.
     """
     raw_catalog = SettingService.get_pricing_catalog()
+    promo_info = SettingService.get_promo_banner_info()
     return PricingCatalogResponse(
         currency="USD",
         tiers={
@@ -60,6 +63,7 @@ async def get_pricing_catalog():
             )
             for tier, cycles in raw_catalog.items()
         },
+        promo_banner=PromoBannerInfo(**promo_info),
     )
 
 
@@ -122,7 +126,7 @@ async def checkout_subscription(
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Complete subscription upgrade with Razorpay signature verification or direct Sandbox checkout.
+    Complete subscription upgrade with Razorpay signature verification.
     """
     return await SubscriptionService.process_checkout_and_upgrade(
         db=db, user_id=current_user.id, dto=request
@@ -191,11 +195,11 @@ async def handle_payment_webhook(
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Webhook endpoint for payment gateways (Paddle, Razorpay, etc.).
+    Webhook endpoint for Razorpay payment gateway.
     """
     p_instance = PaymentService.get_provider(provider)
     raw_body = await request.body()
-    sig_header = request.headers.get("paddle-signature") or request.headers.get("x-razorpay-signature") or ""
+    sig_header = request.headers.get("x-razorpay-signature") or ""
 
     is_valid = await p_instance.verify_webhook_signature(raw_body, sig_header)
     if not is_valid:

@@ -257,6 +257,9 @@ class _CheckoutReviewDialogState extends ConsumerState<CheckoutReviewDialog> {
   }
 
   Widget _buildReviewContent(bool isDark, bool isUltra) {
+    final catalog = ref.watch(pricingCatalogProvider).value;
+    final promoBanner = catalog?.promoBanner;
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -383,6 +386,64 @@ class _CheckoutReviewDialogState extends ConsumerState<CheckoutReviewDialog> {
             ),
           ],
         ),
+
+        // 1-Click Promotional Campaign Coupon Chip
+        if (promoBanner != null &&
+            promoBanner.enabled &&
+            promoBanner.couponCode.isNotEmpty &&
+            _appliedCoupon == null) ...[
+          const SizedBox(height: 8),
+          InkWell(
+            onTap: _isValidatingCoupon
+                ? null
+                : () {
+                    _couponController.text = promoBanner.couponCode;
+                    _applyCoupon();
+                  },
+            borderRadius: BorderRadius.circular(10),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    const Color(0xFFF59E0B).withValues(alpha: isDark ? 0.20 : 0.12),
+                    const Color(0xFFEF4444).withValues(alpha: isDark ? 0.14 : 0.08),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: const Color(0xFFF59E0B).withValues(alpha: isDark ? 0.45 : 0.35),
+                ),
+              ),
+              child: Row(
+                children: [
+                  const Text('🪔', style: TextStyle(fontSize: 14)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Festive Offer: Tap to apply ${promoBanner.couponCode} (${promoBanner.discountPercent.toInt()}% OFF)',
+                      style: AppTextStyles.caption.copyWith(
+                        color: const Color(0xFFF59E0B),
+                        fontWeight: FontWeight.bold,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  const Text(
+                    'Apply',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFFF59E0B),
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
 
         // Applied Coupon Pill or Error
         if (_appliedCoupon != null) ...[

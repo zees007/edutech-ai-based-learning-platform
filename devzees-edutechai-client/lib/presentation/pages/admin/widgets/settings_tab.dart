@@ -133,6 +133,12 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
         return 'Annual subscription fee in USD for Ultra tier membership (e.g. 470).';
       case 'VALID_COUPONS':
         return 'JSON string or comma-separated list of active promotional coupon codes (e.g. ["WELCOME50", "STUDENT20"]).';
+      case 'PROMO_BANNER_ENABLED':
+        return 'Controls whether the promotional campaign announcement banner is active across the app (true/false).';
+      case 'PROMO_BANNER_TEXT':
+        return 'Festive campaign headline displayed on the top banner (e.g. 🪔 Diwali Mega Sale: Get Flat 50% OFF Pro & Ultra!).';
+      case 'PROMO_BANNER_COUPON':
+        return 'Active promotional coupon code attached to the campaign banner (e.g. DIWALI50).';
       default:
         return 'Runtime configuration parameter directly loaded by backend services.';
     }

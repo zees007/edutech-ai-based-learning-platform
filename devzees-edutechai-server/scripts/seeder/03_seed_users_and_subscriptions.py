@@ -58,6 +58,7 @@ async def seed_users_and_subscriptions():
                     tier=u_data["tier"],
                     status="active",
                     billing_cycle="monthly",
+                    gateway_provider="razorpay",
                     current_period_start=datetime.now(timezone.utc).replace(tzinfo=None),
                     current_period_end=(datetime.now(timezone.utc) + timedelta(days=30)).replace(tzinfo=None),
                     auto_renew=True
@@ -66,6 +67,7 @@ async def seed_users_and_subscriptions():
             else:
                 sub.tier = u_data["tier"]
                 sub.status = "active"
+                sub.gateway_provider = "razorpay"
 
         await db.commit()
         print(f"Users and Subscriptions seeded successfully. Default password is '{PASSWORD}'.")

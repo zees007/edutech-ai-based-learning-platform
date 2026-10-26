@@ -12,6 +12,7 @@ import '../../widgets/glass_card.dart';
 import '../learning/widgets/subscription/checkout_review_dialog.dart';
 import '../learning/widgets/subscription/plan_card.dart';
 import '../learning/widgets/subscription/mobile_plan_deck.dart';
+import '../../widgets/promo_announcement_bar.dart';
 
 class SubscriptionPage extends ConsumerStatefulWidget {
   const SubscriptionPage({super.key});
@@ -174,6 +175,7 @@ class _SubscriptionPageState extends ConsumerState<SubscriptionPage>
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
+                            const PromoAnnouncementBar(),
                             // Hero Title & Subtitle
                             _buildHeroHeader(currentTier, formattedDate, price, gatewayProvider),
                             const SizedBox(height: 28),

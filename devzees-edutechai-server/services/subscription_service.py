@@ -2,7 +2,7 @@
 EduTechAI — Subscription Service Layer
 
 Encapsulates business logic for subscription management, checkout processing,
-multi-gateway payments (Paddle, Razorpay, Sandbox), ledger logging, and automatic tier-role synchronization.
+Razorpay payment integration, ledger logging, and automatic tier-role synchronization.
 """
 
 from __future__ import annotations
@@ -45,7 +45,7 @@ class SubscriptionService:
         db: AsyncSession, user_id: str, dto: CreateOrderRequest
     ) -> CreateOrderResponse:
         """
-        Processes order creation via requested gateway provider (Razorpay, Paddle, Sandbox).
+        Processes order creation via Razorpay.
         Returns order ID, key ID, and client checkout options.
         """
         user = await UserService.get_user_by_id(db, user_id)
@@ -109,7 +109,7 @@ class SubscriptionService:
                 status="active",
                 billing_cycle="monthly",
                 price_amount=0.0,
-                gateway_provider="sandbox",
+                gateway_provider="razorpay",
             )
             db.add(sub)
             await db.commit()
@@ -133,7 +133,7 @@ class SubscriptionService:
         db: AsyncSession, user_id: str, dto: CheckoutRequest
     ) -> CheckoutResponse:
         """
-        Processes checkout payment via requested gateway provider (Razorpay/Paddle/Sandbox),
+        Processes checkout payment via Razorpay,
         records PaymentTransaction in ledger, updates user subscription, and syncs database Role.
         """
         user = await UserService.get_user_by_id(db, user_id)
@@ -156,25 +156,21 @@ class SubscriptionService:
         final_amount = float(coupon_res["final_price"])
         currency_code = (dto.currency or "USD").upper().strip()
 
-        # 2. Select Payment Provider & execute checkout session or signature verification
-        provider_name = dto.gateway_provider.lower().strip()
-        provider = PaymentService.get_provider(provider_name)
+        # 2. Select Payment Provider & execute signature verification or checkout session
+        provider = PaymentService.get_provider(dto.gateway_provider)
 
-        if provider_name == "razorpay" and dto.razorpay_payment_id:
+        if dto.razorpay_payment_id:
             # Razorpay verified client checkout flow
-            from services.payment_providers.razorpay_provider import RazorpayPaymentProvider
-
-            if isinstance(provider, RazorpayPaymentProvider):
-                is_valid = provider.verify_payment_signature(
-                    razorpay_order_id=dto.razorpay_order_id or "",
-                    razorpay_payment_id=dto.razorpay_payment_id or "",
-                    razorpay_signature=dto.razorpay_signature or "",
+            is_valid = provider.verify_payment_signature(
+                razorpay_order_id=dto.razorpay_order_id or "",
+                razorpay_payment_id=dto.razorpay_payment_id or "",
+                razorpay_signature=dto.razorpay_signature or "",
+            )
+            if not is_valid:
+                raise BadRequestException(
+                    error_code="PAYMENT_VERIFICATION_FAILED",
+                    errors="Razorpay payment verification failed: Invalid cryptographic signature.",
                 )
-                if not is_valid:
-                    raise BadRequestException(
-                        error_code="PAYMENT_VERIFICATION_FAILED",
-                        errors="Razorpay payment verification failed: Invalid cryptographic signature.",
-                    )
             txn_id = dto.razorpay_payment_id
             checkout_res = {
                 "success": True,
@@ -183,6 +179,7 @@ class SubscriptionService:
                 "gateway_customer_id": f"cust_{user_id[:8]}",
             }
         else:
+            # Direct/mock dev checkout
             checkout_res = await provider.create_checkout_session(
                 user_id=user_id,
                 user_email=user.email,
@@ -191,12 +188,6 @@ class SubscriptionService:
                 amount=final_amount,
                 currency=currency_code,
                 coupon_code=dto.coupon_code,
-                extra_data={
-                    "card_number": dto.card_number,
-                    "exp_month": dto.exp_month,
-                    "exp_year": dto.exp_year,
-                    "cvc": dto.cvc,
-                },
             )
 
         if not checkout_res.get("success"):
@@ -315,7 +306,7 @@ class SubscriptionService:
                 tier=target_tier,
                 status=dto.status,
                 billing_cycle=dto.billing_cycle,
-                gateway_provider=dto.gateway_provider or "sandbox",
+                gateway_provider=dto.gateway_provider or "razorpay",
                 current_period_end=dto.current_period_end,
                 payment_gateway_ref=dto.payment_gateway_ref,
             )

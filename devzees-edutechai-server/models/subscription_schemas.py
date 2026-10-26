@@ -22,7 +22,7 @@ class SubscriptionResponse(BaseModel):
     price_amount: float = Field(default=0.0, description="Current tier recurring price")
     current_period_start: datetime
     current_period_end: datetime | None = None
-    gateway_provider: str = Field(default="sandbox", description="Payment provider: paddle, razorpay, sandbox")
+    gateway_provider: str = Field(default="razorpay", description="Payment provider: razorpay")
     gateway_subscription_id: str | None = None
     gateway_customer_id: str | None = None
     payment_gateway_ref: str | None = None
@@ -38,7 +38,7 @@ class SubscriptionUpdateRequest(BaseModel):
     tier: str = Field(..., description="Target subscription tier: free, pro, ultra")
     status: str = Field(default="active", description="Status of subscription: active, canceled, expired")
     billing_cycle: str = Field(default="monthly", description="Billing cycle: monthly, annual")
-    gateway_provider: str | None = Field(default="sandbox", description="Payment gateway code")
+    gateway_provider: str | None = Field(default="razorpay", description="Payment gateway code")
     current_period_end: datetime | None = Field(default=None, description="Expiration date of subscription")
     payment_gateway_ref: str | None = Field(default=None, description="Payment processor reference ID")
 
@@ -48,9 +48,9 @@ class CreateOrderRequest(BaseModel):
 
     tier: str = Field(..., description="Target subscription tier: pro, ultra")
     billing_cycle: str = Field(default="monthly", description="Billing cycle: monthly, annual")
-    gateway_provider: str = Field(default="razorpay", description="Selected provider: razorpay, paddle, sandbox")
+    gateway_provider: str = Field(default="razorpay", description="Payment provider: razorpay")
     coupon_code: str | None = Field(default=None, description="Promotional coupon code")
-    currency: str = Field(default="USD", description="Currency code (USD, INR)")
+    currency: str = Field(default="USD", description="Currency code (USD)")
 
 
 class CreateOrderResponse(BaseModel):
@@ -76,18 +76,13 @@ class CheckoutRequest(BaseModel):
 
     tier: str = Field(..., description="Target subscription tier: pro, ultra")
     billing_cycle: str = Field(default="monthly", description="Billing cycle: monthly, annual")
-    gateway_provider: str = Field(default="razorpay", description="Selected provider: razorpay, paddle, sandbox")
+    gateway_provider: str = Field(default="razorpay", description="Payment provider: razorpay")
     coupon_code: str | None = Field(default=None, description="Promotional coupon code")
-    currency: str = Field(default="USD", description="Payment currency: USD, INR")
+    currency: str = Field(default="USD", description="Payment currency: USD")
     # Razorpay payment verification fields
     razorpay_order_id: str | None = Field(default=None, description="Razorpay order reference ID")
     razorpay_payment_id: str | None = Field(default=None, description="Razorpay payment transaction ID")
     razorpay_signature: str | None = Field(default=None, description="Razorpay HMAC SHA256 payment signature")
-    # Sandbox direct card test fields
-    card_number: str | None = Field(default=None, description="Card number (Sandbox test mode)")
-    exp_month: int | None = Field(default=None, description="Expiry month")
-    exp_year: int | None = Field(default=None, description="Expiry year")
-    cvc: str | None = Field(default=None, description="CVC code")
 
 
 class CheckoutResponse(BaseModel):
@@ -160,10 +155,20 @@ class TierPriceInfo(BaseModel):
     annual: float
 
 
+class PromoBannerInfo(BaseModel):
+    """Promotional announcement banner configuration."""
+
+    enabled: bool = False
+    text: str = ""
+    coupon_code: str = ""
+    discount_percent: float = 0.0
+
+
 class PricingCatalogResponse(BaseModel):
-    """Public catalog response of all available tier prices."""
+    """Public catalog response of all available tier prices and promotional campaign banner."""
 
     currency: str = "USD"
     tiers: dict[str, TierPriceInfo]
+    promo_banner: PromoBannerInfo | None = None
 
 

@@ -70,4 +70,4 @@ examples:
             ]
           }
 
-docs: Webhook endpoint for payment gateways (Paddle, Razorpay, etc.).
+docs: Webhook endpoint for Razorpay payment gateway.
