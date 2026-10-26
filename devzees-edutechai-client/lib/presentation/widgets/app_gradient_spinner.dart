@@ -205,7 +205,7 @@ class _GradientSpinnerArcPainter extends CustomPainter {
     final paint = Paint()
       ..shader = SweepGradient(
         colors: colors,
-        stops: const [0.0, 0.45, 0.8, 1.0],
+        stops: colors.length == 4 ? const [0.0, 0.45, 0.8, 1.0] : null,
       ).createShader(rect)
       ..style = PaintingStyle.stroke
       ..strokeWidth = strokeWidth

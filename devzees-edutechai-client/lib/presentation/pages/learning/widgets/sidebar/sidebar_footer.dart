@@ -8,7 +8,6 @@ import '../../../../../core/providers/user_provider.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/text_styles.dart';
 import '../../../../../core/providers/theme_provider.dart';
-import '../subscription/subscription_modal.dart';
 
 class SidebarFooter extends ConsumerStatefulWidget {
   final bool expanded;
@@ -43,10 +42,7 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
         Icons.bolt_rounded,
         AppColors.accentAmber,
         onTap: () {
-          showDialog(
-            context: context,
-            builder: (_) => const SubscriptionModal(),
-          );
+          context.push('/subscription');
         },
       );
     }
@@ -128,10 +124,7 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
                       Icons.credit_card_rounded,
                       isDark ? AppColors.blueSoft : AppColors.primary,
                       onTap: () {
-                        showDialog(
-                          context: context,
-                          builder: (_) => const SubscriptionModal(),
-                        );
+                        context.push('/subscription');
                       },
                     ),
                     if (perms.isAdmin)

@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../../core/constants/responsive.dart';
 import '../../../../../core/providers/user_provider.dart';
@@ -139,7 +140,9 @@ class _SubscriptionModalState extends ConsumerState<SubscriptionModal>
         ),
         child: Container(
           width: isMobile ? double.infinity : 1150,
-          height: isMobile ? 850 : 750,
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.9,
+          ),
           padding: EdgeInsets.all(isMobile ? 20 : 32),
           decoration: BoxDecoration(
             color: isDark
@@ -187,9 +190,23 @@ class _SubscriptionModalState extends ConsumerState<SubscriptionModal>
                       ],
                     ),
                   ),
-                  IconButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    icon: Icon(Icons.close, color: AppColors.textSecondary),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        tooltip: 'Open Fullscreen Page',
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          context.push('/subscription');
+                        },
+                        icon: const Icon(Icons.open_in_new_rounded, size: 20),
+                      ),
+                      IconButton(
+                        tooltip: 'Close',
+                        onPressed: () => Navigator.of(context).pop(),
+                        icon: Icon(Icons.close, color: AppColors.textSecondary),
+                      ),
+                    ],
                   ),
                 ],
               ),

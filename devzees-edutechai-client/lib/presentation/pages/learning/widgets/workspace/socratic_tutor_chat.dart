@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -10,7 +11,6 @@ import 'package:flutter_math_fork/flutter_math.dart';
 import '../../../../../../core/theme/app_colors.dart';
 import '../../../../../../core/providers/active_session_provider.dart';
 import '../../../../../../core/providers/permission_provider.dart';
-import '../subscription/subscription_modal.dart';
 import 'mermaid_web_view.dart';
 import '../../../../../../core/constants/responsive.dart';
 import '../../../../widgets/animated_tutor_icon.dart';
@@ -365,7 +365,7 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
   void _sendMessage([String? prefilledText]) async {
     final perms = ref.read(permissionProvider);
     if (perms.isFollowUpLimitReached(_followUpCount)) {
-      showDialog(context: context, builder: (_) => const SubscriptionModal());
+      context.push('/subscription');
       return;
     }
 
@@ -1152,10 +1152,7 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
                 readOnly: limitReached,
                 onTap: limitReached
                     ? () {
-                        showDialog(
-                          context: context,
-                          builder: (_) => const SubscriptionModal(),
-                        );
+                        context.push('/subscription');
                       }
                     : null,
                 style: GoogleFonts.inter(

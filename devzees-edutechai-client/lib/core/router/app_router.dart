@@ -10,6 +10,7 @@ import 'package:devzees_edutechai_client/presentation/pages/auth/auth_page.dart'
 import 'package:devzees_edutechai_client/presentation/pages/learning/learning_page.dart';
 import 'package:devzees_edutechai_client/presentation/pages/admin/admin_page.dart';
 import 'package:devzees_edutechai_client/presentation/pages/onboarding/onboarding_page.dart';
+import 'package:devzees_edutechai_client/presentation/pages/subscription/subscription_page.dart';
 
 /// Bridges Riverpod's AuthNotifier state into GoRouter's Listenable-based refresh mechanism.
 class AppRouterNotifier extends ChangeNotifier {
@@ -165,6 +166,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/admin',
         name: 'admin',
         builder: (context, state) => const AdminPage(),
+      ),
+      GoRoute(
+        path: '/subscription',
+        name: 'subscription',
+        builder: (context, state) => const SubscriptionPage(),
       ),
     ],
   );
