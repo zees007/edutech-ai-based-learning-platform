@@ -28,14 +28,39 @@ from models.subscription_schemas import (
     CreateOrderRequest,
     CreateOrderResponse,
     PaymentTransactionResponse,
+    PricingCatalogResponse,
     SubscriptionResponse,
     SubscriptionUpdateRequest,
+    TierPriceInfo,
 )
 from services.database import get_db
 from services.payment_service import PaymentService
+from services.setting_service import SettingService
 from services.subscription_service import SubscriptionService
 
 router = APIRouter()
+
+
+@router.get(
+    "/subscriptions/pricing-catalog",
+    response_model=PricingCatalogResponse,
+)
+async def get_pricing_catalog():
+    """
+    Public endpoint providing current catalog pricing for all tiers and billing cycles.
+    Dynamically loads values from system settings (PRO_MONTHLY, PRO_ANNUALLY, etc.).
+    """
+    raw_catalog = SettingService.get_pricing_catalog()
+    return PricingCatalogResponse(
+        currency="USD",
+        tiers={
+            tier: TierPriceInfo(
+                monthly=float(cycles.get("monthly", 0.0)),
+                annual=float(cycles.get("annual", 0.0)),
+            )
+            for tier, cycles in raw_catalog.items()
+        },
+    )
 
 
 @router.get(

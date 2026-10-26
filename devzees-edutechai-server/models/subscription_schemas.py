@@ -152,3 +152,18 @@ class CancelSubscriptionRequest(BaseModel):
     reason: str | None = None
     immediate: bool = False
 
+
+class TierPriceInfo(BaseModel):
+    """Price amounts for monthly and annual billing cycles."""
+
+    monthly: float
+    annual: float
+
+
+class PricingCatalogResponse(BaseModel):
+    """Public catalog response of all available tier prices."""
+
+    currency: str = "USD"
+    tiers: dict[str, TierPriceInfo]
+
+

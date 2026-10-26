@@ -46,6 +46,18 @@ void main() {
 
     expect(find.text('Supercharge Your AI Learning'), findsOneWidget);
     expect(find.text('Free'), findsOneWidget);
+    expect(find.text('Starter'), findsOneWidget);
+    expect(find.text('Pro ⭐'), findsOneWidget);
+    expect(find.text('Ultra ✨'), findsOneWidget);
+    expect(find.byType(PageView), findsOneWidget);
+    expect(tester.takeException(), isNull);
+
+    // Scroll to and tap on 'Ultra ✨' pill to navigate deck to Ultra card
+    await tester.ensureVisible(find.text('Ultra ✨'));
+    await tester.tap(find.text('Ultra ✨'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Ultra'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }

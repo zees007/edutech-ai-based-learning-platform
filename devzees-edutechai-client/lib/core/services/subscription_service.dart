@@ -9,6 +9,11 @@ final subscriptionServiceProvider = Provider<SubscriptionService>((ref) {
   return SubscriptionService();
 });
 
+final pricingCatalogProvider = FutureProvider<PricingCatalogModel>((ref) async {
+  final service = ref.watch(subscriptionServiceProvider);
+  return await service.getPricingCatalog();
+});
+
 class SubscriptionService {
   final Dio _dio;
 
@@ -97,6 +102,18 @@ class SubscriptionService {
     } on DioException catch (e) {
       final msg = e.response?.data?['errors'] ?? e.message ?? 'Failed to cancel subscription.';
       throw Exception(msg.toString());
+    }
+  }
+
+  /// Fetches real-time pricing catalog from backend settings
+  Future<PricingCatalogModel> getPricingCatalog() async {
+    try {
+      final response = await _dio.get(ApiConstants.subscriptionPricingCatalog);
+      return PricingCatalogModel.fromJson(response.data as Map<String, dynamic>);
+    } on DioException {
+      return PricingCatalogModel.defaultCatalog;
+    } catch (_) {
+      return PricingCatalogModel.defaultCatalog;
     }
   }
 }

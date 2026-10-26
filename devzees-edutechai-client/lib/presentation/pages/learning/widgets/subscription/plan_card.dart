@@ -17,6 +17,7 @@ class PlanCard extends StatelessWidget {
   final double? width;
   final String? badgeText;
   final bool isFeatured;
+  final EdgeInsetsGeometry? padding;
 
   const PlanCard({
     super.key,
@@ -32,6 +33,7 @@ class PlanCard extends StatelessWidget {
     this.width = 340,
     this.badgeText,
     this.isFeatured = false,
+    this.padding,
   });
 
   @override
@@ -240,8 +242,11 @@ class PlanCard extends StatelessWidget {
       width: width,
       child: GlassCard(
         isGlowing: isFeatured || isCurrentPlan,
-        padding: const EdgeInsets.all(28),
-        child: content,
+        padding: padding ?? const EdgeInsets.all(28),
+        child: SingleChildScrollView(
+          physics: const NeverScrollableScrollPhysics(),
+          child: content,
+        ),
       ),
     );
   }

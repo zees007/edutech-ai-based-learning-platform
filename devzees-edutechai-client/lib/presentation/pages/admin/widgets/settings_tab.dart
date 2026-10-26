@@ -6,6 +6,7 @@ import '../../../../core/providers/admin_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../data/models/admin/system_setting_model.dart';
+import '../../../../core/services/subscription_service.dart';
 import '../../../widgets/shimmer_loading.dart';
 
 enum SettingCategory {
@@ -941,11 +942,15 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
     final newValue = _valueController.text.trim();
     final newOrder = int.tryParse(_orderController.text.trim()) ?? current.orderNumber;
 
-    await ref.read(adminSettingsProvider.notifier).updateSetting(
+    final success = await ref.read(adminSettingsProvider.notifier).updateSetting(
           current.code,
           newValue,
           newOrder,
         );
+
+    if (success) {
+      ref.invalidate(pricingCatalogProvider);
+    }
   }
 
   String _formatDateTime(DateTime? dt) {

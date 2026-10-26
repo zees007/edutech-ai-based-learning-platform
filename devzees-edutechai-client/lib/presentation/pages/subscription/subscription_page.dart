@@ -11,6 +11,7 @@ import '../../../data/models/subscription/payment_models.dart';
 import '../../widgets/glass_card.dart';
 import '../learning/widgets/subscription/checkout_review_dialog.dart';
 import '../learning/widgets/subscription/plan_card.dart';
+import '../learning/widgets/subscription/mobile_plan_deck.dart';
 
 class SubscriptionPage extends ConsumerStatefulWidget {
   const SubscriptionPage({super.key});
@@ -421,12 +422,24 @@ class _SubscriptionPageState extends ConsumerState<SubscriptionPage>
   }
 
   Widget _buildPlansTab(BuildContext context, String currentTier, bool isMobile) {
+    final catalogAsync = ref.watch(pricingCatalogProvider);
+    final catalog = catalogAsync.value ?? PricingCatalogModel.defaultCatalog;
+
     final isAnnual = _billingCycle == 'annual';
 
-    final proPrice = isAnnual ? '\$180' : '\$19';
-    final ultraPrice = isAnnual ? '\$470' : '\$49';
-    final proRawPrice = isAnnual ? 180.0 : 19.0;
-    final ultraRawPrice = isAnnual ? 470.0 : 49.0;
+    final proRawPrice = catalog.getPrice('pro', _billingCycle);
+    final ultraRawPrice = catalog.getPrice('ultra', _billingCycle);
+
+    final proPrice = proRawPrice == proRawPrice.toInt()
+        ? '\$${proRawPrice.toInt()}'
+        : '\$${proRawPrice.toStringAsFixed(2)}';
+    final ultraPrice = ultraRawPrice == ultraRawPrice.toInt()
+        ? '\$${ultraRawPrice.toInt()}'
+        : '\$${ultraRawPrice.toStringAsFixed(2)}';
+
+    final cardPadding = isMobile
+        ? const EdgeInsets.symmetric(horizontal: 20, vertical: 22)
+        : const EdgeInsets.all(28);
 
     final cardFree = PlanCard(
       title: 'Free',
@@ -446,6 +459,7 @@ class _SubscriptionPageState extends ConsumerState<SubscriptionPage>
       isCurrentPlan: currentTier == 'free',
       badgeText: 'STARTER',
       onButtonTap: null,
+      padding: cardPadding,
       width: isMobile ? double.infinity : 350,
     );
 
@@ -470,6 +484,7 @@ class _SubscriptionPageState extends ConsumerState<SubscriptionPage>
       onButtonTap: currentTier == 'pro'
           ? null
           : () => _openCheckout('pro', proRawPrice),
+      padding: cardPadding,
       width: isMobile ? double.infinity : 350,
     );
 
@@ -493,6 +508,7 @@ class _SubscriptionPageState extends ConsumerState<SubscriptionPage>
       onButtonTap: currentTier == 'ultra'
           ? null
           : () => _openCheckout('ultra', ultraRawPrice),
+      padding: cardPadding,
       width: isMobile ? double.infinity : 350,
     );
 
@@ -607,14 +623,14 @@ class _SubscriptionPageState extends ConsumerState<SubscriptionPage>
                 ],
               );
             } else {
-              return Column(
-                children: [
-                  cardFree,
-                  const SizedBox(height: 20),
-                  cardPro,
-                  const SizedBox(height: 20),
-                  cardUltra,
-                ],
+              final initialIdx = currentTier == 'ultra'
+                  ? 2
+                  : (currentTier == 'pro' ? 1 : 1);
+              return MobilePlanDeck(
+                cards: [cardFree, cardPro, cardUltra],
+                planTitles: const ['Starter', 'Pro ⭐', 'Ultra ✨'],
+                initialIndex: initialIdx,
+                cardHeight: 640,
               );
             }
           },

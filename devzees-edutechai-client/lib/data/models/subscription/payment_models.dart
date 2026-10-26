@@ -229,3 +229,72 @@ class PaymentTransactionModel {
     );
   }
 }
+
+class TierPricingItem {
+  final double monthly;
+  final double annual;
+
+  const TierPricingItem({
+    required this.monthly,
+    required this.annual,
+  });
+
+  factory TierPricingItem.fromJson(Map<String, dynamic> json) {
+    return TierPricingItem(
+      monthly: (json['monthly'] as num?)?.toDouble() ?? 0.0,
+      annual: (json['annual'] as num?)?.toDouble() ?? 0.0,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'monthly': monthly,
+        'annual': annual,
+      };
+}
+
+class PricingCatalogModel {
+  final String currency;
+  final Map<String, TierPricingItem> tiers;
+
+  const PricingCatalogModel({
+    this.currency = 'USD',
+    required this.tiers,
+  });
+
+  factory PricingCatalogModel.fromJson(Map<String, dynamic> json) {
+    final rawTiers = json['tiers'] as Map<String, dynamic>? ?? {};
+    final parsedTiers = <String, TierPricingItem>{};
+    for (final entry in rawTiers.entries) {
+      if (entry.value is Map<String, dynamic>) {
+        parsedTiers[entry.key.toLowerCase()] =
+            TierPricingItem.fromJson(entry.value as Map<String, dynamic>);
+      }
+    }
+
+    return PricingCatalogModel(
+      currency: json['currency'] as String? ?? 'USD',
+      tiers: parsedTiers,
+    );
+  }
+
+  static const PricingCatalogModel defaultCatalog = PricingCatalogModel(
+    currency: 'USD',
+    tiers: {
+      'free': TierPricingItem(monthly: 0.0, annual: 0.0),
+      'pro': TierPricingItem(monthly: 19.0, annual: 180.0),
+      'ultra': TierPricingItem(monthly: 49.0, annual: 470.0),
+    },
+  );
+
+  TierPricingItem getTier(String tier) {
+    return tiers[tier.toLowerCase()] ??
+        defaultCatalog.tiers[tier.toLowerCase()] ??
+        const TierPricingItem(monthly: 0.0, annual: 0.0);
+  }
+
+  double getPrice(String tier, String billingCycle) {
+    final t = getTier(tier);
+    return billingCycle.toLowerCase() == 'annual' ? t.annual : t.monthly;
+  }
+}
+

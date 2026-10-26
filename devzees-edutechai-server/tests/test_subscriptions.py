@@ -127,3 +127,24 @@ async def test_user_subscription_and_role_lifecycle(app):
         reverted_roles = [r["name"] for r in reverted_user["roles"]]
         assert "Free" in reverted_roles
         assert "Ultra" not in reverted_roles
+
+
+@pytest.mark.asyncio
+async def test_get_pricing_catalog_endpoint(app):
+    await init_db()
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://testserver"
+    ) as client:
+        res = await client.get("/api/v1/subscriptions/pricing-catalog")
+        assert res.status_code == 200, res.text
+        data = res.json()
+        assert "currency" in data
+        assert "tiers" in data
+        assert "free" in data["tiers"]
+        assert "pro" in data["tiers"]
+        assert "ultra" in data["tiers"]
+        assert data["tiers"]["pro"]["monthly"] > 0
+        assert data["tiers"]["pro"]["annual"] > 0
+        assert data["tiers"]["ultra"]["monthly"] > 0
+        assert data["tiers"]["ultra"]["annual"] > 0
+

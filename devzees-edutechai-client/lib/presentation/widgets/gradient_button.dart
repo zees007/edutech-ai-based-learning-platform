@@ -84,7 +84,7 @@ class _GradientButtonState extends State<GradientButton>
   @override
   Widget build(BuildContext context) {
     final Widget buttonContent = Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: widget.isLoading
           ? const SizedBox(
               width: 20,
@@ -112,12 +112,16 @@ class _GradientButtonState extends State<GradientButton>
                   ),
                   const SizedBox(width: 8),
                 ],
-                Text(
-                  widget.text,
-                  style: AppTextStyles.button.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0.3,
+                Flexible(
+                  child: Text(
+                    widget.text,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.button.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.3,
+                    ),
                   ),
                 ),
                 if (widget.icon != null && !widget.iconFirst) ...[

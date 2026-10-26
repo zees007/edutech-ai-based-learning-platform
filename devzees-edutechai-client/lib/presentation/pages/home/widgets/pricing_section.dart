@@ -1,20 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:devzees_edutechai_client/core/theme/text_styles.dart';
 import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
+import 'package:devzees_edutechai_client/core/services/subscription_service.dart';
+import 'package:devzees_edutechai_client/data/models/subscription/payment_models.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/glass_card.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/gradient_button.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/gradient_text.dart';
 import 'package:devzees_edutechai_client/core/constants/responsive.dart';
 import 'package:go_router/go_router.dart';
 
-class PricingSection extends StatefulWidget {
+class PricingSection extends ConsumerStatefulWidget {
   const PricingSection({super.key});
 
   @override
-  State<PricingSection> createState() => _PricingSectionState();
+  ConsumerState<PricingSection> createState() => _PricingSectionState();
 }
 
-class _PricingSectionState extends State<PricingSection> {
+class _PricingSectionState extends ConsumerState<PricingSection> {
   final PageController _pageController = PageController(viewportFraction: 0.88);
   int _currentPage = 0;
   bool _isAnnual = true; // Annual billing by default
@@ -28,6 +31,15 @@ class _PricingSectionState extends State<PricingSection> {
   @override
   Widget build(BuildContext context) {
     final bool isMobile = Responsive.isMobile(context);
+
+    final catalogAsync = ref.watch(pricingCatalogProvider);
+    final catalog = catalogAsync.value ?? PricingCatalogModel.defaultCatalog;
+    final proMonthly = catalog.getPrice('pro', 'monthly');
+    final proAnnual = catalog.getPrice('pro', 'annual');
+    final proPerMonth = (proAnnual / 12.0).round();
+    final ultraMonthly = catalog.getPrice('ultra', 'monthly');
+    final ultraAnnual = catalog.getPrice('ultra', 'annual');
+    final ultraPerMonth = (ultraAnnual / 12.0).round();
 
     final cards = [
       _PricingCard(
@@ -48,9 +60,9 @@ class _PricingSectionState extends State<PricingSection> {
       ),
       _PricingCard(
         name: 'Pro',
-        price: _isAnnual ? '\$15' : '\$19',
-        billingCycle: _isAnnual ? '/mo (billed annually)' : '/month',
-        originalPrice: _isAnnual ? '\$19/mo' : null,
+        price: _isAnnual ? '\$$proPerMonth' : '\$$proMonthly',
+        billingCycle: _isAnnual ? '/mo (\$$proAnnual/yr)' : '/month',
+        originalPrice: _isAnnual ? '\$$proMonthly/mo' : null,
         description: 'Full agent squad, visual modes, research preprints & Markdown export.',
         features: [
           'Unlimited AI Sessions',
@@ -67,9 +79,9 @@ class _PricingSectionState extends State<PricingSection> {
       ),
       _PricingCard(
         name: 'Ultra',
-        price: _isAnnual ? '\$39' : '\$49',
-        billingCycle: _isAnnual ? '/mo (billed annually)' : '/month',
-        originalPrice: _isAnnual ? '\$49/mo' : null,
+        price: _isAnnual ? '\$$ultraPerMonth' : '\$$ultraMonthly',
+        billingCycle: _isAnnual ? '/mo (\$$ultraAnnual/yr)' : '/month',
+        originalPrice: _isAnnual ? '\$$ultraMonthly/mo' : null,
         description: 'Unrestricted multi-agent squad, full research, PDF export & 2x XP.',
         features: [
           'Everything in Pro +',

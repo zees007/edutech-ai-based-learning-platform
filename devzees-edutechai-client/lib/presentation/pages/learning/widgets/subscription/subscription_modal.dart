@@ -297,13 +297,20 @@ class _SubscriptionModalState extends ConsumerState<SubscriptionModal>
   }
 
   Widget _buildPlansTab(BuildContext context, String currentTier, bool isMobile) {
+    final catalogAsync = ref.watch(pricingCatalogProvider);
+    final catalog = catalogAsync.value ?? PricingCatalogModel.defaultCatalog;
+
     final isAnnual = _billingCycle == 'annual';
 
-    // Pricing definitions
-    final proPrice = isAnnual ? '\$180' : '\$19';
-    final ultraPrice = isAnnual ? '\$470' : '\$49';
-    final proRawPrice = isAnnual ? 180.0 : 19.0;
-    final ultraRawPrice = isAnnual ? 470.0 : 49.0;
+    final proRawPrice = catalog.getPrice('pro', _billingCycle);
+    final ultraRawPrice = catalog.getPrice('ultra', _billingCycle);
+
+    final proPrice = proRawPrice == proRawPrice.toInt()
+        ? '\$${proRawPrice.toInt()}'
+        : '\$${proRawPrice.toStringAsFixed(2)}';
+    final ultraPrice = ultraRawPrice == ultraRawPrice.toInt()
+        ? '\$${ultraRawPrice.toInt()}'
+        : '\$${ultraRawPrice.toStringAsFixed(2)}';
 
     final List<Widget> allCards = [
       PlanCard(
@@ -440,7 +447,15 @@ class _SubscriptionModalState extends ConsumerState<SubscriptionModal>
         // Plan Cards Deck
         Expanded(
           child: isMobile
-              ? MobilePlanDeck(cards: allCards)
+              ? SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  child: MobilePlanDeck(
+                    cards: allCards,
+                    planTitles: const ['Starter', 'Pro ⭐', 'Ultra ✨'],
+                    initialIndex: currentTier == 'ultra' ? 2 : 1,
+                    cardHeight: 560,
+                  ),
+                )
               : Center(
                   child: SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
