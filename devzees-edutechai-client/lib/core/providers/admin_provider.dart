@@ -422,7 +422,7 @@ class AdminSettingsNotifier extends Notifier<AdminSettingsState> {
           upper.contains('PRICE') ||
           upper.contains('MONTHLY') ||
           upper.contains('ANNUALLY') ||
-          upper.contains('YEARLY')) {
+          upper.contains('YEARLY') || upper.contains('PROMO') || upper.contains('COUPON')) {
         ref.invalidate(pricingCatalogProvider);
       }
       return true;

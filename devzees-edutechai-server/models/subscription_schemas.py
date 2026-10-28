@@ -7,6 +7,7 @@ Request and response models for subscription management endpoints.
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -162,7 +163,7 @@ class PromoBannerInfo(BaseModel):
     text: str = ""
     coupon_code: str = ""
     discount_percent: float = 0.0
-    valid_until: Optional[str] = None
+    valid_until: str | None = None
     is_expired: bool = False
 
 
@@ -172,5 +173,3 @@ class PricingCatalogResponse(BaseModel):
     currency: str = "USD"
     tiers: dict[str, TierPriceInfo]
     promo_banner: PromoBannerInfo | None = None
-
-
