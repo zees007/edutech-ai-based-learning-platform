@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/glow_background.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/n8n_canvas.dart';
+import 'package:devzees_edutechai_client/presentation/widgets/scroll_fade_in.dart';
 import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
 import 'package:devzees_edutechai_client/core/theme/app_theme.dart';
 import 'package:devzees_edutechai_client/core/providers/theme_provider.dart';
@@ -11,6 +12,7 @@ import 'package:devzees_edutechai_client/presentation/widgets/promo_announcement
 
 import 'widgets/home_navbar.dart';
 import 'widgets/hero_section.dart';
+import 'widgets/animated_stats_bar.dart';
 import 'widgets/workspace_preview_section.dart';
 import 'widgets/comparison_section.dart';
 import 'widgets/modes_and_levels_section.dart';
@@ -147,32 +149,110 @@ class _HomePageState extends ConsumerState<HomePage> {
                       padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 24.0),
                       child: Column(
                         children: [
+                          // ─── Above-the-fold (no scroll animation) ───
                           const PromoAnnouncementBar(),
                           HomeNavbar(onNavTap: _scrollToSection),
                           const SizedBox(height: 60),
                           HeroSection(onExploreTap: () => _scrollToSection('preview')),
+
+                          // ─── Animated Stats Bar ───
                           const SizedBox(height: 100),
-                          WorkspacePreviewSection(key: _previewKey),
+                          ScrollFadeIn(
+                            offset: const Offset(0, 40),
+                            duration: const Duration(milliseconds: 800),
+                            child: const AnimatedStatsBar(),
+                          ),
+
+                          // ─── Workspace Preview ───
                           const SizedBox(height: 120),
-                          ComparisonSection(key: _comparisonKey),
+                          ScrollFadeIn(
+                            offset: const Offset(0, 40),
+                            duration: const Duration(milliseconds: 800),
+                            child: WorkspacePreviewSection(key: _previewKey),
+                          ),
+
+                          // ─── Comparison Section ───
                           const SizedBox(height: 120),
-                          const N8nCanvas(),
+                          ScrollFadeIn(
+                            offset: const Offset(0, 40),
+                            duration: const Duration(milliseconds: 800),
+                            delay: const Duration(milliseconds: 100),
+                            child: ComparisonSection(key: _comparisonKey),
+                          ),
+
+                          // ─── N8n Canvas ───
                           const SizedBox(height: 120),
-                          ModesAndLevelsSection(key: _modesKey),
+                          ScrollFadeIn(
+                            offset: const Offset(0, 30),
+                            duration: const Duration(milliseconds: 700),
+                            child: const N8nCanvas(),
+                          ),
+
+                          // ─── Modes & Levels ───
                           const SizedBox(height: 120),
-                          FeaturesSection(key: _featuresKey),
+                          ScrollFadeIn(
+                            offset: const Offset(0, 40),
+                            duration: const Duration(milliseconds: 800),
+                            child: ModesAndLevelsSection(key: _modesKey),
+                          ),
+
+                          // ─── Features ───
                           const SizedBox(height: 120),
-                          AgentsSection(key: _agentsKey),
+                          ScrollFadeIn(
+                            offset: const Offset(0, 40),
+                            duration: const Duration(milliseconds: 800),
+                            delay: const Duration(milliseconds: 100),
+                            child: FeaturesSection(key: _featuresKey),
+                          ),
+
+                          // ─── Agents ───
                           const SizedBox(height: 120),
-                          ExportEcosystemSection(key: _ecosystemKey),
+                          ScrollFadeIn(
+                            offset: const Offset(0, 40),
+                            duration: const Duration(milliseconds: 800),
+                            child: AgentsSection(key: _agentsKey),
+                          ),
+
+                          // ─── Export Ecosystem ───
                           const SizedBox(height: 120),
-                          AboutSection(key: _aboutKey),
+                          ScrollFadeIn(
+                            offset: const Offset(0, 40),
+                            duration: const Duration(milliseconds: 800),
+                            child: ExportEcosystemSection(key: _ecosystemKey),
+                          ),
+
+                          // ─── About ───
                           const SizedBox(height: 120),
-                          PricingSection(key: _pricingKey),
+                          ScrollFadeIn(
+                            offset: const Offset(0, 40),
+                            duration: const Duration(milliseconds: 800),
+                            child: AboutSection(key: _aboutKey),
+                          ),
+
+                          // ─── Pricing ───
                           const SizedBox(height: 120),
-                          FaqSection(key: _faqKey),
+                          ScrollFadeIn(
+                            offset: const Offset(0, 40),
+                            duration: const Duration(milliseconds: 800),
+                            delay: const Duration(milliseconds: 120),
+                            child: PricingSection(key: _pricingKey),
+                          ),
+
+                          // ─── FAQ ───
                           const SizedBox(height: 120),
-                          const CtaFooter(),
+                          ScrollFadeIn(
+                            offset: const Offset(0, 40),
+                            duration: const Duration(milliseconds: 800),
+                            child: FaqSection(key: _faqKey),
+                          ),
+
+                          // ─── CTA Footer ───
+                          const SizedBox(height: 120),
+                          ScrollFadeIn(
+                            offset: const Offset(0, 30),
+                            duration: const Duration(milliseconds: 700),
+                            child: const CtaFooter(),
+                          ),
                         ],
                       ),
                     ),

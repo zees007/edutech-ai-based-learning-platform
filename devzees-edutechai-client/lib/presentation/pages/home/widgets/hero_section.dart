@@ -1,19 +1,20 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:devzees_edutechai_client/core/theme/text_styles.dart';
 import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
 import 'package:devzees_edutechai_client/core/constants/responsive.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/word_by_word_reveal.dart';
 import 'package:go_router/go_router.dart';
-import 'hero_3d_core.dart';
 
-/// Ultra-premium 3D motion SaaS hero section.
+/// Ultra-premium SaaS hero section with auto-playing product showcase carousel.
 ///
 /// Features:
 /// - Staggered spring reveals across badge, word-by-word headline, subtitle, and CTA.
 /// - Frosted glass badge pill with live pulsating radar beacon.
 /// - High-contrast action pills & interactive quick-masterclass prompt bar.
 /// - Floating frosted social proof trust badges.
-/// - Interactive 3D Holographic Blackboard AI Core centerpiece.
+/// - Auto-playing hero carousel with crossfade transitions, glowing indicators,
+///   and overlay captions — showcasing the actual product.
 class HeroSection extends StatefulWidget {
   final VoidCallback? onExploreTap;
 
@@ -25,7 +26,6 @@ class HeroSection extends StatefulWidget {
 
 class _HeroSectionState extends State<HeroSection> {
   final TextEditingController _promptController = TextEditingController();
-  bool _showBlueprint = false;
 
   @override
   void dispose() {
@@ -34,12 +34,7 @@ class _HeroSectionState extends State<HeroSection> {
   }
 
   void _handleQuickStart() {
-    final query = _promptController.text.trim();
-    if (query.isNotEmpty) {
-      context.go('/auth');
-    } else {
-      context.go('/auth');
-    }
+    context.go('/auth');
   }
 
   @override
@@ -147,7 +142,7 @@ class _HeroSectionState extends State<HeroSection> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Interactive Topic Bar (Glass capsule inspired by Flowstate waitlist bar)
+              // Interactive Topic Bar (Glass capsule)
               Container(
                 width: isMobile ? double.infinity : 620,
                 height: isMobile ? 54 : 58,
@@ -269,246 +264,355 @@ class _HeroSectionState extends State<HeroSection> {
             ],
           ),
         ),
-        const SizedBox(height: 36),
+        const SizedBox(height: 48),
 
-        // ─── Centerpiece View Switcher (3D Gyroscope vs 8K Cinematic Core) ───
-        SpringEntranceBlock(
-          delayMs: 1750,
-          durationMs: 700,
-          fromOffset: const Offset(0, 16),
-          child: Container(
-            padding: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              color: const Color(0xEE080A14),
-              borderRadius: BorderRadius.circular(9999),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.14),
-                width: 1.0,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.5),
-                  blurRadius: 16,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildHeroModeToggle(
-                  isSelected: !_showBlueprint,
-                  icon: Icons.all_inclusive_rounded,
-                  label: '3D Gyroscope Engine',
-                  onTap: () => setState(() => _showBlueprint = false),
-                  isMobile: isMobile,
-                ),
-                const SizedBox(width: 4),
-                _buildHeroModeToggle(
-                  isSelected: _showBlueprint,
-                  icon: Icons.photo_size_select_actual_rounded,
-                  label: '8K Cinematic Core',
-                  badge: '16:9',
-                  onTap: () => setState(() => _showBlueprint = true),
-                  isMobile: isMobile,
-                ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(height: 28),
-
-        // ─── 6. Centerpiece: Interactive 3D AI Core or 8K Blueprint (Delay 1800ms) ───
+        // ─── 6. Auto-Playing Product Showcase Carousel (Delay 1800ms) ───
         SpringEntranceBlock(
           delayMs: 1800,
           durationMs: 800,
           fromOffset: const Offset(0, 30),
-          child: _showBlueprint
-              ? _buildCinematicHeroBlueprint(isMobile)
-              : const Hero3DAICore(),
+          child: const _HeroCarousel(),
         ),
       ],
     );
   }
+}
 
-  Widget _buildHeroModeToggle({
-    required bool isSelected,
-    required IconData icon,
-    required String label,
-    String? badge,
-    required VoidCallback onTap,
-    required bool isMobile,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: EdgeInsets.symmetric(
-          horizontal: isMobile ? 12 : 16,
-          vertical: isMobile ? 7 : 8,
-        ),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary : Colors.transparent,
-          borderRadius: BorderRadius.circular(9999),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.45),
-                    blurRadius: 14,
-                  ),
-                ]
-              : null,
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              size: isMobile ? 13 : 15,
-              color: isSelected ? Colors.white : const Color(0xFF94A3B8),
-            ),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: TextStyle(
-                color: isSelected ? Colors.white : const Color(0xFF94A3B8),
-                fontSize: isMobile ? 11 : 12.5,
-                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-              ),
-            ),
-            if (badge != null) ...[
-              const SizedBox(width: 6),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? Colors.white.withValues(alpha: 0.25)
-                      : const Color(0xFF00F5D4).withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Text(
-                  badge,
-                  style: TextStyle(
-                    color: isSelected ? Colors.white : const Color(0xFF00F5D4),
-                    fontSize: 8.5,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
+// ═══════════════════════════════════════════════════════════════════════════════
+// HERO CAROUSEL — Auto-playing product showcase
+// ═══════════════════════════════════════════════════════════════════════════════
+
+class _HeroCarouselSlide {
+  final String imagePath;
+  final String badgeText;
+  final String captionTitle;
+  final String captionSubtitle;
+
+  const _HeroCarouselSlide({
+    required this.imagePath,
+    required this.badgeText,
+    required this.captionTitle,
+    required this.captionSubtitle,
+  });
+}
+
+class _HeroCarousel extends StatefulWidget {
+  const _HeroCarousel();
+
+  @override
+  State<_HeroCarousel> createState() => _HeroCarouselState();
+}
+
+class _HeroCarouselState extends State<_HeroCarousel>
+    with SingleTickerProviderStateMixin {
+  late final PageController _pageController;
+  Timer? _autoPlayTimer;
+  int _currentPage = 0;
+  bool _isHovered = false;
+
+  static const _slides = [
+    _HeroCarouselSlide(
+      imagePath: 'assets/images/home/hero_blackboard_core.jpg',
+      badgeText: 'AUTONOMOUS BLACKBOARD SYNCHRONIZATION',
+      captionTitle: 'Multi-Agent AI Blackboard',
+      captionSubtitle: '6 specialized agents collaborate in real-time on a shared cognitive workspace',
+    ),
+    _HeroCarouselSlide(
+      imagePath: 'assets/images/home/workspace_preview.jpg',
+      badgeText: 'DUAL-PANEL COGNITIVE ARCHITECTURE',
+      captionTitle: 'Dual-Panel Workspace',
+      captionSubtitle: 'Socratic tutor + multimedia curation side-by-side for active learning',
+    ),
+    _HeroCarouselSlide(
+      imagePath: 'assets/images/home/second_brain_ecosystem.jpg',
+      badgeText: 'SECOND BRAIN EXPORT ECOSYSTEM',
+      captionTitle: 'Knowledge Export System',
+      captionSubtitle: 'Export to Obsidian, Notion, Markdown & PDF — own your learning forever',
+    ),
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+    _startAutoPlay();
   }
 
-  Widget _buildCinematicHeroBlueprint(bool isMobile) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: AppColors.primary.withValues(alpha: 0.45),
-          width: 1.2,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.30),
-            blurRadius: 55,
-            offset: const Offset(0, 12),
-          ),
-          BoxShadow(
-            color: const Color(0xFF00F5D4).withValues(alpha: 0.15),
-            blurRadius: 40,
-            spreadRadius: 2,
-          ),
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.75),
-            blurRadius: 36,
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: Stack(
-          children: [
-            AspectRatio(
-              aspectRatio: 16 / 9,
-              child: Image.asset(
-                'assets/images/home/hero_blackboard_core.jpg',
-                fit: BoxFit.cover,
+  @override
+  void dispose() {
+    _autoPlayTimer?.cancel();
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  void _startAutoPlay() {
+    _autoPlayTimer?.cancel();
+    _autoPlayTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      if (!_isHovered && mounted) {
+        final nextPage = (_currentPage + 1) % _slides.length;
+        _pageController.animateToPage(
+          nextPage,
+          duration: const Duration(milliseconds: 800),
+          curve: Curves.easeInOutCubic,
+        );
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isMobile = Responsive.isMobile(context);
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: Column(
+        children: [
+          // Carousel Container with frosted glass frame
+          Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: AppColors.primary.withValues(alpha: 0.35),
+                width: 1.2,
               ),
-            ),
-            Positioned(
-              top: isMobile ? 10 : 16,
-              left: isMobile ? 10 : 16,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: const Color(0xDD090A14),
-                  borderRadius: BorderRadius.circular(9999),
-                  border: Border.all(
-                    color: const Color(0xFF00F5D4).withValues(alpha: 0.5),
-                    width: 1.0,
-                  ),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withValues(alpha: 0.25),
+                  blurRadius: 55,
+                  offset: const Offset(0, 12),
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
+                BoxShadow(
+                  color: const Color(0xFF00F5D4).withValues(alpha: 0.10),
+                  blurRadius: 40,
+                  spreadRadius: 2,
+                ),
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.70),
+                  blurRadius: 36,
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: AspectRatio(
+                aspectRatio: 16 / 9,
+                child: Stack(
                   children: [
-                    Container(
-                      width: 6,
-                      height: 6,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF00F5D4),
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(color: Color(0xFF00F5D4), blurRadius: 6),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'AUTONOMOUS BLACKBOARD SYNCHRONIZATION',
-                      style: TextStyle(
-                        color: const Color(0xFFEEF0F6),
-                        fontSize: isMobile ? 9 : 11,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 1.2,
-                      ),
+                    // Page View
+                    PageView.builder(
+                      controller: _pageController,
+                      itemCount: _slides.length,
+                      onPageChanged: (index) {
+                        setState(() => _currentPage = index);
+                      },
+                      itemBuilder: (context, index) {
+                        final slide = _slides[index];
+                        return Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            // Image
+                            Image.asset(
+                              slide.imagePath,
+                              fit: BoxFit.cover,
+                            ),
+
+                            // Bottom gradient scrim for caption legibility
+                            Positioned.fill(
+                              child: DecoratedBox(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomCenter,
+                                    colors: [
+                                      Colors.transparent,
+                                      Colors.transparent,
+                                      const Color(0xCC05060D),
+                                    ],
+                                    stops: const [0.0, 0.5, 1.0],
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                            // Top-left live badge
+                            Positioned(
+                              top: isMobile ? 10 : 16,
+                              left: isMobile ? 10 : 16,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xDD090A14),
+                                  borderRadius: BorderRadius.circular(9999),
+                                  border: Border.all(
+                                    color: const Color(0xFF00F5D4).withValues(alpha: 0.5),
+                                    width: 1.0,
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Container(
+                                      width: 6,
+                                      height: 6,
+                                      decoration: const BoxDecoration(
+                                        color: Color(0xFF00F5D4),
+                                        shape: BoxShape.circle,
+                                        boxShadow: [
+                                          BoxShadow(color: Color(0xFF00F5D4), blurRadius: 6),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      slide.badgeText,
+                                      style: TextStyle(
+                                        color: const Color(0xFFEEF0F6),
+                                        fontSize: isMobile ? 9 : 11,
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: 1.2,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+
+                            // Bottom caption glass card
+                            Positioned(
+                              bottom: isMobile ? 10 : 20,
+                              left: isMobile ? 10 : 20,
+                              right: isMobile ? 10 : 20,
+                              child: Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: isMobile ? 14 : 20,
+                                  vertical: isMobile ? 10 : 14,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xDD090A14),
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: Colors.white.withValues(alpha: 0.12),
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(alpha: 0.5),
+                                      blurRadius: 20,
+                                    ),
+                                  ],
+                                ),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            slide.captionTitle,
+                                            style: TextStyle(
+                                              color: const Color(0xFFEEF0F6),
+                                              fontSize: isMobile ? 13 : 16,
+                                              fontWeight: FontWeight.w800,
+                                              letterSpacing: -0.3,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            slide.captionSubtitle,
+                                            style: TextStyle(
+                                              color: const Color(0xFF94A3B8),
+                                              fontSize: isMobile ? 10.5 : 12.5,
+                                              fontWeight: FontWeight.w500,
+                                              height: 1.3,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    // Slide number indicator
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.primary.withValues(alpha: 0.25),
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(
+                                          color: AppColors.primary.withValues(alpha: 0.45),
+                                        ),
+                                      ),
+                                      child: Text(
+                                        '${index + 1}/${_slides.length}',
+                                        style: const TextStyle(
+                                          color: Color(0xFFEEF0F6),
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
                     ),
                   ],
                 ),
               ),
             ),
-            Positioned(
-              bottom: isMobile ? 10 : 16,
-              right: isMobile ? 10 : 16,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: const Color(0xEE090A14),
-                  borderRadius: BorderRadius.circular(9999),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.15),
+          ),
+          const SizedBox(height: 20),
+
+          // Page Indicators — glowing animated dots
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(_slides.length, (index) {
+              final isActive = index == _currentPage;
+              return GestureDetector(
+                onTap: () {
+                  _pageController.animateToPage(
+                    index,
+                    duration: const Duration(milliseconds: 600),
+                    curve: Curves.easeInOutCubic,
+                  );
+                },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 350),
+                  curve: Curves.easeOutCubic,
+                  width: isActive ? 32 : 10,
+                  height: 10,
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(9999),
+                    color: isActive
+                        ? AppColors.primary
+                        : Colors.white.withValues(alpha: 0.20),
+                    boxShadow: isActive
+                        ? [
+                            BoxShadow(
+                              color: AppColors.primary.withValues(alpha: 0.60),
+                              blurRadius: 12,
+                              spreadRadius: 1,
+                            ),
+                          ]
+                        : null,
                   ),
                 ),
-                child: Text(
-                  '6 ISOMETRIC AGENT SATELLITES • 60 FPS CONSENSUS',
-                  style: TextStyle(
-                    color: const Color(0xFF94A3B8),
-                    fontSize: isMobile ? 8 : 10,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 1.0,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
+              );
+            }),
+          ),
+        ],
       ),
     );
   }
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SHARED SUB-WIDGETS
+// ═══════════════════════════════════════════════════════════════════════════════
 
 /// Pulsing Beacon Dot with breathing radar ring
 class _PulsingBeaconDot extends StatefulWidget {
@@ -628,7 +732,7 @@ class _TrustBadge extends StatelessWidget {
   }
 }
 
-/// High-contrast solid white pill CTA button
+/// High-contrast solid white pill CTA button with shimmer hover
 class _HeroSolidPillButton extends StatefulWidget {
   final String text;
   final VoidCallback onTap;
@@ -642,14 +746,37 @@ class _HeroSolidPillButton extends StatefulWidget {
   State<_HeroSolidPillButton> createState() => _HeroSolidPillButtonState();
 }
 
-class _HeroSolidPillButtonState extends State<_HeroSolidPillButton> {
+class _HeroSolidPillButtonState extends State<_HeroSolidPillButton>
+    with SingleTickerProviderStateMixin {
   bool _isHovered = false;
+  late final AnimationController _shimmerController;
+
+  @override
+  void initState() {
+    super.initState();
+    _shimmerController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    );
+  }
+
+  @override
+  void dispose() {
+    _shimmerController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
+      onEnter: (_) {
+        setState(() => _isHovered = true);
+        _shimmerController.forward(from: 0);
+      },
+      onExit: (_) {
+        setState(() => _isHovered = false);
+        _shimmerController.stop();
+      },
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
         onTap: widget.onTap,
@@ -671,15 +798,47 @@ class _HeroSolidPillButtonState extends State<_HeroSolidPillButton> {
                 ),
               ],
             ),
-            alignment: Alignment.center,
-            child: Text(
-              widget.text,
-              style: const TextStyle(
-                color: Color(0xFF04050C), // Deep near-black on white
-                fontSize: 13.5,
-                fontWeight: FontWeight.w800,
-                letterSpacing: -0.2,
-              ),
+            clipBehavior: Clip.antiAlias,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Text(
+                  widget.text,
+                  style: const TextStyle(
+                    color: Color(0xFF04050C),
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.2,
+                  ),
+                ),
+                // Shimmer sweep overlay on hover
+                if (_isHovered)
+                  AnimatedBuilder(
+                    animation: _shimmerController,
+                    builder: (context, _) {
+                      return Positioned.fill(
+                        child: FractionallySizedBox(
+                          widthFactor: 0.4,
+                          alignment: Alignment(
+                            -1.0 + _shimmerController.value * 3.0,
+                            0,
+                          ),
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.white.withValues(alpha: 0.0),
+                                  Colors.white.withValues(alpha: 0.35),
+                                  Colors.white.withValues(alpha: 0.0),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+              ],
             ),
           ),
         ),
