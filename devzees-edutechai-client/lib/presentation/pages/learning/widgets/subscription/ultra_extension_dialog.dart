@@ -5,6 +5,7 @@ import '../../../../../core/theme/text_styles.dart';
 import '../../../../../data/models/subscription/payment_models.dart';
 import '../../../../../data/models/auth/user_current_profile_response.dart';
 import '../../../../widgets/gradient_button.dart';
+import '../../../../widgets/promo_countdown_clock.dart';
 
 /// Dialog shown to users on the Ultra tier when claiming a festive promotional offer.
 /// Allows extending / stacking an additional 1-year Ultra subscription at the discounted promotional rate.
@@ -126,7 +127,13 @@ class UltraExtensionDialog extends StatelessWidget {
                             ),
                           ),
                         ),
-                        if (promoBanner.remainingTimeLabel != null) ...[
+                        if (promoBanner.validUntilDate != null) ...[
+                          const SizedBox(width: 8),
+                          PromoCountdownClock(
+                            targetDate: promoBanner.validUntilDate!,
+                            isCompact: true,
+                          ),
+                        ] else if (promoBanner.remainingTimeLabel != null) ...[
                           const SizedBox(width: 8),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),

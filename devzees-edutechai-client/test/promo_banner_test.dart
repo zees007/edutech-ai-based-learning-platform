@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:devzees_edutechai_client/data/models/subscription/payment_models.dart';
 import 'package:devzees_edutechai_client/core/services/subscription_service.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/promo_announcement_bar.dart';
+import 'package:devzees_edutechai_client/presentation/widgets/promo_countdown_clock.dart';
 import 'package:devzees_edutechai_client/presentation/pages/learning/widgets/subscription/ultra_extension_dialog.dart';
 
 void main() {
@@ -266,6 +267,73 @@ void main() {
 
       expect(find.text('Expired Flash Sale'), findsNothing);
       expect(find.text('Claim Offer'), findsNothing);
+    });
+  });
+
+  group('PromoCountdownClock widget tests', () {
+    testWidgets('renders countdown clock with days, hours, minutes, and seconds', (tester) async {
+      final targetDate = DateTime.now().add(const Duration(days: 2, hours: 4, minutes: 30, seconds: 15));
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: PromoCountdownClock(targetDate: targetDate),
+          ),
+        ),
+      );
+
+      await tester.pump();
+
+      expect(find.textContaining('Ends in'), findsOneWidget);
+      expect(find.text('02'), findsOneWidget);
+      expect(find.text('d'), findsOneWidget);
+      expect(find.text('h'), findsOneWidget);
+      expect(find.text('m'), findsOneWidget);
+      expect(find.text('s'), findsOneWidget);
+    });
+
+    testWidgets('renders compact clock mode without seconds for multi-day sales', (tester) async {
+      final targetDate = DateTime.now().add(const Duration(days: 3, hours: 2));
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: PromoCountdownClock(
+              targetDate: targetDate,
+              isCompact: true,
+            ),
+          ),
+        ),
+      );
+
+      await tester.pump();
+
+      expect(find.textContaining('Ends in'), findsOneWidget);
+      expect(find.text('03'), findsOneWidget);
+      expect(find.text('d'), findsOneWidget);
+    });
+
+    testWidgets('shows Expired and fires callback when targetDate has elapsed', (tester) async {
+      final pastDate = DateTime.now().subtract(const Duration(minutes: 5));
+      bool expiredCalled = false;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: PromoCountdownClock(
+              targetDate: pastDate,
+              onExpired: () {
+                expiredCalled = true;
+              },
+            ),
+          ),
+        ),
+      );
+
+      await tester.pump();
+
+      expect(find.text('Expired'), findsOneWidget);
+      expect(expiredCalled, isTrue);
     });
   });
 }

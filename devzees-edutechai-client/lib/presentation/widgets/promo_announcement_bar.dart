@@ -6,6 +6,7 @@ import 'package:devzees_edutechai_client/core/services/subscription_service.dart
 import 'package:devzees_edutechai_client/core/theme/text_styles.dart';
 import 'package:devzees_edutechai_client/core/constants/responsive.dart';
 import 'package:devzees_edutechai_client/core/providers/auth_provider.dart';
+import 'promo_countdown_clock.dart';
 
 /// Top announcement banner for festive and promotional sales campaigns (e.g. Diwali Mega Sale).
 /// Controlled dynamically via backend system settings (PROMO_BANNER_ENABLED, PROMO_BANNER_TEXT, etc.).
@@ -80,6 +81,7 @@ class _PromoAnnouncementBarState extends ConsumerState<PromoAnnouncementBar> {
         : 'Limited Time Festive Offer: Upgrade today and save big!';
     final coupon = banner.couponCode;
     final remainingTime = banner.remainingTimeLabel;
+    final validUntilDate = banner.validUntilDate;
 
     return Container(
       margin: widget.margin ?? const EdgeInsets.only(bottom: 16),
@@ -130,8 +132,8 @@ class _PromoAnnouncementBarState extends ConsumerState<PromoAnnouncementBar> {
                 vertical: isMobile ? 10 : 10,
               ),
               child: isMobile
-                  ? _buildMobileLayout(context, text, coupon, remainingTime)
-                  : _buildDesktopLayout(context, text, coupon, remainingTime),
+                  ? _buildMobileLayout(context, text, coupon, remainingTime, validUntilDate)
+                  : _buildDesktopLayout(context, text, coupon, remainingTime, validUntilDate),
             ),
           ],
         ),
@@ -144,6 +146,7 @@ class _PromoAnnouncementBarState extends ConsumerState<PromoAnnouncementBar> {
     String text,
     String coupon,
     String? remainingTime,
+    DateTime? validUntilDate,
   ) {
     return Row(
       children: [
@@ -174,8 +177,16 @@ class _PromoAnnouncementBarState extends ConsumerState<PromoAnnouncementBar> {
         ),
         const SizedBox(width: 12),
 
-        // Countdown / Validity Chip
-        if (remainingTime != null) ...[
+        // Countdown / Validity Clock
+        if (validUntilDate != null) ...[
+          PromoCountdownClock(
+            targetDate: validUntilDate,
+            onExpired: () {
+              if (mounted) setState(() {});
+            },
+          ),
+          const SizedBox(width: 10),
+        ] else if (remainingTime != null) ...[
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
             decoration: BoxDecoration(
@@ -295,6 +306,7 @@ class _PromoAnnouncementBarState extends ConsumerState<PromoAnnouncementBar> {
     String text,
     String coupon,
     String? remainingTime,
+    DateTime? validUntilDate,
   ) {
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -373,7 +385,18 @@ class _PromoAnnouncementBarState extends ConsumerState<PromoAnnouncementBar> {
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (remainingTime != null) ...[
+                if (validUntilDate != null) ...[
+                  Padding(
+                    padding: const EdgeInsets.only(right: 6),
+                    child: PromoCountdownClock(
+                      targetDate: validUntilDate,
+                      isCompact: true,
+                      onExpired: () {
+                        if (mounted) setState(() {});
+                      },
+                    ),
+                  ),
+                ] else if (remainingTime != null) ...[
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                     margin: const EdgeInsets.only(right: 6),
