@@ -13,12 +13,17 @@ import 'package:go_router/go_router.dart';
 /// - Frosted glass badge pill with live pulsating radar beacon.
 /// - High-contrast action pills & interactive quick-masterclass prompt bar.
 /// - Floating frosted social proof trust badges.
-/// - Auto-playing hero carousel with crossfade transitions, glowing indicators,
-///   and overlay captions — showcasing the actual product.
+/// - Auto-playing full-width hero carousel with new images, crossfade transitions,
+///   breathing indicators, chevron navigation, and overlay captions.
 class HeroSection extends StatefulWidget {
   final VoidCallback? onExploreTap;
+  final bool includeCarousel;
 
-  const HeroSection({super.key, this.onExploreTap});
+  const HeroSection({
+    super.key,
+    this.onExploreTap,
+    this.includeCarousel = true,
+  });
 
   @override
   State<HeroSection> createState() => _HeroSectionState();
@@ -264,22 +269,24 @@ class _HeroSectionState extends State<HeroSection> {
             ],
           ),
         ),
-        const SizedBox(height: 48),
 
-        // ─── 6. Auto-Playing Product Showcase Carousel (Delay 1800ms) ───
-        SpringEntranceBlock(
-          delayMs: 1800,
-          durationMs: 800,
-          fromOffset: const Offset(0, 30),
-          child: const _HeroCarousel(),
-        ),
+        // ─── 6. Optional Inline Carousel (When not full-width separated) ───
+        if (widget.includeCarousel) ...[
+          const SizedBox(height: 48),
+          SpringEntranceBlock(
+            delayMs: 1800,
+            durationMs: 800,
+            fromOffset: const Offset(0, 30),
+            child: const FullWidthHeroCarousel(),
+          ),
+        ],
       ],
     );
   }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// HERO CAROUSEL — Auto-playing product showcase
+// FULL-WIDTH HERO CAROUSEL — Cinematic Product Showcase with New Images
 // ═══════════════════════════════════════════════════════════════════════════════
 
 class _HeroCarouselSlide {
@@ -287,47 +294,59 @@ class _HeroCarouselSlide {
   final String badgeText;
   final String captionTitle;
   final String captionSubtitle;
+  final String tabLabel;
+  final IconData tabIcon;
 
   const _HeroCarouselSlide({
     required this.imagePath,
     required this.badgeText,
     required this.captionTitle,
     required this.captionSubtitle,
+    required this.tabLabel,
+    required this.tabIcon,
   });
 }
 
-class _HeroCarousel extends StatefulWidget {
-  const _HeroCarousel();
+/// Full-width auto-playing cinematic product carousel displaying new hero images.
+class FullWidthHeroCarousel extends StatefulWidget {
+  const FullWidthHeroCarousel({super.key});
 
   @override
-  State<_HeroCarousel> createState() => _HeroCarouselState();
+  State<FullWidthHeroCarousel> createState() => _FullWidthHeroCarouselState();
 }
 
-class _HeroCarouselState extends State<_HeroCarousel>
+class _FullWidthHeroCarouselState extends State<FullWidthHeroCarousel>
     with SingleTickerProviderStateMixin {
   late final PageController _pageController;
+  late final AnimationController _pulseController;
   Timer? _autoPlayTimer;
   int _currentPage = 0;
   bool _isHovered = false;
 
-  static const _slides = [
+  static const List<_HeroCarouselSlide> _slides = [
     _HeroCarouselSlide(
-      imagePath: 'assets/images/home/hero_blackboard_core.jpg',
-      badgeText: 'AUTONOMOUS BLACKBOARD SYNCHRONIZATION',
-      captionTitle: 'Multi-Agent AI Blackboard',
-      captionSubtitle: '6 specialized agents collaborate in real-time on a shared cognitive workspace',
+      imagePath: 'assets/images/home/hero-pic.jpg',
+      badgeText: 'AUTONOMOUS MULTI-AGENT BLACKBOARD ARCHITECTURE',
+      captionTitle: 'Autonomous Multi-Agent AI Core',
+      captionSubtitle: 'Specialized agents collaborate simultaneously on a shared cognitive blackboard, orchestrating curriculum milestones, Socratic scaffolding, and citations.',
+      tabLabel: 'Multi-Agent Core',
+      tabIcon: Icons.hub_rounded,
     ),
     _HeroCarouselSlide(
-      imagePath: 'assets/images/home/workspace_preview.jpg',
-      badgeText: 'DUAL-PANEL COGNITIVE ARCHITECTURE',
-      captionTitle: 'Dual-Panel Workspace',
-      captionSubtitle: 'Socratic tutor + multimedia curation side-by-side for active learning',
+      imagePath: 'assets/images/home/hero-pic2.jpg',
+      badgeText: 'SOCRATIC & ADAPTIVE PEDAGOGICAL ENGINE',
+      captionTitle: 'Interactive Cognitive Synthesis',
+      captionSubtitle: 'Engage with step-by-step concept flowcharts, grounded LaTeX equations, and Socratic guiding prompts tailored to your comprehension velocity.',
+      tabLabel: 'Cognitive Engine',
+      tabIcon: Icons.psychology_rounded,
     ),
     _HeroCarouselSlide(
-      imagePath: 'assets/images/home/second_brain_ecosystem.jpg',
-      badgeText: 'SECOND BRAIN EXPORT ECOSYSTEM',
-      captionTitle: 'Knowledge Export System',
-      captionSubtitle: 'Export to Obsidian, Notion, Markdown & PDF — own your learning forever',
+      imagePath: 'assets/images/home/new-workspace-preview.png',
+      badgeText: 'DUAL-PANEL MULTI-MODAL WORKSPACE',
+      captionTitle: 'Active Dual-Panel Workspace',
+      captionSubtitle: 'Socratic dialogue on the left panel, verified YouTube transcript clips, arXiv research preprints, and formative quizzes on the right panel.',
+      tabLabel: 'Dual Workspace',
+      tabIcon: Icons.space_dashboard_rounded,
     ),
   ];
 
@@ -335,6 +354,10 @@ class _HeroCarouselState extends State<_HeroCarousel>
   void initState() {
     super.initState();
     _pageController = PageController();
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1400),
+    )..repeat(reverse: true);
     _startAutoPlay();
   }
 
@@ -342,6 +365,7 @@ class _HeroCarouselState extends State<_HeroCarousel>
   void dispose() {
     _autoPlayTimer?.cancel();
     _pageController.dispose();
+    _pulseController.dispose();
     super.dispose();
   }
 
@@ -359,6 +383,24 @@ class _HeroCarouselState extends State<_HeroCarousel>
     });
   }
 
+  void _goToPrevious() {
+    final prevPage = (_currentPage - 1 + _slides.length) % _slides.length;
+    _pageController.animateToPage(
+      prevPage,
+      duration: const Duration(milliseconds: 600),
+      curve: Curves.easeInOutCubic,
+    );
+  }
+
+  void _goToNext() {
+    final nextPage = (_currentPage + 1) % _slides.length;
+    _pageController.animateToPage(
+      nextPage,
+      duration: const Duration(milliseconds: 600),
+      curve: Curves.easeInOutCubic,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final bool isMobile = Responsive.isMobile(context);
@@ -368,39 +410,116 @@ class _HeroCarouselState extends State<_HeroCarousel>
       onExit: (_) => setState(() => _isHovered = false),
       child: Column(
         children: [
-          // Carousel Container with frosted glass frame
+          // ─── 1. Desktop Tab Switcher (Direct Jump) ───
+          if (!isMobile) ...[
+            Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: const Color(0xCC090A14),
+                borderRadius: BorderRadius.circular(9999),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.12),
+                  width: 1.0,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.40),
+                    blurRadius: 16,
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: List.generate(_slides.length, (index) {
+                  final slide = _slides[index];
+                  final isSelected = _currentPage == index;
+                  return GestureDetector(
+                    onTap: () {
+                      _pageController.animateToPage(
+                        index,
+                        duration: const Duration(milliseconds: 600),
+                        curve: Curves.easeInOutCubic,
+                      );
+                    },
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 220),
+                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? AppColors.primary
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(9999),
+                        boxShadow: isSelected
+                            ? [
+                                BoxShadow(
+                                  color: AppColors.primary.withValues(alpha: 0.50),
+                                  blurRadius: 16,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ]
+                            : null,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            slide.tabIcon,
+                            size: 15,
+                            color: isSelected ? Colors.white : const Color(0xFF94A3B8),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            slide.tabLabel,
+                            style: TextStyle(
+                              color: isSelected ? Colors.white : const Color(0xFF94A3B8),
+                              fontSize: 12.5,
+                              fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                              letterSpacing: -0.1,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }),
+              ),
+            ),
+            const SizedBox(height: 20),
+          ],
+
+          // ─── 2. Full-Width Carousel Frame ───
           Container(
             width: double.infinity,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(24),
               border: Border.all(
-                color: AppColors.primary.withValues(alpha: 0.35),
+                color: AppColors.primary.withValues(alpha: 0.40),
                 width: 1.2,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.25),
-                  blurRadius: 55,
-                  offset: const Offset(0, 12),
+                  color: AppColors.primary.withValues(alpha: 0.30),
+                  blurRadius: 65,
+                  offset: const Offset(0, 16),
                 ),
                 BoxShadow(
-                  color: const Color(0xFF00F5D4).withValues(alpha: 0.10),
-                  blurRadius: 40,
+                  color: const Color(0xFF00F5D4).withValues(alpha: 0.12),
+                  blurRadius: 45,
                   spreadRadius: 2,
                 ),
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.70),
-                  blurRadius: 36,
+                  color: Colors.black.withValues(alpha: 0.75),
+                  blurRadius: 40,
                 ),
               ],
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(24),
               child: AspectRatio(
-                aspectRatio: 16 / 9,
+                aspectRatio: isMobile ? (16 / 10) : (16 / 9),
                 child: Stack(
                   children: [
-                    // Page View
+                    // Main PageView
                     PageView.builder(
                       controller: _pageController,
                       itemCount: _slides.length,
@@ -412,13 +531,13 @@ class _HeroCarouselState extends State<_HeroCarousel>
                         return Stack(
                           fit: StackFit.expand,
                           children: [
-                            // Image
+                            // High-DPI Visual
                             Image.asset(
                               slide.imagePath,
                               fit: BoxFit.cover,
                             ),
 
-                            // Bottom gradient scrim for caption legibility
+                            // Ambient scrim for typography
                             Positioned.fill(
                               child: DecoratedBox(
                                 decoration: BoxDecoration(
@@ -428,27 +547,36 @@ class _HeroCarouselState extends State<_HeroCarousel>
                                     colors: [
                                       Colors.transparent,
                                       Colors.transparent,
-                                      const Color(0xCC05060D),
+                                      const Color(0xDD04050C),
                                     ],
-                                    stops: const [0.0, 0.5, 1.0],
+                                    stops: const [0.0, 0.45, 1.0],
                                   ),
                                 ),
                               ),
                             ),
 
-                            // Top-left live badge
+                            // Live status badge (Top-Left)
                             Positioned(
-                              top: isMobile ? 10 : 16,
-                              left: isMobile ? 10 : 16,
+                              top: isMobile ? 12 : 20,
+                              left: isMobile ? 12 : 24,
                               child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: isMobile ? 10 : 14,
+                                  vertical: isMobile ? 5 : 7,
+                                ),
                                 decoration: BoxDecoration(
                                   color: const Color(0xDD090A14),
                                   borderRadius: BorderRadius.circular(9999),
                                   border: Border.all(
-                                    color: const Color(0xFF00F5D4).withValues(alpha: 0.5),
+                                    color: const Color(0xFF00F5D4).withValues(alpha: 0.55),
                                     width: 1.0,
                                   ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(alpha: 0.5),
+                                      blurRadius: 10,
+                                    ),
+                                  ],
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
@@ -460,7 +588,10 @@ class _HeroCarouselState extends State<_HeroCarousel>
                                         color: Color(0xFF00F5D4),
                                         shape: BoxShape.circle,
                                         boxShadow: [
-                                          BoxShadow(color: Color(0xFF00F5D4), blurRadius: 6),
+                                          BoxShadow(
+                                            color: Color(0xFF00F5D4),
+                                            blurRadius: 6,
+                                          ),
                                         ],
                                       ),
                                     ),
@@ -479,26 +610,27 @@ class _HeroCarouselState extends State<_HeroCarousel>
                               ),
                             ),
 
-                            // Bottom caption glass card
+                            // Bottom Caption Glass Card
                             Positioned(
-                              bottom: isMobile ? 10 : 20,
-                              left: isMobile ? 10 : 20,
-                              right: isMobile ? 10 : 20,
+                              bottom: isMobile ? 12 : 24,
+                              left: isMobile ? 12 : 24,
+                              right: isMobile ? 12 : 24,
                               child: Container(
                                 padding: EdgeInsets.symmetric(
-                                  horizontal: isMobile ? 14 : 20,
-                                  vertical: isMobile ? 10 : 14,
+                                  horizontal: isMobile ? 14 : 22,
+                                  vertical: isMobile ? 12 : 16,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xDD090A14),
-                                  borderRadius: BorderRadius.circular(16),
+                                  color: const Color(0xE6090A14),
+                                  borderRadius: BorderRadius.circular(18),
                                   border: Border.all(
-                                    color: Colors.white.withValues(alpha: 0.12),
+                                    color: Colors.white.withValues(alpha: 0.14),
                                   ),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withValues(alpha: 0.5),
-                                      blurRadius: 20,
+                                      color: Colors.black.withValues(alpha: 0.60),
+                                      blurRadius: 24,
+                                      offset: const Offset(0, 8),
                                     ),
                                   ],
                                 ),
@@ -513,7 +645,7 @@ class _HeroCarouselState extends State<_HeroCarousel>
                                             slide.captionTitle,
                                             style: TextStyle(
                                               color: const Color(0xFFEEF0F6),
-                                              fontSize: isMobile ? 13 : 16,
+                                              fontSize: isMobile ? 14 : 18,
                                               fontWeight: FontWeight.w800,
                                               letterSpacing: -0.3,
                                             ),
@@ -522,32 +654,33 @@ class _HeroCarouselState extends State<_HeroCarousel>
                                           Text(
                                             slide.captionSubtitle,
                                             style: TextStyle(
-                                              color: const Color(0xFF94A3B8),
-                                              fontSize: isMobile ? 10.5 : 12.5,
+                                              color: const Color(0xFFB9BECF),
+                                              fontSize: isMobile ? 11 : 13,
                                               fontWeight: FontWeight.w500,
-                                              height: 1.3,
+                                              height: 1.35,
                                             ),
                                           ),
                                         ],
                                       ),
                                     ),
-                                    const SizedBox(width: 12),
-                                    // Slide number indicator
+                                    const SizedBox(width: 14),
+                                    // Slide counter pill
                                     Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                                       decoration: BoxDecoration(
-                                        color: AppColors.primary.withValues(alpha: 0.25),
-                                        borderRadius: BorderRadius.circular(8),
+                                        color: AppColors.primary.withValues(alpha: 0.28),
+                                        borderRadius: BorderRadius.circular(9999),
                                         border: Border.all(
-                                          color: AppColors.primary.withValues(alpha: 0.45),
+                                          color: AppColors.primary.withValues(alpha: 0.50),
                                         ),
                                       ),
                                       child: Text(
-                                        '${index + 1}/${_slides.length}',
+                                        '${index + 1} / ${_slides.length}',
                                         style: const TextStyle(
                                           color: Color(0xFFEEF0F6),
-                                          fontSize: 11,
+                                          fontSize: 11.5,
                                           fontWeight: FontWeight.w800,
+                                          letterSpacing: 0.5,
                                         ),
                                       ),
                                     ),
@@ -559,52 +692,166 @@ class _HeroCarouselState extends State<_HeroCarousel>
                         );
                       },
                     ),
+
+                    // Left Chevron Button
+                    Positioned(
+                      left: isMobile ? 8 : 16,
+                      top: 0,
+                      bottom: 0,
+                      child: Center(
+                        child: _CarouselArrowButton(
+                          icon: Icons.chevron_left_rounded,
+                          onTap: _goToPrevious,
+                          tooltip: 'Previous Slide',
+                          isMobile: isMobile,
+                        ),
+                      ),
+                    ),
+
+                    // Right Chevron Button
+                    Positioned(
+                      right: isMobile ? 8 : 16,
+                      top: 0,
+                      bottom: 0,
+                      child: Center(
+                        child: _CarouselArrowButton(
+                          icon: Icons.chevron_right_rounded,
+                          onTap: _goToNext,
+                          tooltip: 'Next Slide',
+                          isMobile: isMobile,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 22),
 
-          // Page Indicators — glowing animated dots
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(_slides.length, (index) {
-              final isActive = index == _currentPage;
-              return GestureDetector(
-                onTap: () {
-                  _pageController.animateToPage(
-                    index,
-                    duration: const Duration(milliseconds: 600),
-                    curve: Curves.easeInOutCubic,
+          // ─── 3. Breathing Glow Indicator Dots ───
+          AnimatedBuilder(
+            animation: _pulseController,
+            builder: (context, _) {
+              final pulse = _pulseController.value;
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(_slides.length, (index) {
+                  final isActive = index == _currentPage;
+                  return GestureDetector(
+                    onTap: () {
+                      _pageController.animateToPage(
+                        index,
+                        duration: const Duration(milliseconds: 600),
+                        curve: Curves.easeInOutCubic,
+                      );
+                    },
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 350),
+                      curve: Curves.easeOutCubic,
+                      width: isActive ? (isMobile ? 28 : 38) : 10,
+                      height: 10,
+                      margin: const EdgeInsets.symmetric(horizontal: 5),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(9999),
+                        color: isActive
+                            ? AppColors.primary
+                            : Colors.white.withValues(alpha: 0.20),
+                        boxShadow: isActive
+                            ? [
+                                BoxShadow(
+                                  color: AppColors.primary.withValues(alpha: 0.50 + 0.35 * pulse),
+                                  blurRadius: 10 + 6 * pulse,
+                                  spreadRadius: 1 + 1 * pulse,
+                                ),
+                                BoxShadow(
+                                  color: const Color(0xFF00F5D4).withValues(alpha: 0.30 * pulse),
+                                  blurRadius: 8,
+                                ),
+                              ]
+                            : null,
+                      ),
+                    ),
                   );
-                },
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 350),
-                  curve: Curves.easeOutCubic,
-                  width: isActive ? 32 : 10,
-                  height: 10,
-                  margin: const EdgeInsets.symmetric(horizontal: 4),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(9999),
-                    color: isActive
-                        ? AppColors.primary
-                        : Colors.white.withValues(alpha: 0.20),
-                    boxShadow: isActive
-                        ? [
-                            BoxShadow(
-                              color: AppColors.primary.withValues(alpha: 0.60),
-                              blurRadius: 12,
-                              spreadRadius: 1,
-                            ),
-                          ]
-                        : null,
-                  ),
-                ),
+                }),
               );
-            }),
+            },
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Floating glass arrow button for carousel navigation
+class _CarouselArrowButton extends StatefulWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+  final String tooltip;
+  final bool isMobile;
+
+  const _CarouselArrowButton({
+    required this.icon,
+    required this.onTap,
+    required this.tooltip,
+    required this.isMobile,
+  });
+
+  @override
+  State<_CarouselArrowButton> createState() => _CarouselArrowButtonState();
+}
+
+class _CarouselArrowButtonState extends State<_CarouselArrowButton> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      cursor: SystemMouseCursors.click,
+      child: Tooltip(
+        message: widget.tooltip,
+        child: GestureDetector(
+          onTap: widget.onTap,
+          child: AnimatedScale(
+            scale: _isHovered ? 1.08 : 1.0,
+            duration: const Duration(milliseconds: 180),
+            child: Container(
+              width: widget.isMobile ? 36 : 46,
+              height: widget.isMobile ? 36 : 46,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: _isHovered
+                    ? AppColors.primary.withValues(alpha: 0.85)
+                    : const Color(0xCC090A14),
+                border: Border.all(
+                  color: _isHovered
+                      ? Colors.white
+                      : Colors.white.withValues(alpha: 0.18),
+                  width: 1.0,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.55),
+                    blurRadius: 16,
+                    offset: const Offset(0, 4),
+                  ),
+                  if (_isHovered)
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.50),
+                      blurRadius: 20,
+                    ),
+                ],
+              ),
+              child: Icon(
+                widget.icon,
+                color: Colors.white,
+                size: widget.isMobile ? 22 : 28,
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -811,7 +1058,6 @@ class _HeroSolidPillButtonState extends State<_HeroSolidPillButton>
                     letterSpacing: -0.2,
                   ),
                 ),
-                // Shimmer sweep overlay on hover
                 if (_isHovered)
                   AnimatedBuilder(
                     animation: _shimmerController,

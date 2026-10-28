@@ -107,13 +107,13 @@ class _ScrollFadeInState extends State<ScrollFadeIn>
     if (renderObject == null || !renderObject.attached) return;
 
     final renderBox = renderObject as RenderBox;
+    if (!renderBox.hasSize) return;
+
     final position = renderBox.localToGlobal(Offset.zero);
-    final size = renderBox.size;
     final screenHeight = MediaQuery.of(context).size.height;
 
-    // Trigger when top of widget enters the bottom 85% of the screen
-    // This gives a nice "just scrolled into view" effect
-    if (position.dy < screenHeight * 0.92 && position.dy + size.height > 0) {
+    // Trigger when top of widget enters the bottom 92% of the screen (or is already above)
+    if (position.dy < screenHeight * 0.92) {
       _hasTriggered = true;
       if (widget.delay == Duration.zero) {
         _controller.forward();

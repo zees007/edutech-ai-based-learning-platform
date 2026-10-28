@@ -326,7 +326,7 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
             AspectRatio(
               aspectRatio: 16 / 9,
               child: Image.asset(
-                'assets/images/home/workspace_preview.jpg',
+                'assets/images/home/new-workspace-preview.png',
                 fit: BoxFit.cover,
               ),
             ),

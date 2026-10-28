@@ -67,6 +67,7 @@ class _AnimatedStatsBarState extends State<AnimatedStatsBar>
     if (renderObject == null || !renderObject.attached) return;
 
     final renderBox = renderObject as RenderBox;
+    if (!renderBox.hasSize) return;
     final position = renderBox.localToGlobal(Offset.zero);
     final screenHeight = MediaQuery.of(context).size.height;
 
@@ -82,7 +83,7 @@ class _AnimatedStatsBarState extends State<AnimatedStatsBar>
     final bool isMobile = Responsive.isMobile(context);
 
     return Column(
-        children: [
+      children: [
           // Section badge
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),

@@ -7,6 +7,7 @@ import 'package:devzees_edutechai_client/presentation/widgets/scroll_fade_in.dar
 import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
 import 'package:devzees_edutechai_client/core/theme/app_theme.dart';
 import 'package:devzees_edutechai_client/core/providers/theme_provider.dart';
+import 'package:devzees_edutechai_client/core/constants/responsive.dart';
 
 import 'package:devzees_edutechai_client/presentation/widgets/promo_announcement_bar.dart';
 
@@ -141,6 +142,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           child: CustomScrollView(
             controller: _scrollController,
             slivers: [
+              // ─── 1. Header & Hero Text (Centered maxWidth: 1200) ───
               SliverToBoxAdapter(
                 child: Center(
                   child: ConstrainedBox(
@@ -149,14 +151,47 @@ class _HomePageState extends ConsumerState<HomePage> {
                       padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 24.0),
                       child: Column(
                         children: [
-                          // ─── Above-the-fold (no scroll animation) ───
                           const PromoAnnouncementBar(),
                           HomeNavbar(onNavTap: _scrollToSection),
                           const SizedBox(height: 60),
-                          HeroSection(onExploreTap: () => _scrollToSection('preview')),
+                          HeroSection(
+                            onExploreTap: () => _scrollToSection('preview'),
+                            includeCarousel: false,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
 
+              // ─── 2. CINEMATIC FULL-WIDTH HERO PRODUCT CAROUSEL ───
+              SliverToBoxAdapter(
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 1600),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: Responsive.isMobile(context) ? 16.0 : 36.0,
+                        vertical: 16.0,
+                      ),
+                      child: const FullWidthHeroCarousel(),
+                    ),
+                  ),
+                ),
+              ),
+
+              // ─── 3. Rest of Sections (Centered maxWidth: 1200) ───
+              SliverToBoxAdapter(
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 1200),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 24.0),
+                      child: Column(
+                        children: [
                           // ─── Animated Stats Bar ───
-                          const SizedBox(height: 100),
+                          const SizedBox(height: 80),
                           ScrollFadeIn(
                             offset: const Offset(0, 40),
                             duration: const Duration(milliseconds: 800),

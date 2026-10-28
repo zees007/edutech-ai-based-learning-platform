@@ -268,19 +268,37 @@ class _NavPillState extends State<_NavPill> {
         onTap: widget.onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(9999),
             color: _isHovered ? Colors.white.withValues(alpha: 0.10) : Colors.transparent,
           ),
-          child: Text(
-            widget.title,
-            style: TextStyle(
-              color: _isHovered ? const Color(0xFFEEF0F6) : const Color(0xFFB9BECF),
-              fontSize: 13.5,
-              fontWeight: _isHovered ? FontWeight.w600 : FontWeight.w500,
-              letterSpacing: -0.1,
-            ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                widget.title,
+                style: TextStyle(
+                  color: _isHovered ? const Color(0xFFEEF0F6) : const Color(0xFFB9BECF),
+                  fontSize: 13.5,
+                  fontWeight: _isHovered ? FontWeight.w600 : FontWeight.w500,
+                  letterSpacing: -0.1,
+                ),
+              ),
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                height: 2,
+                width: _isHovered ? 16 : 0,
+                margin: const EdgeInsets.only(top: 2),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(2),
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF2B68F6), Color(0xFF9061F9)],
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -302,14 +320,37 @@ class _HighContrastActionPill extends StatefulWidget {
   State<_HighContrastActionPill> createState() => _HighContrastActionPillState();
 }
 
-class _HighContrastActionPillState extends State<_HighContrastActionPill> {
+class _HighContrastActionPillState extends State<_HighContrastActionPill>
+    with SingleTickerProviderStateMixin {
   bool _isHovered = false;
+  late final AnimationController _shimmerController;
+
+  @override
+  void initState() {
+    super.initState();
+    _shimmerController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    );
+  }
+
+  @override
+  void dispose() {
+    _shimmerController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
+      onEnter: (_) {
+        setState(() => _isHovered = true);
+        _shimmerController.forward(from: 0);
+      },
+      onExit: (_) {
+        setState(() => _isHovered = false);
+        _shimmerController.stop();
+      },
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
         onTap: widget.onTap,
@@ -317,11 +358,11 @@ class _HighContrastActionPillState extends State<_HighContrastActionPill> {
           scale: _isHovered ? 1.03 : 1.0,
           duration: const Duration(milliseconds: 180),
           curve: Curves.easeOutCubic,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 180),
+          child: Container(
+            clipBehavior: Clip.antiAlias,
             padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
             decoration: BoxDecoration(
-              color: _isHovered ? const Color(0xFFE2E8F0) : Colors.white,
+              color: _isHovered ? const Color(0xFFF1F5F9) : Colors.white,
               borderRadius: BorderRadius.circular(9999),
               boxShadow: [
                 BoxShadow(
@@ -336,8 +377,8 @@ class _HighContrastActionPillState extends State<_HighContrastActionPill> {
                 ),
               ],
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
+            child: Stack(
+              alignment: Alignment.center,
               children: [
                 Text(
                   widget.text,
@@ -348,6 +389,32 @@ class _HighContrastActionPillState extends State<_HighContrastActionPill> {
                     letterSpacing: -0.2,
                   ),
                 ),
+                if (_isHovered)
+                  AnimatedBuilder(
+                    animation: _shimmerController,
+                    builder: (context, _) {
+                      return Positioned.fill(
+                        child: FractionallySizedBox(
+                          widthFactor: 0.45,
+                          alignment: Alignment(
+                            -1.0 + _shimmerController.value * 3.0,
+                            0,
+                          ),
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.white.withValues(alpha: 0.0),
+                                  Colors.white.withValues(alpha: 0.40),
+                                  Colors.white.withValues(alpha: 0.0),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
               ],
             ),
           ),
