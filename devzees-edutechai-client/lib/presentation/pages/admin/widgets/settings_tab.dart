@@ -6,6 +6,7 @@ import '../../../../core/providers/admin_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../data/models/admin/system_setting_model.dart';
+import '../../../../core/services/subscription_service.dart';
 import '../../../widgets/shimmer_loading.dart';
 
 enum SettingCategory {
@@ -132,6 +133,14 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
         return 'Annual subscription fee in USD for Ultra tier membership (e.g. 470).';
       case 'VALID_COUPONS':
         return 'JSON string or comma-separated list of active promotional coupon codes (e.g. ["WELCOME50", "STUDENT20"]).';
+      case 'PROMO_BANNER_ENABLED':
+        return 'Controls whether the promotional campaign announcement banner is active across the app (true/false).';
+      case 'PROMO_BANNER_TEXT':
+        return 'Campaign headline displayed on the top banner (e.g. ⚡ Flash Sale: Get Flat 50% OFF Pro & Ultra!).';
+      case 'PROMO_BANNER_COUPON':
+        return 'Active promotional coupon code attached to the campaign banner (e.g. DIWALI50).';
+      case 'PROMO_VALIDITY':
+        return 'Expiration timestamp (UTC) for the promotional campaign (e.g. 2026-11-15 23:59:59 or 2026-11-15). Banner and coupon automatically deactivate once elapsed.';
       default:
         return 'Runtime configuration parameter directly loaded by backend services.';
     }
@@ -941,11 +950,15 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
     final newValue = _valueController.text.trim();
     final newOrder = int.tryParse(_orderController.text.trim()) ?? current.orderNumber;
 
-    await ref.read(adminSettingsProvider.notifier).updateSetting(
+    final success = await ref.read(adminSettingsProvider.notifier).updateSetting(
           current.code,
           newValue,
           newOrder,
         );
+
+    if (success) {
+      ref.invalidate(pricingCatalogProvider);
+    }
   }
 
   String _formatDateTime(DateTime? dt) {

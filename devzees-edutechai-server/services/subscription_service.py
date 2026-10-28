@@ -2,7 +2,7 @@
 EduTechAI — Subscription Service Layer
 
 Encapsulates business logic for subscription management, checkout processing,
-multi-gateway payments (Paddle, Razorpay, Sandbox), ledger logging, and automatic tier-role synchronization.
+Razorpay payment integration, ledger logging, and automatic tier-role synchronization.
 """
 
 from __future__ import annotations
@@ -20,6 +20,8 @@ from models.subscription_schemas import (
     CancelSubscriptionRequest,
     CheckoutRequest,
     CheckoutResponse,
+    CreateOrderRequest,
+    CreateOrderResponse,
     SubscriptionUpdateRequest,
 )
 from services.payment_service import PaymentService
@@ -39,6 +41,59 @@ class SubscriptionService:
     """Service layer for subscription operations."""
 
     @staticmethod
+    async def create_checkout_order(
+        db: AsyncSession, user_id: str, dto: CreateOrderRequest
+    ) -> CreateOrderResponse:
+        """
+        Processes order creation via Razorpay.
+        Returns order ID, key ID, and client checkout options.
+        """
+        user = await UserService.get_user_by_id(db, user_id)
+        target_tier = dto.tier.lower().strip()
+
+        if target_tier not in TIER_ROLE_NAME_MAP:
+            raise BadRequestException(
+                error_code="INVALID_TIER",
+                errors=f"Invalid target tier '{dto.tier}'. Must be 'pro' or 'ultra'.",
+            )
+
+        coupon_res = PaymentService.validate_coupon(dto.coupon_code, target_tier, dto.billing_cycle)
+        if dto.coupon_code and not coupon_res["valid"]:
+            raise BadRequestException(
+                error_code="INVALID_COUPON",
+                errors=str(coupon_res["message"]),
+            )
+
+        final_amount = float(coupon_res["final_price"])
+        provider = PaymentService.get_provider(dto.gateway_provider)
+
+        session = await provider.create_checkout_session(
+            user_id=user_id,
+            user_email=user.email,
+            tier=target_tier,
+            billing_cycle=dto.billing_cycle,
+            amount=final_amount,
+            currency=dto.currency,
+            coupon_code=dto.coupon_code,
+        )
+
+        return CreateOrderResponse(
+            success=bool(session.get("success", True)),
+            order_id=str(session.get("order_id") or session.get("transaction_id", "")),
+            key_id=str(session.get("key_id", "")),
+            amount=final_amount,
+            amount_subunits=int(session.get("amount_subunits", int(round(final_amount * 100)))),
+            currency=str(session.get("currency", dto.currency)),
+            tier=target_tier,
+            billing_cycle=dto.billing_cycle,
+            gateway_provider=provider.provider_name,
+            user_name=f"{user.first_name} {user.last_name}".strip(),
+            user_email=user.email,
+            user_mobile=user.mobile,
+            message=str(session.get("message", "Payment order created successfully.")),
+        )
+
+    @staticmethod
     async def get_subscription_by_user_id(db: AsyncSession, user_id: str) -> Subscription:
         """
         Retrieve a user's subscription record. Creates default 'free' tier if none exists.
@@ -54,7 +109,7 @@ class SubscriptionService:
                 status="active",
                 billing_cycle="monthly",
                 price_amount=0.0,
-                gateway_provider="sandbox",
+                gateway_provider="razorpay",
             )
             db.add(sub)
             await db.commit()
@@ -78,7 +133,7 @@ class SubscriptionService:
         db: AsyncSession, user_id: str, dto: CheckoutRequest
     ) -> CheckoutResponse:
         """
-        Processes checkout payment via requested gateway provider (Paddle/Sandbox/Razorpay),
+        Processes checkout payment via Razorpay,
         records PaymentTransaction in ledger, updates user subscription, and syncs database Role.
         """
         user = await UserService.get_user_by_id(db, user_id)
@@ -99,40 +154,60 @@ class SubscriptionService:
             )
 
         final_amount = float(coupon_res["final_price"])
+        currency_code = (dto.currency or "USD").upper().strip()
 
-        # 2. Select Payment Provider & execute checkout session/payment
-        provider_name = dto.gateway_provider.lower().strip()
-        provider = PaymentService.get_provider(provider_name)
+        # 2. Select Payment Provider & execute signature verification or checkout session
+        provider = PaymentService.get_provider(dto.gateway_provider)
 
-        checkout_res = await provider.create_checkout_session(
-            user_id=user_id,
-            user_email=user.email,
-            tier=target_tier,
-            billing_cycle=dto.billing_cycle,
-            amount=final_amount,
-            currency="USD",
-            coupon_code=dto.coupon_code,
-            extra_data={
-                "card_number": dto.card_number,
-                "exp_month": dto.exp_month,
-                "exp_year": dto.exp_year,
-                "cvc": dto.cvc,
-            },
-        )
+        if dto.razorpay_payment_id:
+            # Razorpay verified client checkout flow
+            is_valid = provider.verify_payment_signature(
+                razorpay_order_id=dto.razorpay_order_id or "",
+                razorpay_payment_id=dto.razorpay_payment_id or "",
+                razorpay_signature=dto.razorpay_signature or "",
+            )
+            if not is_valid:
+                raise BadRequestException(
+                    error_code="PAYMENT_VERIFICATION_FAILED",
+                    errors="Razorpay payment verification failed: Invalid cryptographic signature.",
+                )
+            txn_id = dto.razorpay_payment_id
+            checkout_res = {
+                "success": True,
+                "transaction_id": txn_id,
+                "gateway_subscription_id": dto.razorpay_order_id,
+                "gateway_customer_id": f"cust_{user_id[:8]}",
+            }
+        else:
+            # Direct/mock dev checkout
+            checkout_res = await provider.create_checkout_session(
+                user_id=user_id,
+                user_email=user.email,
+                tier=target_tier,
+                billing_cycle=dto.billing_cycle,
+                amount=final_amount,
+                currency=currency_code,
+                coupon_code=dto.coupon_code,
+            )
 
         if not checkout_res.get("success"):
             err_msg = str(checkout_res.get("message", "Payment processing failed."))
             raise BadRequestException(error_code="PAYMENT_FAILED", errors=err_msg)
 
-        # 3. Expiry Calculation: Monthly (30d) vs Annual (365d)
-        now = datetime.now(timezone.utc).replace(tzinfo=None)
-        days = 365 if dto.billing_cycle.lower() == "annual" else 30
-        period_end = now + timedelta(days=days)
-
-        # 4. Get or Create Subscription Record
+        # 3. Get or Create Subscription Record
         sub_stmt = select(Subscription).where(Subscription.user_id == user_id)
         sub_res = await db.execute(sub_stmt)
         sub = sub_res.scalar_one_or_none()
+
+        # 4. Expiry Calculation (with Subscription Stacking support):
+        # If user is on the same tier with an active future period, stack the duration onto existing expiration date!
+        now = datetime.now(timezone.utc).replace(tzinfo=None)
+        days = 365 if dto.billing_cycle.lower() == "annual" else 30
+
+        if sub and sub.tier == target_tier and sub.current_period_end and sub.current_period_end > now:
+            period_end = sub.current_period_end + timedelta(days=days)
+        else:
+            period_end = now + timedelta(days=days)
 
         txn_id = str(checkout_res.get("transaction_id", f"txn_{now.timestamp()}"))
 
@@ -175,7 +250,7 @@ class SubscriptionService:
             user_id=user_id,
             gateway_provider=provider.provider_name,
             amount=final_amount,
-            currency="USD",
+            currency=currency_code,
             status="completed",
             tier=target_tier,
             billing_cycle=dto.billing_cycle,
@@ -203,10 +278,11 @@ class SubscriptionService:
             tier=target_tier,
             billing_cycle=dto.billing_cycle,
             amount_paid=final_amount,
-            currency="USD",
+            currency=currency_code,
             gateway_provider=provider.provider_name,
             current_period_end=period_end,
             receipt_url=checkout_res.get("checkout_url"),
+            order_id=checkout_res.get("gateway_subscription_id"),
         )
 
     @staticmethod
@@ -235,7 +311,7 @@ class SubscriptionService:
                 tier=target_tier,
                 status=dto.status,
                 billing_cycle=dto.billing_cycle,
-                gateway_provider=dto.gateway_provider or "sandbox",
+                gateway_provider=dto.gateway_provider or "razorpay",
                 current_period_end=dto.current_period_end,
                 payment_gateway_ref=dto.payment_gateway_ref,
             )

@@ -37,11 +37,13 @@ async def test_user_subscription_and_role_lifecycle(app):
 
         # Assign SuperAdmin role to test user so client has all privileges for test steps
         from models.db_models import Role, User
+        from sqlalchemy.orm import selectinload
         from services.database import get_db_session
         from sqlalchemy import select
         async with get_db_session() as db:
-            user_obj = (await db.execute(select(User).where(User.id == user_id))).scalar_one()
-            admin_role = (await db.execute(select(Role).where(Role.name == "SuperAdmin"))).scalar_one_or_none()
+            stmt = select(User).options(selectinload(User.roles)).where(User.id == user_id)
+            user_obj = (await db.execute(stmt)).scalar_one()
+            admin_role = (await db.execute(select(Role).where(Role.name.in_(["SuperAdmin", "Admin"])))).scalars().first()
             if admin_role:
                 user_obj.roles.append(admin_role)
                 await db.commit()
@@ -125,3 +127,24 @@ async def test_user_subscription_and_role_lifecycle(app):
         reverted_roles = [r["name"] for r in reverted_user["roles"]]
         assert "Free" in reverted_roles
         assert "Ultra" not in reverted_roles
+
+
+@pytest.mark.asyncio
+async def test_get_pricing_catalog_endpoint(app):
+    await init_db()
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://testserver"
+    ) as client:
+        res = await client.get("/api/v1/subscriptions/pricing-catalog")
+        assert res.status_code == 200, res.text
+        data = res.json()
+        assert "currency" in data
+        assert "tiers" in data
+        assert "free" in data["tiers"]
+        assert "pro" in data["tiers"]
+        assert "ultra" in data["tiers"]
+        assert data["tiers"]["pro"]["monthly"] > 0
+        assert data["tiers"]["pro"]["annual"] > 0
+        assert data["tiers"]["ultra"]["monthly"] > 0
+        assert data["tiers"]["ultra"]["annual"] > 0
+

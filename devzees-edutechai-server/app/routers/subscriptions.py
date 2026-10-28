@@ -25,15 +25,46 @@ from models.subscription_schemas import (
     CheckoutResponse,
     CouponValidateRequest,
     CouponValidateResponse,
+    CreateOrderRequest,
+    CreateOrderResponse,
     PaymentTransactionResponse,
+    PricingCatalogResponse,
+    PromoBannerInfo,
     SubscriptionResponse,
     SubscriptionUpdateRequest,
+    TierPriceInfo,
 )
 from services.database import get_db
 from services.payment_service import PaymentService
+from services.setting_service import SettingService
 from services.subscription_service import SubscriptionService
 
 router = APIRouter()
+
+
+@router.get(
+    "/subscriptions/pricing-catalog",
+    response_model=PricingCatalogResponse,
+)
+async def get_pricing_catalog():
+    """
+    Public endpoint providing current catalog pricing for all tiers and billing cycles.
+    Dynamically loads values from system settings (PRO_MONTHLY, PRO_ANNUALLY, etc.).
+    Includes active promotional campaign banner information.
+    """
+    raw_catalog = SettingService.get_pricing_catalog()
+    promo_info = SettingService.get_promo_banner_info()
+    return PricingCatalogResponse(
+        currency="USD",
+        tiers={
+            tier: TierPriceInfo(
+                monthly=float(cycles.get("monthly", 0.0)),
+                annual=float(cycles.get("annual", 0.0)),
+            )
+            for tier, cycles in raw_catalog.items()
+        },
+        promo_banner=PromoBannerInfo(**promo_info),
+    )
 
 
 @router.get(
@@ -69,6 +100,23 @@ async def update_user_subscription_tier(
 
 
 @router.post(
+    "/subscriptions/create-order",
+    response_model=CreateOrderResponse,
+)
+async def create_checkout_order(
+    request: CreateOrderRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Initiate a payment order with Razorpay (or other providers) for client popup checkout.
+    """
+    return await SubscriptionService.create_checkout_order(
+        db=db, user_id=current_user.id, dto=request
+    )
+
+
+@router.post(
     "/subscriptions/checkout",
     response_model=CheckoutResponse,
 )
@@ -78,7 +126,7 @@ async def checkout_subscription(
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Initiate or complete subscription upgrade via requested gateway (Paddle, Sandbox, Razorpay).
+    Complete subscription upgrade with Razorpay signature verification.
     """
     return await SubscriptionService.process_checkout_and_upgrade(
         db=db, user_id=current_user.id, dto=request
@@ -147,11 +195,11 @@ async def handle_payment_webhook(
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Webhook endpoint for payment gateways (Paddle, Razorpay, etc.).
+    Webhook endpoint for Razorpay payment gateway.
     """
     p_instance = PaymentService.get_provider(provider)
     raw_body = await request.body()
-    sig_header = request.headers.get("paddle-signature") or request.headers.get("x-razorpay-signature") or ""
+    sig_header = request.headers.get("x-razorpay-signature") or ""
 
     is_valid = await p_instance.verify_webhook_signature(raw_body, sig_header)
     if not is_valid:

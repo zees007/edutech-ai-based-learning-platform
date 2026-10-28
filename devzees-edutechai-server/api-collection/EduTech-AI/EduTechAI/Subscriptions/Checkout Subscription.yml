@@ -109,4 +109,4 @@ examples:
             ]
           }
 
-docs: Initiate or complete subscription upgrade via requested gateway (Paddle, Sandbox, Razorpay).
+docs: Initiate or complete subscription upgrade via Razorpay.

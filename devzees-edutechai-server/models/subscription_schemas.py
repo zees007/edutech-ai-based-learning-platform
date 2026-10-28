@@ -7,6 +7,7 @@ Request and response models for subscription management endpoints.
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -22,7 +23,7 @@ class SubscriptionResponse(BaseModel):
     price_amount: float = Field(default=0.0, description="Current tier recurring price")
     current_period_start: datetime
     current_period_end: datetime | None = None
-    gateway_provider: str = Field(default="sandbox", description="Payment provider: paddle, razorpay, sandbox")
+    gateway_provider: str = Field(default="razorpay", description="Payment provider: razorpay")
     gateway_subscription_id: str | None = None
     gateway_customer_id: str | None = None
     payment_gateway_ref: str | None = None
@@ -38,9 +39,37 @@ class SubscriptionUpdateRequest(BaseModel):
     tier: str = Field(..., description="Target subscription tier: free, pro, ultra")
     status: str = Field(default="active", description="Status of subscription: active, canceled, expired")
     billing_cycle: str = Field(default="monthly", description="Billing cycle: monthly, annual")
-    gateway_provider: str | None = Field(default="sandbox", description="Payment gateway code")
+    gateway_provider: str | None = Field(default="razorpay", description="Payment gateway code")
     current_period_end: datetime | None = Field(default=None, description="Expiration date of subscription")
     payment_gateway_ref: str | None = Field(default=None, description="Payment processor reference ID")
+
+
+class CreateOrderRequest(BaseModel):
+    """Payload to initiate a payment order with the gateway (Razorpay)."""
+
+    tier: str = Field(..., description="Target subscription tier: pro, ultra")
+    billing_cycle: str = Field(default="monthly", description="Billing cycle: monthly, annual")
+    gateway_provider: str = Field(default="razorpay", description="Payment provider: razorpay")
+    coupon_code: str | None = Field(default=None, description="Promotional coupon code")
+    currency: str = Field(default="USD", description="Currency code (USD)")
+
+
+class CreateOrderResponse(BaseModel):
+    """Order initialization result for client-side checkout popup."""
+
+    success: bool
+    order_id: str
+    key_id: str
+    amount: float
+    amount_subunits: int
+    currency: str
+    tier: str
+    billing_cycle: str
+    gateway_provider: str
+    user_name: str | None = None
+    user_email: str | None = None
+    user_mobile: str | None = None
+    message: str | None = None
 
 
 class CheckoutRequest(BaseModel):
@@ -48,12 +77,13 @@ class CheckoutRequest(BaseModel):
 
     tier: str = Field(..., description="Target subscription tier: pro, ultra")
     billing_cycle: str = Field(default="monthly", description="Billing cycle: monthly, annual")
-    gateway_provider: str = Field(default="paddle", description="Selected provider: paddle, razorpay, sandbox")
+    gateway_provider: str = Field(default="razorpay", description="Payment provider: razorpay")
     coupon_code: str | None = Field(default=None, description="Promotional coupon code")
-    card_number: str | None = Field(default=None, description="Card number (Sandbox test mode)")
-    exp_month: int | None = Field(default=None, description="Expiry month")
-    exp_year: int | None = Field(default=None, description="Expiry year")
-    cvc: str | None = Field(default=None, description="CVC code")
+    currency: str = Field(default="USD", description="Payment currency: USD")
+    # Razorpay payment verification fields
+    razorpay_order_id: str | None = Field(default=None, description="Razorpay order reference ID")
+    razorpay_payment_id: str | None = Field(default=None, description="Razorpay payment transaction ID")
+    razorpay_signature: str | None = Field(default=None, description="Razorpay HMAC SHA256 payment signature")
 
 
 class CheckoutResponse(BaseModel):
@@ -69,6 +99,8 @@ class CheckoutResponse(BaseModel):
     gateway_provider: str
     current_period_end: datetime | None = None
     receipt_url: str | None = None
+    order_id: str | None = None
+    key_id: str | None = None
 
 
 class CouponValidateRequest(BaseModel):
@@ -116,3 +148,28 @@ class CancelSubscriptionRequest(BaseModel):
     reason: str | None = None
     immediate: bool = False
 
+
+class TierPriceInfo(BaseModel):
+    """Price amounts for monthly and annual billing cycles."""
+
+    monthly: float
+    annual: float
+
+
+class PromoBannerInfo(BaseModel):
+    """Promotional announcement banner configuration."""
+
+    enabled: bool = False
+    text: str = ""
+    coupon_code: str = ""
+    discount_percent: float = 0.0
+    valid_until: str | None = None
+    is_expired: bool = False
+
+
+class PricingCatalogResponse(BaseModel):
+    """Public catalog response of all available tier prices and promotional campaign banner."""
+
+    currency: str = "USD"
+    tiers: dict[str, TierPriceInfo]
+    promo_banner: PromoBannerInfo | None = None

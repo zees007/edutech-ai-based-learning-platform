@@ -136,7 +136,7 @@ class _GlassCardState extends State<GlassCard> {
                                 if (isGlow) const Color(0xFF00F5D4).withValues(alpha: 0.4),
                                 Colors.transparent,
                               ],
-                              stops: isGlow ? const [0.0, 0.4, 0.6, 1.0] : const [0.0, 0.5, 0.7, 1.0],
+                              stops: isGlow ? const [0.0, 0.4, 0.6, 1.0] : const [0.0, 0.5, 1.0],
                             ),
                           ),
                         ),

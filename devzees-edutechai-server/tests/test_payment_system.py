@@ -71,16 +71,33 @@ async def test_checkout_flow_and_transaction_ledger(app):
         assert v_res.json()["valid"] is True
         assert v_res.json()["final_price"] == 15.2
 
-        # 4. Perform Subscription Checkout via Sandbox Payment Gateway
+        # 4. Perform Subscription Order Creation & Checkout via Razorpay
+        order_res = await client.post(
+            "/api/v1/subscriptions/create-order",
+            json={
+                "tier": "pro",
+                "billing_cycle": "monthly",
+                "gateway_provider": "razorpay",
+                "coupon_code": "EDU20",
+                "currency": "USD",
+            },
+        )
+        assert order_res.status_code == 200
+        order_data = order_res.json()
+        assert order_data["success"] is True
+        assert order_data["amount"] == 15.2
+        test_order_id = order_data["order_id"]
+        test_payment_id = f"pay_test_{uuid4().hex[:10]}"
+
         checkout_payload = {
             "tier": "pro",
             "billing_cycle": "monthly",
-            "gateway_provider": "sandbox",
+            "gateway_provider": "razorpay",
             "coupon_code": "EDU20",
-            "card_number": "4242 4242 4242 4242",
-            "exp_month": 12,
-            "exp_year": 2028,
-            "cvc": "123",
+            "currency": "USD",
+            "razorpay_order_id": test_order_id,
+            "razorpay_payment_id": test_payment_id,
+            "razorpay_signature": "mock_test_signature",
         }
         chk_res = await client.post("/api/v1/subscriptions/checkout", json=checkout_payload)
         assert chk_res.status_code == 200
@@ -88,8 +105,8 @@ async def test_checkout_flow_and_transaction_ledger(app):
         assert chk_data["success"] is True
         assert chk_data["tier"] == "pro"
         assert chk_data["amount_paid"] == 15.2
-        assert chk_data["gateway_provider"] == "sandbox"
-        assert chk_data["transaction_id"] is not None
+        assert chk_data["gateway_provider"] == "razorpay"
+        assert chk_data["transaction_id"] == test_payment_id
 
         # 5. Retrieve Subscription Details & Verify Status
         sub_res = await client.get(f"/api/v1/subscriptions/users/{user_id}")
@@ -97,7 +114,7 @@ async def test_checkout_flow_and_transaction_ledger(app):
         sub_info = sub_res.json()
         assert sub_info["tier"] == "pro"
         assert sub_info["billing_cycle"] == "monthly"
-        assert sub_info["gateway_provider"] == "sandbox"
+        assert sub_info["gateway_provider"] == "razorpay"
 
         # 6. Retrieve Payment Transaction History & Verify Ledger Record
         tx_res = await client.get(f"/api/v1/subscriptions/users/{user_id}/transactions")

@@ -7,6 +7,8 @@ import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
 import 'package:devzees_edutechai_client/core/theme/app_theme.dart';
 import 'package:devzees_edutechai_client/core/providers/theme_provider.dart';
 
+import 'package:devzees_edutechai_client/presentation/widgets/promo_announcement_bar.dart';
+
 import 'widgets/home_navbar.dart';
 import 'widgets/hero_section.dart';
 import 'widgets/workspace_preview_section.dart';
@@ -145,6 +147,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                       padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 24.0),
                       child: Column(
                         children: [
+                          const PromoAnnouncementBar(),
                           HomeNavbar(onNavTap: _scrollToSection),
                           const SizedBox(height: 60),
                           HeroSection(onExploreTap: () => _scrollToSection('preview')),

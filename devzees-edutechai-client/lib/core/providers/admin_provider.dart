@@ -9,6 +9,7 @@ import '../../data/models/admin/subscription_update_request.dart';
 import '../../data/models/admin/system_setting_model.dart';
 import '../../data/models/admin/setting_update_request.dart';
 import '../services/admin_service.dart';
+import '../services/subscription_service.dart';
 
 // ─── Service Provider ─────────────────────────────────────────────
 final adminServiceProvider = Provider<AdminService>((ref) {
@@ -415,6 +416,15 @@ class AdminSettingsNotifier extends Notifier<AdminSettingsState> {
         isSaving: false,
         successMessage: "Setting '$code' updated successfully!",
       );
+      final upper = code.toUpperCase();
+      if (upper.contains('PRO_') ||
+          upper.contains('ULTRA_') ||
+          upper.contains('PRICE') ||
+          upper.contains('MONTHLY') ||
+          upper.contains('ANNUALLY') ||
+          upper.contains('YEARLY') || upper.contains('PROMO') || upper.contains('COUPON')) {
+        ref.invalidate(pricingCatalogProvider);
+      }
       return true;
     } catch (e) {
       state = state.copyWith(

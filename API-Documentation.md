@@ -1401,7 +1401,7 @@ Automatically updates the user's assigned role in the database.
 ## Checkout Subscription
 **Endpoint:** `POST /api/v1/subscriptions/checkout`
 
-Initiate or complete subscription upgrade via requested gateway (Paddle, Sandbox, Razorpay).
+Initiate or complete subscription upgrade via Razorpay.
 
 ### Request
 
@@ -1560,7 +1560,7 @@ Cancel subscription auto-renewal or downgrade user immediately.
 ## Handle Payment Webhook
 **Endpoint:** `POST /api/v1/subscriptions/webhooks/{provider}`
 
-Webhook endpoint for payment gateways (Paddle, Razorpay, etc.).
+Webhook endpoint for Razorpay payment gateway.
 
 ### Request
 

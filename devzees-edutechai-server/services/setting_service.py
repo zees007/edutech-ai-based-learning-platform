@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import logging
 import os
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from dotenv import load_dotenv
@@ -34,7 +35,11 @@ DEFAULT_SYSTEM_SETTINGS: Dict[str, str] = {
     "PRO_ANNUALLY": "180",
     "ULTRA_MONTHLY": "49",
     "ULTRA_ANNUALLY": "470",
-    "VALID_COUPONS": "EDU20:20,WELCOME50:50,STUDENT10:10,EDUTECH100:100",
+    "VALID_COUPONS": "EDU20:20,WELCOME50:50,STUDENT10:10,EDUTECH100:100,DIWALI50:50",
+    "PROMO_BANNER_ENABLED": "true",
+    "PROMO_BANNER_TEXT": "⚡ Special Offer: Celebrate with 50% OFF on all Pro & Ultra plans! Use code DIWALI50 at checkout",
+    "PROMO_BANNER_COUPON": "DIWALI50",
+    "PROMO_VALIDITY": "",
     "YOUTUBE_DAILY_SEARCH_LIMIT": "100",
     "FREE_YOUTUBE_LIMIT": "1",
     "PRO_YOUTUBE_LIMIT": "3",
@@ -265,5 +270,102 @@ class SettingService:
                 "WELCOME50": 50.0,
                 "STUDENT10": 10.0,
                 "EDUTECH100": 100.0,
+                "DIWALI50": 50.0,
             }
         return coupons_map
+
+    @classmethod
+    def parse_promo_validity(cls, raw_val: str) -> Optional[datetime]:
+        """
+        Parses flexible validity date/time string into a UTC-aware datetime:
+        - ISO 8601: "2026-11-15T23:59:59Z" or "2026-11-15T23:59:59"
+        - Standard date-time: "2026-11-15 23:59:59"
+        - Date only: "2026-11-15" (defaults to 23:59:59 UTC on that day)
+        """
+        if not raw_val or not raw_val.strip():
+            return None
+        val = raw_val.strip()
+
+        # 1. Try ISO format
+        try:
+            dt = datetime.fromisoformat(val.replace("Z", "+00:00"))
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=timezone.utc)
+            return dt
+        except ValueError:
+            pass
+
+        # 2. Try standard date-time formats
+        for fmt in ("%Y-%m-%d %H:%M:%S", "%Y/%m/%d %H:%M:%S", "%d-%m-%Y %H:%M:%S"):
+            try:
+                dt = datetime.strptime(val, fmt)
+                return dt.replace(tzinfo=timezone.utc)
+            except ValueError:
+                pass
+
+        # 3. Try date-only formats (interpreted as end of that day: 23:59:59 UTC)
+        for fmt in ("%Y-%m-%d", "%Y/%m/%d", "%d-%m-%Y"):
+            try:
+                dt = datetime.strptime(val, fmt)
+                return dt.replace(hour=23, minute=59, second=59, tzinfo=timezone.utc)
+            except ValueError:
+                pass
+
+        return None
+
+    @classmethod
+    def get_promo_banner_info(cls) -> Dict[str, Any]:
+        """
+        Retrieves active promo campaign banner information dynamically from settings:
+        - PROMO_BANNER_ENABLED: 'true'/'false'
+        - PROMO_BANNER_TEXT: banner message
+        - PROMO_BANNER_COUPON: associated coupon code
+        - PROMO_VALIDITY: expiration timestamp string (UTC)
+        """
+        enabled_raw = str(cls.get_value("PROMO_BANNER_ENABLED", default="true")).strip().lower()
+        enabled = enabled_raw in ("true", "1", "yes", "on")
+        text = str(
+            cls.get_value(
+                "PROMO_BANNER_TEXT",
+                default="⚡ Special Offer: Celebrate with 50% OFF all plans! Use code DIWALI50 at checkout",
+            )
+        ).strip()
+        coupon = str(cls.get_value("PROMO_BANNER_COUPON", default="DIWALI50")).strip().upper()
+        validity_raw = str(cls.get_value("PROMO_VALIDITY", default="")).strip()
+
+        validity_dt = cls.parse_promo_validity(validity_raw)
+        is_expired = False
+        valid_until_iso = None
+
+        if validity_dt is not None:
+            valid_until_iso = validity_dt.isoformat()
+            now_utc = datetime.now(timezone.utc)
+            if now_utc > validity_dt:
+                is_expired = True
+                enabled = False
+
+        coupons = cls.get_valid_coupons()
+        pct = float(coupons.get(coupon, 50.0))
+
+        return {
+            "enabled": enabled,
+            "text": text,
+            "coupon_code": coupon,
+            "discount_percent": pct,
+            "valid_until": valid_until_iso,
+            "is_expired": is_expired,
+        }
+
+    @classmethod
+    def is_promo_coupon_expired(cls, coupon_code: Optional[str]) -> bool:
+        """
+        Checks if the given coupon code is tied to the promo campaign and has expired.
+        """
+        if not coupon_code:
+            return False
+        promo_info = cls.get_promo_banner_info()
+        promo_coupon = promo_info.get("coupon_code", "").upper().strip()
+        if coupon_code.upper().strip() == promo_coupon:
+            return bool(promo_info.get("is_expired", False))
+        return False
+

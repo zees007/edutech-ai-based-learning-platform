@@ -54,8 +54,28 @@ DEFAULT_SETTINGS = [
         "order_number": 70,
     },
     {
+        "code": "PROMO_BANNER_ENABLED",
+        "value": "true",
+        "order_number": 75,
+    },
+    {
+        "code": "PROMO_BANNER_TEXT",
+        "value": "⚡ Special Offer: Celebrate with 50% OFF on all Pro & Ultra plans! Use code DIWALI50 at checkout",
+        "order_number": 76,
+    },
+    {
+        "code": "PROMO_BANNER_COUPON",
+        "value": "DIWALI50",
+        "order_number": 77,
+    },
+    {
+        "code": "PROMO_VALIDITY",
+        "value": "2026-11-15 23:59:59",
+        "order_number": 78,
+    },
+    {
         "code": "VALID_COUPONS",
-        "value": "EDU20:20,WELCOME50:50,STUDENT10:10,EDUTECH100:100",
+        "value": "EDU20:20,WELCOME50:50,STUDENT10:10,EDUTECH100:100,DIWALI50:50",
         "order_number": 80,
     },
     {
