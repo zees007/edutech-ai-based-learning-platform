@@ -141,19 +141,19 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
             children: [
               _buildTabPill(
                 index: 0,
-                icon: '🎬',
+                icon: Icons.smart_display_rounded,
                 label: 'Timestamped Video Clip',
                 badge: 'Semantic Vector Search',
               ),
               _buildTabPill(
                 index: 1,
-                icon: '📚',
+                icon: Icons.menu_book_rounded,
                 label: 'Academic Preprints',
                 badge: 'arXiv & OpenAlex',
               ),
               _buildTabPill(
                 index: 2,
-                icon: '📝',
+                icon: Icons.quiz_rounded,
                 label: 'Dynamic Formative Quiz',
                 badge: 'Grounded Assessment',
               ),
@@ -402,7 +402,7 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
 
   Widget _buildTabPill({
     required int index,
-    required String icon,
+    required IconData icon,
     required String label,
     required String badge,
   }) {
@@ -440,7 +440,11 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(icon, style: const TextStyle(fontSize: 16)),
+            Icon(
+              icon,
+              size: 16,
+              color: isSelected ? Colors.white : AppColors.textSecondary,
+            ),
             const SizedBox(width: 8),
             Text(
               label,
@@ -535,9 +539,11 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(color: AppColors.accentAmber.withValues(alpha: 0.4)),
                 ),
-                child: const Row(
+                child: Row(
                   children: [
-                    Text('🔥 3 Days', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.accentAmber)),
+                    Icon(Icons.local_fire_department_rounded, size: 14, color: AppColors.accentAmber),
+                    const SizedBox(width: 4),
+                    Text('3 DAYS', style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: AppColors.accentAmber)),
                   ],
                 ),
               ),
@@ -554,9 +560,15 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
                     ),
                   ],
                 ),
-                child: const Text(
-                  '⭐ 720 XP',
-                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Colors.white),
+                child: Row(
+                  children: const [
+                    Icon(Icons.military_tech_rounded, size: 14, color: Colors.white),
+                    SizedBox(width: 4),
+                    Text(
+                      '720 XP',
+                      style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: Colors.white),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -583,7 +595,7 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
                   shape: BoxShape.circle,
                 ),
                 child: const Center(
-                  child: Text('💬', style: TextStyle(fontSize: 16)),
+                  child: Icon(Icons.psychology_rounded, color: Colors.white, size: 18),
                 ),
               ),
               const SizedBox(width: 10),
@@ -694,9 +706,9 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Row(
-                  children: [
-                    Text('🤔', style: TextStyle(fontSize: 14)),
+                Row(
+                  children: const [
+                    Icon(Icons.tips_and_updates_rounded, color: Color(0xFFFBBF24), size: 16),
                     SizedBox(width: 8),
                     Text(
                       'Ponder This Before Advancing:',
@@ -822,7 +834,7 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
       children: [
         Row(
           children: [
-            const Text('🎬', style: TextStyle(fontSize: 18)),
+            const Icon(Icons.play_circle_fill_rounded, color: Color(0xFFEF4444), size: 20),
             const SizedBox(width: 8),
             Text(
               'Curated YouTube Deep-Link',
@@ -947,7 +959,7 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
       children: [
         Row(
           children: [
-            const Text('📚', style: TextStyle(fontSize: 18)),
+            const Icon(Icons.menu_book_rounded, color: Color(0xFF10B981), size: 20),
             const SizedBox(width: 8),
             Text(
               'Curated Academic Literature',
@@ -1001,7 +1013,13 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('💡 AI KEY TAKEAWAY', style: TextStyle(color: AppColors.accentBlue, fontSize: 9, fontWeight: FontWeight.w800)),
+                    Row(
+                      children: const [
+                        Icon(Icons.lightbulb_rounded, size: 12, color: AppColors.accentBlue),
+                        SizedBox(width: 4),
+                        Text('AI KEY TAKEAWAY', style: TextStyle(color: AppColors.accentBlue, fontSize: 9, fontWeight: FontWeight.w800, letterSpacing: 0.5)),
+                      ],
+                    ),
                     const SizedBox(height: 4),
                     Text(
                       'Achieves 99.8% fidelity in maintaining coherent superposition states across 12 entangled Josephson junction qubits at 15mK.',
@@ -1056,7 +1074,7 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
       children: [
         Row(
           children: [
-            const Text('📝', style: TextStyle(fontSize: 18)),
+            const Icon(Icons.quiz_rounded, color: Color(0xFFF59E0B), size: 20),
             const SizedBox(width: 8),
             Text(
               'Formative Knowledge Check',

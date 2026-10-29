@@ -20,13 +20,13 @@ class AgentsSection extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.05),
+            color: const Color(0xFF8B5CF6).withValues(alpha: 0.10),
             borderRadius: BorderRadius.circular(9999),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+            border: Border.all(color: const Color(0xFF8B5CF6).withValues(alpha: 0.28)),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF9061F9).withValues(alpha: 0.14),
-                blurRadius: 16,
+                color: const Color(0xFF8B5CF6).withValues(alpha: 0.18),
+                blurRadius: 18,
               ),
             ],
           ),
@@ -34,13 +34,13 @@ class AgentsSection extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                width: 6,
-                height: 6,
+                width: 7,
+                height: 7,
                 decoration: const BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Color(0xFF9061F9),
+                  color: Color(0xFF8B5CF6),
                   boxShadow: [
-                    BoxShadow(color: Color(0xFF9061F9), blurRadius: 6),
+                    BoxShadow(color: Color(0xFF8B5CF6), blurRadius: 8, spreadRadius: 1),
                   ],
                 ),
               ),
@@ -48,8 +48,8 @@ class AgentsSection extends StatelessWidget {
               const Text(
                 'AUTONOMOUS AGENT SQUAD',
                 style: TextStyle(
-                  color: Color(0xFFD4D8E8),
-                  fontSize: 10.5,
+                  color: Color(0xFFDDD6FE),
+                  fontSize: 11,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 1.4,
                 ),
@@ -57,70 +57,90 @@ class AgentsSection extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(height: 16),
-        GradientText('The Agent Squad', style: AppTextStyles.h2),
+        const SizedBox(height: 18),
+        GradientText(
+          'Six Neural Specialists. One Unified Mind.',
+          style: (isMobile ? AppTextStyles.h3 : AppTextStyles.h2).copyWith(
+            fontWeight: FontWeight.w900,
+          ),
+          textAlign: TextAlign.center,
+        ),
         const SizedBox(height: 16),
         ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 720),
+          constraints: const BoxConstraints(maxWidth: 760),
           child: Text(
-            'Six specialized AI agents working in parallel via shared memory to deliver your personalized curriculum.',
+            'Rather than a single monolithic prompt, EduTech AI orchestrates six dedicated AI micro-agents operating in parallel over a shared blackboard memory architecture.',
             textAlign: TextAlign.center,
             style: AppTextStyles.body1.copyWith(
-              color: const Color(0xFFB9BECF),
-              height: 1.55,
+              color: const Color(0xFF94A3B8),
+              fontSize: isMobile ? 15 : 17,
+              height: 1.6,
             ),
           ),
         ),
         const SizedBox(height: 48),
+
         GridView.count(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           crossAxisCount: crossAxisCount,
-          crossAxisSpacing: 24,
-          mainAxisSpacing: 24,
-          childAspectRatio: isMobile ? 1.45 : 1.18,
+          crossAxisSpacing: 22,
+          mainAxisSpacing: 22,
+          childAspectRatio: isMobile ? 1.35 : 1.12,
           children: const [
             _AgentCard(
-              icon: '🎯',
-              role: 'SUPERVISOR',
-              title: 'Orchestrator',
-              description: 'Decomposes open-ended topics into milestone graphs and prerequisite warmups.',
-              iconColor: AppColors.primary,
+              icon: Icons.hub_rounded,
+              role: 'DAG SUPERVISOR',
+              status: 'DETERMINISTIC',
+              title: 'Supervisor Orchestrator',
+              description: 'Decomposes open-ended topics into progressive directed acyclic milestone graphs with prerequisite calibration.',
+              tags: ['Topological DAG', 'Low Temperature', 'Session Graph'],
+              accentColor: Color(0xFF3B82F6),
             ),
             _AgentCard(
-              icon: '💬',
+              icon: Icons.psychology_rounded,
               role: 'COGNITIVE TUTOR',
+              status: 'SOCRATIC',
               title: 'Socratic Tutor',
-              description: 'Guided inquiry, daily-life mental models, and contextual dialogue adapted to your level.',
-              iconColor: AppColors.accentBlue,
+              description: 'Guides conceptual inquiry using real-world anchor analogies, progressive scaffolding, and active dialogue.',
+              tags: ['Mental Models', 'Guided Discovery', 'Adaptive Depth'],
+              accentColor: Color(0xFF00F5D4),
             ),
             _AgentCard(
-              icon: '🎬',
+              icon: Icons.play_circle_filled_rounded,
               role: 'MULTIMEDIA CURATOR',
+              status: 'CHROMADB',
               title: 'YouTube Curator',
-              description: 'Scans video transcript vector embeddings to pinpoint exact start-and-end timestamp clips.',
-              iconColor: AppColors.accentCyan,
+              description: 'Scans video transcript vector embeddings to pinpoint exact start-and-end timestamp clips for key concepts.',
+              tags: ['Vector Search', 'Precise Timestamps', 'High SNR'],
+              accentColor: Color(0xFFF43F5E),
             ),
             _AgentCard(
-              icon: '📚',
+              icon: Icons.menu_book_rounded,
               role: 'SCHOLARLY RESEARCH',
-              title: 'Academic Researcher',
-              description: 'Direct live query across 250M+ peer-reviewed papers on arXiv, Semantic Scholar, and OpenAlex.',
-              iconColor: AppColors.accentGreen,
+              status: '250M+ PAPERS',
+              title: 'Academic Scout',
+              description: 'Conducts live federated searches across arXiv, OpenAlex, and Semantic Scholar with verified DOI paper links.',
+              tags: ['arXiv & OpenAlex', 'Live Peer Review', 'AI TL;DR'],
+              accentColor: Color(0xFF10B981),
             ),
             _AgentCard(
-              icon: '📝',
-              role: 'GROUNDED TESTING',
-              title: 'Quiz Agent',
-              description: 'Formative MCQs strictly grounded on the current lesson with immediate XP scoring.',
-              iconColor: AppColors.accentAmber,
+              icon: Icons.quiz_rounded,
+              role: 'EVALUATION ENGINE',
+              status: 'GROUNDED',
+              title: 'Formative Quiz Agent',
+              description: 'Constructs targeted multiple-choice evaluations derived strictly from active lesson context with instant XP grading.',
+              tags: ['Zero Hallucination', 'Formative Scoring', 'Instant XP'],
+              accentColor: Color(0xFFF59E0B),
             ),
             _AgentCard(
-              icon: '⚡',
-              role: 'TELEMETRY ENGINE',
+              icon: Icons.auto_awesome_rounded,
+              role: 'SYNTHESIS & BUS',
+              status: 'REAL-TIME',
               title: 'Synthesizer Agent',
-              description: 'Streams live blackboard state over WebSockets and exports to Obsidian & Notion markdown.',
-              iconColor: AppColors.accentPink,
+              description: 'Streams live blackboard state over WebSockets and compiles notes into Obsidian, Notion, Mermaid, and PDF.',
+              tags: ['WebSocket Bus', 'Mermaid.js', 'Obsidian Ready'],
+              accentColor: Color(0xFFA855F7),
             ),
           ],
         ),
@@ -129,91 +149,206 @@ class AgentsSection extends StatelessWidget {
   }
 }
 
-class _AgentCard extends StatelessWidget {
-  final String icon;
+class _AgentCard extends StatefulWidget {
+  final IconData icon;
   final String role;
+  final String status;
   final String title;
   final String description;
-  final Color iconColor;
+  final List<String> tags;
+  final Color accentColor;
 
   const _AgentCard({
     required this.icon,
     required this.role,
+    required this.status,
     required this.title,
     required this.description,
-    required this.iconColor,
+    required this.tags,
+    required this.accentColor,
   });
 
   @override
+  State<_AgentCard> createState() => _AgentCardState();
+}
+
+class _AgentCardState extends State<_AgentCard> {
+  bool _isHovered = false;
+
+  @override
   Widget build(BuildContext context) {
-    return Interactive3DCard(
-      maxTiltAngle: 0.08,
-      perspective: 0.001,
-      hoverScale: 1.02,
-      glareColor: iconColor,
-      maxGlareOpacity: 0.15,
-      borderRadius: BorderRadius.circular(24),
-      child: GlassCard(
-        isGlowing: false,
-        padding: const EdgeInsets.all(26),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    final color = widget.accentColor;
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: Interactive3DCard(
+        maxTiltAngle: 0.07,
+        perspective: 0.001,
+        hoverScale: 1.025,
+        glareColor: color,
+        maxGlareOpacity: 0.16,
+        borderRadius: BorderRadius.circular(22),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 240),
+          decoration: BoxDecoration(
+            color: _isHovered
+                ? const Color(0xFF0F1226)
+                : const Color(0xDD0A0D1D),
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(
+              color: _isHovered
+                  ? color.withValues(alpha: 0.55)
+                  : Colors.white.withValues(alpha: 0.09),
+              width: 1.2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: _isHovered
+                    ? color.withValues(alpha: 0.22)
+                    : Colors.black.withValues(alpha: 0.45),
+                blurRadius: _isHovered ? 28 : 16,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: iconColor.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: iconColor.withValues(alpha: 0.3)),
-                    boxShadow: [
-                      BoxShadow(
-                        color: iconColor.withValues(alpha: 0.22),
-                        blurRadius: 12,
+                // Top Row: Glowing Vector Icon & Telemetry Pill
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: color.withValues(alpha: 0.14),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: color.withValues(alpha: 0.38),
+                          width: 1,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: color.withValues(alpha: 0.28),
+                            blurRadius: 14,
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                  child: Text(icon, style: const TextStyle(fontSize: 22)),
+                      child: Icon(
+                        widget.icon,
+                        color: color,
+                        size: 24,
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: color.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(9999),
+                        border: Border.all(
+                          color: color.withValues(alpha: 0.24),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 5,
+                            height: 5,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: color,
+                              boxShadow: [
+                                BoxShadow(color: color, blurRadius: 4),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            widget.status,
+                            style: TextStyle(
+                              color: color,
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.8,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: iconColor.withValues(alpha: 0.10),
-                    borderRadius: BorderRadius.circular(9999),
-                    border: Border.all(color: iconColor.withValues(alpha: 0.25)),
+                const SizedBox(height: 18),
+
+                // Role Eyebrow
+                Text(
+                  widget.role,
+                  style: TextStyle(
+                    color: color.withValues(alpha: 0.85),
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.2,
                   ),
+                ),
+                const SizedBox(height: 4),
+
+                // Title
+                Text(
+                  widget.title,
+                  style: const TextStyle(
+                    color: Color(0xFFF1F5F9),
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.3,
+                  ),
+                ),
+                const SizedBox(height: 10),
+
+                // Description
+                Expanded(
                   child: Text(
-                    role,
-                    style: TextStyle(
-                      color: iconColor,
-                      fontSize: 9.5,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.8,
+                    widget.description,
+                    style: const TextStyle(
+                      color: Color(0xFF94A3B8),
+                      fontSize: 13,
+                      height: 1.55,
                     ),
                   ),
                 ),
+                const SizedBox(height: 14),
+
+                // Bottom Micro-Tags
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: widget.tags.map((tag) {
+                    return Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.04),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.07),
+                        ),
+                      ),
+                      child: Text(
+                        tag,
+                        style: const TextStyle(
+                          color: Color(0xFFCBD5E1),
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
               ],
             ),
-            const SizedBox(height: 18),
-            Text(
-              title,
-              style: AppTextStyles.h4.copyWith(
-                color: const Color(0xFFEEF0F6),
-                fontWeight: FontWeight.w700,
-                letterSpacing: -0.2,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              description,
-              style: AppTextStyles.body2.copyWith(
-                color: const Color(0xFFB9BECF),
-                height: 1.5,
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );

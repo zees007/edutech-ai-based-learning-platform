@@ -6,15 +6,13 @@ import 'package:devzees_edutechai_client/core/constants/responsive.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/word_by_word_reveal.dart';
 import 'package:go_router/go_router.dart';
 
-/// Ultra-premium SaaS hero section with auto-playing product showcase carousel.
+/// Ultra-premium SaaS hero section designed for a high-converting, agency-grade presentation.
 ///
 /// Features:
-/// - Staggered spring reveals across badge, word-by-word headline, subtitle, and CTA.
-/// - Frosted glass badge pill with live pulsating radar beacon.
-/// - High-contrast action pills & interactive quick-masterclass prompt bar.
-/// - Floating frosted social proof trust badges.
-/// - Auto-playing full-width hero carousel with new images, crossfade transitions,
-///   breathing indicators, chevron navigation, and overlay captions.
+/// - Futuristic glass badge pill with live radar beacon and gradient border.
+/// - Punchy high-contrast typography with multi-stop electric gradient.
+/// - Interactive search input with quick-topic starter chips.
+/// - Full-width cinematic product carousel showcasing the 3 high-resolution assets.
 class HeroSection extends StatefulWidget {
   final VoidCallback? onExploreTap;
   final bool includeCarousel;
@@ -32,13 +30,23 @@ class HeroSection extends StatefulWidget {
 class _HeroSectionState extends State<HeroSection> {
   final TextEditingController _promptController = TextEditingController();
 
+  static const List<String> _suggestedTopics = [
+    'Quantum Superposition',
+    'Transformer Attention',
+    'CRISPR Gene Editing',
+    'Neural Tangent Kernel',
+  ];
+
   @override
   void dispose() {
     _promptController.dispose();
     super.dispose();
   }
 
-  void _handleQuickStart() {
+  void _handleQuickStart([String? topic]) {
+    if (topic != null) {
+      _promptController.text = topic;
+    }
     context.go('/auth');
   }
 
@@ -49,152 +57,168 @@ class _HeroSectionState extends State<HeroSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // ─── 1. Staggered Badge Pill (Delay 300ms) ───
+        // ─── 1. Floating Live Architecture Badge ───
         SpringEntranceBlock(
-          delayMs: 300,
+          delayMs: 250,
           durationMs: 700,
-          fromOffset: const Offset(0, 20),
+          fromOffset: const Offset(0, 18),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.05),
+              color: const Color(0xCC0B0D1B),
               borderRadius: BorderRadius.circular(9999),
               border: Border.all(
-                color: Colors.white.withValues(alpha: 0.14),
+                color: const Color(0xFF60A5FA).withValues(alpha: 0.30),
                 width: 1.0,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.15),
-                  blurRadius: 16,
-                  offset: const Offset(0, 2),
+                  color: const Color(0xFF2B68F6).withValues(alpha: 0.25),
+                  blurRadius: 20,
+                  spreadRadius: -2,
                 ),
               ],
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Live Radar Beacon Pulse Dot
                 const _PulsingBeaconDot(),
-                const SizedBox(width: 9),
+                const SizedBox(width: 10),
                 Text(
-                  'AUTONOMOUS MULTI-AGENT BLACKBOARD ARCHITECTURE',
+                  'NEXT-GEN COGNITIVE MULTI-AGENT ARCHITECTURE',
                   style: TextStyle(
-                    color: const Color(0xFFD4D8E8),
+                    color: const Color(0xFFE2E8F0),
                     fontSize: isMobile ? 9.5 : 11,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w800,
                     letterSpacing: 1.3,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF00F5D4).withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: const Text(
+                    'v2.4',
+                    style: TextStyle(
+                      color: Color(0xFF00F5D4),
+                      fontSize: 9,
+                      fontWeight: FontWeight.w900,
+                    ),
                   ),
                 ),
               ],
             ),
           ),
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 28),
 
-        // ─── 2. Headline with Word-by-Word Reveal (Delay 480ms) ───
+        // ─── 2. Headline with Word-by-Word Reveal ───
         ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: isMobile ? 360 : 900),
+          constraints: BoxConstraints(maxWidth: isMobile ? 360 : 920),
           child: WordByWordReveal(
-            text: 'Master Any Subject with a Team of AI Agents',
-            gradientWords: const ['team', 'of', 'ai', 'agents'],
+            text: 'Master Complex Topics with an Autonomous AI Squad',
+            gradientWords: const ['autonomous', 'ai', 'squad'],
             gradient: const LinearGradient(
               colors: [
-                Color(0xFF60A5FA), // Electric cyan/blue
-                Color(0xFF9061F9), // Royal violet
-                Color(0xFFE879F9), // Vivid magenta
+                Color(0xFF60A5FA), // Azure Blue
+                Color(0xFF9061F9), // Royal Violet
+                Color(0xFF00F5D4), // Cyan Spark
               ],
             ),
-            initialDelayMs: 480,
-            staggerMs: 80,
-            wordDurationMs: 720,
-            initialTranslateY: 28.0,
+            initialDelayMs: 450,
+            staggerMs: 70,
+            wordDurationMs: 680,
+            initialTranslateY: 26.0,
             style: (isMobile ? AppTextStyles.h2 : AppTextStyles.h1).copyWith(
-              fontSize: isMobile ? 32 : 54,
+              fontSize: isMobile ? 34 : 58,
               fontWeight: FontWeight.w900,
-              color: const Color(0xFFEEF0F6),
-              letterSpacing: -1.0,
-              height: 1.12,
+              color: const Color(0xFFF8FAFC),
+              letterSpacing: -1.4,
+              height: 1.10,
             ),
           ),
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 22),
 
-        // ─── 3. Subtitle with Word-by-Word Reveal (Delay 1100ms) ───
+        // ─── 3. Subtitle with High-Contrast Typography ───
         ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: isMobile ? 340 : 800),
+          constraints: BoxConstraints(maxWidth: isMobile ? 340 : 760),
           child: WordByWordReveal(
-            text: 'Our supervisor agent decomposes complex topics into adaptive milestones, while specialized workers collaborate in real-time to deliver Socratic dialogue, timestamped video clips, academic preprints, and grounded quizzes.',
-            initialDelayMs: 1100,
-            staggerMs: 22,
-            wordDurationMs: 600,
-            initialTranslateY: 14.0,
+            text: 'Stop skimming passive chatbot text. Our supervisor agent decomposes any domain into adaptive milestones, orchestrating verified Socratic dialogue, timestamped video clips, and live arXiv citations in real-time.',
+            initialDelayMs: 950,
+            staggerMs: 18,
+            wordDurationMs: 550,
+            initialTranslateY: 12.0,
             style: AppTextStyles.body1.copyWith(
               fontSize: isMobile ? 15 : 17.5,
-              color: const Color(0xFFB9BECF),
-              height: 1.55,
-              letterSpacing: -0.1,
+              color: const Color(0xFF94A3B8),
+              height: 1.60,
+              letterSpacing: -0.2,
             ),
           ),
         ),
-        const SizedBox(height: 32),
+        const SizedBox(height: 36),
 
-        // ─── 4. Interactive Quick-Start & Dual CTA Bar (Delay 1450ms) ───
+        // ─── 4. Quick-Start Input Capsule with Topic Chips ───
         SpringEntranceBlock(
-          delayMs: 1450,
+          delayMs: 1300,
           durationMs: 700,
-          fromOffset: const Offset(0, 24),
+          fromOffset: const Offset(0, 22),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Interactive Topic Bar (Glass capsule)
+              // Main Input Capsule
               Container(
-                width: isMobile ? double.infinity : 620,
-                height: isMobile ? 54 : 58,
+                width: isMobile ? double.infinity : 640,
+                height: isMobile ? 54 : 60,
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.05),
+                  color: const Color(0xEE090B18),
                   borderRadius: BorderRadius.circular(9999),
                   border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.16),
+                    color: Colors.white.withValues(alpha: 0.18),
+                    width: 1.2,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.4),
-                      blurRadius: 20,
-                      offset: const Offset(0, 4),
+                      color: Colors.black.withValues(alpha: 0.60),
+                      blurRadius: 28,
+                      offset: const Offset(0, 8),
                     ),
                     BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.12),
-                      blurRadius: 18,
+                      color: AppColors.primary.withValues(alpha: 0.20),
+                      blurRadius: 30,
                     ),
                   ],
                 ),
                 child: Row(
                   children: [
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 14),
                     const Icon(
-                      Icons.auto_awesome_rounded,
+                      Icons.auto_awesome,
                       color: Color(0xFF00F5D4),
-                      size: 20,
+                      size: 21,
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: TextField(
                         controller: _promptController,
-                        onSubmitted: (_) => _handleQuickStart(),
+                        onSubmitted: (val) => _handleQuickStart(val),
                         style: const TextStyle(
-                          color: Color(0xFFEEF0F6),
-                          fontSize: 14.5,
+                          color: Color(0xFFF8FAFC),
+                          fontSize: 15,
                           fontWeight: FontWeight.w500,
                         ),
                         decoration: InputDecoration(
                           hintText: isMobile
                               ? 'Enter topic (e.g. Quantum Physics)...'
-                              : 'What do you want to learn? (e.g., Transformers, Neuroplasticity)...',
-                          hintStyle: TextStyle(
-                            color: const Color(0xFF8E94A8).withValues(alpha: 0.8),
-                            fontSize: isMobile ? 13 : 14.5,
+                              : 'What do you want to master today? (e.g. Transformers, CRISPR)...',
+                          hintStyle: const TextStyle(
+                            color: Color(0xFF64748B),
+                            fontSize: 14,
                             fontWeight: FontWeight.w400,
                           ),
                           border: InputBorder.none,
@@ -206,75 +230,79 @@ class _HeroSectionState extends State<HeroSection> {
                     const SizedBox(width: 8),
                     _HeroSolidPillButton(
                       text: isMobile ? 'Start Free' : 'Generate Masterclass →',
-                      onTap: _handleQuickStart,
+                      onTap: () => _handleQuickStart(_promptController.text),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 18),
+              const SizedBox(height: 14),
 
-              // Secondary Quick Action Link
-              if (widget.onExploreTap != null)
-                MouseRegion(
-                  cursor: SystemMouseCursors.click,
-                  child: GestureDetector(
-                    onTap: widget.onExploreTap,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.03),
-                        borderRadius: BorderRadius.circular(9999),
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.10),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: const [
-                          Icon(Icons.remove_red_eye_outlined, color: Color(0xFFB9BECF), size: 16),
-                          SizedBox(width: 8),
-                          Text(
-                            'Explore Dual-Panel Cognitive Workspace Preview',
-                            style: TextStyle(
-                              color: Color(0xFFB9BECF),
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                            ),
+              // Interactive Suggested Chips
+              Wrap(
+                spacing: 8,
+                runSpacing: 6,
+                alignment: WrapAlignment.center,
+                children: [
+                  Text(
+                    'Try:',
+                    style: TextStyle(
+                      color: const Color(0xFF64748B),
+                      fontSize: isMobile ? 11 : 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  ..._suggestedTopics.map(
+                    (topic) => GestureDetector(
+                      onTap: () => _handleQuickStart(topic),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3.5),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.04),
+                          borderRadius: BorderRadius.circular(9999),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.09),
                           ),
-                          SizedBox(width: 6),
-                          Icon(Icons.arrow_downward_rounded, color: Color(0xFFB9BECF), size: 14),
-                        ],
+                        ),
+                        child: Text(
+                          topic,
+                          style: const TextStyle(
+                            color: Color(0xFF94A3B8),
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                ),
+                ],
+              ),
             ],
           ),
         ),
-        const SizedBox(height: 28),
+        const SizedBox(height: 32),
 
-        // ─── 5. Trust Indicators (Delay 1650ms) ───
+        // ─── 5. Trust Indicators ───
         SpringEntranceBlock(
-          delayMs: 1650,
+          delayMs: 1500,
           durationMs: 700,
-          fromOffset: const Offset(0, 16),
+          fromOffset: const Offset(0, 14),
           child: Wrap(
-            spacing: 12,
+            spacing: 14,
             runSpacing: 8,
             alignment: WrapAlignment.center,
             children: const [
-              _TrustBadge(text: '10 Free AI Sessions / Month'),
-              _TrustBadge(text: 'Zero AI Hallucinations Grounded'),
-              _TrustBadge(text: 'Export to Obsidian & Notion'),
+              _TrustBadge(icon: Icons.check_circle_rounded, text: '10 Free AI Sessions / Month'),
+              _TrustBadge(icon: Icons.verified_user_rounded, text: 'Zero Hallucinations Grounded'),
+              _TrustBadge(icon: Icons.download_rounded, text: 'Export to Obsidian & Notion'),
             ],
           ),
         ),
 
-        // ─── 6. Optional Inline Carousel (When not full-width separated) ───
+        // Optional Inline Carousel (When not extracted to separate wide sliver)
         if (widget.includeCarousel) ...[
           const SizedBox(height: 48),
           SpringEntranceBlock(
-            delayMs: 1800,
+            delayMs: 1750,
             durationMs: 800,
             fromOffset: const Offset(0, 30),
             child: const FullWidthHeroCarousel(),
@@ -286,7 +314,7 @@ class _HeroSectionState extends State<HeroSection> {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// FULL-WIDTH HERO CAROUSEL — Cinematic Product Showcase with New Images
+// FULL-WIDTH HERO CAROUSEL — Cinematic Product Showcase
 // ═══════════════════════════════════════════════════════════════════════════════
 
 class _HeroCarouselSlide {
@@ -328,7 +356,7 @@ class _FullWidthHeroCarouselState extends State<FullWidthHeroCarousel>
       imagePath: 'assets/images/home/hero-pic.jpg',
       badgeText: 'AUTONOMOUS MULTI-AGENT BLACKBOARD ARCHITECTURE',
       captionTitle: 'Autonomous Multi-Agent AI Core',
-      captionSubtitle: 'Specialized agents collaborate simultaneously on a shared cognitive blackboard, orchestrating curriculum milestones, Socratic scaffolding, and citations.',
+      captionSubtitle: 'Six specialized agents collaborate simultaneously on a shared cognitive blackboard, orchestrating curriculum milestones, Socratic scaffolding, and citations.',
       tabLabel: 'Multi-Agent Core',
       tabIcon: Icons.hub_rounded,
     ),
@@ -410,12 +438,12 @@ class _FullWidthHeroCarouselState extends State<FullWidthHeroCarousel>
       onExit: (_) => setState(() => _isHovered = false),
       child: Column(
         children: [
-          // ─── 1. Desktop Tab Switcher (Direct Jump) ───
+          // ─── 1. Desktop Tab Direct Switcher ───
           if (!isMobile) ...[
             Container(
               padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(
-                color: const Color(0xCC090A14),
+                color: const Color(0xDD080A16),
                 borderRadius: BorderRadius.circular(9999),
                 border: Border.all(
                   color: Colors.white.withValues(alpha: 0.12),
@@ -423,8 +451,8 @@ class _FullWidthHeroCarouselState extends State<FullWidthHeroCarousel>
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.40),
-                    blurRadius: 16,
+                    color: Colors.black.withValues(alpha: 0.50),
+                    blurRadius: 20,
                   ),
                 ],
               ),
@@ -443,17 +471,15 @@ class _FullWidthHeroCarouselState extends State<FullWidthHeroCarousel>
                     },
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 220),
-                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 9),
                       decoration: BoxDecoration(
-                        color: isSelected
-                            ? AppColors.primary
-                            : Colors.transparent,
+                        color: isSelected ? AppColors.primary : Colors.transparent,
                         borderRadius: BorderRadius.circular(9999),
                         boxShadow: isSelected
                             ? [
                                 BoxShadow(
                                   color: AppColors.primary.withValues(alpha: 0.50),
-                                  blurRadius: 16,
+                                  blurRadius: 18,
                                   offset: const Offset(0, 2),
                                 ),
                               ]
@@ -484,10 +510,10 @@ class _FullWidthHeroCarouselState extends State<FullWidthHeroCarousel>
                 }),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 22),
           ],
 
-          // ─── 2. Full-Width Carousel Frame ───
+          // ─── 2. Cinema Full-Width Frame ───
           Container(
             width: double.infinity,
             decoration: BoxDecoration(
@@ -498,17 +524,17 @@ class _FullWidthHeroCarouselState extends State<FullWidthHeroCarousel>
               ),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.30),
-                  blurRadius: 65,
-                  offset: const Offset(0, 16),
+                  color: AppColors.primary.withValues(alpha: 0.32),
+                  blurRadius: 75,
+                  offset: const Offset(0, 20),
                 ),
                 BoxShadow(
                   color: const Color(0xFF00F5D4).withValues(alpha: 0.12),
-                  blurRadius: 45,
+                  blurRadius: 50,
                   spreadRadius: 2,
                 ),
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.75),
+                  color: Colors.black.withValues(alpha: 0.80),
                   blurRadius: 40,
                 ),
               ],
@@ -519,7 +545,7 @@ class _FullWidthHeroCarouselState extends State<FullWidthHeroCarousel>
                 aspectRatio: isMobile ? (16 / 10) : (16 / 9),
                 child: Stack(
                   children: [
-                    // Main PageView
+                    // Image PageView
                     PageView.builder(
                       controller: _pageController,
                       itemCount: _slides.length,
@@ -531,13 +557,12 @@ class _FullWidthHeroCarouselState extends State<FullWidthHeroCarousel>
                         return Stack(
                           fit: StackFit.expand,
                           children: [
-                            // High-DPI Visual
                             Image.asset(
                               slide.imagePath,
                               fit: BoxFit.cover,
                             ),
 
-                            // Ambient scrim for typography
+                            // Bottom readability scrim
                             Positioned.fill(
                               child: DecoratedBox(
                                 decoration: BoxDecoration(
@@ -547,7 +572,7 @@ class _FullWidthHeroCarouselState extends State<FullWidthHeroCarousel>
                                     colors: [
                                       Colors.transparent,
                                       Colors.transparent,
-                                      const Color(0xDD04050C),
+                                      const Color(0xDD030712),
                                     ],
                                     stops: const [0.0, 0.45, 1.0],
                                   ),
@@ -555,7 +580,7 @@ class _FullWidthHeroCarouselState extends State<FullWidthHeroCarousel>
                               ),
                             ),
 
-                            // Live status badge (Top-Left)
+                            // Top-left live status pill
                             Positioned(
                               top: isMobile ? 12 : 20,
                               left: isMobile ? 12 : 24,
@@ -565,7 +590,7 @@ class _FullWidthHeroCarouselState extends State<FullWidthHeroCarousel>
                                   vertical: isMobile ? 5 : 7,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xDD090A14),
+                                  color: const Color(0xEE080A16),
                                   borderRadius: BorderRadius.circular(9999),
                                   border: Border.all(
                                     color: const Color(0xFF00F5D4).withValues(alpha: 0.55),
@@ -573,7 +598,7 @@ class _FullWidthHeroCarouselState extends State<FullWidthHeroCarousel>
                                   ),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withValues(alpha: 0.5),
+                                      color: Colors.black.withValues(alpha: 0.50),
                                       blurRadius: 10,
                                     ),
                                   ],
@@ -599,7 +624,7 @@ class _FullWidthHeroCarouselState extends State<FullWidthHeroCarousel>
                                     Text(
                                       slide.badgeText,
                                       style: TextStyle(
-                                        color: const Color(0xFFEEF0F6),
+                                        color: const Color(0xFFF8FAFC),
                                         fontSize: isMobile ? 9 : 11,
                                         fontWeight: FontWeight.w800,
                                         letterSpacing: 1.2,
@@ -617,19 +642,19 @@ class _FullWidthHeroCarouselState extends State<FullWidthHeroCarousel>
                               right: isMobile ? 12 : 24,
                               child: Container(
                                 padding: EdgeInsets.symmetric(
-                                  horizontal: isMobile ? 14 : 22,
+                                  horizontal: isMobile ? 14 : 24,
                                   vertical: isMobile ? 12 : 16,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xE6090A14),
+                                  color: const Color(0xEE090B18),
                                   borderRadius: BorderRadius.circular(18),
                                   border: Border.all(
-                                    color: Colors.white.withValues(alpha: 0.14),
+                                    color: Colors.white.withValues(alpha: 0.15),
                                   ),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withValues(alpha: 0.60),
-                                      blurRadius: 24,
+                                      color: Colors.black.withValues(alpha: 0.65),
+                                      blurRadius: 28,
                                       offset: const Offset(0, 8),
                                     ),
                                   ],
@@ -644,7 +669,7 @@ class _FullWidthHeroCarouselState extends State<FullWidthHeroCarousel>
                                           Text(
                                             slide.captionTitle,
                                             style: TextStyle(
-                                              color: const Color(0xFFEEF0F6),
+                                              color: const Color(0xFFF8FAFC),
                                               fontSize: isMobile ? 14 : 18,
                                               fontWeight: FontWeight.w800,
                                               letterSpacing: -0.3,
@@ -677,7 +702,7 @@ class _FullWidthHeroCarouselState extends State<FullWidthHeroCarousel>
                                       child: Text(
                                         '${index + 1} / ${_slides.length}',
                                         style: const TextStyle(
-                                          color: Color(0xFFEEF0F6),
+                                          color: Color(0xFFF8FAFC),
                                           fontSize: 11.5,
                                           fontWeight: FontWeight.w800,
                                           letterSpacing: 0.5,
@@ -695,7 +720,7 @@ class _FullWidthHeroCarouselState extends State<FullWidthHeroCarousel>
 
                     // Left Chevron Button
                     Positioned(
-                      left: isMobile ? 8 : 16,
+                      left: isMobile ? 8 : 18,
                       top: 0,
                       bottom: 0,
                       child: Center(
@@ -710,7 +735,7 @@ class _FullWidthHeroCarouselState extends State<FullWidthHeroCarousel>
 
                     // Right Chevron Button
                     Positioned(
-                      right: isMobile ? 8 : 16,
+                      right: isMobile ? 8 : 18,
                       top: 0,
                       bottom: 0,
                       child: Center(
@@ -824,11 +849,11 @@ class _CarouselArrowButtonState extends State<_CarouselArrowButton> {
                 shape: BoxShape.circle,
                 color: _isHovered
                     ? AppColors.primary.withValues(alpha: 0.85)
-                    : const Color(0xCC090A14),
+                    : const Color(0xDD090B18),
                 border: Border.all(
                   color: _isHovered
                       ? Colors.white
-                      : Colors.white.withValues(alpha: 0.18),
+                      : Colors.white.withValues(alpha: 0.20),
                   width: 1.0,
                 ),
                 boxShadow: [
@@ -858,7 +883,7 @@ class _CarouselArrowButtonState extends State<_CarouselArrowButton> {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// SHARED SUB-WIDGETS
+// SHARED MICRO-COMPONENTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// Pulsing Beacon Dot with breathing radar ring
@@ -900,7 +925,6 @@ class _PulsingBeaconDotState extends State<_PulsingBeaconDot>
           child: Stack(
             alignment: Alignment.center,
             children: [
-              // Outer radar wave
               Transform.scale(
                 scale: 1.0 + t * 1.2,
                 child: Container(
@@ -915,7 +939,6 @@ class _PulsingBeaconDotState extends State<_PulsingBeaconDot>
                   ),
                 ),
               ),
-              // Inner solid glowing dot
               Container(
                 width: 6,
                 height: 6,
@@ -941,14 +964,15 @@ class _PulsingBeaconDotState extends State<_PulsingBeaconDot>
 
 /// Modern Social Proof Frosted Micro-Badge
 class _TrustBadge extends StatelessWidget {
+  final IconData icon;
   final String text;
 
-  const _TrustBadge({required this.text});
+  const _TrustBadge({required this.icon, required this.text});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.04),
         borderRadius: BorderRadius.circular(9999),
@@ -959,17 +983,17 @@ class _TrustBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(
-            Icons.check_circle_rounded,
-            color: Color(0xFF10B981),
-            size: 13,
+          Icon(
+            icon,
+            color: const Color(0xFF10B981),
+            size: 14,
           ),
-          const SizedBox(width: 6),
+          const SizedBox(width: 8),
           Text(
             text,
             style: const TextStyle(
-              color: Color(0xFFB9BECF),
-              fontSize: 12,
+              color: Color(0xFFCBD5E1),
+              fontSize: 12.5,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -1032,15 +1056,15 @@ class _HeroSolidPillButtonState extends State<_HeroSolidPillButton>
           duration: const Duration(milliseconds: 180),
           curve: Curves.easeOutCubic,
           child: Container(
-            height: 44,
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+            height: 46,
+            padding: const EdgeInsets.symmetric(horizontal: 22),
             decoration: BoxDecoration(
               color: _isHovered ? const Color(0xFFF1F5F9) : Colors.white,
               borderRadius: BorderRadius.circular(9999),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.white.withValues(alpha: _isHovered ? 0.35 : 0.20),
-                  blurRadius: _isHovered ? 16 : 8,
+                  color: Colors.white.withValues(alpha: _isHovered ? 0.40 : 0.22),
+                  blurRadius: 18,
                   offset: const Offset(0, 2),
                 ),
               ],
@@ -1064,7 +1088,7 @@ class _HeroSolidPillButtonState extends State<_HeroSolidPillButton>
                     builder: (context, _) {
                       return Positioned.fill(
                         child: FractionallySizedBox(
-                          widthFactor: 0.4,
+                          widthFactor: 0.45,
                           alignment: Alignment(
                             -1.0 + _shimmerController.value * 3.0,
                             0,
@@ -1074,7 +1098,7 @@ class _HeroSolidPillButtonState extends State<_HeroSolidPillButton>
                               gradient: LinearGradient(
                                 colors: [
                                   Colors.white.withValues(alpha: 0.0),
-                                  Colors.white.withValues(alpha: 0.35),
+                                  Colors.white.withValues(alpha: 0.40),
                                   Colors.white.withValues(alpha: 0.0),
                                 ],
                               ),
