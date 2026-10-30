@@ -36,6 +36,7 @@ class _HeroSectionState extends State<HeroSection> {
   static const List<String> _bgImages = [
     'assets/images/home/hero-pic.jpg',
     'assets/images/home/hero-pic2.jpg',
+    'assets/images/home/hero-pic3.jpg',
   ];
 
   @override
