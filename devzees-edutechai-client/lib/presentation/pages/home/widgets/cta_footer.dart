@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:devzees_edutechai_client/core/theme/text_styles.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/glass_card.dart';
@@ -88,15 +89,17 @@ class CtaFooter extends StatelessWidget {
                   ),
                   const SizedBox(height: 32),
 
-                  // Dual CTA Action Pills
+                  // Dual CTA Action Pills with floating sparkle field
                   Wrap(
                     spacing: 16,
                     runSpacing: 12,
                     alignment: WrapAlignment.center,
                     children: [
-                      _FooterWhiteActionPill(
-                        text: 'Get Started Free →',
-                        onTap: () => context.go('/auth'),
+                      _CtaSparkleField(
+                        child: _FooterWhiteActionPill(
+                          text: 'Get Started Free →',
+                          onTap: () => context.go('/auth'),
+                        ),
                       ),
                     ],
                   ),
@@ -119,64 +122,75 @@ class CtaFooter extends StatelessWidget {
               ),
             ),
           ),
-          child: Flex(
-            direction: isMobile ? Axis.vertical : Axis.horizontal,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: isMobile ? CrossAxisAlignment.center : CrossAxisAlignment.center,
-            children: [
-              Column(
-                crossAxisAlignment: isMobile ? CrossAxisAlignment.center : CrossAxisAlignment.start,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final bool isNarrow = constraints.maxWidth < 720;
+              return Flex(
+                direction: isNarrow ? Axis.vertical : Axis.horizontal,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: isNarrow ? CrossAxisAlignment.center : CrossAxisAlignment.center,
                 children: [
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        width: 8,
-                        height: 8,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Color(0xFF00F5D4),
-                          boxShadow: [
-                            BoxShadow(color: Color(0xFF00F5D4), blurRadius: 6),
+                  Flexible(
+                    flex: isNarrow ? 0 : 1,
+                    child: Column(
+                      crossAxisAlignment: isNarrow ? CrossAxisAlignment.center : CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 8,
+                              height: 8,
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Color(0xFF00F5D4),
+                                boxShadow: [
+                                  BoxShadow(color: Color(0xFF00F5D4), blurRadius: 6),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            const Text(
+                              'EduTech AI',
+                              style: TextStyle(
+                                color: Color(0xFFEEF0F6),
+                                fontWeight: FontWeight.w800,
+                                fontSize: 16,
+                                letterSpacing: -0.2,
+                              ),
+                            ),
                           ],
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      const Text(
-                        'EduTech AI',
-                        style: TextStyle(
-                          color: Color(0xFFEEF0F6),
-                          fontWeight: FontWeight.w800,
-                          fontSize: 16,
-                          letterSpacing: -0.2,
+                        const SizedBox(height: 6),
+                        Text(
+                          '© ${DateTime.now().year} EduTech AI — engineered for autonomous deep work & mastery.',
+                          style: TextStyle(
+                            color: const Color(0xFF8E94A8),
+                            fontSize: isNarrow ? 11.5 : 12.5,
+                            fontWeight: FontWeight.w400,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 6),
-                  Text(
-                    '© ${DateTime.now().year} EduTech AI — engineered for autonomous deep work & mastery.',
-                    style: TextStyle(
-                      color: const Color(0xFF8E94A8),
-                      fontSize: isMobile ? 11.5 : 12.5,
-                      fontWeight: FontWeight.w400,
+                  if (isNarrow) const SizedBox(height: 24),
+                  Flexible(
+                    flex: isNarrow ? 0 : 1,
+                    child: Wrap(
+                      spacing: 24,
+                      runSpacing: 14,
+                      alignment: isNarrow ? WrapAlignment.center : WrapAlignment.end,
+                      children: const [
+                        _FooterLink('Terms of Service'),
+                        _FooterLink('Privacy Policy'),
+                        _FooterLink('Contact Support'),
+                        _FooterLink('Documentation'),
+                      ],
                     ),
                   ),
                 ],
-              ),
-              if (isMobile) const SizedBox(height: 24),
-              Wrap(
-                spacing: 24,
-                runSpacing: 14,
-                alignment: isMobile ? WrapAlignment.center : WrapAlignment.end,
-                children: const [
-                  _FooterLink('Terms of Service'),
-                  _FooterLink('Privacy Policy'),
-                  _FooterLink('Contact Support'),
-                  _FooterLink('Documentation'),
-                ],
-              ),
-            ],
+              );
+            },
           ),
         ),
       ],
@@ -197,14 +211,37 @@ class _FooterWhiteActionPill extends StatefulWidget {
   State<_FooterWhiteActionPill> createState() => _FooterWhiteActionPillState();
 }
 
-class _FooterWhiteActionPillState extends State<_FooterWhiteActionPill> {
+class _FooterWhiteActionPillState extends State<_FooterWhiteActionPill>
+    with SingleTickerProviderStateMixin {
   bool _isHovered = false;
+  late final AnimationController _shimmerController;
+
+  @override
+  void initState() {
+    super.initState();
+    _shimmerController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    );
+  }
+
+  @override
+  void dispose() {
+    _shimmerController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
+      onEnter: (_) {
+        setState(() => _isHovered = true);
+        _shimmerController.forward(from: 0);
+      },
+      onExit: (_) {
+        setState(() => _isHovered = false);
+        _shimmerController.stop();
+      },
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
         onTap: widget.onTap,
@@ -213,6 +250,7 @@ class _FooterWhiteActionPillState extends State<_FooterWhiteActionPill> {
           duration: const Duration(milliseconds: 180),
           curve: Curves.easeOutCubic,
           child: Container(
+            clipBehavior: Clip.antiAlias,
             height: 48,
             padding: const EdgeInsets.symmetric(horizontal: 28),
             decoration: BoxDecoration(
@@ -220,25 +258,151 @@ class _FooterWhiteActionPillState extends State<_FooterWhiteActionPill> {
               borderRadius: BorderRadius.circular(9999),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.white.withValues(alpha: _isHovered ? 0.35 : 0.20),
+                  color: Colors.white.withValues(alpha: _isHovered ? 0.40 : 0.20),
                   blurRadius: _isHovered ? 20 : 12,
                   offset: const Offset(0, 3),
                 ),
               ],
             ),
-            alignment: Alignment.center,
-            child: Text(
-              widget.text,
-              style: const TextStyle(
-                color: Color(0xFF04050C),
-                fontSize: 14.5,
-                fontWeight: FontWeight.w800,
-                letterSpacing: -0.2,
-              ),
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Text(
+                  widget.text,
+                  style: const TextStyle(
+                    color: Color(0xFF04050C),
+                    fontSize: 14.5,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.2,
+                  ),
+                ),
+                if (_isHovered)
+                  AnimatedBuilder(
+                    animation: _shimmerController,
+                    builder: (context, _) {
+                      return Positioned.fill(
+                        child: FractionallySizedBox(
+                          widthFactor: 0.45,
+                          alignment: Alignment(
+                            -1.0 + _shimmerController.value * 3.0,
+                            0,
+                          ),
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.white.withValues(alpha: 0.0),
+                                  Colors.white.withValues(alpha: 0.40),
+                                  Colors.white.withValues(alpha: 0.0),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+              ],
             ),
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Floating sparkle particles around the CTA action button
+class _CtaSparkleField extends StatefulWidget {
+  final Widget child;
+  const _CtaSparkleField({required this.child});
+
+  @override
+  State<_CtaSparkleField> createState() => _CtaSparkleFieldState();
+}
+
+class _CtaSparkleFieldState extends State<_CtaSparkleField>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 4),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        final t = _controller.value;
+        return Stack(
+          alignment: Alignment.center,
+          clipBehavior: Clip.none,
+          children: [
+            // Orbiting sparkles
+            Positioned(
+              left: -22 + 6 * math.sin(t * 2 * math.pi),
+              top: -10 + 6 * math.cos(t * 2 * math.pi),
+              child: Opacity(
+                opacity: 0.4 + 0.6 * math.sin(t * 2 * math.pi).abs(),
+                child: const Icon(
+                  Icons.auto_awesome,
+                  color: Color(0xFF00F5D4),
+                  size: 18,
+                ),
+              ),
+            ),
+            Positioned(
+              right: -22 + 6 * math.cos(t * 2 * math.pi),
+              bottom: -8 + 6 * math.sin(t * 2 * math.pi),
+              child: Opacity(
+                opacity: 0.4 + 0.6 * math.cos(t * 2 * math.pi).abs(),
+                child: const Icon(
+                  Icons.auto_awesome,
+                  color: Color(0xFFE879F9),
+                  size: 16,
+                ),
+              ),
+            ),
+            Positioned(
+              left: 36 + 6 * math.sin((t + 0.3) * 2 * math.pi),
+              bottom: -14,
+              child: Opacity(
+                opacity: 0.3 + 0.5 * math.sin((t + 0.3) * 2 * math.pi).abs(),
+                child: const Icon(
+                  Icons.star_rounded,
+                  color: Color(0xFF60A5FA),
+                  size: 14,
+                ),
+              ),
+            ),
+            Positioned(
+              right: 44 + 6 * math.cos((t + 0.5) * 2 * math.pi),
+              top: -12,
+              child: Opacity(
+                opacity: 0.3 + 0.5 * math.cos((t + 0.5) * 2 * math.pi).abs(),
+                child: const Icon(
+                  Icons.star_rounded,
+                  color: Color(0xFF9061F9),
+                  size: 13,
+                ),
+              ),
+            ),
+            child!,
+          ],
+        );
+      },
+      child: widget.child,
     );
   }
 }

@@ -6,16 +6,16 @@ import 'package:devzees_edutechai_client/core/theme/text_styles.dart';
 import 'package:devzees_edutechai_client/core/constants/responsive.dart';
 import 'package:devzees_edutechai_client/core/providers/auth_provider.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/word_by_word_reveal.dart';
+import 'package:devzees_edutechai_client/presentation/widgets/gradient_text.dart';
 import 'package:go_router/go_router.dart';
 
-/// Ultra-premium floating glass navigation bar inspired by modern 3D motion SaaS platforms.
+/// Ultra-premium floating glass navigation bar for EduTech AI.
 ///
 /// Features:
 /// - Floating pill capsule with 20px Gaussian backdrop blur and 1px crisp glass border.
-/// - Vector fluid wave brand mark + modern typography.
-/// - Center glass link pill with smooth color transition and micro-glow hover states.
-/// - High-contrast action pill button (solid white on dark hero canvas).
-/// - Staggered spring slide-down entrance on page load.
+/// - Exact branded logo matching the Learning Page sidebar ('⚡ EduTech AI').
+/// - Borderless menu options displaying a smooth glassy highlight on hover.
+/// - Kinetic gradient action pill button ('Get Started') with electric fuchsia/royal blue sweep.
 class HomeNavbar extends ConsumerWidget {
   final Function(String)? onNavTap;
   const HomeNavbar({super.key, this.onNavTap});
@@ -64,7 +64,7 @@ class HomeNavbar extends ConsumerWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // ─── 1. Brand Identity ───
+                  // ─── 1. Brand Identity (Matches Learning Sidebar Exactly) ───
                   MouseRegion(
                     cursor: SystemMouseCursors.click,
                     child: GestureDetector(
@@ -72,40 +72,39 @@ class HomeNavbar extends ConsumerWidget {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          // Vector Fluid Line Glyph
-                          _BrandFluidGlyph(size: isMobile ? 24 : 28),
-                          const SizedBox(width: 10),
                           Text(
-                            'EduTech',
-                            style: AppTextStyles.h3.copyWith(
-                              fontSize: isMobile ? 18 : 21,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: -0.5,
-                              color: const Color(0xFFEEF0F6),
+                            '⚡ ',
+                            style: AppTextStyles.h4.copyWith(
+                              fontWeight: FontWeight.w900,
+                              fontSize: isMobile ? 18 : 22,
                             ),
                           ),
-                          const SizedBox(width: 6),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [Color(0xFF2B68F6), Color(0xFF9061F9)],
-                              ),
-                              borderRadius: BorderRadius.circular(9999),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: const Color(0xFF2B68F6).withValues(alpha: 0.4),
-                                  blurRadius: 8,
-                                ),
-                              ],
+                          GradientText(
+                            'EduTech',
+                            style: AppTextStyles.h3.copyWith(
+                              fontSize: isMobile ? 18 : 22,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: -0.5,
                             ),
-                            child: const Text(
+                          ),
+                          const SizedBox(width: 5),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.primary.withValues(alpha: 0.2),
+                              border: Border.all(
+                                color: AppColors.primary.withValues(alpha: 0.4),
+                              ),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
                               'AI',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 9,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: 0.8,
+                              style: AppTextStyles.labelSmall.copyWith(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.w800,
                               ),
                             ),
                           ),
@@ -114,38 +113,27 @@ class HomeNavbar extends ConsumerWidget {
                     ),
                   ),
 
-                  // ─── 2. Center Glass Links Pill (Desktop only) ───
+                  // ─── 2. Center Menu Links (Borderless, Hover Glassy Look) ───
                   if (!isMobile)
-                    Container(
-                      height: 38,
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.04),
-                        borderRadius: BorderRadius.circular(9999),
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.08),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          _NavPill(title: 'Workspace', onTap: () => onNavTap?.call('preview')),
-                          _NavPill(title: 'Features', onTap: () => onNavTap?.call('features')),
-                          _NavPill(title: 'Modes', onTap: () => onNavTap?.call('modes')),
-                          _NavPill(title: 'Compare', onTap: () => onNavTap?.call('comparison')),
-                          _NavPill(title: 'Agents', onTap: () => onNavTap?.call('agents')),
-                          _NavPill(title: 'Pricing', onTap: () => onNavTap?.call('pricing')),
-                          _NavPill(title: 'FAQ', onTap: () => onNavTap?.call('faq')),
-                        ],
-                      ),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _NavPill(title: 'Workspace', onTap: () => onNavTap?.call('preview')),
+                        _NavPill(title: 'Features', onTap: () => onNavTap?.call('features')),
+                        _NavPill(title: 'Modes', onTap: () => onNavTap?.call('modes')),
+                        _NavPill(title: 'Compare', onTap: () => onNavTap?.call('comparison')),
+                        _NavPill(title: 'Agents', onTap: () => onNavTap?.call('agents')),
+                        _NavPill(title: 'Pricing', onTap: () => onNavTap?.call('pricing')),
+                        _NavPill(title: 'FAQ', onTap: () => onNavTap?.call('faq')),
+                      ],
                     ),
 
-                  // ─── 3. Auth & Action Pill Buttons ───
+                  // ─── 3. Auth & Action Pill Buttons (Gradient Button Look) ───
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       if (isAuthenticated) ...[
-                        _HighContrastActionPill(
+                        _NavbarGradientActionPill(
                           text: 'Open Workspace →',
                           onTap: () => context.go('/learning'),
                         ),
@@ -170,7 +158,7 @@ class HomeNavbar extends ConsumerWidget {
                           ),
                           const SizedBox(width: 8),
                         ],
-                        _HighContrastActionPill(
+                        _NavbarGradientActionPill(
                           text: 'Get Started',
                           onTap: () => context.go('/auth'),
                         ),
@@ -194,57 +182,7 @@ class HomeNavbar extends ConsumerWidget {
   }
 }
 
-/// Dynamic dual interleaving fluid line glyph echoing the WebGL fluid background
-class _BrandFluidGlyph extends StatelessWidget {
-  final double size;
-  const _BrandFluidGlyph({this.size = 28});
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomPaint(
-      size: Size(size, size),
-      painter: _FluidGlyphPainter(),
-    );
-  }
-}
-
-class _FluidGlyphPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final w = size.width;
-    final h = size.height;
-
-    // Glowing cyan top wave
-    final Paint p1 = Paint()
-      ..color = const Color(0xFF00F5D4)
-      ..strokeWidth = 2.2
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
-
-    final Path path1 = Path()
-      ..moveTo(w * 0.1, h * 0.38)
-      ..cubicTo(w * 0.3, h * 0.15, w * 0.45, h * 0.6, w * 0.65, h * 0.35)
-      ..cubicTo(w * 0.8, h * 0.15, w * 0.9, h * 0.45, w * 0.9, h * 0.38);
-    canvas.drawPath(path1, p1);
-
-    // Glowing magenta / violet bottom wave
-    final Paint p2 = Paint()
-      ..color = const Color(0xFFB838EE).withValues(alpha: 0.75)
-      ..strokeWidth = 2.2
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
-
-    final Path path2 = Path()
-      ..moveTo(w * 0.1, h * 0.65)
-      ..cubicTo(w * 0.3, h * 0.85, w * 0.45, h * 0.4, w * 0.65, h * 0.7)
-      ..cubicTo(w * 0.8, h * 0.9, w * 0.9, h * 0.58, w * 0.9, h * 0.65);
-    canvas.drawPath(path2, p2);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
+/// Borderless menu link displaying an elegant frosted glass highlight on hover.
 class _NavPill extends StatefulWidget {
   final String title;
   final VoidCallback onTap;
@@ -268,17 +206,31 @@ class _NavPillState extends State<_NavPill> {
         onTap: widget.onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+          curve: Curves.easeOutCubic,
+          margin: const EdgeInsets.symmetric(horizontal: 3),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(9999),
-            color: _isHovered ? Colors.white.withValues(alpha: 0.10) : Colors.transparent,
+            borderRadius: BorderRadius.circular(10),
+            color: _isHovered ? Colors.white.withValues(alpha: 0.08) : Colors.transparent,
+            border: Border.all(
+              color: _isHovered ? Colors.white.withValues(alpha: 0.12) : Colors.transparent,
+              width: 1.0,
+            ),
+            boxShadow: _isHovered
+                ? [
+                    BoxShadow(
+                      color: Colors.white.withValues(alpha: 0.03),
+                      blurRadius: 8,
+                    ),
+                  ]
+                : null,
           ),
           child: Text(
             widget.title,
             style: TextStyle(
-              color: _isHovered ? const Color(0xFFEEF0F6) : const Color(0xFFB9BECF),
+              color: _isHovered ? const Color(0xFFF8FAFC) : const Color(0xFF94A3B8),
               fontSize: 13.5,
-              fontWeight: _isHovered ? FontWeight.w600 : FontWeight.w500,
+              fontWeight: _isHovered ? FontWeight.w700 : FontWeight.w500,
               letterSpacing: -0.1,
             ),
           ),
@@ -288,28 +240,52 @@ class _NavPillState extends State<_NavPill> {
   }
 }
 
-/// The signature modern SaaS high-contrast solid white pill button.
-class _HighContrastActionPill extends StatefulWidget {
+/// The signature modern SaaS gradient action pill button matching app theme.
+class _NavbarGradientActionPill extends StatefulWidget {
   final String text;
   final VoidCallback onTap;
 
-  const _HighContrastActionPill({
+  const _NavbarGradientActionPill({
     required this.text,
     required this.onTap,
   });
 
   @override
-  State<_HighContrastActionPill> createState() => _HighContrastActionPillState();
+  State<_NavbarGradientActionPill> createState() => _NavbarGradientActionPillState();
 }
 
-class _HighContrastActionPillState extends State<_HighContrastActionPill> {
+class _NavbarGradientActionPillState extends State<_NavbarGradientActionPill>
+    with SingleTickerProviderStateMixin {
   bool _isHovered = false;
+  late final AnimationController _shimmerController;
+
+  @override
+  void initState() {
+    super.initState();
+    _shimmerController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1400),
+    );
+  }
+
+  @override
+  void dispose() {
+    _shimmerController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
+      onEnter: (_) {
+        setState(() => _isHovered = true);
+        _shimmerController.repeat();
+      },
+      onExit: (_) {
+        setState(() => _isHovered = false);
+        _shimmerController.stop();
+        _shimmerController.reset();
+      },
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
         onTap: widget.onTap,
@@ -317,37 +293,66 @@ class _HighContrastActionPillState extends State<_HighContrastActionPill> {
           scale: _isHovered ? 1.03 : 1.0,
           duration: const Duration(milliseconds: 180),
           curve: Curves.easeOutCubic,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 180),
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+          child: Container(
+            clipBehavior: Clip.antiAlias,
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 9),
             decoration: BoxDecoration(
-              color: _isHovered ? const Color(0xFFE2E8F0) : Colors.white,
+              gradient: AppColors.primaryGradient,
               borderRadius: BorderRadius.circular(9999),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.white.withValues(alpha: _isHovered ? 0.35 : 0.18),
-                  blurRadius: _isHovered ? 18 : 10,
-                  offset: const Offset(0, 2),
+                  color: AppColors.accentPink.withValues(
+                    alpha: _isHovered ? 0.65 : 0.38,
+                  ),
+                  blurRadius: _isHovered ? 24 : 14,
+                  offset: const Offset(0, 3),
                 ),
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.20),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
+                if (_isHovered)
+                  BoxShadow(
+                    color: AppColors.accentCyan.withValues(alpha: 0.40),
+                    blurRadius: 16,
+                    spreadRadius: 1,
+                  ),
               ],
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
+            child: Stack(
+              alignment: Alignment.center,
               children: [
                 Text(
                   widget.text,
                   style: const TextStyle(
-                    color: Color(0xFF04050C), // High-contrast dark on white
+                    color: Colors.white,
                     fontSize: 13.5,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: -0.2,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.2,
                   ),
                 ),
+                if (_isHovered)
+                  AnimatedBuilder(
+                    animation: _shimmerController,
+                    builder: (context, _) {
+                      return Positioned.fill(
+                        child: FractionallySizedBox(
+                          widthFactor: 0.45,
+                          alignment: Alignment(
+                            -1.0 + _shimmerController.value * 3.0,
+                            0,
+                          ),
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.white.withValues(alpha: 0.0),
+                                  Colors.white.withValues(alpha: 0.40),
+                                  Colors.white.withValues(alpha: 0.0),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
               ],
             ),
           ),
