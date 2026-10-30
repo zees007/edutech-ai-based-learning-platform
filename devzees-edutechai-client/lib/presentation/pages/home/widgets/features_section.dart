@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:devzees_edutechai_client/core/theme/text_styles.dart';
-import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/gradient_text.dart';
 import 'package:devzees_edutechai_client/core/constants/responsive.dart';
 
@@ -120,6 +119,9 @@ class FeaturesSection extends StatelessWidget {
                 title: 'Timestamped Vector Video Clips',
                 tag: 'CHROMADB EMBEDDINGS',
                 description: 'Semantic vector search across YouTube transcripts pinpoints the exact timestamp where complex concepts are illustrated visually.',
+                previewWidget: _ImageCardPreview(
+                  imagePath: 'assets/images/home/vector_video_curator.png',
+                ),
               ),
               SizedBox(height: 20),
               _BentoFeatureCard(
@@ -128,6 +130,9 @@ class FeaturesSection extends StatelessWidget {
                 title: 'Live Scholarly Verification',
                 tag: '250M+ PAPERS',
                 description: 'Live parallel queries to arXiv, OpenAlex, and Semantic Scholar with verified DOI links, citations, and executive AI summaries.',
+                previewWidget: _ImageCardPreview(
+                  imagePath: 'assets/images/home/academic_scout_research.png',
+                ),
               ),
               SizedBox(height: 20),
               _BentoFeatureCard(
@@ -136,6 +141,9 @@ class FeaturesSection extends StatelessWidget {
                 title: 'Grounded Formative Quizzes',
                 tag: 'ZERO HALLUCINATIONS',
                 description: 'Assessments generated strictly from verified lesson content with instant XP feedback and targeted remediation explanations.',
+                previewWidget: _ImageCardPreview(
+                  imagePath: 'assets/images/home/formative_quiz_mastery.png',
+                ),
               ),
               SizedBox(height: 20),
               _BentoFeatureCard(
@@ -144,6 +152,7 @@ class FeaturesSection extends StatelessWidget {
                 title: 'Second Brain Native Export',
                 tag: 'NOTION & OBSIDIAN',
                 description: 'One-click full session export to Obsidian-ready Markdown with embedded Mermaid.js diagrams, Anki flashcards, and styled PDF.',
+                previewWidget: _ExportPillsPreview(),
               ),
             ],
           )
@@ -192,6 +201,9 @@ class FeaturesSection extends StatelessWidget {
                       title: 'Timestamped Video Clips',
                       tag: 'CHROMADB VECTOR SEARCH',
                       description: 'Pinpoints the exact seconds in university lectures and animations where your active concept is visually proven.',
+                      previewWidget: _ImageCardPreview(
+                        imagePath: 'assets/images/home/vector_video_curator.png',
+                      ),
                     ),
                   ),
                   SizedBox(width: 20),
@@ -202,6 +214,9 @@ class FeaturesSection extends StatelessWidget {
                       title: 'Live Scholarly Grounding',
                       tag: 'ARXIV & OPENALEX',
                       description: 'Real academic preprints with authors, publishing dates, and direct links. Zero made-up citations or fake DOIs.',
+                      previewWidget: _ImageCardPreview(
+                        imagePath: 'assets/images/home/academic_scout_research.png',
+                      ),
                     ),
                   ),
                   SizedBox(width: 20),
@@ -212,6 +227,9 @@ class FeaturesSection extends StatelessWidget {
                       title: 'Grounded Quizzes & XP',
                       tag: 'RETENTION GRADING',
                       description: 'Immediate formative quizzes graded by the Quizmaster agent to lock insights into long-term memory before advancing.',
+                      previewWidget: _ImageCardPreview(
+                        imagePath: 'assets/images/home/formative_quiz_mastery.png',
+                      ),
                     ),
                   ),
                 ],
@@ -532,6 +550,52 @@ class _ExportPillsPreview extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ImageCardPreview extends StatelessWidget {
+  final String imagePath;
+
+  const _ImageCardPreview({
+    required this.imagePath,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.12),
+          width: 1.0,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.50),
+            blurRadius: 18,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: AspectRatio(
+          aspectRatio: 16 / 10,
+          child: Image.asset(
+            imagePath,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) {
+              return Container(
+                color: const Color(0xFF0D0E1C),
+                child: const Center(
+                  child: Icon(Icons.broken_image_rounded, color: Colors.white24),
+                ),
+              );
+            },
+          ),
+        ),
       ),
     );
   }

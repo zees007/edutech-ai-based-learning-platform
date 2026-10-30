@@ -20,6 +20,7 @@ import 'widgets/modes_and_levels_section.dart';
 import 'widgets/export_ecosystem_section.dart';
 import 'widgets/features_section.dart';
 import 'widgets/agents_section.dart';
+import 'widgets/wall_of_love_section.dart';
 import 'widgets/about_section.dart';
 import 'widgets/pricing_section.dart';
 import 'widgets/faq_section.dart';
@@ -37,11 +38,13 @@ class _HomePageState extends ConsumerState<HomePage> {
   bool _showScrollToTop = false;
 
   final GlobalKey _previewKey = GlobalKey();
+  final GlobalKey _canvasKey = GlobalKey();
   final GlobalKey _comparisonKey = GlobalKey();
   final GlobalKey _modesKey = GlobalKey();
   final GlobalKey _featuresKey = GlobalKey();
   final GlobalKey _agentsKey = GlobalKey();
   final GlobalKey _ecosystemKey = GlobalKey();
+  final GlobalKey _testimonialsKey = GlobalKey();
   final GlobalKey _aboutKey = GlobalKey();
   final GlobalKey _pricingKey = GlobalKey();
   final GlobalKey _faqKey = GlobalKey();
@@ -85,9 +88,15 @@ class _HomePageState extends ConsumerState<HomePage> {
     BuildContext? targetContext;
     switch (section) {
       case 'preview':
+      case 'workspace':
         targetContext = _previewKey.currentContext;
         break;
+      case 'canvas':
+      case 'architecture':
+        targetContext = _canvasKey.currentContext;
+        break;
       case 'comparison':
+      case 'compare':
         targetContext = _comparisonKey.currentContext;
         break;
       case 'modes':
@@ -101,6 +110,10 @@ class _HomePageState extends ConsumerState<HomePage> {
         break;
       case 'agents':
         targetContext = _agentsKey.currentContext;
+        break;
+      case 'testimonials':
+      case 'reviews':
+        targetContext = _testimonialsKey.currentContext;
         break;
       case 'about':
         targetContext = _aboutKey.currentContext;
@@ -142,26 +155,17 @@ class _HomePageState extends ConsumerState<HomePage> {
           child: CustomScrollView(
             controller: _scrollController,
             slivers: [
-              // ─── 1. Header & Hero Text (Centered maxWidth: 1200) ───
+              // ─── 1. Cinematic Full-Width Header & Hero (Zero Margin / Edge-to-Edge) ───
               SliverToBoxAdapter(
-                child: Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 1200),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 24.0),
-                      child: Column(
-                        children: [
-                          const PromoAnnouncementBar(),
-                          HomeNavbar(onNavTap: _scrollToSection),
-                          const SizedBox(height: 60),
-                          HeroSection(
-                            onExploreTap: () => _scrollToSection('preview'),
-                            includeCarousel: false,
-                          ),
-                        ],
-                      ),
-                    ),
+                child: HeroSection(
+                  header: Column(
+                    children: [
+                      const PromoAnnouncementBar(),
+                      HomeNavbar(onNavTap: _scrollToSection),
+                    ],
                   ),
+                  onExploreTap: () => _scrollToSection('architecture'),
+                  includeCarousel: false,
                 ),
               ),
 
@@ -190,23 +194,23 @@ class _HomePageState extends ConsumerState<HomePage> {
                       padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 24.0),
                       child: Column(
                         children: [
-                          // ─── Animated Stats Bar ───
-                          const SizedBox(height: 80),
+                          // ─── 1. N8n Interactive Blackboard DAG Canvas (The Visual Proof) ───
+                          const SizedBox(height: 60),
+                          ScrollFadeIn(
+                            offset: const Offset(0, 30),
+                            duration: const Duration(milliseconds: 700),
+                            child: N8nCanvas(key: _canvasKey),
+                          ),
+
+                          // ─── 2. Animated Stats Bar (Telemetry Impact) ───
+                          const SizedBox(height: 100),
                           ScrollFadeIn(
                             offset: const Offset(0, 40),
                             duration: const Duration(milliseconds: 800),
                             child: const AnimatedStatsBar(),
                           ),
 
-                          // ─── Workspace Preview ───
-                          const SizedBox(height: 120),
-                          ScrollFadeIn(
-                            offset: const Offset(0, 40),
-                            duration: const Duration(milliseconds: 800),
-                            child: WorkspacePreviewSection(key: _previewKey),
-                          ),
-
-                          // ─── Comparison Section ───
+                          // ─── 3. The Unfair Advantage (Comparison Section) ───
                           const SizedBox(height: 120),
                           ScrollFadeIn(
                             offset: const Offset(0, 40),
@@ -215,23 +219,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                             child: ComparisonSection(key: _comparisonKey),
                           ),
 
-                          // ─── N8n Canvas ───
-                          const SizedBox(height: 120),
-                          ScrollFadeIn(
-                            offset: const Offset(0, 30),
-                            duration: const Duration(milliseconds: 700),
-                            child: const N8nCanvas(),
-                          ),
-
-                          // ─── Modes & Levels ───
-                          const SizedBox(height: 120),
-                          ScrollFadeIn(
-                            offset: const Offset(0, 40),
-                            duration: const Duration(milliseconds: 800),
-                            child: ModesAndLevelsSection(key: _modesKey),
-                          ),
-
-                          // ─── Features ───
+                          // ─── 4. Bento Grid Features Section (Rich Mockups) ───
                           const SizedBox(height: 120),
                           ScrollFadeIn(
                             offset: const Offset(0, 40),
@@ -240,7 +228,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                             child: FeaturesSection(key: _featuresKey),
                           ),
 
-                          // ─── Agents ───
+                          // ─── 5. Autonomous Agent Squad Section ───
                           const SizedBox(height: 120),
                           ScrollFadeIn(
                             offset: const Offset(0, 40),
@@ -248,7 +236,15 @@ class _HomePageState extends ConsumerState<HomePage> {
                             child: AgentsSection(key: _agentsKey),
                           ),
 
-                          // ─── Export Ecosystem ───
+                          // ─── 6. Live Workspace Preview ───
+                          const SizedBox(height: 120),
+                          ScrollFadeIn(
+                            offset: const Offset(0, 40),
+                            duration: const Duration(milliseconds: 800),
+                            child: WorkspacePreviewSection(key: _previewKey),
+                          ),
+
+                          // ─── 7. Second Brain Ecosystem (Zero Lock-In) ───
                           const SizedBox(height: 120),
                           ScrollFadeIn(
                             offset: const Offset(0, 40),
@@ -256,7 +252,23 @@ class _HomePageState extends ConsumerState<HomePage> {
                             child: ExportEcosystemSection(key: _ecosystemKey),
                           ),
 
-                          // ─── About ───
+                          // ─── 8. Adaptive Cognitive Modes & Levels ───
+                          const SizedBox(height: 120),
+                          ScrollFadeIn(
+                            offset: const Offset(0, 40),
+                            duration: const Duration(milliseconds: 800),
+                            child: ModesAndLevelsSection(key: _modesKey),
+                          ),
+
+                          // ─── 9. Wall of Love / Testimonials (Proof of Results) ───
+                          const SizedBox(height: 120),
+                          ScrollFadeIn(
+                            offset: const Offset(0, 40),
+                            duration: const Duration(milliseconds: 800),
+                            child: WallOfLoveSection(key: _testimonialsKey),
+                          ),
+
+                          // ─── 10. Cognitive Pedagogy & Research (About) ───
                           const SizedBox(height: 120),
                           ScrollFadeIn(
                             offset: const Offset(0, 40),
@@ -264,7 +276,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                             child: AboutSection(key: _aboutKey),
                           ),
 
-                          // ─── Pricing ───
+                          // ─── 11. Transparent Tiered Pricing ───
                           const SizedBox(height: 120),
                           ScrollFadeIn(
                             offset: const Offset(0, 40),
@@ -273,7 +285,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                             child: PricingSection(key: _pricingKey),
                           ),
 
-                          // ─── FAQ ───
+                          // ─── 12. Frequently Asked Questions (FAQ) ───
                           const SizedBox(height: 120),
                           ScrollFadeIn(
                             offset: const Offset(0, 40),
@@ -281,7 +293,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                             child: FaqSection(key: _faqKey),
                           ),
 
-                          // ─── CTA Footer ───
+                          // ─── 13. Terminal CTA Footer ───
                           const SizedBox(height: 120),
                           ScrollFadeIn(
                             offset: const Offset(0, 30),

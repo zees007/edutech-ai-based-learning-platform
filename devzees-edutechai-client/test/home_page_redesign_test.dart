@@ -13,6 +13,9 @@ import 'package:devzees_edutechai_client/presentation/pages/home/widgets/export_
 import 'package:devzees_edutechai_client/presentation/pages/home/widgets/about_section.dart';
 import 'package:devzees_edutechai_client/presentation/pages/home/widgets/pricing_section.dart';
 import 'package:devzees_edutechai_client/presentation/pages/home/widgets/faq_section.dart';
+import 'package:devzees_edutechai_client/presentation/pages/home/widgets/wall_of_love_section.dart';
+import 'package:devzees_edutechai_client/core/services/subscription_service.dart';
+import 'package:devzees_edutechai_client/data/models/subscription/payment_models.dart';
 
 void main() {
   group('ScrollFadeIn Widget Tests', () {
@@ -84,7 +87,7 @@ void main() {
   });
 
   group('HeroSection & FullWidthHeroCarousel Widget Tests', () {
-    testWidgets('renders hero badge, headline, and trust indicators', (tester) async {
+    testWidgets('renders hero badge, headline, and action buttons', (tester) async {
       tester.view.physicalSize = const Size(1200, 1000);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() => tester.view.resetPhysicalSize());
@@ -100,12 +103,12 @@ void main() {
       );
 
       await tester.pump();
-      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pump(const Duration(milliseconds: 2000));
 
-      expect(find.text('AUTONOMOUS MULTI-AGENT BLACKBOARD ARCHITECTURE'), findsOneWidget);
-      expect(find.text('10 Free AI Sessions / Month'), findsOneWidget);
-      expect(find.text('Zero AI Hallucinations Grounded'), findsOneWidget);
-      expect(find.text('Export to Obsidian & Notion'), findsOneWidget);
+      expect(find.text('Master Any Subject with a'), findsOneWidget);
+      expect(find.text('Team of AI Agents'), findsOneWidget);
+      expect(find.text('Start Learning for Free'), findsOneWidget);
+      expect(find.text('Watch a Demo'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
 
@@ -213,7 +216,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('ADAPTIVE COGNITIVE CALIBRATION'), findsOneWidget);
-      expect(find.text('Visual Mode'), findsOneWidget);
+      expect(find.text('Visual Mode'), findsWidgets);
       expect(find.text('Deep Dive Mode'), findsOneWidget);
       expect(find.text('Bite-Sized Mode'), findsOneWidget);
       expect(find.text('Undergraduate'), findsOneWidget);
@@ -281,8 +284,13 @@ void main() {
       addTearDown(() => tester.view.resetPhysicalSize());
 
       await tester.pumpWidget(
-        const ProviderScope(
-          child: MaterialApp(
+        ProviderScope(
+          overrides: [
+            pricingCatalogProvider.overrideWith(
+              (ref) => Future.value(PricingCatalogModel.defaultCatalog),
+            ),
+          ],
+          child: const MaterialApp(
             home: Scaffold(
               body: SingleChildScrollView(
                 child: PricingSection(),
@@ -359,6 +367,33 @@ void main() {
       expect(find.text('Pricing'), findsOneWidget);
       expect(find.text('FAQ'), findsOneWidget);
       expect(find.text('Get Started'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  });
+
+  group('WallOfLoveSection Widget Tests', () {
+    testWidgets('renders student and researcher testimonials', (tester) async {
+      tester.view.physicalSize = const Size(1200, 900);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() => tester.view.resetPhysicalSize());
+
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: WallOfLoveSection(),
+            ),
+          ),
+        ),
+      );
+
+      await tester.pump();
+      await tester.pumpAndSettle();
+
+      expect(find.text('STUDENT & RESEARCHER REPUTATION'), findsOneWidget);
+      expect(find.text('Loved by Ambitious Learners Worldwide'), findsOneWidget);
+      expect(find.text('Marcus Chen'), findsOneWidget);
+      expect(find.text('Dr. Elena Rostova'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   });

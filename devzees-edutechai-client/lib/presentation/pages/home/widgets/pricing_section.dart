@@ -374,12 +374,14 @@ class _PricingSectionState extends ConsumerState<PricingSection> {
                           ),
                         ),
                         const SizedBox(width: 12),
-                        Text(
-                          'EduTech AI for Universities & Research Labs',
-                          style: TextStyle(
-                            color: const Color(0xFFF1F5F9),
-                            fontSize: isMobile ? 16 : 18,
-                            fontWeight: FontWeight.w800,
+                        Expanded(
+                          child: Text(
+                            'EduTech AI for Universities & Research Labs',
+                            style: TextStyle(
+                              color: const Color(0xFFF1F5F9),
+                              fontSize: isMobile ? 16 : 18,
+                              fontWeight: FontWeight.w800,
+                            ),
                           ),
                         ),
                       ],
@@ -633,7 +635,12 @@ class _PricingCard extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(buttonText),
+                    Flexible(
+                      child: Text(
+                        buttonText,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
                     const SizedBox(width: 8),
                     const Icon(Icons.arrow_forward_rounded, size: 16),
                   ],

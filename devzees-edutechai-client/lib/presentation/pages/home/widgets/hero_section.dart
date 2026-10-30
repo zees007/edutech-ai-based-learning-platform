@@ -1,25 +1,27 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:devzees_edutechai_client/core/theme/text_styles.dart';
 import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
 import 'package:devzees_edutechai_client/core/constants/responsive.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/word_by_word_reveal.dart';
+import 'package:devzees_edutechai_client/presentation/widgets/gradient_text.dart';
 import 'package:go_router/go_router.dart';
 
 /// Ultra-premium SaaS hero section designed for a high-converting, agency-grade presentation.
 ///
 /// Features:
-/// - Futuristic glass badge pill with live radar beacon and gradient border.
-/// - Punchy high-contrast typography with multi-stop electric gradient.
-/// - Interactive search input with quick-topic starter chips.
-/// - Full-width cinematic product carousel showcasing the 3 high-resolution assets.
+/// - Full background showcase of [assets/images/home/hero-pic.jpg] with directional scrim.
+/// - Left-aligned typography: "Master Any Subject with a" + electric gradient "Team of AI Agents".
+/// - Grounded pedagogical sub-heading detailing autonomous supervisor orchestration.
+/// - Dual action buttons: "Start Learning for Free" (kinetic gradient) and "Watch a Demo" (frosted glass).
 class HeroSection extends StatefulWidget {
   final VoidCallback? onExploreTap;
+  final Widget? header;
   final bool includeCarousel;
 
   const HeroSection({
     super.key,
     this.onExploreTap,
+    this.header,
     this.includeCarousel = true,
   });
 
@@ -28,286 +30,265 @@ class HeroSection extends StatefulWidget {
 }
 
 class _HeroSectionState extends State<HeroSection> {
-  final TextEditingController _promptController = TextEditingController();
+  int _currentBgIndex = 0;
+  Timer? _bgTimer;
 
-  static const List<String> _suggestedTopics = [
-    'Quantum Superposition',
-    'Transformer Attention',
-    'CRISPR Gene Editing',
-    'Neural Tangent Kernel',
+  static const List<String> _bgImages = [
+    'assets/images/home/hero-pic.jpg',
+    'assets/images/home/hero-pic2.jpg',
   ];
 
   @override
-  void dispose() {
-    _promptController.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+    _startBgTimer();
   }
 
-  void _handleQuickStart([String? topic]) {
-    if (topic != null) {
-      _promptController.text = topic;
+  void _startBgTimer() {
+    _bgTimer?.cancel();
+    _bgTimer = Timer.periodic(const Duration(seconds: 6), (timer) {
+      if (mounted) {
+        setState(() {
+          _currentBgIndex = (_currentBgIndex + 1) % _bgImages.length;
+        });
+      }
+    });
+  }
+
+  void _setBgIndex(int index) {
+    if (_currentBgIndex != index) {
+      setState(() {
+        _currentBgIndex = index;
+      });
+      _startBgTimer();
     }
-    context.go('/auth');
+  }
+
+  @override
+  void dispose() {
+    _bgTimer?.cancel();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final bool isMobile = Responsive.isMobile(context);
+    final bool isTablet = Responsive.isTablet(context);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        // ─── 1. Floating Live Architecture Badge ───
-        SpringEntranceBlock(
-          delayMs: 250,
-          durationMs: 700,
-          fromOffset: const Offset(0, 18),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
-            decoration: BoxDecoration(
-              color: const Color(0xCC0B0D1B),
-              borderRadius: BorderRadius.circular(9999),
-              border: Border.all(
-                color: const Color(0xFF60A5FA).withValues(alpha: 0.30),
-                width: 1.0,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF2B68F6).withValues(alpha: 0.25),
-                  blurRadius: 20,
-                  spreadRadius: -2,
-                ),
+    final heroContent = Container(
+      width: double.infinity,
+      constraints: BoxConstraints(
+        minHeight: isMobile ? 540 : 680,
+      ),
+      child: Stack(
+        children: [
+          // ─── 1. Full-Width Background Image Animated Carousel / Cross-Fade ───
+          // Preserves Alignment.topRight to protect top arcs and graphics from vertical cropping
+          Positioned.fill(
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                for (int i = 0; i < _bgImages.length; i++)
+                  AnimatedOpacity(
+                    key: ValueKey<String>(_bgImages[i]),
+                    opacity: _currentBgIndex == i ? 1.0 : 0.0,
+                    duration: const Duration(milliseconds: 1400),
+                    curve: Curves.easeInOutCubic,
+                    child: Image.asset(
+                      _bgImages[i],
+                      fit: BoxFit.cover,
+                      alignment: isMobile ? Alignment.topCenter : Alignment.topRight,
+                    ),
+                  ),
               ],
             ),
-            child: Row(
+          ),
+
+          // ─── 2. Foreground Content (Header + Hero Copy & CTAs) ───
+          SafeArea(
+            bottom: false,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                const _PulsingBeaconDot(),
-                const SizedBox(width: 10),
-                Text(
-                  'NEXT-GEN COGNITIVE MULTI-AGENT ARCHITECTURE',
-                  style: TextStyle(
-                    color: const Color(0xFFE2E8F0),
-                    fontSize: isMobile ? 9.5 : 11,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 1.3,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF00F5D4).withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: const Text(
-                    'v2.4',
-                    style: TextStyle(
-                      color: Color(0xFF00F5D4),
-                      fontSize: 9,
-                      fontWeight: FontWeight.w900,
+                // Overlaid Header (Promo Bar & Floating Glass Navbar)
+                if (widget.header != null)
+                  Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isMobile ? 16.0 : (isTablet ? 28.0 : 40.0),
+                      vertical: isMobile ? 12.0 : 20.0,
                     ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(height: 28),
-
-        // ─── 2. Headline with Word-by-Word Reveal ───
-        ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: isMobile ? 360 : 920),
-          child: WordByWordReveal(
-            text: 'Master Complex Topics with an Autonomous AI Squad',
-            gradientWords: const ['autonomous', 'ai', 'squad'],
-            gradient: const LinearGradient(
-              colors: [
-                Color(0xFF60A5FA), // Azure Blue
-                Color(0xFF9061F9), // Royal Violet
-                Color(0xFF00F5D4), // Cyan Spark
-              ],
-            ),
-            initialDelayMs: 450,
-            staggerMs: 70,
-            wordDurationMs: 680,
-            initialTranslateY: 26.0,
-            style: (isMobile ? AppTextStyles.h2 : AppTextStyles.h1).copyWith(
-              fontSize: isMobile ? 34 : 58,
-              fontWeight: FontWeight.w900,
-              color: const Color(0xFFF8FAFC),
-              letterSpacing: -1.4,
-              height: 1.10,
-            ),
-          ),
-        ),
-        const SizedBox(height: 22),
-
-        // ─── 3. Subtitle with High-Contrast Typography ───
-        ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: isMobile ? 340 : 760),
-          child: WordByWordReveal(
-            text: 'Stop skimming passive chatbot text. Our supervisor agent decomposes any domain into adaptive milestones, orchestrating verified Socratic dialogue, timestamped video clips, and live arXiv citations in real-time.',
-            initialDelayMs: 950,
-            staggerMs: 18,
-            wordDurationMs: 550,
-            initialTranslateY: 12.0,
-            style: AppTextStyles.body1.copyWith(
-              fontSize: isMobile ? 15 : 17.5,
-              color: const Color(0xFF94A3B8),
-              height: 1.60,
-              letterSpacing: -0.2,
-            ),
-          ),
-        ),
-        const SizedBox(height: 36),
-
-        // ─── 4. Quick-Start Input Capsule with Topic Chips ───
-        SpringEntranceBlock(
-          delayMs: 1300,
-          durationMs: 700,
-          fromOffset: const Offset(0, 22),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Main Input Capsule
-              Container(
-                width: isMobile ? double.infinity : 640,
-                height: isMobile ? 54 : 60,
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                decoration: BoxDecoration(
-                  color: const Color(0xEE090B18),
-                  borderRadius: BorderRadius.circular(9999),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.18),
-                    width: 1.2,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.60),
-                      blurRadius: 28,
-                      offset: const Offset(0, 8),
-                    ),
-                    BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.20),
-                      blurRadius: 30,
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    const SizedBox(width: 14),
-                    const Icon(
-                      Icons.auto_awesome,
-                      color: Color(0xFF00F5D4),
-                      size: 21,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: TextField(
-                        controller: _promptController,
-                        onSubmitted: (val) => _handleQuickStart(val),
-                        style: const TextStyle(
-                          color: Color(0xFFF8FAFC),
-                          fontSize: 15,
-                          fontWeight: FontWeight.w500,
-                        ),
-                        decoration: InputDecoration(
-                          hintText: isMobile
-                              ? 'Enter topic (e.g. Quantum Physics)...'
-                              : 'What do you want to master today? (e.g. Transformers, CRISPR)...',
-                          hintStyle: const TextStyle(
-                            color: Color(0xFF64748B),
-                            fontSize: 14,
-                            fontWeight: FontWeight.w400,
-                          ),
-                          border: InputBorder.none,
-                          isDense: true,
-                          contentPadding: EdgeInsets.zero,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    _HeroSolidPillButton(
-                      text: isMobile ? 'Start Free' : 'Generate Masterclass →',
-                      onTap: () => _handleQuickStart(_promptController.text),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 14),
-
-              // Interactive Suggested Chips
-              Wrap(
-                spacing: 8,
-                runSpacing: 6,
-                alignment: WrapAlignment.center,
-                children: [
-                  Text(
-                    'Try:',
-                    style: TextStyle(
-                      color: const Color(0xFF64748B),
-                      fontSize: isMobile ? 11 : 12,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  ..._suggestedTopics.map(
-                    (topic) => GestureDetector(
-                      onTap: () => _handleQuickStart(topic),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3.5),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.04),
-                          borderRadius: BorderRadius.circular(9999),
-                          border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.09),
-                          ),
-                        ),
-                        child: Text(
-                          topic,
-                          style: const TextStyle(
-                            color: Color(0xFF94A3B8),
-                            fontSize: 11.5,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 1320),
+                        child: widget.header!,
                       ),
                     ),
                   ),
-                ],
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 32),
 
-        // ─── 5. Trust Indicators ───
-        SpringEntranceBlock(
-          delayMs: 1500,
-          durationMs: 700,
-          fromOffset: const Offset(0, 14),
-          child: Wrap(
-            spacing: 14,
-            runSpacing: 8,
-            alignment: WrapAlignment.center,
-            children: const [
-              _TrustBadge(icon: Icons.check_circle_rounded, text: '10 Free AI Sessions / Month'),
-              _TrustBadge(icon: Icons.verified_user_rounded, text: 'Zero Hallucinations Grounded'),
-              _TrustBadge(icon: Icons.download_rounded, text: 'Export to Obsidian & Notion'),
-            ],
-          ),
-        ),
+                SizedBox(
+                  height: widget.header != null
+                      ? (isMobile ? 24.0 : (isTablet ? 36.0 : 50.0))
+                      : (isMobile ? 24.0 : 40.0),
+                ),
 
-        // Optional Inline Carousel (When not extracted to separate wide sliver)
-        if (widget.includeCarousel) ...[
-          const SizedBox(height: 48),
-          SpringEntranceBlock(
-            delayMs: 1750,
-            durationMs: 800,
-            fromOffset: const Offset(0, 30),
-            child: const FullWidthHeroCarousel(),
+                // Left-aligned Hero Content (Heading, Sub-heading, and Action Buttons)
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isMobile ? 20.0 : (isTablet ? 36.0 : 56.0),
+                  ),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxWidth: isMobile ? double.infinity : (isTablet ? 540 : 620),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Heading:
+                        // Line 1: "Master Any Subject with a"
+                        // Line 2: "Team of AI Agents" (with gradient look)
+                        SpringEntranceBlock(
+                          delayMs: 250,
+                          durationMs: 700,
+                          fromOffset: const Offset(0, 18),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Master Any Subject with a',
+                                style: TextStyle(
+                                  fontSize: isMobile ? 28 : (isTablet ? 38 : 50),
+                                  fontWeight: FontWeight.w900,
+                                  color: const Color(0xFFF8FAFC),
+                                  letterSpacing: -1.2,
+                                  height: 1.12,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              GradientText(
+                                'Team of AI Agents',
+                                gradient: AppColors.primaryGradient,
+                                style: TextStyle(
+                                  fontSize: isMobile ? 30 : (isTablet ? 40 : 52),
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: -1.2,
+                                  height: 1.12,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+
+                        // Sub-heading Text
+                        SpringEntranceBlock(
+                          delayMs: 500,
+                          durationMs: 700,
+                          fromOffset: const Offset(0, 16),
+                          child: Text(
+                            'Stop skimming passive chatbot text. Our supervisor agent decomposes any topic into adaptive milestones, orchestrating verified Socratic dialogue, timestamped YouTube video clips, live arXiv citations, research papers, and interactive assessments in real time.',
+                            style: TextStyle(
+                              fontSize: isMobile ? 14.5 : (isTablet ? 15.5 : 16.5),
+                              color: const Color(0xFFCBD5E1),
+                              fontWeight: FontWeight.w400,
+                              height: 1.62,
+                              letterSpacing: -0.2,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 32),
+
+                        // Action Buttons: Start Learning for Free & Watch a Demo
+                        SpringEntranceBlock(
+                          delayMs: 650,
+                          durationMs: 700,
+                          fromOffset: const Offset(0, 16),
+                          child: Wrap(
+                            spacing: 16,
+                            runSpacing: 12,
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            children: [
+                              _HeroPrimaryButton(
+                                text: 'Start Learning for Free',
+                                onTap: () => context.go('/auth'),
+                                isMobile: isMobile,
+                              ),
+                              _HeroSecondaryDemoButton(
+                                text: 'Watch a Demo',
+                                onTap: () => widget.onExploreTap?.call(),
+                                isMobile: isMobile,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // Generous bottom spacing for cinematic breathing room
+                SizedBox(height: isMobile ? 60 : 100),
+              ],
+            ),
+          ),
+
+          // ─── 3. Subtle Floating Slider Indicator Pills (Bottom-Right) ───
+          Positioned(
+            bottom: isMobile ? 18 : 28,
+            right: isMobile ? 20 : 36,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: List.generate(_bgImages.length, (index) {
+                final bool isActive = _currentBgIndex == index;
+                return GestureDetector(
+                  onTap: () => _setBgIndex(index),
+                  child: MouseRegion(
+                    cursor: SystemMouseCursors.click,
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 400),
+                      curve: Curves.easeOutCubic,
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                      width: isActive ? 28 : 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        gradient: isActive ? AppColors.primaryGradient : null,
+                        color: isActive ? null : Colors.white.withValues(alpha: 0.35),
+                        borderRadius: BorderRadius.circular(9999),
+                        boxShadow: isActive
+                            ? [
+                                BoxShadow(
+                                  color: AppColors.primary.withValues(alpha: 0.5),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 1),
+                                ),
+                              ]
+                            : null,
+                      ),
+                    ),
+                  ),
+                );
+              }),
+            ),
           ),
         ],
+      ),
+    );
+
+    if (!widget.includeCarousel) {
+      return heroContent;
+    }
+
+    return Column(
+      children: [
+        heroContent,
+        const SizedBox(height: 48),
+        SpringEntranceBlock(
+          delayMs: 800,
+          durationMs: 800,
+          fromOffset: const Offset(0, 30),
+          child: const FullWidthHeroCarousel(),
+        ),
       ],
     );
   }
@@ -886,138 +867,23 @@ class _CarouselArrowButtonState extends State<_CarouselArrowButton> {
 // SHARED MICRO-COMPONENTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Pulsing Beacon Dot with breathing radar ring
-class _PulsingBeaconDot extends StatefulWidget {
-  const _PulsingBeaconDot();
-
-  @override
-  State<_PulsingBeaconDot> createState() => _PulsingBeaconDotState();
-}
-
-class _PulsingBeaconDotState extends State<_PulsingBeaconDot>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1800),
-    )..repeat();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, _) {
-        final t = _controller.value;
-        return SizedBox(
-          width: 14,
-          height: 14,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              Transform.scale(
-                scale: 1.0 + t * 1.2,
-                child: Container(
-                  width: 12,
-                  height: 12,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: const Color(0xFF00F5D4).withValues(alpha: (1.0 - t) * 0.7),
-                      width: 1.2,
-                    ),
-                  ),
-                ),
-              ),
-              Container(
-                width: 6,
-                height: 6,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Color(0xFF00F5D4),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Color(0xFF00F5D4),
-                      blurRadius: 6,
-                      spreadRadius: 1,
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-}
-
-/// Modern Social Proof Frosted Micro-Badge
-class _TrustBadge extends StatelessWidget {
-  final IconData icon;
-  final String text;
-
-  const _TrustBadge({required this.icon, required this.text});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.04),
-        borderRadius: BorderRadius.circular(9999),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.08),
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            icon,
-            color: const Color(0xFF10B981),
-            size: 14,
-          ),
-          const SizedBox(width: 8),
-          Text(
-            text,
-            style: const TextStyle(
-              color: Color(0xFFCBD5E1),
-              fontSize: 12.5,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// High-contrast solid white pill CTA button with shimmer hover
-class _HeroSolidPillButton extends StatefulWidget {
+/// Premium gradient action button with subtle hover lift and specular sweep
+class _HeroPrimaryButton extends StatefulWidget {
   final String text;
   final VoidCallback onTap;
+  final bool isMobile;
 
-  const _HeroSolidPillButton({
+  const _HeroPrimaryButton({
     required this.text,
     required this.onTap,
+    required this.isMobile,
   });
 
   @override
-  State<_HeroSolidPillButton> createState() => _HeroSolidPillButtonState();
+  State<_HeroPrimaryButton> createState() => _HeroPrimaryButtonState();
 }
 
-class _HeroSolidPillButtonState extends State<_HeroSolidPillButton>
+class _HeroPrimaryButtonState extends State<_HeroPrimaryButton>
     with SingleTickerProviderStateMixin {
   bool _isHovered = false;
   late final AnimationController _shimmerController;
@@ -1027,7 +893,7 @@ class _HeroSolidPillButtonState extends State<_HeroSolidPillButton>
     super.initState();
     _shimmerController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1500),
+      duration: const Duration(milliseconds: 1600),
     );
   }
 
@@ -1042,30 +908,33 @@ class _HeroSolidPillButtonState extends State<_HeroSolidPillButton>
     return MouseRegion(
       onEnter: (_) {
         setState(() => _isHovered = true);
-        _shimmerController.forward(from: 0);
+        _shimmerController.repeat();
       },
       onExit: (_) {
         setState(() => _isHovered = false);
         _shimmerController.stop();
+        _shimmerController.reset();
       },
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
         onTap: widget.onTap,
         child: AnimatedScale(
-          scale: _isHovered ? 1.025 : 1.0,
+          scale: _isHovered ? 1.03 : 1.0,
           duration: const Duration(milliseconds: 180),
           curve: Curves.easeOutCubic,
           child: Container(
-            height: 46,
-            padding: const EdgeInsets.symmetric(horizontal: 22),
+            height: widget.isMobile ? 48 : 52,
+            padding: EdgeInsets.symmetric(
+              horizontal: widget.isMobile ? 22 : 28,
+            ),
             decoration: BoxDecoration(
-              color: _isHovered ? const Color(0xFFF1F5F9) : Colors.white,
+              gradient: AppColors.primaryGradient,
               borderRadius: BorderRadius.circular(9999),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.white.withValues(alpha: _isHovered ? 0.40 : 0.22),
-                  blurRadius: 18,
-                  offset: const Offset(0, 2),
+                  color: AppColors.primary.withValues(alpha: _isHovered ? 0.55 : 0.35),
+                  blurRadius: _isHovered ? 24 : 16,
+                  offset: const Offset(0, 4),
                 ),
               ],
             ),
@@ -1073,14 +942,25 @@ class _HeroSolidPillButtonState extends State<_HeroSolidPillButton>
             child: Stack(
               alignment: Alignment.center,
               children: [
-                Text(
-                  widget.text,
-                  style: const TextStyle(
-                    color: Color(0xFF04050C),
-                    fontSize: 13.5,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -0.2,
-                  ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      widget.text,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: widget.isMobile ? 14 : 15,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.2,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    const Icon(
+                      Icons.arrow_forward_rounded,
+                      color: Colors.white,
+                      size: 18,
+                    ),
+                  ],
                 ),
                 if (_isHovered)
                   AnimatedBuilder(
@@ -1090,7 +970,7 @@ class _HeroSolidPillButtonState extends State<_HeroSolidPillButton>
                         child: FractionallySizedBox(
                           widthFactor: 0.45,
                           alignment: Alignment(
-                            -1.0 + _shimmerController.value * 3.0,
+                            -1.5 + _shimmerController.value * 3.0,
                             0,
                           ),
                           child: DecoratedBox(
@@ -1098,7 +978,7 @@ class _HeroSolidPillButtonState extends State<_HeroSolidPillButton>
                               gradient: LinearGradient(
                                 colors: [
                                   Colors.white.withValues(alpha: 0.0),
-                                  Colors.white.withValues(alpha: 0.40),
+                                  Colors.white.withValues(alpha: 0.35),
                                   Colors.white.withValues(alpha: 0.0),
                                 ],
                               ),
@@ -1108,6 +988,93 @@ class _HeroSolidPillButtonState extends State<_HeroSolidPillButton>
                       );
                     },
                   ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Frosted glass secondary action button for demo trigger
+class _HeroSecondaryDemoButton extends StatefulWidget {
+  final String text;
+  final VoidCallback onTap;
+  final bool isMobile;
+
+  const _HeroSecondaryDemoButton({
+    required this.text,
+    required this.onTap,
+    required this.isMobile,
+  });
+
+  @override
+  State<_HeroSecondaryDemoButton> createState() => _HeroSecondaryDemoButtonState();
+}
+
+class _HeroSecondaryDemoButtonState extends State<_HeroSecondaryDemoButton> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedScale(
+          scale: _isHovered ? 1.03 : 1.0,
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOutCubic,
+          child: Container(
+            height: widget.isMobile ? 48 : 52,
+            padding: EdgeInsets.symmetric(
+              horizontal: widget.isMobile ? 20 : 24,
+            ),
+            decoration: BoxDecoration(
+              color: _isHovered
+                  ? Colors.white.withValues(alpha: 0.15)
+                  : Colors.white.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(9999),
+              border: Border.all(
+                color: _isHovered
+                    ? Colors.white.withValues(alpha: 0.40)
+                    : Colors.white.withValues(alpha: 0.20),
+                width: 1.2,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.30),
+                  blurRadius: 12,
+                  offset: const Offset(0, 3),
+                ),
+                if (_isHovered)
+                  BoxShadow(
+                    color: const Color(0xFF00F5D4).withValues(alpha: 0.20),
+                    blurRadius: 18,
+                  ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.play_circle_fill_rounded,
+                  color: Color(0xFF00F5D4),
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  widget.text,
+                  style: TextStyle(
+                    color: const Color(0xFFF1F5F9),
+                    fontSize: widget.isMobile ? 14 : 15,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: -0.2,
+                  ),
+                ),
               ],
             ),
           ),

@@ -122,64 +122,75 @@ class CtaFooter extends StatelessWidget {
               ),
             ),
           ),
-          child: Flex(
-            direction: isMobile ? Axis.vertical : Axis.horizontal,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: isMobile ? CrossAxisAlignment.center : CrossAxisAlignment.center,
-            children: [
-              Column(
-                crossAxisAlignment: isMobile ? CrossAxisAlignment.center : CrossAxisAlignment.start,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final bool isNarrow = constraints.maxWidth < 720;
+              return Flex(
+                direction: isNarrow ? Axis.vertical : Axis.horizontal,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: isNarrow ? CrossAxisAlignment.center : CrossAxisAlignment.center,
                 children: [
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        width: 8,
-                        height: 8,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Color(0xFF00F5D4),
-                          boxShadow: [
-                            BoxShadow(color: Color(0xFF00F5D4), blurRadius: 6),
+                  Flexible(
+                    flex: isNarrow ? 0 : 1,
+                    child: Column(
+                      crossAxisAlignment: isNarrow ? CrossAxisAlignment.center : CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 8,
+                              height: 8,
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Color(0xFF00F5D4),
+                                boxShadow: [
+                                  BoxShadow(color: Color(0xFF00F5D4), blurRadius: 6),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            const Text(
+                              'EduTech AI',
+                              style: TextStyle(
+                                color: Color(0xFFEEF0F6),
+                                fontWeight: FontWeight.w800,
+                                fontSize: 16,
+                                letterSpacing: -0.2,
+                              ),
+                            ),
                           ],
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      const Text(
-                        'EduTech AI',
-                        style: TextStyle(
-                          color: Color(0xFFEEF0F6),
-                          fontWeight: FontWeight.w800,
-                          fontSize: 16,
-                          letterSpacing: -0.2,
+                        const SizedBox(height: 6),
+                        Text(
+                          '© ${DateTime.now().year} EduTech AI — engineered for autonomous deep work & mastery.',
+                          style: TextStyle(
+                            color: const Color(0xFF8E94A8),
+                            fontSize: isNarrow ? 11.5 : 12.5,
+                            fontWeight: FontWeight.w400,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 6),
-                  Text(
-                    '© ${DateTime.now().year} EduTech AI — engineered for autonomous deep work & mastery.',
-                    style: TextStyle(
-                      color: const Color(0xFF8E94A8),
-                      fontSize: isMobile ? 11.5 : 12.5,
-                      fontWeight: FontWeight.w400,
+                  if (isNarrow) const SizedBox(height: 24),
+                  Flexible(
+                    flex: isNarrow ? 0 : 1,
+                    child: Wrap(
+                      spacing: 24,
+                      runSpacing: 14,
+                      alignment: isNarrow ? WrapAlignment.center : WrapAlignment.end,
+                      children: const [
+                        _FooterLink('Terms of Service'),
+                        _FooterLink('Privacy Policy'),
+                        _FooterLink('Contact Support'),
+                        _FooterLink('Documentation'),
+                      ],
                     ),
                   ),
                 ],
-              ),
-              if (isMobile) const SizedBox(height: 24),
-              Wrap(
-                spacing: 24,
-                runSpacing: 14,
-                alignment: isMobile ? WrapAlignment.center : WrapAlignment.end,
-                children: const [
-                  _FooterLink('Terms of Service'),
-                  _FooterLink('Privacy Policy'),
-                  _FooterLink('Contact Support'),
-                  _FooterLink('Documentation'),
-                ],
-              ),
-            ],
+              );
+            },
           ),
         ),
       ],

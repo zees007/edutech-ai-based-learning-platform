@@ -106,7 +106,7 @@ class ExportEcosystemSection extends StatelessWidget {
                 AspectRatio(
                   aspectRatio: 16 / 9,
                   child: Image.asset(
-                    'assets/images/home/hero-pic2.jpg',
+                    'assets/images/home/second_brain_ecosystem.jpg',
                     fit: BoxFit.cover,
                   ),
                 ),
