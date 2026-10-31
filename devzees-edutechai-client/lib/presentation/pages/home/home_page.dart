@@ -48,6 +48,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   final GlobalKey _aboutKey = GlobalKey();
   final GlobalKey _pricingKey = GlobalKey();
   final GlobalKey _faqKey = GlobalKey();
+  ThemeMode _themeMode = ThemeMode.system;
 
   @override
   void initState() {
@@ -58,14 +59,22 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _themeMode = ref.read(themeModeProvider);
+  }
+
+  @override
   void dispose() {
     _scrollController.removeListener(_scrollListener);
     _scrollController.dispose();
     // Restore AppColors to active user preference when leaving home page
-    final themeMode = ref.read(themeModeProvider);
-    final platformBrightness = WidgetsBinding.instance.platformDispatcher.platformBrightness;
-    final isDark = themeMode == ThemeMode.dark ||
-        (themeMode == ThemeMode.system && platformBrightness == Brightness.dark);
+    final platformBrightness =
+        WidgetsBinding.instance.platformDispatcher.platformBrightness;
+    final isDark =
+        _themeMode == ThemeMode.dark ||
+        (_themeMode == ThemeMode.system &&
+            platformBrightness == Brightness.dark);
     AppColors.setBrightness(isDark ? Brightness.dark : Brightness.light);
     super.dispose();
   }
@@ -125,7 +134,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         targetContext = _faqKey.currentContext;
         break;
     }
-    
+
     if (targetContext != null) {
       Scrollable.ensureVisible(
         targetContext,
@@ -173,7 +182,7 @@ class _HomePageState extends ConsumerState<HomePage> {
               SliverToBoxAdapter(
                 child: Center(
                   child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 1600),
+                    constraints: const BoxConstraints(maxWidth: 1200),
                     child: Padding(
                       padding: EdgeInsets.symmetric(
                         horizontal: Responsive.isMobile(context) ? 16.0 : 36.0,
@@ -191,7 +200,10 @@ class _HomePageState extends ConsumerState<HomePage> {
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 1200),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 24.0),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24.0,
+                        vertical: 24.0,
+                      ),
                       child: Column(
                         children: [
                           // ─── 1. N8n Interactive Blackboard DAG Canvas (The Visual Proof) ───
@@ -309,7 +321,7 @@ class _HomePageState extends ConsumerState<HomePage> {
             ],
           ),
         ),
-        floatingActionButton: _showScrollToTop 
+        floatingActionButton: _showScrollToTop
             ? Container(
                 width: 50,
                 height: 50,
@@ -339,7 +351,11 @@ class _HomePageState extends ConsumerState<HomePage> {
                       child: InkWell(
                         onTap: _scrollToTop,
                         child: const Center(
-                          child: Icon(Icons.arrow_upward_rounded, color: Color(0xFFEEF0F6), size: 20),
+                          child: Icon(
+                            Icons.arrow_upward_rounded,
+                            color: Color(0xFFEEF0F6),
+                            size: 20,
+                          ),
                         ),
                       ),
                     ),

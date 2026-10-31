@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
 import 'package:devzees_edutechai_client/core/constants/responsive.dart';
@@ -36,6 +37,7 @@ class _HeroSectionState extends State<HeroSection> {
   static const List<String> _bgImages = [
     'assets/images/home/hero-pic.jpg',
     'assets/images/home/hero-pic2.jpg',
+    'assets/images/home/hero-pic3.jpg',
   ];
 
   @override
@@ -70,20 +72,43 @@ class _HeroSectionState extends State<HeroSection> {
     super.dispose();
   }
 
+  BoxFit _getBgFit(int index, bool isDesktop) {
+    // hero-pic3.jpg spans from top (Y=55) to bottom (Y=1510).
+    // Using BoxFit.fitHeight on desktop preserves 100% of its vertical illustration without cropping top or bottom.
+    if (isDesktop && _bgImages[index].contains('hero-pic3')) {
+      return BoxFit.fitHeight;
+    }
+    return BoxFit.cover;
+  }
+
+  Alignment _getBgAlignment(int index, bool isMobile, bool isDesktop) {
+    if (isMobile) return Alignment.topCenter;
+    if (isDesktop && _bgImages[index].contains('hero-pic3')) {
+      return Alignment.centerRight;
+    }
+    return Alignment.topRight;
+  }
+
   @override
   Widget build(BuildContext context) {
     final bool isMobile = Responsive.isMobile(context);
     final bool isTablet = Responsive.isTablet(context);
+    final bool isDesktop = Responsive.isDesktop(context);
+
+    // Symmetrical vertical spacing above and below the hero text & action button block,
+    // balancing the content within the full-height slider (860 desktop / 680 tablet / 540 mobile)
+    final double verticalMargin = isMobile ? 24.0 : (isTablet ? 96.0 : 180.0);
 
     final heroContent = Container(
       width: double.infinity,
+      color: const Color(0xFF030712),
       constraints: BoxConstraints(
-        minHeight: isMobile ? 540 : 680,
+        minHeight: isMobile ? 540 : (isTablet ? 680 : 860),
       ),
       child: Stack(
         children: [
           // ─── 1. Full-Width Background Image Animated Carousel / Cross-Fade ───
-          // Preserves Alignment.topRight to protect top arcs and graphics from vertical cropping
+          // Per-slide fit and alignment: hero-pic 1&2 cover with Alignment.topRight; hero-pic3 fits height without top/bottom cropping
           Positioned.fill(
             child: Stack(
               fit: StackFit.expand,
@@ -96,11 +121,46 @@ class _HeroSectionState extends State<HeroSection> {
                     curve: Curves.easeInOutCubic,
                     child: Image.asset(
                       _bgImages[i],
-                      fit: BoxFit.cover,
-                      alignment: isMobile ? Alignment.topCenter : Alignment.topRight,
+                      fit: _getBgFit(i, isDesktop),
+                      alignment: _getBgAlignment(i, isMobile, isDesktop),
                     ),
                   ),
               ],
+            ),
+          ),
+
+          // ─── Directional Scrim Overlay ───
+          // On Desktop: Directional horizontal scrim protects left-aligned hero copy while keeping the right illustration completely bright and clear.
+          // On Mobile: Enhanced high-contrast scrim (66%-78% opacity) providing solid readability for the hero copy while still letting the background slider artwork show through.
+          Positioned.fill(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: isMobile
+                    ? LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          const Color(0xFF030712).withValues(alpha: 0.78),
+                          const Color(0xFF030712).withValues(alpha: 0.66),
+                          const Color(0xFF030712).withValues(alpha: 0.70),
+                          const Color(0xFF030712).withValues(alpha: 0.80),
+                        ],
+                        stops: const [0.0, 0.25, 0.70, 1.0],
+                      )
+                    : LinearGradient(
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
+                        colors: [
+                          const Color(0xFF030712).withValues(alpha: 0.96),
+                          const Color(
+                            0xFF030712,
+                          ).withValues(alpha: isTablet ? 0.70 : 0.45),
+                          const Color(0xFF030712).withValues(alpha: 0.10),
+                          Colors.transparent,
+                        ],
+                        stops: const [0.0, 0.32, 0.58, 1.0],
+                      ),
+              ),
             ),
           ),
 
@@ -126,151 +186,221 @@ class _HeroSectionState extends State<HeroSection> {
                     ),
                   ),
 
-                SizedBox(
-                  height: widget.header != null
-                      ? (isMobile ? 24.0 : (isTablet ? 36.0 : 50.0))
-                      : (isMobile ? 24.0 : 40.0),
-                ),
+                // Symmetrical top spacing matching bottom margin
+                SizedBox(height: verticalMargin),
 
-                // Left-aligned Hero Content (Heading, Sub-heading, and Action Buttons)
+                // Hero Content (Centered on mobile for a unified premium look; left-aligned on desktop/tablet)
                 Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: isMobile ? 20.0 : (isTablet ? 36.0 : 56.0),
+                  padding: EdgeInsets.only(
+                    left: isMobile ? 20.0 : (isTablet ? 36.0 : 56.0),
+                    right: isMobile ? 20.0 : 36.0,
                   ),
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      maxWidth: isMobile ? double.infinity : (isTablet ? 540 : 620),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // Heading:
-                        // Line 1: "Master Any Subject with a"
-                        // Line 2: "Team of AI Agents" (with gradient look)
-                        SpringEntranceBlock(
-                          delayMs: 250,
-                          durationMs: 700,
-                          fromOffset: const Offset(0, 18),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Master Any Subject with a',
-                                style: TextStyle(
-                                  fontSize: isMobile ? 28 : (isTablet ? 38 : 50),
-                                  fontWeight: FontWeight.w900,
-                                  color: const Color(0xFFF8FAFC),
-                                  letterSpacing: -1.2,
-                                  height: 1.12,
+                  child: Align(
+                    alignment: isMobile
+                        ? Alignment.center
+                        : Alignment.centerLeft,
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxWidth: isMobile ? 540 : (isTablet ? 540 : 620),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: isMobile
+                            ? CrossAxisAlignment.center
+                            : CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Heading:
+                          // Line 1: "Master Any Subject with a"
+                          // Line 2: "Team of AI Agents" (with gradient look)
+                          SpringEntranceBlock(
+                            delayMs: 250,
+                            durationMs: 700,
+                            fromOffset: const Offset(0, 18),
+                            child: Column(
+                              crossAxisAlignment: isMobile
+                                  ? CrossAxisAlignment.center
+                                  : CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Master Any Subject with a',
+                                  textAlign: isMobile
+                                      ? TextAlign.center
+                                      : TextAlign.start,
+                                  style: TextStyle(
+                                    fontSize: isMobile
+                                        ? 28
+                                        : (isTablet ? 38 : 50),
+                                    fontWeight: FontWeight.w900,
+                                    color: const Color(0xFFF8FAFC),
+                                    letterSpacing: -1.2,
+                                    height: 1.12,
+                                    shadows: isMobile
+                                        ? [
+                                            Shadow(
+                                              color: Colors.black.withValues(
+                                                alpha: 0.90,
+                                              ),
+                                              blurRadius: 4,
+                                              offset: const Offset(0, 1),
+                                            ),
+                                            Shadow(
+                                              color: Colors.black.withValues(
+                                                alpha: 0.75,
+                                              ),
+                                              blurRadius: 14,
+                                              offset: const Offset(0, 2),
+                                            ),
+                                          ]
+                                        : null,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 4),
-                              GradientText(
-                                'Team of AI Agents',
-                                gradient: AppColors.primaryGradient,
-                                style: TextStyle(
-                                  fontSize: isMobile ? 30 : (isTablet ? 40 : 52),
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: -1.2,
-                                  height: 1.12,
+                                const SizedBox(height: 4),
+                                GradientText(
+                                  'Team of AI Agents',
+                                  textAlign: isMobile
+                                      ? TextAlign.center
+                                      : TextAlign.start,
+                                  gradient: AppColors.primaryGradient,
+                                  style: TextStyle(
+                                    fontSize: isMobile
+                                        ? 30
+                                        : (isTablet ? 40 : 52),
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: -1.2,
+                                    height: 1.20,
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-
-                        // Sub-heading Text
-                        SpringEntranceBlock(
-                          delayMs: 500,
-                          durationMs: 700,
-                          fromOffset: const Offset(0, 16),
-                          child: Text(
-                            'Stop skimming passive chatbot text. Our supervisor agent decomposes any topic into adaptive milestones, orchestrating verified Socratic dialogue, timestamped YouTube video clips, live arXiv citations, research papers, and interactive assessments in real time.',
-                            style: TextStyle(
-                              fontSize: isMobile ? 14.5 : (isTablet ? 15.5 : 16.5),
-                              color: const Color(0xFFCBD5E1),
-                              fontWeight: FontWeight.w400,
-                              height: 1.62,
-                              letterSpacing: -0.2,
+                              ],
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 32),
+                          const SizedBox(height: 20),
 
-                        // Action Buttons: Start Learning for Free & Watch a Demo
-                        SpringEntranceBlock(
-                          delayMs: 650,
-                          durationMs: 700,
-                          fromOffset: const Offset(0, 16),
-                          child: Wrap(
-                            spacing: 16,
-                            runSpacing: 12,
-                            crossAxisAlignment: WrapCrossAlignment.center,
-                            children: [
-                              _HeroPrimaryButton(
-                                text: 'Start Learning for Free',
-                                onTap: () => context.go('/auth'),
-                                isMobile: isMobile,
+                          // Sub-heading Text
+                          SpringEntranceBlock(
+                            delayMs: 500,
+                            durationMs: 700,
+                            fromOffset: const Offset(0, 16),
+                            child: Text(
+                              'Stop skimming passive chatbot text. Our supervisor agent decomposes any topic into adaptive milestones, orchestrating verified Socratic dialogue, timestamped YouTube video clips, live arXiv citations, research papers, and interactive assessments in real time.',
+                              textAlign: isMobile
+                                  ? TextAlign.center
+                                  : TextAlign.start,
+                              style: TextStyle(
+                                fontSize: isMobile
+                                    ? 14.5
+                                    : (isTablet ? 15.5 : 16.5),
+                                color: isMobile
+                                    ? const Color(0xFFE2E8F0)
+                                    : const Color(0xFFCBD5E1),
+                                fontWeight: isMobile
+                                    ? FontWeight.w500
+                                    : FontWeight.w400,
+                                height: 1.62,
+                                letterSpacing: -0.2,
+                                shadows: isMobile
+                                    ? [
+                                        Shadow(
+                                          color: Colors.black.withValues(
+                                            alpha: 0.85,
+                                          ),
+                                          blurRadius: 4,
+                                          offset: const Offset(0, 1),
+                                        ),
+                                        Shadow(
+                                          color: Colors.black.withValues(
+                                            alpha: 0.65,
+                                          ),
+                                          blurRadius: 12,
+                                          offset: const Offset(0, 1),
+                                        ),
+                                      ]
+                                    : null,
                               ),
-                              _HeroSecondaryDemoButton(
-                                text: 'Watch a Demo',
-                                onTap: () => widget.onExploreTap?.call(),
-                                isMobile: isMobile,
-                              ),
-                            ],
+                            ),
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 32),
+
+                          // Action Buttons: Start Learning for Free & Watch a Demo
+                          SpringEntranceBlock(
+                            delayMs: 650,
+                            durationMs: 700,
+                            fromOffset: const Offset(0, 16),
+                            child: Wrap(
+                              spacing: 16,
+                              runSpacing: 12,
+                              alignment: isMobile
+                                  ? WrapAlignment.center
+                                  : WrapAlignment.start,
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              children: [
+                                _HeroPrimaryButton(
+                                  text: 'Start Learning for Free',
+                                  onTap: () => context.go('/auth'),
+                                  isMobile: isMobile,
+                                ),
+                                _HeroSecondaryDemoButton(
+                                  text: 'Watch a Demo',
+                                  onTap: () => widget.onExploreTap?.call(),
+                                  isMobile: isMobile,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
 
-                // Generous bottom spacing for cinematic breathing room
-                SizedBox(height: isMobile ? 60 : 100),
+                // Symmetrical bottom spacing matching top margin; preserves ample clearance from slider
+                SizedBox(height: verticalMargin),
               ],
             ),
           ),
 
-          // ─── 3. Subtle Floating Slider Indicator Pills (Bottom-Right) ───
-          Positioned(
-            bottom: isMobile ? 18 : 28,
-            right: isMobile ? 20 : 36,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: List.generate(_bgImages.length, (index) {
-                final bool isActive = _currentBgIndex == index;
-                return GestureDetector(
-                  onTap: () => _setBgIndex(index),
-                  child: MouseRegion(
-                    cursor: SystemMouseCursors.click,
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 400),
-                      curve: Curves.easeOutCubic,
-                      margin: const EdgeInsets.symmetric(horizontal: 4),
-                      width: isActive ? 28 : 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        gradient: isActive ? AppColors.primaryGradient : null,
-                        color: isActive ? null : Colors.white.withValues(alpha: 0.35),
-                        borderRadius: BorderRadius.circular(9999),
-                        boxShadow: isActive
-                            ? [
-                                BoxShadow(
-                                  color: AppColors.primary.withValues(alpha: 0.5),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 1),
-                                ),
-                              ]
-                            : null,
+          // ─── 3. Subtle Floating Slider Indicator Pills (Bottom-Right, hidden on mobile) ───
+          if (!isMobile)
+            Positioned(
+              bottom: 28,
+              right: 36,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: List.generate(_bgImages.length, (index) {
+                  final bool isActive = _currentBgIndex == index;
+                  return GestureDetector(
+                    onTap: () => _setBgIndex(index),
+                    child: MouseRegion(
+                      cursor: SystemMouseCursors.click,
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 400),
+                        curve: Curves.easeOutCubic,
+                        margin: const EdgeInsets.symmetric(horizontal: 4),
+                        width: isActive ? 28 : 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          gradient: isActive ? AppColors.primaryGradient : null,
+                          color: isActive
+                              ? null
+                              : Colors.white.withValues(alpha: 0.35),
+                          borderRadius: BorderRadius.circular(9999),
+                          boxShadow: isActive
+                              ? [
+                                  BoxShadow(
+                                    color: AppColors.primary.withValues(
+                                      alpha: 0.5,
+                                    ),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 1),
+                                  ),
+                                ]
+                              : null,
+                        ),
                       ),
                     ),
-                  ),
-                );
-              }),
+                  );
+                }),
+              ),
             ),
-          ),
         ],
       ),
     );
@@ -337,7 +467,8 @@ class _FullWidthHeroCarouselState extends State<FullWidthHeroCarousel>
       imagePath: 'assets/images/home/hero-pic.jpg',
       badgeText: 'AUTONOMOUS MULTI-AGENT BLACKBOARD ARCHITECTURE',
       captionTitle: 'Autonomous Multi-Agent AI Core',
-      captionSubtitle: 'Six specialized agents collaborate simultaneously on a shared cognitive blackboard, orchestrating curriculum milestones, Socratic scaffolding, and citations.',
+      captionSubtitle:
+          'Six specialized agents collaborate simultaneously on a shared cognitive blackboard, orchestrating curriculum milestones, Socratic scaffolding, and citations.',
       tabLabel: 'Multi-Agent Core',
       tabIcon: Icons.hub_rounded,
     ),
@@ -345,7 +476,8 @@ class _FullWidthHeroCarouselState extends State<FullWidthHeroCarousel>
       imagePath: 'assets/images/home/hero-pic2.jpg',
       badgeText: 'SOCRATIC & ADAPTIVE PEDAGOGICAL ENGINE',
       captionTitle: 'Interactive Cognitive Synthesis',
-      captionSubtitle: 'Engage with step-by-step concept flowcharts, grounded LaTeX equations, and Socratic guiding prompts tailored to your comprehension velocity.',
+      captionSubtitle:
+          'Engage with step-by-step concept flowcharts, grounded LaTeX equations, and Socratic guiding prompts tailored to your comprehension velocity.',
       tabLabel: 'Cognitive Engine',
       tabIcon: Icons.psychology_rounded,
     ),
@@ -353,7 +485,8 @@ class _FullWidthHeroCarouselState extends State<FullWidthHeroCarousel>
       imagePath: 'assets/images/home/new-workspace-preview.png',
       badgeText: 'DUAL-PANEL MULTI-MODAL WORKSPACE',
       captionTitle: 'Active Dual-Panel Workspace',
-      captionSubtitle: 'Socratic dialogue on the left panel, verified YouTube transcript clips, arXiv research preprints, and formative quizzes on the right panel.',
+      captionSubtitle:
+          'Socratic dialogue on the left panel, verified YouTube transcript clips, arXiv research preprints, and formative quizzes on the right panel.',
       tabLabel: 'Dual Workspace',
       tabIcon: Icons.space_dashboard_rounded,
     ),
@@ -381,7 +514,7 @@ class _FullWidthHeroCarouselState extends State<FullWidthHeroCarousel>
   void _startAutoPlay() {
     _autoPlayTimer?.cancel();
     _autoPlayTimer = Timer.periodic(const Duration(seconds: 5), (_) {
-      if (!_isHovered && mounted) {
+      if (!_isHovered && mounted && _pageController.hasClients) {
         final nextPage = (_currentPage + 1) % _slides.length;
         _pageController.animateToPage(
           nextPage,
@@ -393,6 +526,7 @@ class _FullWidthHeroCarouselState extends State<FullWidthHeroCarousel>
   }
 
   void _goToPrevious() {
+    if (!_pageController.hasClients) return;
     final prevPage = (_currentPage - 1 + _slides.length) % _slides.length;
     _pageController.animateToPage(
       prevPage,
@@ -402,6 +536,7 @@ class _FullWidthHeroCarouselState extends State<FullWidthHeroCarousel>
   }
 
   void _goToNext() {
+    if (!_pageController.hasClients) return;
     final nextPage = (_currentPage + 1) % _slides.length;
     _pageController.animateToPage(
       nextPage,
@@ -413,6 +548,12 @@ class _FullWidthHeroCarouselState extends State<FullWidthHeroCarousel>
   @override
   Widget build(BuildContext context) {
     final bool isMobile = Responsive.isMobile(context);
+    final bool isTablet = Responsive.isTablet(context);
+
+    // Dynamic responsive aspect ratio:
+    // Mobile: 16/10 (compact & legible)
+    // Tablet & Desktop: 16/9 (preserves native 16:9 aspect ratio of hero assets; prevents bottom cropping)
+    final double frameAspectRatio = isMobile ? (16 / 10) : (16 / 9);
 
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
@@ -437,58 +578,74 @@ class _FullWidthHeroCarouselState extends State<FullWidthHeroCarousel>
                   ),
                 ],
               ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: List.generate(_slides.length, (index) {
-                  final slide = _slides[index];
-                  final isSelected = _currentPage == index;
-                  return GestureDetector(
-                    onTap: () {
-                      _pageController.animateToPage(
-                        index,
-                        duration: const Duration(milliseconds: 600),
-                        curve: Curves.easeInOutCubic,
-                      );
-                    },
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 220),
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 9),
-                      decoration: BoxDecoration(
-                        color: isSelected ? AppColors.primary : Colors.transparent,
-                        borderRadius: BorderRadius.circular(9999),
-                        boxShadow: isSelected
-                            ? [
-                                BoxShadow(
-                                  color: AppColors.primary.withValues(alpha: 0.50),
-                                  blurRadius: 18,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ]
-                            : null,
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            slide.tabIcon,
-                            size: 15,
-                            color: isSelected ? Colors.white : const Color(0xFF94A3B8),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            slide.tabLabel,
-                            style: TextStyle(
-                              color: isSelected ? Colors.white : const Color(0xFF94A3B8),
-                              fontSize: 12.5,
-                              fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                              letterSpacing: -0.1,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: List.generate(_slides.length, (index) {
+                    final slide = _slides[index];
+                    final isSelected = _currentPage == index;
+                    return GestureDetector(
+                      onTap: () {
+                        _pageController.animateToPage(
+                          index,
+                          duration: const Duration(milliseconds: 600),
+                          curve: Curves.easeInOutCubic,
+                        );
+                      },
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 220),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 9,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? AppColors.primary
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(9999),
+                          boxShadow: isSelected
+                              ? [
+                                  BoxShadow(
+                                    color: AppColors.primary.withValues(
+                                      alpha: 0.50,
+                                    ),
+                                    blurRadius: 18,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ]
+                              : null,
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              slide.tabIcon,
+                              size: 15,
+                              color: isSelected
+                                  ? Colors.white
+                                  : const Color(0xFF94A3B8),
                             ),
-                          ),
-                        ],
+                            const SizedBox(width: 8),
+                            Text(
+                              slide.tabLabel,
+                              style: TextStyle(
+                                color: isSelected
+                                    ? Colors.white
+                                    : const Color(0xFF94A3B8),
+                                fontSize: 12.5,
+                                fontWeight: isSelected
+                                    ? FontWeight.w800
+                                    : FontWeight.w600,
+                                letterSpacing: -0.1,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  );
-                }),
+                    );
+                  }),
+                ),
               ),
             ),
             const SizedBox(height: 22),
@@ -523,7 +680,7 @@ class _FullWidthHeroCarouselState extends State<FullWidthHeroCarousel>
             child: ClipRRect(
               borderRadius: BorderRadius.circular(24),
               child: AspectRatio(
-                aspectRatio: isMobile ? (16 / 10) : (16 / 9),
+                aspectRatio: frameAspectRatio,
                 child: Stack(
                   children: [
                     // Image PageView
@@ -541,6 +698,7 @@ class _FullWidthHeroCarouselState extends State<FullWidthHeroCarousel>
                             Image.asset(
                               slide.imagePath,
                               fit: BoxFit.cover,
+                              alignment: Alignment.center,
                             ),
 
                             // Bottom readability scrim
@@ -555,7 +713,7 @@ class _FullWidthHeroCarouselState extends State<FullWidthHeroCarousel>
                                       Colors.transparent,
                                       const Color(0xDD030712),
                                     ],
-                                    stops: const [0.0, 0.45, 1.0],
+                                    stops: const [0.0, 0.74, 1.0],
                                   ),
                                 ),
                               ),
@@ -574,12 +732,16 @@ class _FullWidthHeroCarouselState extends State<FullWidthHeroCarousel>
                                   color: const Color(0xEE080A16),
                                   borderRadius: BorderRadius.circular(9999),
                                   border: Border.all(
-                                    color: const Color(0xFF00F5D4).withValues(alpha: 0.55),
+                                    color: const Color(
+                                      0xFF00F5D4,
+                                    ).withValues(alpha: 0.55),
                                     width: 1.0,
                                   ),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withValues(alpha: 0.50),
+                                      color: Colors.black.withValues(
+                                        alpha: 0.50,
+                                      ),
                                       blurRadius: 10,
                                     ),
                                   ],
@@ -616,81 +778,109 @@ class _FullWidthHeroCarouselState extends State<FullWidthHeroCarousel>
                               ),
                             ),
 
-                            // Bottom Caption Glass Card
+                            // Bottom Caption Glass Card (Floating HUD on Desktop/Tablet)
                             Positioned(
-                              bottom: isMobile ? 12 : 24,
+                              bottom: isMobile ? 12 : 20,
                               left: isMobile ? 12 : 24,
-                              right: isMobile ? 12 : 24,
-                              child: Container(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: isMobile ? 14 : 24,
-                                  vertical: isMobile ? 12 : 16,
+                              right: isMobile ? 12 : null,
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  maxWidth: isMobile
+                                      ? double.infinity
+                                      : (isTablet ? 580 : 720),
                                 ),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xEE090B18),
-                                  borderRadius: BorderRadius.circular(18),
-                                  border: Border.all(
-                                    color: Colors.white.withValues(alpha: 0.15),
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: isMobile ? 14 : 22,
+                                    vertical: isMobile ? 12 : 14,
                                   ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withValues(alpha: 0.65),
-                                      blurRadius: 28,
-                                      offset: const Offset(0, 8),
-                                    ),
-                                  ],
-                                ),
-                                child: Row(
-                                  children: [
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Text(
-                                            slide.captionTitle,
-                                            style: TextStyle(
-                                              color: const Color(0xFFF8FAFC),
-                                              fontSize: isMobile ? 14 : 18,
-                                              fontWeight: FontWeight.w800,
-                                              letterSpacing: -0.3,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            slide.captionSubtitle,
-                                            style: TextStyle(
-                                              color: const Color(0xFFB9BECF),
-                                              fontSize: isMobile ? 11 : 13,
-                                              fontWeight: FontWeight.w500,
-                                              height: 1.35,
-                                            ),
-                                          ),
-                                        ],
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xEE090B18),
+                                    borderRadius: BorderRadius.circular(18),
+                                    border: Border.all(
+                                      color: Colors.white.withValues(
+                                        alpha: 0.15,
                                       ),
                                     ),
-                                    const SizedBox(width: 14),
-                                    // Slide counter pill
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                      decoration: BoxDecoration(
-                                        color: AppColors.primary.withValues(alpha: 0.28),
-                                        borderRadius: BorderRadius.circular(9999),
-                                        border: Border.all(
-                                          color: AppColors.primary.withValues(alpha: 0.50),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withValues(
+                                          alpha: 0.65,
+                                        ),
+                                        blurRadius: 28,
+                                        offset: const Offset(0, 8),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: isMobile
+                                        ? MainAxisSize.max
+                                        : MainAxisSize.min,
+                                    children: [
+                                      Flexible(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Text(
+                                              slide.captionTitle,
+                                              style: TextStyle(
+                                                color: const Color(0xFFF8FAFC),
+                                                fontSize: isMobile
+                                                    ? 13.5
+                                                    : (isTablet ? 15.5 : 17),
+                                                fontWeight: FontWeight.w800,
+                                                letterSpacing: -0.3,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 3),
+                                            Text(
+                                              slide.captionSubtitle,
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: TextStyle(
+                                                color: const Color(0xFFB9BECF),
+                                                fontSize: isMobile ? 11 : 12.5,
+                                                fontWeight: FontWeight.w500,
+                                                height: 1.35,
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
-                                      child: Text(
-                                        '${index + 1} / ${_slides.length}',
-                                        style: const TextStyle(
-                                          color: Color(0xFFF8FAFC),
-                                          fontSize: 11.5,
-                                          fontWeight: FontWeight.w800,
-                                          letterSpacing: 0.5,
+                                      const SizedBox(width: 14),
+                                      // Slide counter pill
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 11,
+                                          vertical: 5,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: AppColors.primary.withValues(
+                                            alpha: 0.28,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            9999,
+                                          ),
+                                          border: Border.all(
+                                            color: AppColors.primary.withValues(
+                                              alpha: 0.50,
+                                            ),
+                                          ),
+                                        ),
+                                        child: Text(
+                                          '${index + 1} / ${_slides.length}',
+                                          style: const TextStyle(
+                                            color: Color(0xFFF8FAFC),
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w800,
+                                            letterSpacing: 0.5,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
@@ -766,12 +956,16 @@ class _FullWidthHeroCarouselState extends State<FullWidthHeroCarousel>
                         boxShadow: isActive
                             ? [
                                 BoxShadow(
-                                  color: AppColors.primary.withValues(alpha: 0.50 + 0.35 * pulse),
+                                  color: AppColors.primary.withValues(
+                                    alpha: 0.50 + 0.35 * pulse,
+                                  ),
                                   blurRadius: 10 + 6 * pulse,
                                   spreadRadius: 1 + 1 * pulse,
                                 ),
                                 BoxShadow(
-                                  color: const Color(0xFF00F5D4).withValues(alpha: 0.30 * pulse),
+                                  color: const Color(
+                                    0xFF00F5D4,
+                                  ).withValues(alpha: 0.30 * pulse),
                                   blurRadius: 8,
                                 ),
                               ]
@@ -932,7 +1126,9 @@ class _HeroPrimaryButtonState extends State<_HeroPrimaryButton>
               borderRadius: BorderRadius.circular(9999),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.primary.withValues(alpha: _isHovered ? 0.55 : 0.35),
+                  color: AppColors.primary.withValues(
+                    alpha: _isHovered ? 0.55 : 0.35,
+                  ),
                   blurRadius: _isHovered ? 24 : 16,
                   offset: const Offset(0, 4),
                 ),
@@ -942,25 +1138,28 @@ class _HeroPrimaryButtonState extends State<_HeroPrimaryButton>
             child: Stack(
               alignment: Alignment.center,
               children: [
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      widget.text,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: widget.isMobile ? 14 : 15,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: -0.2,
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        widget.text,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: widget.isMobile ? 14 : 15,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: -0.2,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    const Icon(
-                      Icons.arrow_forward_rounded,
-                      color: Colors.white,
-                      size: 18,
-                    ),
-                  ],
+                      const SizedBox(width: 8),
+                      const Icon(
+                        Icons.arrow_forward_rounded,
+                        color: Colors.white,
+                        size: 18,
+                      ),
+                    ],
+                  ),
                 ),
                 if (_isHovered)
                   AnimatedBuilder(
@@ -1010,7 +1209,8 @@ class _HeroSecondaryDemoButton extends StatefulWidget {
   });
 
   @override
-  State<_HeroSecondaryDemoButton> createState() => _HeroSecondaryDemoButtonState();
+  State<_HeroSecondaryDemoButton> createState() =>
+      _HeroSecondaryDemoButtonState();
 }
 
 class _HeroSecondaryDemoButtonState extends State<_HeroSecondaryDemoButton> {

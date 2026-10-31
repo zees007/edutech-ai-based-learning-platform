@@ -20,7 +20,9 @@ class ExportEcosystemSection extends StatelessWidget {
           decoration: BoxDecoration(
             color: const Color(0xFF10B981).withValues(alpha: 0.10),
             borderRadius: BorderRadius.circular(9999),
-            border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.28)),
+            border: Border.all(
+              color: const Color(0xFF10B981).withValues(alpha: 0.28),
+            ),
             boxShadow: [
               BoxShadow(
                 color: const Color(0xFF10B981).withValues(alpha: 0.16),
@@ -38,7 +40,11 @@ class ExportEcosystemSection extends StatelessWidget {
                   shape: BoxShape.circle,
                   color: Color(0xFF10B981),
                   boxShadow: [
-                    BoxShadow(color: Color(0xFF10B981), blurRadius: 8, spreadRadius: 1),
+                    BoxShadow(
+                      color: Color(0xFF10B981),
+                      blurRadius: 8,
+                      spreadRadius: 1,
+                    ),
                   ],
                 ),
               ),
@@ -132,7 +138,10 @@ class ExportEcosystemSection extends StatelessWidget {
                   top: isMobile ? 10 : 16,
                   left: isMobile ? 10 : 16,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xDD090A14),
                       borderRadius: BorderRadius.circular(9999),
@@ -151,7 +160,10 @@ class ExportEcosystemSection extends StatelessWidget {
                             color: Color(0xFF10B981),
                             shape: BoxShape.circle,
                             boxShadow: [
-                              BoxShadow(color: Color(0xFF10B981), blurRadius: 6),
+                              BoxShadow(
+                                color: Color(0xFF10B981),
+                                blurRadius: 6,
+                              ),
                             ],
                           ),
                         ),
@@ -174,7 +186,10 @@ class ExportEcosystemSection extends StatelessWidget {
                   bottom: isMobile ? 10 : 16,
                   right: isMobile ? 10 : 16,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xEE090A14),
                       borderRadius: BorderRadius.circular(9999),
@@ -207,7 +222,8 @@ class ExportEcosystemSection extends StatelessWidget {
                 title: 'Markdown (.md)',
                 badge: 'Obsidian & Notion Ready',
                 color: Color(0xFFA855F7),
-                description: 'Preserves raw Mermaid.js diagrams that render natively in Obsidian and GitHub, alongside structured session tables and quiz rationales.',
+                description:
+                    'Preserves raw Mermaid.js diagrams that render natively in Obsidian and GitHub, alongside structured session tables and quiz rationales.',
                 tools: ['Obsidian', 'Notion', 'Logseq', 'Bear'],
               ),
               SizedBox(height: 16),
@@ -216,7 +232,8 @@ class ExportEcosystemSection extends StatelessWidget {
                 title: 'Interactive HTML (.html)',
                 badge: 'Zero-Dependency Web',
                 color: Color(0xFF00F5D4),
-                description: 'Standalone, offline-viewable web documents formatted with our custom dark glassmorphism styling. Perfect for sharing with study groups.',
+                description:
+                    'Standalone, offline-viewable web documents formatted with our custom dark glassmorphism styling. Perfect for sharing with study groups.',
                 tools: ['Chrome', 'Safari', 'Firefox', 'AirDrop'],
               ),
               SizedBox(height: 16),
@@ -225,7 +242,8 @@ class ExportEcosystemSection extends StatelessWidget {
                 title: 'Executive PDF (.pdf)',
                 badge: 'Ultra Exclusive',
                 color: Color(0xFFF59E0B),
-                description: 'Printable, professionally formatted study guides with executive typography, blue hierarchy headers, callouts, and comprehensive quiz answer keys.',
+                description:
+                    'Printable, professionally formatted study guides with executive typography, blue hierarchy headers, callouts, and comprehensive quiz answer keys.',
                 tools: ['Print', 'iPad GoodNotes', 'Remarkable', 'Archive'],
               ),
             ],
@@ -241,7 +259,8 @@ class ExportEcosystemSection extends StatelessWidget {
                     title: 'Markdown (.md)',
                     badge: 'Obsidian & Notion Ready',
                     color: Color(0xFFA855F7),
-                    description: 'Preserves raw Mermaid.js diagrams that render natively in Obsidian and GitHub, alongside structured session tables and quiz rationales.',
+                    description:
+                        'Preserves raw Mermaid.js diagrams that render natively in Obsidian and GitHub, alongside structured session tables and quiz rationales.',
                     tools: ['Obsidian', 'Notion', 'Logseq', 'Bear'],
                   ),
                 ),
@@ -252,7 +271,8 @@ class ExportEcosystemSection extends StatelessWidget {
                     title: 'Interactive HTML (.html)',
                     badge: 'Zero-Dependency Web',
                     color: Color(0xFF00F5D4),
-                    description: 'Standalone, offline-viewable web documents formatted with our custom dark glassmorphism styling. Perfect for sharing with study groups.',
+                    description:
+                        'Standalone, offline-viewable web documents formatted with our custom dark glassmorphism styling. Perfect for sharing with study groups.',
                     tools: ['Chrome', 'Safari', 'Firefox', 'AirDrop'],
                   ),
                 ),
@@ -263,7 +283,8 @@ class ExportEcosystemSection extends StatelessWidget {
                     title: 'Executive PDF (.pdf)',
                     badge: 'Ultra Exclusive',
                     color: Color(0xFFF59E0B),
-                    description: 'Printable, professionally formatted study guides with executive typography, blue hierarchy headers, callouts, and comprehensive quiz answer keys.',
+                    description:
+                        'Printable, professionally formatted study guides with executive typography, blue hierarchy headers, callouts, and comprehensive quiz answer keys.',
                     tools: ['Print', 'iPad GoodNotes', 'Remarkable', 'Archive'],
                   ),
                 ),
@@ -298,15 +319,9 @@ class _ExportFormatCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xDD0A0D1D),
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(
-          color: color.withValues(alpha: 0.28),
-          width: 1.2,
-        ),
+        border: Border.all(color: color.withValues(alpha: 0.28), width: 1.2),
         boxShadow: [
-          BoxShadow(
-            color: color.withValues(alpha: 0.10),
-            blurRadius: 24,
-          ),
+          BoxShadow(color: color.withValues(alpha: 0.10), blurRadius: 24),
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.4),
             blurRadius: 18,
@@ -332,7 +347,10 @@ class _ExportFormatCard extends StatelessWidget {
               ),
               const Spacer(),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: color.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(8),
@@ -367,8 +385,7 @@ class _ExportFormatCard extends StatelessWidget {
               height: 1.55,
             ),
           ),
-          const Spacer(),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
           Divider(color: Colors.white.withValues(alpha: 0.08)),
           const SizedBox(height: 12),
           Wrap(
@@ -380,7 +397,9 @@ class _ExportFormatCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: const Color(0xFF0F1226),
                   borderRadius: BorderRadius.circular(6),
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.08),
+                  ),
                 ),
                 child: Text(
                   t,

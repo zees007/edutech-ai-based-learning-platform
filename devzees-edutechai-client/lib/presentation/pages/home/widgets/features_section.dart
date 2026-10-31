@@ -38,31 +38,34 @@ class FeaturesSection extends StatelessWidget {
               ),
             ],
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 6,
-                height: 6,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Color(0xFF2B68F6),
-                  boxShadow: [
-                    BoxShadow(color: Color(0xFF2B68F6), blurRadius: 6),
-                  ],
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 6,
+                  height: 6,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Color(0xFF2B68F6),
+                    boxShadow: [
+                      BoxShadow(color: Color(0xFF2B68F6), blurRadius: 6),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(width: 9),
-              const Text(
-                'ENTERPRISE ARCHITECTURAL ADVANTAGES',
-                style: TextStyle(
-                  color: Color(0xFFD4D8E8),
-                  fontSize: 10.5,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 1.4,
+                const SizedBox(width: 9),
+                const Text(
+                  'ENTERPRISE ARCHITECTURAL ADVANTAGES',
+                  style: TextStyle(
+                    color: Color(0xFFD4D8E8),
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.4,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
         const SizedBox(height: 20),
@@ -101,7 +104,8 @@ class FeaturesSection extends StatelessWidget {
                 iconColor: Color(0xFF2B68F6),
                 title: 'Adaptive Milestone DAGs',
                 tag: 'SUPERVISOR KERNEL',
-                description: 'The Orchestrator agent breaks any open-ended topic into 4–7 progressive milestone nodes with auto prerequisite warmups.',
+                description:
+                    'The Orchestrator agent breaks any open-ended topic into 4–7 progressive milestone nodes with auto prerequisite warmups.',
                 previewWidget: _MilestoneNodesPreview(),
               ),
               SizedBox(height: 20),
@@ -110,7 +114,8 @@ class FeaturesSection extends StatelessWidget {
                 iconColor: Color(0xFF00F5D4),
                 title: 'Socratic Guided Inquiry',
                 tag: 'PEDAGOGICAL ENGINE',
-                description: 'Never dry monologues. Contextual guiding questions, everyday mental models, and progressive anchor analogies tailored to your level.',
+                description:
+                    'Never dry monologues. Contextual guiding questions, everyday mental models, and progressive anchor analogies tailored to your level.',
               ),
               SizedBox(height: 20),
               _BentoFeatureCard(
@@ -118,7 +123,8 @@ class FeaturesSection extends StatelessWidget {
                 iconColor: Color(0xFFE879F9),
                 title: 'Timestamped Vector Video Clips',
                 tag: 'CHROMADB EMBEDDINGS',
-                description: 'Semantic vector search across YouTube transcripts pinpoints the exact timestamp where complex concepts are illustrated visually.',
+                description:
+                    'Semantic vector search across YouTube transcripts pinpoints the exact timestamp where complex concepts are illustrated visually.',
                 previewWidget: _ImageCardPreview(
                   imagePath: 'assets/images/home/vector_video_curator.png',
                 ),
@@ -129,7 +135,8 @@ class FeaturesSection extends StatelessWidget {
                 iconColor: Color(0xFF60A5FA),
                 title: 'Live Scholarly Verification',
                 tag: '250M+ PAPERS',
-                description: 'Live parallel queries to arXiv, OpenAlex, and Semantic Scholar with verified DOI links, citations, and executive AI summaries.',
+                description:
+                    'Live parallel queries to arXiv, OpenAlex, and Semantic Scholar with verified DOI links, citations, and executive AI summaries.',
                 previewWidget: _ImageCardPreview(
                   imagePath: 'assets/images/home/academic_scout_research.png',
                 ),
@@ -140,7 +147,8 @@ class FeaturesSection extends StatelessWidget {
                 iconColor: Color(0xFFF59E0B),
                 title: 'Grounded Formative Quizzes',
                 tag: 'ZERO HALLUCINATIONS',
-                description: 'Assessments generated strictly from verified lesson content with instant XP feedback and targeted remediation explanations.',
+                description:
+                    'Assessments generated strictly from verified lesson content with instant XP feedback and targeted remediation explanations.',
                 previewWidget: _ImageCardPreview(
                   imagePath: 'assets/images/home/formative_quiz_mastery.png',
                 ),
@@ -151,7 +159,8 @@ class FeaturesSection extends StatelessWidget {
                 iconColor: Color(0xFF10B981),
                 title: 'Second Brain Native Export',
                 tag: 'NOTION & OBSIDIAN',
-                description: 'One-click full session export to Obsidian-ready Markdown with embedded Mermaid.js diagrams, Anki flashcards, and styled PDF.',
+                description:
+                    'One-click full session export to Obsidian-ready Markdown with embedded Mermaid.js diagrams, Anki flashcards, and styled PDF.',
                 previewWidget: _ExportPillsPreview(),
               ),
             ],
@@ -170,7 +179,8 @@ class FeaturesSection extends StatelessWidget {
                       iconColor: Color(0xFF2B68F6),
                       title: 'Adaptive Milestone DAG Decomposer',
                       tag: 'AUTONOMOUS SUPERVISOR',
-                      description: 'The supervisor agent decomposes complex domains into structured, dependency-checked learning milestones. Never get overwhelmed by complex topics again.',
+                      description:
+                          'The supervisor agent decomposes complex domains into structured, dependency-checked learning milestones. Never get overwhelmed by complex topics again.',
                       previewWidget: _MilestoneNodesPreview(),
                     ),
                   ),
@@ -182,7 +192,8 @@ class FeaturesSection extends StatelessWidget {
                       iconColor: Color(0xFF00F5D4),
                       title: 'Socratic Guided Inquiry',
                       tag: 'ACTIVE RECALL',
-                      description: 'Instead of passive answers, the tutor presents scaffolding analogies and thought-provoking questions calibrated to your education level.',
+                      description:
+                          'Instead of passive answers, the tutor presents scaffolding analogies and thought-provoking questions calibrated to your education level.',
                       previewWidget: _SocraticDialoguePreview(),
                     ),
                   ),
@@ -200,9 +211,11 @@ class FeaturesSection extends StatelessWidget {
                       iconColor: Color(0xFFE879F9),
                       title: 'Timestamped Video Clips',
                       tag: 'CHROMADB VECTOR SEARCH',
-                      description: 'Pinpoints the exact seconds in university lectures and animations where your active concept is visually proven.',
+                      description:
+                          'Pinpoints the exact seconds in university lectures and animations where your active concept is visually proven.',
                       previewWidget: _ImageCardPreview(
-                        imagePath: 'assets/images/home/vector_video_curator.png',
+                        imagePath:
+                            'assets/images/home/vector_video_curator.png',
                       ),
                     ),
                   ),
@@ -213,9 +226,11 @@ class FeaturesSection extends StatelessWidget {
                       iconColor: Color(0xFF60A5FA),
                       title: 'Live Scholarly Grounding',
                       tag: 'ARXIV & OPENALEX',
-                      description: 'Real academic preprints with authors, publishing dates, and direct links. Zero made-up citations or fake DOIs.',
+                      description:
+                          'Real academic preprints with authors, publishing dates, and direct links. Zero made-up citations or fake DOIs.',
                       previewWidget: _ImageCardPreview(
-                        imagePath: 'assets/images/home/academic_scout_research.png',
+                        imagePath:
+                            'assets/images/home/academic_scout_research.png',
                       ),
                     ),
                   ),
@@ -226,9 +241,11 @@ class FeaturesSection extends StatelessWidget {
                       iconColor: Color(0xFFF59E0B),
                       title: 'Grounded Quizzes & XP',
                       tag: 'RETENTION GRADING',
-                      description: 'Immediate formative quizzes graded by the Quizmaster agent to lock insights into long-term memory before advancing.',
+                      description:
+                          'Immediate formative quizzes graded by the Quizmaster agent to lock insights into long-term memory before advancing.',
                       previewWidget: _ImageCardPreview(
-                        imagePath: 'assets/images/home/formative_quiz_mastery.png',
+                        imagePath:
+                            'assets/images/home/formative_quiz_mastery.png',
                       ),
                     ),
                   ),
@@ -242,7 +259,8 @@ class FeaturesSection extends StatelessWidget {
                 iconColor: Color(0xFF10B981),
                 title: 'Second Brain Native Knowledge Portability',
                 tag: 'OBSIDIAN • NOTION • MERMAID • PDF',
-                description: 'Own your knowledge graph forever. Export with preserved LaTeX equations, Mermaid flowchart diagrams, and citation tables with one single click.',
+                description:
+                    'Own your knowledge graph forever. Export with preserved LaTeX equations, Mermaid flowchart diagrams, and citation tables with one single click.',
                 previewWidget: _ExportPillsPreview(),
               ),
             ],
@@ -333,28 +351,32 @@ class _BentoFeatureCardState extends State<_BentoFeatureCard> {
                       ),
                     ],
                   ),
-                  child: Icon(
-                    widget.icon,
-                    color: widget.iconColor,
-                    size: 22,
-                  ),
+                  child: Icon(widget.icon, color: widget.iconColor, size: 22),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.04),
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.08),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
                     ),
-                  ),
-                  child: Text(
-                    widget.tag,
-                    style: TextStyle(
-                      color: widget.iconColor,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 1.0,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.04),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.08),
+                      ),
+                    ),
+                    child: Text(
+                      widget.tag,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                      style: TextStyle(
+                        color: widget.iconColor,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.0,
+                      ),
                     ),
                   ),
                 ),
@@ -416,9 +438,19 @@ class _MilestoneNodesPreview extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         child: Row(
           children: [
-            _buildStepPill('1. Prereqs', 'Vectors', const Color(0xFF10B981), isDone: true),
+            _buildStepPill(
+              '1. Prereqs',
+              'Vectors',
+              const Color(0xFF10B981),
+              isDone: true,
+            ),
             _buildConnector(),
-            _buildStepPill('2. Core', 'Bloch Sphere', const Color(0xFF2B68F6), isActive: true),
+            _buildStepPill(
+              '2. Core',
+              'Bloch Sphere',
+              const Color(0xFF2B68F6),
+              isActive: true,
+            ),
             _buildConnector(),
             _buildStepPill('3. Gate', 'Hadamard', const Color(0xFF64748B)),
             _buildConnector(),
@@ -429,7 +461,13 @@ class _MilestoneNodesPreview extends StatelessWidget {
     );
   }
 
-  Widget _buildStepPill(String step, String name, Color color, {bool isDone = false, bool isActive = false}) {
+  Widget _buildStepPill(
+    String step,
+    String name,
+    Color color, {
+    bool isDone = false,
+    bool isActive = false,
+  }) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
@@ -445,16 +483,41 @@ class _MilestoneNodesPreview extends StatelessWidget {
           if (isDone)
             const Icon(Icons.check_circle, color: Color(0xFF10B981), size: 12)
           else if (isActive)
-            Container(width: 6, height: 6, decoration: BoxDecoration(color: color, shape: BoxShape.circle))
+            Container(
+              width: 6,
+              height: 6,
+              decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+            )
           else
-            Container(width: 5, height: 5, decoration: BoxDecoration(color: color.withValues(alpha: 0.5), shape: BoxShape.circle)),
+            Container(
+              width: 5,
+              height: 5,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.5),
+                shape: BoxShape.circle,
+              ),
+            ),
           const SizedBox(width: 6),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(step, style: TextStyle(color: color, fontSize: 9.5, fontWeight: FontWeight.w700)),
-              Text(name, style: const TextStyle(color: Color(0xFFE2E8F0), fontSize: 11, fontWeight: FontWeight.w600)),
+              Text(
+                step,
+                style: TextStyle(
+                  color: color,
+                  fontSize: 9.5,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              Text(
+                name,
+                style: const TextStyle(
+                  color: Color(0xFFE2E8F0),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ],
           ),
         ],
@@ -465,7 +528,11 @@ class _MilestoneNodesPreview extends StatelessWidget {
   Widget _buildConnector() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 6),
-      child: Icon(Icons.arrow_forward_rounded, size: 13, color: Colors.white.withValues(alpha: 0.25)),
+      child: Icon(
+        Icons.arrow_forward_rounded,
+        size: 13,
+        color: Colors.white.withValues(alpha: 0.25),
+      ),
     );
   }
 }
@@ -491,7 +558,11 @@ class _SocraticDialoguePreview extends StatelessWidget {
               color: const Color(0xFF00F5D4).withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.auto_awesome, color: Color(0xFF00F5D4), size: 12),
+            child: const Icon(
+              Icons.auto_awesome,
+              color: Color(0xFF00F5D4),
+              size: 12,
+            ),
           ),
           const SizedBox(width: 10),
           const Expanded(
@@ -520,10 +591,26 @@ class _ExportPillsPreview extends StatelessWidget {
       spacing: 10,
       runSpacing: 8,
       children: [
-        _buildPill('Obsidian (.md)', Icons.note_alt_outlined, const Color(0xFF9061F9)),
-        _buildPill('Notion Import', Icons.article_outlined, const Color(0xFF60A5FA)),
-        _buildPill('Mermaid.js Flowcharts', Icons.account_tree_outlined, const Color(0xFF00F5D4)),
-        _buildPill('Executive PDF', Icons.picture_as_pdf_outlined, const Color(0xFFF43F5E)),
+        _buildPill(
+          'Obsidian (.md)',
+          Icons.note_alt_outlined,
+          const Color(0xFF9061F9),
+        ),
+        _buildPill(
+          'Notion Import',
+          Icons.article_outlined,
+          const Color(0xFF60A5FA),
+        ),
+        _buildPill(
+          'Mermaid.js Flowcharts',
+          Icons.account_tree_outlined,
+          const Color(0xFF00F5D4),
+        ),
+        _buildPill(
+          'Executive PDF',
+          Icons.picture_as_pdf_outlined,
+          const Color(0xFFF43F5E),
+        ),
       ],
     );
   }
@@ -536,20 +623,23 @@ class _ExportPillsPreview extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: color.withValues(alpha: 0.25)),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: color, size: 14),
-          const SizedBox(width: 6),
-          Text(
-            title,
-            style: TextStyle(
-              color: color,
-              fontSize: 11.5,
-              fontWeight: FontWeight.w700,
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: color, size: 14),
+            const SizedBox(width: 6),
+            Text(
+              title,
+              style: TextStyle(
+                color: color,
+                fontSize: 11.5,
+                fontWeight: FontWeight.w700,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -558,9 +648,7 @@ class _ExportPillsPreview extends StatelessWidget {
 class _ImageCardPreview extends StatelessWidget {
   final String imagePath;
 
-  const _ImageCardPreview({
-    required this.imagePath,
-  });
+  const _ImageCardPreview({required this.imagePath});
 
   @override
   Widget build(BuildContext context) {
@@ -590,7 +678,10 @@ class _ImageCardPreview extends StatelessWidget {
               return Container(
                 color: const Color(0xFF0D0E1C),
                 child: const Center(
-                  child: Icon(Icons.broken_image_rounded, color: Colors.white24),
+                  child: Icon(
+                    Icons.broken_image_rounded,
+                    color: Colors.white24,
+                  ),
                 ),
               );
             },

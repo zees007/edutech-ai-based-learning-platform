@@ -261,22 +261,28 @@ class _N8nCanvasState extends State<N8nCanvas>
                 child: const Center(child: Text('🤖', style: TextStyle(fontSize: 18))),
               ),
               const SizedBox(width: 10),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'AI Orchestrator',
-                    style: TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w800,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'AI Orchestrator',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
-                  ),
-                  Text(
-                    'Supervisor Agent',
-                    style: TextStyle(color: AppColors.textSecondary, fontSize: 10),
-                  ),
-                ],
+                    Text(
+                      'Supervisor Agent',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(color: AppColors.textSecondary, fontSize: 10),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),

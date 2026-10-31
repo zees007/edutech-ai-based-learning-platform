@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -366,7 +367,28 @@ void main() {
       expect(find.text('Agents'), findsOneWidget);
       expect(find.text('Pricing'), findsOneWidget);
       expect(find.text('FAQ'), findsOneWidget);
+      expect(find.text('Sign In'), findsOneWidget);
       expect(find.text('Get Started'), findsOneWidget);
+
+      // Verify mouse hover interaction on Sign In button
+      final signInFinder = find.text('Sign In');
+      final gesture = await tester.createGesture(kind: PointerDeviceKind.mouse);
+      await gesture.addPointer(location: Offset.zero);
+      addTearDown(gesture.removePointer);
+      await gesture.moveTo(tester.getCenter(signInFinder));
+      await tester.pump(const Duration(milliseconds: 200));
+      expect(tester.takeException(), isNull);
+
+      // Verify mouse hover interaction & shimmer wave on Get Started button
+      final getStartedFinder = find.text('Get Started');
+      await gesture.moveTo(tester.getCenter(getStartedFinder));
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(tester.takeException(), isNull);
+
+      // Move mouse away to reset hover state
+      await gesture.moveTo(Offset.zero);
+      await tester.pump(const Duration(milliseconds: 200));
       expect(tester.takeException(), isNull);
     });
   });
