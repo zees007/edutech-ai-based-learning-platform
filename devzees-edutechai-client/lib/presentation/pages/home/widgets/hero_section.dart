@@ -225,7 +225,7 @@ class _HeroSectionState extends State<HeroSection> {
                                       : (isTablet ? 40 : 52),
                                   fontWeight: FontWeight.w900,
                                   letterSpacing: -1.2,
-                                  height: 1.12,
+                                  height: 1.20,
                                 ),
                               ),
                             ],
