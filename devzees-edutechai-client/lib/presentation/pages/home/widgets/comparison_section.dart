@@ -139,7 +139,7 @@ class _ComparisonSectionState extends State<ComparisonSection> {
                 ),
                 const SizedBox(width: 8),
                 const Text(
-                  'THE ARCHITECTURAL ADVANTAGE',
+                  'WHY EDUTECH AI',
                   style: TextStyle(
                     color: Color(0xFFFBCFE8),
                     fontSize: 11,
