@@ -23,6 +23,7 @@ class HomeNavbar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isAuthenticated = ref.watch(authProvider.select((s) => s.isAuthenticated));
+    final bool isDesktop = Responsive.isDesktop(context);
     final bool isMobile = Responsive.isMobile(context);
 
     return SpringEntranceBlock(
@@ -58,7 +59,7 @@ class HomeNavbar extends ConsumerWidget {
             filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
             child: Padding(
               padding: EdgeInsets.symmetric(
-                horizontal: isMobile ? 16 : 24,
+                horizontal: isMobile ? 12 : 24,
                 vertical: 8,
               ),
               child: Row(
@@ -114,18 +115,26 @@ class HomeNavbar extends ConsumerWidget {
                   ),
 
                   // ─── 2. Center Menu Links (Borderless, Hover Glassy Look) ───
-                  if (!isMobile)
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        _NavPill(title: 'Workspace', onTap: () => onNavTap?.call('preview')),
-                        _NavPill(title: 'Features', onTap: () => onNavTap?.call('features')),
-                        _NavPill(title: 'Modes', onTap: () => onNavTap?.call('modes')),
-                        _NavPill(title: 'Compare', onTap: () => onNavTap?.call('comparison')),
-                        _NavPill(title: 'Agents', onTap: () => onNavTap?.call('agents')),
-                        _NavPill(title: 'Pricing', onTap: () => onNavTap?.call('pricing')),
-                        _NavPill(title: 'FAQ', onTap: () => onNavTap?.call('faq')),
-                      ],
+                  if (isDesktop)
+                    Flexible(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              _NavPill(title: 'Workspace', onTap: () => onNavTap?.call('preview')),
+                              _NavPill(title: 'Features', onTap: () => onNavTap?.call('features')),
+                              _NavPill(title: 'Modes', onTap: () => onNavTap?.call('modes')),
+                              _NavPill(title: 'Compare', onTap: () => onNavTap?.call('comparison')),
+                              _NavPill(title: 'Agents', onTap: () => onNavTap?.call('agents')),
+                              _NavPill(title: 'Pricing', onTap: () => onNavTap?.call('pricing')),
+                              _NavPill(title: 'FAQ', onTap: () => onNavTap?.call('faq')),
+                            ],
+                          ),
+                        ),
+                      ),
                     ),
 
                   // ─── 3. Auth & Action Pill Buttons (Gradient Button Look) ───
@@ -136,9 +145,10 @@ class HomeNavbar extends ConsumerWidget {
                         _NavbarGradientActionPill(
                           text: 'Open Workspace →',
                           onTap: () => context.go('/learning'),
+                          isMobile: isMobile,
                         ),
                       ] else ...[
-                        if (!isMobile) ...[
+                        if (isDesktop) ...[
                           MouseRegion(
                             cursor: SystemMouseCursors.click,
                             child: GestureDetector(
@@ -161,9 +171,10 @@ class HomeNavbar extends ConsumerWidget {
                         _NavbarGradientActionPill(
                           text: 'Get Started',
                           onTap: () => context.go('/auth'),
+                          isMobile: isMobile,
                         ),
                       ],
-                      if (isMobile) ...[
+                      if (!isDesktop) ...[
                         const SizedBox(width: 6),
                         _MobileMenuButton(
                           onNavTap: onNavTap,
@@ -244,10 +255,12 @@ class _NavPillState extends State<_NavPill> {
 class _NavbarGradientActionPill extends StatefulWidget {
   final String text;
   final VoidCallback onTap;
+  final bool isMobile;
 
   const _NavbarGradientActionPill({
     required this.text,
     required this.onTap,
+    this.isMobile = false,
   });
 
   @override
@@ -295,7 +308,10 @@ class _NavbarGradientActionPillState extends State<_NavbarGradientActionPill>
           curve: Curves.easeOutCubic,
           child: Container(
             clipBehavior: Clip.antiAlias,
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 9),
+            padding: EdgeInsets.symmetric(
+              horizontal: widget.isMobile ? 14 : 20,
+              vertical: widget.isMobile ? 8 : 9,
+            ),
             decoration: BoxDecoration(
               gradient: AppColors.primaryGradient,
               borderRadius: BorderRadius.circular(9999),
@@ -320,9 +336,9 @@ class _NavbarGradientActionPillState extends State<_NavbarGradientActionPill>
               children: [
                 Text(
                   widget.text,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Colors.white,
-                    fontSize: 13.5,
+                    fontSize: widget.isMobile ? 12.5 : 13.5,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 0.2,
                   ),

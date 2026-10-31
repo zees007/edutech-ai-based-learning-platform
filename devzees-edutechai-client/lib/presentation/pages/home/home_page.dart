@@ -48,6 +48,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   final GlobalKey _aboutKey = GlobalKey();
   final GlobalKey _pricingKey = GlobalKey();
   final GlobalKey _faqKey = GlobalKey();
+  ThemeMode _themeMode = ThemeMode.system;
 
   @override
   void initState() {
@@ -58,16 +59,21 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _themeMode = ref.read(themeModeProvider);
+  }
+
+  @override
   void dispose() {
     _scrollController.removeListener(_scrollListener);
     _scrollController.dispose();
     // Restore AppColors to active user preference when leaving home page
-    final themeMode = ref.read(themeModeProvider);
     final platformBrightness =
         WidgetsBinding.instance.platformDispatcher.platformBrightness;
     final isDark =
-        themeMode == ThemeMode.dark ||
-        (themeMode == ThemeMode.system &&
+        _themeMode == ThemeMode.dark ||
+        (_themeMode == ThemeMode.system &&
             platformBrightness == Brightness.dark);
     AppColors.setBrightness(isDark ? Brightness.dark : Brightness.light);
     super.dispose();

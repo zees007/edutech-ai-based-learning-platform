@@ -125,15 +125,68 @@ class CtaFooter extends StatelessWidget {
           child: LayoutBuilder(
             builder: (context, constraints) {
               final bool isNarrow = constraints.maxWidth < 720;
-              return Flex(
-                direction: isNarrow ? Axis.vertical : Axis.horizontal,
+              if (isNarrow) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Color(0xFF00F5D4),
+                            boxShadow: [
+                              BoxShadow(color: Color(0xFF00F5D4), blurRadius: 6),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        const Text(
+                          'EduTech AI',
+                          style: TextStyle(
+                            color: Color(0xFFEEF0F6),
+                            fontWeight: FontWeight.w800,
+                            fontSize: 16,
+                            letterSpacing: -0.2,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      '© ${DateTime.now().year} EduTech AI — engineered for autonomous deep work & mastery.',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: Color(0xFF8E94A8),
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Wrap(
+                      spacing: 24,
+                      runSpacing: 14,
+                      alignment: WrapAlignment.center,
+                      children: const [
+                        _FooterLink('Terms of Service'),
+                        _FooterLink('Privacy Policy'),
+                        _FooterLink('Contact Support'),
+                        _FooterLink('Documentation'),
+                      ],
+                    ),
+                  ],
+                );
+              }
+              return Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: isNarrow ? CrossAxisAlignment.center : CrossAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Flexible(
-                    flex: isNarrow ? 0 : 1,
+                  Expanded(
                     child: Column(
-                      crossAxisAlignment: isNarrow ? CrossAxisAlignment.center : CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
                           mainAxisSize: MainAxisSize.min,
@@ -164,29 +217,26 @@ class CtaFooter extends StatelessWidget {
                         const SizedBox(height: 6),
                         Text(
                           '© ${DateTime.now().year} EduTech AI — engineered for autonomous deep work & mastery.',
-                          style: TextStyle(
-                            color: const Color(0xFF8E94A8),
-                            fontSize: isNarrow ? 11.5 : 12.5,
+                          style: const TextStyle(
+                            color: Color(0xFF8E94A8),
+                            fontSize: 12.5,
                             fontWeight: FontWeight.w400,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  if (isNarrow) const SizedBox(height: 24),
-                  Flexible(
-                    flex: isNarrow ? 0 : 1,
-                    child: Wrap(
-                      spacing: 24,
-                      runSpacing: 14,
-                      alignment: isNarrow ? WrapAlignment.center : WrapAlignment.end,
-                      children: const [
-                        _FooterLink('Terms of Service'),
-                        _FooterLink('Privacy Policy'),
-                        _FooterLink('Contact Support'),
-                        _FooterLink('Documentation'),
-                      ],
-                    ),
+                  const SizedBox(width: 24),
+                  Wrap(
+                    spacing: 24,
+                    runSpacing: 14,
+                    alignment: WrapAlignment.end,
+                    children: const [
+                      _FooterLink('Terms of Service'),
+                      _FooterLink('Privacy Policy'),
+                      _FooterLink('Contact Support'),
+                      _FooterLink('Documentation'),
+                    ],
                   ),
                 ],
               );

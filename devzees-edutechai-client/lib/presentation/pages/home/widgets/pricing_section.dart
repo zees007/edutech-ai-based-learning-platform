@@ -348,17 +348,13 @@ class _PricingSectionState extends ConsumerState<PricingSection> {
               ),
             ],
           ),
-          child: Flex(
-            direction: isMobile ? Axis.vertical : Axis.horizontal,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Flexible(
-                child: Column(
-                  crossAxisAlignment: isMobile ? CrossAxisAlignment.center : CrossAxisAlignment.start,
+          child: isMobile
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Row(
-                      mainAxisSize: isMobile ? MainAxisSize.min : MainAxisSize.max,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Container(
                           width: 36,
@@ -374,7 +370,7 @@ class _PricingSectionState extends ConsumerState<PricingSection> {
                           ),
                         ),
                         const SizedBox(width: 12),
-                        Expanded(
+                        Flexible(
                           child: Text(
                             'EduTech AI for Universities & Research Labs',
                             style: TextStyle(
@@ -387,35 +383,97 @@ class _PricingSectionState extends ConsumerState<PricingSection> {
                       ],
                     ),
                     const SizedBox(height: 10),
-                    Text(
+                    const Text(
                       'Campus-wide seat licensing, dedicated LMS/Canvas LTI integration, private model endpoints, and departmental telemetry analytics.',
-                      textAlign: isMobile ? TextAlign.center : TextAlign.start,
-                      style: const TextStyle(
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
                         color: Color(0xFF94A3B8),
                         fontSize: 13.5,
                         height: 1.5,
                       ),
                     ),
+                    const SizedBox(height: 20),
+                    OutlinedButton.icon(
+                      onPressed: () {
+                        context.go('/auth');
+                      },
+                      icon: const Icon(Icons.business_center_rounded, size: 16),
+                      label: const Text('Contact Solutions Architect', style: TextStyle(fontWeight: FontWeight.bold)),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        side: const BorderSide(color: Color(0xFF3B82F6), width: 1.2),
+                        padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        backgroundColor: const Color(0xFF3B82F6).withValues(alpha: 0.10),
+                      ),
+                    ),
+                  ],
+                )
+              : Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                width: 36,
+                                height: 36,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: const Icon(
+                                  Icons.account_balance_rounded,
+                                  color: Color(0xFF60A5FA),
+                                  size: 20,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              const Expanded(
+                                child: Text(
+                                  'EduTech AI for Universities & Research Labs',
+                                  style: TextStyle(
+                                    color: Color(0xFFF1F5F9),
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          const Text(
+                            'Campus-wide seat licensing, dedicated LMS/Canvas LTI integration, private model endpoints, and departmental telemetry analytics.',
+                            style: TextStyle(
+                              color: Color(0xFF94A3B8),
+                              fontSize: 13.5,
+                              height: 1.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 24),
+                    OutlinedButton.icon(
+                      onPressed: () {
+                        context.go('/auth');
+                      },
+                      icon: const Icon(Icons.business_center_rounded, size: 16),
+                      label: const Text('Contact Solutions Architect', style: TextStyle(fontWeight: FontWeight.bold)),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        side: const BorderSide(color: Color(0xFF3B82F6), width: 1.2),
+                        padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        backgroundColor: const Color(0xFF3B82F6).withValues(alpha: 0.10),
+                      ),
+                    ),
                   ],
                 ),
-              ),
-              if (isMobile) const SizedBox(height: 20),
-              OutlinedButton.icon(
-                onPressed: () {
-                  context.go('/auth');
-                },
-                icon: const Icon(Icons.business_center_rounded, size: 16),
-                label: const Text('Contact Solutions Architect', style: TextStyle(fontWeight: FontWeight.bold)),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  side: const BorderSide(color: Color(0xFF3B82F6), width: 1.2),
-                  padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                  backgroundColor: const Color(0xFF3B82F6).withValues(alpha: 0.10),
-                ),
-              ),
-            ],
-          ),
         ),
       ],
     );
