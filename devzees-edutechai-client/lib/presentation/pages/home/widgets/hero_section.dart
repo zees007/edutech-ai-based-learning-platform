@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
 import 'package:devzees_edutechai_client/core/constants/responsive.dart';
@@ -129,25 +130,36 @@ class _HeroSectionState extends State<HeroSection> {
           ),
 
           // ─── Directional Scrim Overlay ───
-          // Protects left-aligned hero copy while keeping the right illustration completely bright and clear
+          // On Desktop: Directional horizontal scrim protects left-aligned hero copy while keeping the right illustration completely bright and clear.
+          // On Mobile: Enhanced high-contrast scrim (66%-78% opacity) providing solid readability for the hero copy while still letting the background slider artwork show through.
           Positioned.fill(
             child: DecoratedBox(
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.centerLeft,
-                  end: Alignment.centerRight,
-                  colors: [
-                    const Color(
-                      0xFF030712,
-                    ).withValues(alpha: isMobile ? 0.88 : 0.96),
-                    const Color(0xFF030712).withValues(
-                      alpha: isMobile ? 0.70 : (isTablet ? 0.70 : 0.45),
-                    ),
-                    const Color(0xFF030712).withValues(alpha: 0.10),
-                    Colors.transparent,
-                  ],
-                  stops: const [0.0, 0.32, 0.58, 1.0],
-                ),
+                gradient: isMobile
+                    ? LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          const Color(0xFF030712).withValues(alpha: 0.78),
+                          const Color(0xFF030712).withValues(alpha: 0.66),
+                          const Color(0xFF030712).withValues(alpha: 0.70),
+                          const Color(0xFF030712).withValues(alpha: 0.80),
+                        ],
+                        stops: const [0.0, 0.25, 0.70, 1.0],
+                      )
+                    : LinearGradient(
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
+                        colors: [
+                          const Color(0xFF030712).withValues(alpha: 0.96),
+                          const Color(
+                            0xFF030712,
+                          ).withValues(alpha: isTablet ? 0.70 : 0.45),
+                          const Color(0xFF030712).withValues(alpha: 0.10),
+                          Colors.transparent,
+                        ],
+                        stops: const [0.0, 0.32, 0.58, 1.0],
+                      ),
               ),
             ),
           ),
@@ -177,106 +189,165 @@ class _HeroSectionState extends State<HeroSection> {
                 // Symmetrical top spacing matching bottom margin
                 SizedBox(height: verticalMargin),
 
-                // Left-aligned Hero Content (Heading, Sub-heading, and Action Buttons)
+                // Hero Content (Centered on mobile for a unified premium look; left-aligned on desktop/tablet)
                 Padding(
                   padding: EdgeInsets.only(
                     left: isMobile ? 20.0 : (isTablet ? 36.0 : 56.0),
                     right: isMobile ? 20.0 : 36.0,
                   ),
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      maxWidth: isMobile
-                          ? double.infinity
-                          : (isTablet ? 540 : 620),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // Heading:
-                        // Line 1: "Master Any Subject with a"
-                        // Line 2: "Team of AI Agents" (with gradient look)
-                        SpringEntranceBlock(
-                          delayMs: 250,
-                          durationMs: 700,
-                          fromOffset: const Offset(0, 18),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Master Any Subject with a',
-                                style: TextStyle(
-                                  fontSize: isMobile
-                                      ? 28
-                                      : (isTablet ? 38 : 50),
-                                  fontWeight: FontWeight.w900,
-                                  color: const Color(0xFFF8FAFC),
-                                  letterSpacing: -1.2,
-                                  height: 1.12,
+                  child: Align(
+                    alignment: isMobile
+                        ? Alignment.center
+                        : Alignment.centerLeft,
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxWidth: isMobile ? 540 : (isTablet ? 540 : 620),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: isMobile
+                            ? CrossAxisAlignment.center
+                            : CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Heading:
+                          // Line 1: "Master Any Subject with a"
+                          // Line 2: "Team of AI Agents" (with gradient look)
+                          SpringEntranceBlock(
+                            delayMs: 250,
+                            durationMs: 700,
+                            fromOffset: const Offset(0, 18),
+                            child: Column(
+                              crossAxisAlignment: isMobile
+                                  ? CrossAxisAlignment.center
+                                  : CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Master Any Subject with a',
+                                  textAlign: isMobile
+                                      ? TextAlign.center
+                                      : TextAlign.start,
+                                  style: TextStyle(
+                                    fontSize: isMobile
+                                        ? 28
+                                        : (isTablet ? 38 : 50),
+                                    fontWeight: FontWeight.w900,
+                                    color: const Color(0xFFF8FAFC),
+                                    letterSpacing: -1.2,
+                                    height: 1.12,
+                                    shadows: isMobile
+                                        ? [
+                                            Shadow(
+                                              color: Colors.black.withValues(
+                                                alpha: 0.90,
+                                              ),
+                                              blurRadius: 4,
+                                              offset: const Offset(0, 1),
+                                            ),
+                                            Shadow(
+                                              color: Colors.black.withValues(
+                                                alpha: 0.75,
+                                              ),
+                                              blurRadius: 14,
+                                              offset: const Offset(0, 2),
+                                            ),
+                                          ]
+                                        : null,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 4),
-                              GradientText(
-                                'Team of AI Agents',
-                                gradient: AppColors.primaryGradient,
-                                style: TextStyle(
-                                  fontSize: isMobile
-                                      ? 30
-                                      : (isTablet ? 40 : 52),
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: -1.2,
-                                  height: 1.20,
+                                const SizedBox(height: 4),
+                                GradientText(
+                                  'Team of AI Agents',
+                                  textAlign: isMobile
+                                      ? TextAlign.center
+                                      : TextAlign.start,
+                                  gradient: AppColors.primaryGradient,
+                                  style: TextStyle(
+                                    fontSize: isMobile
+                                        ? 30
+                                        : (isTablet ? 40 : 52),
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: -1.2,
+                                    height: 1.20,
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-
-                        // Sub-heading Text
-                        SpringEntranceBlock(
-                          delayMs: 500,
-                          durationMs: 700,
-                          fromOffset: const Offset(0, 16),
-                          child: Text(
-                            'Stop skimming passive chatbot text. Our supervisor agent decomposes any topic into adaptive milestones, orchestrating verified Socratic dialogue, timestamped YouTube video clips, live arXiv citations, research papers, and interactive assessments in real time.',
-                            style: TextStyle(
-                              fontSize: isMobile
-                                  ? 14.5
-                                  : (isTablet ? 15.5 : 16.5),
-                              color: const Color(0xFFCBD5E1),
-                              fontWeight: FontWeight.w400,
-                              height: 1.62,
-                              letterSpacing: -0.2,
+                              ],
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 32),
+                          const SizedBox(height: 20),
 
-                        // Action Buttons: Start Learning for Free & Watch a Demo
-                        SpringEntranceBlock(
-                          delayMs: 650,
-                          durationMs: 700,
-                          fromOffset: const Offset(0, 16),
-                          child: Wrap(
-                            spacing: 16,
-                            runSpacing: 12,
-                            crossAxisAlignment: WrapCrossAlignment.center,
-                            children: [
-                              _HeroPrimaryButton(
-                                text: 'Start Learning for Free',
-                                onTap: () => context.go('/auth'),
-                                isMobile: isMobile,
+                          // Sub-heading Text
+                          SpringEntranceBlock(
+                            delayMs: 500,
+                            durationMs: 700,
+                            fromOffset: const Offset(0, 16),
+                            child: Text(
+                              'Stop skimming passive chatbot text. Our supervisor agent decomposes any topic into adaptive milestones, orchestrating verified Socratic dialogue, timestamped YouTube video clips, live arXiv citations, research papers, and interactive assessments in real time.',
+                              textAlign: isMobile
+                                  ? TextAlign.center
+                                  : TextAlign.start,
+                              style: TextStyle(
+                                fontSize: isMobile
+                                    ? 14.5
+                                    : (isTablet ? 15.5 : 16.5),
+                                color: isMobile
+                                    ? const Color(0xFFE2E8F0)
+                                    : const Color(0xFFCBD5E1),
+                                fontWeight: isMobile
+                                    ? FontWeight.w500
+                                    : FontWeight.w400,
+                                height: 1.62,
+                                letterSpacing: -0.2,
+                                shadows: isMobile
+                                    ? [
+                                        Shadow(
+                                          color: Colors.black.withValues(
+                                            alpha: 0.85,
+                                          ),
+                                          blurRadius: 4,
+                                          offset: const Offset(0, 1),
+                                        ),
+                                        Shadow(
+                                          color: Colors.black.withValues(
+                                            alpha: 0.65,
+                                          ),
+                                          blurRadius: 12,
+                                          offset: const Offset(0, 1),
+                                        ),
+                                      ]
+                                    : null,
                               ),
-                              _HeroSecondaryDemoButton(
-                                text: 'Watch a Demo',
-                                onTap: () => widget.onExploreTap?.call(),
-                                isMobile: isMobile,
-                              ),
-                            ],
+                            ),
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 32),
+
+                          // Action Buttons: Start Learning for Free & Watch a Demo
+                          SpringEntranceBlock(
+                            delayMs: 650,
+                            durationMs: 700,
+                            fromOffset: const Offset(0, 16),
+                            child: Wrap(
+                              spacing: 16,
+                              runSpacing: 12,
+                              alignment: isMobile
+                                  ? WrapAlignment.center
+                                  : WrapAlignment.start,
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              children: [
+                                _HeroPrimaryButton(
+                                  text: 'Start Learning for Free',
+                                  onTap: () => context.go('/auth'),
+                                  isMobile: isMobile,
+                                ),
+                                _HeroSecondaryDemoButton(
+                                  text: 'Watch a Demo',
+                                  onTap: () => widget.onExploreTap?.call(),
+                                  isMobile: isMobile,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -287,48 +358,49 @@ class _HeroSectionState extends State<HeroSection> {
             ),
           ),
 
-          // ─── 3. Subtle Floating Slider Indicator Pills (Bottom-Right) ───
-          Positioned(
-            bottom: isMobile ? 18 : 28,
-            right: isMobile ? 20 : 36,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: List.generate(_bgImages.length, (index) {
-                final bool isActive = _currentBgIndex == index;
-                return GestureDetector(
-                  onTap: () => _setBgIndex(index),
-                  child: MouseRegion(
-                    cursor: SystemMouseCursors.click,
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 400),
-                      curve: Curves.easeOutCubic,
-                      margin: const EdgeInsets.symmetric(horizontal: 4),
-                      width: isActive ? 28 : 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        gradient: isActive ? AppColors.primaryGradient : null,
-                        color: isActive
-                            ? null
-                            : Colors.white.withValues(alpha: 0.35),
-                        borderRadius: BorderRadius.circular(9999),
-                        boxShadow: isActive
-                            ? [
-                                BoxShadow(
-                                  color: AppColors.primary.withValues(
-                                    alpha: 0.5,
+          // ─── 3. Subtle Floating Slider Indicator Pills (Bottom-Right, hidden on mobile) ───
+          if (!isMobile)
+            Positioned(
+              bottom: 28,
+              right: 36,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: List.generate(_bgImages.length, (index) {
+                  final bool isActive = _currentBgIndex == index;
+                  return GestureDetector(
+                    onTap: () => _setBgIndex(index),
+                    child: MouseRegion(
+                      cursor: SystemMouseCursors.click,
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 400),
+                        curve: Curves.easeOutCubic,
+                        margin: const EdgeInsets.symmetric(horizontal: 4),
+                        width: isActive ? 28 : 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          gradient: isActive ? AppColors.primaryGradient : null,
+                          color: isActive
+                              ? null
+                              : Colors.white.withValues(alpha: 0.35),
+                          borderRadius: BorderRadius.circular(9999),
+                          boxShadow: isActive
+                              ? [
+                                  BoxShadow(
+                                    color: AppColors.primary.withValues(
+                                      alpha: 0.5,
+                                    ),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 1),
                                   ),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 1),
-                                ),
-                              ]
-                            : null,
+                                ]
+                              : null,
+                        ),
                       ),
                     ),
-                  ),
-                );
-              }),
+                  );
+                }),
+              ),
             ),
-          ),
         ],
       ),
     );
@@ -506,71 +578,74 @@ class _FullWidthHeroCarouselState extends State<FullWidthHeroCarousel>
                   ),
                 ],
               ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: List.generate(_slides.length, (index) {
-                  final slide = _slides[index];
-                  final isSelected = _currentPage == index;
-                  return GestureDetector(
-                    onTap: () {
-                      _pageController.animateToPage(
-                        index,
-                        duration: const Duration(milliseconds: 600),
-                        curve: Curves.easeInOutCubic,
-                      );
-                    },
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 220),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 9,
-                      ),
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? AppColors.primary
-                            : Colors.transparent,
-                        borderRadius: BorderRadius.circular(9999),
-                        boxShadow: isSelected
-                            ? [
-                                BoxShadow(
-                                  color: AppColors.primary.withValues(
-                                    alpha: 0.50,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: List.generate(_slides.length, (index) {
+                    final slide = _slides[index];
+                    final isSelected = _currentPage == index;
+                    return GestureDetector(
+                      onTap: () {
+                        _pageController.animateToPage(
+                          index,
+                          duration: const Duration(milliseconds: 600),
+                          curve: Curves.easeInOutCubic,
+                        );
+                      },
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 220),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 9,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? AppColors.primary
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(9999),
+                          boxShadow: isSelected
+                              ? [
+                                  BoxShadow(
+                                    color: AppColors.primary.withValues(
+                                      alpha: 0.50,
+                                    ),
+                                    blurRadius: 18,
+                                    offset: const Offset(0, 2),
                                   ),
-                                  blurRadius: 18,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ]
-                            : null,
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            slide.tabIcon,
-                            size: 15,
-                            color: isSelected
-                                ? Colors.white
-                                : const Color(0xFF94A3B8),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            slide.tabLabel,
-                            style: TextStyle(
+                                ]
+                              : null,
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              slide.tabIcon,
+                              size: 15,
                               color: isSelected
                                   ? Colors.white
                                   : const Color(0xFF94A3B8),
-                              fontSize: 12.5,
-                              fontWeight: isSelected
-                                  ? FontWeight.w800
-                                  : FontWeight.w600,
-                              letterSpacing: -0.1,
                             ),
-                          ),
-                        ],
+                            const SizedBox(width: 8),
+                            Text(
+                              slide.tabLabel,
+                              style: TextStyle(
+                                color: isSelected
+                                    ? Colors.white
+                                    : const Color(0xFF94A3B8),
+                                fontSize: 12.5,
+                                fontWeight: isSelected
+                                    ? FontWeight.w800
+                                    : FontWeight.w600,
+                                letterSpacing: -0.1,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  );
-                }),
+                    );
+                  }),
+                ),
               ),
             ),
             const SizedBox(height: 22),
@@ -1063,25 +1138,28 @@ class _HeroPrimaryButtonState extends State<_HeroPrimaryButton>
             child: Stack(
               alignment: Alignment.center,
               children: [
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      widget.text,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: widget.isMobile ? 14 : 15,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: -0.2,
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        widget.text,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: widget.isMobile ? 14 : 15,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: -0.2,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    const Icon(
-                      Icons.arrow_forward_rounded,
-                      color: Colors.white,
-                      size: 18,
-                    ),
-                  ],
+                      const SizedBox(width: 8),
+                      const Icon(
+                        Icons.arrow_forward_rounded,
+                        color: Colors.white,
+                        size: 18,
+                      ),
+                    ],
+                  ),
                 ),
                 if (_isHovered)
                   AnimatedBuilder(

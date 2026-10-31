@@ -49,6 +49,7 @@ class _ScrollFadeInState extends State<ScrollFadeIn>
 
   bool _hasTriggered = false;
   ScrollPosition? _scrollPosition;
+  double _screenHeight = 1000.0;
 
   @override
   void initState() {
@@ -75,6 +76,9 @@ class _ScrollFadeInState extends State<ScrollFadeIn>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    // Cache screen height safely in didChangeDependencies
+    _screenHeight = MediaQuery.maybeSizeOf(context)?.height ?? 1000.0;
+
     // Detach from previous scroll position if any
     _scrollPosition?.removeListener(_onScroll);
 
@@ -90,6 +94,14 @@ class _ScrollFadeInState extends State<ScrollFadeIn>
   }
 
   @override
+  void deactivate() {
+    // Unsubscribe from ancestor scroll notifications immediately upon deactivation
+    _scrollPosition?.removeListener(_onScroll);
+    _scrollPosition = null;
+    super.deactivate();
+  }
+
+  @override
   void dispose() {
     _scrollPosition?.removeListener(_onScroll);
     _controller.dispose();
@@ -101,29 +113,32 @@ class _ScrollFadeInState extends State<ScrollFadeIn>
   }
 
   void _checkVisibility() {
-    if (_hasTriggered || !mounted) return;
+    if (_hasTriggered || !mounted || !context.mounted) return;
 
-    final renderObject = context.findRenderObject();
-    if (renderObject == null || !renderObject.attached) return;
+    try {
+      final renderObject = context.findRenderObject();
+      if (renderObject == null || !renderObject.attached) return;
 
-    final renderBox = renderObject as RenderBox;
-    if (!renderBox.hasSize) return;
+      final renderBox = renderObject as RenderBox;
+      if (!renderBox.hasSize) return;
 
-    final position = renderBox.localToGlobal(Offset.zero);
-    final screenHeight = MediaQuery.of(context).size.height;
+      final position = renderBox.localToGlobal(Offset.zero);
 
-    // Trigger when top of widget enters the bottom 92% of the screen (or is already above)
-    if (position.dy < screenHeight * 0.92) {
-      _hasTriggered = true;
-      if (widget.delay == Duration.zero) {
-        _controller.forward();
-      } else {
-        Future.delayed(widget.delay, () {
-          if (mounted) {
-            _controller.forward();
-          }
-        });
+      // Trigger when top of widget enters the bottom 92% of the screen (or is already above)
+      if (position.dy < _screenHeight * 0.92) {
+        _hasTriggered = true;
+        if (widget.delay == Duration.zero) {
+          _controller.forward();
+        } else {
+          Future.delayed(widget.delay, () {
+            if (mounted) {
+              _controller.forward();
+            }
+          });
+        }
       }
+    } catch (_) {
+      // Safely ignore lookup exceptions during rapid unmount / window resizing passes
     }
   }
 

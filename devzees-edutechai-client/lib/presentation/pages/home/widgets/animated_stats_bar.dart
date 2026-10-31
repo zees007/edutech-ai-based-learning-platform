@@ -23,6 +23,7 @@ class _AnimatedStatsBarState extends State<AnimatedStatsBar>
   late final AnimationController _controller;
   bool _hasTriggered = false;
   ScrollPosition? _scrollPosition;
+  double _screenHeight = 1000.0;
 
   static const _stats = [
     _StatData(icon: Icons.bolt_rounded, value: 10000, suffix: '+', label: 'AI Sessions Generated', color: Color(0xFF60A5FA)),
@@ -45,6 +46,9 @@ class _AnimatedStatsBarState extends State<AnimatedStatsBar>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    // Cache screen height safely in didChangeDependencies
+    _screenHeight = MediaQuery.maybeSizeOf(context)?.height ?? 1000.0;
+
     _scrollPosition?.removeListener(_checkVisibility);
     final scrollable = Scrollable.maybeOf(context);
     _scrollPosition = scrollable?.position;
@@ -55,6 +59,13 @@ class _AnimatedStatsBarState extends State<AnimatedStatsBar>
   }
 
   @override
+  void deactivate() {
+    _scrollPosition?.removeListener(_checkVisibility);
+    _scrollPosition = null;
+    super.deactivate();
+  }
+
+  @override
   void dispose() {
     _scrollPosition?.removeListener(_checkVisibility);
     _controller.dispose();
@@ -62,19 +73,23 @@ class _AnimatedStatsBarState extends State<AnimatedStatsBar>
   }
 
   void _checkVisibility() {
-    if (_hasTriggered || !mounted) return;
-    final renderObject = context.findRenderObject();
-    if (renderObject == null || !renderObject.attached) return;
+    if (_hasTriggered || !mounted || !context.mounted) return;
 
-    final renderBox = renderObject as RenderBox;
-    if (!renderBox.hasSize) return;
-    final position = renderBox.localToGlobal(Offset.zero);
-    final screenHeight = MediaQuery.of(context).size.height;
+    try {
+      final renderObject = context.findRenderObject();
+      if (renderObject == null || !renderObject.attached) return;
 
-    // Trigger when top of widget enters the bottom 85% of the screen
-    if (position.dy < screenHeight * 0.85) {
-      _hasTriggered = true;
-      _controller.forward();
+      final renderBox = renderObject as RenderBox;
+      if (!renderBox.hasSize) return;
+      final position = renderBox.localToGlobal(Offset.zero);
+
+      // Trigger when top of widget enters the bottom 85% of the screen
+      if (position.dy < _screenHeight * 0.85) {
+        _hasTriggered = true;
+        _controller.forward();
+      }
+    } catch (_) {
+      // Safe fallback during unmounting or continuous resize passes
     }
   }
 
@@ -98,31 +113,34 @@ class _AnimatedStatsBarState extends State<AnimatedStatsBar>
                 ),
               ],
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 6,
-                  height: 6,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Color(0xFF00F5D4),
-                    boxShadow: [
-                      BoxShadow(color: Color(0xFF00F5D4), blurRadius: 6),
-                    ],
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 6,
+                    height: 6,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Color(0xFF00F5D4),
+                      boxShadow: [
+                        BoxShadow(color: Color(0xFF00F5D4), blurRadius: 6),
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                const Text(
-                  'TRUSTED BY LEARNERS WORLDWIDE',
-                  style: TextStyle(
-                    color: Color(0xFFD4D8E8),
-                    fontSize: 10.5,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 1.4,
+                  const SizedBox(width: 8),
+                  const Text(
+                    'TRUSTED BY LEARNERS WORLDWIDE',
+                    style: TextStyle(
+                      color: Color(0xFFD4D8E8),
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1.4,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           const SizedBox(height: 32),

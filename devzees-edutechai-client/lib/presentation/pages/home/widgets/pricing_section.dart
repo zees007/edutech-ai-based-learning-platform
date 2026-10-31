@@ -354,7 +354,6 @@ class _PricingSectionState extends ConsumerState<PricingSection> {
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Container(
                           width: 36,
@@ -373,9 +372,10 @@ class _PricingSectionState extends ConsumerState<PricingSection> {
                         Flexible(
                           child: Text(
                             'EduTech AI for Universities & Research Labs',
+                            textAlign: isMobile ? TextAlign.center : TextAlign.start,
                             style: TextStyle(
                               color: const Color(0xFFF1F5F9),
-                              fontSize: isMobile ? 16 : 18,
+                              fontSize: isMobile ? 15 : 18,
                               fontWeight: FontWeight.w800,
                             ),
                           ),
@@ -668,7 +668,7 @@ class _PricingCard extends StatelessWidget {
               ],
             ),
           )),
-          const Spacer(),
+          const SizedBox(height: 20),
           const SizedBox(height: 24),
           if (isPopular)
             SizedBox(
