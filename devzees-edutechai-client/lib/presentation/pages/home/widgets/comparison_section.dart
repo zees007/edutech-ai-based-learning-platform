@@ -376,98 +376,105 @@ class _ComparisonSectionState extends State<ComparisonSection> {
                 children: [
                   const Expanded(
                     flex: 3,
-                    child: Text(
-                      'LEARNING DIMENSION',
-                      style: TextStyle(
-                        color: Color(0xFF94A3B8),
-                        fontSize: 11,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 1.2,
+                    child: Center(
+                      child: Text(
+                        'LEARNING DIMENSION',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Color(0xFF94A3B8),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 1.2,
+                        ),
                       ),
                     ),
                   ),
                   Expanded(
                     flex: 4,
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.centerLeft,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 5,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.06),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.10),
+                    child: Center(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.center,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
                           ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: const [
-                            Icon(
-                              Icons.chat_bubble_outline_rounded,
-                              size: 14,
-                              color: Color(0xFF94A3B8),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.06),
+                            borderRadius: BorderRadius.circular(9999),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.12),
                             ),
-                            SizedBox(width: 6),
-                            Text(
-                              'Generic Chatbots',
-                              style: TextStyle(
-                                color: Color(0xFFCBD5E1),
-                                fontSize: 11.5,
-                                fontWeight: FontWeight.w700,
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: const [
+                              Icon(
+                                Icons.chat_bubble_outline_rounded,
+                                size: 14,
+                                color: Color(0xFF94A3B8),
                               ),
-                            ),
-                          ],
+                              SizedBox(width: 6),
+                              Text(
+                                'Generic Chatbots',
+                                style: TextStyle(
+                                  color: Color(0xFFCBD5E1),
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
                   ),
                   Expanded(
                     flex: 5,
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.centerLeft,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 5,
-                        ),
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF2563EB), Color(0xFF7C3AED)],
+                    child: Center(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.center,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 6,
                           ),
-                          borderRadius: BorderRadius.circular(8),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(
-                                0xFF3B82F6,
-                              ).withValues(alpha: 0.35),
-                              blurRadius: 10,
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF2563EB), Color(0xFF7C3AED)],
                             ),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: const [
-                            Icon(
-                              Icons.hub_rounded,
-                              size: 14,
-                              color: Colors.white,
-                            ),
-                            SizedBox(width: 6),
-                            Text(
-                              'EduTech AI Multi-Agent Squad',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 0.2,
+                            borderRadius: BorderRadius.circular(9999),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(
+                                  0xFF3B82F6,
+                                ).withValues(alpha: 0.35),
+                                blurRadius: 10,
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: const [
+                              Icon(
+                                Icons.hub_rounded,
+                                size: 14,
+                                color: Colors.white,
+                              ),
+                              SizedBox(width: 6),
+                              Text(
+                                'EduTech AI Multi-Agent Squad',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 0.2,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
