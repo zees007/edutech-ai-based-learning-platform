@@ -149,22 +149,8 @@ class HomeNavbar extends ConsumerWidget {
                         ),
                       ] else ...[
                         if (isDesktop) ...[
-                          MouseRegion(
-                            cursor: SystemMouseCursors.click,
-                            child: GestureDetector(
-                              onTap: () => context.go('/auth'),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                                child: const Text(
-                                  'Sign In',
-                                  style: TextStyle(
-                                    color: Color(0xFFB9BECF),
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ),
+                          _NavbarSignInButton(
+                            onTap: () => context.go('/auth'),
                           ),
                           const SizedBox(width: 8),
                         ],
@@ -251,6 +237,75 @@ class _NavPillState extends State<_NavPill> {
   }
 }
 
+/// Borderless glass hover action pill for 'Sign In'.
+class _NavbarSignInButton extends StatefulWidget {
+  final VoidCallback onTap;
+
+  const _NavbarSignInButton({required this.onTap});
+
+  @override
+  State<_NavbarSignInButton> createState() => _NavbarSignInButtonState();
+}
+
+class _NavbarSignInButtonState extends State<_NavbarSignInButton> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedScale(
+          scale: _isHovered ? 1.03 : 1.0,
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOutCubic,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            curve: Curves.easeOutCubic,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(9999),
+              color: _isHovered
+                  ? Colors.white.withValues(alpha: 0.09)
+                  : Colors.transparent,
+              border: Border.all(
+                color: _isHovered
+                    ? Colors.white.withValues(alpha: 0.16)
+                    : Colors.transparent,
+                width: 1.0,
+              ),
+              boxShadow: _isHovered
+                  ? [
+                      BoxShadow(
+                        color: Colors.white.withValues(alpha: 0.04),
+                        blurRadius: 10,
+                      ),
+                      BoxShadow(
+                        color: AppColors.primary.withValues(alpha: 0.12),
+                        blurRadius: 14,
+                      ),
+                    ]
+                  : null,
+            ),
+            child: Text(
+              'Sign In',
+              style: TextStyle(
+                color: _isHovered ? Colors.white : const Color(0xFFCBD5E1),
+                fontSize: 13.5,
+                fontWeight: _isHovered ? FontWeight.w700 : FontWeight.w600,
+                letterSpacing: -0.1,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// The signature modern SaaS gradient action pill button matching app theme.
 class _NavbarGradientActionPill extends StatefulWidget {
   final String text;
@@ -277,7 +332,7 @@ class _NavbarGradientActionPillState extends State<_NavbarGradientActionPill>
     super.initState();
     _shimmerController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1400),
+      duration: const Duration(milliseconds: 1600),
     );
   }
 
@@ -308,66 +363,64 @@ class _NavbarGradientActionPillState extends State<_NavbarGradientActionPill>
           curve: Curves.easeOutCubic,
           child: Container(
             clipBehavior: Clip.antiAlias,
-            padding: EdgeInsets.symmetric(
-              horizontal: widget.isMobile ? 14 : 20,
-              vertical: widget.isMobile ? 8 : 9,
-            ),
             decoration: BoxDecoration(
               gradient: AppColors.primaryGradient,
               borderRadius: BorderRadius.circular(9999),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.accentPink.withValues(
-                    alpha: _isHovered ? 0.65 : 0.38,
+                  color: AppColors.primary.withValues(
+                    alpha: _isHovered ? 0.55 : 0.35,
                   ),
-                  blurRadius: _isHovered ? 24 : 14,
-                  offset: const Offset(0, 3),
+                  blurRadius: _isHovered ? 24 : 16,
+                  offset: const Offset(0, 4),
                 ),
-                if (_isHovered)
-                  BoxShadow(
-                    color: AppColors.accentCyan.withValues(alpha: 0.40),
-                    blurRadius: 16,
-                    spreadRadius: 1,
-                  ),
               ],
             ),
             child: Stack(
               alignment: Alignment.center,
               children: [
-                Text(
-                  widget.text,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: widget.isMobile ? 12.5 : 13.5,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 0.2,
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: widget.isMobile ? 14 : 20,
+                    vertical: widget.isMobile ? 8 : 9,
+                  ),
+                  child: Text(
+                    widget.text,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: widget.isMobile ? 12.5 : 13.5,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.2,
+                    ),
                   ),
                 ),
                 if (_isHovered)
-                  AnimatedBuilder(
-                    animation: _shimmerController,
-                    builder: (context, _) {
-                      return Positioned.fill(
-                        child: FractionallySizedBox(
-                          widthFactor: 0.45,
-                          alignment: Alignment(
-                            -1.0 + _shimmerController.value * 3.0,
-                            0,
-                          ),
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  Colors.white.withValues(alpha: 0.0),
-                                  Colors.white.withValues(alpha: 0.40),
-                                  Colors.white.withValues(alpha: 0.0),
-                                ],
+                  Positioned.fill(
+                    child: IgnorePointer(
+                      child: AnimatedBuilder(
+                        animation: _shimmerController,
+                        builder: (context, _) {
+                          return FractionallySizedBox(
+                            widthFactor: 0.45,
+                            alignment: Alignment(
+                              -1.5 + _shimmerController.value * 3.0,
+                              0,
+                            ),
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    Colors.white.withValues(alpha: 0.0),
+                                    Colors.white.withValues(alpha: 0.35),
+                                    Colors.white.withValues(alpha: 0.0),
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                        ),
-                      );
-                    },
+                          );
+                        },
+                      ),
+                    ),
                   ),
               ],
             ),
