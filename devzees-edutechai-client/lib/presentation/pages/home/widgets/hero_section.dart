@@ -94,6 +94,10 @@ class _HeroSectionState extends State<HeroSection> {
     final bool isTablet = Responsive.isTablet(context);
     final bool isDesktop = Responsive.isDesktop(context);
 
+    // Symmetrical vertical spacing above and below the hero text & action button block,
+    // balancing the content within the full-height slider (860 desktop / 680 tablet / 540 mobile)
+    final double verticalMargin = isMobile ? 24.0 : (isTablet ? 96.0 : 180.0);
+
     final heroContent = Container(
       width: double.infinity,
       color: const Color(0xFF030712),
@@ -170,11 +174,8 @@ class _HeroSectionState extends State<HeroSection> {
                     ),
                   ),
 
-                SizedBox(
-                  height: widget.header != null
-                      ? (isMobile ? 24.0 : (isTablet ? 36.0 : 50.0))
-                      : (isMobile ? 24.0 : 40.0),
-                ),
+                // Symmetrical top spacing matching bottom margin
+                SizedBox(height: verticalMargin),
 
                 // Left-aligned Hero Content (Heading, Sub-heading, and Action Buttons)
                 Padding(
@@ -280,8 +281,8 @@ class _HeroSectionState extends State<HeroSection> {
                   ),
                 ),
 
-                // Generous bottom spacing for cinematic breathing room
-                SizedBox(height: isMobile ? 60 : (isTablet ? 100 : 150)),
+                // Symmetrical bottom spacing matching top margin; preserves ample clearance from slider
+                SizedBox(height: verticalMargin),
               ],
             ),
           ),
