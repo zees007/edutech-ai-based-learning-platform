@@ -178,23 +178,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                 ),
               ),
 
-              // ─── 2. CINEMATIC FULL-WIDTH HERO PRODUCT CAROUSEL ───
-              SliverToBoxAdapter(
-                child: Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 1200),
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: Responsive.isMobile(context) ? 16.0 : 36.0,
-                        vertical: 16.0,
-                      ),
-                      child: const FullWidthHeroCarousel(),
-                    ),
-                  ),
-                ),
-              ),
-
-              // ─── 3. Rest of Sections (Centered maxWidth: 1200) ───
+              // ─── 2. Rest of Sections (Centered maxWidth: 1200) ───
               SliverToBoxAdapter(
                 child: Center(
                   child: ConstrainedBox(
@@ -206,29 +190,29 @@ class _HomePageState extends ConsumerState<HomePage> {
                       ),
                       child: Column(
                         children: [
-                          // ─── 1. N8n Interactive Blackboard DAG Canvas (The Visual Proof) ───
+                          // ─── 1. The Unfair Advantage (Comparison Section: Beyond Generic AI Chatbots) ───
                           const SizedBox(height: 60),
+                          ScrollFadeIn(
+                            offset: const Offset(0, 40),
+                            duration: const Duration(milliseconds: 800),
+                            delay: const Duration(milliseconds: 100),
+                            child: ComparisonSection(key: _comparisonKey),
+                          ),
+
+                          // ─── 2. N8n Interactive Blackboard DAG Canvas (The Visual Proof) ───
+                          const SizedBox(height: 120),
                           ScrollFadeIn(
                             offset: const Offset(0, 30),
                             duration: const Duration(milliseconds: 700),
                             child: N8nCanvas(key: _canvasKey),
                           ),
 
-                          // ─── 2. Animated Stats Bar (Telemetry Impact) ───
+                          // ─── 3. Animated Stats Bar (Telemetry Impact) ───
                           const SizedBox(height: 100),
                           ScrollFadeIn(
                             offset: const Offset(0, 40),
                             duration: const Duration(milliseconds: 800),
                             child: const AnimatedStatsBar(),
-                          ),
-
-                          // ─── 3. The Unfair Advantage (Comparison Section) ───
-                          const SizedBox(height: 120),
-                          ScrollFadeIn(
-                            offset: const Offset(0, 40),
-                            duration: const Duration(milliseconds: 800),
-                            delay: const Duration(milliseconds: 100),
-                            child: ComparisonSection(key: _comparisonKey),
                           ),
 
                           // ─── 4. Bento Grid Features Section (Rich Mockups) ───

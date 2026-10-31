@@ -86,7 +86,7 @@ class AgentsSection extends StatelessWidget {
           crossAxisCount: crossAxisCount,
           crossAxisSpacing: 22,
           mainAxisSpacing: 22,
-          childAspectRatio: isMobile ? 1.35 : 1.12,
+          childAspectRatio: isMobile ? (MediaQuery.of(context).size.width < 480 ? 0.88 : (MediaQuery.of(context).size.width < 600 ? 1.08 : 1.35)) : 1.12,
           children: const [
             _AgentCard(
               icon: Icons.hub_rounded,

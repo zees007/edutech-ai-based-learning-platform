@@ -23,7 +23,7 @@ class HeroSection extends StatefulWidget {
     super.key,
     this.onExploreTap,
     this.header,
-    this.includeCarousel = true,
+    this.includeCarousel = false,
   });
 
   @override

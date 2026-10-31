@@ -195,6 +195,38 @@ void main() {
       expect(find.text('Curricular Structure'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
+
+    testWidgets('renders mobile-friendly comparison table with switcher and horizontal scroll', (tester) async {
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() => tester.view.resetPhysicalSize());
+
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: ComparisonSection(),
+            ),
+          ),
+        ),
+      );
+
+      await tester.pump();
+      await tester.pumpAndSettle();
+
+      expect(find.text('Table Matrix'), findsOneWidget);
+      expect(find.text('Dimension Cards'), findsOneWidget);
+      expect(find.text('Swipe horizontally to compare columns'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+
+      // Tap to switch to Dimension Cards
+      await tester.tap(find.text('Dimension Cards'));
+      await tester.pump();
+      await tester.pumpAndSettle();
+
+      expect(find.text('EduTech AI Squad'), findsWidgets);
+      expect(tester.takeException(), isNull);
+    });
   });
 
   group('ModesAndLevelsSection Widget Tests', () {
