@@ -189,7 +189,7 @@ void main() {
       await tester.pump();
       await tester.pumpAndSettle();
 
-      expect(find.text('THE ARCHITECTURAL ADVANTAGE'), findsOneWidget);
+      expect(find.text('WHY EDUTECH AI'), findsOneWidget);
       expect(find.text('Beyond Generic AI Chatbots'), findsOneWidget);
       expect(find.text('Teaching Methodology'), findsOneWidget);
       expect(find.text('Curricular Structure'), findsOneWidget);
