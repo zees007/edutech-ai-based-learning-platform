@@ -7,6 +7,7 @@ import 'package:devzees_edutechai_client/presentation/pages/home/widgets/hero_se
 import 'package:devzees_edutechai_client/presentation/pages/home/widgets/home_navbar.dart';
 import 'package:devzees_edutechai_client/presentation/pages/home/widgets/cta_footer.dart';
 import 'package:devzees_edutechai_client/presentation/pages/home/widgets/agents_section.dart';
+import 'package:devzees_edutechai_client/presentation/pages/home/widgets/gamified_mastery_section.dart';
 import 'package:devzees_edutechai_client/presentation/pages/home/widgets/comparison_section.dart';
 import 'package:devzees_edutechai_client/presentation/pages/home/widgets/modes_and_levels_section.dart';
 import 'package:devzees_edutechai_client/presentation/pages/home/widgets/export_ecosystem_section.dart';
@@ -103,6 +104,41 @@ void main() {
       expect(find.text('Academic Scout'), findsOneWidget);
       expect(find.text('Formative Quiz Agent'), findsOneWidget);
       expect(find.text('Synthesizer Agent'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  });
+
+  group('GamifiedMasterySection Widget Tests', () {
+    testWidgets('renders badge, headline, and all 3 feature cards', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(1200, 900);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() => tester.view.resetPhysicalSize());
+
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: SingleChildScrollView(child: GamifiedMasterySection()),
+          ),
+        ),
+      );
+
+      await tester.pump();
+      await tester.pumpAndSettle();
+
+      expect(find.text('DAILY HABITS & REWARDS'), findsOneWidget);
+      expect(
+        find.text('Gamified Mastery Ladders That Make Hard Subjects Addictive'),
+        findsOneWidget,
+      );
+      expect(
+        find.text('Streak Multipliers (+10% Daily XP Boost)'),
+        findsOneWidget,
+      );
+      expect(find.text('Instant Quiz Feedback (+30 XP Bonus)'), findsOneWidget);
+      expect(find.text('10-Level Mastery Ladder'), findsOneWidget);
+      expect(find.text('Obsidian, Notion & PDF Export'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   });

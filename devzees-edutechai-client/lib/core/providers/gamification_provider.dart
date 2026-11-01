@@ -5,15 +5,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 class GamificationUtils {
   static const levels = [
     {"level": 1, "xp_required": 0, "title": "Curious Explorer"},
-    {"level": 2, "xp_required": 100, "title": "Knowledge Seeker"},
-    {"level": 3, "xp_required": 300, "title": "Quick Learner"},
-    {"level": 4, "xp_required": 600, "title": "Deep Thinker"},
-    {"level": 5, "xp_required": 1000, "title": "Rising Scholar"},
-    {"level": 6, "xp_required": 1500, "title": "Concept Master"},
-    {"level": 7, "xp_required": 2200, "title": "Wisdom Weaver"},
-    {"level": 8, "xp_required": 3000, "title": "Knowledge Architect"},
-    {"level": 9, "xp_required": 4000, "title": "Enlightened Mind"},
-    {"level": 10, "xp_required": 5500, "title": "Grand Sage"},
+    {"level": 2, "xp_required": 60, "title": "Knowledge Seeker"},
+    {"level": 3, "xp_required": 140, "title": "Quick Learner"},
+    {"level": 4, "xp_required": 250, "title": "Deep Thinker"},
+    {"level": 5, "xp_required": 380, "title": "Rising Scholar"},
+    {"level": 6, "xp_required": 520, "title": "Concept Master"},
+    {"level": 7, "xp_required": 670, "title": "Wisdom Weaver"},
+    {"level": 8, "xp_required": 800, "title": "Knowledge Architect"},
+    {"level": 9, "xp_required": 920, "title": "Enlightened Mind"},
+    {"level": 10, "xp_required": 1000, "title": "Grand Sage"},
   ];
 
   static int calculateLevel(int totalXp) {

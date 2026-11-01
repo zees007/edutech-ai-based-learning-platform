@@ -556,15 +556,15 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
   }
 
   String _getLevelGradeTitle(int xp) {
-    if (xp >= 5500) return '👑 Grand Sage (Lvl 10)';
-    if (xp >= 4000) return '💡 Enlightened Mind (Lvl 9)';
-    if (xp >= 3000) return '🏛️ Knowledge Architect (Lvl 8)';
-    if (xp >= 2200) return '🔮 Wisdom Weaver (Lvl 7)';
-    if (xp >= 1500) return '🎯 Concept Master (Lvl 6)';
-    if (xp >= 1000) return '📚 Rising Scholar (Lvl 5)';
-    if (xp >= 600) return '🧠 Deep Thinker (Lvl 4)';
-    if (xp >= 300) return '⚡ Quick Learner (Lvl 3)';
-    if (xp >= 100) return '🔍 Knowledge Seeker (Lvl 2)';
+    if (xp >= 1000) return '👑 Grand Sage (Lvl 10)';
+    if (xp >= 920) return '💡 Enlightened Mind (Lvl 9)';
+    if (xp >= 800) return '🏛️ Knowledge Architect (Lvl 8)';
+    if (xp >= 670) return '🔮 Wisdom Weaver (Lvl 7)';
+    if (xp >= 520) return '🎯 Concept Master (Lvl 6)';
+    if (xp >= 380) return '📚 Rising Scholar (Lvl 5)';
+    if (xp >= 250) return '🧠 Deep Thinker (Lvl 4)';
+    if (xp >= 140) return '⚡ Quick Learner (Lvl 3)';
+    if (xp >= 60) return '🔍 Knowledge Seeker (Lvl 2)';
     return '🧭 Curious Explorer (Lvl 1)';
   }
 

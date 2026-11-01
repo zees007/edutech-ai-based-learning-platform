@@ -354,15 +354,15 @@ The system has **10 levels** with escalating XP thresholds:
 | Level | Title | XP Required |
 |-------|-------|-------------|
 | 1 | Curious Explorer | 0 |
-| 2 | Knowledge Seeker | 100 |
-| 3 | Quick Learner | 300 |
-| 4 | Deep Thinker | 600 |
-| 5 | Rising Scholar | 1,000 |
-| 6 | Concept Master | 1,500 |
-| 7 | Wisdom Weaver | 2,200 |
-| 8 | Knowledge Architect | 3,000 |
-| 9 | Enlightened Mind | 4,000 |
-| 10 | Grand Sage | 5,500 |
+| 2 | Knowledge Seeker | 60 |
+| 3 | Quick Learner | 140 |
+| 4 | Deep Thinker | 250 |
+| 5 | Rising Scholar | 380 |
+| 6 | Concept Master | 520 |
+| 7 | Wisdom Weaver | 670 |
+| 8 | Knowledge Architect | 800 |
+| 9 | Enlightened Mind | 920 |
+| 10 | Grand Sage | 1,000 |
 
 ### How Streaks & XP are Calculated
 
@@ -379,7 +379,7 @@ If Alice completes everything on day 1 (0-day streak bonus):
 - **Steps:** 6 steps × 50 Base XP = 300 XP
 - **Quizzes:** 6 quizzes × 90 XP (assuming 100% accuracy: 60 Base + 30 Bonus) = 540 XP
 - **Session Complete Bonus:** 100 XP
-- **Total:** **940 XP** (She reaches **Level 4: Deep Thinker**)
+- **Total:** **940 XP** (She reaches **Level 9: Enlightened Mind**, just 60 XP away from Grand Sage!)
 
 **Scenario B: Pacing over 3 Days**
 If Alice completes 2 steps per day consecutively:
@@ -387,7 +387,7 @@ If Alice completes 2 steps per day consecutively:
 - **Day 2 (10% bonus):** 2 steps = 110 XP
 - **Day 3 (20% bonus):** 2 steps = 120 XP
 - **Total Step XP:** 330 XP *(30 Extra XP earned just from the streak!)*
-- **Total (with quizzes & bonus):** **970 XP**
+- **Total (with quizzes & bonus):** **970 XP** (She reaches **Level 9: Enlightened Mind**, just 30 XP away from Grand Sage — and if she had 7 steps, she would unlock **Level 10: Grand Sage**!)
 
 *Note: If Alice creates 3 separate sessions and works on them concurrently, she will level them up independently. A future roadmap enhancement will migrate these isolated session records into a unified global User Profile.*
 

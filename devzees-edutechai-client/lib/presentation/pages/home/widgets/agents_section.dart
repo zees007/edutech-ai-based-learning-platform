@@ -109,8 +109,8 @@ class AgentsSection extends StatelessWidget {
                   'Decomposes open-ended topics into progressive directed acyclic milestone graphs with prerequisite calibration.',
               tags: [
                 'Step-by-Step Roadmap',
-                'Low Temperature',
-                'Session Graph',
+                'Prerequisite Check',
+                'Session Memory',
               ],
               accentColor: Color(0xFF3B82F6),
             ),
