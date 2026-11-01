@@ -102,12 +102,16 @@ class AgentsSection extends StatelessWidget {
           children: const [
             _AgentCard(
               icon: Icons.hub_rounded,
-              role: 'DAG SUPERVISOR',
+              role: 'Curriculum Architect',
               status: 'DETERMINISTIC',
               title: 'Supervisor Orchestrator',
               description:
                   'Decomposes open-ended topics into progressive directed acyclic milestone graphs with prerequisite calibration.',
-              tags: ['Topological DAG', 'Low Temperature', 'Session Graph'],
+              tags: [
+                'Step-by-Step Roadmap',
+                'Low Temperature',
+                'Session Graph',
+              ],
               accentColor: Color(0xFF3B82F6),
             ),
             _AgentCard(

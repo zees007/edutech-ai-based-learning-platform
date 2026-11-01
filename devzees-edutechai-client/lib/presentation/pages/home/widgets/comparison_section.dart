@@ -50,7 +50,7 @@ class _ComparisonSectionState extends State<ComparisonSection> {
         genericTag: 'No Roadmap',
         edutech:
             'Supervisor Orchestrator plans 4–7 progressive milestone steps with automated prerequisite scaffolding.',
-        edutechTag: 'Topological DAG',
+        edutechTag: 'Step-by-Step Roadmap',
         advantageBadge: 'Step Mastery',
       ),
       _ComparisonItem(

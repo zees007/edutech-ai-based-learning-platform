@@ -115,7 +115,7 @@ class _N8nCanvasState extends State<N8nCanvas> with TickerProviderStateMixin {
 
         // ─── 2. Section Title (Outside Canvas Box) ───
         GradientText(
-          'Interactive Cognitive DAG Pipeline',
+          'Interactive Smart Roadmap Pipeline',
           style: (isMobile ? AppTextStyles.h3 : AppTextStyles.h2).copyWith(
             fontWeight: FontWeight.w900,
             letterSpacing: -0.3,
@@ -128,7 +128,7 @@ class _N8nCanvasState extends State<N8nCanvas> with TickerProviderStateMixin {
         ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 780),
           child: Text(
-            'Deterministic Topic Ingestion ➔ Supervisor Topological DAG ➔ Shared Blackboard Memory ➔ Parallel Workers ➔ Formative Assessment ➔ Stream',
+            'Deterministic Topic Ingestion ➔ Smart Milestone Roadmap ➔ Shared Blackboard Memory ➔ Parallel Workers ➔ Formative Assessment ➔ Stream',
             textAlign: TextAlign.center,
             style: TextStyle(
               color: const Color(0xFF94A3B8),
