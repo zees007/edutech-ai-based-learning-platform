@@ -20,8 +20,7 @@ class N8nCanvas extends StatefulWidget {
   State<N8nCanvas> createState() => _N8nCanvasState();
 }
 
-class _N8nCanvasState extends State<N8nCanvas>
-    with TickerProviderStateMixin {
+class _N8nCanvasState extends State<N8nCanvas> with TickerProviderStateMixin {
   late final AnimationController _flowController;
   late final AnimationController _pulseController;
   late final Animation<double> _glowAnimation;
@@ -65,10 +64,7 @@ class _N8nCanvasState extends State<N8nCanvas>
       children: [
         // ─── 1. Header Badge (Outside Canvas Box) ───
         Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 6,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
           decoration: BoxDecoration(
             color: const Color(0xFF2B68F6).withValues(alpha: 0.14),
             border: Border.all(
@@ -132,7 +128,7 @@ class _N8nCanvasState extends State<N8nCanvas>
         ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 780),
           child: Text(
-            'Deterministic Topic Ingestion ➔ Supervisor Topological DAG ➔ Shared Blackboard Memory ➔ Parallel Workers ➔ Formative Assessment ➔ WebSocket Stream',
+            'Deterministic Topic Ingestion ➔ Supervisor Topological DAG ➔ Shared Blackboard Memory ➔ Parallel Workers ➔ Formative Assessment ➔ Stream',
             textAlign: TextAlign.center,
             style: TextStyle(
               color: const Color(0xFF94A3B8),
@@ -155,7 +151,9 @@ class _N8nCanvasState extends State<N8nCanvas>
             )!;
 
             final outerShadow = BoxShadow(
-              color: const Color(0xFF3B82F6).withValues(alpha: 0.12 + (0.08 * t)),
+              color: const Color(
+                0xFF3B82F6,
+              ).withValues(alpha: 0.12 + (0.08 * t)),
               blurRadius: 50 + (10 * t),
               spreadRadius: -10,
               offset: const Offset(0, 16),
@@ -181,7 +179,9 @@ class _N8nCanvasState extends State<N8nCanvas>
                             center: Alignment.center,
                             radius: 0.85,
                             colors: [
-                              const Color(0xFF3B82F6).withValues(alpha: 0.08 + (0.04 * t)),
+                              const Color(
+                                0xFF3B82F6,
+                              ).withValues(alpha: 0.08 + (0.04 * t)),
                               const Color(0xFF6B47EB).withValues(alpha: 0.04),
                               Colors.transparent,
                             ],
@@ -253,7 +253,7 @@ class _N8nCanvasState extends State<N8nCanvas>
 
             // Forking branches into 3 Parallel Workers
             SizedBox(
-              width: 580,
+              width: 624,
               height: 38,
               child: CustomPaint(
                 painter: _ForkBranchesPainter(
@@ -273,32 +273,32 @@ class _N8nCanvasState extends State<N8nCanvas>
                   subtitle: 'Active Dialogue & Scaffolding',
                   tag: 'PEDAGOGY',
                   color: AppColors.primary,
-                  width: 190,
+                  width: 200,
                 ),
-                const SizedBox(width: 14),
+                const SizedBox(width: 12),
                 _buildWorkerCard(
                   icon: Icons.smart_display_rounded,
                   title: 'YouTube Curator',
                   subtitle: 'Transcript Vector Clips',
                   tag: 'CHROMADB',
                   color: AppColors.accentCyan,
-                  width: 190,
+                  width: 200,
                 ),
-                const SizedBox(width: 14),
+                const SizedBox(width: 12),
                 _buildWorkerCard(
                   icon: Icons.menu_book_rounded,
                   title: 'Academic Scout',
                   subtitle: 'arXiv & OpenAlex DOIs',
                   tag: '250M+ PAPERS',
                   color: AppColors.accentGreen,
-                  width: 190,
+                  width: 200,
                 ),
               ],
             ),
 
             // Converging branches from 3 Workers into Quiz Agent
             SizedBox(
-              width: 580,
+              width: 624,
               height: 38,
               child: CustomPaint(
                 painter: _ConvergeBranchesPainter(
@@ -367,9 +367,7 @@ class _N8nCanvasState extends State<N8nCanvas>
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.02),
                 borderRadius: BorderRadius.circular(18),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.08),
-                ),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -494,10 +492,7 @@ class _N8nCanvasState extends State<N8nCanvas>
                 ),
                 const Text(
                   'Topic • Mode • Level',
-                  style: TextStyle(
-                    color: Color(0xFF94A3B8),
-                    fontSize: 10,
-                  ),
+                  style: TextStyle(color: Color(0xFF94A3B8), fontSize: 10),
                   overflow: TextOverflow.ellipsis,
                 ),
               ],
@@ -527,7 +522,10 @@ class _N8nCanvasState extends State<N8nCanvas>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _StatusBadge(text: 'DETERMINISTIC', color: AppColors.primary),
+                    _StatusBadge(
+                      text: 'DETERMINISTIC',
+                      color: AppColors.primary,
+                    ),
                     const SizedBox(height: 2),
                     const Text(
                       'AI Orchestrator',
@@ -540,10 +538,7 @@ class _N8nCanvasState extends State<N8nCanvas>
                     ),
                     const Text(
                       'Supervisor Agent',
-                      style: TextStyle(
-                        color: Color(0xFF94A3B8),
-                        fontSize: 10,
-                      ),
+                      style: TextStyle(color: Color(0xFF94A3B8), fontSize: 10),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ],
@@ -574,7 +569,10 @@ class _N8nCanvasState extends State<N8nCanvas>
     );
   }
 
-  Widget _buildBlackboardNode({required double pulseVal, required bool compact}) {
+  Widget _buildBlackboardNode({
+    required double pulseVal,
+    required bool compact,
+  }) {
     final borderColor = Color.lerp(
       const Color(0xFF6B47EB).withValues(alpha: 0.6),
       const Color(0xFFB838EE).withValues(alpha: 0.8),
@@ -590,7 +588,9 @@ class _N8nCanvasState extends State<N8nCanvas>
         border: Border.all(color: borderColor, width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF6B47EB).withValues(alpha: 0.25 + (0.15 * pulseVal)),
+            color: const Color(
+              0xFF6B47EB,
+            ).withValues(alpha: 0.25 + (0.15 * pulseVal)),
             blurRadius: 20 + (10 * pulseVal),
           ),
         ],
@@ -627,7 +627,10 @@ class _N8nCanvasState extends State<N8nCanvas>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _StatusBadge(text: 'CENTRAL HUB', color: const Color(0xFFA855F7)),
+                    _StatusBadge(
+                      text: 'CENTRAL HUB',
+                      color: const Color(0xFFA855F7),
+                    ),
                     const SizedBox(height: 2),
                     const Text(
                       'Shared Blackboard',
@@ -640,10 +643,7 @@ class _N8nCanvasState extends State<N8nCanvas>
                     ),
                     const Text(
                       'Central Memory State Bus',
-                      style: TextStyle(
-                        color: Color(0xFF94A3B8),
-                        fontSize: 10,
-                      ),
+                      style: TextStyle(color: Color(0xFF94A3B8), fontSize: 10),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ],
@@ -702,7 +702,7 @@ class _N8nCanvasState extends State<N8nCanvas>
   }) {
     return Container(
       width: width,
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
         color: const Color(0xDD0A0D1D),
         borderRadius: BorderRadius.circular(12),
@@ -727,44 +727,26 @@ class _N8nCanvasState extends State<N8nCanvas>
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        title,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w800,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                      decoration: BoxDecoration(
-                        color: color.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(3),
-                      ),
-                      child: Text(
-                        tag,
-                        style: TextStyle(
-                          color: color,
-                          fontSize: 7.5,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                _StatusBadge(text: tag, color: color),
                 const SizedBox(height: 2),
                 Text(
-                  subtitle,
-                  style: const TextStyle(
-                    color: Color(0xFF94A3B8),
-                    fontSize: 9,
-                  ),
+                  title,
+                  maxLines: 1,
+                  softWrap: false,
                   overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 1),
+                Text(
+                  subtitle,
+                  maxLines: 1,
+                  softWrap: false,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 9),
                 ),
               ],
             ),
@@ -804,10 +786,7 @@ class _N8nCanvasState extends State<N8nCanvas>
                 ),
                 const Text(
                   'Grounded Assessment',
-                  style: TextStyle(
-                    color: Color(0xFF94A3B8),
-                    fontSize: 10,
-                  ),
+                  style: TextStyle(color: Color(0xFF94A3B8), fontSize: 10),
                   overflow: TextOverflow.ellipsis,
                 ),
               ],
@@ -825,10 +804,7 @@ class _N8nCanvasState extends State<N8nCanvas>
       child: Row(
         mainAxisSize: compact ? MainAxisSize.max : MainAxisSize.min,
         children: [
-          _NodeIconBadge(
-            icon: Icons.bolt_rounded,
-            color: AppColors.accentPink,
-          ),
+          _NodeIconBadge(icon: Icons.bolt_rounded, color: AppColors.accentPink),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
@@ -848,10 +824,7 @@ class _N8nCanvasState extends State<N8nCanvas>
                 ),
                 const Text(
                   'Obsidian • PDF • Stream',
-                  style: TextStyle(
-                    color: Color(0xFF94A3B8),
-                    fontSize: 10,
-                  ),
+                  style: TextStyle(color: Color(0xFF94A3B8), fontSize: 10),
                   overflow: TextOverflow.ellipsis,
                 ),
               ],
@@ -919,10 +892,7 @@ class _NodeIconBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: color.withValues(alpha: 0.45)),
         boxShadow: [
-          BoxShadow(
-            color: color.withValues(alpha: 0.25),
-            blurRadius: 8,
-          ),
+          BoxShadow(color: color.withValues(alpha: 0.25), blurRadius: 8),
         ],
       ),
       child: Icon(icon, color: color, size: 17),
@@ -947,9 +917,7 @@ class _StatusBadge extends StatelessWidget {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: color,
-            boxShadow: [
-              BoxShadow(color: color, blurRadius: 4),
-            ],
+            boxShadow: [BoxShadow(color: color, blurRadius: 4)],
           ),
         ),
         const SizedBox(width: 5),
@@ -1181,9 +1149,9 @@ class _ForkBranchesPainter extends CustomPainter {
 
     // Target X coordinates for the 3 worker columns
     final targetXs = [
-      size.width * 0.17, // Left Worker (Socratic)
-      centerX,           // Middle Worker (YouTube)
-      size.width * 0.83, // Right Worker (Academic)
+      size.width * 0.16, // Left Worker (Socratic)
+      centerX, // Middle Worker (YouTube)
+      size.width * 0.84, // Right Worker (Academic)
     ];
 
     final trackPaint = Paint()
@@ -1227,7 +1195,11 @@ class _ForkBranchesPainter extends CustomPainter {
     }
 
     // Top port
-    canvas.drawCircle(Offset(centerX, startY), 3.5, Paint()..color = accentColor);
+    canvas.drawCircle(
+      Offset(centerX, startY),
+      3.5,
+      Paint()..color = accentColor,
+    );
   }
 
   @override
@@ -1239,7 +1211,10 @@ class _ConvergeBranchesPainter extends CustomPainter {
   final double flowProgress;
   final Color accentColor;
 
-  _ConvergeBranchesPainter({required this.flowProgress, required this.accentColor});
+  _ConvergeBranchesPainter({
+    required this.flowProgress,
+    required this.accentColor,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -1249,7 +1224,7 @@ class _ConvergeBranchesPainter extends CustomPainter {
 
     final sourceXs = [
       size.width * 0.17, // Left Worker
-      centerX,           // Middle Worker
+      centerX, // Middle Worker
       size.width * 0.83, // Right Worker
     ];
 
@@ -1304,8 +1279,7 @@ class _ConvergeBranchesPainter extends CustomPainter {
 class _DotGridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.05);
+    final paint = Paint()..color = Colors.white.withValues(alpha: 0.05);
     const double spacing = 22.0;
     const double radius = 1.0;
 
