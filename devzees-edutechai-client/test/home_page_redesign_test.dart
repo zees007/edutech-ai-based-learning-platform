@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/scroll_fade_in.dart';
-import 'package:devzees_edutechai_client/presentation/pages/home/widgets/animated_stats_bar.dart';
 import 'package:devzees_edutechai_client/presentation/pages/home/widgets/hero_section.dart';
 import 'package:devzees_edutechai_client/presentation/pages/home/widgets/home_navbar.dart';
 import 'package:devzees_edutechai_client/presentation/pages/home/widgets/cta_footer.dart';
@@ -23,11 +22,7 @@ void main() {
     testWidgets('renders child widget correctly', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
-          home: Scaffold(
-            body: ScrollFadeIn(
-              child: Text('Test Child Content'),
-            ),
-          ),
+          home: Scaffold(body: ScrollFadeIn(child: Text('Test Child Content'))),
         ),
       );
 
@@ -35,7 +30,9 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('animates opacity and slide offset when triggered', (tester) async {
+    testWidgets('animates opacity and slide offset when triggered', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
@@ -57,49 +54,17 @@ void main() {
     });
   });
 
-  group('AnimatedStatsBar Widget Tests', () {
-    testWidgets('renders badge and all 6 key metrics', (tester) async {
-      tester.view.physicalSize = const Size(1200, 800);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(() => tester.view.resetPhysicalSize());
-
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: SingleChildScrollView(
-              child: AnimatedStatsBar(),
-            ),
-          ),
-        ),
-      );
-
-      await tester.pump();
-      await tester.pumpAndSettle();
-
-      expect(find.text('TRUSTED BY LEARNERS WORLDWIDE'), findsOneWidget);
-      expect(find.text('AI Sessions Generated'), findsOneWidget);
-      expect(find.text('Topics Covered'), findsOneWidget);
-      expect(find.text('Accuracy Grounded'), findsOneWidget);
-      expect(find.text('Universities'), findsOneWidget);
-      expect(find.text('Countries'), findsOneWidget);
-      expect(find.text('User Rating'), findsOneWidget);
-      expect(tester.takeException(), isNull);
-    });
-  });
-
   group('HeroSection Widget Tests', () {
-    testWidgets('renders hero badge, headline, and action buttons', (tester) async {
+    testWidgets('renders hero badge, headline, and action buttons', (
+      tester,
+    ) async {
       tester.view.physicalSize = const Size(1200, 1000);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() => tester.view.resetPhysicalSize());
 
       await tester.pumpWidget(
         const MaterialApp(
-          home: Scaffold(
-            body: SingleChildScrollView(
-              child: HeroSection(),
-            ),
-          ),
+          home: Scaffold(body: SingleChildScrollView(child: HeroSection())),
         ),
       );
 
@@ -115,18 +80,16 @@ void main() {
   });
 
   group('AgentsSection Widget Tests', () {
-    testWidgets('renders all 6 autonomous agents without raw emojis', (tester) async {
+    testWidgets('renders all 6 autonomous agents without raw emojis', (
+      tester,
+    ) async {
       tester.view.physicalSize = const Size(1200, 900);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() => tester.view.resetPhysicalSize());
 
       await tester.pumpWidget(
         const MaterialApp(
-          home: Scaffold(
-            body: SingleChildScrollView(
-              child: AgentsSection(),
-            ),
-          ),
+          home: Scaffold(body: SingleChildScrollView(child: AgentsSection())),
         ),
       );
 
@@ -153,9 +116,7 @@ void main() {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
-            body: SingleChildScrollView(
-              child: ComparisonSection(),
-            ),
+            body: SingleChildScrollView(child: ComparisonSection()),
           ),
         ),
       );
@@ -170,37 +131,41 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('renders mobile-friendly comparison table with switcher and horizontal scroll', (tester) async {
-      tester.view.physicalSize = const Size(390, 844);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(() => tester.view.resetPhysicalSize());
+    testWidgets(
+      'renders mobile-friendly comparison table with switcher and horizontal scroll',
+      (tester) async {
+        tester.view.physicalSize = const Size(390, 844);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() => tester.view.resetPhysicalSize());
 
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: SingleChildScrollView(
-              child: ComparisonSection(),
+        await tester.pumpWidget(
+          const MaterialApp(
+            home: Scaffold(
+              body: SingleChildScrollView(child: ComparisonSection()),
             ),
           ),
-        ),
-      );
+        );
 
-      await tester.pump();
-      await tester.pumpAndSettle();
+        await tester.pump();
+        await tester.pumpAndSettle();
 
-      expect(find.text('Table Matrix'), findsOneWidget);
-      expect(find.text('Dimension Cards'), findsOneWidget);
-      expect(find.text('Swipe horizontally to compare columns'), findsOneWidget);
-      expect(tester.takeException(), isNull);
+        expect(find.text('Table Matrix'), findsOneWidget);
+        expect(find.text('Dimension Cards'), findsOneWidget);
+        expect(
+          find.text('Swipe horizontally to compare columns'),
+          findsOneWidget,
+        );
+        expect(tester.takeException(), isNull);
 
-      // Tap to switch to Dimension Cards
-      await tester.tap(find.text('Dimension Cards'));
-      await tester.pump();
-      await tester.pumpAndSettle();
+        // Tap to switch to Dimension Cards
+        await tester.tap(find.text('Dimension Cards'));
+        await tester.pump();
+        await tester.pumpAndSettle();
 
-      expect(find.text('EduTech AI Squad'), findsWidgets);
-      expect(tester.takeException(), isNull);
-    });
+        expect(find.text('EduTech AI Squad'), findsWidgets);
+        expect(tester.takeException(), isNull);
+      },
+    );
   });
 
   group('ModesAndLevelsSection Widget Tests', () {
@@ -212,9 +177,7 @@ void main() {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
-            body: SingleChildScrollView(
-              child: ModesAndLevelsSection(),
-            ),
+            body: SingleChildScrollView(child: ModesAndLevelsSection()),
           ),
         ),
       );
@@ -232,7 +195,9 @@ void main() {
   });
 
   group('ExportEcosystemSection Widget Tests', () {
-    testWidgets('renders second brain export formats and image', (tester) async {
+    testWidgets('renders second brain export formats and image', (
+      tester,
+    ) async {
       tester.view.physicalSize = const Size(1200, 900);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() => tester.view.resetPhysicalSize());
@@ -240,9 +205,7 @@ void main() {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
-            body: SingleChildScrollView(
-              child: ExportEcosystemSection(),
-            ),
+            body: SingleChildScrollView(child: ExportEcosystemSection()),
           ),
         ),
       );
@@ -266,11 +229,7 @@ void main() {
 
       await tester.pumpWidget(
         const MaterialApp(
-          home: Scaffold(
-            body: SingleChildScrollView(
-              child: AboutSection(),
-            ),
-          ),
+          home: Scaffold(body: SingleChildScrollView(child: AboutSection())),
         ),
       );
 
@@ -299,9 +258,7 @@ void main() {
           ],
           child: const MaterialApp(
             home: Scaffold(
-              body: SingleChildScrollView(
-                child: PricingSection(),
-              ),
+              body: SingleChildScrollView(child: PricingSection()),
             ),
           ),
         ),
@@ -327,11 +284,7 @@ void main() {
 
       await tester.pumpWidget(
         const MaterialApp(
-          home: Scaffold(
-            body: SingleChildScrollView(
-              child: FaqSection(),
-            ),
-          ),
+          home: Scaffold(body: SingleChildScrollView(child: FaqSection())),
         ),
       );
 
@@ -346,18 +299,16 @@ void main() {
   });
 
   group('HomeNavbar Widget Tests', () {
-    testWidgets('renders logo, brand, navigation pills, and CTA button', (tester) async {
+    testWidgets('renders logo, brand, navigation pills, and CTA button', (
+      tester,
+    ) async {
       tester.view.physicalSize = const Size(1200, 800);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() => tester.view.resetPhysicalSize());
 
       await tester.pumpWidget(
         const ProviderScope(
-          child: MaterialApp(
-            home: Scaffold(
-              body: HomeNavbar(),
-            ),
-          ),
+          child: MaterialApp(home: Scaffold(body: HomeNavbar())),
         ),
       );
 
@@ -408,9 +359,7 @@ void main() {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
-            body: SingleChildScrollView(
-              child: WallOfLoveSection(),
-            ),
+            body: SingleChildScrollView(child: WallOfLoveSection()),
           ),
         ),
       );
@@ -419,7 +368,10 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('STUDENT & RESEARCHER REPUTATION'), findsOneWidget);
-      expect(find.text('Loved by Ambitious Learners Worldwide'), findsOneWidget);
+      expect(
+        find.text('Loved by Ambitious Learners Worldwide'),
+        findsOneWidget,
+      );
       expect(find.text('Marcus Chen'), findsOneWidget);
       expect(find.text('Dr. Elena Rostova'), findsOneWidget);
       expect(tester.takeException(), isNull);
@@ -434,11 +386,7 @@ void main() {
 
       await tester.pumpWidget(
         const MaterialApp(
-          home: Scaffold(
-            body: SingleChildScrollView(
-              child: CtaFooter(),
-            ),
-          ),
+          home: Scaffold(body: SingleChildScrollView(child: CtaFooter())),
         ),
       );
 

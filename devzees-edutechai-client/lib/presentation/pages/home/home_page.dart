@@ -7,13 +7,11 @@ import 'package:devzees_edutechai_client/presentation/widgets/scroll_fade_in.dar
 import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
 import 'package:devzees_edutechai_client/core/theme/app_theme.dart';
 import 'package:devzees_edutechai_client/core/providers/theme_provider.dart';
-import 'package:devzees_edutechai_client/core/constants/responsive.dart';
 
 import 'package:devzees_edutechai_client/presentation/widgets/promo_announcement_bar.dart';
 
 import 'widgets/home_navbar.dart';
 import 'widgets/hero_section.dart';
-import 'widgets/animated_stats_bar.dart';
 import 'widgets/workspace_preview_section.dart';
 import 'widgets/comparison_section.dart';
 import 'widgets/modes_and_levels_section.dart';
@@ -206,15 +204,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                             child: N8nCanvas(key: _canvasKey),
                           ),
 
-                          // ─── 3. Animated Stats Bar (Telemetry Impact) ───
-                          const SizedBox(height: 100),
-                          ScrollFadeIn(
-                            offset: const Offset(0, 40),
-                            duration: const Duration(milliseconds: 800),
-                            child: const AnimatedStatsBar(),
-                          ),
-
-                          // ─── 4. Bento Grid Features Section (Rich Mockups) ───
+                          // ─── 3. Bento Grid Features Section (Rich Mockups) ───
                           const SizedBox(height: 120),
                           ScrollFadeIn(
                             offset: const Offset(0, 40),
@@ -223,7 +213,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                             child: FeaturesSection(key: _featuresKey),
                           ),
 
-                          // ─── 5. Autonomous Agent Squad Section ───
+                          // ─── 4. Autonomous Agent Squad Section ───
                           const SizedBox(height: 120),
                           ScrollFadeIn(
                             offset: const Offset(0, 40),
@@ -231,7 +221,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                             child: AgentsSection(key: _agentsKey),
                           ),
 
-                          // ─── 6. Live Workspace Preview ───
+                          // ─── 5. Live Workspace Preview ───
                           const SizedBox(height: 120),
                           ScrollFadeIn(
                             offset: const Offset(0, 40),
@@ -239,7 +229,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                             child: WorkspacePreviewSection(key: _previewKey),
                           ),
 
-                          // ─── 7. Second Brain Ecosystem (Zero Lock-In) ───
+                          // ─── 6. Second Brain Ecosystem (Zero Lock-In) ───
                           const SizedBox(height: 120),
                           ScrollFadeIn(
                             offset: const Offset(0, 40),
@@ -247,7 +237,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                             child: ExportEcosystemSection(key: _ecosystemKey),
                           ),
 
-                          // ─── 8. Adaptive Cognitive Modes & Levels ───
+                          // ─── 7. Adaptive Cognitive Modes & Levels ───
                           const SizedBox(height: 120),
                           ScrollFadeIn(
                             offset: const Offset(0, 40),
@@ -255,7 +245,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                             child: ModesAndLevelsSection(key: _modesKey),
                           ),
 
-                          // ─── 9. Wall of Love / Testimonials (Proof of Results) ───
+                          // ─── 8. Wall of Love / Testimonials (Proof of Results) ───
                           const SizedBox(height: 120),
                           ScrollFadeIn(
                             offset: const Offset(0, 40),
@@ -263,7 +253,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                             child: WallOfLoveSection(key: _testimonialsKey),
                           ),
 
-                          // ─── 10. Cognitive Pedagogy & Research (About) ───
+                          // ─── 9. Cognitive Pedagogy & Research (About) ───
                           const SizedBox(height: 120),
                           ScrollFadeIn(
                             offset: const Offset(0, 40),
@@ -271,7 +261,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                             child: AboutSection(key: _aboutKey),
                           ),
 
-                          // ─── 11. Transparent Tiered Pricing ───
+                          // ─── 10. Transparent Tiered Pricing ───
                           const SizedBox(height: 120),
                           ScrollFadeIn(
                             offset: const Offset(0, 40),
@@ -280,7 +270,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                             child: PricingSection(key: _pricingKey),
                           ),
 
-                          // ─── 12. Frequently Asked Questions (FAQ) ───
+                          // ─── 11. Frequently Asked Questions (FAQ) ───
                           const SizedBox(height: 120),
                           ScrollFadeIn(
                             offset: const Offset(0, 40),
