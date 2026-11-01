@@ -204,21 +204,21 @@ class _HomePageState extends ConsumerState<HomePage> {
                             child: N8nCanvas(key: _canvasKey),
                           ),
 
-                          // ─── 3. Bento Grid Features Section (Rich Mockups) ───
+                          // ─── 3. Autonomous Agent Squad Section ───
+                          const SizedBox(height: 120),
+                          ScrollFadeIn(
+                            offset: const Offset(0, 40),
+                            duration: const Duration(milliseconds: 800),
+                            child: AgentsSection(key: _agentsKey),
+                          ),
+
+                          // ─── 4. Bento Grid Features Section (Rich Mockups) ───
                           const SizedBox(height: 120),
                           ScrollFadeIn(
                             offset: const Offset(0, 40),
                             duration: const Duration(milliseconds: 800),
                             delay: const Duration(milliseconds: 100),
                             child: FeaturesSection(key: _featuresKey),
-                          ),
-
-                          // ─── 4. Autonomous Agent Squad Section ───
-                          const SizedBox(height: 120),
-                          ScrollFadeIn(
-                            offset: const Offset(0, 40),
-                            duration: const Duration(milliseconds: 800),
-                            child: AgentsSection(key: _agentsKey),
                           ),
 
                           // ─── 5. Live Workspace Preview ───

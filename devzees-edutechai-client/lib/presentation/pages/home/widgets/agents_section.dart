@@ -12,7 +12,9 @@ class AgentsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool isMobile = Responsive.isMobile(context);
-    final int crossAxisCount = isMobile ? 1 : (Responsive.isTablet(context) ? 2 : 3);
+    final int crossAxisCount = isMobile
+        ? 1
+        : (Responsive.isTablet(context) ? 2 : 3);
 
     return Column(
       children: [
@@ -22,7 +24,9 @@ class AgentsSection extends StatelessWidget {
           decoration: BoxDecoration(
             color: const Color(0xFF8B5CF6).withValues(alpha: 0.10),
             borderRadius: BorderRadius.circular(9999),
-            border: Border.all(color: const Color(0xFF8B5CF6).withValues(alpha: 0.28)),
+            border: Border.all(
+              color: const Color(0xFF8B5CF6).withValues(alpha: 0.28),
+            ),
             boxShadow: [
               BoxShadow(
                 color: const Color(0xFF8B5CF6).withValues(alpha: 0.18),
@@ -40,7 +44,11 @@ class AgentsSection extends StatelessWidget {
                   shape: BoxShape.circle,
                   color: Color(0xFF8B5CF6),
                   boxShadow: [
-                    BoxShadow(color: Color(0xFF8B5CF6), blurRadius: 8, spreadRadius: 1),
+                    BoxShadow(
+                      color: Color(0xFF8B5CF6),
+                      blurRadius: 8,
+                      spreadRadius: 1,
+                    ),
                   ],
                 ),
               ),
@@ -59,7 +67,7 @@ class AgentsSection extends StatelessWidget {
         ),
         const SizedBox(height: 18),
         GradientText(
-          'Six Neural Specialists. One Unified Mind.',
+          'Six Specialized Autonomous Agents. One Unified Mind.',
           style: (isMobile ? AppTextStyles.h3 : AppTextStyles.h2).copyWith(
             fontWeight: FontWeight.w900,
           ),
@@ -86,14 +94,19 @@ class AgentsSection extends StatelessWidget {
           crossAxisCount: crossAxisCount,
           crossAxisSpacing: 22,
           mainAxisSpacing: 22,
-          childAspectRatio: isMobile ? (MediaQuery.of(context).size.width < 480 ? 0.88 : (MediaQuery.of(context).size.width < 600 ? 1.08 : 1.35)) : 1.12,
+          childAspectRatio: isMobile
+              ? (MediaQuery.of(context).size.width < 480
+                    ? 0.88
+                    : (MediaQuery.of(context).size.width < 600 ? 1.08 : 1.35))
+              : 1.12,
           children: const [
             _AgentCard(
               icon: Icons.hub_rounded,
               role: 'DAG SUPERVISOR',
               status: 'DETERMINISTIC',
               title: 'Supervisor Orchestrator',
-              description: 'Decomposes open-ended topics into progressive directed acyclic milestone graphs with prerequisite calibration.',
+              description:
+                  'Decomposes open-ended topics into progressive directed acyclic milestone graphs with prerequisite calibration.',
               tags: ['Topological DAG', 'Low Temperature', 'Session Graph'],
               accentColor: Color(0xFF3B82F6),
             ),
@@ -102,7 +115,8 @@ class AgentsSection extends StatelessWidget {
               role: 'COGNITIVE TUTOR',
               status: 'SOCRATIC',
               title: 'Socratic Tutor',
-              description: 'Guides conceptual inquiry using real-world anchor analogies, progressive scaffolding, and active dialogue.',
+              description:
+                  'Guides conceptual inquiry using real-world anchor analogies, progressive scaffolding, and active dialogue.',
               tags: ['Mental Models', 'Guided Discovery', 'Adaptive Depth'],
               accentColor: Color(0xFF00F5D4),
             ),
@@ -111,7 +125,8 @@ class AgentsSection extends StatelessWidget {
               role: 'MULTIMEDIA CURATOR',
               status: 'CHROMADB',
               title: 'YouTube Curator',
-              description: 'Scans video transcript vector embeddings to pinpoint exact start-and-end timestamp clips for key concepts.',
+              description:
+                  'Scans video transcript vector embeddings to pinpoint exact start-and-end timestamp clips for key concepts.',
               tags: ['Vector Search', 'Precise Timestamps', 'High SNR'],
               accentColor: Color(0xFFF43F5E),
             ),
@@ -120,7 +135,8 @@ class AgentsSection extends StatelessWidget {
               role: 'SCHOLARLY RESEARCH',
               status: '250M+ PAPERS',
               title: 'Academic Scout',
-              description: 'Conducts live federated searches across arXiv, OpenAlex, and Semantic Scholar with verified DOI paper links.',
+              description:
+                  'Conducts live federated searches across arXiv, OpenAlex, and Semantic Scholar with verified DOI paper links.',
               tags: ['arXiv & OpenAlex', 'Live Peer Review', 'AI TL;DR'],
               accentColor: Color(0xFF10B981),
             ),
@@ -129,7 +145,8 @@ class AgentsSection extends StatelessWidget {
               role: 'EVALUATION ENGINE',
               status: 'GROUNDED',
               title: 'Formative Quiz Agent',
-              description: 'Constructs targeted multiple-choice evaluations derived strictly from active lesson context with instant XP grading.',
+              description:
+                  'Constructs targeted multiple-choice evaluations derived strictly from active lesson context with instant XP grading.',
               tags: ['Zero Hallucination', 'Formative Scoring', 'Instant XP'],
               accentColor: Color(0xFFF59E0B),
             ),
@@ -138,7 +155,8 @@ class AgentsSection extends StatelessWidget {
               role: 'SYNTHESIS & BUS',
               status: 'REAL-TIME',
               title: 'Synthesizer Agent',
-              description: 'Streams live blackboard state over WebSockets and compiles notes into Obsidian, Notion, Mermaid, and PDF.',
+              description:
+                  'Streams live blackboard state over WebSockets and compiles notes into Obsidian, Notion, Mermaid, and PDF.',
               tags: ['WebSocket Bus', 'Mermaid.js', 'Obsidian Ready'],
               accentColor: Color(0xFFA855F7),
             ),
@@ -238,14 +256,13 @@ class _AgentCardState extends State<_AgentCard> {
                           ),
                         ],
                       ),
-                      child: Icon(
-                        widget.icon,
-                        color: color,
-                        size: 24,
-                      ),
+                      child: Icon(widget.icon, color: color, size: 24),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: color.withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(9999),
@@ -327,7 +344,10 @@ class _AgentCardState extends State<_AgentCard> {
                   runSpacing: 6,
                   children: widget.tags.map((tag) {
                     return Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.04),
                         borderRadius: BorderRadius.circular(6),
