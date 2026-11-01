@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
+import 'package:devzees_edutechai_client/core/theme/text_styles.dart';
+import 'package:devzees_edutechai_client/presentation/widgets/gradient_text.dart';
 import '../../core/constants/responsive.dart';
 
 /// Ultra-premium, responsive DAG Blackboard Canvas.
@@ -58,158 +60,158 @@ class _N8nCanvasState extends State<N8nCanvas>
     final bool isCompact = screenWidth < 740;
     final bool isMobile = Responsive.isMobile(context);
 
-    return AnimatedBuilder(
-      animation: _glowAnimation,
-      builder: (context, child) {
-        final t = _glowAnimation.value;
-        final borderColor = Color.lerp(
-          AppColors.primary.withValues(alpha: 0.35),
-          const Color(0xFF6B47EB).withValues(alpha: 0.55),
-          t,
-        )!;
-
-        final outerShadow = BoxShadow(
-          color: const Color(0xFF3B82F6).withValues(alpha: 0.12 + (0.08 * t)),
-          blurRadius: 50 + (10 * t),
-          spreadRadius: -10,
-          offset: const Offset(0, 16),
-        );
-
-        return Container(
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: const Color(0xFF080B18),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: borderColor, width: 1.5),
-            boxShadow: isMobile ? null : [outerShadow],
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        // ─── 1. Header Badge (Outside Canvas Box) ───
+        Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 6,
           ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(24),
-            child: Stack(
+          decoration: BoxDecoration(
+            color: const Color(0xFF2B68F6).withValues(alpha: 0.14),
+            border: Border.all(
+              color: const Color(0xFF2B68F6).withValues(alpha: 0.38),
+            ),
+            borderRadius: BorderRadius.circular(9999),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF2B68F6).withValues(alpha: 0.25),
+                blurRadius: 14,
+              ),
+            ],
+          ),
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                // Ambient Radial Gradient behind Blackboard
-                Positioned.fill(
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: RadialGradient(
-                        center: Alignment.center,
-                        radius: 0.85,
-                        colors: [
-                          const Color(0xFF3B82F6).withValues(alpha: 0.08 + (0.04 * t)),
-                          const Color(0xFF6B47EB).withValues(alpha: 0.04),
-                          Colors.transparent,
-                        ],
+                Container(
+                  width: 7,
+                  height: 7,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: const Color(0xFF00F5D4),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF00F5D4).withValues(alpha: 0.8),
+                        blurRadius: 6,
                       ),
-                    ),
-                  ),
-                ),
-
-                // Cyber Dot Grid Pattern
-                Positioned.fill(
-                  child: CustomPaint(painter: _DotGridPainter()),
-                ),
-
-                // Canvas Content
-                Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: isMobile ? 16 : 28,
-                    vertical: isMobile ? 24 : 36,
-                  ),
-                  child: Column(
-                    children: [
-                      // ─── Header Badge ───
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF2B68F6).withValues(alpha: 0.14),
-                          border: Border.all(
-                            color: const Color(0xFF2B68F6).withValues(alpha: 0.38),
-                          ),
-                          borderRadius: BorderRadius.circular(9999),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFF2B68F6).withValues(alpha: 0.25),
-                              blurRadius: 14,
-                            ),
-                          ],
-                        ),
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Container(
-                                width: 7,
-                                height: 7,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: const Color(0xFF00F5D4),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: const Color(0xFF00F5D4).withValues(alpha: 0.8),
-                                      blurRadius: 6,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              const Text(
-                                'AUTONOMOUS MULTI-AGENT BLACKBOARD ARCHITECTURE',
-                                style: TextStyle(
-                                  color: Color(0xFFDDD6FE),
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: 1.4,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 14),
-
-                      // Section Title
-                      Text(
-                        'Interactive Cognitive DAG Pipeline',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: isMobile ? 18 : 22,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: -0.3,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 720),
-                        child: Text(
-                          'Deterministic Topic Ingestion ➔ Supervisor Topological DAG ➔ Shared Blackboard Memory ➔ Parallel Workers ➔ Formative Assessment ➔ WebSocket Stream',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: const Color(0xFF94A3B8),
-                            fontSize: isMobile ? 12 : 13,
-                            height: 1.5,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 32),
-
-                      // ─── Adaptive DAG Architecture Flow ───
-                      if (isCompact)
-                        _buildMobileVerticalPipeline(t)
-                      else
-                        _buildDesktopDagFlow(t),
                     ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                const Text(
+                  'AUTONOMOUS MULTI-AGENT BLACKBOARD ARCHITECTURE',
+                  style: TextStyle(
+                    color: Color(0xFFDDD6FE),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.4,
                   ),
                 ),
               ],
             ),
           ),
-        );
-      },
+        ),
+        const SizedBox(height: 18),
+
+        // ─── 2. Section Title (Outside Canvas Box) ───
+        GradientText(
+          'Interactive Cognitive DAG Pipeline',
+          style: (isMobile ? AppTextStyles.h3 : AppTextStyles.h2).copyWith(
+            fontWeight: FontWeight.w900,
+            letterSpacing: -0.3,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 14),
+
+        // ─── 3. Section Subtitle (Outside Canvas Box) ───
+        ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 780),
+          child: Text(
+            'Deterministic Topic Ingestion ➔ Supervisor Topological DAG ➔ Shared Blackboard Memory ➔ Parallel Workers ➔ Formative Assessment ➔ WebSocket Stream',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: const Color(0xFF94A3B8),
+              fontSize: isMobile ? 13 : 15,
+              height: 1.55,
+            ),
+          ),
+        ),
+        const SizedBox(height: 36),
+
+        // ─── 4. Interactive Blackboard Canvas Box ───
+        AnimatedBuilder(
+          animation: _glowAnimation,
+          builder: (context, child) {
+            final t = _glowAnimation.value;
+            final borderColor = Color.lerp(
+              AppColors.primary.withValues(alpha: 0.35),
+              const Color(0xFF6B47EB).withValues(alpha: 0.55),
+              t,
+            )!;
+
+            final outerShadow = BoxShadow(
+              color: const Color(0xFF3B82F6).withValues(alpha: 0.12 + (0.08 * t)),
+              blurRadius: 50 + (10 * t),
+              spreadRadius: -10,
+              offset: const Offset(0, 16),
+            );
+
+            return Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: const Color(0xFF080B18),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: borderColor, width: 1.5),
+                boxShadow: isMobile ? null : [outerShadow],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(24),
+                child: Stack(
+                  children: [
+                    // Ambient Radial Gradient behind Blackboard
+                    Positioned.fill(
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: RadialGradient(
+                            center: Alignment.center,
+                            radius: 0.85,
+                            colors: [
+                              const Color(0xFF3B82F6).withValues(alpha: 0.08 + (0.04 * t)),
+                              const Color(0xFF6B47EB).withValues(alpha: 0.04),
+                              Colors.transparent,
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // Cyber Dot Grid Pattern
+                    Positioned.fill(
+                      child: CustomPaint(painter: _DotGridPainter()),
+                    ),
+
+                    // Canvas Content
+                    Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: isMobile ? 16 : 28,
+                        vertical: isMobile ? 24 : 36,
+                      ),
+                      child: isCompact
+                          ? _buildMobileVerticalPipeline(t)
+                          : _buildDesktopDagFlow(t),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ],
     );
   }
 

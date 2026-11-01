@@ -87,7 +87,7 @@ void main() {
     });
   });
 
-  group('HeroSection & FullWidthHeroCarousel Widget Tests', () {
+  group('HeroSection Widget Tests', () {
     testWidgets('renders hero badge, headline, and action buttons', (tester) async {
       tester.view.physicalSize = const Size(1200, 1000);
       tester.view.devicePixelRatio = 1.0;
@@ -97,7 +97,7 @@ void main() {
         const MaterialApp(
           home: Scaffold(
             body: SingleChildScrollView(
-              child: HeroSection(includeCarousel: false),
+              child: HeroSection(),
             ),
           ),
         ),
@@ -110,32 +110,6 @@ void main() {
       expect(find.text('Team of AI Agents'), findsOneWidget);
       expect(find.text('Start Learning for Free'), findsOneWidget);
       expect(find.text('Watch a Demo'), findsOneWidget);
-      expect(tester.takeException(), isNull);
-    });
-
-    testWidgets('renders FullWidthHeroCarousel with slide tabs and chevron controls', (tester) async {
-      tester.view.physicalSize = const Size(1600, 1000);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(() => tester.view.resetPhysicalSize());
-
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: SingleChildScrollView(
-              child: FullWidthHeroCarousel(),
-            ),
-          ),
-        ),
-      );
-
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 300));
-
-      expect(find.text('Multi-Agent Core'), findsOneWidget);
-      expect(find.text('Cognitive Engine'), findsOneWidget);
-      expect(find.text('Dual Workspace'), findsOneWidget);
-      expect(find.byIcon(Icons.chevron_left_rounded), findsOneWidget);
-      expect(find.byIcon(Icons.chevron_right_rounded), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   });

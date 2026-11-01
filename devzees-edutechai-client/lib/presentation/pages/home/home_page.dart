@@ -174,7 +174,6 @@ class _HomePageState extends ConsumerState<HomePage> {
                     ],
                   ),
                   onExploreTap: () => _scrollToSection('architecture'),
-                  includeCarousel: false,
                 ),
               ),
 
