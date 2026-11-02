@@ -125,20 +125,40 @@ class _GamifiedMasterySectionState extends State<GamifiedMasterySection> {
 
         // ─── Two-Panel Showcase (Desktop side-by-side, Mobile stacked) ───
         if (isDesktop)
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
+          Stack(
             children: [
-              // Left Panel: Synchronized Pure Image Slider
-              Expanded(
-                flex: 5,
-                child: _buildShowcaseSlider(context, isMobile: false),
+              // Base Layer: Feature Cards define the natural section height
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Expanded(
+                    flex: 5,
+                    child: SizedBox.shrink(),
+                  ),
+                  const SizedBox(width: 44),
+                  Expanded(
+                    flex: 6,
+                    child: _buildFeatureCardsList(context, isMobile: false),
+                  ),
+                ],
               ),
-              const SizedBox(width: 44),
 
-              // Right Panel: 4 Highlightable Feature Cards
-              Expanded(
-                flex: 6,
-                child: _buildFeatureCardsList(context, isMobile: false),
+              // Overlay Layer: Image Slider stretches to match EXACT top & bottom of the cards
+              Positioned.fill(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Expanded(
+                      flex: 5,
+                      child: _buildShowcaseSlider(context, isMobile: false),
+                    ),
+                    const SizedBox(width: 44),
+                    const Expanded(
+                      flex: 6,
+                      child: IgnorePointer(child: SizedBox.shrink()),
+                    ),
+                  ],
+                ),
               ),
             ],
           )
@@ -235,124 +255,156 @@ class _GamifiedMasterySectionState extends State<GamifiedMasterySection> {
 
   Widget _buildShowcaseSlider(BuildContext context, {required bool isMobile}) {
     final _GamificationTileItem activeTile = _tiles[_currentIndex];
-    final double height = isMobile ? 340 : 420;
+
+    final Widget sliderContent = Container(
+      key: const Key('slider_showcase_container'),
+      decoration: BoxDecoration(
+        color: const Color(0xFF070914),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: activeTile.accentColor.withValues(alpha: 0.35),
+          width: 1.4,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: activeTile.accentColor.withValues(alpha: 0.18),
+            blurRadius: 40,
+            spreadRadius: -2,
+            offset: const Offset(0, 14),
+          ),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.65),
+            blurRadius: 28,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(23),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            // Crossfade Pure Image Slider (Edge-to-Edge)
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 600),
+              switchInCurve: Curves.easeOutCubic,
+              switchOutCurve: Curves.easeInCubic,
+              layoutBuilder: (currentChild, previousChildren) => Stack(
+                fit: StackFit.expand,
+                children: [
+                  ...previousChildren,
+                  ?currentChild,
+                ],
+              ),
+              transitionBuilder: (child, animation) {
+                return FadeTransition(opacity: animation, child: child);
+              },
+              child: Image.asset(
+                activeTile.imagePath,
+                key: ValueKey<String>(activeTile.imagePath),
+                fit: BoxFit.cover,
+                width: double.infinity,
+                height: double.infinity,
+                alignment: Alignment.center,
+                errorBuilder: (context, error, stackTrace) => Container(
+                  color: const Color(0xFF0B0E22),
+                  child: const Center(
+                    child: Icon(
+                      Icons.image_not_supported_rounded,
+                      color: Colors.white24,
+                      size: 48,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            // Soft bottom scrim gradient for glowing dot contrast over images
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: 56,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.transparent,
+                      Colors.black.withValues(alpha: 0.60),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            // 4 Glowing Dots at Bottom of Slider
+            Positioned(
+              bottom: 14,
+              left: 0,
+              right: 0,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(_tiles.length, (index) {
+                  final bool isSelected = index == _currentIndex;
+                  return MouseRegion(
+                    cursor: SystemMouseCursors.click,
+                    child: GestureDetector(
+                      onTap: () => _onTileSelected(index),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeOutCubic,
+                        margin: const EdgeInsets.symmetric(horizontal: 5),
+                        width: isSelected ? 24 : 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? activeTile.accentColor
+                              : Colors.white.withValues(alpha: 0.35),
+                          borderRadius: BorderRadius.circular(9999),
+                          boxShadow: isSelected
+                              ? [
+                                  BoxShadow(
+                                    color: activeTile.accentColor.withValues(alpha: 0.9),
+                                    blurRadius: 10,
+                                    spreadRadius: 1,
+                                  ),
+                                  BoxShadow(
+                                    color: activeTile.accentColor.withValues(alpha: 0.5),
+                                    blurRadius: 18,
+                                    spreadRadius: 2,
+                                  ),
+                                ]
+                              : null,
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (isMobile) {
+      return Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 500),
+          child: AspectRatio(
+            aspectRatio: 2400 / 1792,
+            child: sliderContent,
+          ),
+        ),
+      );
+    }
 
     return Center(
       child: ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: isMobile ? 500 : 540),
-        child: Container(
-          height: height,
-          decoration: BoxDecoration(
-            color: const Color(0xFF070914),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: activeTile.accentColor.withValues(alpha: 0.35),
-              width: 1.4,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: activeTile.accentColor.withValues(alpha: 0.18),
-                blurRadius: 40,
-                spreadRadius: -2,
-                offset: const Offset(0, 14),
-              ),
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.65),
-                blurRadius: 28,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(23),
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                // Crossfade Pure Image Slider (No Overlays)
-                AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 600),
-                  switchInCurve: Curves.easeOutCubic,
-                  switchOutCurve: Curves.easeInCubic,
-                  transitionBuilder: (child, animation) {
-                    return FadeTransition(opacity: animation, child: child);
-                  },
-                  child: Image.asset(
-                    activeTile.imagePath,
-                    key: ValueKey<String>(activeTile.imagePath),
-                    fit: BoxFit.cover,
-                    alignment: Alignment.center,
-                    errorBuilder: (context, error, stackTrace) => Container(
-                      color: const Color(0xFF0B0E22),
-                      child: const Center(
-                        child: Icon(
-                          Icons.image_not_supported_rounded,
-                          color: Colors.white24,
-                          size: 48,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-
-                // Subtle bottom scrim gradient for clean dot readability
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  height: 60,
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.transparent,
-                          Colors.black.withValues(alpha: 0.60),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-
-                // Bottom Floating Slide Dot Indicators
-                Positioned(
-                  bottom: 14,
-                  left: 0,
-                  right: 0,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(_tiles.length, (index) {
-                      final bool isSelected = index == _currentIndex;
-                      return GestureDetector(
-                        onTap: () => _onTileSelected(index),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 300),
-                          margin: const EdgeInsets.symmetric(horizontal: 4),
-                          width: isSelected ? 24 : 7,
-                          height: 7,
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? activeTile.accentColor
-                                : Colors.white.withValues(alpha: 0.35),
-                            borderRadius: BorderRadius.circular(9999),
-                            boxShadow: isSelected
-                                ? [
-                                    BoxShadow(
-                                      color: activeTile.accentColor.withValues(alpha: 0.7),
-                                      blurRadius: 8,
-                                    ),
-                                  ]
-                                : null,
-                          ),
-                        ),
-                      );
-                    }),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+        constraints: const BoxConstraints(maxWidth: 540),
+        child: sliderContent,
       ),
     );
   }
@@ -361,8 +413,16 @@ class _GamifiedMasterySectionState extends State<GamifiedMasterySection> {
   // RIGHT PANEL: 4 HIGHLIGHTABLE FEATURE CARDS
   // ═════════════════════════════════════════════════════════════════════════════
 
-  Widget _buildFeatureCardsList(BuildContext context, {required bool isMobile}) {
+  Widget _buildFeatureCardsList(
+    BuildContext context, {
+    required bool isMobile,
+  }) {
+    final double bottomSpacing = isMobile ? 12 : 15;
+
     return Column(
+      key: isMobile
+          ? const Key('feature_cards_column_mobile')
+          : const Key('feature_cards_column_desktop'),
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: List.generate(_tiles.length, (index) {
@@ -370,7 +430,9 @@ class _GamifiedMasterySectionState extends State<GamifiedMasterySection> {
         final bool isSelected = index == _currentIndex;
 
         return Padding(
-          padding: EdgeInsets.only(bottom: index == _tiles.length - 1 ? 0 : 12),
+          padding: EdgeInsets.only(
+            bottom: index == _tiles.length - 1 ? 0 : bottomSpacing,
+          ),
           child: _HighlightableFeatureCard(
             icon: item.icon,
             iconColor: item.accentColor,
@@ -407,7 +469,8 @@ class _HighlightableFeatureCard extends StatefulWidget {
   });
 
   @override
-  State<_HighlightableFeatureCard> createState() => _HighlightableFeatureCardState();
+  State<_HighlightableFeatureCard> createState() =>
+      _HighlightableFeatureCardState();
 }
 
 class _HighlightableFeatureCardState extends State<_HighlightableFeatureCard> {
@@ -426,18 +489,20 @@ class _HighlightableFeatureCardState extends State<_HighlightableFeatureCard> {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 250),
           curve: Curves.easeOutCubic,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           decoration: BoxDecoration(
             color: widget.isSelected
                 ? widget.iconColor.withValues(alpha: 0.12)
-                : (_isHovered ? const Color(0xFF10142B) : const Color(0xDD090B18)),
+                : (_isHovered
+                      ? const Color(0xFF10142B)
+                      : const Color(0xDD090B18)),
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
               color: widget.isSelected
                   ? widget.iconColor.withValues(alpha: 0.85)
                   : (_isHovered
-                      ? widget.iconColor.withValues(alpha: 0.45)
-                      : Colors.white.withValues(alpha: 0.08)),
+                        ? widget.iconColor.withValues(alpha: 0.45)
+                        : Colors.white.withValues(alpha: 0.08)),
               width: widget.isSelected ? 1.6 : 1.2,
             ),
             boxShadow: [
@@ -445,8 +510,8 @@ class _HighlightableFeatureCardState extends State<_HighlightableFeatureCard> {
                 color: widget.isSelected
                     ? widget.iconColor.withValues(alpha: 0.25)
                     : (_isHovered
-                        ? widget.iconColor.withValues(alpha: 0.14)
-                        : Colors.black.withValues(alpha: 0.35)),
+                          ? widget.iconColor.withValues(alpha: 0.14)
+                          : Colors.black.withValues(alpha: 0.35)),
                 blurRadius: highlighted ? 22 : 12,
                 offset: const Offset(0, 4),
               ),
@@ -492,7 +557,9 @@ class _HighlightableFeatureCardState extends State<_HighlightableFeatureCard> {
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 14.5,
-                              fontWeight: widget.isSelected ? FontWeight.w900 : FontWeight.w800,
+                              fontWeight: widget.isSelected
+                                  ? FontWeight.w900
+                                  : FontWeight.w800,
                               letterSpacing: -0.2,
                             ),
                           ),
