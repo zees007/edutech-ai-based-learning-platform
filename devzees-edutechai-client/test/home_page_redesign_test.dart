@@ -106,6 +106,33 @@ void main() {
       expect(find.text('Synthesizer Agent'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
+
+    testWidgets('renders mobile carousel and auto-rotates agents every 3 seconds', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(375, 812);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() => tester.view.resetPhysicalSize());
+
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(body: SingleChildScrollView(child: AgentsSection())),
+        ),
+      );
+
+      await tester.pump();
+      await tester.pumpAndSettle();
+
+      expect(find.text('AUTONOMOUS AGENT SQUAD'), findsOneWidget);
+      expect(find.text('Supervisor Orchestrator'), findsOneWidget);
+
+      // Fast-forward by 3 seconds to verify auto-rotation to Socratic Tutor
+      await tester.pump(const Duration(seconds: 3));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Socratic Tutor'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
   });
 
   group('GamifiedMasterySection Widget Tests', () {
