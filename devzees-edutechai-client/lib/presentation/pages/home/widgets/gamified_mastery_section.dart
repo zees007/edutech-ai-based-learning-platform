@@ -54,7 +54,7 @@ class _GamifiedMasterySectionState extends State<GamifiedMasterySection> {
     _GamificationTileItem(
       imagePath: 'assets/images/gamification/tile2.png',
       icon: Icons.bolt_rounded,
-      accentColor: Color(0xFF10B981),
+      accentColor: Color(0xFF00F5D4),
       title: 'Instant Quiz Feedback (+30 XP Bonus)',
       description:
           'Test your comprehension at each milestone with dynamic quizzes, immediate rationales, and bonus XP for 100% accuracy.',
@@ -62,7 +62,7 @@ class _GamifiedMasterySectionState extends State<GamifiedMasterySection> {
     _GamificationTileItem(
       imagePath: 'assets/images/gamification/tile3.png',
       icon: Icons.military_tech_rounded,
-      accentColor: Color(0xFFEC4899),
+      accentColor: Color(0xFFA855F7),
       title: '10-Level Mastery Ladder',
       description:
           'Advance from Curious Explorer (Level 1) to Grand Sage (Level 10) by conquering milestones across every subject.',
@@ -70,7 +70,7 @@ class _GamifiedMasterySectionState extends State<GamifiedMasterySection> {
     _GamificationTileItem(
       imagePath: 'assets/images/gamification/tile4.png',
       icon: Icons.download_for_offline_rounded,
-      accentColor: Color(0xFF00F5D4),
+      accentColor: Color(0xFF10B981),
       title: 'Obsidian, Notion & PDF Export',
       description:
           'Own your knowledge forever. Export full sessions as clean Markdown, HTML, or styled PDFs with formulas and video links.',
@@ -117,12 +117,10 @@ class _GamifiedMasterySectionState extends State<GamifiedMasterySection> {
     final bool isDesktop = screenWidth >= 960;
 
     return Column(
-      crossAxisAlignment: isMobile
-          ? CrossAxisAlignment.center
-          : CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // ─── Section Header (Left-aligned on Desktop, Centered on Mobile) ───
-        _buildSectionHeader(context, isMobile: isMobile),
+        // ─── Section Header (Centered on Page) ───
+        Center(child: _buildSectionHeader(context, isMobile: isMobile)),
         SizedBox(height: isMobile ? 32 : 48),
 
         // ─── Two-Panel Showcase (Desktop side-by-side: Features LEFT, Slider RIGHT) ───
@@ -175,14 +173,9 @@ class _GamifiedMasterySectionState extends State<GamifiedMasterySection> {
   // ═════════════════════════════════════════════════════════════════════════════
 
   Widget _buildSectionHeader(BuildContext context, {required bool isMobile}) {
-    final CrossAxisAlignment alignment = isMobile
-        ? CrossAxisAlignment.center
-        : CrossAxisAlignment.start;
-    final TextAlign textAlign = isMobile ? TextAlign.center : TextAlign.start;
-
     return Column(
       mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: alignment,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         // Section Header Pill Badge
         Container(
@@ -206,13 +199,13 @@ class _GamifiedMasterySectionState extends State<GamifiedMasterySection> {
               mainAxisSize: MainAxisSize.min,
               children: const [
                 Icon(
-                  Icons.local_fire_department_rounded,
+                  Icons.military_tech_rounded,
                   color: Color(0xFFF59E0B),
-                  size: 14,
+                  size: 15,
                 ),
                 SizedBox(width: 8),
                 Text(
-                  'DAILY HABITS & REWARDS',
+                  'GAMIFICATION & REWARDS',
                   style: TextStyle(
                     color: Color(0xFFFCD34D),
                     fontSize: 11,
@@ -226,22 +219,22 @@ class _GamifiedMasterySectionState extends State<GamifiedMasterySection> {
         ),
         const SizedBox(height: 18),
 
-        // Headline with Gradient (Left-aligned on desktop, Centered on mobile)
+        // Headline with Gradient (Centered)
         GradientText(
           'Gamified Mastery Ladders That Make Hard Subjects Addictive',
           style: (isMobile ? AppTextStyles.h3 : AppTextStyles.h2).copyWith(
             fontWeight: FontWeight.w900,
           ),
-          textAlign: textAlign,
+          textAlign: TextAlign.center,
         ),
         const SizedBox(height: 16),
 
-        // Subtitle (Left-aligned on desktop, Centered on mobile)
+        // Subtitle (Centered)
         ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 820),
           child: Text(
             'Traditional learning apps rely on hollow notifications. EduTechAI keeps you genuinely motivated with interactive quizzes, streak multipliers, 10 progressive mastery levels, and zero lock-in exports.',
-            textAlign: textAlign,
+            textAlign: TextAlign.center,
             style: AppTextStyles.body1.copyWith(
               color: const Color(0xFF94A3B8),
               fontSize: isMobile ? 15 : 17,
@@ -268,11 +261,13 @@ class _GamifiedMasterySectionState extends State<GamifiedMasterySection> {
         fit: StackFit.expand,
         alignment: Alignment.center,
         children: [
-          // Soft ambient volumetric glow matching the active tile's accent color
+          // Soft ambient volumetric glow smoothly morphing with active tile accent color
           Center(
-            child: Container(
-              width: isMobile ? 320 : 540,
-              height: isMobile ? 240 : 420,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 350),
+              curve: Curves.easeOutCubic,
+              width: isMobile ? 300 : 520,
+              height: isMobile ? 220 : 380,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
@@ -287,9 +282,9 @@ class _GamifiedMasterySectionState extends State<GamifiedMasterySection> {
             ),
           ),
 
-          // Borderless Floating 3D Artwork (Seamless with page background)
+          // Borderless Floating 3D Artwork with buttery-smooth crossfade
           AnimatedSwitcher(
-            duration: const Duration(milliseconds: 600),
+            duration: const Duration(milliseconds: 350),
             switchInCurve: Curves.easeOutCubic,
             switchOutCurve: Curves.easeInCubic,
             layoutBuilder: (currentChild, previousChildren) => Stack(
@@ -298,7 +293,13 @@ class _GamifiedMasterySectionState extends State<GamifiedMasterySection> {
               children: [...previousChildren, ?currentChild],
             ),
             transitionBuilder: (child, animation) {
-              return FadeTransition(opacity: animation, child: child);
+              return FadeTransition(
+                opacity: CurvedAnimation(
+                  parent: animation,
+                  curve: Curves.easeInOutCubic,
+                ),
+                child: child,
+              );
             },
             child: Image.asset(
               activeTile.imagePath,
@@ -343,7 +344,7 @@ class _GamifiedMasterySectionState extends State<GamifiedMasterySection> {
     BuildContext context, {
     required bool isMobile,
   }) {
-    final double bottomSpacing = isMobile ? 12 : 16;
+    final double bottomSpacing = isMobile ? 10 : 12;
 
     return Column(
       key: isMobile
@@ -374,7 +375,7 @@ class _GamifiedMasterySectionState extends State<GamifiedMasterySection> {
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
-// REUSABLE HIGHLIGHTABLE FEATURE TILE
+// REUSABLE HIGHLIGHTABLE FEATURE TILE (SLEEK & COMPACT)
 // ═════════════════════════════════════════════════════════════════════════════
 
 class _HighlightableFeatureCard extends StatefulWidget {
@@ -414,35 +415,40 @@ class _HighlightableFeatureCardState extends State<_HighlightableFeatureCard> {
       child: GestureDetector(
         onTap: widget.onTap,
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 250),
+          duration: const Duration(milliseconds: 200),
           curve: Curves.easeOutCubic,
+          transform: Matrix4.translationValues(
+            widget.isSelected ? 3.0 : (_isHovered ? 1.5 : 0.0),
+            0.0,
+            0.0,
+          ),
           padding: EdgeInsets.symmetric(
-            horizontal: isMobile ? 16 : 20,
-            vertical: isMobile ? 14 : 17,
+            horizontal: isMobile ? 14 : 18,
+            vertical: isMobile ? 10 : 12,
           ),
           decoration: BoxDecoration(
             color: widget.isSelected
-                ? widget.iconColor.withValues(alpha: 0.12)
+                ? widget.iconColor.withValues(alpha: 0.13)
                 : (_isHovered
-                      ? const Color(0xFF10142B)
+                      ? widget.iconColor.withValues(alpha: 0.09)
                       : const Color(0xDD090B18)),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(14),
             border: Border.all(
               color: widget.isSelected
-                  ? widget.iconColor.withValues(alpha: 0.85)
+                  ? widget.iconColor.withValues(alpha: 0.90)
                   : (_isHovered
-                        ? widget.iconColor.withValues(alpha: 0.45)
+                        ? widget.iconColor.withValues(alpha: 0.65)
                         : Colors.white.withValues(alpha: 0.08)),
-              width: widget.isSelected ? 1.6 : 1.2,
+              width: widget.isSelected ? 1.5 : 1.1,
             ),
             boxShadow: [
               BoxShadow(
                 color: widget.isSelected
-                    ? widget.iconColor.withValues(alpha: 0.25)
+                    ? widget.iconColor.withValues(alpha: 0.28)
                     : (_isHovered
-                          ? widget.iconColor.withValues(alpha: 0.14)
+                          ? widget.iconColor.withValues(alpha: 0.20)
                           : Colors.black.withValues(alpha: 0.35)),
-                blurRadius: highlighted ? 22 : 12,
+                blurRadius: highlighted ? 20 : 10,
                 offset: const Offset(0, 4),
               ),
             ],
@@ -450,71 +456,94 @@ class _HighlightableFeatureCardState extends State<_HighlightableFeatureCard> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Left Icon Badge
+              // Sleek Vector Icon Badge
               AnimatedContainer(
-                duration: const Duration(milliseconds: 250),
-                width: isMobile ? 36 : 40,
-                height: isMobile ? 36 : 40,
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeOutCubic,
+                width: isMobile ? 34 : 38,
+                height: isMobile ? 34 : 38,
                 decoration: BoxDecoration(
                   color: widget.isSelected
                       ? widget.iconColor.withValues(alpha: 0.24)
-                      : widget.iconColor.withValues(alpha: 0.14),
-                  borderRadius: BorderRadius.circular(11),
+                      : (_isHovered
+                          ? widget.iconColor.withValues(alpha: 0.18)
+                          : widget.iconColor.withValues(alpha: 0.10)),
+                  borderRadius: BorderRadius.circular(10),
                   border: Border.all(
                     color: widget.isSelected
                         ? widget.iconColor
-                        : widget.iconColor.withValues(alpha: 0.35),
+                        : (_isHovered
+                            ? widget.iconColor.withValues(alpha: 0.60)
+                            : widget.iconColor.withValues(alpha: 0.25)),
+                    width: 1.1,
                   ),
+                  boxShadow: widget.isSelected
+                      ? [
+                          BoxShadow(
+                            color: widget.iconColor.withValues(alpha: 0.35),
+                            blurRadius: 10,
+                            spreadRadius: 1,
+                          ),
+                        ]
+                      : null,
                 ),
                 child: Icon(
                   widget.icon,
                   color: widget.isSelected ? Colors.white : widget.iconColor,
-                  size: isMobile ? 18 : 20,
+                  size: isMobile ? 17 : 19,
                 ),
               ),
-              SizedBox(width: isMobile ? 14 : 16),
+              SizedBox(width: isMobile ? 12 : 15),
 
-              // Text Column
+              // Title and Description in a compact, sleek vertical column
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       widget.title,
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: isMobile ? 14.5 : 15.5,
+                        fontSize: isMobile ? 14.0 : 15.0,
                         fontWeight: widget.isSelected
                             ? FontWeight.w900
                             : FontWeight.w800,
                         letterSpacing: -0.2,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 3),
                     Text(
                       widget.description,
                       style: TextStyle(
                         color: widget.isSelected
                             ? const Color(0xFFCBD5E1)
                             : const Color(0xFF94A3B8),
-                        fontSize: isMobile ? 12.5 : 13.0,
-                        height: 1.5,
+                        fontSize: isMobile ? 12.0 : 12.5,
+                        height: 1.4,
                       ),
                     ),
                   ],
                 ),
               ),
 
-              // Active Right Chevron Indicator (matching reference design)
-              if (widget.isSelected)
-                Padding(
-                  padding: const EdgeInsets.only(left: 10),
-                  child: Icon(
-                    Icons.chevron_right_rounded,
-                    color: widget.iconColor,
-                    size: isMobile ? 20 : 24,
+              // Smooth Active Right Chevron (fixed reserved slot prevents text reflow!)
+              SizedBox(
+                width: isMobile ? 20 : 24,
+                height: isMobile ? 20 : 24,
+                child: Center(
+                  child: AnimatedOpacity(
+                    duration: const Duration(milliseconds: 200),
+                    curve: Curves.easeOutCubic,
+                    opacity: widget.isSelected ? 1.0 : 0.0,
+                    child: Icon(
+                      Icons.chevron_right_rounded,
+                      color: widget.iconColor,
+                      size: isMobile ? 20 : 22,
+                    ),
                   ),
                 ),
+              ),
             ],
           ),
         ),

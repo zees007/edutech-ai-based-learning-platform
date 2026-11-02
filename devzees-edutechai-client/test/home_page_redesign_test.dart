@@ -109,43 +109,49 @@ void main() {
   });
 
   group('GamifiedMasterySection Widget Tests', () {
-    testWidgets('renders badge, headline, and all 4 feature cards with 4 glowing dots', (
-      tester,
-    ) async {
-      tester.view.physicalSize = const Size(1200, 900);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(() => tester.view.resetPhysicalSize());
+    testWidgets(
+      'renders badge, headline, and all 4 feature cards with 4 glowing dots',
+      (tester) async {
+        tester.view.physicalSize = const Size(1200, 900);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() => tester.view.resetPhysicalSize());
 
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: SingleChildScrollView(child: GamifiedMasterySection()),
+        await tester.pumpWidget(
+          const MaterialApp(
+            home: Scaffold(
+              body: SingleChildScrollView(child: GamifiedMasterySection()),
+            ),
           ),
-        ),
-      );
+        );
 
-      await tester.pump();
-      await tester.pumpAndSettle();
+        await tester.pump();
+        await tester.pumpAndSettle();
 
-      expect(find.text('DAILY HABITS & REWARDS'), findsOneWidget);
-      expect(
-        find.text('Gamified Mastery Ladders That Make Hard Subjects Addictive'),
-        findsOneWidget,
-      );
-      expect(
-        find.text('Streak Multipliers (+10% Daily XP Boost)'),
-        findsOneWidget,
-      );
-      expect(find.text('Instant Quiz Feedback (+30 XP Bonus)'), findsOneWidget);
-      expect(find.text('10-Level Mastery Ladder'), findsOneWidget);
-      expect(find.text('Obsidian, Notion & PDF Export'), findsOneWidget);
+        expect(find.text('GAMIFICATION & REWARDS'), findsOneWidget);
+        expect(
+          find.text(
+            'Gamified Mastery Ladders That Make Hard Subjects Addictive',
+          ),
+          findsOneWidget,
+        );
+        expect(
+          find.text('Streak Multipliers (+10% Daily XP Boost)'),
+          findsOneWidget,
+        );
+        expect(
+          find.text('Instant Quiz Feedback (+30 XP Bonus)'),
+          findsOneWidget,
+        );
+        expect(find.text('10-Level Mastery Ladder'), findsOneWidget);
+        expect(find.text('Obsidian, Notion & PDF Export'), findsOneWidget);
 
-      // Verify the 4 glowing slider dots are rendered
-      final sliderDotFinders = find.byType(AnimatedContainer);
-      expect(sliderDotFinders, findsWidgets);
+        // Verify the 4 glowing slider dots are rendered
+        final sliderDotFinders = find.byType(AnimatedContainer);
+        expect(sliderDotFinders, findsWidgets);
 
-      expect(tester.takeException(), isNull);
-    });
+        expect(tester.takeException(), isNull);
+      },
+    );
 
     testWidgets('tapping feature card or dot changes active index', (
       tester,
@@ -190,8 +196,12 @@ void main() {
       await tester.pump();
       await tester.pumpAndSettle();
 
-      final sliderSize = tester.getSize(find.byKey(const Key('slider_showcase_container')));
-      final cardsSize = tester.getSize(find.byKey(const Key('feature_cards_column_desktop')));
+      final sliderSize = tester.getSize(
+        find.byKey(const Key('slider_showcase_container')),
+      );
+      final cardsSize = tester.getSize(
+        find.byKey(const Key('feature_cards_column_desktop')),
+      );
 
       expect(sliderSize.height, equals(cardsSize.height));
     });
