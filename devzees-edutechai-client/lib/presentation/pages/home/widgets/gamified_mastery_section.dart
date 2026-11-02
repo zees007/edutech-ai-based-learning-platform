@@ -25,15 +25,25 @@ class _GamificationTileItem {
 ///
 /// Features:
 /// - Centered Header matching [AgentsSection]:
-///   - 'DAILY HABITS & REWARDS' stadium capsule badge
+///   - 'GAMIFICATION & REWARDS' stadium capsule badge
 ///   - 'Gamified Mastery Ladders That Make Hard Subjects Addictive' gradient headline
 ///   - Clean motivational subtitle
 /// - Two-panel responsive layout:
-///   - Left: Dynamic pure image slider showcasing `tile1.jpg`, `tile2.jpg`, `tile3.jpg`, `tile4.jpg`
-///     with uncluttered visuals, smooth crossfades, and subtle slide pagination dots.
-///   - Right: 4 interactive feature cards. When an image slide changes, its corresponding
-///     text card is highlighted with a glowing border and accent background. Clicking any
-///     card immediately navigates the slider to that item.
+///   - Desktop: Side-by-side with 4 interactive feature cards on the LEFT (flex: 4)
+///     and dynamic borderless 3D artwork showcase on the RIGHT (flex: 7).
+///   - Mobile: Vertically stacked layout with showcase slider on top and cards below.
+/// - 4 Highlightable Feature Cards:
+///   - 1. Streak Multipliers: Amber (`#F59E0B`)
+///   - 2. Instant Quiz Feedback: Electric Blue (`#3B82F6`, aligned with Supervisor Orchestrator)
+///   - 3. 10-Level Mastery Ladder: Vibrant Purple (`#A855F7`)
+///   - 4. Obsidian, Notion & PDF Export: Emerald Green (`#10B981`)
+/// - Dynamic 3D Showcase Slider:
+///   - Synchronized transparent PNG artwork (`tile1.png` – `tile4.png`)
+///   - Volumetric ambient radial glow morphing to active tile's accent color
+///   - Interactive hover zoom-in (scales up to 1.20)
+///   - Left & right interactive mouse-over/tap navigation zones with glowing chevrons
+///   - Smooth 350ms crossfade transitions between slides
+///   - Clicking any card immediately navigates the slider to that item.
 class GamifiedMasterySection extends StatefulWidget {
   const GamifiedMasterySection({super.key});
 
@@ -108,6 +118,7 @@ class _GamifiedMasterySectionState extends State<GamifiedMasterySection> {
     _startSliderTimer(); // Reset auto-slide timer on user tap
   }
 
+  /// Navigates the slider left (-1) or right (+1) with a 250ms debounce threshold.
   void _navigateSlide(int direction) {
     final now = DateTime.now();
     if (now.difference(_lastNavTime).inMilliseconds < 250) return;
@@ -120,6 +131,7 @@ class _GamifiedMasterySectionState extends State<GamifiedMasterySection> {
     _startSliderTimer();
   }
 
+  /// Triggers slide change and highlights the interactive chevron when cursor enters left/right half.
   void _onZoneEntered(int zone) {
     setState(() {
       _hoveredZone = zone;
@@ -127,6 +139,7 @@ class _GamifiedMasterySectionState extends State<GamifiedMasterySection> {
     _navigateSlide(zone);
   }
 
+  /// Clears zone hover state when cursor leaves the navigation zone.
   void _onZoneExited(int zone) {
     if (_hoveredZone == zone) {
       setState(() {
@@ -191,6 +204,7 @@ class _GamifiedMasterySectionState extends State<GamifiedMasterySection> {
               ),
             ],
           )
+        // Mobile: Vertically stacked layout (Showcase Slider on top, Feature Cards below)
         else ...[
           _buildShowcaseSlider(context, isMobile: true),
           const SizedBox(height: 28),
@@ -279,7 +293,7 @@ class _GamifiedMasterySectionState extends State<GamifiedMasterySection> {
   }
 
   // ═════════════════════════════════════════════════════════════════════════════
-  // LEFT PANEL: SYNCHRONIZED PURE IMAGE SLIDER
+  // RIGHT PANEL (DESKTOP) / TOP (MOBILE): SYNCHRONIZED SHOWCASE IMAGE SLIDER
   // ═════════════════════════════════════════════════════════════════════════════
 
   Widget _buildShowcaseSlider(BuildContext context, {required bool isMobile}) {
@@ -489,7 +503,7 @@ class _GamifiedMasterySectionState extends State<GamifiedMasterySection> {
   }
 
   // ═════════════════════════════════════════════════════════════════════════════
-  // 4 HIGHLIGHTABLE FEATURE CARDS
+  // LEFT PANEL (DESKTOP) / BOTTOM (MOBILE): 4 HIGHLIGHTABLE FEATURE CARDS
   // ═════════════════════════════════════════════════════════════════════════════
 
   Widget _buildFeatureCardsList(
@@ -530,6 +544,13 @@ class _GamifiedMasterySectionState extends State<GamifiedMasterySection> {
 // REUSABLE HIGHLIGHTABLE FEATURE TILE (SLEEK & COMPACT)
 // ═════════════════════════════════════════════════════════════════════════════
 
+/// Interactive feature card that highlights when hovered or when its
+/// corresponding image slide is active.
+///
+/// Features:
+/// - Compact horizontal layout (~76px height) with left icon badge and text column
+/// - Dynamic hover glow and active accent borders matching the tile's theme color
+/// - Fixed-width chevron slot preventing text wrapping or reflow on selection change
 class _HighlightableFeatureCard extends StatefulWidget {
   final IconData icon;
   final Color iconColor;
