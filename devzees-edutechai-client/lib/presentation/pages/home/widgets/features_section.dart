@@ -177,7 +177,7 @@ class FeaturesSection extends StatelessWidget {
                     child: _BentoFeatureCard(
                       icon: Icons.account_tree_rounded,
                       iconColor: Color(0xFF2B68F6),
-                      title: 'Adaptive Milestone DAG Decomposer',
+                      title: 'Adaptive Milestone Roadmap Planner',
                       tag: 'AUTONOMOUS SUPERVISOR',
                       description:
                           'The supervisor agent decomposes complex domains into structured, dependency-checked learning milestones. Never get overwhelmed by complex topics again.',

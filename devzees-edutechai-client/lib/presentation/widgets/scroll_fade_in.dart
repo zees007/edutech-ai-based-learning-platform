@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 
 /// A premium scroll-triggered entrance animation widget.
@@ -50,6 +51,7 @@ class _ScrollFadeInState extends State<ScrollFadeIn>
   bool _hasTriggered = false;
   ScrollPosition? _scrollPosition;
   double _screenHeight = 1000.0;
+  Timer? _delayTimer;
 
   @override
   void initState() {
@@ -103,6 +105,7 @@ class _ScrollFadeInState extends State<ScrollFadeIn>
 
   @override
   void dispose() {
+    _delayTimer?.cancel();
     _scrollPosition?.removeListener(_onScroll);
     _controller.dispose();
     super.dispose();
@@ -130,7 +133,7 @@ class _ScrollFadeInState extends State<ScrollFadeIn>
         if (widget.delay == Duration.zero) {
           _controller.forward();
         } else {
-          Future.delayed(widget.delay, () {
+          _delayTimer = Timer(widget.delay, () {
             if (mounted) {
               _controller.forward();
             }

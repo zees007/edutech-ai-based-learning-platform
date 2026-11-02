@@ -32,5 +32,8 @@ void main() {
         await tester.pump(const Duration(milliseconds: 50));
       }
     }
+
+    // Let any remaining animations and delayed reveals settle
+    await tester.pump(const Duration(milliseconds: 300));
   });
 }

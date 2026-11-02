@@ -7,19 +7,18 @@ import 'package:devzees_edutechai_client/presentation/widgets/scroll_fade_in.dar
 import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
 import 'package:devzees_edutechai_client/core/theme/app_theme.dart';
 import 'package:devzees_edutechai_client/core/providers/theme_provider.dart';
-import 'package:devzees_edutechai_client/core/constants/responsive.dart';
 
 import 'package:devzees_edutechai_client/presentation/widgets/promo_announcement_bar.dart';
 
 import 'widgets/home_navbar.dart';
 import 'widgets/hero_section.dart';
-import 'widgets/animated_stats_bar.dart';
 import 'widgets/workspace_preview_section.dart';
 import 'widgets/comparison_section.dart';
 import 'widgets/modes_and_levels_section.dart';
 import 'widgets/export_ecosystem_section.dart';
 import 'widgets/features_section.dart';
 import 'widgets/agents_section.dart';
+import 'widgets/gamified_mastery_section.dart';
 import 'widgets/wall_of_love_section.dart';
 import 'widgets/about_section.dart';
 import 'widgets/pricing_section.dart';
@@ -43,6 +42,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   final GlobalKey _modesKey = GlobalKey();
   final GlobalKey _featuresKey = GlobalKey();
   final GlobalKey _agentsKey = GlobalKey();
+  final GlobalKey _gamifiedKey = GlobalKey();
   final GlobalKey _ecosystemKey = GlobalKey();
   final GlobalKey _testimonialsKey = GlobalKey();
   final GlobalKey _aboutKey = GlobalKey();
@@ -120,6 +120,11 @@ class _HomePageState extends ConsumerState<HomePage> {
       case 'agents':
         targetContext = _agentsKey.currentContext;
         break;
+      case 'mastery':
+      case 'gamified':
+      case 'gamification':
+        targetContext = _gamifiedKey.currentContext;
+        break;
       case 'testimonials':
       case 'reviews':
         targetContext = _testimonialsKey.currentContext;
@@ -174,27 +179,10 @@ class _HomePageState extends ConsumerState<HomePage> {
                     ],
                   ),
                   onExploreTap: () => _scrollToSection('architecture'),
-                  includeCarousel: false,
                 ),
               ),
 
-              // ─── 2. CINEMATIC FULL-WIDTH HERO PRODUCT CAROUSEL ───
-              SliverToBoxAdapter(
-                child: Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 1200),
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: Responsive.isMobile(context) ? 16.0 : 36.0,
-                        vertical: 16.0,
-                      ),
-                      child: const FullWidthHeroCarousel(),
-                    ),
-                  ),
-                ),
-              ),
-
-              // ─── 3. Rest of Sections (Centered maxWidth: 1200) ───
+              // ─── 2. Rest of Sections (Centered maxWidth: 1200) ───
               SliverToBoxAdapter(
                 child: Center(
                   child: ConstrainedBox(
@@ -206,24 +194,8 @@ class _HomePageState extends ConsumerState<HomePage> {
                       ),
                       child: Column(
                         children: [
-                          // ─── 1. N8n Interactive Blackboard DAG Canvas (The Visual Proof) ───
+                          // ─── 1. The Unfair Advantage (Comparison Section: Beyond Generic AI Chatbots) ───
                           const SizedBox(height: 60),
-                          ScrollFadeIn(
-                            offset: const Offset(0, 30),
-                            duration: const Duration(milliseconds: 700),
-                            child: N8nCanvas(key: _canvasKey),
-                          ),
-
-                          // ─── 2. Animated Stats Bar (Telemetry Impact) ───
-                          const SizedBox(height: 100),
-                          ScrollFadeIn(
-                            offset: const Offset(0, 40),
-                            duration: const Duration(milliseconds: 800),
-                            child: const AnimatedStatsBar(),
-                          ),
-
-                          // ─── 3. The Unfair Advantage (Comparison Section) ───
-                          const SizedBox(height: 120),
                           ScrollFadeIn(
                             offset: const Offset(0, 40),
                             duration: const Duration(milliseconds: 800),
@@ -231,21 +203,37 @@ class _HomePageState extends ConsumerState<HomePage> {
                             child: ComparisonSection(key: _comparisonKey),
                           ),
 
-                          // ─── 4. Bento Grid Features Section (Rich Mockups) ───
+                          // ─── 2. N8n Interactive Blackboard DAG Canvas (The Visual Proof) ───
+                          const SizedBox(height: 120),
+                          ScrollFadeIn(
+                            offset: const Offset(0, 30),
+                            duration: const Duration(milliseconds: 700),
+                            child: N8nCanvas(key: _canvasKey),
+                          ),
+
+                          // ─── 3. Autonomous Agent Squad Section ───
+                          const SizedBox(height: 120),
+                          ScrollFadeIn(
+                            offset: const Offset(0, 40),
+                            duration: const Duration(milliseconds: 800),
+                            child: AgentsSection(key: _agentsKey),
+                          ),
+
+                          // ─── 4. Gamified Mastery Ladder Section ───
+                          const SizedBox(height: 120),
+                          ScrollFadeIn(
+                            offset: const Offset(0, 40),
+                            duration: const Duration(milliseconds: 800),
+                            child: GamifiedMasterySection(key: _gamifiedKey),
+                          ),
+
+                          // ─── 5. Bento Grid Features Section (Rich Mockups) ───
                           const SizedBox(height: 120),
                           ScrollFadeIn(
                             offset: const Offset(0, 40),
                             duration: const Duration(milliseconds: 800),
                             delay: const Duration(milliseconds: 100),
                             child: FeaturesSection(key: _featuresKey),
-                          ),
-
-                          // ─── 5. Autonomous Agent Squad Section ───
-                          const SizedBox(height: 120),
-                          ScrollFadeIn(
-                            offset: const Offset(0, 40),
-                            duration: const Duration(milliseconds: 800),
-                            child: AgentsSection(key: _agentsKey),
                           ),
 
                           // ─── 6. Live Workspace Preview ───

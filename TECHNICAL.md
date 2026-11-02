@@ -794,13 +794,18 @@ Client (Riverpod)                   WebSocket Server                      Agents
 
 EduTechAI integrates a comprehensive gamification framework motivating students through immediate positive reinforcement:
 
-1. **Standardized Level Progression:**
+1. **Standardized 10-Level Progression:**
    Managed by `GamificationUtils` (`lib/core/providers/gamification_provider.dart`), calculating levels from cumulative XP:
-   - **Level 1 (0–99 XP):** Novice
-   - **Level 2 (100–249 XP):** Explorer
-   - **Level 3 (250–499 XP):** Practitioner
-   - **Level 4 (500–999 XP):** Specialist
-   - **Level 5 (1000+ XP):** Master
+   - **Level 1 (0 XP):** Curious Explorer
+   - **Level 2 (60 XP):** Knowledge Seeker
+   - **Level 3 (140 XP):** Quick Learner
+   - **Level 4 (250 XP):** Deep Thinker
+   - **Level 5 (380 XP):** Rising Scholar
+   - **Level 6 (520 XP):** Concept Master
+   - **Level 7 (670 XP):** Wisdom Weaver
+   - **Level 8 (800 XP):** Knowledge Architect
+   - **Level 9 (920 XP):** Enlightened Mind
+   - **Level 10 (1,000 XP):** Grand Sage
 2. **Real-Time Event Broadcasting:**
    - Completing a step emits an `XPUpdateEvent` (+50 base XP, multiplied by streak bonuses).
    - Submitting a quiz emits an `XPUpdateEvent` (+20 XP per correct question + accuracy bonus).
