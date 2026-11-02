@@ -54,7 +54,7 @@ class _GamifiedMasterySectionState extends State<GamifiedMasterySection> {
     _GamificationTileItem(
       imagePath: 'assets/images/gamification/tile2.png',
       icon: Icons.bolt_rounded,
-      accentColor: Color(0xFF00F5D4),
+      accentColor: Color(0xFF3B82F6),
       title: 'Instant Quiz Feedback (+30 XP Bonus)',
       description:
           'Test your comprehension at each milestone with dynamic quizzes, immediate rationales, and bonus XP for 100% accuracy.',
@@ -79,6 +79,9 @@ class _GamifiedMasterySectionState extends State<GamifiedMasterySection> {
 
   int _currentIndex = 0;
   Timer? _sliderTimer;
+  bool _isSliderHovered = false;
+  int? _hoveredZone; // -1 for left, 1 for right, null for none
+  DateTime _lastNavTime = DateTime.fromMillisecondsSinceEpoch(0);
 
   @override
   void initState() {
@@ -90,6 +93,7 @@ class _GamifiedMasterySectionState extends State<GamifiedMasterySection> {
     _sliderTimer?.cancel();
     _sliderTimer = Timer.periodic(const Duration(seconds: 4), (timer) {
       if (!mounted) return;
+      if (_isSliderHovered) return; // Pause auto-rotation while user is hovering
       setState(() {
         _currentIndex = (_currentIndex + 1) % _tiles.length;
       });
@@ -102,6 +106,33 @@ class _GamifiedMasterySectionState extends State<GamifiedMasterySection> {
       _currentIndex = index;
     });
     _startSliderTimer(); // Reset auto-slide timer on user tap
+  }
+
+  void _navigateSlide(int direction) {
+    final now = DateTime.now();
+    if (now.difference(_lastNavTime).inMilliseconds < 250) return;
+    _lastNavTime = now;
+
+    setState(() {
+      _currentIndex =
+          (_currentIndex + direction + _tiles.length) % _tiles.length;
+    });
+    _startSliderTimer();
+  }
+
+  void _onZoneEntered(int zone) {
+    setState(() {
+      _hoveredZone = zone;
+    });
+    _navigateSlide(zone);
+  }
+
+  void _onZoneExited(int zone) {
+    if (_hoveredZone == zone) {
+      setState(() {
+        _hoveredZone = null;
+      });
+    }
   }
 
   @override
@@ -126,6 +157,7 @@ class _GamifiedMasterySectionState extends State<GamifiedMasterySection> {
         // ─── Two-Panel Showcase (Desktop side-by-side: Features LEFT, Slider RIGHT) ───
         if (isDesktop)
           Stack(
+            clipBehavior: Clip.none,
             children: [
               // Base Layer: Feature Cards on the LEFT define the natural section height
               Row(
@@ -253,74 +285,194 @@ class _GamifiedMasterySectionState extends State<GamifiedMasterySection> {
   Widget _buildShowcaseSlider(BuildContext context, {required bool isMobile}) {
     final _GamificationTileItem activeTile = _tiles[_currentIndex];
 
-    final Widget sliderContent = SizedBox(
-      key: const Key('slider_showcase_container'),
-      width: double.infinity,
-      height: double.infinity,
-      child: Stack(
-        fit: StackFit.expand,
-        alignment: Alignment.center,
-        children: [
-          // Soft ambient volumetric glow smoothly morphing with active tile accent color
-          Center(
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 350),
-              curve: Curves.easeOutCubic,
-              width: isMobile ? 300 : 520,
-              height: isMobile ? 220 : 380,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    activeTile.accentColor.withValues(alpha: 0.22),
-                    activeTile.accentColor.withValues(alpha: 0.05),
-                    Colors.transparent,
-                  ],
-                  stops: const [0.0, 0.55, 1.0],
-                ),
-              ),
-            ),
-          ),
-
-          // Borderless Floating 3D Artwork with buttery-smooth crossfade
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 350),
-            switchInCurve: Curves.easeOutCubic,
-            switchOutCurve: Curves.easeInCubic,
-            layoutBuilder: (currentChild, previousChildren) => Stack(
-              fit: StackFit.expand,
-              alignment: Alignment.center,
-              children: [...previousChildren, ?currentChild],
-            ),
-            transitionBuilder: (child, animation) {
-              return FadeTransition(
-                opacity: CurvedAnimation(
-                  parent: animation,
-                  curve: Curves.easeInOutCubic,
-                ),
-                child: child,
-              );
-            },
-            child: Image.asset(
-              activeTile.imagePath,
-              key: ValueKey<String>(activeTile.imagePath),
-              fit: BoxFit.contain,
-              width: double.infinity,
-              height: double.infinity,
-              alignment: Alignment.center,
-              errorBuilder: (context, error, stackTrace) => Container(
-                color: Colors.transparent,
-                child: const Center(
-                  child: Icon(
-                    Icons.image_not_supported_rounded,
-                    color: Colors.white24,
-                    size: 48,
+    final Widget sliderContent = MouseRegion(
+      onEnter: (_) {
+        setState(() => _isSliderHovered = true);
+      },
+      onExit: (_) {
+        setState(() {
+          _isSliderHovered = false;
+          _hoveredZone = null;
+        });
+      },
+      child: SizedBox(
+        key: const Key('slider_showcase_container'),
+        width: double.infinity,
+        height: double.infinity,
+        child: Stack(
+          fit: StackFit.expand,
+          clipBehavior: Clip.none,
+          alignment: Alignment.center,
+          children: [
+            // Soft ambient volumetric glow smoothly morphing with active tile accent color
+            Center(
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 350),
+                curve: Curves.easeOutCubic,
+                width: isMobile ? 300 : (_isSliderHovered ? 620 : 500),
+                height: isMobile ? 220 : (_isSliderHovered ? 450 : 370),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      activeTile.accentColor.withValues(
+                        alpha: _isSliderHovered ? 0.30 : 0.20,
+                      ),
+                      activeTile.accentColor.withValues(
+                        alpha: _isSliderHovered ? 0.08 : 0.04,
+                      ),
+                      Colors.transparent,
+                    ],
+                    stops: const [0.0, 0.55, 1.0],
                   ),
                 ),
               ),
             ),
-          ),
-        ],
+
+            // Borderless Floating 3D Artwork with hover zoom-in & buttery-smooth crossfade
+            AnimatedScale(
+              scale: _isSliderHovered ? 1.20 : 1.0,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeOutCubic,
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 350),
+                switchInCurve: Curves.easeOutCubic,
+                switchOutCurve: Curves.easeInCubic,
+                layoutBuilder: (currentChild, previousChildren) => Stack(
+                  fit: StackFit.expand,
+                  alignment: Alignment.center,
+                  children: [...previousChildren, ?currentChild],
+                ),
+                transitionBuilder: (child, animation) {
+                  return FadeTransition(
+                    opacity: CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.easeInOutCubic,
+                    ),
+                    child: child,
+                  );
+                },
+                child: Image.asset(
+                  activeTile.imagePath,
+                  key: ValueKey<String>(activeTile.imagePath),
+                  fit: BoxFit.contain,
+                  width: double.infinity,
+                  height: double.infinity,
+                  alignment: Alignment.center,
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    color: Colors.transparent,
+                    child: const Center(
+                      child: Icon(
+                        Icons.image_not_supported_rounded,
+                        color: Colors.white24,
+                        size: 48,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            // Left & Right Interactive Navigation Zones (Mouse-over to switch slides)
+            Positioned.fill(
+              child: Row(
+                children: [
+                  // Left Zone: Navigates to Previous Slide
+                  Expanded(
+                    child: MouseRegion(
+                      cursor: SystemMouseCursors.click,
+                      onEnter: (_) => _onZoneEntered(-1),
+                      onExit: (_) => _onZoneExited(-1),
+                      child: GestureDetector(
+                        onTap: () => _navigateSlide(-1),
+                        behavior: HitTestBehavior.translucent,
+                        child: Container(
+                          color: Colors.transparent,
+                          alignment: Alignment.centerLeft,
+                          padding: const EdgeInsets.only(left: 14),
+                          child: AnimatedOpacity(
+                            duration: const Duration(milliseconds: 200),
+                            opacity: _hoveredZone == -1 ? 0.9 : 0.0,
+                            child: Container(
+                              padding: const EdgeInsets.all(7),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: const Color(0xCC090B18),
+                                border: Border.all(
+                                  color: activeTile.accentColor
+                                      .withValues(alpha: 0.65),
+                                  width: 1.2,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: activeTile.accentColor
+                                        .withValues(alpha: 0.35),
+                                    blurRadius: 14,
+                                  ),
+                                ],
+                              ),
+                              child: Icon(
+                                Icons.chevron_left_rounded,
+                                color: activeTile.accentColor,
+                                size: 22,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // Right Zone: Navigates to Next Slide
+                  Expanded(
+                    child: MouseRegion(
+                      cursor: SystemMouseCursors.click,
+                      onEnter: (_) => _onZoneEntered(1),
+                      onExit: (_) => _onZoneExited(1),
+                      child: GestureDetector(
+                        onTap: () => _navigateSlide(1),
+                        behavior: HitTestBehavior.translucent,
+                        child: Container(
+                          color: Colors.transparent,
+                          alignment: Alignment.centerRight,
+                          padding: const EdgeInsets.only(right: 14),
+                          child: AnimatedOpacity(
+                            duration: const Duration(milliseconds: 200),
+                            opacity: _hoveredZone == 1 ? 0.9 : 0.0,
+                            child: Container(
+                              padding: const EdgeInsets.all(7),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: const Color(0xCC090B18),
+                                border: Border.all(
+                                  color: activeTile.accentColor
+                                      .withValues(alpha: 0.65),
+                                  width: 1.2,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: activeTile.accentColor
+                                        .withValues(alpha: 0.35),
+                                    blurRadius: 14,
+                                  ),
+                                ],
+                              ),
+                              child: Icon(
+                                Icons.chevron_right_rounded,
+                                color: activeTile.accentColor,
+                                size: 22,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
 
