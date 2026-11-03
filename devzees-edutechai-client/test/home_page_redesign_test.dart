@@ -231,6 +231,80 @@ void main() {
 
       expect(sliderSize.height, equals(cardsSize.height));
     });
+
+    testWidgets('hovering on slider does not change active slide', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(1200, 900);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() => tester.view.resetPhysicalSize());
+
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: SingleChildScrollView(child: GamifiedMasterySection()),
+          ),
+        ),
+      );
+
+      await tester.pump();
+      await tester.pumpAndSettle();
+
+      // Tap on the 2nd feature card (Instant Quiz Feedback)
+      await tester.tap(find.text('Instant Quiz Feedback (+30 XP Bonus)'));
+      await tester.pumpAndSettle();
+
+      // Verify tile2 is active
+      expect(
+        find.byKey(
+          const ValueKey<String>('assets/images/gamification/tile2.png'),
+        ),
+        findsOneWidget,
+      );
+
+      // Hover over the slider container
+      final gesture = await tester.createGesture(kind: PointerDeviceKind.mouse);
+      await gesture.addPointer(location: Offset.zero);
+      addTearDown(gesture.removePointer);
+
+      final sliderCenter = tester.getCenter(
+        find.byKey(const Key('slider_showcase_container')),
+      );
+      await gesture.moveTo(sliderCenter);
+      await tester.pumpAndSettle();
+
+      // Active slide must still be tile 2!
+      expect(
+        find.byKey(
+          const ValueKey<String>('assets/images/gamification/tile2.png'),
+        ),
+        findsOneWidget,
+      );
+
+      // Now click the next chevron button
+      await tester.tap(find.byKey(const Key('slider_next_chevron')));
+      await tester.pumpAndSettle();
+
+      // Active slide must now be tile 3!
+      expect(
+        find.byKey(
+          const ValueKey<String>('assets/images/gamification/tile3.png'),
+        ),
+        findsOneWidget,
+      );
+
+      // Now click the prev chevron button
+      await tester.tap(find.byKey(const Key('slider_prev_chevron')));
+      await tester.pumpAndSettle();
+
+      // Active slide must now be back to tile 2!
+      expect(
+        find.byKey(
+          const ValueKey<String>('assets/images/gamification/tile2.png'),
+        ),
+        findsOneWidget,
+      );
+    });
   });
 
   group('ComparisonSection Widget Tests', () {

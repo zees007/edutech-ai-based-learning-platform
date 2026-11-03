@@ -41,7 +41,7 @@ class _GamificationTileItem {
 ///   - Synchronized transparent PNG artwork (`tile1.png` – `tile4.png`)
 ///   - Volumetric ambient radial glow morphing to active tile's accent color
 ///   - Interactive hover zoom-in (scales up to 1.20)
-///   - Left & right interactive mouse-over/tap navigation zones with glowing chevrons
+///   - Left & right interactive tap/click chevron navigation buttons
 ///   - Smooth 350ms crossfade transitions between slides
 ///   - Clicking any card immediately navigates the slider to that item.
 class GamifiedMasterySection extends StatefulWidget {
@@ -91,7 +91,6 @@ class _GamifiedMasterySectionState extends State<GamifiedMasterySection> {
   Timer? _sliderTimer;
   bool _isSliderHovered = false;
   int? _hoveredZone; // -1 for left, 1 for right, null for none
-  DateTime _lastNavTime = DateTime.fromMillisecondsSinceEpoch(0);
 
   @override
   void initState() {
@@ -118,12 +117,8 @@ class _GamifiedMasterySectionState extends State<GamifiedMasterySection> {
     _startSliderTimer(); // Reset auto-slide timer on user tap
   }
 
-  /// Navigates the slider left (-1) or right (+1) with a 250ms debounce threshold.
+  /// Navigates the slider left (-1) or right (+1).
   void _navigateSlide(int direction) {
-    final now = DateTime.now();
-    if (now.difference(_lastNavTime).inMilliseconds < 250) return;
-    _lastNavTime = now;
-
     setState(() {
       _currentIndex =
           (_currentIndex + direction + _tiles.length) % _tiles.length;
@@ -131,16 +126,15 @@ class _GamifiedMasterySectionState extends State<GamifiedMasterySection> {
     _startSliderTimer();
   }
 
-  /// Triggers slide change and highlights the interactive chevron when cursor enters left/right half.
-  void _onZoneEntered(int zone) {
+  /// Highlights the interactive chevron when cursor enters the chevron button.
+  void _onChevronEntered(int zone) {
     setState(() {
       _hoveredZone = zone;
     });
-    _navigateSlide(zone);
   }
 
-  /// Clears zone hover state when cursor leaves the navigation zone.
-  void _onZoneExited(int zone) {
+  /// Clears chevron hover state when cursor leaves the chevron button.
+  void _onChevronExited(int zone) {
     if (_hoveredZone == zone) {
       setState(() {
         _hoveredZone = null;
@@ -387,102 +381,117 @@ class _GamifiedMasterySectionState extends State<GamifiedMasterySection> {
               ),
             ),
 
-            // Left & Right Interactive Navigation Zones (Mouse-over to switch slides)
-            Positioned.fill(
-              child: Row(
-                children: [
-                  // Left Zone: Navigates to Previous Slide
-                  Expanded(
-                    child: MouseRegion(
-                      cursor: SystemMouseCursors.click,
-                      onEnter: (_) => _onZoneEntered(-1),
-                      onExit: (_) => _onZoneExited(-1),
-                      child: GestureDetector(
-                        onTap: () => _navigateSlide(-1),
-                        behavior: HitTestBehavior.translucent,
+            // Left Chevron Button: Navigates to Previous Slide
+            Positioned(
+              left: 14,
+              top: 0,
+              bottom: 0,
+              child: Center(
+                child: MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  onEnter: (_) => _onChevronEntered(-1),
+                  onExit: (_) => _onChevronExited(-1),
+                  child: GestureDetector(
+                    key: const Key('slider_prev_chevron'),
+                    onTap: () => _navigateSlide(-1),
+                    behavior: HitTestBehavior.opaque,
+                    child: AnimatedOpacity(
+                      duration: const Duration(milliseconds: 200),
+                      opacity: isMobile
+                          ? 0.85
+                          : (_isSliderHovered
+                              ? (_hoveredZone == -1 ? 1.0 : 0.70)
+                              : 0.0),
+                      child: AnimatedScale(
+                        duration: const Duration(milliseconds: 150),
+                        scale: _hoveredZone == -1 ? 1.12 : 1.0,
                         child: Container(
-                          color: Colors.transparent,
-                          alignment: Alignment.centerLeft,
-                          padding: const EdgeInsets.only(left: 14),
-                          child: AnimatedOpacity(
-                            duration: const Duration(milliseconds: 200),
-                            opacity: _hoveredZone == -1 ? 0.9 : 0.0,
-                            child: Container(
-                              padding: const EdgeInsets.all(7),
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: const Color(0xCC090B18),
-                                border: Border.all(
-                                  color: activeTile.accentColor
-                                      .withValues(alpha: 0.65),
-                                  width: 1.2,
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: activeTile.accentColor
-                                        .withValues(alpha: 0.35),
-                                    blurRadius: 14,
-                                  ),
-                                ],
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: const Color(0xCC090B18),
+                            border: Border.all(
+                              color: activeTile.accentColor.withValues(
+                                alpha: _hoveredZone == -1 ? 0.90 : 0.65,
                               ),
-                              child: Icon(
-                                Icons.chevron_left_rounded,
-                                color: activeTile.accentColor,
-                                size: 22,
-                              ),
+                              width: 1.2,
                             ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: activeTile.accentColor.withValues(
+                                  alpha: _hoveredZone == -1 ? 0.55 : 0.35,
+                                ),
+                                blurRadius: _hoveredZone == -1 ? 18 : 14,
+                              ),
+                            ],
+                          ),
+                          child: Icon(
+                            Icons.chevron_left_rounded,
+                            color: activeTile.accentColor,
+                            size: 24,
                           ),
                         ),
                       ),
                     ),
                   ),
+                ),
+              ),
+            ),
 
-                  // Right Zone: Navigates to Next Slide
-                  Expanded(
-                    child: MouseRegion(
-                      cursor: SystemMouseCursors.click,
-                      onEnter: (_) => _onZoneEntered(1),
-                      onExit: (_) => _onZoneExited(1),
-                      child: GestureDetector(
-                        onTap: () => _navigateSlide(1),
-                        behavior: HitTestBehavior.translucent,
+            // Right Chevron Button: Navigates to Next Slide
+            Positioned(
+              right: 14,
+              top: 0,
+              bottom: 0,
+              child: Center(
+                child: MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  onEnter: (_) => _onChevronEntered(1),
+                  onExit: (_) => _onChevronExited(1),
+                  child: GestureDetector(
+                    key: const Key('slider_next_chevron'),
+                    onTap: () => _navigateSlide(1),
+                    behavior: HitTestBehavior.opaque,
+                    child: AnimatedOpacity(
+                      duration: const Duration(milliseconds: 200),
+                      opacity: isMobile
+                          ? 0.85
+                          : (_isSliderHovered
+                              ? (_hoveredZone == 1 ? 1.0 : 0.70)
+                              : 0.0),
+                      child: AnimatedScale(
+                        duration: const Duration(milliseconds: 150),
+                        scale: _hoveredZone == 1 ? 1.12 : 1.0,
                         child: Container(
-                          color: Colors.transparent,
-                          alignment: Alignment.centerRight,
-                          padding: const EdgeInsets.only(right: 14),
-                          child: AnimatedOpacity(
-                            duration: const Duration(milliseconds: 200),
-                            opacity: _hoveredZone == 1 ? 0.9 : 0.0,
-                            child: Container(
-                              padding: const EdgeInsets.all(7),
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: const Color(0xCC090B18),
-                                border: Border.all(
-                                  color: activeTile.accentColor
-                                      .withValues(alpha: 0.65),
-                                  width: 1.2,
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: activeTile.accentColor
-                                        .withValues(alpha: 0.35),
-                                    blurRadius: 14,
-                                  ),
-                                ],
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: const Color(0xCC090B18),
+                            border: Border.all(
+                              color: activeTile.accentColor.withValues(
+                                alpha: _hoveredZone == 1 ? 0.90 : 0.65,
                               ),
-                              child: Icon(
-                                Icons.chevron_right_rounded,
-                                color: activeTile.accentColor,
-                                size: 22,
-                              ),
+                              width: 1.2,
                             ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: activeTile.accentColor.withValues(
+                                  alpha: _hoveredZone == 1 ? 0.55 : 0.35,
+                                ),
+                                blurRadius: _hoveredZone == 1 ? 18 : 14,
+                              ),
+                            ],
+                          ),
+                          child: Icon(
+                            Icons.chevron_right_rounded,
+                            color: activeTile.accentColor,
+                            size: 24,
                           ),
                         ),
                       ),
                     ),
                   ),
-                ],
+                ),
               ),
             ),
           ],
