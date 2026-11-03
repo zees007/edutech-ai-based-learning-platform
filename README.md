@@ -290,7 +290,7 @@ Learning Modes control how all agents adapt their output style, depth, and conte
 | **Orchestrator** | Focuses on concepts that can be demonstrated visually. Concise step descriptions. |
 | **Socratic Tutor** | Shorter explanations (3–5 paragraphs). Uses vivid, descriptive language. References accompanying video clips. |
 | **YouTube Curator** | Returns up to **3 video clips** per step — emphasizes visual learning. |
-| **Academic Researcher** | Returns up to **2 papers** per step — lighter reading load. |
+| **Academic Researcher** | Returns up to **3 papers** per step — lighter reading load. |
 | **Quiz Agent** | Standard 2–3 questions per step. |
 
 ### 🔬 Deep Dive Mode
@@ -301,7 +301,7 @@ Learning Modes control how all agents adapt their output style, depth, and conte
 | **Orchestrator** | Includes theoretical foundations, proofs, and research-level depth in step descriptions. |
 | **Socratic Tutor** | Thorough, rigorous explanations (5–8 paragraphs). Includes mathematical notation where relevant. References academic sources. |
 | **YouTube Curator** | Returns up to **3 video clips** per step. |
-| **Academic Researcher** | Returns up to **3 papers** per step — maximum depth. |
+| **Academic Researcher** | Returns up to **4 papers** per step — maximum depth. |
 | **Quiz Agent** | Standard 2–3 questions, calibrated to higher difficulty. |
 
 ### ⚡ Bite-Sized Mode

@@ -222,7 +222,15 @@ class _HomePageState extends ConsumerState<HomePage> {
                             child: GamifiedMasterySection(key: _gamifiedKey),
                           ),
 
-                          // ─── 5. Bento Grid Features Section (Rich Mockups) ───
+                          // ─── 5. Adaptive Cognitive Calibration (Modes & Levels) ───
+                          const SizedBox(height: 120),
+                          ScrollFadeIn(
+                            offset: const Offset(0, 40),
+                            duration: const Duration(milliseconds: 800),
+                            child: ModesAndLevelsSection(key: _modesKey),
+                          ),
+
+                          // ─── 6. Bento Grid Features Section (Rich Mockups) ───
                           const SizedBox(height: 120),
                           ScrollFadeIn(
                             offset: const Offset(0, 40),
@@ -231,20 +239,12 @@ class _HomePageState extends ConsumerState<HomePage> {
                             child: FeaturesSection(key: _featuresKey),
                           ),
 
-                          // ─── 6. Live Workspace Preview ───
+                          // ─── 7. Live Workspace Preview ───
                           const SizedBox(height: 120),
                           ScrollFadeIn(
                             offset: const Offset(0, 40),
                             duration: const Duration(milliseconds: 800),
                             child: WorkspacePreviewSection(key: _previewKey),
-                          ),
-
-                          // ─── 7. Adaptive Cognitive Modes & Levels ───
-                          const SizedBox(height: 120),
-                          ScrollFadeIn(
-                            offset: const Offset(0, 40),
-                            duration: const Duration(milliseconds: 800),
-                            child: ModesAndLevelsSection(key: _modesKey),
                           ),
 
                           // ─── 8. Wall of Love / Testimonials (Proof of Results) ───
