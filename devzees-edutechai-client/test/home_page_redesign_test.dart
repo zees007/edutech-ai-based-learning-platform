@@ -327,8 +327,8 @@ void main() {
 
       expect(find.text('WHY EDUTECH AI'), findsOneWidget);
       expect(find.text('Beyond Generic AI Chatbots'), findsOneWidget);
-      expect(find.text('Teaching Methodology'), findsOneWidget);
-      expect(find.text('Curricular Structure'), findsOneWidget);
+      expect(find.text('How You Learn'), findsOneWidget);
+      expect(find.text('Learning Roadmap'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
 
@@ -350,20 +350,20 @@ void main() {
         await tester.pump();
         await tester.pumpAndSettle();
 
-        expect(find.text('Table Matrix'), findsOneWidget);
-        expect(find.text('Dimension Cards'), findsOneWidget);
+        expect(find.text('Table View'), findsOneWidget);
+        expect(find.text('Feature Cards'), findsOneWidget);
         expect(
           find.text('Swipe horizontally to compare columns'),
           findsOneWidget,
         );
         expect(tester.takeException(), isNull);
 
-        // Tap to switch to Dimension Cards
-        await tester.tap(find.text('Dimension Cards'));
+        // Tap to switch to Feature Cards
+        await tester.tap(find.text('Feature Cards'));
         await tester.pump();
         await tester.pumpAndSettle();
 
-        expect(find.text('EduTech AI Squad'), findsWidgets);
+        expect(find.text('EduTech AI Tutor'), findsWidgets);
         expect(tester.takeException(), isNull);
       },
     );

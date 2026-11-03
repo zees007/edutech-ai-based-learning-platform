@@ -33,68 +33,68 @@ class _ComparisonSectionState extends State<ComparisonSection> {
     const comparisonItems = [
       _ComparisonItem(
         icon: Icons.psychology_alt_rounded,
-        dimension: 'Teaching Methodology',
+        dimension: 'How You Learn',
         generic:
-            'Dumps monolithic walls of text; fosters passive reading, prompt fatigue, and low memory retention.',
-        genericTag: 'Passive Dump',
+            'Dumps overwhelming walls of text that are easy to skim and quickly forget.',
+        genericTag: 'Passive Reading',
         edutech:
-            'Active Socratic guided inquiry, real-world anchor analogies, progressive hints, and self-discovery.',
-        edutechTag: 'Socratic Method',
-        advantageBadge: '5x Retention',
+            'Interactive step-by-step guidance with relatable analogies and smart hints so you discover answers yourself.',
+        edutechTag: 'Active Guidance',
+        advantageBadge: 'Better Retention',
       ),
       _ComparisonItem(
         icon: Icons.alt_route_rounded,
-        dimension: 'Curricular Structure',
+        dimension: 'Learning Roadmap',
         generic:
-            'Fragmented single-turn answers with zero milestone roadmap, dependency tracking, or prerequisites.',
-        genericTag: 'No Roadmap',
+            'Answers questions one by one with no clear learning path, milestones, or progression.',
+        genericTag: 'No Clear Path',
         edutech:
-            'Supervisor Orchestrator plans 4–7 progressive milestone steps with automated prerequisite scaffolding.',
-        edutechTag: 'Step-by-Step Roadmap',
+            'Creates a personalized 4–7 step roadmap for any topic, identifying what you need to learn first so you never get stuck.',
+        edutechTag: 'Step-by-Step Path',
         advantageBadge: 'Step Mastery',
       ),
       _ComparisonItem(
         icon: Icons.video_collection_rounded,
-        dimension: 'Video Deep-Linking',
+        dimension: 'Curated Video Lessons',
         generic:
-            'Cannot verify multimedia; frequently invents non-existent or completely irrelevant video URLs.',
-        genericTag: 'Broken Links',
+            'Links to full-length 30–60 minute videos, leaving you to manually scrub through the timeline to find the relevant explanation.',
+        genericTag: 'Full-Length Videos',
         edutech:
-            'Dense vector semantic search across YouTube transcripts; pinpoints the exact start and end timestamps.',
-        edutechTag: 'ChromaDB Vector',
-        advantageBadge: 'Timestamped',
+            'Embeds curated video lessons pre-cued to the exact minute and second explaining your concept—zero scrubbing needed.',
+        edutechTag: 'Pre-Cued to Key Moments',
+        advantageBadge: 'Zero Scrubbing',
       ),
       _ComparisonItem(
         icon: Icons.auto_stories_rounded,
-        dimension: 'Scholarly Verification',
+        dimension: 'Real Research & Sources',
         generic:
-            'Relies on static training weights; frequently hallucinates authors, DOIs, and non-existent citations.',
-        genericTag: 'Hallucinations',
+            'Pulls general web articles and blog summaries, often linking to studies locked behind publisher paywalls.',
+        genericTag: 'Paywalls & Blog Posts',
         edutech:
-            'Live federated search across 250M+ peer-reviewed papers on arXiv, OpenAlex, and Semantic Scholar.',
-        edutechTag: 'Live APIs',
-        advantageBadge: '250M+ DOIs',
+            'Searches 250M+ scholarly papers across arXiv, OpenAlex, and Semantic Scholar with direct, free open-access PDF links.',
+        edutechTag: 'Direct Open-Access PDFs',
+        advantageBadge: 'Free Full Papers',
       ),
       _ComparisonItem(
         icon: Icons.fact_check_rounded,
-        dimension: 'Comprehension Testing',
+        dimension: 'Quizzes & Progress',
         generic:
-            'Zero verification of whether the user actually understood the material before moving forward.',
-        genericTag: 'Zero Testing',
+            'Never checks if you actually understood the concept before moving on.',
+        genericTag: 'No Understanding Check',
         edutech:
-            'Contextual formative quizzes strictly grounded in lesson content with instant XP scoring and streak tracking.',
-        edutechTag: 'Grounded Quizzes',
-        advantageBadge: 'XP Rewards',
+            'Quick interactive quizzes after every lesson with XP rewards and streak tracking to keep you motivated.',
+        edutechTag: 'Interactive Quizzes',
+        advantageBadge: 'XP & Daily Streaks',
       ),
       _ComparisonItem(
         icon: Icons.folder_zip_rounded,
-        dimension: 'Second Brain Export',
+        dimension: 'Saving & Exporting Notes',
         generic:
-            'Manual copy-pasting required; completely strips formatting, formulas, and structural diagrams.',
-        genericTag: 'Raw Copy-Paste',
+            'Requires messy copy-pasting that ruins formatting, diagrams, and math formulas.',
+        genericTag: 'Messy Copy-Paste',
         edutech:
-            'One-click export to Obsidian & Notion Markdown with native Mermaid.js flowcharts and styled PDF.',
-        edutechTag: 'Obsidian & Notion',
+            'Export your entire study roadmap to Notion, Obsidian, or clean PDF in one click—diagrams and formulas included.',
+        edutechTag: 'Notion, Obsidian & PDF',
         advantageBadge: '1-Click Export',
       ),
     ];
@@ -163,7 +163,7 @@ class _ComparisonSectionState extends State<ComparisonSection> {
         ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 800),
           child: Text(
-            'Generic conversational models are designed to give quick answers and end the session. EduTech AI is engineered as an autonomous teaching squad dedicated to building deep cognitive retention.',
+            'Generic AI chatbots give quick answers and move on. EduTech AI acts like an expert 1-on-1 personal tutor—guiding you step-by-step until you truly master any topic.',
             textAlign: TextAlign.center,
             style: AppTextStyles.body1.copyWith(
               color: const Color(0xFF94A3B8),
@@ -174,7 +174,7 @@ class _ComparisonSectionState extends State<ComparisonSection> {
         ),
         const SizedBox(height: 32),
 
-        // ─── Compact / Mobile View Switcher (Table Matrix vs Dimension Cards) ───
+        // ─── Compact / Mobile View Switcher (Table View vs Feature Cards) ───
         if (isCompact) ...[
           Container(
             padding: const EdgeInsets.all(4),
@@ -201,7 +201,7 @@ class _ComparisonSectionState extends State<ComparisonSection> {
                   _buildViewToggle(
                     isSelected: _viewMode == _ComparisonViewMode.table,
                     icon: Icons.table_chart_rounded,
-                    label: 'Table Matrix',
+                    label: 'Table View',
                     onTap: () =>
                         setState(() => _viewMode = _ComparisonViewMode.table),
                   ),
@@ -209,7 +209,7 @@ class _ComparisonSectionState extends State<ComparisonSection> {
                   _buildViewToggle(
                     isSelected: _viewMode == _ComparisonViewMode.cards,
                     icon: Icons.view_agenda_rounded,
-                    label: 'Dimension Cards',
+                    label: 'Feature Cards',
                     onTap: () =>
                         setState(() => _viewMode = _ComparisonViewMode.cards),
                   ),
@@ -378,7 +378,7 @@ class _ComparisonSectionState extends State<ComparisonSection> {
                     flex: 3,
                     child: Center(
                       child: Text(
-                        'LEARNING DIMENSION',
+                        'LEARNING FEATURE',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: Color(0xFF94A3B8),
@@ -465,7 +465,7 @@ class _ComparisonSectionState extends State<ComparisonSection> {
                               ),
                               SizedBox(width: 6),
                               Text(
-                                'EduTech AI Multi-Agent Squad',
+                                'EduTech AI Personal Tutor',
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 12,
@@ -815,7 +815,7 @@ class _ComparisonSectionState extends State<ComparisonSection> {
                     const SizedBox(width: 8),
                     const Expanded(
                       child: Text(
-                        'EduTech AI Squad',
+                        'EduTech AI Tutor',
                         style: TextStyle(
                           color: Color(0xFF60A5FA),
                           fontSize: 12,
