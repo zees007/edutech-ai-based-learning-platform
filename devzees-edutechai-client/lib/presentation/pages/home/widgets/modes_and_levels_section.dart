@@ -142,71 +142,8 @@ class _ModesAndLevelsSectionState extends State<ModesAndLevelsSection> {
         ),
         SizedBox(height: isMobile ? 24 : 36),
 
-        Wrap(
-          spacing: isMobile ? 8 : 12,
-          runSpacing: 8,
-          alignment: WrapAlignment.center,
-          children: List.generate(_modes.length, (i) {
-            final m = _modes[i];
-            final isSelected = _selectedMode == i;
-            final Color color = m['color'];
+        _buildModeSwitcher(isMobile),
 
-            return InkWell(
-              onTap: () => setState(() => _selectedMode = i),
-              borderRadius: BorderRadius.circular(isMobile ? 12 : 16),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                padding: EdgeInsets.symmetric(
-                  horizontal: isMobile ? 14 : 20,
-                  vertical: isMobile ? 9 : 12,
-                ),
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? color.withValues(alpha: 0.16)
-                      : const Color(0xDD0A0D1D),
-                  borderRadius: BorderRadius.circular(isMobile ? 12 : 16),
-                  border: Border.all(
-                    color: isSelected
-                        ? color
-                        : Colors.white.withValues(alpha: 0.10),
-                    width: isSelected ? 1.5 : 1,
-                  ),
-                  boxShadow: isSelected
-                      ? [
-                          BoxShadow(
-                            color: color.withValues(alpha: 0.30),
-                            blurRadius: isMobile ? 12 : 18,
-                          ),
-                        ]
-                      : null,
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      m['icon'] as IconData,
-                      size: isMobile ? 17 : 20,
-                      color: isSelected ? color : const Color(0xFF94A3B8),
-                    ),
-                    SizedBox(width: isMobile ? 7 : 10),
-                    Text(
-                      m['name'],
-                      style: TextStyle(
-                        color: isSelected
-                            ? Colors.white
-                            : const Color(0xFFCBD5E1),
-                        fontSize: isMobile ? 13 : 14,
-                        fontWeight: isSelected
-                            ? FontWeight.w800
-                            : FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }),
-        ),
         SizedBox(height: isMobile ? 18 : 24),
 
         // Mode Specs Card
@@ -373,6 +310,137 @@ class _ModesAndLevelsSectionState extends State<ModesAndLevelsSection> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildModeSwitcher(bool isMobile) {
+    if (isMobile) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          color: const Color(0xDD0A0D1D),
+          borderRadius: BorderRadius.circular(9999),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.10),
+            width: 1.0,
+          ),
+        ),
+        child: Row(
+          children: List.generate(_modes.length, (i) {
+            return Expanded(
+              child: Padding(
+                padding: EdgeInsets.only(
+                  right: i < _modes.length - 1 ? 4 : 0,
+                ),
+                child: _buildSegmentItem(i, isMobile: true),
+              ),
+            );
+          }),
+        ),
+      );
+    }
+
+    // Desktop pill track
+    return Container(
+      padding: const EdgeInsets.all(5),
+      decoration: BoxDecoration(
+        color: const Color(0xDD0A0D1D),
+        borderRadius: BorderRadius.circular(9999),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.10),
+          width: 1.0,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.35),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: List.generate(_modes.length, (i) {
+          return Padding(
+            padding: EdgeInsets.only(
+              right: i < _modes.length - 1 ? 6 : 0,
+            ),
+            child: _buildSegmentItem(i, isMobile: false),
+          );
+        }),
+      ),
+    );
+  }
+
+  Widget _buildSegmentItem(int i, {required bool isMobile}) {
+    final m = _modes[i];
+    final isSelected = _selectedMode == i;
+    final Color color = m['color'];
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => setState(() => _selectedMode = i),
+        borderRadius: BorderRadius.circular(9999),
+        splashColor: color.withValues(alpha: 0.20),
+        hoverColor: color.withValues(alpha: 0.08),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOutCubic,
+          padding: EdgeInsets.symmetric(
+            horizontal: isMobile ? 6 : 22,
+            vertical: isMobile ? 11 : 12,
+          ),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? color.withValues(alpha: 0.16)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(9999),
+            border: Border.all(
+              color: isSelected
+                  ? color.withValues(alpha: 0.45)
+                  : Colors.transparent,
+              width: 1.2,
+            ),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: color.withValues(alpha: 0.28),
+                      blurRadius: isMobile ? 10 : 16,
+                    ),
+                  ]
+                : null,
+          ),
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  m['icon'] as IconData,
+                  size: isMobile ? 16 : 19,
+                  color: isSelected ? color : const Color(0xFF94A3B8),
+                ),
+                SizedBox(width: isMobile ? 5 : 9),
+                Text(
+                  m['name'],
+                  style: TextStyle(
+                    color: isSelected
+                        ? Colors.white
+                        : const Color(0xFFCBD5E1),
+                    fontSize: isMobile ? 12.5 : 14,
+                    fontWeight: isSelected
+                        ? FontWeight.w800
+                        : FontWeight.w600,
+                    letterSpacing: -0.1,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
