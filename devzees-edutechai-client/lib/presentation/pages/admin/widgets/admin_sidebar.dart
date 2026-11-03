@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/text_styles.dart';
 
-enum AdminSection { users, roles, subscriptions, settings, analytics }
+enum AdminSection { users, roles, subscriptions, settings, analytics, feedbacks }
 
 /// Admin sidebar navigation with glassmorphic styling.
 class AdminSidebar extends StatelessWidget {
@@ -117,6 +117,12 @@ class AdminSidebar extends StatelessWidget {
             icon: Icons.bar_chart_outlined,
             label: 'Analytics',
             section: AdminSection.analytics,
+          ),
+          _buildNavItem(
+            context,
+            icon: Icons.rate_review_outlined,
+            label: 'Feedbacks & Reviews',
+            section: AdminSection.feedbacks,
           ),
           const Spacer(),
           // Back to Learning

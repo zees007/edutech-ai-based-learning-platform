@@ -95,3 +95,8 @@ def test_alice_scenario_calculations():
     assert info["xp_needed_for_next"] == 80
     assert info["progress"] == 0.25
 
+def test_feedback_xp_bonus():
+    """Verify submitting session feedback awards +30 XP bonus."""
+    from services.gamification import calculate_feedback_xp, XP_FEEDBACK_BONUS
+    assert calculate_feedback_xp() == 30
+    assert XP_FEEDBACK_BONUS == 30

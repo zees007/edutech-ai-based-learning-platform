@@ -355,6 +355,7 @@ EduTechAI includes a full gamification layer to keep students motivated and enga
 | Each correct quiz answer | **20 XP** per question |
 | 100% quiz accuracy bonus | **+30 XP** extra |
 | Completing an entire session | **+100 XP** bonus |
+| Submitting session feedback/testimonial | **+30 XP** bonus |
 | Streak multiplier | **+10%** per consecutive day (capped at 10 days) |
 
 ### Leveling System

@@ -126,7 +126,7 @@ def create_app() -> FastAPI:
         )
 
     # ─── Routers ─────────────────────────────────────────────
-    from app.routers import auth, learning, quiz, roles, subscriptions, users, websocket, exports, admin
+    from app.routers import auth, learning, quiz, roles, subscriptions, users, websocket, exports, admin, feedback
 
     app.include_router(auth.router, prefix="/api/v1", tags=["Auth"])
     app.include_router(learning.router, prefix="/api/v1", tags=["Learning"])
@@ -136,6 +136,7 @@ def create_app() -> FastAPI:
     app.include_router(roles.router, prefix="/api/v1", tags=["Roles"])
     app.include_router(subscriptions.router, prefix="/api/v1", tags=["Subscriptions"])
     app.include_router(admin.router, prefix="/api/v1", tags=["Admin"])
+    app.include_router(feedback.router, prefix="/api/v1", tags=["Feedback"])
     app.include_router(websocket.router, tags=["WebSocket"])
 
     # ─── Health Check ────────────────────────────────────────

@@ -12,6 +12,8 @@ import 'widgets/sidebar/learning_sidebar.dart';
 import 'widgets/main_content/learning_main_content.dart';
 import 'widgets/gamification/level_up_celebration.dart';
 import 'widgets/gamification/journey_complete_celebration.dart';
+import 'widgets/gamification/session_feedback_dialog.dart';
+import 'package:devzees_edutechai_client/core/providers/feedback_provider.dart';
 import 'package:devzees_edutechai_client/core/providers/active_session_provider.dart';
 import 'package:devzees_edutechai_client/core/providers/theme_provider.dart';
 import 'widgets/mobile/mobile_learning_top_bar.dart';
@@ -28,6 +30,7 @@ class _LearningPageState extends ConsumerState<LearningPage> {
   bool isExpanded = true;
   OverlayEntry? _levelUpOverlay;
   bool _isJourneyCompleteDialogOpen = false;
+  bool _isFeedbackDialogOpen = false;
 
   @override
   void initState() {
@@ -71,6 +74,40 @@ class _LearningPageState extends ConsumerState<LearningPage> {
       ),
     );
     Overlay.of(context).insert(_levelUpOverlay!);
+  }
+
+  void _showFeedbackDialog(FeedbackPromptEvent event) {
+    if (_isFeedbackDialogOpen || !mounted) return;
+    _isFeedbackDialogOpen = true;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return SessionFeedbackDialog(
+          sessionId: event.sessionId,
+          topic: event.topic,
+          onCompleted: (bonusXp) {
+            Navigator.of(dialogContext).pop();
+            _isFeedbackDialogOpen = false;
+            ref.read(feedbackPromptProvider.notifier).dismiss();
+            ref
+                .read(activeSessionProvider.notifier)
+                .completeFeedbackAndCelebrate(bonusXp: bonusXp);
+          },
+          onSkipped: () {
+            Navigator.of(dialogContext).pop();
+            _isFeedbackDialogOpen = false;
+            ref.read(feedbackPromptProvider.notifier).dismiss();
+            ref
+                .read(activeSessionProvider.notifier)
+                .skipFeedbackAndCelebrate();
+          },
+        );
+      },
+    ).then((_) {
+      _isFeedbackDialogOpen = false;
+    });
   }
 
   void _showJourneyCompleteCelebration(JourneyCompleteEvent event) {
@@ -126,6 +163,14 @@ class _LearningPageState extends ConsumerState<LearningPage> {
         // Ensure this runs after the current frame
         WidgetsBinding.instance.addPostFrameCallback((_) {
            _showLevelUpCelebration(next);
+        });
+      }
+    });
+
+    ref.listen<FeedbackPromptEvent?>(feedbackPromptProvider, (previous, next) {
+      if (next != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _showFeedbackDialog(next);
         });
       }
     });
