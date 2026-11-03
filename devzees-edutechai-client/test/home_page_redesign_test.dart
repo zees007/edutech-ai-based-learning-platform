@@ -396,6 +396,11 @@ void main() {
       await tester.tap(find.text('Deep Dive Mode'));
       await tester.pumpAndSettle();
       expect(find.text('Comprehensive & Academic Depth'), findsOneWidget);
+
+      // Verify auto-switch to next mode (Bite-Sized) after 3 seconds
+      await tester.pump(const Duration(seconds: 3));
+      await tester.pumpAndSettle();
+      expect(find.text('Fast Revision (<10 Mins)'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   });
