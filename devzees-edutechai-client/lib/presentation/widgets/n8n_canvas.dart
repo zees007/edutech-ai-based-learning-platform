@@ -241,10 +241,11 @@ class _N8nCanvasState extends State<N8nCanvas> with TickerProviderStateMixin {
               ],
             ),
 
-            // Wire down into Central Blackboard
-            _AnimatedVerticalWire(
+            // Wire down into Central Blackboard (Curves from mid of Orchestrator to center of Blackboard)
+            _AnimatedOrchestratorToBlackboardWire(
               animation: _flowController,
-              height: 32,
+              width: 624,
+              height: 38,
               accentColor: AppColors.primary,
             ),
 
@@ -1132,6 +1133,135 @@ class _VerticalWirePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _VerticalWirePainter oldDelegate) => true;
+}
+
+class _AnimatedOrchestratorToBlackboardWire extends StatelessWidget {
+  final Animation<double> animation;
+  final double width;
+  final double height;
+  final Color accentColor;
+
+  const _AnimatedOrchestratorToBlackboardWire({
+    required this.animation,
+    this.width = 624,
+    this.height = 38,
+    required this.accentColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: width,
+      height: height,
+      child: AnimatedBuilder(
+        animation: animation,
+        builder: (context, _) {
+          return CustomPaint(
+            painter: _OrchestratorToBlackboardWirePainter(
+              flowProgress: animation.value,
+              accentColor: accentColor,
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// Draws a smooth curved bezier wire from the bottom-mid of AI Orchestrator
+/// down into the top-center of the Shared Blackboard hub.
+class _OrchestratorToBlackboardWirePainter extends CustomPainter {
+  final double flowProgress;
+  final Color accentColor;
+
+  _OrchestratorToBlackboardWirePainter({
+    required this.flowProgress,
+    required this.accentColor,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final centerX = size.width / 2;
+    // Level 1 planning row width: 190 (Ingestion) + 44 (Wire) + 240 (Orchestrator) = 474.
+    // Centered in size.width, AI Orchestrator's mid is at: (size.width / 2) + 117.0.
+    final startX = centerX + 117.0;
+    const startY = 0.0;
+
+    // Shared Blackboard is centered at centerX
+    final endX = centerX;
+    final endY = size.height;
+
+    final path = Path()
+      ..moveTo(startX, startY)
+      ..cubicTo(
+        startX,
+        size.height * 0.5,
+        endX,
+        size.height * 0.5,
+        endX,
+        endY,
+      );
+
+    // Track
+    final trackPaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.12)
+      ..strokeWidth = 2.0
+      ..style = PaintingStyle.stroke;
+    canvas.drawPath(path, trackPaint);
+
+    // Glowing Pulse along wire
+    final metrics = path.computeMetrics().toList();
+    if (metrics.isNotEmpty) {
+      final metric = metrics.first;
+      final pulseLen = metric.length * 0.35;
+      final startDist = (metric.length + pulseLen) * flowProgress - pulseLen;
+      final endDist = (startDist + pulseLen).clamp(0.0, metric.length);
+      if (endDist > startDist && startDist < metric.length) {
+        final extracted = metric.extractPath(
+          startDist.clamp(0.0, metric.length),
+          endDist,
+        );
+        final pulsePaint = Paint()
+          ..color = accentColor.withValues(alpha: 0.6)
+          ..strokeWidth = 2.2
+          ..style = PaintingStyle.stroke;
+        canvas.drawPath(extracted, pulsePaint);
+      }
+
+      // Moving Data Packet Dot
+      final distance = metric.length * flowProgress;
+      final tangent = metric.getTangentForOffset(distance);
+      if (tangent != null) {
+        final glowPaint = Paint()
+          ..color = accentColor.withValues(alpha: 0.7)
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5);
+        final dotPaint = Paint()
+          ..color = Colors.white
+          ..style = PaintingStyle.fill;
+        canvas.drawCircle(tangent.position, 5.0, glowPaint);
+        canvas.drawCircle(tangent.position, 2.5, dotPaint);
+      }
+    }
+
+    // Ports
+    _drawPort(canvas, Offset(startX, startY), accentColor);
+    _drawPort(canvas, Offset(endX, endY), accentColor);
+  }
+
+  void _drawPort(Canvas canvas, Offset offset, Color color) {
+    final portPaint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+    final borderPaint = Paint()
+      ..color = const Color(0xFF080B18)
+      ..strokeWidth = 1.5
+      ..style = PaintingStyle.stroke;
+    canvas.drawCircle(offset, 4.0, portPaint);
+    canvas.drawCircle(offset, 4.0, borderPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _OrchestratorToBlackboardWirePainter oldDelegate) => true;
 }
 
 /// Draws 3 curved bezier branches forking out from Blackboard down into the 3 worker nodes.
