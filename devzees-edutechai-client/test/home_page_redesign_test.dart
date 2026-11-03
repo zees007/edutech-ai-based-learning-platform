@@ -10,7 +10,6 @@ import 'package:devzees_edutechai_client/presentation/pages/home/widgets/agents_
 import 'package:devzees_edutechai_client/presentation/pages/home/widgets/gamified_mastery_section.dart';
 import 'package:devzees_edutechai_client/presentation/pages/home/widgets/comparison_section.dart';
 import 'package:devzees_edutechai_client/presentation/pages/home/widgets/modes_and_levels_section.dart';
-import 'package:devzees_edutechai_client/presentation/pages/home/widgets/export_ecosystem_section.dart';
 import 'package:devzees_edutechai_client/presentation/pages/home/widgets/about_section.dart';
 import 'package:devzees_edutechai_client/presentation/pages/home/widgets/pricing_section.dart';
 import 'package:devzees_edutechai_client/presentation/pages/home/widgets/faq_section.dart';
@@ -317,33 +316,6 @@ void main() {
       expect(find.text('Deep Dive Mode'), findsOneWidget);
       expect(find.text('Bite-Sized Mode'), findsOneWidget);
       expect(find.text('Undergraduate'), findsOneWidget);
-      expect(tester.takeException(), isNull);
-    });
-  });
-
-  group('ExportEcosystemSection Widget Tests', () {
-    testWidgets('renders second brain export formats and image', (
-      tester,
-    ) async {
-      tester.view.physicalSize = const Size(1200, 900);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(() => tester.view.resetPhysicalSize());
-
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: SingleChildScrollView(child: ExportEcosystemSection()),
-          ),
-        ),
-      );
-
-      await tester.pump();
-      await tester.pumpAndSettle();
-
-      expect(find.text('ZERO VENDOR LOCK-IN'), findsOneWidget);
-      expect(find.text('Markdown (.md)'), findsOneWidget);
-      expect(find.text('Interactive HTML (.html)'), findsOneWidget);
-      expect(find.text('Executive PDF (.pdf)'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   });

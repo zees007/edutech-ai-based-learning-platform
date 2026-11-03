@@ -15,7 +15,6 @@ import 'widgets/hero_section.dart';
 import 'widgets/workspace_preview_section.dart';
 import 'widgets/comparison_section.dart';
 import 'widgets/modes_and_levels_section.dart';
-import 'widgets/export_ecosystem_section.dart';
 import 'widgets/features_section.dart';
 import 'widgets/agents_section.dart';
 import 'widgets/gamified_mastery_section.dart';
@@ -43,7 +42,6 @@ class _HomePageState extends ConsumerState<HomePage> {
   final GlobalKey _featuresKey = GlobalKey();
   final GlobalKey _agentsKey = GlobalKey();
   final GlobalKey _gamifiedKey = GlobalKey();
-  final GlobalKey _ecosystemKey = GlobalKey();
   final GlobalKey _testimonialsKey = GlobalKey();
   final GlobalKey _aboutKey = GlobalKey();
   final GlobalKey _pricingKey = GlobalKey();
@@ -110,9 +108,6 @@ class _HomePageState extends ConsumerState<HomePage> {
         break;
       case 'modes':
         targetContext = _modesKey.currentContext;
-        break;
-      case 'ecosystem':
-        targetContext = _ecosystemKey.currentContext;
         break;
       case 'features':
         targetContext = _featuresKey.currentContext;
@@ -244,15 +239,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                             child: WorkspacePreviewSection(key: _previewKey),
                           ),
 
-                          // ─── 7. Second Brain Ecosystem (Zero Lock-In) ───
-                          const SizedBox(height: 120),
-                          ScrollFadeIn(
-                            offset: const Offset(0, 40),
-                            duration: const Duration(milliseconds: 800),
-                            child: ExportEcosystemSection(key: _ecosystemKey),
-                          ),
-
-                          // ─── 8. Adaptive Cognitive Modes & Levels ───
+                          // ─── 7. Adaptive Cognitive Modes & Levels ───
                           const SizedBox(height: 120),
                           ScrollFadeIn(
                             offset: const Offset(0, 40),
@@ -260,7 +247,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                             child: ModesAndLevelsSection(key: _modesKey),
                           ),
 
-                          // ─── 9. Wall of Love / Testimonials (Proof of Results) ───
+                          // ─── 8. Wall of Love / Testimonials (Proof of Results) ───
                           const SizedBox(height: 120),
                           ScrollFadeIn(
                             offset: const Offset(0, 40),
@@ -268,7 +255,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                             child: WallOfLoveSection(key: _testimonialsKey),
                           ),
 
-                          // ─── 10. Cognitive Pedagogy & Research (About) ───
+                          // ─── 9. Cognitive Pedagogy & Research (About) ───
                           const SizedBox(height: 120),
                           ScrollFadeIn(
                             offset: const Offset(0, 40),
@@ -276,7 +263,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                             child: AboutSection(key: _aboutKey),
                           ),
 
-                          // ─── 11. Transparent Tiered Pricing ───
+                          // ─── 10. Transparent Tiered Pricing ───
                           const SizedBox(height: 120),
                           ScrollFadeIn(
                             offset: const Offset(0, 40),
@@ -285,7 +272,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                             child: PricingSection(key: _pricingKey),
                           ),
 
-                          // ─── 12. Frequently Asked Questions (FAQ) ───
+                          // ─── 11. Frequently Asked Questions (FAQ) ───
                           const SizedBox(height: 120),
                           ScrollFadeIn(
                             offset: const Offset(0, 40),
@@ -293,7 +280,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                             child: FaqSection(key: _faqKey),
                           ),
 
-                          // ─── 13. Terminal CTA Footer ───
+                          // ─── 12. Terminal CTA Footer ───
                           const SizedBox(height: 120),
                           ScrollFadeIn(
                             offset: const Offset(0, 30),
