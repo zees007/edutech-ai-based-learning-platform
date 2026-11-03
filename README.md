@@ -319,17 +319,27 @@ Learning Modes control how all agents adapt their output style, depth, and conte
 
 ## Education Levels
 
-Education Levels control how all agents calibrate **language complexity, vocabulary, and analogy style**. The student selects their level in the sidebar before starting.
+Education Levels control how the entire multi-agent squad calibrates **vocabulary, technical depth, anchor analogies, and research exposure**. The student selects their level prior to starting a session.
 
-| Level | Target Audience | Adaptation |
-|-------|-----------------|------------|
-| 🏫 **Middle School** | Ages 11–14 | Simple vocabulary. Analogies from daily life, sports, games. No jargon. |
-| 🎒 **High School** | Ages 15–18 | Introduces some technical terms with definitions. Science-fair level depth. |
-| 🏛️ **Undergraduate** | College students | Full technical vocabulary. Can reference textbook-level concepts and equations. |
-| 🎓 **Graduate** | Master's / PhD students | Research-level depth. Discusses edge cases, open problems, and current literature. |
-| 💡 **General Curious** | Any curious adult | Assumes no specific background. Clear but not condescending. Accessible yet substantive. |
+### Cognitive Calibration Matrix
 
-Both the **Socratic Tutor** and **Quiz Agent** adapt their language, examples, and difficulty based on the selected education level.
+| Level | Target Audience | Anchor Analogy Domain (Step 1) | Technical & Math Depth | Academic Papers | Quiz Calibration |
+| :--- | :--- | :--- | :--- | :---: | :--- |
+| 🏫 **Middle School** | Ages 11–14 | Video games, sports, cooking, superhero powers | Zero jargon, purely descriptive concepts | **Skipped (0)** | Everyday logic, intuitive recall |
+| 🎒 **High School** | Ages 15–18 | Smartphones, cars, social media, popular apps | Foundational terminology & introductory formulas | **Skipped (0)** | Core definitions, mechanism flow |
+| 🏛️ **Undergraduate** | College STEM | Logistics, city grids, distributed systems | Rigorous mathematics, matrix operations, derivations | **Up to 3–4** | Multi-step problem solving & logic |
+| 🎓 **Graduate** | Master's / PhD | Theoretical mechanics, formal proofs | Formal theorems, edge cases, open research problems | **Up to 3–4** | Research evaluation & critique |
+| 💡 **General Curious** | Lifelong Learners | Practical real-world adult systems | Intuitive systems-thinking, substantive without jargon | **Up to 3–4** | Conceptual comprehension & impact |
+
+### Anchor Analogy Framework
+To prevent cognitive overload, the **Socratic Tutor** introduces a single sticky mental model in Step 1 tailored to the student's level. Subsequent steps build directly on this anchor rather than confusing the learner with disjointed metaphors.
+
+### Level-Adaptive Concept Transformation: "Neural Networks"
+- **Middle School:** *"Think of a neural network like a team of friends guessing what animal is in a photo. One friend checks the fur, another checks the ears, and together they vote on the answer!"*
+- **High School:** *"An algorithm inspired by biological neurons. It passes signals through interconnected layers, tuning connection weights to recognize patterns like handwriting or speech."*
+- **Undergraduate:** *"A parameterized mapping function $f(x; \theta): \mathbb{R}^n \to \mathbb{R}^m$ trained via gradient descent and backpropagation across non-linear activation layers."*
+- **Graduate:** *"Analyzed through Neural Tangent Kernel (NTK) regimes in the infinite-width limit, evaluating inductive bias, Fisher Information spectrum, and non-convex loss manifolds."*
+- **General Curious:** *"A sophisticated pattern-matching engine that learns from millions of examples rather than rigid hand-coded rules, revealing hidden mathematical patterns in data."*
 
 ---
 

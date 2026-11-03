@@ -71,6 +71,9 @@ class _ModesAndLevelsSectionState extends State<ModesAndLevelsSection> {
       'badge': 'Ages 11–14',
       'icon': Icons.school_rounded,
       'color': Color(0xFF38BDF8),
+      'analogy': 'Video Games & Daily Life',
+      'mathRigor': 'Zero Jargon',
+      'researchPapers': 'Filtered Out (Safe)',
       'sample':
           '"Think of an artificial neural network like a team of friends guessing what animal is in a photo. One friend looks at the fur, another checks the ears, and a third spots the tail. Together, they vote on the answer!"',
       'cognitiveFocus':
@@ -81,6 +84,9 @@ class _ModesAndLevelsSectionState extends State<ModesAndLevelsSection> {
       'badge': 'Ages 15–18',
       'icon': Icons.backpack_rounded,
       'color': Color(0xFF34D399),
+      'analogy': 'Smartphones & Apps',
+      'mathRigor': 'Core Terminology',
+      'researchPapers': 'Filtered Out (Safe)',
       'sample':
           '"A neural network is an algorithm inspired by biological neurons. It passes inputs through layers of interconnected nodes. Each connection has an adjustable weight that tunes itself to recognize patterns like handwriting or speech."',
       'cognitiveFocus':
@@ -91,6 +97,9 @@ class _ModesAndLevelsSectionState extends State<ModesAndLevelsSection> {
       'badge': 'College STEM',
       'icon': Icons.account_balance_rounded,
       'color': Color(0xFF818CF8),
+      'analogy': 'Logistics & City Grids',
+      'mathRigor': 'Full Math & Matrices',
+      'researchPapers': '3–4 Landmark Papers',
       'sample':
           '"A parameterized mapping function f(x; θ): ℝⁿ → ℝᵐ. Forward propagation applies affine transformations W·x + b followed by non-linear activations (ReLU, GELU). Optimization minimizes empirical loss using stochastic gradient descent and backpropagation."',
       'cognitiveFocus':
@@ -101,6 +110,9 @@ class _ModesAndLevelsSectionState extends State<ModesAndLevelsSection> {
       'badge': 'Research / PhD',
       'icon': Icons.workspace_premium_rounded,
       'color': Color(0xFFC084FC),
+      'analogy': 'Theoretical Frameworks',
+      'mathRigor': 'Research Proofs & Bounds',
+      'researchPapers': '3–4 Landmark Papers',
       'sample':
           '"Analyzed through the empirical Neural Tangent Kernel (NTK) regime in the infinite-width limit. Evaluates inductive bias, spectral decay of the Fisher Information Matrix, Hessian conditioning, and generalization bounds on non-convex manifolds."',
       'cognitiveFocus':
@@ -111,6 +123,9 @@ class _ModesAndLevelsSectionState extends State<ModesAndLevelsSection> {
       'badge': 'Lifelong Learner',
       'icon': Icons.lightbulb_rounded,
       'color': Color(0xFFFBBF24),
+      'analogy': 'Everyday Modern Systems',
+      'mathRigor': 'Systems Thinking',
+      'researchPapers': '3–4 Landmark Papers',
       'sample':
           '"A sophisticated pattern-matching engine that learns from millions of examples rather than rigid hand-coded rules, uncovering subtle mathematical structures hidden deep inside complex data."',
       'cognitiveFocus':
@@ -600,7 +615,33 @@ class _ModesAndLevelsSectionState extends State<ModesAndLevelsSection> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 14),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    _buildLevelAttributePill(
+                      icon: Icons.track_changes_rounded,
+                      label: 'Analogy',
+                      value: _levels[_selectedLevel]['analogy'] as String,
+                      color: _levels[_selectedLevel]['color'] as Color,
+                    ),
+                    _buildLevelAttributePill(
+                      icon: Icons.tune_rounded,
+                      label: 'Depth',
+                      value: _levels[_selectedLevel]['mathRigor'] as String,
+                      color: _levels[_selectedLevel]['color'] as Color,
+                    ),
+                    _buildLevelAttributePill(
+                      icon: Icons.menu_book_rounded,
+                      label: 'Papers',
+                      value:
+                          _levels[_selectedLevel]['researchPapers'] as String,
+                      color: _levels[_selectedLevel]['color'] as Color,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(18),
@@ -655,6 +696,53 @@ class _ModesAndLevelsSectionState extends State<ModesAndLevelsSection> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildLevelAttributePill({
+    required IconData icon,
+    required String label,
+    required String value,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4.5),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: color.withValues(alpha: 0.24),
+        ),
+      ),
+      child: Text.rich(
+        TextSpan(
+          children: [
+            WidgetSpan(
+              alignment: PlaceholderAlignment.middle,
+              child: Padding(
+                padding: const EdgeInsets.only(right: 5),
+                child: Icon(icon, size: 12, color: color),
+              ),
+            ),
+            TextSpan(
+              text: '$label: ',
+              style: TextStyle(
+                color: color,
+                fontWeight: FontWeight.w700,
+                fontSize: 10.5,
+              ),
+            ),
+            TextSpan(
+              text: value,
+              style: const TextStyle(
+                color: Color(0xFFCBD5E1),
+                fontWeight: FontWeight.w500,
+                fontSize: 10.5,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
