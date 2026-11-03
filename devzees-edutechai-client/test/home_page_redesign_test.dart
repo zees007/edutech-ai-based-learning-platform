@@ -106,32 +106,33 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('renders mobile carousel and auto-rotates agents every 3 seconds', (
-      tester,
-    ) async {
-      tester.view.physicalSize = const Size(375, 812);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(() => tester.view.resetPhysicalSize());
+    testWidgets(
+      'renders mobile carousel and auto-rotates agents every 3 seconds',
+      (tester) async {
+        tester.view.physicalSize = const Size(375, 812);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() => tester.view.resetPhysicalSize());
 
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(body: SingleChildScrollView(child: AgentsSection())),
-        ),
-      );
+        await tester.pumpWidget(
+          const MaterialApp(
+            home: Scaffold(body: SingleChildScrollView(child: AgentsSection())),
+          ),
+        );
 
-      await tester.pump();
-      await tester.pumpAndSettle();
+        await tester.pump();
+        await tester.pumpAndSettle();
 
-      expect(find.text('AUTONOMOUS AGENT SQUAD'), findsOneWidget);
-      expect(find.text('Supervisor Orchestrator'), findsOneWidget);
+        expect(find.text('AUTONOMOUS AGENT SQUAD'), findsOneWidget);
+        expect(find.text('Supervisor Orchestrator'), findsOneWidget);
 
-      // Fast-forward by 3 seconds to verify auto-rotation to Socratic Tutor
-      await tester.pump(const Duration(seconds: 3));
-      await tester.pumpAndSettle();
+        // Fast-forward by 3 seconds to verify auto-rotation to Socratic Tutor
+        await tester.pump(const Duration(seconds: 3));
+        await tester.pumpAndSettle();
 
-      expect(find.text('Socratic Tutor'), findsOneWidget);
-      expect(tester.takeException(), isNull);
-    });
+        expect(find.text('Socratic Tutor'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      },
+    );
   });
 
   group('GamifiedMasterySection Widget Tests', () {
@@ -385,11 +386,16 @@ void main() {
       await tester.pump();
       await tester.pumpAndSettle();
 
-      expect(find.text('ADAPTIVE COGNITIVE CALIBRATION'), findsOneWidget);
+      expect(find.text('ADAPTIVE LEARNING MODES'), findsOneWidget);
       expect(find.text('Visual Mode'), findsWidgets);
       expect(find.text('Deep Dive Mode'), findsOneWidget);
       expect(find.text('Bite-Sized Mode'), findsOneWidget);
-      expect(find.text('Undergraduate'), findsOneWidget);
+      expect(find.text('HOW THIS MODE WORKS:'), findsOneWidget);
+
+      // Tap Deep Dive Mode
+      await tester.tap(find.text('Deep Dive Mode'));
+      await tester.pumpAndSettle();
+      expect(find.text('Comprehensive & Academic Depth'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   });
