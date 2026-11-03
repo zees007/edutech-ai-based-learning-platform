@@ -71,7 +71,7 @@ class _ModesAndLevelsSectionState extends State<ModesAndLevelsSection> {
       'tag': 'Comprehensive & Academic Depth',
       'color': Color(0xFF8B5CF6),
       'description':
-          'It is engineered for students, researchers, and professionals who demand a complete, in-depth understanding through rigorous proofs and peer-reviewed citations.',
+          'Engineered for students, researchers, and professionals who require rigorous proofs, deep technical depth, and peer-reviewed citations.',
       'specs': [
         'Ideal Pace: 6 to 10 comprehensive steps (around 45 minutes total)',
         'Formulas & Clear Proofs: Complete mathematical formulas, calculations, and in-depth explanations for why things work',
@@ -194,17 +194,13 @@ class _ModesAndLevelsSectionState extends State<ModesAndLevelsSection> {
                     borderRadius: BorderRadius.circular(isMobile ? 18 : 22),
                     border: Border.all(
                       color: (_modes[_selectedMode]['color'] as Color)
-                          .withValues(
-                        alpha: 0.35,
-                      ),
+                          .withValues(alpha: 0.35),
                       width: 1.2,
                     ),
                     boxShadow: [
                       BoxShadow(
                         color: (_modes[_selectedMode]['color'] as Color)
-                            .withValues(
-                          alpha: 0.12,
-                        ),
+                            .withValues(alpha: 0.12),
                         blurRadius: isMobile ? 20 : 32,
                       ),
                     ],
@@ -221,11 +217,11 @@ class _ModesAndLevelsSectionState extends State<ModesAndLevelsSection> {
                             decoration: BoxDecoration(
                               color: (_modes[_selectedMode]['color'] as Color)
                                   .withValues(alpha: 0.15),
-                              borderRadius:
-                                  BorderRadius.circular(isMobile ? 10 : 12),
+                              borderRadius: BorderRadius.circular(
+                                isMobile ? 10 : 12,
+                              ),
                               border: Border.all(
-                                color: (_modes[_selectedMode]['color']
-                                        as Color)
+                                color: (_modes[_selectedMode]['color'] as Color)
                                     .withValues(alpha: 0.4),
                               ),
                             ),
@@ -252,8 +248,8 @@ class _ModesAndLevelsSectionState extends State<ModesAndLevelsSection> {
                                 Text(
                                   _modes[_selectedMode]['tag'],
                                   style: TextStyle(
-                                    color: _modes[_selectedMode]['color']
-                                        as Color,
+                                    color:
+                                        _modes[_selectedMode]['color'] as Color,
                                     fontSize: isMobile ? 10.5 : 11,
                                     fontWeight: FontWeight.w700,
                                     letterSpacing: 0.6,
@@ -286,8 +282,9 @@ class _ModesAndLevelsSectionState extends State<ModesAndLevelsSection> {
                         ),
                       ),
                       SizedBox(height: isMobile ? 12 : 14),
-                      ...(_modes[_selectedMode]['specs'] as List<String>)
-                          .map((spec) {
+                      ...(_modes[_selectedMode]['specs'] as List<String>).map((
+                        spec,
+                      ) {
                         final int colonIndex = spec.indexOf(':');
                         final bool hasLabel = colonIndex != -1;
                         final String label = hasLabel
@@ -330,23 +327,19 @@ class _ModesAndLevelsSectionState extends State<ModesAndLevelsSection> {
                                           style: TextStyle(
                                             color: Colors.white,
                                             fontWeight: FontWeight.w700,
-                                            fontSize:
-                                                isMobile ? 12.5 : 13.5,
+                                            fontSize: isMobile ? 12.5 : 13.5,
                                           ),
                                         ),
                                       TextSpan(
                                         text: body,
                                         style: TextStyle(
                                           color: const Color(0xFFCBD5E1),
-                                          fontSize:
-                                              isMobile ? 12.5 : 13.5,
+                                          fontSize: isMobile ? 12.5 : 13.5,
                                         ),
                                       ),
                                     ],
                                   ),
-                                  style: const TextStyle(
-                                    height: 1.45,
-                                  ),
+                                  style: const TextStyle(height: 1.45),
                                 ),
                               ),
                             ],
@@ -381,9 +374,7 @@ class _ModesAndLevelsSectionState extends State<ModesAndLevelsSection> {
           children: List.generate(_modes.length, (i) {
             return Expanded(
               child: Padding(
-                padding: EdgeInsets.only(
-                  right: i < _modes.length - 1 ? 4 : 0,
-                ),
+                padding: EdgeInsets.only(right: i < _modes.length - 1 ? 4 : 0),
                 child: _buildSegmentItem(i, isMobile: true),
               ),
             );
@@ -414,9 +405,7 @@ class _ModesAndLevelsSectionState extends State<ModesAndLevelsSection> {
         mainAxisSize: MainAxisSize.min,
         children: List.generate(_modes.length, (i) {
           return Padding(
-            padding: EdgeInsets.only(
-              right: i < _modes.length - 1 ? 6 : 0,
-            ),
+            padding: EdgeInsets.only(right: i < _modes.length - 1 ? 6 : 0),
             child: _buildSegmentItem(i, isMobile: false),
           );
         }),
@@ -477,13 +466,9 @@ class _ModesAndLevelsSectionState extends State<ModesAndLevelsSection> {
                 Text(
                   m['name'],
                   style: TextStyle(
-                    color: isSelected
-                        ? Colors.white
-                        : const Color(0xFFCBD5E1),
+                    color: isSelected ? Colors.white : const Color(0xFFCBD5E1),
                     fontSize: isMobile ? 12.5 : 14,
-                    fontWeight: isSelected
-                        ? FontWeight.w800
-                        : FontWeight.w600,
+                    fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
                     letterSpacing: -0.1,
                   ),
                 ),
