@@ -502,7 +502,6 @@ void main() {
       expect(find.text('EduTech'), findsOneWidget);
       expect(find.text('AI'), findsOneWidget);
       expect(find.text('Workspace'), findsOneWidget);
-      expect(find.text('Features'), findsOneWidget);
       expect(find.text('Modes'), findsOneWidget);
       expect(find.text('Compare'), findsOneWidget);
       expect(find.text('Agents'), findsOneWidget);

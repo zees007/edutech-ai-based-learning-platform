@@ -172,10 +172,6 @@ class HomeNavbar extends ConsumerWidget {
                                       onTap: () => onNavTap?.call('preview'),
                                     ),
                                     _NavPill(
-                                      title: 'Features',
-                                      onTap: () => onNavTap?.call('features'),
-                                    ),
-                                    _NavPill(
                                       title: 'Modes',
                                       onTap: () => onNavTap?.call('modes'),
                                     ),
@@ -577,7 +573,6 @@ class _MobileMenuButtonState extends State<_MobileMenuButton> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         _buildMenuItem('Workspace Preview', 'preview'),
-                        _buildMenuItem('Features', 'features'),
                         _buildMenuItem('Learning Modes', 'modes'),
                         _buildMenuItem('Why Us vs Chatbots', 'comparison'),
                         _buildMenuItem('AI Agents', 'agents'),
