@@ -10,7 +10,6 @@ import 'package:devzees_edutechai_client/presentation/pages/home/widgets/agents_
 import 'package:devzees_edutechai_client/presentation/pages/home/widgets/gamified_mastery_section.dart';
 import 'package:devzees_edutechai_client/presentation/pages/home/widgets/comparison_section.dart';
 import 'package:devzees_edutechai_client/presentation/pages/home/widgets/modes_and_levels_section.dart';
-import 'package:devzees_edutechai_client/presentation/pages/home/widgets/export_ecosystem_section.dart';
 import 'package:devzees_edutechai_client/presentation/pages/home/widgets/about_section.dart';
 import 'package:devzees_edutechai_client/presentation/pages/home/widgets/pricing_section.dart';
 import 'package:devzees_edutechai_client/presentation/pages/home/widgets/faq_section.dart';
@@ -107,32 +106,33 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('renders mobile carousel and auto-rotates agents every 3 seconds', (
-      tester,
-    ) async {
-      tester.view.physicalSize = const Size(375, 812);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(() => tester.view.resetPhysicalSize());
+    testWidgets(
+      'renders mobile carousel and auto-rotates agents every 3 seconds',
+      (tester) async {
+        tester.view.physicalSize = const Size(375, 812);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() => tester.view.resetPhysicalSize());
 
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(body: SingleChildScrollView(child: AgentsSection())),
-        ),
-      );
+        await tester.pumpWidget(
+          const MaterialApp(
+            home: Scaffold(body: SingleChildScrollView(child: AgentsSection())),
+          ),
+        );
 
-      await tester.pump();
-      await tester.pumpAndSettle();
+        await tester.pump();
+        await tester.pumpAndSettle();
 
-      expect(find.text('AUTONOMOUS AGENT SQUAD'), findsOneWidget);
-      expect(find.text('Supervisor Orchestrator'), findsOneWidget);
+        expect(find.text('AUTONOMOUS AGENT SQUAD'), findsOneWidget);
+        expect(find.text('Supervisor Orchestrator'), findsOneWidget);
 
-      // Fast-forward by 3 seconds to verify auto-rotation to Socratic Tutor
-      await tester.pump(const Duration(seconds: 3));
-      await tester.pumpAndSettle();
+        // Fast-forward by 3 seconds to verify auto-rotation to Socratic Tutor
+        await tester.pump(const Duration(seconds: 3));
+        await tester.pumpAndSettle();
 
-      expect(find.text('Socratic Tutor'), findsOneWidget);
-      expect(tester.takeException(), isNull);
-    });
+        expect(find.text('Socratic Tutor'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      },
+    );
   });
 
   group('GamifiedMasterySection Widget Tests', () {
@@ -232,6 +232,80 @@ void main() {
 
       expect(sliderSize.height, equals(cardsSize.height));
     });
+
+    testWidgets('hovering on slider does not change active slide', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(1200, 900);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() => tester.view.resetPhysicalSize());
+
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: SingleChildScrollView(child: GamifiedMasterySection()),
+          ),
+        ),
+      );
+
+      await tester.pump();
+      await tester.pumpAndSettle();
+
+      // Tap on the 2nd feature card (Instant Quiz Feedback)
+      await tester.tap(find.text('Instant Quiz Feedback (+30 XP Bonus)'));
+      await tester.pumpAndSettle();
+
+      // Verify tile2 is active
+      expect(
+        find.byKey(
+          const ValueKey<String>('assets/images/gamification/tile2.png'),
+        ),
+        findsOneWidget,
+      );
+
+      // Hover over the slider container
+      final gesture = await tester.createGesture(kind: PointerDeviceKind.mouse);
+      await gesture.addPointer(location: Offset.zero);
+      addTearDown(gesture.removePointer);
+
+      final sliderCenter = tester.getCenter(
+        find.byKey(const Key('slider_showcase_container')),
+      );
+      await gesture.moveTo(sliderCenter);
+      await tester.pumpAndSettle();
+
+      // Active slide must still be tile 2!
+      expect(
+        find.byKey(
+          const ValueKey<String>('assets/images/gamification/tile2.png'),
+        ),
+        findsOneWidget,
+      );
+
+      // Now click the next chevron button
+      await tester.tap(find.byKey(const Key('slider_next_chevron')));
+      await tester.pumpAndSettle();
+
+      // Active slide must now be tile 3!
+      expect(
+        find.byKey(
+          const ValueKey<String>('assets/images/gamification/tile3.png'),
+        ),
+        findsOneWidget,
+      );
+
+      // Now click the prev chevron button
+      await tester.tap(find.byKey(const Key('slider_prev_chevron')));
+      await tester.pumpAndSettle();
+
+      // Active slide must now be back to tile 2!
+      expect(
+        find.byKey(
+          const ValueKey<String>('assets/images/gamification/tile2.png'),
+        ),
+        findsOneWidget,
+      );
+    });
   });
 
   group('ComparisonSection Widget Tests', () {
@@ -253,8 +327,8 @@ void main() {
 
       expect(find.text('WHY EDUTECH AI'), findsOneWidget);
       expect(find.text('Beyond Generic AI Chatbots'), findsOneWidget);
-      expect(find.text('Teaching Methodology'), findsOneWidget);
-      expect(find.text('Curricular Structure'), findsOneWidget);
+      expect(find.text('How You Learn'), findsOneWidget);
+      expect(find.text('Learning Roadmap'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
 
@@ -276,20 +350,20 @@ void main() {
         await tester.pump();
         await tester.pumpAndSettle();
 
-        expect(find.text('Table Matrix'), findsOneWidget);
-        expect(find.text('Dimension Cards'), findsOneWidget);
+        expect(find.text('Table View'), findsOneWidget);
+        expect(find.text('Feature Cards'), findsOneWidget);
         expect(
           find.text('Swipe horizontally to compare columns'),
           findsOneWidget,
         );
         expect(tester.takeException(), isNull);
 
-        // Tap to switch to Dimension Cards
-        await tester.tap(find.text('Dimension Cards'));
+        // Tap to switch to Feature Cards
+        await tester.tap(find.text('Feature Cards'));
         await tester.pump();
         await tester.pumpAndSettle();
 
-        expect(find.text('EduTech AI Squad'), findsWidgets);
+        expect(find.text('EduTech AI Tutor'), findsWidgets);
         expect(tester.takeException(), isNull);
       },
     );
@@ -312,38 +386,21 @@ void main() {
       await tester.pump();
       await tester.pumpAndSettle();
 
-      expect(find.text('ADAPTIVE COGNITIVE CALIBRATION'), findsOneWidget);
+      expect(find.text('ADAPTIVE LEARNING MODES'), findsOneWidget);
       expect(find.text('Visual Mode'), findsWidgets);
       expect(find.text('Deep Dive Mode'), findsOneWidget);
       expect(find.text('Bite-Sized Mode'), findsOneWidget);
-      expect(find.text('Undergraduate'), findsOneWidget);
-      expect(tester.takeException(), isNull);
-    });
-  });
+      expect(find.text('HOW THIS MODE WORKS:'), findsOneWidget);
 
-  group('ExportEcosystemSection Widget Tests', () {
-    testWidgets('renders second brain export formats and image', (
-      tester,
-    ) async {
-      tester.view.physicalSize = const Size(1200, 900);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(() => tester.view.resetPhysicalSize());
-
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: SingleChildScrollView(child: ExportEcosystemSection()),
-          ),
-        ),
-      );
-
-      await tester.pump();
+      // Tap Deep Dive Mode
+      await tester.tap(find.text('Deep Dive Mode'));
       await tester.pumpAndSettle();
+      expect(find.text('Comprehensive & Academic Depth'), findsOneWidget);
 
-      expect(find.text('ZERO VENDOR LOCK-IN'), findsOneWidget);
-      expect(find.text('Markdown (.md)'), findsOneWidget);
-      expect(find.text('Interactive HTML (.html)'), findsOneWidget);
-      expect(find.text('Executive PDF (.pdf)'), findsOneWidget);
+      // Verify auto-switch to next mode (Bite-Sized) after 3 seconds
+      await tester.pump(const Duration(seconds: 3));
+      await tester.pumpAndSettle();
+      expect(find.text('Fast Revision (<10 Mins)'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   });
@@ -445,7 +502,6 @@ void main() {
       expect(find.text('EduTech'), findsOneWidget);
       expect(find.text('AI'), findsOneWidget);
       expect(find.text('Workspace'), findsOneWidget);
-      expect(find.text('Features'), findsOneWidget);
       expect(find.text('Modes'), findsOneWidget);
       expect(find.text('Compare'), findsOneWidget);
       expect(find.text('Agents'), findsOneWidget);
