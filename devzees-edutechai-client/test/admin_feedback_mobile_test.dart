@@ -109,13 +109,13 @@ void main() {
       expect(find.text('Total Reviews'), findsOneWidget);
       expect(find.text('Pending Review'), findsOneWidget);
       expect(find.text('Featured on Homepage'), findsOneWidget);
-      expect(find.text('42'), findsOneWidget);
-      expect(find.text('15'), findsOneWidget);
+      expect(find.text('42'), findsNWidgets(2)); // in KPI card and "All" chip badge
+      expect(find.text('15'), findsNWidgets(2)); // in KPI card and "Pending" chip badge
 
       // Verify status filter chips are rendered
       expect(find.text('Pending'), findsWidgets);
       expect(find.text('🌟 Featured'), findsOneWidget);
-      expect(find.text('Archived'), findsOneWidget);
+      expect(find.text('Archived'), findsNWidgets(2)); // in KPI card and filter chip
       expect(find.text('All'), findsOneWidget);
 
       // Verify search input is present
@@ -179,20 +179,20 @@ void main() {
       await tester.pumpAndSettle();
 
       // Scroll vertical page down slightly so table is visible in viewport
-      final vScrollable = find.byWidgetPredicate(
-        (widget) => widget is SingleChildScrollView && widget.scrollDirection == Axis.vertical,
+      final verticalScrollables = find.byWidgetPredicate(
+        (w) => w is Scrollable && (w.axisDirection == AxisDirection.down || w.axisDirection == AxisDirection.up),
       );
-      await tester.drag(vScrollable.first, const Offset(0, -350));
+      await tester.drag(verticalScrollables.first, const Offset(0, -350));
       await tester.pumpAndSettle();
 
-      // Find horizontal scroll view inside AdminDataTable
-      final hScrollable = find.byWidgetPredicate(
-        (widget) => widget is SingleChildScrollView && widget.scrollDirection == Axis.horizontal,
+      // Find horizontal scrollable inside AdminDataTable
+      final horizontalScrollables = find.byWidgetPredicate(
+        (w) => w is Scrollable && (w.axisDirection == AxisDirection.right || w.axisDirection == AxisDirection.left),
       );
-      expect(hScrollable, findsWidgets);
+      expect(horizontalScrollables, findsWidgets);
 
       // Drag horizontally to reveal rightmost columns
-      await tester.drag(hScrollable.last, const Offset(-300, 0));
+      await tester.drag(horizontalScrollables.last, const Offset(-300, 0));
       await tester.pumpAndSettle();
 
       expect(tester.takeException(), isNull);
@@ -219,17 +219,17 @@ void main() {
       await tester.pumpAndSettle();
 
       // Scroll vertically so table is in viewport
-      final vScrollable = find.byWidgetPredicate(
-        (widget) => widget is SingleChildScrollView && widget.scrollDirection == Axis.vertical,
+      final verticalScrollables = find.byWidgetPredicate(
+        (w) => w is Scrollable && (w.axisDirection == AxisDirection.down || w.axisDirection == AxisDirection.up),
       );
-      await tester.drag(vScrollable.first, const Offset(0, -350));
+      await tester.drag(verticalScrollables.first, const Offset(0, -400));
       await tester.pumpAndSettle();
 
       // Scroll horizontally to reach actions column
-      final hScrollable = find.byWidgetPredicate(
-        (widget) => widget is SingleChildScrollView && widget.scrollDirection == Axis.horizontal,
+      final horizontalScrollables = find.byWidgetPredicate(
+        (w) => w is Scrollable && (w.axisDirection == AxisDirection.right || w.axisDirection == AxisDirection.left),
       );
-      await tester.drag(hScrollable.last, const Offset(-500, 0));
+      await tester.drag(horizontalScrollables.last, const Offset(-700, 0));
       await tester.pumpAndSettle();
 
       // Tap the View Details icon button on the first row

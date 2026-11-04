@@ -190,11 +190,15 @@ class _AdminDataTableState extends State<AdminDataTable> {
                                 color: AppColors.textMuted.withValues(alpha: 0.8),
                               ),
                               const SizedBox(width: 5),
-                              Text(
-                                'Swipe horizontally for all columns',
-                                style: AppTextStyles.caption.copyWith(
-                                  color: AppColors.textMuted.withValues(alpha: 0.8),
-                                  fontSize: 11,
+                              Flexible(
+                                child: Text(
+                                  'Swipe horizontally for all columns',
+                                  style: AppTextStyles.caption.copyWith(
+                                    color: AppColors.textMuted.withValues(alpha: 0.8),
+                                    fontSize: 11,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                             ],
