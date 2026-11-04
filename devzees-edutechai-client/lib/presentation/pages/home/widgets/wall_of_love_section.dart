@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:devzees_edutechai_client/core/providers/feedback_provider.dart';
@@ -8,9 +9,17 @@ import 'package:devzees_edutechai_client/core/constants/responsive.dart';
 import 'package:devzees_edutechai_client/data/models/feedback/feedback_model.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/shimmer_loading.dart';
 
-/// Ultra-premium Social Proof / Wall of Love Section for EduTech AI.
-/// Displays verified student and STEM researcher testimonials with education levels and regions.
-/// Paginates testimonials into a smooth slider displaying 6 solidified cards at a time on desktop.
+/// Ultra-premium 3D Spatial Cylindrical Wheel Carousel
+/// modeled after Alex Tkachev's Felix Koenig animation.
+///
+/// Features:
+/// - True 3D spatial cylindrical projection displaying up to 6-7 cards simultaneously.
+/// - Mathematical cylinder positioning: X = R * sin(delta * theta), rotateY = -delta * theta.
+/// - Exact Z-index paint sorting: cards farthest from center render first, center hero card renders last on top.
+/// - Foreshortened horizontal spacing & natural overlapping as cards curve back in 3D space.
+/// - Edge gradient vignette fadeout masks (ShaderMask) matching the reference design.
+/// - Locked uniform card dimensions (370px width x 290px height) for absolute architectural solidity.
+/// - Interactive tap-to-focus on any flanking card, drag/swipe physics, auto-slide rotation, and chevron navigation.
 class WallOfLoveSection extends ConsumerStatefulWidget {
   const WallOfLoveSection({super.key});
 
@@ -94,44 +103,97 @@ class WallOfLoveSection extends ConsumerStatefulWidget {
   ConsumerState<WallOfLoveSection> createState() => _WallOfLoveSectionState();
 }
 
-class _WallOfLoveSectionState extends ConsumerState<WallOfLoveSection> {
-  late final PageController _pageController;
-  int _currentPage = 0;
+class _CardRenderData {
+  final int index;
+  final PublicFeedbackModel item;
+  final double delta;
+  final double absDelta;
+
+  const _CardRenderData({
+    required this.index,
+    required this.item,
+    required this.delta,
+    required this.absDelta,
+  });
+}
+
+class _WallOfLoveSectionState extends ConsumerState<WallOfLoveSection>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _animController;
+  Animation<double>? _scrollAnimation;
+
+  double _scrollOffset = 0.0;
   Timer? _autoSlideTimer;
   bool _isHovered = false;
-  int _lastTotalPages = 1;
+  int _lastItemCount = 0;
 
   @override
   void initState() {
     super.initState();
-    _pageController = PageController(initialPage: 0);
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 650),
+    );
+    _animController.addListener(() {
+      if (_scrollAnimation != null) {
+        setState(() {
+          _scrollOffset = _scrollAnimation!.value;
+        });
+      }
+    });
   }
 
   @override
   void dispose() {
     _autoSlideTimer?.cancel();
-    _pageController.dispose();
+    _animController.dispose();
     super.dispose();
   }
 
-  void _setupAutoSlide(int totalPages) {
-    if (totalPages == _lastTotalPages && _autoSlideTimer != null) return;
-    _lastTotalPages = totalPages;
+  void _animateToOffset(
+    double targetOffset, {
+    Duration duration = const Duration(milliseconds: 600),
+    Curve curve = Curves.easeOutCubic,
+  }) {
+    if (!mounted) return;
+    _animController.stop();
+    _scrollAnimation = Tween<double>(
+      begin: _scrollOffset,
+      end: targetOffset,
+    ).animate(CurvedAnimation(parent: _animController, curve: curve));
+    _animController.duration = duration;
+    _animController.reset();
+    _animController.forward();
+  }
+
+  void _setupAutoSlide(int itemCount) {
+    if (itemCount == _lastItemCount && _autoSlideTimer != null) return;
+    _lastItemCount = itemCount;
     _autoSlideTimer?.cancel();
 
-    if (totalPages <= 1) return;
+    if (itemCount <= 1) return;
 
-    _autoSlideTimer = Timer.periodic(const Duration(seconds: 8), (_) {
-      if (!mounted || _isHovered) return;
-      if (_pageController.hasClients) {
-        final nextPage = (_currentPage + 1) % totalPages;
-        _pageController.animateToPage(
-          nextPage,
-          duration: const Duration(milliseconds: 550),
-          curve: Curves.easeInOutCubic,
-        );
-      }
+    _autoSlideTimer = Timer.periodic(const Duration(seconds: 7), (_) {
+      if (!mounted || _isHovered || _animController.isAnimating) return;
+      _animateToOffset((_scrollOffset.round() + 1).toDouble());
     });
+  }
+
+  double _getCircularDelta(int index, double current, int n) {
+    if (n <= 0) return 0.0;
+    double d = (index.toDouble() - current) % n.toDouble();
+    if (d > n / 2.0) {
+      d -= n.toDouble();
+    } else if (d < -n / 2.0) {
+      d += n.toDouble();
+    }
+    return d;
+  }
+
+  int _getActiveIndex(int itemCount) {
+    if (itemCount <= 0) return 0;
+    final round = _scrollOffset.round();
+    return ((round % itemCount) + itemCount) % itemCount;
   }
 
   @override
@@ -214,68 +276,177 @@ class _WallOfLoveSectionState extends ConsumerState<WallOfLoveSection> {
         ),
         const SizedBox(height: 48),
 
-        // ─── Slider Body & Solidified Cards ───
+        // ─── 3D Cylindrical Wheel Carousel ───
         publicFeedbackAsync.when(
-          loading: () => _buildShimmerGrid(isMobile),
-          error: (err, stack) => _buildSlider(isMobile, WallOfLoveSection.defaultFallback),
+          loading: () => _buildShimmerWheel(context, isMobile),
+          error: (err, stack) => _build3dCylindricalWheel(WallOfLoveSection.defaultFallback),
           data: (items) {
             final list = items.isNotEmpty ? items : WallOfLoveSection.defaultFallback;
-            return _buildSlider(isMobile, list);
+            return _build3dCylindricalWheel(list);
           },
         ),
       ],
     );
   }
 
-  Widget _buildSlider(bool isMobile, List<PublicFeedbackModel> items) {
-    // Desktop: 6 cards per page (3 columns x 2 rows). Mobile: 1 card per page.
-    final int itemsPerPage = isMobile ? 1 : 6;
-    final int totalPages = (items.length / itemsPerPage).ceil().clamp(1, 9999);
-
-    _setupAutoSlide(totalPages);
+  Widget _build3dCylindricalWheel(List<PublicFeedbackModel> items) {
+    _setupAutoSlide(items.length);
+    final activeIndex = _getActiveIndex(items.length);
 
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
       child: Column(
         children: [
-          // Fixed Height Carousel Container (No layout jumping)
+          // ─── 3D Wheel Stage Area ───
           SizedBox(
-            height: isMobile ? 300 : 600,
-            child: PageView.builder(
-              controller: _pageController,
-              itemCount: totalPages,
-              onPageChanged: (index) {
-                setState(() {
-                  _currentPage = index;
-                });
-              },
-              itemBuilder: (context, pageIndex) {
-                final int start = pageIndex * itemsPerPage;
-                final int end = (start + itemsPerPage).clamp(0, items.length);
-                final pageItems = items.sublist(start, end);
+            height: 380,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final double viewportWidth = constraints.maxWidth;
 
-                if (isMobile) {
-                  return Center(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: _TestimonialCard(data: pageItems.first),
-                      ),
-                    ),
-                  );
+                // Responsive parameters:
+                // Desktop (>=1200): up to 7 cards visible, wide cylindrical arc
+                // Tablet (800..1200): up to 5 cards visible
+                // Mobile (<800): up to 3 cards visible
+                final double maxVisibleDelta;
+                final double spacingRadius;
+                final double angleStep;
+
+                if (viewportWidth >= 1200) {
+                  maxVisibleDelta = 3.5;
+                  spacingRadius = 660.0;
+                  angleStep = 0.32;
+                } else if (viewportWidth >= 800) {
+                  maxVisibleDelta = 2.5;
+                  spacingRadius = 460.0;
+                  angleStep = 0.38;
+                } else {
+                  maxVisibleDelta = 1.4;
+                  spacingRadius = 260.0;
+                  angleStep = 0.44;
                 }
 
-                // Desktop: 6 items in 2 rows of 3
-                return _buildDesktopSixGrid(pageItems);
+                // Compute exact relative offset on circle for each distinct item
+                final visibleData = <_CardRenderData>[];
+                for (int i = 0; i < items.length; i++) {
+                  final double delta = _getCircularDelta(i, _scrollOffset, items.length);
+                  final double absDelta = delta.abs();
+                  if (absDelta <= maxVisibleDelta) {
+                    visibleData.add(_CardRenderData(
+                      index: i,
+                      item: items[i],
+                      delta: delta,
+                      absDelta: absDelta,
+                    ));
+                  }
+                }
+
+                // CRITICAL 3D DEPTH SORTING:
+                // Sort by absolute distance from center descending.
+                // Cards furthest in background (largest absDelta) are added FIRST,
+                // and the active center hero card (absDelta ~ 0) is added LAST.
+                // This guarantees the center card commands the front and overlaps flanking wings!
+                visibleData.sort((a, b) => b.absDelta.compareTo(a.absDelta));
+
+                return GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onHorizontalDragStart: (_) {
+                    _animController.stop();
+                  },
+                  onHorizontalDragUpdate: (details) {
+                    final double sensitivity = viewportWidth >= 800 ? 240.0 : 180.0;
+                    setState(() {
+                      _scrollOffset -= details.primaryDelta! / sensitivity;
+                    });
+                  },
+                  onHorizontalDragEnd: (details) {
+                    final velocity = details.primaryVelocity ?? 0.0;
+                    double target = _scrollOffset;
+                    if (velocity.abs() > 350) {
+                      target += velocity > 0 ? -1.0 : 1.0;
+                    }
+                    _animateToOffset(target.roundToDouble());
+                  },
+                  child: ShaderMask(
+                    // Soft vignette fadeout at left and right edges matching reference image
+                    shaderCallback: (bounds) {
+                      return const LinearGradient(
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
+                        colors: [
+                          Colors.transparent,
+                          Colors.white,
+                          Colors.white,
+                          Colors.transparent,
+                        ],
+                        stops: [0.0, 0.07, 0.93, 1.0],
+                      ).createShader(bounds);
+                    },
+                    blendMode: BlendMode.dstIn,
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: visibleData.map((data) {
+                        final double delta = data.delta;
+                        final double absDelta = data.absDelta;
+                        final item = data.item;
+
+                        // 3D Cylindrical physics calculations:
+                        // Horizontal displacement along cylindrical curve
+                        final double xOffset = spacingRadius * math.sin(delta * angleStep);
+
+                        // Y-axis perspective rotation: cards on left face right, cards on right face left
+                        final double rotateY = (-delta * 0.32).clamp(-0.85, 0.85);
+
+                        // Z-depth scale falloff: center card 1.0, flanks scale smoothly down
+                        final double scale = (1.0 - (absDelta * 0.10)).clamp(0.66, 1.0);
+
+                        // Depth translucency falloff
+                        final double opacity = (1.0 - (absDelta * 0.16)).clamp(0.20, 1.0);
+
+                        final bool isFocused = absDelta < 0.45;
+
+                        return Center(
+                          key: ValueKey('testimonial_card_${item.feedbackId}'),
+                          child: Transform.translate(
+                            offset: Offset(xOffset, 0),
+                            child: Transform(
+                              alignment: Alignment.center,
+                              transform: Matrix4.identity()
+                                ..setEntry(3, 2, 0.001) // Camera perspective
+                                ..rotateY(rotateY),
+                              child: Transform.scale(
+                                scale: scale,
+                                child: Opacity(
+                                  opacity: opacity,
+                                  child: GestureDetector(
+                                    behavior: HitTestBehavior.opaque,
+                                    onTap: () {
+                                      if (absDelta > 0.35) {
+                                        _animateToOffset(_scrollOffset + delta);
+                                      }
+                                    },
+                                    child: _TestimonialCard(
+                                      data: item,
+                                      isFocused: isFocused,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                );
               },
             ),
           ),
 
-          // Pagination Controls: Chevrons & Pill Dots
-          if (totalPages > 1) ...[
-            const SizedBox(height: 32),
+          // ─── Carousel Controls: Chevrons & Pill Dots ───
+          if (items.length > 1) ...[
+            const SizedBox(height: 28),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -283,33 +454,25 @@ class _WallOfLoveSectionState extends ConsumerState<WallOfLoveSection> {
                 _buildNavButton(
                   icon: Icons.chevron_left_rounded,
                   onTap: () {
-                    final prevPage = (_currentPage - 1 + totalPages) % totalPages;
-                    _pageController.animateToPage(
-                      prevPage,
-                      duration: const Duration(milliseconds: 450),
-                      curve: Curves.easeInOutCubic,
-                    );
+                    _animateToOffset((_scrollOffset.round() - 1).toDouble());
                   },
                 ),
                 const SizedBox(width: 18),
 
-                // Indicator Dots / Active Glow Pill
+                // Indicator Dots / Glowing Pill
                 Row(
                   mainAxisSize: MainAxisSize.min,
-                  children: List.generate(totalPages, (index) {
-                    final bool isActive = index == _currentPage;
+                  children: List.generate(items.length, (index) {
+                    final bool isActive = index == activeIndex;
                     return GestureDetector(
                       onTap: () {
-                        _pageController.animateToPage(
-                          index,
-                          duration: const Duration(milliseconds: 450),
-                          curve: Curves.easeInOutCubic,
-                        );
+                        final double delta = _getCircularDelta(index, _scrollOffset, items.length);
+                        _animateToOffset(_scrollOffset + delta);
                       },
                       child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 250),
+                        duration: const Duration(milliseconds: 280),
                         margin: const EdgeInsets.symmetric(horizontal: 4),
-                        width: isActive ? 28 : 8,
+                        width: isActive ? 30 : 8,
                         height: 8,
                         decoration: BoxDecoration(
                           color: isActive
@@ -319,8 +482,8 @@ class _WallOfLoveSectionState extends ConsumerState<WallOfLoveSection> {
                           boxShadow: isActive
                               ? [
                                   BoxShadow(
-                                    color: const Color(0xFFF59E0B).withValues(alpha: 0.55),
-                                    blurRadius: 8,
+                                    color: const Color(0xFFF59E0B).withValues(alpha: 0.60),
+                                    blurRadius: 10,
                                     spreadRadius: 1,
                                   ),
                                 ]
@@ -336,60 +499,12 @@ class _WallOfLoveSectionState extends ConsumerState<WallOfLoveSection> {
                 _buildNavButton(
                   icon: Icons.chevron_right_rounded,
                   onTap: () {
-                    final nextPage = (_currentPage + 1) % totalPages;
-                    _pageController.animateToPage(
-                      nextPage,
-                      duration: const Duration(milliseconds: 450),
-                      curve: Curves.easeInOutCubic,
-                    );
+                    _animateToOffset((_scrollOffset.round() + 1).toDouble());
                   },
                 ),
               ],
             ),
           ],
-        ],
-      ),
-    );
-  }
-
-  /// Builds a unified 3x2 grid of 6 identically sized cards on desktop.
-  Widget _buildDesktopSixGrid(List<PublicFeedbackModel> pageItems) {
-    final row1Items = pageItems.take(3).toList();
-    final row2Items = pageItems.skip(3).take(3).toList();
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Row 1 (Up to 3 cards)
-          Row(
-            children: [
-              for (int i = 0; i < 3; i++) ...[
-                if (i > 0) const SizedBox(width: 20),
-                Expanded(
-                  child: i < row1Items.length
-                      ? _TestimonialCard(data: row1Items[i])
-                      : const SizedBox(height: 285),
-                ),
-              ],
-            ],
-          ),
-          const SizedBox(height: 20),
-
-          // Row 2 (Up to 3 cards)
-          Row(
-            children: [
-              for (int i = 0; i < 3; i++) ...[
-                if (i > 0) const SizedBox(width: 20),
-                Expanded(
-                  child: i < row2Items.length
-                      ? _TestimonialCard(data: row2Items[i])
-                      : const SizedBox(height: 285),
-                ),
-              ],
-            ],
-          ),
         ],
       ),
     );
@@ -403,8 +518,8 @@ class _WallOfLoveSectionState extends ConsumerState<WallOfLoveSection> {
       onTap: onTap,
       borderRadius: BorderRadius.circular(9999),
       child: Container(
-        width: 38,
-        height: 38,
+        width: 40,
+        height: 40,
         decoration: BoxDecoration(
           color: const Color(0xCC0B0D1B),
           shape: BoxShape.circle,
@@ -414,8 +529,8 @@ class _WallOfLoveSectionState extends ConsumerState<WallOfLoveSection> {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.40),
-              blurRadius: 10,
+              color: Colors.black.withValues(alpha: 0.45),
+              blurRadius: 12,
               offset: const Offset(0, 4),
             ),
           ],
@@ -423,62 +538,52 @@ class _WallOfLoveSectionState extends ConsumerState<WallOfLoveSection> {
         child: Icon(
           icon,
           color: Colors.white,
-          size: 20,
+          size: 22,
         ),
       ),
     );
   }
 
-  Widget _buildShimmerGrid(bool isMobile) {
-    if (isMobile) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16),
-        child: _TestimonialShimmerCard(),
-      );
-    }
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
+  Widget _buildShimmerWheel(BuildContext context, bool isMobile) {
+    return SizedBox(
+      height: 380,
+      child: Center(
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          physics: const NeverScrollableScrollPhysics(),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: const [
-              Expanded(child: _TestimonialShimmerCard()),
+              _TestimonialShimmerCard(),
               SizedBox(width: 20),
-              Expanded(child: _TestimonialShimmerCard()),
+              _TestimonialShimmerCard(),
               SizedBox(width: 20),
-              Expanded(child: _TestimonialShimmerCard()),
+              _TestimonialShimmerCard(),
             ],
           ),
-          const SizedBox(height: 20),
-          Row(
-            children: const [
-              Expanded(child: _TestimonialShimmerCard()),
-              SizedBox(width: 20),
-              Expanded(child: _TestimonialShimmerCard()),
-              SizedBox(width: 20),
-              Expanded(child: _TestimonialShimmerCard()),
-            ],
-          ),
-        ],
+        ),
       ),
     );
   }
 }
 
-/// Solidified testimonial card with locked uniform height (285px).
-/// Guarantees architectural consistency across all cards in the grid.
+/// Solidified testimonial card with locked uniform dimensions (370px x 290px).
+/// Features ambient spotlight glow and razor-sharp internal layout.
 class _TestimonialCard extends StatefulWidget {
   final PublicFeedbackModel data;
-  const _TestimonialCard({required this.data});
+  final bool isFocused;
+
+  const _TestimonialCard({
+    required this.data,
+    this.isFocused = true,
+  });
 
   @override
   State<_TestimonialCard> createState() => _TestimonialCardState();
 }
 
 class _TestimonialCardState extends State<_TestimonialCard> {
-  bool _isHovered = false;
+  bool _isCardHovered = false;
 
   @override
   Widget build(BuildContext context) {
@@ -486,55 +591,58 @@ class _TestimonialCardState extends State<_TestimonialCard> {
         ? widget.data.country!
         : 'Global Learner';
 
+    final bool isHighlighted = widget.isFocused || _isCardHovered;
+
     return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
+      onEnter: (_) => setState(() => _isCardHovered = true),
+      onExit: (_) => setState(() => _isCardHovered = false),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 220),
         curve: Curves.easeOutCubic,
-        height: 285,
-        transform: Matrix4.translationValues(0, _isHovered ? -4 : 0, 0),
+        width: 370,
+        height: 290,
+        transform: Matrix4.translationValues(0, isHighlighted ? -4 : 0, 0),
         decoration: BoxDecoration(
           color: const Color(0xCC0B0D1B),
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(22),
           border: Border.all(
-            color: _isHovered
-                ? widget.data.avatarColor.withValues(alpha: 0.50)
+            color: isHighlighted
+                ? widget.data.avatarColor.withValues(alpha: 0.55)
                 : Colors.white.withValues(alpha: 0.10),
-            width: 1.2,
+            width: isHighlighted ? 1.4 : 1.0,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.50),
+              color: Colors.black.withValues(alpha: 0.55),
               blurRadius: 24,
               offset: const Offset(0, 8),
             ),
-            if (_isHovered)
+            if (isHighlighted)
               BoxShadow(
-                color: widget.data.avatarColor.withValues(alpha: 0.18),
-                blurRadius: 30,
+                color: widget.data.avatarColor.withValues(alpha: 0.22),
+                blurRadius: 32,
                 spreadRadius: -2,
               ),
           ],
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(22),
           child: Padding(
             padding: const EdgeInsets.all(22),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Top Row: Avatar + Info (Fixed height: 42)
+                // Top Row: Avatar + Info (Fixed height: 44)
                 Row(
                   children: [
                     Container(
-                      width: 42,
-                      height: 42,
+                      width: 44,
+                      height: 44,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: widget.data.avatarColor.withValues(alpha: 0.18),
                         border: Border.all(
-                          color: widget.data.avatarColor.withValues(alpha: 0.40),
+                          color: widget.data.avatarColor.withValues(alpha: 0.45),
                           width: 1.5,
                         ),
                       ),
@@ -544,7 +652,7 @@ class _TestimonialCardState extends State<_TestimonialCard> {
                           style: TextStyle(
                             color: widget.data.avatarColor,
                             fontWeight: FontWeight.w900,
-                            fontSize: 14,
+                            fontSize: 15,
                           ),
                         ),
                       ),
@@ -613,7 +721,7 @@ class _TestimonialCardState extends State<_TestimonialCard> {
                 ),
                 const SizedBox(height: 12),
 
-                // Quote Body (Expands to fill remaining height uniformly, maxLines 4)
+                // Quote Body (Expanded uniformly, maxLines 4)
                 Expanded(
                   child: Align(
                     alignment: Alignment.topLeft,
@@ -632,10 +740,10 @@ class _TestimonialCardState extends State<_TestimonialCard> {
                 ),
                 const SizedBox(height: 10),
 
-                // Bottom Tag (Pinned to the exact bottom of every card)
+                // Bottom Tag (Pinned to the exact bottom line)
                 Container(
-                  constraints: const BoxConstraints(maxWidth: 290),
-                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                  constraints: const BoxConstraints(maxWidth: 300),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4.5),
                   decoration: BoxDecoration(
                     color: widget.data.avatarColor.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(6),
@@ -676,18 +784,19 @@ class _TestimonialCardState extends State<_TestimonialCard> {
   }
 }
 
-/// Shimmer skeleton card with identical dimensions (285px) for rock-solid stability during loading.
+/// Shimmer skeleton card with identical dimensions (370px x 290px) for rock-solid stability during loading.
 class _TestimonialShimmerCard extends StatelessWidget {
   const _TestimonialShimmerCard();
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 285,
+      width: 370,
+      height: 290,
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
         color: const Color(0xCC0B0D1B),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(22),
         border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
       ),
       child: const ShimmerLoading(
@@ -696,7 +805,7 @@ class _TestimonialShimmerCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                ShimmerBox(width: 42, height: 42, shape: BoxShape.circle),
+                ShimmerBox(width: 44, height: 44, shape: BoxShape.circle),
                 SizedBox(width: 12),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
