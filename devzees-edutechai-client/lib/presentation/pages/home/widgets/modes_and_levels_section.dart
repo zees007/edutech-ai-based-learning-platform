@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:devzees_edutechai_client/core/theme/text_styles.dart';
-import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
-import 'package:devzees_edutechai_client/presentation/widgets/glass_card.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/gradient_text.dart';
 import 'package:devzees_edutechai_client/core/constants/responsive.dart';
 
@@ -56,13 +54,13 @@ class _ModesAndLevelsSectionState extends State<ModesAndLevelsSection> {
       'tag': 'Video & Diagram-First Learning',
       'color': Color(0xFF00F5D4),
       'description':
-          'Designed for visual learners who understand concepts faster through video demonstrations, clean flowcharts, and relatable real-world comparisons.',
+          'Designed for visual learners who master concepts faster through clean video walkthroughs, intuitive flowcharts, and relatable real-world analogies.',
       'specs': [
         'Ideal Pace: 5 to 7 visual steps (around 20 minutes total)',
-        'Interactive Visuals: Clean concept flowcharts and diagrams embedded directly into each lesson',
-        'Exact Video Moments: Up to 3 curated YouTube clips that start playing at the exact second the concept is explained',
-        'Light Reading: Up to 3 short article summaries so you are never overwhelmed with dense text',
-        'Everyday Analogies: Friendly step-by-step explanations using real-world examples to help tricky ideas click easily',
+        'Interactive Visuals: Step-by-step concept flowcharts and diagrams embedded directly into each lesson',
+        'Curated Video Moments: Up to 3 focused YouTube clips playing at the exact second concepts are taught',
+        'Concise Summaries: Short digestible article recaps so you grasp critical details without dense text',
+        'Real-World Analogies: Relatable step-by-step walkthroughs to help complex topics click effortlessly',
       ],
     },
     {
@@ -71,13 +69,13 @@ class _ModesAndLevelsSectionState extends State<ModesAndLevelsSection> {
       'tag': 'Comprehensive & Academic Depth',
       'color': Color(0xFF8B5CF6),
       'description':
-          'Engineered for students, researchers, and professionals who require rigorous proofs, deep technical depth, and peer-reviewed citations.',
+          'Engineered for students and scholars who require rigorous mathematical proofs, comprehensive depth, and peer-reviewed citations for deep mastery.',
       'specs': [
-        'Ideal Pace: 6 to 10 comprehensive steps (around 45 minutes total)',
-        'Formulas & Clear Proofs: Complete mathematical formulas, calculations, and in-depth explanations for why things work',
-        'Real Published Research: Up to 4 in-depth research papers and preprints with 1-click direct PDF links',
-        'Thought-Provoking Questions: Deep Socratic questions at every step that guide you to think like a subject-matter expert',
-        'Challenging Quizzes: In-depth quizzes that test your true understanding, not just surface memorization',
+        'Ideal Pace: 6 to 10 deep steps (around 45 minutes total)',
+        'Formulas & Proofs: In-depth mathematical equations and clear logic explaining exactly why ideas work',
+        'Published Research: Up to 4 academic study preprints and research papers with 1-click direct PDF links',
+        'Socratic Questions: Analytical prompts at every step that challenge your logic and build true mastery',
+        'Mastery Assessments: Deep analytical quizzes designed to verify your understanding of complex ideas',
       ],
     },
     {
@@ -86,13 +84,13 @@ class _ModesAndLevelsSectionState extends State<ModesAndLevelsSection> {
       'tag': 'Fast Revision (<10 Mins)',
       'color': Color(0xFFF59E0B),
       'description':
-          'Built for busy schedules and fast exam prep. Get the core takeaways and key concepts in quick, easy-to-digest breakdowns.',
+          'Optimized for busy schedules and rapid revision. Master high-yield takeaways, core principles, and essential formulas in quick, punchy summaries.',
       'specs': [
-        'Ideal Pace: Strictly capped at 4 quick steps (under 10 minutes total)',
-        'Straight to the Point: Concise, bullet-point summaries with zero filler or unnecessary reading',
-        'Single Best Video: Handpicks the single best clip for fast, focused viewing',
-        'Distraction-Free: Skips heavy academic papers and complex charts so you can focus purely on the key takeaway',
-        'Quick Knowledge Checks: 30-second rapid quizzes to lock in what you just learned',
+        'Ideal Pace: 3 to 4 fast steps (under 10 minutes total)',
+        'High-Yield Points: Punchy bullet takeaways focused strictly on core ideas with zero unnecessary filler',
+        'Single Best Video Clip: Handpicked high-impact video demonstration delivering rapid visual clarity',
+        'Distraction-Free Focus: Eliminates lengthy papers and dense charts so you retain essential takeaways',
+        'Rapid Knowledge Checks: 30-second recall quizzes designed to lock in concepts and test your confidence',
       ],
     },
   ];
@@ -184,177 +182,234 @@ class _ModesAndLevelsSectionState extends State<ModesAndLevelsSection> {
               _buildModeSwitcher(isMobile),
               SizedBox(height: isMobile ? 18 : 24),
 
-              // Mode Specs Card
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 250),
-                child: Container(
-                  key: ValueKey<int>(_selectedMode),
-                  decoration: BoxDecoration(
-                    color: const Color(0xDD0A0D1D),
-                    borderRadius: BorderRadius.circular(isMobile ? 18 : 22),
-                    border: Border.all(
-                      color: (_modes[_selectedMode]['color'] as Color)
-                          .withValues(alpha: 0.35),
-                      width: 1.2,
+              // Mode Specs Card with Swipe Gestures and Locked MinHeight to Prevent Page Shaking
+              GestureDetector(
+                onHorizontalDragEnd: (details) {
+                  if (details.primaryVelocity == null) return;
+                  if (details.primaryVelocity! < -150) {
+                    // Swiped Left -> Next mode
+                    _onModeSelected((_selectedMode + 1) % _modes.length);
+                  } else if (details.primaryVelocity! > 150) {
+                    // Swiped Right -> Previous mode
+                    _onModeSelected(
+                      (_selectedMode - 1 + _modes.length) % _modes.length,
+                    );
+                  }
+                },
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 250),
+                  layoutBuilder: (
+                    Widget? currentChild,
+                    List<Widget> previousChildren,
+                  ) {
+                    return Stack(
+                      alignment: Alignment.topCenter,
+                      children: <Widget>[
+                        ...previousChildren,
+                        ?currentChild,
+                      ],
+                    );
+                  },
+                  child: Container(
+                    key: ValueKey<int>(_selectedMode),
+                    width: double.infinity,
+                    constraints: BoxConstraints(
+                      minHeight: _getCardMinHeight(context),
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: (_modes[_selectedMode]['color'] as Color)
-                            .withValues(alpha: 0.12),
-                        blurRadius: isMobile ? 20 : 32,
-                      ),
-                    ],
-                  ),
-                  padding: EdgeInsets.all(isMobile ? 18 : 32),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            width: isMobile ? 38 : 44,
-                            height: isMobile ? 38 : 44,
-                            decoration: BoxDecoration(
-                              color: (_modes[_selectedMode]['color'] as Color)
-                                  .withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(
-                                isMobile ? 10 : 12,
-                              ),
-                              border: Border.all(
-                                color: (_modes[_selectedMode]['color'] as Color)
-                                    .withValues(alpha: 0.4),
-                              ),
-                            ),
-                            child: Icon(
-                              _modes[_selectedMode]['icon'] as IconData,
-                              color: _modes[_selectedMode]['color'] as Color,
-                              size: isMobile ? 19 : 22,
-                            ),
+                    decoration: BoxDecoration(
+                          color: const Color(0xDD0A0D1D),
+                          borderRadius: BorderRadius.circular(
+                            isMobile ? 18 : 22,
                           ),
-                          SizedBox(width: isMobile ? 12 : 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                          border: Border.all(
+                            color: (_modes[_selectedMode]['color'] as Color)
+                                .withValues(alpha: 0.35),
+                            width: 1.2,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: (_modes[_selectedMode]['color'] as Color)
+                                  .withValues(alpha: 0.12),
+                              blurRadius: isMobile ? 20 : 32,
+                            ),
+                          ],
+                        ),
+                        padding: EdgeInsets.all(isMobile ? 18 : 32),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
                               children: [
-                                Text(
-                                  _modes[_selectedMode]['name'],
-                                  style: TextStyle(
-                                    color: const Color(0xFFF8FAFC),
-                                    fontSize: isMobile ? 17 : 20,
-                                    fontWeight: FontWeight.w800,
+                                Container(
+                                  width: isMobile ? 38 : 44,
+                                  height: isMobile ? 38 : 44,
+                                  decoration: BoxDecoration(
+                                    color:
+                                        (_modes[_selectedMode]['color']
+                                                as Color)
+                                            .withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(
+                                      isMobile ? 10 : 12,
+                                    ),
+                                    border: Border.all(
+                                      color:
+                                          (_modes[_selectedMode]['color']
+                                                  as Color)
+                                              .withValues(alpha: 0.4),
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  _modes[_selectedMode]['tag'],
-                                  style: TextStyle(
+                                  child: Icon(
+                                    _modes[_selectedMode]['icon'] as IconData,
                                     color:
                                         _modes[_selectedMode]['color'] as Color,
-                                    fontSize: isMobile ? 10.5 : 11,
-                                    fontWeight: FontWeight.w700,
-                                    letterSpacing: 0.6,
+                                    size: isMobile ? 19 : 22,
                                   ),
                                 ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: isMobile ? 14 : 16),
-                      Text(
-                        _modes[_selectedMode]['description'],
-                        style: TextStyle(
-                          color: const Color(0xFF94A3B8),
-                          fontSize: isMobile ? 13 : 14,
-                          height: 1.5,
-                        ),
-                      ),
-                      SizedBox(height: isMobile ? 16 : 22),
-                      Divider(color: Colors.white.withValues(alpha: 0.08)),
-                      SizedBox(height: isMobile ? 12 : 16),
-                      Text(
-                        'HOW THIS MODE WORKS:',
-                        style: TextStyle(
-                          color: const Color(0xFF64748B),
-                          fontSize: isMobile ? 10 : 11,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 1.2,
-                        ),
-                      ),
-                      SizedBox(height: isMobile ? 12 : 14),
-                      ...(_modes[_selectedMode]['specs'] as List<String>).map((
-                        spec,
-                      ) {
-                        final int colonIndex = spec.indexOf(':');
-                        final bool hasLabel = colonIndex != -1;
-                        final String label = hasLabel
-                            ? spec.substring(0, colonIndex + 1)
-                            : '';
-                        final String body = hasLabel
-                            ? spec.substring(colonIndex + 1)
-                            : spec;
-
-                        return Padding(
-                          padding: EdgeInsets.only(bottom: isMobile ? 11 : 10),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                margin: const EdgeInsets.only(top: 2.5),
-                                width: isMobile ? 15 : 16,
-                                height: isMobile ? 15 : 16,
-                                decoration: BoxDecoration(
-                                  color:
-                                      (_modes[_selectedMode]['color'] as Color)
-                                          .withValues(alpha: 0.18),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Icon(
-                                  Icons.check_rounded,
-                                  size: isMobile ? 10 : 11,
-                                  color:
-                                      _modes[_selectedMode]['color'] as Color,
-                                ),
-                              ),
-                              SizedBox(width: isMobile ? 10 : 12),
-                              Expanded(
-                                child: Text.rich(
-                                  TextSpan(
+                                SizedBox(width: isMobile ? 12 : 14),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
-                                      if (hasLabel)
-                                        TextSpan(
-                                          text: label,
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.w700,
-                                            fontSize: isMobile ? 12.5 : 13.5,
-                                          ),
-                                        ),
-                                      TextSpan(
-                                        text: body,
+                                      Text(
+                                        _modes[_selectedMode]['name'],
                                         style: TextStyle(
-                                          color: const Color(0xFFCBD5E1),
-                                          fontSize: isMobile ? 12.5 : 13.5,
+                                          color: const Color(0xFFF8FAFC),
+                                          fontSize: isMobile ? 17 : 20,
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        _modes[_selectedMode]['tag'],
+                                        style: TextStyle(
+                                          color: _modes[_selectedMode]['color']
+                                              as Color,
+                                          fontSize: isMobile ? 10.5 : 11,
+                                          fontWeight: FontWeight.w700,
+                                          letterSpacing: 0.6,
                                         ),
                                       ),
                                     ],
                                   ),
-                                  style: const TextStyle(height: 1.45),
                                 ),
+                              ],
+                            ),
+                            SizedBox(height: isMobile ? 14 : 16),
+                            Text(
+                              _modes[_selectedMode]['description'],
+                              style: TextStyle(
+                                color: const Color(0xFF94A3B8),
+                                fontSize: isMobile ? 13 : 14,
+                                height: 1.5,
                               ),
-                            ],
-                          ),
-                        );
-                      }),
-                    ],
+                            ),
+                            SizedBox(height: isMobile ? 16 : 22),
+                            Divider(color: Colors.white.withValues(alpha: 0.08)),
+                            SizedBox(height: isMobile ? 12 : 16),
+                            Text(
+                              'HOW THIS MODE WORKS:',
+                              style: TextStyle(
+                                color: const Color(0xFF64748B),
+                                fontSize: isMobile ? 10 : 11,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 1.2,
+                              ),
+                            ),
+                            SizedBox(height: isMobile ? 12 : 14),
+                            ...(_modes[_selectedMode]['specs'] as List<String>)
+                                .map((spec) {
+                              final int colonIndex = spec.indexOf(':');
+                              final bool hasLabel = colonIndex != -1;
+                              final String label = hasLabel
+                                  ? spec.substring(0, colonIndex + 1)
+                                  : '';
+                              final String body = hasLabel
+                                  ? spec.substring(colonIndex + 1)
+                                  : spec;
+
+                              return Padding(
+                                padding: EdgeInsets.only(
+                                  bottom: isMobile ? 11 : 10,
+                                ),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Container(
+                                      margin: const EdgeInsets.only(top: 2.5),
+                                      width: isMobile ? 15 : 16,
+                                      height: isMobile ? 15 : 16,
+                                      decoration: BoxDecoration(
+                                        color:
+                                            (_modes[_selectedMode]['color']
+                                                    as Color)
+                                                .withValues(alpha: 0.18),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Icon(
+                                        Icons.check_rounded,
+                                        size: isMobile ? 10 : 11,
+                                        color: _modes[_selectedMode]['color']
+                                            as Color,
+                                      ),
+                                    ),
+                                    SizedBox(width: isMobile ? 10 : 12),
+                                    Expanded(
+                                      child: Text.rich(
+                                        TextSpan(
+                                          children: [
+                                            if (hasLabel)
+                                              TextSpan(
+                                                text: label,
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.w700,
+                                                  fontSize: isMobile
+                                                      ? 12.5
+                                                      : 13.5,
+                                                ),
+                                              ),
+                                            TextSpan(
+                                              text: body,
+                                              style: TextStyle(
+                                                color: const Color(0xFFCBD5E1),
+                                                fontSize: isMobile
+                                                    ? 12.5
+                                                    : 13.5,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        style: const TextStyle(height: 1.45),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-      ],
-    );
+        ],
+      );
+  }
+
+  double _getCardMinHeight(BuildContext context) {
+    final double screenWidth = MediaQuery.sizeOf(context).width;
+    if (screenWidth < 350) {
+      return 930.0;
+    } else if (Responsive.isMobile(context)) {
+      return 810.0;
+    } else if (Responsive.isTablet(context)) {
+      return 630.0;
+    } else {
+      return 500.0;
+    }
   }
 
   Widget _buildModeSwitcher(bool isMobile) {
@@ -401,14 +456,17 @@ class _ModesAndLevelsSectionState extends State<ModesAndLevelsSection> {
           ),
         ],
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: List.generate(_modes.length, (i) {
-          return Padding(
-            padding: EdgeInsets.only(right: i < _modes.length - 1 ? 6 : 0),
-            child: _buildSegmentItem(i, isMobile: false),
-          );
-        }),
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: List.generate(_modes.length, (i) {
+            return Padding(
+              padding: EdgeInsets.only(right: i < _modes.length - 1 ? 6 : 0),
+              child: _buildSegmentItem(i, isMobile: false),
+            );
+          }),
+        ),
       ),
     );
   }
