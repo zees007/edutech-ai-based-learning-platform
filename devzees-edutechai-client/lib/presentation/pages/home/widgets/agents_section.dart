@@ -59,7 +59,7 @@ class _AgentsSectionState extends State<AgentsSection>
 
   double _scrollOffset = 0.0;
   Timer? _autoSlideTimer;
-  bool _isHovered = false;
+  bool _isDragging = false;
 
   static const List<_AgentData> _agents = [
     _AgentData(
@@ -151,7 +151,7 @@ class _AgentsSectionState extends State<AgentsSection>
   void _startAutoSlideTimer() {
     _autoSlideTimer?.cancel();
     _autoSlideTimer = Timer.periodic(const Duration(seconds: 3), (_) {
-      if (!mounted || _isHovered || _animController.isAnimating) return;
+      if (!mounted || _animController.isAnimating || _isDragging) return;
       _animateToOffset((_scrollOffset.round() + 1).toDouble());
     });
   }
@@ -298,12 +298,9 @@ class _AgentsSectionState extends State<AgentsSection>
 
   /// Mobile view: Exactly ONE card in view at rest (maxVisibleDelta = 0.85) with silky scale-up/down transitions
   Widget _buildMobile3dSlider() {
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      child: Column(
-        children: [
-          SizedBox(
+    return Column(
+      children: [
+        SizedBox(
             height: 340,
             child: LayoutBuilder(
               builder: (context, constraints) {
@@ -359,6 +356,7 @@ class _AgentsSectionState extends State<AgentsSection>
                     return GestureDetector(
                       behavior: HitTestBehavior.opaque,
                       onHorizontalDragStart: (_) {
+                        _isDragging = true;
                         _autoSlideTimer?.cancel();
                         _animController.stop();
                       },
@@ -368,6 +366,7 @@ class _AgentsSectionState extends State<AgentsSection>
                         });
                       },
                       onHorizontalDragEnd: (details) {
+                        _isDragging = false;
                         final velocity = details.primaryVelocity ?? 0.0;
                         double target = _scrollOffset;
                         if (velocity.abs() > 250) {
@@ -524,8 +523,7 @@ class _AgentsSectionState extends State<AgentsSection>
             },
           ),
         ],
-      ),
-    );
+      );
   }
 }
 
