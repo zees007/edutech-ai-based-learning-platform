@@ -86,7 +86,7 @@ void main() {
       expect(cardFinder, findsWidgets);
     });
 
-    testWidgets('chevron controls navigate to next and previous testimonials', (tester) async {
+    testWidgets('tapping flanking card navigates the 3D wheel', (tester) async {
       tester.view.physicalSize = const Size(1200, 900);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() => tester.view.resetPhysicalSize());
@@ -109,21 +109,18 @@ void main() {
       await tester.pump();
       await tester.pumpAndSettle();
 
-      // Find chevron right icon and tap
-      final chevronRight = find.byIcon(Icons.chevron_right_rounded);
-      expect(chevronRight, findsOneWidget);
+      // Tap on flanking card "Alice Smith" to rotate it into center spotlight
+      final aliceCard = find.text('Alice Smith');
+      expect(aliceCard, findsOneWidget);
 
-      await tester.tap(chevronRight);
+      await tester.tap(aliceCard);
       await tester.pumpAndSettle();
 
-      // Second testimonial card should now be spotlighted
-      expect(find.text('Alice Smith'), findsOneWidget);
+      // Now tap on flanking card "Dr. John Doe" to return to center
+      final johnCard = find.text('Dr. John Doe');
+      expect(johnCard, findsOneWidget);
 
-      // Find chevron left icon and tap to return to first
-      final chevronLeft = find.byIcon(Icons.chevron_left_rounded);
-      expect(chevronLeft, findsOneWidget);
-
-      await tester.tap(chevronLeft);
+      await tester.tap(johnCard);
       await tester.pumpAndSettle();
 
       expect(find.text('Dr. John Doe'), findsOneWidget);

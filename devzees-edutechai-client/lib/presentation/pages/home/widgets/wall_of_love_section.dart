@@ -190,12 +190,6 @@ class _WallOfLoveSectionState extends ConsumerState<WallOfLoveSection>
     return d;
   }
 
-  int _getActiveIndex(int itemCount) {
-    if (itemCount <= 0) return 0;
-    final round = _scrollOffset.round();
-    return ((round % itemCount) + itemCount) % itemCount;
-  }
-
   @override
   Widget build(BuildContext context) {
     final bool isMobile = Responsive.isMobile(context);
@@ -291,7 +285,6 @@ class _WallOfLoveSectionState extends ConsumerState<WallOfLoveSection>
 
   Widget _build3dCylindricalWheel(List<PublicFeedbackModel> items) {
     _setupAutoSlide(items.length);
-    final activeIndex = _getActiveIndex(items.length);
 
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
@@ -315,16 +308,16 @@ class _WallOfLoveSectionState extends ConsumerState<WallOfLoveSection>
 
                 if (viewportWidth >= 1200) {
                   maxVisibleDelta = 3.5;
-                  spacingRadius = 660.0;
-                  angleStep = 0.32;
+                  spacingRadius = 880.0;
+                  angleStep = 0.40;
                 } else if (viewportWidth >= 800) {
                   maxVisibleDelta = 2.5;
-                  spacingRadius = 460.0;
-                  angleStep = 0.38;
+                  spacingRadius = 600.0;
+                  angleStep = 0.44;
                 } else {
                   maxVisibleDelta = 1.4;
-                  spacingRadius = 260.0;
-                  angleStep = 0.44;
+                  spacingRadius = 340.0;
+                  angleStep = 0.50;
                 }
 
                 // Compute exact relative offset on circle for each distinct item
@@ -380,7 +373,7 @@ class _WallOfLoveSectionState extends ConsumerState<WallOfLoveSection>
                           Colors.white,
                           Colors.transparent,
                         ],
-                        stops: [0.0, 0.07, 0.93, 1.0],
+                        stops: [0.0, 0.05, 0.95, 1.0],
                       ).createShader(bounds);
                     },
                     blendMode: BlendMode.dstIn,
@@ -392,17 +385,20 @@ class _WallOfLoveSectionState extends ConsumerState<WallOfLoveSection>
                         final item = data.item;
 
                         // 3D Cylindrical physics calculations:
-                        // Horizontal displacement along cylindrical curve
+                        // Horizontal displacement along cylindrical curve with generous spacing
                         final double xOffset = spacingRadius * math.sin(delta * angleStep);
 
                         // Y-axis perspective rotation: cards on left face right, cards on right face left
-                        final double rotateY = (-delta * 0.32).clamp(-0.85, 0.85);
+                        final double rotateY = (-delta * 0.36).clamp(-0.85, 0.85);
 
                         // Z-depth scale falloff: center card 1.0, flanks scale smoothly down
-                        final double scale = (1.0 - (absDelta * 0.10)).clamp(0.66, 1.0);
+                        final double scale = (1.0 - (absDelta * 0.12)).clamp(0.64, 1.0);
 
-                        // Depth translucency falloff
-                        final double opacity = (1.0 - (absDelta * 0.16)).clamp(0.20, 1.0);
+                        // Pronounced depth translucency falloff:
+                        // Center card is 100% solid, while behind cards fade into the background
+                        final double opacity = absDelta < 0.35
+                            ? 1.0
+                            : (math.pow(0.50, absDelta).toDouble()).clamp(0.12, 1.0);
 
                         final bool isFocused = absDelta < 0.45;
 
@@ -443,103 +439,7 @@ class _WallOfLoveSectionState extends ConsumerState<WallOfLoveSection>
               },
             ),
           ),
-
-          // ─── Carousel Controls: Chevrons & Pill Dots ───
-          if (items.length > 1) ...[
-            const SizedBox(height: 28),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Previous Chevron
-                _buildNavButton(
-                  icon: Icons.chevron_left_rounded,
-                  onTap: () {
-                    _animateToOffset((_scrollOffset.round() - 1).toDouble());
-                  },
-                ),
-                const SizedBox(width: 18),
-
-                // Indicator Dots / Glowing Pill
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: List.generate(items.length, (index) {
-                    final bool isActive = index == activeIndex;
-                    return GestureDetector(
-                      onTap: () {
-                        final double delta = _getCircularDelta(index, _scrollOffset, items.length);
-                        _animateToOffset(_scrollOffset + delta);
-                      },
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 280),
-                        margin: const EdgeInsets.symmetric(horizontal: 4),
-                        width: isActive ? 30 : 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          color: isActive
-                              ? const Color(0xFFF59E0B)
-                              : Colors.white.withValues(alpha: 0.20),
-                          borderRadius: BorderRadius.circular(4),
-                          boxShadow: isActive
-                              ? [
-                                  BoxShadow(
-                                    color: const Color(0xFFF59E0B).withValues(alpha: 0.60),
-                                    blurRadius: 10,
-                                    spreadRadius: 1,
-                                  ),
-                                ]
-                              : null,
-                        ),
-                      ),
-                    );
-                  }),
-                ),
-                const SizedBox(width: 18),
-
-                // Next Chevron
-                _buildNavButton(
-                  icon: Icons.chevron_right_rounded,
-                  onTap: () {
-                    _animateToOffset((_scrollOffset.round() + 1).toDouble());
-                  },
-                ),
-              ],
-            ),
-          ],
         ],
-      ),
-    );
-  }
-
-  Widget _buildNavButton({
-    required IconData icon,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(9999),
-      child: Container(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          color: const Color(0xCC0B0D1B),
-          shape: BoxShape.circle,
-          border: Border.all(
-            color: Colors.white.withValues(alpha: 0.16),
-            width: 1.2,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.45),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Icon(
-          icon,
-          color: Colors.white,
-          size: 22,
-        ),
       ),
     );
   }
@@ -603,24 +503,26 @@ class _TestimonialCardState extends State<_TestimonialCard> {
         height: 290,
         transform: Matrix4.translationValues(0, isHighlighted ? -4 : 0, 0),
         decoration: BoxDecoration(
-          color: const Color(0xCC0B0D1B),
+          color: isHighlighted
+              ? const Color(0xF20B0D1E)
+              : const Color(0x66080A16),
           borderRadius: BorderRadius.circular(22),
           border: Border.all(
             color: isHighlighted
-                ? widget.data.avatarColor.withValues(alpha: 0.55)
-                : Colors.white.withValues(alpha: 0.10),
-            width: isHighlighted ? 1.4 : 1.0,
+                ? widget.data.avatarColor.withValues(alpha: 0.65)
+                : Colors.white.withValues(alpha: 0.08),
+            width: isHighlighted ? 1.5 : 1.0,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.55),
-              blurRadius: 24,
+              color: Colors.black.withValues(alpha: isHighlighted ? 0.65 : 0.30),
+              blurRadius: isHighlighted ? 28 : 14,
               offset: const Offset(0, 8),
             ),
             if (isHighlighted)
               BoxShadow(
-                color: widget.data.avatarColor.withValues(alpha: 0.22),
-                blurRadius: 32,
+                color: widget.data.avatarColor.withValues(alpha: 0.28),
+                blurRadius: 36,
                 spreadRadius: -2,
               ),
           ],
@@ -712,8 +614,8 @@ class _TestimonialCardState extends State<_TestimonialCard> {
                             ? Icons.star_rounded
                             : Icons.star_border_rounded,
                         color: index < widget.data.rating
-                            ? const Color(0xFFFBBF24)
-                            : const Color(0xFF64748B),
+                            ? (isHighlighted ? const Color(0xFFFBBF24) : const Color(0x99FBBF24))
+                            : const Color(0xFF475569),
                         size: 15,
                       ),
                     ),
@@ -727,8 +629,10 @@ class _TestimonialCardState extends State<_TestimonialCard> {
                     alignment: Alignment.topLeft,
                     child: Text(
                       '"${widget.data.quote}"',
-                      style: const TextStyle(
-                        color: Color(0xFFCBD5E1),
+                      style: TextStyle(
+                        color: isHighlighted
+                            ? const Color(0xFFF1F5F9)
+                            : const Color(0xFF94A3B8),
                         fontSize: 13,
                         height: 1.5,
                         fontStyle: FontStyle.italic,
@@ -745,10 +649,10 @@ class _TestimonialCardState extends State<_TestimonialCard> {
                   constraints: const BoxConstraints(maxWidth: 300),
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4.5),
                   decoration: BoxDecoration(
-                    color: widget.data.avatarColor.withValues(alpha: 0.12),
+                    color: widget.data.avatarColor.withValues(alpha: isHighlighted ? 0.14 : 0.06),
                     borderRadius: BorderRadius.circular(6),
                     border: Border.all(
-                      color: widget.data.avatarColor.withValues(alpha: 0.25),
+                      color: widget.data.avatarColor.withValues(alpha: isHighlighted ? 0.30 : 0.14),
                     ),
                   ),
                   child: Row(
