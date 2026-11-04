@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/constants/responsive.dart';
 import '../../../../core/providers/feedback_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/text_styles.dart';
@@ -65,37 +66,41 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
   Widget build(BuildContext context) {
     final state = ref.watch(adminFeedbackProvider);
     final metrics = state.metrics;
+    final isMobile = Responsive.isMobile(context);
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(isMobile ? 16 : 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Section Header
           Text(
             'Feedback & Testimonials Moderation',
-            style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
+            style: (isMobile ? AppTextStyles.subtitle1 : AppTextStyles.h4).copyWith(
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 8),
           Text(
             'Review feedback submitted by learners upon session completion, manage homepage featured testimonials, and maintain internal notes.',
             style: AppTextStyles.body2.copyWith(color: AppColors.textMuted),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: isMobile ? 16 : 24),
 
           // KPI Cards
-          _buildMetricsRow(metrics),
-          const SizedBox(height: 32),
+          _buildMetricsRow(metrics, isMobile),
+          SizedBox(height: isMobile ? 20 : 32),
 
           Container(
             width: double.infinity,
             height: 1,
             color: AppColors.glassBorder,
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: isMobile ? 16 : 24),
 
           // Filter bar & Search box
-          _buildFilterAndSearchRow(state),
+          _buildFilterAndSearchRow(state, isMobile),
           const SizedBox(height: 20),
 
           // Data Table / Loading / Error
@@ -104,13 +109,13 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
           else if (state.errorMessage != null && state.items.isEmpty)
             _buildErrorCard(state.errorMessage!)
           else
-            _buildFeedbackTable(state),
+            _buildFeedbackTable(state, isMobile),
         ],
       ),
     );
   }
 
-  Widget _buildMetricsRow(AdminFeedbackSummaryMetrics? metrics) {
+  Widget _buildMetricsRow(AdminFeedbackSummaryMetrics? metrics, bool isMobile) {
     final cards = [
       _MetricCardData(
         label: 'Total Reviews',
@@ -150,10 +155,12 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
       builder: (context, constraints) {
         final crossAxisCount = constraints.maxWidth > 1100
             ? 5
-            : constraints.maxWidth > 700
-            ? 3
-            : 2;
-        final spacing = 16.0;
+            : constraints.maxWidth > 680
+                ? 3
+                : constraints.maxWidth > 340
+                    ? 2
+                    : 1;
+        final spacing = isMobile ? 12.0 : 16.0;
         final width =
             (constraints.maxWidth - (crossAxisCount - 1) * spacing) /
             crossAxisCount;
@@ -164,7 +171,7 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
           children: cards.map((card) {
             return SizedBox(
               width: width,
-              child: _MetricCard(data: card),
+              child: _MetricCard(data: card, isMobile: isMobile),
             );
           }).toList(),
         );
@@ -172,97 +179,121 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
     );
   }
 
-  Widget _buildFilterAndSearchRow(AdminFeedbackState state) {
+  Widget _buildFilterAndSearchRow(AdminFeedbackState state, bool isMobile) {
     final metrics = state.metrics;
-    return Wrap(
-      spacing: 16,
-      runSpacing: 16,
-      crossAxisAlignment: WrapCrossAlignment.center,
-      alignment: WrapAlignment.spaceBetween,
-      children: [
-        // Status filter tabs
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildStatusChip(
-              id: 'pending',
-              label: 'Pending',
-              count: metrics?.pendingCount,
-              badgeColor: AppColors.accentAmber,
-            ),
-            const SizedBox(width: 8),
-            _buildStatusChip(
-              id: 'featured',
-              label: '🌟 Featured',
-              count: metrics?.featuredCount,
-              badgeColor: AppColors.accentGreen,
-            ),
-            const SizedBox(width: 8),
-            _buildStatusChip(
-              id: 'archived',
-              label: 'Archived',
-              count: metrics?.archivedCount,
-              badgeColor: AppColors.slate400,
-            ),
-            const SizedBox(width: 8),
-            _buildStatusChip(
-              id: 'all',
-              label: 'All',
-              count: metrics?.totalCount,
-              badgeColor: AppColors.purple,
-            ),
-          ],
-        ),
 
-        // Search Bar & Refresh
+    final chipsList = SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      physics: const BouncingScrollPhysics(),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildStatusChip(
+            id: 'pending',
+            label: 'Pending',
+            count: metrics?.pendingCount,
+            badgeColor: AppColors.accentAmber,
+          ),
+          const SizedBox(width: 8),
+          _buildStatusChip(
+            id: 'featured',
+            label: '🌟 Featured',
+            count: metrics?.featuredCount,
+            badgeColor: AppColors.accentGreen,
+          ),
+          const SizedBox(width: 8),
+          _buildStatusChip(
+            id: 'archived',
+            label: 'Archived',
+            count: metrics?.archivedCount,
+            badgeColor: AppColors.slate400,
+          ),
+          const SizedBox(width: 8),
+          _buildStatusChip(
+            id: 'all',
+            label: 'All',
+            count: metrics?.totalCount,
+            badgeColor: AppColors.purple,
+          ),
+        ],
+      ),
+    );
+
+    final searchBox = Container(
+      height: 40,
+      decoration: BoxDecoration(
+        color: AppColors.glassBase,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.glassBorder),
+      ),
+      child: TextField(
+        controller: _searchController,
+        onSubmitted: _onSearchSubmitted,
+        style: AppTextStyles.body2.copyWith(
+          color: AppColors.textPrimary,
+        ),
+        decoration: InputDecoration(
+          isDense: true,
+          hintText: 'Search quote, student, topic...',
+          hintStyle: AppTextStyles.body2.copyWith(
+            color: AppColors.textMuted,
+          ),
+          prefixIcon: Icon(
+            Icons.search,
+            color: AppColors.textMuted,
+            size: 18,
+          ),
+          suffixIcon: _searchController.text.isNotEmpty
+              ? IconButton(
+                  icon: const Icon(Icons.clear, size: 16),
+                  color: AppColors.textMuted,
+                  onPressed: _clearSearch,
+                )
+              : null,
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(vertical: 10),
+        ),
+      ),
+    );
+
+    final refreshButton = IconButton(
+      tooltip: 'Refresh Feedbacks',
+      icon: Icon(Icons.refresh_rounded, color: AppColors.textSecondary),
+      onPressed: () {
+        ref.read(adminFeedbackProvider.notifier).loadFeedbacks();
+      },
+    );
+
+    if (isMobile) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          chipsList,
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(child: searchBox),
+              const SizedBox(width: 8),
+              refreshButton,
+            ],
+          ),
+        ],
+      );
+    }
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        chipsList,
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
+            SizedBox(
               width: 280,
-              height: 40,
-              decoration: BoxDecoration(
-                color: AppColors.glassBase,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.glassBorder),
-              ),
-              child: TextField(
-                controller: _searchController,
-                onSubmitted: _onSearchSubmitted,
-                style: AppTextStyles.body2.copyWith(
-                  color: AppColors.textPrimary,
-                ),
-                decoration: InputDecoration(
-                  isDense: true,
-                  hintText: 'Search quote, student, topic...',
-                  hintStyle: AppTextStyles.body2.copyWith(
-                    color: AppColors.textMuted,
-                  ),
-                  prefixIcon: Icon(
-                    Icons.search,
-                    color: AppColors.textMuted,
-                    size: 18,
-                  ),
-                  suffixIcon: _searchController.text.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(Icons.clear, size: 16),
-                          color: AppColors.textMuted,
-                          onPressed: _clearSearch,
-                        )
-                      : null,
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(vertical: 10),
-                ),
-              ),
+              child: searchBox,
             ),
             const SizedBox(width: 12),
-            IconButton(
-              tooltip: 'Refresh Feedbacks',
-              icon: Icon(Icons.refresh_rounded, color: AppColors.textSecondary),
-              onPressed: () {
-                ref.read(adminFeedbackProvider.notifier).loadFeedbacks();
-              },
-            ),
+            refreshButton,
           ],
         ),
       ],
@@ -325,7 +356,7 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
     );
   }
 
-  Widget _buildFeedbackTable(AdminFeedbackState state) {
+  Widget _buildFeedbackTable(AdminFeedbackState state, bool isMobile) {
     if (state.items.isEmpty) {
       return Container(
         height: 240,
@@ -359,6 +390,7 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
     final totalPages = (state.total / state.pageSize).ceil().clamp(1, 9999);
 
     return AdminDataTable(
+      minWidth: 1100,
       columns: const [
         'Student',
         'Level & Region',
@@ -369,7 +401,7 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
         'Admin Notes',
         'Actions',
       ],
-      columnWidths: const [1.6, 1.4, 0.9, 1.3, 2.5, 1.1, 1.3, 1.6],
+      columnWidths: const [1.5, 1.2, 0.8, 1.2, 2.2, 1.3, 1.3, 1.5],
       currentPage: state.page,
       totalPages: totalPages,
       onPageChanged: (newPage) {
@@ -388,6 +420,7 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
                   color: AppColors.textPrimary,
                   fontWeight: FontWeight.w600,
                 ),
+                maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
               Text(
@@ -395,6 +428,7 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
                 style: AppTextStyles.caption.copyWith(
                   color: AppColors.textMuted,
                 ),
+                maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
             ],
@@ -522,42 +556,70 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
               if (item.status == 'featured')
                 IconButton(
                   tooltip: 'Unfeature (Archive)',
+                  visualDensity: VisualDensity.compact,
+                  style: IconButton.styleFrom(
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    minimumSize: const Size(28, 28),
+                    padding: EdgeInsets.zero,
+                  ),
                   icon: const Icon(
                     Icons.star_rounded,
                     color: Color(0xFFFBBF24),
-                    size: 20,
+                    size: 18,
                   ),
                   onPressed: () => _updateFeedbackStatus(item, 'archived'),
                 )
               else
                 IconButton(
                   tooltip: 'Feature on Homepage',
+                  visualDensity: VisualDensity.compact,
+                  style: IconButton.styleFrom(
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    minimumSize: const Size(28, 28),
+                    padding: EdgeInsets.zero,
+                  ),
                   icon: Icon(
                     Icons.star_outline_rounded,
                     color: AppColors.textMuted,
-                    size: 20,
+                    size: 18,
                   ),
                   onPressed: () => _updateFeedbackStatus(item, 'featured'),
                 ),
 
+              const SizedBox(width: 2),
+
               // Add / Edit Note Button
               IconButton(
                 tooltip: 'Add / Edit Internal Note',
+                visualDensity: VisualDensity.compact,
+                style: IconButton.styleFrom(
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  minimumSize: const Size(28, 28),
+                  padding: EdgeInsets.zero,
+                ),
                 icon: const Icon(
                   Icons.edit_note_rounded,
                   color: AppColors.purple,
-                  size: 20,
+                  size: 18,
                 ),
                 onPressed: () => _showModerationDialog(item),
               ),
 
+              const SizedBox(width: 2),
+
               // View Details
               IconButton(
                 tooltip: 'Review Details & Moderation',
+                visualDensity: VisualDensity.compact,
+                style: IconButton.styleFrom(
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  minimumSize: const Size(28, 28),
+                  padding: EdgeInsets.zero,
+                ),
                 icon: Icon(
                   Icons.visibility_outlined,
                   color: AppColors.textMuted,
-                  size: 18,
+                  size: 17,
                 ),
                 onPressed: () => _showModerationDialog(item),
               ),
@@ -597,10 +659,10 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
       decoration: BoxDecoration(
         color: bg,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(10),
         border: Border.all(color: fg.withValues(alpha: 0.4)),
       ),
       child: Row(
@@ -608,12 +670,16 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
         children: [
           Icon(icon, size: 12, color: fg),
           const SizedBox(width: 4),
-          Text(
-            label,
-            style: TextStyle(
-              color: fg,
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
+          Flexible(
+            child: Text(
+              label,
+              style: TextStyle(
+                color: fg,
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],
@@ -759,16 +825,23 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            Wrap(
+                              alignment: WrapAlignment.spaceBetween,
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              spacing: 8,
+                              runSpacing: 4,
                               children: [
                                 Row(
+                                  mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Text(
-                                      item.userName,
-                                      style: AppTextStyles.body1.copyWith(
-                                        color: AppColors.textPrimary,
-                                        fontWeight: FontWeight.w700,
+                                    Flexible(
+                                      child: Text(
+                                        item.userName,
+                                        style: AppTextStyles.body1.copyWith(
+                                          color: AppColors.textPrimary,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
                                     const SizedBox(width: 8),
@@ -781,6 +854,7 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
                                   ],
                                 ),
                                 Row(
+                                  mainAxisSize: MainAxisSize.min,
                                   children: List.generate(
                                     5,
                                     (i) => Icon(
@@ -796,36 +870,55 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 6),
-                            Row(
+                            const SizedBox(height: 8),
+                            Wrap(
+                              spacing: 12,
+                              runSpacing: 6,
+                              crossAxisAlignment: WrapCrossAlignment.center,
                               children: [
-                                Icon(
-                                  Icons.location_on_outlined,
-                                  size: 14,
-                                  color: AppColors.textMuted,
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.location_on_outlined,
+                                      size: 14,
+                                      color: AppColors.textMuted,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Flexible(
+                                      child: Text(
+                                        item.country != null &&
+                                                item.country!.isNotEmpty
+                                            ? item.country!
+                                            : 'Country not provided',
+                                        style: AppTextStyles.caption.copyWith(
+                                          color: AppColors.textMuted,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  item.country != null &&
-                                          item.country!.isNotEmpty
-                                      ? item.country!
-                                      : 'Country not provided',
-                                  style: AppTextStyles.caption.copyWith(
-                                    color: AppColors.textMuted,
-                                  ),
-                                ),
-                                const SizedBox(width: 16),
-                                Icon(
-                                  Icons.school_outlined,
-                                  size: 14,
-                                  color: AppColors.textMuted,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  item.topicTag,
-                                  style: AppTextStyles.caption.copyWith(
-                                    color: AppColors.purpleLight,
-                                  ),
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.school_outlined,
+                                      size: 14,
+                                      color: AppColors.textMuted,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Flexible(
+                                      child: Text(
+                                        item.topicTag,
+                                        style: AppTextStyles.caption.copyWith(
+                                          color: AppColors.purpleLight,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                        maxLines: 2,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
@@ -859,7 +952,9 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      Row(
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
                         children: [
                           _buildStatusSelectButton(
                             label: 'Pending',
@@ -868,7 +963,6 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
                             onTap: () =>
                                 setDialogState(() => currentStatus = 'pending'),
                           ),
-                          const SizedBox(width: 8),
                           _buildStatusSelectButton(
                             label: '⭐ Featured',
                             active: currentStatus == 'featured',
@@ -877,7 +971,6 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
                               () => currentStatus = 'featured',
                             ),
                           ),
-                          const SizedBox(width: 8),
                           _buildStatusSelectButton(
                             label: 'Archived',
                             active: currentStatus == 'archived',
@@ -894,12 +987,16 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            'Internal Administrative Notes',
-                            style: AppTextStyles.captionBold.copyWith(
-                              color: AppColors.textPrimary,
+                          Expanded(
+                            child: Text(
+                              'Internal Administrative Notes',
+                              style: AppTextStyles.captionBold.copyWith(
+                                color: AppColors.textPrimary,
+                              ),
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
+                          const SizedBox(width: 8),
                           ValueListenableBuilder<TextEditingValue>(
                             valueListenable: notesController,
                             builder: (context, val, _) {
@@ -1066,12 +1163,13 @@ class _MetricCardData {
 
 class _MetricCard extends StatelessWidget {
   final _MetricCardData data;
-  const _MetricCard({required this.data});
+  final bool isMobile;
+  const _MetricCard({required this.data, this.isMobile = false});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: EdgeInsets.all(isMobile ? 12 : 18),
       decoration: BoxDecoration(
         color: AppColors.surfaceDark.withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(16),
@@ -1081,18 +1179,18 @@ class _MetricCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 36,
-            height: 36,
+            width: isMobile ? 32 : 36,
+            height: isMobile ? 32 : 36,
             decoration: BoxDecoration(
               color: data.iconColor.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(data.icon, color: data.iconColor, size: 20),
+            child: Icon(data.icon, color: data.iconColor, size: isMobile ? 18 : 20),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: isMobile ? 8 : 12),
           Text(
             data.value,
-            style: AppTextStyles.h4.copyWith(
+            style: (isMobile ? AppTextStyles.subtitle1 : AppTextStyles.h4).copyWith(
               color: AppColors.textPrimary,
               fontWeight: FontWeight.w800,
             ),
@@ -1101,6 +1199,8 @@ class _MetricCard extends StatelessWidget {
           Text(
             data.label,
             style: AppTextStyles.caption.copyWith(color: AppColors.textMuted),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),

@@ -10,16 +10,8 @@ import 'package:devzees_edutechai_client/data/models/feedback/feedback_model.dar
 import 'package:devzees_edutechai_client/presentation/widgets/shimmer_loading.dart';
 
 /// Ultra-premium 3D Spatial Cylindrical Wheel Carousel
-/// modeled after Alex Tkachev's Felix Koenig animation.
-///
-/// Features:
-/// - True 3D spatial cylindrical projection displaying up to 6-7 cards simultaneously.
-/// - Mathematical cylinder positioning: X = R * sin(delta * theta), rotateY = -delta * theta.
-/// - Exact Z-index paint sorting: cards farthest from center render first, center hero card renders last on top.
-/// - Foreshortened horizontal spacing & natural overlapping as cards curve back in 3D space.
-/// - Edge gradient vignette fadeout masks (ShaderMask) matching the reference design.
-/// - Locked uniform card dimensions (370px width x 290px height) for absolute architectural solidity.
-/// - Interactive tap-to-focus on any flanking card, drag/swipe physics, auto-slide rotation, and chevron navigation.
+/// modeled after Alex Tkachev's Felix Koenig animation with luxury easing
+/// and unified continuous scale up/down breathing transitions.
 class WallOfLoveSection extends ConsumerStatefulWidget {
   const WallOfLoveSection({super.key});
 
@@ -108,12 +100,14 @@ class _CardRenderData {
   final PublicFeedbackModel item;
   final double delta;
   final double absDelta;
+  final double focusWeight;
 
   const _CardRenderData({
     required this.index,
     required this.item,
     required this.delta,
     required this.absDelta,
+    required this.focusWeight,
   });
 }
 
@@ -132,13 +126,16 @@ class _WallOfLoveSectionState extends ConsumerState<WallOfLoveSection>
     super.initState();
     _animController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 650),
+      duration: const Duration(milliseconds: 1150),
     );
     _animController.addListener(() {
       if (_scrollAnimation != null) {
-        setState(() {
-          _scrollOffset = _scrollAnimation!.value;
-        });
+        _scrollOffset = _scrollAnimation!.value;
+      }
+    });
+    _animController.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        setState(() {}); // Settle final state
       }
     });
   }
@@ -150,10 +147,11 @@ class _WallOfLoveSectionState extends ConsumerState<WallOfLoveSection>
     super.dispose();
   }
 
+  /// Silky, luxurious cubic bezier curve with gentle onset and majestic feathered settling.
   void _animateToOffset(
     double targetOffset, {
-    Duration duration = const Duration(milliseconds: 600),
-    Curve curve = Curves.easeOutCubic,
+    Duration duration = const Duration(milliseconds: 1150),
+    Curve curve = const Cubic(0.25, 0.1, 0.20, 1.0),
   }) {
     if (!mounted) return;
     _animController.stop();
@@ -173,7 +171,7 @@ class _WallOfLoveSectionState extends ConsumerState<WallOfLoveSection>
 
     if (itemCount <= 1) return;
 
-    _autoSlideTimer = Timer.periodic(const Duration(seconds: 7), (_) {
+    _autoSlideTimer = Timer.periodic(const Duration(seconds: 8), (_) {
       if (!mounted || _isHovered || _animController.isAnimating) return;
       _animateToOffset((_scrollOffset.round() + 1).toDouble());
     });
@@ -298,10 +296,7 @@ class _WallOfLoveSectionState extends ConsumerState<WallOfLoveSection>
               builder: (context, constraints) {
                 final double viewportWidth = constraints.maxWidth;
 
-                // Responsive parameters:
-                // Desktop (>=1200): up to 7 cards visible, wide cylindrical arc
-                // Tablet (800..1200): up to 5 cards visible
-                // Mobile (<800): up to 3 cards visible
+                // Responsive cylindrical geometry parameters:
                 final double maxVisibleDelta;
                 final double spacingRadius;
                 final double angleStep;
@@ -320,121 +315,150 @@ class _WallOfLoveSectionState extends ConsumerState<WallOfLoveSection>
                   angleStep = 0.50;
                 }
 
-                // Compute exact relative offset on circle for each distinct item
-                final visibleData = <_CardRenderData>[];
-                for (int i = 0; i < items.length; i++) {
-                  final double delta = _getCircularDelta(i, _scrollOffset, items.length);
-                  final double absDelta = delta.abs();
-                  if (absDelta <= maxVisibleDelta) {
-                    visibleData.add(_CardRenderData(
-                      index: i,
-                      item: items[i],
-                      delta: delta,
-                      absDelta: absDelta,
-                    ));
-                  }
-                }
+                return AnimatedBuilder(
+                  animation: _animController,
+                  builder: (context, _) {
+                    final double currentOffset = _animController.isAnimating
+                        ? (_scrollAnimation?.value ?? _scrollOffset)
+                        : _scrollOffset;
 
-                // CRITICAL 3D DEPTH SORTING:
-                // Sort by absolute distance from center descending.
-                // Cards furthest in background (largest absDelta) are added FIRST,
-                // and the active center hero card (absDelta ~ 0) is added LAST.
-                // This guarantees the center card commands the front and overlaps flanking wings!
-                visibleData.sort((a, b) => b.absDelta.compareTo(a.absDelta));
+                    // Transition progress factor between integer cards [0.0 .. 0.5]
+                    final double fractionalShift = (currentOffset - currentOffset.round()).abs();
+                    // Bell-curve motion factor peaking at midpoint of slide change:
+                    final double transitionFactor = math.sin(fractionalShift * math.pi);
+                    // Dynamic scale compression dip (-6.5%) during active sliding
+                    final double transitionScaleDip = 1.0 - (transitionFactor * 0.065);
 
-                return GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onHorizontalDragStart: (_) {
-                    _animController.stop();
-                  },
-                  onHorizontalDragUpdate: (details) {
-                    final double sensitivity = viewportWidth >= 800 ? 240.0 : 180.0;
-                    setState(() {
-                      _scrollOffset -= details.primaryDelta! / sensitivity;
-                    });
-                  },
-                  onHorizontalDragEnd: (details) {
-                    final velocity = details.primaryVelocity ?? 0.0;
-                    double target = _scrollOffset;
-                    if (velocity.abs() > 350) {
-                      target += velocity > 0 ? -1.0 : 1.0;
+                    // Compute exact relative offset and continuous focus weight for each item
+                    final visibleData = <_CardRenderData>[];
+                    for (int i = 0; i < items.length; i++) {
+                      final double delta = _getCircularDelta(i, currentOffset, items.length);
+                      final double absDelta = delta.abs();
+                      if (absDelta <= maxVisibleDelta) {
+                        // Smooth cubic Hermite focus interpolation (0.0 background -> 1.0 center hero)
+                        final double clamped = absDelta.clamp(0.0, 0.85);
+                        final double t = (0.85 - clamped) / 0.85;
+                        final double focusWeight = t * t * (3.0 - 2.0 * t);
+
+                        visibleData.add(_CardRenderData(
+                          index: i,
+                          item: items[i],
+                          delta: delta,
+                          absDelta: absDelta,
+                          focusWeight: focusWeight,
+                        ));
+                      }
                     }
-                    _animateToOffset(target.roundToDouble());
-                  },
-                  child: ShaderMask(
-                    // Soft vignette fadeout at left and right edges matching reference image
-                    shaderCallback: (bounds) {
-                      return const LinearGradient(
-                        begin: Alignment.centerLeft,
-                        end: Alignment.centerRight,
-                        colors: [
-                          Colors.transparent,
-                          Colors.white,
-                          Colors.white,
-                          Colors.transparent,
-                        ],
-                        stops: [0.0, 0.05, 0.95, 1.0],
-                      ).createShader(bounds);
-                    },
-                    blendMode: BlendMode.dstIn,
-                    child: Stack(
-                      clipBehavior: Clip.none,
-                      children: visibleData.map((data) {
-                        final double delta = data.delta;
-                        final double absDelta = data.absDelta;
-                        final item = data.item;
 
-                        // 3D Cylindrical physics calculations:
-                        // Horizontal displacement along cylindrical curve with generous spacing
-                        final double xOffset = spacingRadius * math.sin(delta * angleStep);
+                    // CRITICAL 3D DEPTH SORTING:
+                    // Sort by absolute distance from center descending.
+                    // Cards furthest in background (largest absDelta) are added FIRST,
+                    // and the active center hero card (absDelta ~ 0) is added LAST.
+                    visibleData.sort((a, b) => b.absDelta.compareTo(a.absDelta));
 
-                        // Y-axis perspective rotation: cards on left face right, cards on right face left
-                        final double rotateY = (-delta * 0.36).clamp(-0.85, 0.85);
+                    return GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onHorizontalDragStart: (_) {
+                        _animController.stop();
+                      },
+                      onHorizontalDragUpdate: (details) {
+                        final double sensitivity = viewportWidth >= 800 ? 300.0 : 220.0;
+                        setState(() {
+                          _scrollOffset -= details.primaryDelta! / sensitivity;
+                        });
+                      },
+                      onHorizontalDragEnd: (details) {
+                        final velocity = details.primaryVelocity ?? 0.0;
+                        double target = _scrollOffset;
+                        if (velocity.abs() > 300) {
+                          target += velocity > 0 ? -1.0 : 1.0;
+                        }
+                        _animateToOffset(target.roundToDouble());
+                      },
+                      child: ShaderMask(
+                        // Soft vignette fadeout at left and right edges matching reference image
+                        shaderCallback: (bounds) {
+                          return const LinearGradient(
+                            begin: Alignment.centerLeft,
+                            end: Alignment.centerRight,
+                            colors: [
+                              Colors.transparent,
+                              Colors.white,
+                              Colors.white,
+                              Colors.transparent,
+                            ],
+                            stops: [0.0, 0.05, 0.95, 1.0],
+                          ).createShader(bounds);
+                        },
+                        blendMode: BlendMode.dstIn,
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          children: visibleData.map((data) {
+                            final double delta = data.delta;
+                            final double absDelta = data.absDelta;
+                            final double focusWeight = data.focusWeight;
+                            final item = data.item;
 
-                        // Z-depth scale falloff: center card 1.0, flanks scale smoothly down
-                        final double scale = (1.0 - (absDelta * 0.12)).clamp(0.64, 1.0);
+                            // 3D Cylindrical physics calculations:
+                            // Horizontal displacement along cylindrical curve with generous spacing
+                            final double xOffset = spacingRadius * math.sin(delta * angleStep);
 
-                        // Pronounced depth translucency falloff:
-                        // Center card is 100% solid, while behind cards fade into the background
-                        final double opacity = absDelta < 0.35
-                            ? 1.0
-                            : (math.pow(0.50, absDelta).toDouble()).clamp(0.12, 1.0);
+                            // Y-axis perspective rotation: cards on left face right, cards on right face left
+                            final double rotateY = (-delta * 0.36).clamp(-0.85, 0.85);
 
-                        final bool isFocused = absDelta < 0.45;
+                            // Base spatial scale along the 3D cylinder:
+                            // Center card has a cosine crown at 1.0, scaling smoothly down to flanks
+                            final double baseScale;
+                            if (absDelta <= 1.0) {
+                              baseScale = 0.85 + 0.15 * math.cos(absDelta * (math.pi / 2.0));
+                            } else {
+                              baseScale = (0.85 - ((absDelta - 1.0) * 0.10)).clamp(0.60, 0.85);
+                            }
 
-                        return Center(
-                          key: ValueKey('testimonial_card_${item.feedbackId}'),
-                          child: Transform.translate(
-                            offset: Offset(xOffset, 0),
-                            child: Transform(
-                              alignment: Alignment.center,
-                              transform: Matrix4.identity()
-                                ..setEntry(3, 2, 0.001) // Camera perspective
-                                ..rotateY(rotateY),
-                              child: Transform.scale(
-                                scale: scale,
-                                child: Opacity(
-                                  opacity: opacity,
-                                  child: GestureDetector(
-                                    behavior: HitTestBehavior.opaque,
-                                    onTap: () {
-                                      if (absDelta > 0.35) {
-                                        _animateToOffset(_scrollOffset + delta);
-                                      }
-                                    },
-                                    child: _TestimonialCard(
-                                      data: item,
-                                      isFocused: isFocused,
+                            // Final scale: dynamic scale down during change, blooming scale up when locking into center
+                            final double scale = (baseScale * transitionScaleDip).clamp(0.56, 1.0);
+
+                            // Pronounced depth translucency falloff:
+                            // Center card is 100% solid, while behind cards fade into the background
+                            final double opacity = absDelta < 0.35
+                                ? 1.0
+                                : (math.pow(0.50, absDelta).toDouble()).clamp(0.12, 1.0);
+
+                            return Center(
+                              key: ValueKey('testimonial_card_${item.feedbackId}'),
+                              child: Transform.translate(
+                                offset: Offset(xOffset, 0),
+                                child: Transform(
+                                  alignment: Alignment.center,
+                                  transform: Matrix4.identity()
+                                    ..setEntry(3, 2, 0.001) // Camera perspective
+                                    ..rotateY(rotateY),
+                                  child: Transform.scale(
+                                    scale: scale,
+                                    child: Opacity(
+                                      opacity: opacity,
+                                      child: GestureDetector(
+                                        behavior: HitTestBehavior.opaque,
+                                        onTap: () {
+                                          if (absDelta > 0.35) {
+                                            _animateToOffset(_scrollOffset + delta);
+                                          }
+                                        },
+                                        child: _TestimonialCard(
+                                          data: item,
+                                          focusWeight: focusWeight,
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ),
                               ),
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  ),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    );
+                  },
                 );
               },
             ),
@@ -468,14 +492,14 @@ class _WallOfLoveSectionState extends ConsumerState<WallOfLoveSection>
 }
 
 /// Solidified testimonial card with locked uniform dimensions (370px x 290px).
-/// Features ambient spotlight glow and razor-sharp internal layout.
+/// Features unified continuous frame-by-frame focus weight interpolation.
 class _TestimonialCard extends StatefulWidget {
   final PublicFeedbackModel data;
-  final bool isFocused;
+  final double focusWeight;
 
   const _TestimonialCard({
     required this.data,
-    this.isFocused = true,
+    this.focusWeight = 1.0,
   });
 
   @override
@@ -491,42 +515,64 @@ class _TestimonialCardState extends State<_TestimonialCard> {
         ? widget.data.country!
         : 'Global Learner';
 
-    final bool isHighlighted = widget.isFocused || _isCardHovered;
+    // Only the mid/center card on focus qualifies for hover zoom and highlight
+    final bool isMidCard = widget.focusWeight > 0.70;
+    final bool isZoomed = isMidCard && _isCardHovered;
+    final double w = isMidCard
+        ? math.max(widget.focusWeight, _isCardHovered ? 1.0 : 0.0)
+        : widget.focusWeight;
 
     return MouseRegion(
       onEnter: (_) => setState(() => _isCardHovered = true),
       onExit: (_) => setState(() => _isCardHovered = false),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 220),
+      child: AnimatedScale(
+        scale: isZoomed ? 1.045 : 1.0,
+        duration: const Duration(milliseconds: 260),
         curve: Curves.easeOutCubic,
-        width: 370,
-        height: 290,
-        transform: Matrix4.translationValues(0, isHighlighted ? -4 : 0, 0),
-        decoration: BoxDecoration(
-          color: isHighlighted
-              ? const Color(0xF20B0D1E)
-              : const Color(0x66080A16),
-          borderRadius: BorderRadius.circular(22),
-          border: Border.all(
-            color: isHighlighted
-                ? widget.data.avatarColor.withValues(alpha: 0.65)
-                : Colors.white.withValues(alpha: 0.08),
-            width: isHighlighted ? 1.5 : 1.0,
+        alignment: Alignment.center,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 220),
+          curve: Curves.easeOutCubic,
+          width: 370,
+          height: 290,
+          transform: Matrix4.translationValues(
+            0,
+            -6.0 * w + (isZoomed ? -4.0 : 0.0),
+            0,
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: isHighlighted ? 0.65 : 0.30),
-              blurRadius: isHighlighted ? 28 : 14,
-              offset: const Offset(0, 8),
+          decoration: BoxDecoration(
+            color: Color.lerp(
+              const Color(0x66080A16),
+              const Color(0xF20B0D1E),
+              w,
+            )!,
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(
+              color: Color.lerp(
+                Colors.white.withValues(alpha: 0.08),
+                widget.data.avatarColor.withValues(alpha: 0.70),
+                w,
+              )!,
+              width: 1.0 + 0.5 * w,
             ),
-            if (isHighlighted)
+            boxShadow: [
               BoxShadow(
-                color: widget.data.avatarColor.withValues(alpha: 0.28),
-                blurRadius: 36,
-                spreadRadius: -2,
+                color: Colors.black.withValues(
+                  alpha: 0.30 + 0.35 * w + (isZoomed ? 0.15 : 0.0),
+                ),
+                blurRadius: 14 + 16 * w + (isZoomed ? 8 : 0),
+                offset: Offset(0, 6 + 4 * w),
               ),
-          ],
-        ),
+              if (w > 0.05 || isZoomed)
+                BoxShadow(
+                  color: widget.data.avatarColor.withValues(
+                    alpha: isZoomed ? 0.38 : (0.30 * w),
+                  ),
+                  blurRadius: 20 + 18 * w + (isZoomed ? 10 : 0),
+                  spreadRadius: isZoomed ? 0 : -2,
+                ),
+            ],
+          ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(22),
           child: Padding(
@@ -542,9 +588,9 @@ class _TestimonialCardState extends State<_TestimonialCard> {
                       height: 44,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: widget.data.avatarColor.withValues(alpha: 0.18),
+                        color: widget.data.avatarColor.withValues(alpha: 0.12 + 0.10 * w),
                         border: Border.all(
-                          color: widget.data.avatarColor.withValues(alpha: 0.45),
+                          color: widget.data.avatarColor.withValues(alpha: 0.30 + 0.35 * w),
                           width: 1.5,
                         ),
                       ),
@@ -570,8 +616,12 @@ class _TestimonialCardState extends State<_TestimonialCard> {
                               Flexible(
                                 child: Text(
                                   widget.data.name,
-                                  style: const TextStyle(
-                                    color: Color(0xFFF8FAFC),
+                                  style: TextStyle(
+                                    color: Color.lerp(
+                                      const Color(0xFFCBD5E1),
+                                      const Color(0xFFF8FAFC),
+                                      w,
+                                    ),
                                     fontSize: 14.5,
                                     fontWeight: FontWeight.w800,
                                   ),
@@ -579,9 +629,9 @@ class _TestimonialCardState extends State<_TestimonialCard> {
                                 ),
                               ),
                               const SizedBox(width: 6),
-                              const Icon(
+                              Icon(
                                 Icons.verified_rounded,
-                                color: Color(0xFF38BDF8),
+                                color: const Color(0xFF38BDF8).withValues(alpha: 0.50 + 0.50 * w),
                                 size: 14,
                               ),
                             ],
@@ -589,8 +639,12 @@ class _TestimonialCardState extends State<_TestimonialCard> {
                           const SizedBox(height: 2),
                           Text(
                             '${widget.data.educationLevel} • $countryText',
-                            style: const TextStyle(
-                              color: Color(0xFF94A3B8),
+                            style: TextStyle(
+                              color: Color.lerp(
+                                const Color(0xFF64748B),
+                                const Color(0xFF94A3B8),
+                                w,
+                              ),
                               fontSize: 11.5,
                               fontWeight: FontWeight.w500,
                             ),
@@ -614,7 +668,11 @@ class _TestimonialCardState extends State<_TestimonialCard> {
                             ? Icons.star_rounded
                             : Icons.star_border_rounded,
                         color: index < widget.data.rating
-                            ? (isHighlighted ? const Color(0xFFFBBF24) : const Color(0x99FBBF24))
+                            ? Color.lerp(
+                                const Color(0x99FBBF24),
+                                const Color(0xFFFBBF24),
+                                w,
+                              )
                             : const Color(0xFF475569),
                         size: 15,
                       ),
@@ -630,9 +688,11 @@ class _TestimonialCardState extends State<_TestimonialCard> {
                     child: Text(
                       '"${widget.data.quote}"',
                       style: TextStyle(
-                        color: isHighlighted
-                            ? const Color(0xFFF1F5F9)
-                            : const Color(0xFF94A3B8),
+                        color: Color.lerp(
+                          const Color(0xFF94A3B8),
+                          const Color(0xFFF1F5F9),
+                          w,
+                        ),
                         fontSize: 13,
                         height: 1.5,
                         fontStyle: FontStyle.italic,
@@ -649,10 +709,10 @@ class _TestimonialCardState extends State<_TestimonialCard> {
                   constraints: const BoxConstraints(maxWidth: 300),
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4.5),
                   decoration: BoxDecoration(
-                    color: widget.data.avatarColor.withValues(alpha: isHighlighted ? 0.14 : 0.06),
+                    color: widget.data.avatarColor.withValues(alpha: 0.06 + 0.10 * w),
                     borderRadius: BorderRadius.circular(6),
                     border: Border.all(
-                      color: widget.data.avatarColor.withValues(alpha: isHighlighted ? 0.30 : 0.14),
+                      color: widget.data.avatarColor.withValues(alpha: 0.14 + 0.18 * w),
                     ),
                   ),
                   child: Row(
@@ -661,14 +721,14 @@ class _TestimonialCardState extends State<_TestimonialCard> {
                       Icon(
                         Icons.school_outlined,
                         size: 12,
-                        color: widget.data.avatarColor,
+                        color: widget.data.avatarColor.withValues(alpha: 0.60 + 0.40 * w),
                       ),
                       const SizedBox(width: 5),
                       Flexible(
                         child: Text(
                           'Mastered: ${widget.data.topicTag}',
                           style: TextStyle(
-                            color: widget.data.avatarColor,
+                            color: widget.data.avatarColor.withValues(alpha: 0.70 + 0.30 * w),
                             fontSize: 10.5,
                             fontWeight: FontWeight.w700,
                           ),
@@ -684,7 +744,8 @@ class _TestimonialCardState extends State<_TestimonialCard> {
           ),
         ),
       ),
-    );
+    ),
+  );
   }
 }
 

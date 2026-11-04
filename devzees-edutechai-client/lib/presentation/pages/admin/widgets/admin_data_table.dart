@@ -4,12 +4,13 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/text_styles.dart';
 
 /// Reusable glassmorphic data table with dark theme styling.
-/// Supports column headers and row builders for flexible content.
-class AdminDataTable extends StatelessWidget {
+/// Supports column headers, horizontal scrolling with scrollbar, and row builders for flexible content.
+class AdminDataTable extends StatefulWidget {
   final List<String> columns;
   final List<List<Widget>> rows;
   final List<double>? columnWidths;
-  
+  final double? minWidth;
+
   // Sorting
   final String? sortBy;
   final bool? isDesc;
@@ -25,6 +26,7 @@ class AdminDataTable extends StatelessWidget {
     required this.columns,
     required this.rows,
     this.columnWidths,
+    this.minWidth,
     this.sortBy,
     this.isDesc,
     this.onSort,
@@ -32,6 +34,25 @@ class AdminDataTable extends StatelessWidget {
     this.totalPages,
     this.onPageChanged,
   });
+
+  @override
+  State<AdminDataTable> createState() => _AdminDataTableState();
+}
+
+class _AdminDataTableState extends State<AdminDataTable> {
+  late final ScrollController _horizontalScrollController;
+
+  @override
+  void initState() {
+    super.initState();
+    _horizontalScrollController = ScrollController();
+  }
+
+  @override
+  void dispose() {
+    _horizontalScrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,9 +73,11 @@ class AdminDataTable extends StatelessWidget {
             children: [
               LayoutBuilder(
                 builder: (context, constraints) {
-                  final double minTableWidth = (columns.length * 110.0).clamp(600.0, 1000.0);
+                  final double minTableWidth = widget.minWidth ??
+                      (widget.columns.length * 110.0).clamp(600.0, 1000.0);
                   final bool needsScroll = constraints.maxWidth < minTableWidth;
-                  final double tableWidth = needsScroll ? minTableWidth : constraints.maxWidth;
+                  final double tableWidth =
+                      needsScroll ? minTableWidth : constraints.maxWidth;
 
                   Widget content = SizedBox(
                     width: tableWidth,
@@ -62,7 +85,10 @@ class AdminDataTable extends StatelessWidget {
                       children: [
                         // Header Row
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
                           decoration: BoxDecoration(
                             color: AppColors.surfaceDeep.withValues(alpha: 0.8),
                             borderRadius: const BorderRadius.only(
@@ -71,10 +97,11 @@ class AdminDataTable extends StatelessWidget {
                             ),
                           ),
                           child: Row(
-                            children: List.generate(columns.length, (i) {
-                              final colName = columns[i];
-                              final isSorted = sortBy?.toLowerCase() == colName.toLowerCase();
-                              
+                            children: List.generate(widget.columns.length, (i) {
+                              final colName = widget.columns[i];
+                              final isSorted = widget.sortBy?.toLowerCase() ==
+                                  colName.toLowerCase();
+
                               Widget headerContent = Text(
                                 colName,
                                 style: AppTextStyles.captionBold.copyWith(
@@ -84,7 +111,7 @@ class AdminDataTable extends StatelessWidget {
                                 overflow: TextOverflow.ellipsis,
                               );
 
-                              if (onSort != null) {
+                              if (widget.onSort != null) {
                                 headerContent = Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
@@ -93,45 +120,51 @@ class AdminDataTable extends StatelessWidget {
                                       Padding(
                                         padding: const EdgeInsets.only(left: 4.0),
                                         child: Icon(
-                                          isDesc == true ? Icons.arrow_downward : Icons.arrow_upward,
+                                          widget.isDesc == true
+                                              ? Icons.arrow_downward
+                                              : Icons.arrow_upward,
                                           size: 14,
                                           color: AppColors.purple,
                                         ),
                                       ),
                                   ],
                                 );
-                                
+
                                 headerContent = MouseRegion(
                                   cursor: SystemMouseCursors.click,
                                   child: GestureDetector(
-                                    onTap: () => onSort!(colName),
+                                    onTap: () => widget.onSort!(colName),
                                     child: headerContent,
                                   ),
                                 );
                               }
 
                               return Expanded(
-                                flex: columnWidths != null ? (columnWidths![i] * 10).round() : 1,
+                                flex: widget.columnWidths != null
+                                    ? (widget.columnWidths![i] * 10).round()
+                                    : 1,
                                 child: headerContent,
                               );
                             }),
                           ),
                         ),
                         // Data Rows
-                        if (rows.isEmpty)
+                        if (widget.rows.isEmpty)
                           Padding(
                             padding: const EdgeInsets.all(32),
                             child: Text(
                               'No data available',
-                              style: AppTextStyles.body2.copyWith(color: AppColors.textMuted),
+                              style: AppTextStyles.body2.copyWith(
+                                color: AppColors.textMuted,
+                              ),
                             ),
                           )
                         else
-                          ...List.generate(rows.length, (rowIdx) {
+                          ...List.generate(widget.rows.length, (rowIdx) {
                             return _DataRow(
-                              cells: rows[rowIdx],
+                              cells: widget.rows[rowIdx],
                               isEven: rowIdx % 2 == 0,
-                              columnWidths: columnWidths,
+                              columnWidths: widget.columnWidths,
                             );
                           }),
                       ],
@@ -139,19 +172,61 @@ class AdminDataTable extends StatelessWidget {
                   );
 
                   if (needsScroll) {
-                    return SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: content,
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(
+                            left: 16,
+                            top: 10,
+                            bottom: 6,
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.swipe_rounded,
+                                size: 13,
+                                color: AppColors.textMuted.withValues(alpha: 0.8),
+                              ),
+                              const SizedBox(width: 5),
+                              Text(
+                                'Swipe horizontally for all columns',
+                                style: AppTextStyles.caption.copyWith(
+                                  color: AppColors.textMuted.withValues(alpha: 0.8),
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Scrollbar(
+                          controller: _horizontalScrollController,
+                          thumbVisibility: false,
+                          child: SingleChildScrollView(
+                            controller: _horizontalScrollController,
+                            scrollDirection: Axis.horizontal,
+                            physics: const BouncingScrollPhysics(),
+                            child: content,
+                          ),
+                        ),
+                      ],
                     );
                   }
                   return content;
                 },
               ),
-              
+
               // Pagination Footer
-              if (onPageChanged != null && currentPage != null && totalPages != null && totalPages! > 1)
+              if (widget.onPageChanged != null &&
+                  widget.currentPage != null &&
+                  widget.totalPages != null &&
+                  widget.totalPages! > 1)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                   decoration: BoxDecoration(
                     border: Border(
                       top: BorderSide(
@@ -164,19 +239,29 @@ class AdminDataTable extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       Text(
-                        'Page ${currentPage! + 1} of $totalPages',
-                        style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+                        'Page ${widget.currentPage! + 1} of ${widget.totalPages}',
+                        style: AppTextStyles.caption.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
                       ),
                       const SizedBox(width: 16),
                       IconButton(
                         icon: const Icon(Icons.chevron_left, size: 20),
-                        color: currentPage! > 0 ? AppColors.textPrimary : AppColors.textMuted,
-                        onPressed: currentPage! > 0 ? () => onPageChanged!(currentPage! - 1) : null,
+                        color: widget.currentPage! > 0
+                            ? AppColors.textPrimary
+                            : AppColors.textMuted,
+                        onPressed: widget.currentPage! > 0
+                            ? () => widget.onPageChanged!(widget.currentPage! - 1)
+                            : null,
                       ),
                       IconButton(
                         icon: const Icon(Icons.chevron_right, size: 20),
-                        color: currentPage! < totalPages! - 1 ? AppColors.textPrimary : AppColors.textMuted,
-                        onPressed: currentPage! < totalPages! - 1 ? () => onPageChanged!(currentPage! + 1) : null,
+                        color: widget.currentPage! < widget.totalPages! - 1
+                            ? AppColors.textPrimary
+                            : AppColors.textMuted,
+                        onPressed: widget.currentPage! < widget.totalPages! - 1
+                            ? () => widget.onPageChanged!(widget.currentPage! + 1)
+                            : null,
                       ),
                     ],
                   ),
