@@ -310,10 +310,13 @@ class _WallOfLoveSectionState extends ConsumerState<WallOfLoveSection>
                   spacingRadius = 600.0;
                   angleStep = 0.44;
                 } else {
-                  maxVisibleDelta = 1.4;
-                  spacingRadius = 340.0;
+                  // Only one card visible at rest on mobile view
+                  maxVisibleDelta = 0.85;
+                  spacingRadius = viewportWidth * 0.90;
                   angleStep = 0.50;
                 }
+
+                final double cardWidth = math.min(viewportWidth - 32.0, 370.0);
 
                 return AnimatedBuilder(
                   animation: _animController,
@@ -447,6 +450,7 @@ class _WallOfLoveSectionState extends ConsumerState<WallOfLoveSection>
                                         child: _TestimonialCard(
                                           data: item,
                                           focusWeight: focusWeight,
+                                          cardWidth: cardWidth,
                                         ),
                                       ),
                                     ),
@@ -496,10 +500,12 @@ class _WallOfLoveSectionState extends ConsumerState<WallOfLoveSection>
 class _TestimonialCard extends StatefulWidget {
   final PublicFeedbackModel data;
   final double focusWeight;
+  final double? cardWidth;
 
   const _TestimonialCard({
     required this.data,
     this.focusWeight = 1.0,
+    this.cardWidth,
   });
 
   @override
@@ -533,7 +539,7 @@ class _TestimonialCardState extends State<_TestimonialCard> {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 220),
           curve: Curves.easeOutCubic,
-          width: 370,
+          width: widget.cardWidth ?? 370,
           height: 290,
           transform: Matrix4.translationValues(
             0,
