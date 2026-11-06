@@ -50,7 +50,7 @@ async def test_user_lifecycle(app):
         from sqlalchemy import select
         async with get_db_session() as db:
             user_obj = (await db.execute(select(User).where(User.id == user_id))).scalar_one()
-            admin_role = (await db.execute(select(Role).where(Role.name == "SuperAdmin"))).scalar_one_or_none()
+            admin_role = (await db.execute(select(Role).where(Role.name.in_(["SuperAdmin", "Admin"])))).scalars().first()
             if admin_role:
                 user_obj.roles.append(admin_role)
                 await db.commit()
@@ -143,7 +143,7 @@ async def test_user_lifecycle(app):
 
         async with get_db_session() as db:
             adm_obj = (await db.execute(select(User).where(User.id == adm_id))).scalar_one()
-            admin_role = (await db.execute(select(Role).where(Role.name == "SuperAdmin"))).scalar_one_or_none()
+            admin_role = (await db.execute(select(Role).where(Role.name.in_(["SuperAdmin", "Admin"])))).scalars().first()
             if admin_role:
                 adm_obj.roles.append(admin_role)
                 await db.commit()
@@ -165,3 +165,136 @@ async def test_user_lifecycle(app):
         assert err_json["error_code"] == "EMAIL_ALREADY_EXISTS"
         assert err_json["http_status"] == 409
         assert err_json["path_uri"] == "/api/v1/users/create"
+
+
+@pytest.mark.asyncio
+async def test_change_password_security(app):
+    """
+    Test security and permissions for Change Password:
+    1. Regular user self-service permission (no admin role needed)
+    2. IDOR prevention (cannot change another user's password)
+    3. Same password prevention
+    4. Token and session invalidation for old access tokens
+    5. Old refresh token revocation
+    6. Seamless credential renewal for active session
+    7. Authentication with new password
+    """
+    import asyncio
+    await init_db()
+    email_1 = f"reguser1_{uuid4().hex[:8]}@example.com"
+    email_2 = f"reguser2_{uuid4().hex[:8]}@example.com"
+    pwd_initial = "InitialPass123!"
+    pwd_new = "UpdatedPass456!"
+
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://testserver"
+    ) as client1, AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://testserver"
+    ) as client2:
+        # 1. Create two regular users (no Admin role assigned)
+        u1_res = await client1.post("/api/v1/users/create", json={
+            "first_name": "Regular",
+            "last_name": "One",
+            "email": email_1,
+            "password": pwd_initial,
+        })
+        assert u1_res.status_code == 201
+        u1_id = u1_res.json()["id"]
+
+        u2_res = await client2.post("/api/v1/users/create", json={
+            "first_name": "Regular",
+            "last_name": "Two",
+            "email": email_2,
+            "password": pwd_initial,
+        })
+        assert u2_res.status_code == 201
+        u2_id = u2_res.json()["id"]
+
+        # 2. Login user 1
+        login1_res = await client1.post("/api/v1/auth/login", json={"email": email_1, "password": pwd_initial})
+        assert login1_res.status_code == 200
+        old_access_token_1 = login1_res.json()["access_token"]
+        old_refresh_token_1 = login1_res.json()["refresh_token"]
+
+        # 3. User 1 attempts to change User 2's password -> must fail with 403 Forbidden
+        idor_res = await client1.patch(f"/api/v1/users/{u2_id}/change-password", json={
+            "old_password": pwd_initial,
+            "new_password": pwd_new,
+            "confirm_password": pwd_new,
+        })
+        assert idor_res.status_code == 403
+        assert idor_res.json()["error_code"] == "PERMISSION_DENIED"
+
+        # 4. User 1 attempts to change to SAME password -> must fail with 400 SAME_PASSWORD
+        same_pwd_res = await client1.patch(f"/api/v1/users/{u1_id}/change-password", json={
+            "old_password": pwd_initial,
+            "new_password": pwd_initial,
+            "confirm_password": pwd_initial,
+        })
+        assert same_pwd_res.status_code == 400
+        assert same_pwd_res.json()["error_code"] == "SAME_PASSWORD"
+
+        # Sleep briefly so token iat differs from old token iat
+        await asyncio.sleep(1)
+
+        # 5. Regular User 1 successfully changes own password (self-service!)
+        change_res = await client1.patch(f"/api/v1/users/{u1_id}/change-password", json={
+            "old_password": pwd_initial,
+            "new_password": pwd_new,
+            "confirm_password": pwd_new,
+        })
+        assert change_res.status_code == 200
+        assert change_res.json()["message"] == "Password has been changed successfully"
+        new_access_token_1 = change_res.json()["access_token"]
+        assert new_access_token_1 != old_access_token_1
+
+        # 6. Verify that User 1's OLD access token is now rejected as TOKEN_REVOKED
+        revoked_check = await client2.get(
+            "/api/v1/auth/me",
+            headers={"Authorization": f"Bearer {old_access_token_1}"},
+        )
+        assert revoked_check.status_code == 401
+        assert revoked_check.json()["error_code"] == "TOKEN_REVOKED"
+
+        # 7. Verify that User 1's OLD refresh token is revoked
+        refresh_check = await client2.post(
+            "/api/v1/auth/refresh",
+            json={"refresh_token": old_refresh_token_1},
+        )
+        assert refresh_check.status_code == 401
+
+        # 8. Verify that User 1's new session continues to work seamlessly
+        me_res = await client1.get("/api/v1/auth/me")
+        assert me_res.status_code == 200
+        assert me_res.json()["email"] == email_1
+
+        # 9. Verify login with the new password works
+        new_login = await client2.post("/api/v1/auth/login", json={"email": email_1, "password": pwd_new})
+        assert new_login.status_code == 200
+
+        # 10. Verify login with old password fails
+        old_login = await client2.post("/api/v1/auth/login", json={"email": email_1, "password": pwd_initial})
+        assert old_login.status_code == 401
+
+        # 11. Verify ET_CHANGE_PASSWORD privilege enforcement:
+        # Strip roles from User 2 and verify change-password is forbidden (403)
+        from models.db_models import User
+        from services.database import get_db_session
+        from sqlalchemy import select
+        async with get_db_session() as db:
+            u2_db = (await db.execute(select(User).where(User.id == u2_id))).scalar_one()
+            u2_db.roles = []
+            await db.commit()
+
+        login2_res = await client2.post("/api/v1/auth/login", json={"email": email_2, "password": pwd_initial})
+        assert login2_res.status_code == 200
+
+        no_priv_res = await client2.patch(f"/api/v1/users/{u2_id}/change-password", json={
+            "old_password": pwd_initial,
+            "new_password": pwd_new,
+            "confirm_password": pwd_new,
+        })
+        assert no_priv_res.status_code == 403
+        assert no_priv_res.json()["error_code"] == "PERMISSION_DENIED"
+        assert "ET_CHANGE_PASSWORD" in str(no_priv_res.json()["errors"])
+
