@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:devzees_edutechai_client/core/constants/country_data.dart';
 import 'package:devzees_edutechai_client/core/providers/auth_provider.dart';
 import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
 import 'package:devzees_edutechai_client/core/theme/text_styles.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/gradient_button.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/gradient_text.dart';
+import 'package:devzees_edutechai_client/presentation/widgets/searchable_country_dropdown.dart';
 
 class AuthFormCard extends ConsumerStatefulWidget {
   final bool isLogin;
@@ -33,7 +35,17 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
   final _mobileCtrl = TextEditingController();
   final _countryCtrl = TextEditingController();
 
+  late Country _selectedCountry;
+  final GlobalKey<SearchableCountryDropdownState> _countryDropdownKey = GlobalKey();
   bool _obscurePassword = true;
+
+  @override
+  void initState() {
+    super.initState();
+    // Auto-detect country based on device locale with safe fallback
+    _selectedCountry = CountryData.detectCountry();
+    _countryCtrl.text = _selectedCountry.name;
+  }
 
   @override
   void dispose() {
@@ -44,6 +56,24 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
     _mobileCtrl.dispose();
     _countryCtrl.dispose();
     super.dispose();
+  }
+
+  void _onMobileChanged(String text) {
+    // If the user pastes or types an international number with dial code (e.g. +1... or +91...)
+    if (text.startsWith('+')) {
+      for (final c in CountryData.allCountries) {
+        if (text.startsWith(c.dialCode)) {
+          final remainder = text.substring(c.dialCode.length).trim();
+          setState(() {
+            _selectedCountry = c;
+            _countryCtrl.text = c.name;
+            _mobileCtrl.text = remainder;
+            _mobileCtrl.selection = TextSelection.collapsed(offset: remainder.length);
+          });
+          break;
+        }
+      }
+    }
   }
 
   void _handleLogin() async {
@@ -93,8 +123,15 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
     final lastName = _lastNameCtrl.text.trim();
     final email = _emailCtrl.text.trim();
     final password = _passwordCtrl.text;
-    final mobileNumber = _mobileCtrl.text.trim();
-    final country = _countryCtrl.text.trim();
+
+    // Standardize mobile number to international E.164 format (e.g. +14155552671 or +919876543210)
+    final rawDigits = _mobileCtrl.text.replaceAll(RegExp(r'[^0-9]'), '');
+    final mobileNumber = rawDigits.isNotEmpty
+        ? '${_selectedCountry.dialCode}$rawDigits'
+        : null;
+    final country = _countryCtrl.text.trim().isNotEmpty
+        ? _countryCtrl.text.trim()
+        : _selectedCountry.name;
 
     if (firstName.isEmpty || lastName.isEmpty || email.isEmpty || password.isEmpty) {
       _showSnackBar('Please fill all required fields');
@@ -106,8 +143,8 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
       lastName: lastName,
       email: email,
       password: password,
-      mobileNumber: mobileNumber.isNotEmpty ? mobileNumber : null,
-      country: country.isNotEmpty ? country : null,
+      mobileNumber: mobileNumber,
+      country: country,
     );
 
     if (success) {
@@ -593,54 +630,18 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
         ),
         const SizedBox(height: 14),
         if (isMobile) ...[
-          _buildInputField(
-            label: "MOBILE NUMBER",
-            hint: "+1 555-0199",
-            controller: _mobileCtrl,
-            prefixIcon: Icons.phone_outlined,
-            keyboardType: TextInputType.phone,
-            textInputAction: TextInputAction.next,
-            autofillHints: const [AutofillHints.telephoneNumber],
-            isDark: isDark,
-          ),
+          _buildCountryPickerField(isDark),
           const SizedBox(height: 14),
-          _buildInputField(
-            label: "COUNTRY",
-            hint: "United States",
-            controller: _countryCtrl,
-            prefixIcon: Icons.public_outlined,
-            textInputAction: TextInputAction.done,
-            autofillHints: const [AutofillHints.countryName],
-            isDark: isDark,
-            onFieldSubmitted: (_) => _handleSignUp(),
-          ),
+          _buildMobileInputField(isDark),
         ] else ...[
           Row(
             children: [
               Expanded(
-                child: _buildInputField(
-                  label: "MOBILE NUMBER",
-                  hint: "+1 555-0199",
-                  controller: _mobileCtrl,
-                  prefixIcon: Icons.phone_outlined,
-                  keyboardType: TextInputType.phone,
-                  textInputAction: TextInputAction.next,
-                  autofillHints: const [AutofillHints.telephoneNumber],
-                  isDark: isDark,
-                ),
+                child: _buildCountryPickerField(isDark),
               ),
               const SizedBox(width: 14),
               Expanded(
-                child: _buildInputField(
-                  label: "COUNTRY",
-                  hint: "United States",
-                  controller: _countryCtrl,
-                  prefixIcon: Icons.public_outlined,
-                  textInputAction: TextInputAction.done,
-                  autofillHints: const [AutofillHints.countryName],
-                  isDark: isDark,
-                  onFieldSubmitted: (_) => _handleSignUp(),
-                ),
+                child: _buildMobileInputField(isDark),
               ),
             ],
           ),
@@ -726,6 +727,132 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
                   : const Color(0xFF64748B),
             ),
             suffixIcon: suffixIcon,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                color: isDark
+                    ? AppColors.primary.withValues(alpha: 0.35)
+                    : const Color(0xFFE2E8F0),
+              ),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                color: isDark
+                    ? AppColors.primary.withValues(alpha: 0.35)
+                    : const Color(0xFFE2E8F0),
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                color: AppColors.primary,
+                width: 1.5,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCountryPickerField(bool isDark) {
+    return SearchableCountryDropdown(
+      key: _countryDropdownKey,
+      selectedCountry: _selectedCountry,
+      isDark: isDark,
+      onCountryChanged: (newCountry) {
+        setState(() {
+          _selectedCountry = newCountry;
+          _countryCtrl.text = newCountry.name;
+        });
+      },
+    );
+  }
+
+  Widget _buildMobileInputField(bool isDark) {
+    final textSecondary = isDark ? AppColors.textSecondary : const Color(0xFF64748B);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "MOBILE NUMBER",
+          style: TextStyle(
+            color: textSecondary,
+            fontSize: 10.5,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0.8,
+          ),
+        ),
+        const SizedBox(height: 6),
+        TextFormField(
+          controller: _mobileCtrl,
+          keyboardType: TextInputType.phone,
+          textInputAction: TextInputAction.done,
+          autofillHints: const [AutofillHints.telephoneNumber],
+          onChanged: _onMobileChanged,
+          onFieldSubmitted: (_) => _handleSignUp(),
+          style: TextStyle(
+            color: AppColors.textPrimary,
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
+          decoration: InputDecoration(
+            hintText: "555-0199",
+            hintStyle: TextStyle(
+              color: isDark
+                  ? AppColors.textSecondary.withValues(alpha: 0.6)
+                  : const Color(0xFF94A3B8),
+              fontSize: 13.5,
+              fontWeight: FontWeight.w400,
+            ),
+            filled: true,
+            fillColor: isDark
+                ? AppColors.surfaceDark.withValues(alpha: 0.75)
+                : const Color(0xFFF8FAFC),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            prefixIcon: InkWell(
+              onTap: () => _countryDropdownKey.currentState?.toggleDropdown(),
+              borderRadius: const BorderRadius.horizontal(left: Radius.circular(12)),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                margin: const EdgeInsets.only(right: 6),
+                decoration: BoxDecoration(
+                  border: Border(
+                    right: BorderSide(
+                      color: isDark
+                          ? AppColors.primary.withValues(alpha: 0.3)
+                          : const Color(0xFFE2E8F0),
+                    ),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      _selectedCountry.flag,
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      _selectedCountry.dialCode,
+                      style: TextStyle(
+                        color: isDark ? Colors.white : AppColors.textPrimary,
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(width: 2),
+                    Icon(
+                      Icons.arrow_drop_down_rounded,
+                      size: 18,
+                      color: isDark ? AppColors.primary : const Color(0xFF64748B),
+                    ),
+                  ],
+                ),
+              ),
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(

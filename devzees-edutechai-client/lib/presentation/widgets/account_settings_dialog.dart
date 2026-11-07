@@ -2,12 +2,14 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/constants/country_data.dart';
 import '../../core/providers/auth_provider.dart';
 import '../../core/providers/permission_provider.dart';
 import '../../core/providers/user_provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/text_styles.dart';
 import 'gradient_button.dart';
+import 'searchable_country_dropdown.dart';
 
 /// Modal dialog for user account management:
 /// Tab 0: Profile Editing (First Name, Last Name, Country, Mobile)
@@ -43,6 +45,8 @@ class _AccountSettingsDialogState extends ConsumerState<AccountSettingsDialog>
   late TextEditingController _lastNameController;
   late TextEditingController _countryController;
   late TextEditingController _mobileController;
+  late Country _selectedCountry;
+  final GlobalKey<SearchableCountryDropdownState> _countryDropdownKey = GlobalKey();
 
   // Security controllers
   final TextEditingController _oldPasswordController = TextEditingController();
@@ -72,13 +76,41 @@ class _AccountSettingsDialogState extends ConsumerState<AccountSettingsDialog>
     );
 
     final currentUser = ref.read(authProvider).user;
+    final savedCountry = currentUser?.country ?? '';
+    _selectedCountry = CountryData.findByName(savedCountry) ??
+        CountryData.findByCode(savedCountry) ??
+        CountryData.detectCountry();
+
     _firstNameController =
         TextEditingController(text: currentUser?.firstName ?? '');
     _lastNameController =
         TextEditingController(text: currentUser?.lastName ?? '');
     _countryController =
-        TextEditingController(text: currentUser?.country ?? '');
-    _mobileController = TextEditingController(text: currentUser?.mobile ?? '');
+        TextEditingController(text: savedCountry.isNotEmpty ? savedCountry : _selectedCountry.name);
+
+    var initialMobile = currentUser?.mobile ?? '';
+    if (initialMobile.startsWith(_selectedCountry.dialCode)) {
+      initialMobile = initialMobile.substring(_selectedCountry.dialCode.length).trim();
+    }
+    _mobileController = TextEditingController(text: initialMobile);
+  }
+
+  void _onMobileChanged(String text) {
+    if (text.startsWith('+')) {
+      for (final c in CountryData.allCountries) {
+        if (text.startsWith(c.dialCode)) {
+          final remainder = text.substring(c.dialCode.length).trim();
+          setState(() {
+            _selectedCountry = c;
+            _countryController.text = c.name;
+            _mobileController.text = remainder;
+            _mobileController.selection =
+                TextSelection.collapsed(offset: remainder.length);
+          });
+          break;
+        }
+      }
+    }
   }
 
   @override
@@ -102,8 +134,14 @@ class _AccountSettingsDialogState extends ConsumerState<AccountSettingsDialog>
 
     final firstName = _firstNameController.text.trim();
     final lastName = _lastNameController.text.trim();
-    final country = _countryController.text.trim();
-    final mobile = _mobileController.text.trim();
+    final country = _countryController.text.trim().isNotEmpty
+        ? _countryController.text.trim()
+        : _selectedCountry.name;
+
+    final rawDigits = _mobileController.text.replaceAll(RegExp(r'[^0-9]'), '');
+    final mobile = rawDigits.isNotEmpty
+        ? '${_selectedCountry.dialCode}$rawDigits'
+        : null;
 
     if (firstName.isEmpty || lastName.isEmpty) {
       setState(() {
@@ -125,8 +163,8 @@ class _AccountSettingsDialogState extends ConsumerState<AccountSettingsDialog>
         currentUser.id,
         firstName: firstName,
         lastName: lastName,
-        country: country.isNotEmpty ? country : null,
-        mobile: mobile.isNotEmpty ? mobile : null,
+        country: country,
+        mobile: mobile,
       );
 
       // Update reactive auth state and invalidate userProvider
@@ -476,23 +514,11 @@ class _AccountSettingsDialogState extends ConsumerState<AccountSettingsDialog>
         Row(
           children: [
             Expanded(
-              child: _buildInputField(
-                label: 'COUNTRY',
-                hint: 'e.g. United States',
-                controller: _countryController,
-                prefixIcon: Icons.public_outlined,
-                isDark: isDark,
-              ),
+              child: _buildCountryPickerField(isDark),
             ),
             const SizedBox(width: 14),
             Expanded(
-              child: _buildInputField(
-                label: 'MOBILE NUMBER',
-                hint: 'e.g. +1 555-0199',
-                controller: _mobileController,
-                prefixIcon: Icons.phone_outlined,
-                isDark: isDark,
-              ),
+              child: _buildMobileInputField(isDark),
             ),
           ],
         ),
@@ -729,6 +755,126 @@ class _AccountSettingsDialogState extends ConsumerState<AccountSettingsDialog>
               ),
             ),
           ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCountryPickerField(bool isDark) {
+    return SearchableCountryDropdown(
+      key: _countryDropdownKey,
+      selectedCountry: _selectedCountry,
+      isDark: isDark,
+      onCountryChanged: (newCountry) {
+        setState(() {
+          _selectedCountry = newCountry;
+          _countryController.text = newCountry.name;
+        });
+      },
+    );
+  }
+
+  Widget _buildMobileInputField(bool isDark) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'MOBILE NUMBER',
+          style: TextStyle(
+            color: isDark ? AppColors.textPrimary : const Color(0xFF334155),
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0.6,
+          ),
+        ),
+        const SizedBox(height: 6),
+        TextFormField(
+          controller: _mobileController,
+          keyboardType: TextInputType.phone,
+          onChanged: _onMobileChanged,
+          style: TextStyle(
+            color: AppColors.textPrimary,
+            fontSize: 13.5,
+            fontWeight: FontWeight.w500,
+          ),
+          decoration: InputDecoration(
+            hintText: '555-0199',
+            hintStyle: TextStyle(
+              color: isDark
+                  ? AppColors.textSecondary.withValues(alpha: 0.6)
+                  : const Color(0xFF94A3B8),
+              fontSize: 13,
+            ),
+            filled: true,
+            fillColor: isDark
+                ? AppColors.surfaceDark.withValues(alpha: 0.75)
+                : const Color(0xFFF8FAFC),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            prefixIcon: InkWell(
+              onTap: () => _countryDropdownKey.currentState?.toggleDropdown(),
+              borderRadius: const BorderRadius.horizontal(left: Radius.circular(12)),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                margin: const EdgeInsets.only(right: 6),
+                decoration: BoxDecoration(
+                  border: Border(
+                    right: BorderSide(
+                      color: isDark
+                          ? AppColors.primary.withValues(alpha: 0.3)
+                          : const Color(0xFFE2E8F0),
+                    ),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      _selectedCountry.flag,
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      _selectedCountry.dialCode,
+                      style: TextStyle(
+                        color: isDark ? Colors.white : AppColors.textPrimary,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(width: 2),
+                    Icon(
+                      Icons.arrow_drop_down_rounded,
+                      size: 18,
+                      color: isDark ? AppColors.primary : const Color(0xFF64748B),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                color: isDark
+                    ? AppColors.primary.withValues(alpha: 0.35)
+                    : const Color(0xFFE2E8F0),
+              ),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                color: isDark
+                    ? AppColors.primary.withValues(alpha: 0.35)
+                    : const Color(0xFFE2E8F0),
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                color: AppColors.primary,
+                width: 1.5,
+              ),
+            ),
+          ),
         ),
       ],
     );
