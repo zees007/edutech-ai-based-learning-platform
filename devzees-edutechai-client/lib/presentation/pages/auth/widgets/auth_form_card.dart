@@ -36,15 +36,31 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
   final _countryCtrl = TextEditingController();
 
   late Country _selectedCountry;
+  bool _hasUserManuallySelectedCountry = false;
   final GlobalKey<SearchableCountryDropdownState> _countryDropdownKey = GlobalKey();
   bool _obscurePassword = true;
 
   @override
   void initState() {
     super.initState();
-    // Auto-detect country based on device locale with safe fallback
+    // 1. Instantly set country from device locale or fallback (zero wait)
     _selectedCountry = CountryData.detectCountry();
     _countryCtrl.text = _selectedCountry.name;
+
+    // 2. Asynchronously detect country from physical IP (e.g. Qatar)
+    _detectPhysicalLocation();
+  }
+
+  void _detectPhysicalLocation() async {
+    final ipCountry = await CountryData.detectCountryByIP();
+    if (ipCountry != null && mounted) {
+      if (!_hasUserManuallySelectedCountry) {
+        setState(() {
+          _selectedCountry = ipCountry;
+          _countryCtrl.text = ipCountry.name;
+        });
+      }
+    }
   }
 
   @override
@@ -64,6 +80,7 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
       for (final c in CountryData.allCountries) {
         if (text.startsWith(c.dialCode)) {
           final remainder = text.substring(c.dialCode.length).trim();
+          _hasUserManuallySelectedCountry = true;
           setState(() {
             _selectedCountry = c;
             _countryCtrl.text = c.name;
@@ -762,6 +779,7 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
       selectedCountry: _selectedCountry,
       isDark: isDark,
       onCountryChanged: (newCountry) {
+        _hasUserManuallySelectedCountry = true;
         setState(() {
           _selectedCountry = newCountry;
           _countryCtrl.text = newCountry.name;

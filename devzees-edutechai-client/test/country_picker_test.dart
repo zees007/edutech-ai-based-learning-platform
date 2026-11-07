@@ -26,6 +26,12 @@ void main() {
       expect(india!.name, equals('India'));
       expect(india.dialCode, equals('+91'));
       expect(india.flag, equals('🇮🇳'));
+
+      final qatar = CountryData.findByCode('QA');
+      expect(qatar, isNotNull);
+      expect(qatar!.name, equals('Qatar'));
+      expect(qatar.dialCode, equals('+974'));
+      expect(qatar.flag, equals('🇶🇦'));
     });
 
     test('findByName is case-insensitive', () {

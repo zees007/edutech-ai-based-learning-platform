@@ -93,6 +93,22 @@ class _AccountSettingsDialogState extends ConsumerState<AccountSettingsDialog>
       initialMobile = initialMobile.substring(_selectedCountry.dialCode.length).trim();
     }
     _mobileController = TextEditingController(text: initialMobile);
+
+    if (savedCountry.isEmpty) {
+      _detectPhysicalLocation();
+    }
+  }
+
+  void _detectPhysicalLocation() async {
+    final ipCountry = await CountryData.detectCountryByIP();
+    if (ipCountry != null && mounted) {
+      if (_countryController.text == _selectedCountry.name) {
+        setState(() {
+          _selectedCountry = ipCountry;
+          _countryController.text = ipCountry.name;
+        });
+      }
+    }
   }
 
   void _onMobileChanged(String text) {

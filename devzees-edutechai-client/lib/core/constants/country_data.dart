@@ -1,4 +1,5 @@
 import 'dart:ui' as ui;
+import 'package:dio/dio.dart';
 
 class Country {
   final String name;
@@ -33,6 +34,59 @@ class CountryData {
     dialCode: '+1',
     flag: '🇺🇸',
   );
+
+  static Country? _cachedIPCountry;
+
+  /// Fast IP-based country lookup with session caching.
+  /// Calls a lightweight public IP geolocation endpoint with CORS support.
+  static Future<Country?> detectCountryByIP() async {
+    if (_cachedIPCountry != null) return _cachedIPCountry;
+
+    try {
+      final dio = Dio(
+        BaseOptions(
+          connectTimeout: const Duration(seconds: 3),
+          receiveTimeout: const Duration(seconds: 3),
+        ),
+      );
+
+      final response = await dio.get('https://api.country.is');
+      if (response.statusCode == 200 && response.data is Map) {
+        final countryCode = response.data['country']?.toString();
+        if (countryCode != null && countryCode.isNotEmpty) {
+          final found = findByCode(countryCode);
+          if (found != null) {
+            _cachedIPCountry = found;
+            return found;
+          }
+        }
+      }
+    } catch (_) {
+      // Graceful fallback to secondary IP service
+      try {
+        final dio = Dio(
+          BaseOptions(
+            connectTimeout: const Duration(seconds: 3),
+            receiveTimeout: const Duration(seconds: 3),
+          ),
+        );
+        final response = await dio.get('https://ipapi.co/json/');
+        if (response.statusCode == 200 && response.data is Map) {
+          final countryCode = response.data['country_code']?.toString();
+          if (countryCode != null && countryCode.isNotEmpty) {
+            final found = findByCode(countryCode);
+            if (found != null) {
+              _cachedIPCountry = found;
+              return found;
+            }
+          }
+        }
+      } catch (_) {
+        // Silently ignore if offline or blocked
+      }
+    }
+    return null;
+  }
 
   static Country detectCountry() {
     try {
