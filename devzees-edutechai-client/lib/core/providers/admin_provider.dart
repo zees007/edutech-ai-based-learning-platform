@@ -273,11 +273,11 @@ class AdminMetrics {
 
   factory AdminMetrics.fromJson(Map<String, dynamic> json) {
     return AdminMetrics(
-      totalUsers: json['total_users'] as int? ?? 0,
-      freeCount: json['free_count'] as int? ?? 0,
-      proCount: json['pro_count'] as int? ?? 0,
-      ultraCount: json['ultra_count'] as int? ?? 0,
-      totalRoles: json['total_roles'] as int? ?? 0,
+      totalUsers: (json['total_users'] ?? json['totalUsers']) as int? ?? 0,
+      freeCount: (json['free_count'] ?? json['freeCount']) as int? ?? 0,
+      proCount: (json['pro_count'] ?? json['proCount']) as int? ?? 0,
+      ultraCount: (json['ultra_count'] ?? json['ultraCount']) as int? ?? 0,
+      totalRoles: (json['total_roles'] ?? json['totalRoles']) as int? ?? 0,
     );
   }
 }
