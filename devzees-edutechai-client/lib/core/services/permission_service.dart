@@ -30,6 +30,7 @@ abstract class PrivilegeCodes {
   static const etEditUser = 'ET_EDIT_USER';
   static const etRetireUser = 'ET_RETIRE_USER';
   static const etAssignUserRole = 'ET_ASSIGN_USER_ROLE';
+  static const etChangePassword = 'ET_CHANGE_PASSWORD';
 
   // Role & Privilege
   static const etFullAccessRole = 'ET_FULL_ACCESS_ROLE';
@@ -93,6 +94,10 @@ class PermissionChecker {
   // ─── Admin ─────────────────────────────────────────────────────
   bool get isSuperAdmin => _codes.contains(PrivilegeCodes.etAll);
   bool get isAdmin => has(PrivilegeCodes.etFullAccessAdmin);
+
+  // ─── Account & User Management ──────────────────────────────────
+  bool get canChangePassword => has(PrivilegeCodes.etChangePassword);
+  bool get canEditUser => has(PrivilegeCodes.etEditUser);
 
   // ─── Learning Modes ────────────────────────────────────────────
   bool get canAccessVisualMode => has(PrivilegeCodes.etAccessVisualMode);

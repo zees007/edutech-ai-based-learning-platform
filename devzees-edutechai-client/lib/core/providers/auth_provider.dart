@@ -214,6 +214,19 @@ class AuthNotifier extends Notifier<AuthState> {
     forceLogout();
     state = AuthState(status: AuthStatus.unauthenticated);
   }
+
+  void setUser(UserCurrentProfileResponse user) {
+    state = state.copyWith(user: user);
+  }
+
+  Future<void> refreshProfile() async {
+    try {
+      final profile = await _authService.getMe();
+      if (profile != null) {
+        state = state.copyWith(user: profile);
+      }
+    } catch (_) {}
+  }
 }
 
 final authProvider = NotifierProvider<AuthNotifier, AuthState>(() {

@@ -23,6 +23,8 @@ class ApiConstants {
 
   // User Endpoints
   static const String createUser = '/users/create';
+  static String editUser(String userId) => '/users/$userId/edit';
+  static String changePassword(String userId) => '/users/$userId/change-password';
 
   // Learning Endpoints
   static const String sessions = '/sessions';

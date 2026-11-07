@@ -1,6 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/auth/user_current_profile_response.dart';
+import '../services/user_service.dart';
 import 'auth_provider.dart';
+
+final userServiceProvider = Provider<UserService>((ref) {
+  return UserService();
+});
 
 final userProvider = FutureProvider<UserCurrentProfileResponse?>((ref) async {
   final authState = ref.watch(authProvider);
