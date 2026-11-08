@@ -795,7 +795,7 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
       context: context,
       builder: (dialogContext) {
         return StatefulBuilder(
-          builder: (context, setDialogState) {
+          builder: (modalContext, setDialogState) {
             return AlertDialog(
               backgroundColor: AppColors.surfaceMid,
               shape: RoundedRectangleBorder(
