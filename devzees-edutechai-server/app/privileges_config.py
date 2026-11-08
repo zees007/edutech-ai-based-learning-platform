@@ -27,6 +27,7 @@ ET_VIEW_USER = "ET_VIEW_USER"
 ET_EDIT_USER = "ET_EDIT_USER"
 ET_RETIRE_USER = "ET_RETIRE_USER"
 ET_ASSIGN_USER_ROLE = "ET_ASSIGN_USER_ROLE"
+ET_CHANGE_PASSWORD = "ET_CHANGE_PASSWORD"
 
 # ─── 3. ROLE & PRIVILEGE MODULE PRIVILEGES ──────────────────────
 ET_FULL_ACCESS_ROLE = "ET_FULL_ACCESS_ROLE"
@@ -74,6 +75,11 @@ ET_FULL_ACCESS_QUIZ = "ET_FULL_ACCESS_QUIZ"
 ET_GENERATE_QUIZ = "ET_GENERATE_QUIZ"
 ET_SUBMIT_QUIZ = "ET_SUBMIT_QUIZ"
 
+# ─── 7. FEEDBACK MODULE PRIVILEGES ──────────────────────────────
+ET_FULL_ACCESS_FEEDBACK = "ET_FULL_ACCESS_FEEDBACK"
+ET_SUBMIT_FEEDBACK = "ET_SUBMIT_FEEDBACK"
+ET_MODERATE_FEEDBACK = "ET_MODERATE_FEEDBACK"
+
 # ─── ALL 33 PRIVILEGES LIST ─────────────────────────────────────
 ALL_PRIVILEGE_CODES = [
     ET_ALL,
@@ -88,6 +94,7 @@ ALL_PRIVILEGE_CODES = [
     ET_EDIT_USER,
     ET_RETIRE_USER,
     ET_ASSIGN_USER_ROLE,
+    ET_CHANGE_PASSWORD,
     # Role Module
     ET_FULL_ACCESS_ROLE,
     ET_CREATE_ROLE,
@@ -126,6 +133,10 @@ ALL_PRIVILEGE_CODES = [
     ET_FULL_ACCESS_QUIZ,
     ET_GENERATE_QUIZ,
     ET_SUBMIT_QUIZ,
+    # Feedback Module
+    ET_FULL_ACCESS_FEEDBACK,
+    ET_SUBMIT_FEEDBACK,
+    ET_MODERATE_FEEDBACK,
 ]
 
 # ─── ENDPOINT REFERENCE MAP ──────────────────────────────────────
@@ -139,7 +150,7 @@ ENDPOINT_PRIVILEGE_MAP = {
     "GET /api/v1/users/search": ET_VIEW_USER,
     "GET /api/v1/users/{user_id}": ET_VIEW_USER,
     "PUT /api/v1/users/{user_id}/edit": ET_EDIT_USER,
-    "PATCH /api/v1/users/{user_id}/change-password": ET_EDIT_USER,
+    "PATCH /api/v1/users/{user_id}/change-password": ET_CHANGE_PASSWORD,
     "DELETE /api/v1/users/{user_id}/retire": ET_RETIRE_USER,
     "PUT /api/v1/users/{user_id}/roles": ET_ASSIGN_USER_ROLE,
     "GET /api/v1/users/{user_id}/roles": ET_VIEW_USER,
@@ -167,4 +178,9 @@ ENDPOINT_PRIVILEGE_MAP = {
     "GET /api/v1/export/{session_id}/md": ET_EXPORT_MARKDOWN,
     "GET /api/v1/export/{session_id}/html": ET_EXPORT_HTML,
     "GET /api/v1/export/{session_id}/pdf": ET_EXPORT_PDF,
+    # Feedback Endpoints
+    "POST /api/v1/feedback": ET_SUBMIT_FEEDBACK,
+    "GET /api/v1/feedback/public": None,  # Public
+    "GET /api/v1/admin/feedback": ET_MODERATE_FEEDBACK,
+    "PATCH /api/v1/admin/feedback/{feedback_id}/status": ET_MODERATE_FEEDBACK,
 }

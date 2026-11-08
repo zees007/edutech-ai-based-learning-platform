@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,6 +9,7 @@ import '../../../../../core/providers/user_provider.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/text_styles.dart';
 import '../../../../../core/providers/theme_provider.dart';
+import '../../../../widgets/account_settings_dialog.dart';
 
 class SidebarFooter extends ConsumerStatefulWidget {
   final bool expanded;
@@ -57,7 +59,7 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
       ),
       position: RelativeRect.fromLTRB(
         offset.dx,
-        offset.dy - 320,
+        math.max(16.0, offset.dy - 400),
         MediaQuery.of(context).size.width - offset.dx - size.width,
         0,
       ),
@@ -72,7 +74,7 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
               child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
               child: Container(
-                width: 230,
+                width: 240,
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 decoration: BoxDecoration(
                   color: AppColors.popoverBackground,
@@ -107,7 +109,34 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    _buildUserInfo(),
+                    _buildUserInfo(context),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: Divider(
+                        color: isDark
+                            ? AppColors.glassBorder
+                            : const Color(0xFFF1F5F9),
+                        height: 12,
+                      ),
+                    ),
+                    _buildMenuItem(
+                      context,
+                      'Account Settings',
+                      Icons.person_outline_rounded,
+                      isDark ? AppColors.blueSoft : AppColors.primary,
+                      onTap: () {
+                        AccountSettingsDialog.show(context, initialTab: 0);
+                      },
+                    ),
+                    _buildMenuItem(
+                      context,
+                      'Change Password',
+                      Icons.lock_reset_rounded,
+                      isDark ? AppColors.blueSoft : AppColors.primary,
+                      onTap: () {
+                        AccountSettingsDialog.show(context, initialTab: 1);
+                      },
+                    ),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       child: Divider(
@@ -179,19 +208,6 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
                         }
                       },
                     ),
-                    _buildMenuItem(
-                      context,
-                      'Sign Out of All Devices',
-                      Icons.phonelink_erase_rounded,
-                      AppColors.rose,
-                      textColor: AppColors.rose,
-                      onTap: () async {
-                        await ref.read(authProvider.notifier).logoutAll();
-                        if (context.mounted) {
-                          context.go('/auth');
-                        }
-                      },
-                    ),
                   ],
                 ),
               ),
@@ -203,8 +219,9 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
     );
   }
 
-  Widget _buildUserInfo() {
+  Widget _buildUserInfo(BuildContext context) {
     final userAsync = ref.watch(userProvider);
+    final bool isDark = AppColors.isDark;
 
     if (userAsync.isLoading) {
       return const Padding(
@@ -229,68 +246,104 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
         ? '${user.subscription!.tier.toUpperCase()} MEMBER'
         : 'FREE MEMBER';
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          CircleAvatar(
-            radius: 32,
-            backgroundColor: AppColors.purple.withValues(alpha: 0.2),
-            child: Text(
-              initials,
-              style: AppTextStyles.h4.copyWith(
-                color: AppColors.purple,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            name,
-            style: AppTextStyles.subtitle1,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            email,
-            style: AppTextStyles.caption.copyWith(color: AppColors.textMuted),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-            decoration: BoxDecoration(
-              color: AppColors.accentGreen.withValues(alpha: 0.1),
-              border: Border.all(
-                color: AppColors.accentGreen.withValues(alpha: 0.3),
-              ),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: () {
+          Navigator.of(context).pop();
+          AccountSettingsDialog.show(context, initialTab: 0);
+        },
+        child: Tooltip(
+          message: 'Edit Profile & Settings',
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Container(
-                  width: 6,
-                  height: 6,
-                  decoration: BoxDecoration(
-                    color: AppColors.accentGreen,
-                    shape: BoxShape.circle,
-                  ),
+                Stack(
+                  children: [
+                    CircleAvatar(
+                      radius: 32,
+                      backgroundColor: AppColors.purple.withValues(alpha: 0.2),
+                      child: Text(
+                        initials,
+                        style: AppTextStyles.h4.copyWith(
+                          color: AppColors.purple,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: isDark ? const Color(0xFF1E2235) : Colors.white,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: AppColors.glassBorder,
+                            width: 1.5,
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.edit_rounded,
+                          size: 11,
+                          color: isDark ? AppColors.blueSoft : AppColors.primary,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 6),
+                const SizedBox(height: 12),
                 Text(
-                  plan,
-                  style: AppTextStyles.badge.copyWith(
-                    color: AppColors.accentGreen,
+                  name,
+                  style: AppTextStyles.subtitle1,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  email,
+                  style: AppTextStyles.caption.copyWith(color: AppColors.textMuted),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppColors.accentGreen.withValues(alpha: 0.1),
+                    border: Border.all(
+                      color: AppColors.accentGreen.withValues(alpha: 0.3),
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 6,
+                        height: 6,
+                        decoration: BoxDecoration(
+                          color: AppColors.accentGreen,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        plan,
+                        style: AppTextStyles.badge.copyWith(
+                          color: AppColors.accentGreen,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }

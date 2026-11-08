@@ -1,13 +1,18 @@
 Direct Execution (Recommended — No ExecutionPolicy issues)
-On Windows PowerShell, activating .ps1 scripts is often blocked by Windows default security policy (PSSecurityException). You can bypass this completely by calling the virtual environment's Python directly:
+On Windows PowerShell, activating .ps1 scripts is often blocked by Windows default security policy (PSSecurityException). You can bypass this completely by calling the virtual environment's Python directly from the project directory.
 
+Make sure you are in the server directory:
+cd devzees-edutechai-server
 
-cd "d:\Projects\Python Projects\EduTechAI\devzees-edutechai-server"
+Run each script individually:
 .\.venv\Scripts\python.exe scripts\seeder\01_reset_schema.py
 .\.venv\Scripts\python.exe scripts\seeder\02_seed_privileges_and_roles.py
 .\.venv\Scripts\python.exe scripts\seeder\03_seed_users_and_subscriptions.py
 .\.venv\Scripts\python.exe scripts\seeder\04_seed_settings.py
+.\.venv\Scripts\python.exe scripts\seeder\05_seed_feedbacks.py
 
-Run all in one line:
+Run all in one line (PowerShell):
+.\.venv\Scripts\python.exe scripts\seeder\01_reset_schema.py; .\.venv\Scripts\python.exe scripts\seeder\02_seed_privileges_and_roles.py; .\.venv\Scripts\python.exe scripts\seeder\03_seed_users_and_subscriptions.py; .\.venv\Scripts\python.exe scripts\seeder\04_seed_settings.py; .\.venv\Scripts\python.exe scripts\seeder\05_seed_feedbacks.py
 
-cd "d:\Projects\Python Projects\EduTechAI\devzees-edutechai-server"; .\.venv\Scripts\python.exe scripts\seeder\01_reset_schema.py; .\.venv\Scripts\python.exe scripts\seeder\02_seed_privileges_and_roles.py; .\.venv\Scripts\python.exe scripts\seeder\03_seed_users_and_subscriptions.py; .\.venv\Scripts\python.exe scripts\seeder\04_seed_settings.py
+Run all in one line (Standard Command Prompt / cmd.exe):
+.venv\Scripts\python.exe scripts\seeder\01_reset_schema.py && .venv\Scripts\python.exe scripts\seeder\02_seed_privileges_and_roles.py && .venv\Scripts\python.exe scripts\seeder\03_seed_users_and_subscriptions.py && .venv\Scripts\python.exe scripts\seeder\04_seed_settings.py && .venv\Scripts\python.exe scripts\seeder\05_seed_feedbacks.py

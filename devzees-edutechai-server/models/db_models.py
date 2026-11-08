@@ -27,6 +27,7 @@ from sqlalchemy import (
     String,
     Table,
     Text,
+    UniqueConstraint,
     func,
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
@@ -82,6 +83,12 @@ class User(LoggedEntity, Base):
     )
     sessions: Mapped[list[SessionRecord]] = relationship(
         "SessionRecord",
+        back_populates="user",
+        cascade="all, delete-orphan",
+        lazy="selectin",
+    )
+    feedbacks: Mapped[list[FeedbackRecord]] = relationship(
+        "FeedbackRecord",
         back_populates="user",
         cascade="all, delete-orphan",
         lazy="selectin",
@@ -255,6 +262,13 @@ class SessionRecord(Base):
     )
 
     user: Mapped[User] = relationship("User", back_populates="sessions")
+    feedback: Mapped[FeedbackRecord | None] = relationship(
+        "FeedbackRecord",
+        back_populates="session",
+        uselist=False,
+        cascade="all, delete-orphan",
+        lazy="selectin",
+    )
 
     def __repr__(self) -> str:
         return f"<Session {self.session_id}: '{self.topic[:40]}'>"
@@ -321,6 +335,52 @@ class RefreshToken(Base):
 
     def __repr__(self) -> str:
         return f"<RefreshToken {self.id} for user={self.user_id}>"
+
+
+
+
+class FeedbackRecord(Base):
+    """
+    Testimonial and feedback submitted by learners upon session completion.
+    Visible only to Admins. Displayed on homepage ONLY if status == 'featured'.
+    """
+
+    __tablename__ = "feedbacks"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    feedback_id: Mapped[str] = mapped_column(String(36), unique=True, index=True, nullable=False)
+    session_id: Mapped[str] = mapped_column(
+        String(24), ForeignKey("sessions.session_id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    user_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    rating: Mapped[int] = mapped_column(Integer, nullable=False)  # 1 to 5 stars
+    quote: Mapped[str] = mapped_column(String(250), nullable=False)  # max 250 chars
+    education_level: Mapped[str] = mapped_column(String(50), nullable=False)
+    user_country: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    topic_tag: Mapped[str] = mapped_column(String(150), nullable=False)
+    is_public_consent: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    status: Mapped[str] = mapped_column(
+        String(20), default="pending", nullable=False, index=True
+    )  # "pending", "featured", "archived"
+    admin_notes: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, server_default=func.now()
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, server_default=func.now(), onupdate=func.now()
+    )
+
+    __table_args__ = (
+        UniqueConstraint("session_id", "user_id", name="uq_session_user_feedback"),
+    )
+
+    user: Mapped[User] = relationship("User", back_populates="feedbacks")
+    session: Mapped[SessionRecord] = relationship("SessionRecord", back_populates="feedback")
+
+    def __repr__(self) -> str:
+        return f"<Feedback {self.feedback_id} session={self.session_id} rating={self.rating} status={self.status}>"
 
 
 class SystemSetting(Base):

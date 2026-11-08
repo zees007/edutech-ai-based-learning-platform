@@ -12,6 +12,7 @@ import 'widgets/role_privilege_tab.dart';
 import 'widgets/subscription_manager_tab.dart';
 import 'widgets/settings_tab.dart';
 import 'widgets/analytics_tab.dart';
+import 'widgets/feedback_management_tab.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/theme_toggle_button.dart';
 
 /// Main Admin Console page with sidebar navigation and content area.
@@ -38,6 +39,8 @@ class _AdminPageState extends ConsumerState<AdminPage> {
         return const SettingsTab();
       case AdminSection.analytics:
         return const AnalyticsTab();
+      case AdminSection.feedbacks:
+        return const FeedbackManagementTab();
     }
   }
 
@@ -53,6 +56,8 @@ class _AdminPageState extends ConsumerState<AdminPage> {
         return '⚙️ System Settings';
       case AdminSection.analytics:
         return '📊 Analytics';
+      case AdminSection.feedbacks:
+        return '💬 Feedbacks & Reviews';
     }
   }
 

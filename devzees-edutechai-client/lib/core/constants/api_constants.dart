@@ -23,6 +23,8 @@ class ApiConstants {
 
   // User Endpoints
   static const String createUser = '/users/create';
+  static String editUser(String userId) => '/users/$userId/edit';
+  static String changePassword(String userId) => '/users/$userId/change-password';
 
   // Learning Endpoints
   static const String sessions = '/sessions';
@@ -69,5 +71,9 @@ class ApiConstants {
   static String userSubscription(String userId) => '/subscriptions/users/$userId';
   static String userSubscriptionTransactions(String userId) => '/subscriptions/users/$userId/transactions';
   static String userSubscriptionCancel(String userId) => '/subscriptions/users/$userId/cancel';
+  // Feedback Endpoints
+  static const String feedback = '/feedback';
+  static const String feedbackPublic = '/feedback/public';
+  static const String adminFeedback = '/admin/feedback';
+  static String adminFeedbackStatus(String feedbackId) => '/admin/feedback/$feedbackId/status';
 }
-

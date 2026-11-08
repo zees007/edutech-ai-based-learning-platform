@@ -8,6 +8,7 @@ import 'learning_provider.dart';
 import '../services/learning_service.dart';
 import '../services/learning_websocket_service.dart';
 import 'gamification_provider.dart';
+import 'feedback_provider.dart';
 
 final learningWebSocketServiceProvider = Provider<LearningWebSocketService>((ref) {
   final service = LearningWebSocketService();
@@ -522,7 +523,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       }
       final avgScore = quizCount > 0 ? (totalScore / quizCount) : null;
 
-      ref.read(journeyCompleteProvider.notifier).triggerEvent(
+      ref.read(feedbackPromptProvider.notifier).triggerEvent(
         sessionId: updatedSession.sessionId,
         topic: updatedSession.topic,
         totalSteps: updatedSession.steps.length,
@@ -538,6 +539,68 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
 
     // Now transition to the next step (triggers NeuralInferenceLoader if ungenerated)
     setActiveStep(stepIndex + 1);
+  }
+
+  /// Called when learner submits session feedback to apply +30 XP bonus and trigger celebration
+  void completeFeedbackAndCelebrate({required int bonusXp}) {
+    final session = state.session;
+    if (session == null) return;
+
+    final updatedXp = session.xpEarned + bonusXp;
+    final updatedSession = session.copyWith(xpEarned: updatedXp);
+    state = state.copyWith(session: updatedSession);
+
+    // Sync with sessionsProvider
+    ref.read(sessionsProvider.notifier).updateSessionProgress(
+      sessionId: session.sessionId,
+      stepsCompleted: session.stepsCompleted,
+      xpEarned: updatedXp,
+      isComplete: true,
+    );
+
+    double totalScore = 0.0;
+    int quizCount = 0;
+    for (final s in session.steps) {
+      if (s.quizScore != null) {
+        totalScore += s.quizScore!;
+        quizCount++;
+      }
+    }
+    final avgScore = quizCount > 0 ? (totalScore / quizCount) : null;
+
+    ref.read(journeyCompleteProvider.notifier).triggerEvent(
+      sessionId: session.sessionId,
+      topic: session.topic,
+      totalSteps: session.steps.length,
+      totalXp: updatedXp,
+      bonusXp: 100 + bonusXp,
+      averageQuizScore: avgScore,
+    );
+  }
+
+  /// Called when learner skips session feedback to proceed to celebration with standard rewards
+  void skipFeedbackAndCelebrate() {
+    final session = state.session;
+    if (session == null) return;
+
+    double totalScore = 0.0;
+    int quizCount = 0;
+    for (final s in session.steps) {
+      if (s.quizScore != null) {
+        totalScore += s.quizScore!;
+        quizCount++;
+      }
+    }
+    final avgScore = quizCount > 0 ? (totalScore / quizCount) : null;
+
+    ref.read(journeyCompleteProvider.notifier).triggerEvent(
+      sessionId: session.sessionId,
+      topic: session.topic,
+      totalSteps: session.steps.length,
+      totalXp: session.xpEarned,
+      bonusXp: 100,
+      averageQuizScore: avgScore,
+    );
   }
 
   /// Displays the Journey Complete celebration modal with summary metrics and stats.

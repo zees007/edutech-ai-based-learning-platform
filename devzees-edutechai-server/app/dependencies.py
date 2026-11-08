@@ -109,6 +109,8 @@ def has_privilege(user: User, privilege_code: str) -> bool:
         parent_group_code = f"ET_FULL_ACCESS_{domain}"
         if parent_group_code in user_privs:
             return True
+        if privilege_code in ("ET_CHANGE_PASSWORD", "ET_ASSIGN_USER_ROLE") and "ET_FULL_ACCESS_USER" in user_privs:
+            return True
             
     return False
 
@@ -147,6 +149,8 @@ def require_privilege(*privilege_codes: str):
                 domain = parts[-1]  # e.g., USER, ROLE, SUBSCRIPTION, LEARNING, QUIZ
                 parent_group_code = f"ET_FULL_ACCESS_{domain}"
                 if parent_group_code in user_privs:
+                    return current_user
+                if code in ("ET_CHANGE_PASSWORD", "ET_ASSIGN_USER_ROLE") and "ET_FULL_ACCESS_USER" in user_privs:
                     return current_user
 
         codes_str = ", ".join(f"'{c}'" for c in privilege_codes)

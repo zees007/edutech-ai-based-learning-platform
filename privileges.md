@@ -93,3 +93,11 @@ This document maps all privileges across the system, explains their functionalit
 | `ET_FULL_ACCESS_QUIZ` | **Quiz Management**. Parent node for quizzes. | - | - | - | ✅ |
 | `ET_GENERATE_QUIZ` | **Generate Quiz**. Have AI create tests based on current session context. | ✅ | ✅ | ✅ | ✅ |
 | `ET_SUBMIT_QUIZ` | **Submit Quiz**. Grade and track quiz XP. | ✅ | ✅ | ✅ | ✅ |
+
+## 7. Feedback & Testimonials Module
+
+| Code | Name & Explanation | Free | Pro | Ultra | Admin |
+| :--- | :--- | :---: | :---: | :---: | :---: |
+| `ET_FULL_ACCESS_FEEDBACK` | **Feedback & Testimonials Management**. Parent node for feedback. | - | - | - | ✅ |
+| `ET_SUBMIT_FEEDBACK` | **Submit Feedback**. Submit session ratings and testimonials upon completion (+30 XP). | ✅ | ✅ | ✅ | ✅ |
+| `ET_MODERATE_FEEDBACK` | **Moderate Feedback**. View, add admin notes, and feature testimonials on the homepage. | - | - | - | ✅ |

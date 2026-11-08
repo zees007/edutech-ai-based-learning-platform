@@ -28,7 +28,7 @@ async def authenticate_superadmin(client, app):
                 password=pwd,
             ),
         )
-        r_stmt = select(Role).where(Role.name == "SuperAdmin")
+        r_stmt = select(Role).where(Role.name.in_(["SuperAdmin", "Admin"]))
         r_res = await db.execute(r_stmt)
         super_role = r_res.scalar_one_or_none()
         if super_role:

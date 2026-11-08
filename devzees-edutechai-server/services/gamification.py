@@ -32,6 +32,7 @@ XP_STEP_COMPLETE = 50            # Completing a milestone step
 XP_QUIZ_PER_QUESTION = 20       # Per correct quiz answer
 XP_QUIZ_ACCURACY_BONUS = 30     # Bonus for 100% quiz accuracy
 XP_SESSION_COMPLETE = 100        # Bonus for finishing all steps
+XP_FEEDBACK_BONUS = 30           # Bonus for submitting session feedback/testimonial
 XP_STREAK_MULTIPLIER = 0.1      # +10% per streak day
 
 
@@ -98,6 +99,11 @@ def calculate_quiz_xp(
     accuracy_bonus = XP_QUIZ_ACCURACY_BONUS if (total_questions > 0 and c_count >= total_questions) else 0
 
     return int((base_xp + accuracy_bonus) * multiplier)
+
+
+def calculate_feedback_xp() -> int:
+    """Return the XP bonus for submitting session feedback."""
+    return XP_FEEDBACK_BONUS
 
 
 def calculate_step_xp(streak_count: int = 0) -> int:

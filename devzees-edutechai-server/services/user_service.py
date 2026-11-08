@@ -15,7 +15,7 @@ from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.exceptions import BadRequestException, ConflictException, NotFoundException
-from models.db_models import Privilege, Role, Subscription, User
+from models.db_models import Privilege, RefreshToken, Role, Subscription, User
 from models.role_schemas import PrivilegeResponse, RoleResponse, UserPrivilegesResponse
 from models.user_schemas import ChangePasswordRequest, SearchDTO, UserCreateRequest, UserEditRequest
 
@@ -139,6 +139,7 @@ class UserService:
     async def change_password(db: AsyncSession, user_id: str, dto: ChangePasswordRequest) -> User:
         """
         Change user's password. Validates old_password before setting new_password.
+        Revokes all existing refresh tokens and invalidates prior access tokens for security.
         Raises NotFoundException if user not found, or BadRequestException if old_password invalid.
         """
         user = await UserService.get_user_by_id(db, user_id)
@@ -149,10 +150,28 @@ class UserService:
                 errors="Old password is incorrect.",
             )
 
+        if dto.old_password == dto.new_password:
+            raise BadRequestException(
+                error_code="SAME_PASSWORD",
+                errors="New password must be different from current password.",
+            )
+
+        now = datetime.now(timezone.utc)
         user.password_hash = UserService.hash_password(dto.new_password)
+        user.tokens_invalidated_before = now.replace(microsecond=0)
+
+        # Invalidate all existing refresh tokens across all devices
+        stmt = select(RefreshToken).where(
+            RefreshToken.user_id == user.id,
+            RefreshToken.revoked_at.is_(None),
+        )
+        res = await db.execute(stmt)
+        for rt in res.scalars().all():
+            rt.revoked_at = now
+
         await db.commit()
         await db.refresh(user)
-        logger.info(f"Password changed for user: {user.id}")
+        logger.info(f"Password changed and active sessions revoked for user: {user.id}")
         return user
 
     @staticmethod
