@@ -39,6 +39,11 @@ class AdminService:
             elif tier.lower() == 'ultra':
                 ultra_count += count
 
+        # Active users without an active paid subscription belong to the default free tier
+        accounted_users = free_count + pro_count + ultra_count
+        if total_users > accounted_users:
+            free_count += (total_users - accounted_users)
+
         return AdminMetricsResponse(
             total_users=total_users,
             free_count=free_count,

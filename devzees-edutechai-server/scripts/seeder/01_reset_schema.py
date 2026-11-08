@@ -26,7 +26,9 @@ async def reset_schema():
     print("Running Alembic migrations...")
     project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     os.chdir(project_root)
-    os.system(f'"{sys.executable}" -m alembic upgrade head')
+    result = os.system(f'"{sys.executable}" -m alembic upgrade head')
+    if result != 0:
+        raise RuntimeError("Alembic migrations failed! Ensure alembic is installed (`pip install alembic`).")
     print("Database reset complete.")
 
 if __name__ == "__main__":

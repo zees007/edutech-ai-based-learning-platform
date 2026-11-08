@@ -6,9 +6,38 @@ Request and response models for user API endpoints.
 
 from __future__ import annotations
 
+import re
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, model_validator
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator, model_validator
+
+
+def _normalize_and_validate_mobile(mobile: str | None) -> str | None:
+    """Validate and format international phone number into standardized E.164 format."""
+    if not mobile:
+        return None
+
+    clean = mobile.strip()
+    if not clean:
+        return None
+
+    try:
+        import phonenumbers
+        from phonenumbers import NumberParseException, PhoneNumberFormat
+
+        parsed = phonenumbers.parse(clean if clean.startswith("+") else f"+{clean}", None)
+        if not phonenumbers.is_valid_number(parsed):
+            raise ValueError("Invalid international phone number format. Please check the country code.")
+
+        return phonenumbers.format_number(parsed, PhoneNumberFormat.E164)
+    except (ImportError, NameError):
+        # Fallback if phonenumbers is not yet installed in local environment
+        digits = re.sub(r"[^\d]", "", clean)
+        if not (7 <= len(digits) <= 15):
+            raise ValueError("Invalid phone number length (must be between 7 and 15 digits).")
+        return f"+{digits}"
+    except Exception:
+        raise ValueError("Could not parse phone number. Please include a valid country dial code (e.g. +1...).")
 
 
 class UserCreateRequest(BaseModel):
@@ -18,8 +47,13 @@ class UserCreateRequest(BaseModel):
     last_name: str = Field(..., min_length=1, max_length=100, description="User's last name")
     email: EmailStr = Field(..., max_length=255, description="Unique email address")
     password: str = Field(..., min_length=6, max_length=72, description="User password")
-    mobile: str | None = Field(default=None, max_length=20, description="Contact mobile number")
+    mobile: str | None = Field(default=None, max_length=25, description="Contact mobile number")
     country: str | None = Field(default=None, max_length=100, description="Country of residence")
+
+    @field_validator("mobile")
+    @classmethod
+    def validate_mobile(cls, v: str | None) -> str | None:
+        return _normalize_and_validate_mobile(v)
 
 
 class UserEditRequest(BaseModel):
@@ -28,8 +62,13 @@ class UserEditRequest(BaseModel):
     first_name: str | None = Field(default=None, min_length=1, max_length=100)
     last_name: str | None = Field(default=None, min_length=1, max_length=100)
     email: EmailStr | None = Field(default=None, max_length=255)
-    mobile: str | None = Field(default=None, max_length=20)
+    mobile: str | None = Field(default=None, max_length=25)
     country: str | None = Field(default=None, max_length=100)
+
+    @field_validator("mobile")
+    @classmethod
+    def validate_mobile(cls, v: str | None) -> str | None:
+        return _normalize_and_validate_mobile(v)
 
 
 class ChangePasswordRequest(BaseModel):

@@ -14,16 +14,20 @@ from __future__ import annotations
 import math
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.dependencies import require_privilege
+from app.dependencies import get_current_user, has_privilege, require_privilege
+from app.exceptions import ForbiddenException
 from app.privileges_config import (
     ET_ASSIGN_USER_ROLE,
+    ET_CHANGE_PASSWORD,
     ET_EDIT_USER,
     ET_RETIRE_USER,
     ET_VIEW_USER,
 )
+from config import get_settings
+from models.db_models import User
 from models.user_schemas import (
     ChangePasswordRequest,
     PaginatedUserResponse,
@@ -32,6 +36,7 @@ from models.user_schemas import (
     UserEditRequest,
     UserResponse,
 )
+from services.auth_service import AuthService
 from services.database import get_db
 from services.user_service import UserService
 
@@ -122,16 +127,64 @@ async def edit_user(
 
 @router.patch(
     "/users/{user_id}/change-password",
-    dependencies=[Depends(require_privilege(ET_EDIT_USER))],
+    dependencies=[Depends(require_privilege(ET_CHANGE_PASSWORD))],
 )
 async def change_password(
     user_id: str,
     request: ChangePasswordRequest,
+    response: Response,
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Change user password after verifying old password and confirm password matching."""
-    await UserService.change_password(db, user_id, request)
-    return {"message": "Password has been changed successfully"}
+    """
+    Change user password after verifying old password and confirm password matching.
+    Protected by ET_CHANGE_PASSWORD privilege.
+    Self-service password change is allowed for any user on their own account.
+    Admin with ET_EDIT_USER (or ET_ALL) can change passwords across accounts.
+    Revokes prior sessions and issues fresh credentials to current session.
+    """
+    if current_user.id != user_id and not has_privilege(current_user, ET_EDIT_USER):
+        raise ForbiddenException(
+            error_code="PERMISSION_DENIED",
+            errors="Access denied. You can only change your own password.",
+        )
+
+    user = await UserService.change_password(db, user_id, request)
+
+    result: dict[str, str] = {"message": "Password has been changed successfully"}
+
+    if current_user.id == user_id:
+        settings = get_settings()
+        new_access_token = AuthService.create_access_token({
+            "sub": user.id,
+            "email": user.email,
+        })
+        new_refresh_token = await AuthService.create_refresh_token(db, user.id)
+
+        access_max_age = settings.jwt_access_expire_minutes * 60
+        refresh_max_age = settings.jwt_refresh_expire_days * 86400
+
+        response.set_cookie(
+            key="access_token",
+            value=new_access_token,
+            httponly=True,
+            samesite="lax",
+            max_age=access_max_age,
+            path="/",
+        )
+        response.set_cookie(
+            key="refresh_token",
+            value=new_refresh_token,
+            httponly=True,
+            samesite="lax",
+            max_age=refresh_max_age,
+            path="/",
+        )
+
+        result["access_token"] = new_access_token
+        result["refresh_token"] = new_refresh_token
+
+    return result
 
 
 @router.delete(
