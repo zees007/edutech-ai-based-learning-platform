@@ -74,6 +74,7 @@ class AdminFeedbackState {
   final String searchQuery;
   final int page;
   final int pageSize;
+  final Set<String> updatingFeedbackIds;
 
   const AdminFeedbackState({
     this.isLoading = false,
@@ -85,7 +86,11 @@ class AdminFeedbackState {
     this.searchQuery = '',
     this.page = 0,
     this.pageSize = 10,
+    this.updatingFeedbackIds = const {},
   });
+
+  bool isFeedbackUpdating(String feedbackId) =>
+      updatingFeedbackIds.contains(feedbackId);
 
   AdminFeedbackState copyWith({
     bool? isLoading,
@@ -97,6 +102,7 @@ class AdminFeedbackState {
     String? searchQuery,
     int? page,
     int? pageSize,
+    Set<String>? updatingFeedbackIds,
   }) {
     return AdminFeedbackState(
       isLoading: isLoading ?? this.isLoading,
@@ -108,6 +114,7 @@ class AdminFeedbackState {
       searchQuery: searchQuery ?? this.searchQuery,
       page: page ?? this.page,
       pageSize: pageSize ?? this.pageSize,
+      updatingFeedbackIds: updatingFeedbackIds ?? this.updatingFeedbackIds,
     );
   }
 }
@@ -163,9 +170,17 @@ class AdminFeedbackNotifier extends Notifier<AdminFeedbackState> {
     required String newStatus,
     String? adminNotes,
   }) async {
+    // Immediately mark item as updating so UI displays an inline loader
+    final nextUpdating = Set<String>.from(state.updatingFeedbackIds)
+      ..add(feedbackId);
+    state = state.copyWith(
+      updatingFeedbackIds: nextUpdating,
+      errorMessage: null,
+    );
+
     try {
       final service = ref.read(feedbackServiceProvider);
-      await service.updateFeedbackStatus(
+      final updatedItem = await service.updateFeedbackStatus(
         feedbackId: feedbackId,
         status: newStatus,
         adminNotes: adminNotes,
@@ -174,11 +189,65 @@ class AdminFeedbackNotifier extends Notifier<AdminFeedbackState> {
       // Invalidate public testimonials cache so homepage immediately reflects change
       ref.invalidate(publicTestimonialsProvider);
 
-      // Refresh list
-      await loadFeedbacks();
+      // Compute local metrics update
+      final oldItemIndex = state.items.indexWhere(
+        (it) => it.feedbackId == feedbackId,
+      );
+      final oldStatus =
+          oldItemIndex != -1 ? state.items[oldItemIndex].status : null;
+
+      AdminFeedbackSummaryMetrics? updatedMetrics = state.metrics;
+      if (updatedMetrics != null && oldStatus != null && oldStatus != newStatus) {
+        int pendingDelta = 0;
+        int featuredDelta = 0;
+        int archivedDelta = 0;
+
+        if (oldStatus == 'pending') pendingDelta--;
+        if (oldStatus == 'featured') featuredDelta--;
+        if (oldStatus == 'archived') archivedDelta--;
+
+        if (newStatus == 'pending') pendingDelta++;
+        if (newStatus == 'featured') featuredDelta++;
+        if (newStatus == 'archived') archivedDelta++;
+
+        updatedMetrics = AdminFeedbackSummaryMetrics(
+          totalCount: updatedMetrics.totalCount,
+          pendingCount: (updatedMetrics.pendingCount + pendingDelta).clamp(
+            0,
+            999999,
+          ),
+          featuredCount: (updatedMetrics.featuredCount + featuredDelta).clamp(
+            0,
+            999999,
+          ),
+          archivedCount: (updatedMetrics.archivedCount + archivedDelta).clamp(
+            0,
+            999999,
+          ),
+          averageRating: updatedMetrics.averageRating,
+        );
+      }
+
+      // Update state in-place with the returned updated item (zero wait for full re-fetch)
+      final updatedItems = state.items.map((it) {
+        return it.feedbackId == feedbackId ? updatedItem : it;
+      }).toList();
+
+      final finishUpdating = Set<String>.from(state.updatingFeedbackIds)
+        ..remove(feedbackId);
+
+      state = state.copyWith(
+        items: updatedItems,
+        metrics: updatedMetrics,
+        updatingFeedbackIds: finishUpdating,
+      );
+
       return true;
     } catch (e) {
+      final finishUpdating = Set<String>.from(state.updatingFeedbackIds)
+        ..remove(feedbackId);
       state = state.copyWith(
+        updatingFeedbackIds: finishUpdating,
         errorMessage: e.toString().replaceAll('Exception: ', ''),
       );
       return false;
@@ -190,4 +259,3 @@ final adminFeedbackProvider =
     NotifierProvider<AdminFeedbackNotifier, AdminFeedbackState>(() {
   return AdminFeedbackNotifier();
 });
-

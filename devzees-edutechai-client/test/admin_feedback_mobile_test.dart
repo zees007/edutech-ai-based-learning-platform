@@ -246,5 +246,33 @@ void main() {
       // Verify no overflow in dialog
       expect(tester.takeException(), isNull);
     });
+
+    testWidgets('shows CircularProgressIndicator when feedback item status is updating', (tester) async {
+      tester.view.physicalSize = const Size(1200, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() => tester.view.resetPhysicalSize());
+
+      final updatingState = mockState.copyWith(
+        updatingFeedbackIds: {'fb_uuid_123456789'},
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            adminFeedbackProvider.overrideWith(() => MockAdminFeedbackNotifier(updatingState)),
+          ],
+          child: const MaterialApp(
+            home: Scaffold(
+              body: FeedbackManagementTab(),
+            ),
+          ),
+        ),
+      );
+
+      await tester.pump();
+
+      // CircularProgressIndicator should be visible for the updating item
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    });
   });
 }
