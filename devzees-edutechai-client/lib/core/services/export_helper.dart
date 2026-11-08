@@ -7,8 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../theme/app_colors.dart';
-import '../theme/text_styles.dart';
+import '../../presentation/widgets/center_toast.dart';
 import 'export_web_stub.dart'
     if (dart.library.js_interop) 'export_web_interop.dart';
 
@@ -153,69 +152,25 @@ class ExportHelper {
     }
   }
 
-  /// Clean, dark-mode glassmorphic notification banner.
+  /// Clean, responsive glassmorphic notification banner in center of screen.
   static void showToast(
     BuildContext context, {
     required String message,
     required IconData icon,
     bool isError = false,
   }) {
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        duration: const Duration(seconds: 3),
-        content: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: BoxDecoration(
-            color: isError
-                ? const Color(0xFF4C0519).withValues(alpha: 0.95)
-                : AppColors.surfaceDark.withValues(alpha: 0.95),
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: isError
-                  ? AppColors.rose.withValues(alpha: 0.5)
-                  : AppColors.primary.withValues(alpha: 0.4),
-              width: 1.2,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.4),
-                blurRadius: 18,
-                offset: const Offset(0, 6),
-              ),
-              if (!isError)
-                BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.15),
-                  blurRadius: 12,
-                ),
-            ],
-          ),
-          child: Row(
-            children: [
-              Icon(
-                icon,
-                color: isError ? AppColors.rose : AppColors.accentCyan,
-                size: 20,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  message,
-                  style: AppTextStyles.body2.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w500,
-                    fontSize: 13,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+    if (isError) {
+      CenterToast.showError(
+        context,
+        message,
+        icon: icon,
+      );
+    } else {
+      CenterToast.showSuccess(
+        context,
+        message,
+        icon: icon,
+      );
+    }
   }
 }

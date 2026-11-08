@@ -115,7 +115,7 @@ def create_app() -> FastAPI:
         logger.error(f"Unhandled exception on {request.url.path}: {exc}", exc_info=True)
         error_payload = APIError(
             http_status=500,
-            errors=["An unexpected internal server error occurred."],
+            errors=["Something went wrong. Please try again or contact support."],
             timestamp=datetime.now(timezone.utc),
             path_uri=str(request.url.path),
             error_code="INTERNAL_SERVER_ERROR",

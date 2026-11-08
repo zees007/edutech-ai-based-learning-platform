@@ -9,6 +9,7 @@ import 'package:devzees_edutechai_client/core/theme/text_styles.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/gradient_button.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/gradient_text.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/searchable_country_dropdown.dart';
+import 'package:devzees_edutechai_client/presentation/widgets/center_toast.dart';
 
 class AuthFormCard extends ConsumerStatefulWidget {
   final bool isLogin;
@@ -37,8 +38,67 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
 
   late Country _selectedCountry;
   bool _hasUserManuallySelectedCountry = false;
-  final GlobalKey<SearchableCountryDropdownState> _countryDropdownKey = GlobalKey();
+  final GlobalKey<SearchableCountryDropdownState> _countryDropdownKey =
+      GlobalKey();
   bool _obscurePassword = true;
+
+  final _loginFormKey = GlobalKey<FormState>();
+  final _signUpFormKey = GlobalKey<FormState>();
+  AutovalidateMode _loginAutoValidate = AutovalidateMode.disabled;
+  AutovalidateMode _signUpAutoValidate = AutovalidateMode.disabled;
+
+  String? _validateEmail(String? value) {
+    final text = value?.trim() ?? '';
+    if (text.isEmpty) {
+      return 'Please enter your email address.';
+    }
+    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    if (!emailRegex.hasMatch(text)) {
+      return 'Please enter a valid email address (e.g. name@example.com).';
+    }
+    return null;
+  }
+
+  String? _validateLoginPassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter your password.';
+    }
+    return null;
+  }
+
+  String? _validateFirstName(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Please enter your first name.';
+    }
+    return null;
+  }
+
+  String? _validateLastName(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Please enter your last name.';
+    }
+    return null;
+  }
+
+  String? _validateSignUpPassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter a password.';
+    }
+    if (value.length < 6) {
+      return 'Password must be at least 6 characters long.';
+    }
+    return null;
+  }
+
+  String? _validateMobile(String? value) {
+    if (value != null && value.trim().isNotEmpty) {
+      final rawDigits = value.replaceAll(RegExp(r'[^0-9]'), '');
+      if (rawDigits.length < 7 || rawDigits.length > 15) {
+        return 'Please enter a valid phone number (7-15 digits).';
+      }
+    }
+    return null;
+  }
 
   @override
   void initState() {
@@ -85,7 +145,9 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
             _selectedCountry = c;
             _countryCtrl.text = c.name;
             _mobileCtrl.text = remainder;
-            _mobileCtrl.selection = TextSelection.collapsed(offset: remainder.length);
+            _mobileCtrl.selection = TextSelection.collapsed(
+              offset: remainder.length,
+            );
           });
           break;
         }
@@ -94,20 +156,26 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
   }
 
   void _handleLogin() async {
-    final email = _emailCtrl.text.trim();
-    final password = _passwordCtrl.text;
+    FocusScope.of(context).unfocus();
 
-    if (email.isEmpty || password.isEmpty) {
-      _showSnackBar('Please enter email and password');
+    if (!_loginFormKey.currentState!.validate()) {
+      setState(() {
+        _loginAutoValidate = AutovalidateMode.onUserInteraction;
+      });
       return;
     }
+
+    final email = _emailCtrl.text.trim();
+    final password = _passwordCtrl.text;
 
     // Capture destination parameters before login because state changes trigger router redirects
     final routerState = GoRouterState.of(context);
     final redirectUrl = routerState.uri.queryParameters['redirect'];
     final claim = routerState.uri.queryParameters['claim'];
 
-    final success = await ref.read(authProvider.notifier).login(email, password);
+    final success = await ref
+        .read(authProvider.notifier)
+        .login(email, password);
     if (success) {
       if (mounted) {
         // If router redirect already navigated away from /auth, do not override
@@ -130,12 +198,25 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
     } else {
       if (mounted) {
         final error = ref.read(authProvider).error;
-        _showSnackBar(error ?? 'Login failed');
+        CenterToast.showError(
+          context,
+          error ?? 'Invalid email address or password.',
+          title: 'Authentication Failed',
+        );
       }
     }
   }
 
   void _handleSignUp() async {
+    FocusScope.of(context).unfocus();
+
+    if (!_signUpFormKey.currentState!.validate()) {
+      setState(() {
+        _signUpAutoValidate = AutovalidateMode.onUserInteraction;
+      });
+      return;
+    }
+
     final firstName = _firstNameCtrl.text.trim();
     final lastName = _lastNameCtrl.text.trim();
     final email = _emailCtrl.text.trim();
@@ -150,52 +231,37 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
         ? _countryCtrl.text.trim()
         : _selectedCountry.name;
 
-    if (firstName.isEmpty || lastName.isEmpty || email.isEmpty || password.isEmpty) {
-      _showSnackBar('Please fill all required fields');
-      return;
-    }
-
-    final success = await ref.read(authProvider.notifier).createUser(
-      firstName: firstName,
-      lastName: lastName,
-      email: email,
-      password: password,
-      mobileNumber: mobileNumber,
-      country: country,
-    );
+    final success = await ref
+        .read(authProvider.notifier)
+        .createUser(
+          firstName: firstName,
+          lastName: lastName,
+          email: email,
+          password: password,
+          mobileNumber: mobileNumber,
+          country: country,
+        );
 
     if (success) {
       if (mounted) {
-        _showSnackBar('Account created successfully! Please login.');
+        CenterToast.showSuccess(
+          context,
+          'Account created successfully! Please sign in.',
+          title: 'Registration Successful',
+        );
         widget.onToggleMode(); // Switch to login
       }
     } else {
       if (mounted) {
         final error = ref.read(authProvider).error;
-        _showSnackBar(error ?? 'Registration failed');
+        CenterToast.showError(
+          context,
+          error ??
+              'Registration failed. Please check your details and try again.',
+          title: 'Registration Failed',
+        );
       }
     }
-  }
-
-  void _showSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          message,
-          style: AppTextStyles.subtitle2.copyWith(
-            color: AppColors.textPrimary,
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        backgroundColor: AppColors.surfaceIndigo,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-          side: BorderSide(color: AppColors.primary.withValues(alpha: 0.5)),
-        ),
-      ),
-    );
   }
 
   @override
@@ -211,7 +277,9 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
           // Step Indicator Badge
           Center(
             child: _buildStepBadge(
-              widget.isLogin ? '🚀  Step 04A • Login' : '✨  Step 04B • Register',
+              widget.isLogin
+                  ? '🚀  Step 04A • Login'
+                  : '✨  Step 04B • Register',
               isDark,
             ),
           ),
@@ -260,27 +328,27 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
         ),
         boxShadow: isDark
             ? (widget.isMobile
-                ? const [
-                    BoxShadow(
-                      color: Color(0x33000000),
-                      blurRadius: 24,
-                      spreadRadius: -4,
-                      offset: Offset(0, 10),
-                    ),
-                    BoxShadow(
-                      color: Color(0x1A000000),
-                      blurRadius: 8,
-                      offset: Offset(0, 2),
-                    ),
-                  ]
-                : [
-                    BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.25),
-                      blurRadius: 65,
-                      spreadRadius: -15,
-                      offset: const Offset(0, 25),
-                    ),
-                  ])
+                  ? const [
+                      BoxShadow(
+                        color: Color(0x33000000),
+                        blurRadius: 24,
+                        spreadRadius: -4,
+                        offset: Offset(0, 10),
+                      ),
+                      BoxShadow(
+                        color: Color(0x1A000000),
+                        blurRadius: 8,
+                        offset: Offset(0, 2),
+                      ),
+                    ]
+                  : [
+                      BoxShadow(
+                        color: AppColors.primary.withValues(alpha: 0.25),
+                        blurRadius: 65,
+                        spreadRadius: -15,
+                        offset: const Offset(0, 25),
+                      ),
+                    ])
             : const [
                 BoxShadow(
                   color: Color(0x0F0F172A),
@@ -318,19 +386,19 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
         ),
         boxShadow: isDark
             ? (widget.isMobile
-                ? const [
-                    BoxShadow(
-                      color: Color(0x1A000000),
-                      blurRadius: 6,
-                      offset: Offset(0, 1),
-                    ),
-                  ]
-                : [
-                    BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.25),
-                      blurRadius: 16,
-                    ),
-                  ])
+                  ? const [
+                      BoxShadow(
+                        color: Color(0x1A000000),
+                        blurRadius: 6,
+                        offset: Offset(0, 1),
+                      ),
+                    ]
+                  : [
+                      BoxShadow(
+                        color: AppColors.primary.withValues(alpha: 0.25),
+                        blurRadius: 16,
+                      ),
+                    ])
             : const [
                 BoxShadow(
                   color: Color(0x060F172A),
@@ -417,7 +485,12 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
               isSelected: widget.isLogin,
               isDark: isDark,
               onTap: () {
-                if (!widget.isLogin) widget.onToggleMode();
+                if (!widget.isLogin) {
+                  setState(() {
+                    _signUpAutoValidate = AutovalidateMode.disabled;
+                  });
+                  widget.onToggleMode();
+                }
               },
             ),
           ),
@@ -427,7 +500,12 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
               isSelected: !widget.isLogin,
               isDark: isDark,
               onTap: () {
-                if (widget.isLogin) widget.onToggleMode();
+                if (widget.isLogin) {
+                  setState(() {
+                    _loginAutoValidate = AutovalidateMode.disabled;
+                  });
+                  widget.onToggleMode();
+                }
               },
             ),
           ),
@@ -452,14 +530,12 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
           decoration: BoxDecoration(
             color: isSelected
                 ? (isDark
-                    ? AppColors.primary.withValues(alpha: 0.25)
-                    : Colors.white)
+                      ? AppColors.primary.withValues(alpha: 0.25)
+                      : Colors.white)
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(12),
             border: isSelected && isDark
-                ? Border.all(
-                    color: AppColors.primary.withValues(alpha: 0.5),
-                  )
+                ? Border.all(color: AppColors.primary.withValues(alpha: 0.5))
                 : null,
             boxShadow: isSelected
                 ? [
@@ -481,7 +557,9 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
               fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
               color: isSelected
                   ? (isDark ? AppColors.lavender : const Color(0xFF6D28D9))
-                  : (isDark ? AppColors.textSecondary : const Color(0xFF64748B)),
+                  : (isDark
+                        ? AppColors.textSecondary
+                        : const Color(0xFF64748B)),
             ),
           ),
         ),
@@ -490,35 +568,44 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
   }
 
   Widget _buildSignInForm(bool isDark) {
-    return Column(
-      key: const ValueKey('signin_form'),
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        _buildInputField(
-          label: "EMAIL ADDRESS",
-          hint: "student@example.com",
-          controller: _emailCtrl,
-          prefixIcon: Icons.alternate_email_rounded,
-          keyboardType: TextInputType.emailAddress,
-          textInputAction: TextInputAction.next,
-          autofillHints: const [AutofillHints.email],
-          isDark: isDark,
-          onFieldSubmitted: (_) => _handleLogin(),
-        ),
-        const SizedBox(height: 18),
-        _buildInputField(
-          label: "PASSWORD",
-          hint: "••••••••••••",
-          controller: _passwordCtrl,
-          isObscure: _obscurePassword,
-          prefixIcon: Icons.lock_outline_rounded,
-          textInputAction: TextInputAction.done,
-          autofillHints: const [AutofillHints.password],
-          isDark: isDark,
+    return Form(
+      key: _loginFormKey,
+      autovalidateMode: _loginAutoValidate,
+      child: Column(
+        key: const ValueKey('signin_form'),
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildInputField(
+            label: "EMAIL ADDRESS",
+            hint: "student@example.com",
+            controller: _emailCtrl,
+            prefixIcon: Icons.alternate_email_rounded,
+            keyboardType: TextInputType.emailAddress,
+            textInputAction: TextInputAction.next,
+            autofillHints: const [AutofillHints.email],
+            isDark: isDark,
+            validator: _validateEmail,
+            onFieldSubmitted: (_) => _handleLogin(),
+          ),
+          const SizedBox(height: 18),
+          _buildInputField(
+            label: "PASSWORD",
+            hint: "••••••••••••",
+            controller: _passwordCtrl,
+            isObscure: _obscurePassword,
+            prefixIcon: Icons.lock_outline_rounded,
+            textInputAction: TextInputAction.done,
+            autofillHints: const [AutofillHints.password],
+            isDark: isDark,
+            validator: _validateLoginPassword,
           trailingHeader: MouseRegion(
             cursor: SystemMouseCursors.click,
             child: GestureDetector(
-              onTap: () => _showSnackBar('Password reset instructions sent to your email.'),
+              onTap: () => CenterToast.showInfo(
+                context,
+                'Password reset instructions sent to your email.',
+                title: 'Password Reset',
+              ),
               child: Text(
                 'Forgot Password?',
                 style: TextStyle(
@@ -531,7 +618,9 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
           ),
           suffixIcon: IconButton(
             icon: Icon(
-              _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+              _obscurePassword
+                  ? Icons.visibility_outlined
+                  : Icons.visibility_off_outlined,
               size: 18,
               color: isDark ? AppColors.textSecondary : const Color(0xFF94A3B8),
             ),
@@ -554,87 +643,99 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
           onPressed: _handleLogin,
         ),
       ],
-    );
+    ),
+  );
   }
 
   Widget _buildSignUpForm(bool isMobile, bool isDark) {
-    return Column(
-      key: const ValueKey('signup_form'),
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (isMobile) ...[
+    return Form(
+      key: _signUpFormKey,
+      autovalidateMode: _signUpAutoValidate,
+      child: Column(
+        key: const ValueKey('signup_form'),
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (isMobile) ...[
+            _buildInputField(
+              label: "FIRST NAME *",
+              hint: "Jane",
+              controller: _firstNameCtrl,
+              prefixIcon: Icons.person_outline_rounded,
+              textInputAction: TextInputAction.next,
+              autofillHints: const [AutofillHints.givenName],
+              isDark: isDark,
+              validator: _validateFirstName,
+            ),
+            const SizedBox(height: 14),
+            _buildInputField(
+              label: "LAST NAME *",
+              hint: "Doe",
+              controller: _lastNameCtrl,
+              prefixIcon: Icons.person_outline_rounded,
+              textInputAction: TextInputAction.next,
+              autofillHints: const [AutofillHints.familyName],
+              isDark: isDark,
+              validator: _validateLastName,
+            ),
+          ] else ...[
+            Row(
+              children: [
+                Expanded(
+                  child: _buildInputField(
+                    label: "FIRST NAME *",
+                    hint: "Jane",
+                    controller: _firstNameCtrl,
+                    prefixIcon: Icons.person_outline_rounded,
+                    textInputAction: TextInputAction.next,
+                    autofillHints: const [AutofillHints.givenName],
+                    isDark: isDark,
+                    validator: _validateFirstName,
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: _buildInputField(
+                    label: "LAST NAME *",
+                    hint: "Doe",
+                    controller: _lastNameCtrl,
+                    prefixIcon: Icons.person_outline_rounded,
+                    textInputAction: TextInputAction.next,
+                    autofillHints: const [AutofillHints.familyName],
+                    isDark: isDark,
+                    validator: _validateLastName,
+                  ),
+                ),
+              ],
+            ),
+          ],
+          const SizedBox(height: 14),
           _buildInputField(
-            label: "FIRST NAME *",
-            hint: "Jane",
-            controller: _firstNameCtrl,
-            prefixIcon: Icons.person_outline_rounded,
+            label: "EMAIL ADDRESS *",
+            hint: "jane.doe@example.com",
+            controller: _emailCtrl,
+            prefixIcon: Icons.alternate_email_rounded,
+            keyboardType: TextInputType.emailAddress,
             textInputAction: TextInputAction.next,
-            autofillHints: const [AutofillHints.givenName],
+            autofillHints: const [AutofillHints.email],
             isDark: isDark,
+            validator: _validateEmail,
           ),
           const SizedBox(height: 14),
           _buildInputField(
-            label: "LAST NAME *",
-            hint: "Doe",
-            controller: _lastNameCtrl,
-            prefixIcon: Icons.person_outline_rounded,
+            label: "PASSWORD * (MIN 6 CHARACTERS)",
+            hint: "••••••••••••",
+            controller: _passwordCtrl,
+            isObscure: _obscurePassword,
+            prefixIcon: Icons.lock_outline_rounded,
             textInputAction: TextInputAction.next,
-            autofillHints: const [AutofillHints.familyName],
+            autofillHints: const [AutofillHints.newPassword],
             isDark: isDark,
-          ),
-        ] else ...[
-          Row(
-            children: [
-              Expanded(
-                child: _buildInputField(
-                  label: "FIRST NAME *",
-                  hint: "Jane",
-                  controller: _firstNameCtrl,
-                  prefixIcon: Icons.person_outline_rounded,
-                  textInputAction: TextInputAction.next,
-                  autofillHints: const [AutofillHints.givenName],
-                  isDark: isDark,
-                ),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: _buildInputField(
-                  label: "LAST NAME *",
-                  hint: "Doe",
-                  controller: _lastNameCtrl,
-                  prefixIcon: Icons.person_outline_rounded,
-                  textInputAction: TextInputAction.next,
-                  autofillHints: const [AutofillHints.familyName],
-                  isDark: isDark,
-                ),
-              ),
-            ],
-          ),
-        ],
-        const SizedBox(height: 14),
-        _buildInputField(
-          label: "EMAIL ADDRESS *",
-          hint: "jane.doe@example.com",
-          controller: _emailCtrl,
-          prefixIcon: Icons.alternate_email_rounded,
-          keyboardType: TextInputType.emailAddress,
-          textInputAction: TextInputAction.next,
-          autofillHints: const [AutofillHints.email],
-          isDark: isDark,
-        ),
-        const SizedBox(height: 14),
-        _buildInputField(
-          label: "PASSWORD * (MIN 6 CHARACTERS)",
-          hint: "••••••••••••",
-          controller: _passwordCtrl,
-          isObscure: _obscurePassword,
-          prefixIcon: Icons.lock_outline_rounded,
-          textInputAction: TextInputAction.next,
-          autofillHints: const [AutofillHints.newPassword],
-          isDark: isDark,
+            validator: _validateSignUpPassword,
           suffixIcon: IconButton(
             icon: Icon(
-              _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+              _obscurePassword
+                  ? Icons.visibility_outlined
+                  : Icons.visibility_off_outlined,
               size: 18,
               color: isDark ? AppColors.textSecondary : const Color(0xFF94A3B8),
             ),
@@ -653,13 +754,9 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
         ] else ...[
           Row(
             children: [
-              Expanded(
-                child: _buildCountryPickerField(isDark),
-              ),
+              Expanded(child: _buildCountryPickerField(isDark)),
               const SizedBox(width: 14),
-              Expanded(
-                child: _buildMobileInputField(isDark),
-              ),
+              Expanded(child: _buildMobileInputField(isDark)),
             ],
           ),
         ],
@@ -674,7 +771,8 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
           onPressed: _handleSignUp,
         ),
       ],
-    );
+    ),
+  );
   }
 
   Widget _buildInputField({
@@ -690,6 +788,7 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
     ValueChanged<String>? onFieldSubmitted,
     TextInputType? keyboardType,
     Iterable<String>? autofillHints,
+    String? Function(String?)? validator,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -717,6 +816,7 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
           onFieldSubmitted: onFieldSubmitted,
           keyboardType: keyboardType,
           autofillHints: autofillHints,
+          validator: validator,
           style: TextStyle(
             color: AppColors.textPrimary,
             fontSize: 14,
@@ -735,7 +835,10 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
             fillColor: isDark
                 ? AppColors.surfaceDark.withValues(alpha: 0.75)
                 : const Color(0xFFF8FAFC),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 14,
+              vertical: 12,
+            ),
             prefixIcon: Icon(
               prefixIcon,
               size: 18,
@@ -762,10 +865,21 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(
-                color: AppColors.primary,
-                width: 1.5,
-              ),
+              borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: AppColors.rose, width: 1.6),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: AppColors.rose, width: 2.0),
+            ),
+            errorStyle: const TextStyle(
+              color: AppColors.rose,
+              fontSize: 11.5,
+              fontWeight: FontWeight.w600,
+              height: 1.3,
             ),
           ),
         ),
@@ -789,7 +903,9 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
   }
 
   Widget _buildMobileInputField(bool isDark) {
-    final textSecondary = isDark ? AppColors.textSecondary : const Color(0xFF64748B);
+    final textSecondary = isDark
+        ? AppColors.textSecondary
+        : const Color(0xFF64748B);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -811,6 +927,7 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
           autofillHints: const [AutofillHints.telephoneNumber],
           onChanged: _onMobileChanged,
           onFieldSubmitted: (_) => _handleSignUp(),
+          validator: _validateMobile,
           style: TextStyle(
             color: AppColors.textPrimary,
             fontSize: 14,
@@ -829,10 +946,15 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
             fillColor: isDark
                 ? AppColors.surfaceDark.withValues(alpha: 0.75)
                 : const Color(0xFFF8FAFC),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 14,
+              vertical: 12,
+            ),
             prefixIcon: InkWell(
               onTap: () => _countryDropdownKey.currentState?.toggleDropdown(),
-              borderRadius: const BorderRadius.horizontal(left: Radius.circular(12)),
+              borderRadius: const BorderRadius.horizontal(
+                left: Radius.circular(12),
+              ),
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10),
                 margin: const EdgeInsets.only(right: 6),
@@ -865,7 +987,9 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
                     Icon(
                       Icons.arrow_drop_down_rounded,
                       size: 18,
-                      color: isDark ? AppColors.primary : const Color(0xFF64748B),
+                      color: isDark
+                          ? AppColors.primary
+                          : const Color(0xFF64748B),
                     ),
                   ],
                 ),
@@ -889,10 +1013,21 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(
-                color: AppColors.primary,
-                width: 1.5,
-              ),
+              borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: AppColors.rose, width: 1.6),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: AppColors.rose, width: 2.0),
+            ),
+            errorStyle: const TextStyle(
+              color: AppColors.rose,
+              fontSize: 11.5,
+              fontWeight: FontWeight.w600,
+              height: 1.3,
             ),
           ),
         ),
