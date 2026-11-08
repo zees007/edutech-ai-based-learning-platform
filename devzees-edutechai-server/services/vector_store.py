@@ -166,6 +166,7 @@ class VectorStore:
             )
             return bool(existing and existing["ids"])
         return await asyncio.to_thread(_check)
+
     async def find_best_timestamp(
         self,
         video_id: str,
@@ -231,3 +232,45 @@ class VectorStore:
             "total_chunks": count,
             "note": "Each unique YouTube video adds ~50-400 chunks. Monitor for unbounded growth.",
         }
+
+    def delete_all(self) -> int:
+        """
+        Delete all transcripts from ChromaDB by deleting the collection and recreating it.
+
+        Returns:
+            Number of chunks/documents deleted.
+        """
+        try:
+            count = self.collection.count()
+        except Exception:
+            count = 0
+
+        try:
+            self.client.delete_collection(name=self.settings.chroma_collection_name)
+        except Exception as e:
+            logger.warning(
+                f"[VectorStore] Could not delete collection '{self.settings.chroma_collection_name}': {e}"
+            )
+
+        self._collection = None
+        # Recreate an empty collection immediately with the cosine space metric
+        _ = self.collection
+        logger.info(
+            f"[VectorStore] Cleared {count} transcript documents from '{self.settings.chroma_collection_name}'."
+        )
+        return count
+
+    def delete_by_video_id(self, video_id: str) -> int:
+        """
+        Delete all transcript chunks for a specific YouTube video ID.
+
+        Returns:
+            Number of chunks deleted.
+        """
+        existing = self.collection.get(where={"video_id": video_id})
+        ids = existing.get("ids", [])
+        if ids:
+            self.collection.delete(ids=ids)
+            logger.info(f"[VectorStore] Deleted {len(ids)} chunks for video {video_id}.")
+            return len(ids)
+        return 0

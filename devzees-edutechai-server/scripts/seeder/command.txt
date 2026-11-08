@@ -16,3 +16,16 @@ Run all in one line (PowerShell):
 
 Run all in one line (Standard Command Prompt / cmd.exe):
 .venv\Scripts\python.exe scripts\seeder\01_reset_schema.py && .venv\Scripts\python.exe scripts\seeder\02_seed_privileges_and_roles.py && .venv\Scripts\python.exe scripts\seeder\03_seed_users_and_subscriptions.py && .venv\Scripts\python.exe scripts\seeder\04_seed_settings.py && .venv\Scripts\python.exe scripts\seeder\05_seed_feedbacks.py
+
+ChromaDB YouTube Transcripts Management:
+# Check transcript count & collection status:
+.\.venv\Scripts\python.exe scripts\clear_transcripts.py --status
+
+# Delete all transcripts (prompts for confirmation):
+.\.venv\Scripts\python.exe scripts\clear_transcripts.py
+
+# Delete all transcripts immediately (skip confirmation prompt):
+.\.venv\Scripts\python.exe scripts\clear_transcripts.py --yes
+
+# Delete transcripts for a specific YouTube video only:
+.\.venv\Scripts\python.exe scripts\clear_transcripts.py --video-id <VIDEO_ID>
