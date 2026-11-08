@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:devzees_edutechai_client/core/theme/text_styles.dart';
-import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
-import 'package:devzees_edutechai_client/presentation/widgets/glass_card.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/gradient_text.dart';
 import 'package:devzees_edutechai_client/core/constants/responsive.dart';
 
@@ -184,177 +182,230 @@ class _ModesAndLevelsSectionState extends State<ModesAndLevelsSection> {
               _buildModeSwitcher(isMobile),
               SizedBox(height: isMobile ? 18 : 24),
 
-              // Mode Specs Card
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 250),
-                child: Container(
-                  key: ValueKey<int>(_selectedMode),
-                  decoration: BoxDecoration(
-                    color: const Color(0xDD0A0D1D),
-                    borderRadius: BorderRadius.circular(isMobile ? 18 : 22),
-                    border: Border.all(
-                      color: (_modes[_selectedMode]['color'] as Color)
-                          .withValues(alpha: 0.35),
-                      width: 1.2,
+              // Mode Specs Card (Approach 1: Height-locked to prevent layout shift)
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final double minHeight = _calculateCardMinHeight(
+                    constraints.maxWidth,
+                    isMobile,
+                  );
+
+                  return ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: minHeight,
+                      minWidth: double.infinity,
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: (_modes[_selectedMode]['color'] as Color)
-                            .withValues(alpha: 0.12),
-                        blurRadius: isMobile ? 20 : 32,
-                      ),
-                    ],
-                  ),
-                  padding: EdgeInsets.all(isMobile ? 18 : 32),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            width: isMobile ? 38 : 44,
-                            height: isMobile ? 38 : 44,
-                            decoration: BoxDecoration(
-                              color: (_modes[_selectedMode]['color'] as Color)
-                                  .withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(
-                                isMobile ? 10 : 12,
-                              ),
-                              border: Border.all(
-                                color: (_modes[_selectedMode]['color'] as Color)
-                                    .withValues(alpha: 0.4),
-                              ),
-                            ),
-                            child: Icon(
-                              _modes[_selectedMode]['icon'] as IconData,
-                              color: _modes[_selectedMode]['color'] as Color,
-                              size: isMobile ? 19 : 22,
-                            ),
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 250),
+                      child: Container(
+                        key: ValueKey<int>(_selectedMode),
+                        constraints: BoxConstraints(
+                          minHeight: minHeight,
+                          minWidth: double.infinity,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xDD0A0D1D),
+                          borderRadius: BorderRadius.circular(
+                            isMobile ? 18 : 22,
                           ),
-                          SizedBox(width: isMobile ? 12 : 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                          border: Border.all(
+                            color: (_modes[_selectedMode]['color'] as Color)
+                                .withValues(alpha: 0.35),
+                            width: 1.2,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: (_modes[_selectedMode]['color'] as Color)
+                                  .withValues(alpha: 0.12),
+                              blurRadius: isMobile ? 20 : 32,
+                            ),
+                          ],
+                        ),
+                        padding: EdgeInsets.all(isMobile ? 18 : 32),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
                               children: [
-                                Text(
-                                  _modes[_selectedMode]['name'],
-                                  style: TextStyle(
-                                    color: const Color(0xFFF8FAFC),
-                                    fontSize: isMobile ? 17 : 20,
-                                    fontWeight: FontWeight.w800,
+                                Container(
+                                  width: isMobile ? 38 : 44,
+                                  height: isMobile ? 38 : 44,
+                                  decoration: BoxDecoration(
+                                    color:
+                                        (_modes[_selectedMode]['color']
+                                                as Color)
+                                            .withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(
+                                      isMobile ? 10 : 12,
+                                    ),
+                                    border: Border.all(
+                                      color:
+                                          (_modes[_selectedMode]['color']
+                                                  as Color)
+                                              .withValues(alpha: 0.4),
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  _modes[_selectedMode]['tag'],
-                                  style: TextStyle(
+                                  child: Icon(
+                                    _modes[_selectedMode]['icon'] as IconData,
                                     color:
                                         _modes[_selectedMode]['color'] as Color,
-                                    fontSize: isMobile ? 10.5 : 11,
-                                    fontWeight: FontWeight.w700,
-                                    letterSpacing: 0.6,
+                                    size: isMobile ? 19 : 22,
                                   ),
                                 ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: isMobile ? 14 : 16),
-                      Text(
-                        _modes[_selectedMode]['description'],
-                        style: TextStyle(
-                          color: const Color(0xFF94A3B8),
-                          fontSize: isMobile ? 13 : 14,
-                          height: 1.5,
-                        ),
-                      ),
-                      SizedBox(height: isMobile ? 16 : 22),
-                      Divider(color: Colors.white.withValues(alpha: 0.08)),
-                      SizedBox(height: isMobile ? 12 : 16),
-                      Text(
-                        'HOW THIS MODE WORKS:',
-                        style: TextStyle(
-                          color: const Color(0xFF64748B),
-                          fontSize: isMobile ? 10 : 11,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 1.2,
-                        ),
-                      ),
-                      SizedBox(height: isMobile ? 12 : 14),
-                      ...(_modes[_selectedMode]['specs'] as List<String>).map((
-                        spec,
-                      ) {
-                        final int colonIndex = spec.indexOf(':');
-                        final bool hasLabel = colonIndex != -1;
-                        final String label = hasLabel
-                            ? spec.substring(0, colonIndex + 1)
-                            : '';
-                        final String body = hasLabel
-                            ? spec.substring(colonIndex + 1)
-                            : spec;
-
-                        return Padding(
-                          padding: EdgeInsets.only(bottom: isMobile ? 11 : 10),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                margin: const EdgeInsets.only(top: 2.5),
-                                width: isMobile ? 15 : 16,
-                                height: isMobile ? 15 : 16,
-                                decoration: BoxDecoration(
-                                  color:
-                                      (_modes[_selectedMode]['color'] as Color)
-                                          .withValues(alpha: 0.18),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Icon(
-                                  Icons.check_rounded,
-                                  size: isMobile ? 10 : 11,
-                                  color:
-                                      _modes[_selectedMode]['color'] as Color,
-                                ),
-                              ),
-                              SizedBox(width: isMobile ? 10 : 12),
-                              Expanded(
-                                child: Text.rich(
-                                  TextSpan(
+                                SizedBox(width: isMobile ? 12 : 14),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
-                                      if (hasLabel)
-                                        TextSpan(
-                                          text: label,
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.w700,
-                                            fontSize: isMobile ? 12.5 : 13.5,
-                                          ),
-                                        ),
-                                      TextSpan(
-                                        text: body,
+                                      Text(
+                                        _modes[_selectedMode]['name'],
                                         style: TextStyle(
-                                          color: const Color(0xFFCBD5E1),
-                                          fontSize: isMobile ? 12.5 : 13.5,
+                                          color: const Color(0xFFF8FAFC),
+                                          fontSize: isMobile ? 17 : 20,
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        _modes[_selectedMode]['tag'],
+                                        style: TextStyle(
+                                          color:
+                                              _modes[_selectedMode]['color']
+                                                  as Color,
+                                          fontSize: isMobile ? 10.5 : 11,
+                                          fontWeight: FontWeight.w700,
+                                          letterSpacing: 0.6,
                                         ),
                                       ),
                                     ],
                                   ),
-                                  style: const TextStyle(height: 1.45),
                                 ),
+                              ],
+                            ),
+                            SizedBox(height: isMobile ? 14 : 16),
+                            Text(
+                              _modes[_selectedMode]['description'],
+                              style: TextStyle(
+                                color: const Color(0xFF94A3B8),
+                                fontSize: isMobile ? 13 : 14,
+                                height: 1.5,
                               ),
-                            ],
-                          ),
-                        );
-                      }),
-                    ],
-                  ),
-                ),
+                            ),
+                            SizedBox(height: isMobile ? 16 : 22),
+                            Divider(
+                              color: Colors.white.withValues(alpha: 0.08),
+                            ),
+                            SizedBox(height: isMobile ? 12 : 16),
+                            Text(
+                              'HOW THIS MODE WORKS:',
+                              style: TextStyle(
+                                color: const Color(0xFF64748B),
+                                fontSize: isMobile ? 10 : 11,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 1.2,
+                              ),
+                            ),
+                            SizedBox(height: isMobile ? 12 : 14),
+                            ...(_modes[_selectedMode]['specs'] as List<String>)
+                                .map((spec) {
+                              final int colonIndex = spec.indexOf(':');
+                              final bool hasLabel = colonIndex != -1;
+                              final String label = hasLabel
+                                  ? spec.substring(0, colonIndex + 1)
+                                  : '';
+                              final String body = hasLabel
+                                  ? spec.substring(colonIndex + 1)
+                                  : spec;
+
+                              return Padding(
+                                padding: EdgeInsets.only(
+                                  bottom: isMobile ? 11 : 10,
+                                ),
+                                child: Row(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    Container(
+                                      margin: const EdgeInsets.only(top: 2.5),
+                                      width: isMobile ? 15 : 16,
+                                      height: isMobile ? 15 : 16,
+                                      decoration: BoxDecoration(
+                                        color:
+                                            (_modes[_selectedMode]['color']
+                                                    as Color)
+                                                .withValues(alpha: 0.18),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Icon(
+                                        Icons.check_rounded,
+                                        size: isMobile ? 10 : 11,
+                                        color:
+                                            _modes[_selectedMode]['color']
+                                                as Color,
+                                      ),
+                                    ),
+                                    SizedBox(width: isMobile ? 10 : 12),
+                                    Expanded(
+                                      child: Text.rich(
+                                        TextSpan(
+                                          children: [
+                                            if (hasLabel)
+                                              TextSpan(
+                                                text: label,
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.w700,
+                                                  fontSize: isMobile
+                                                      ? 12.5
+                                                      : 13.5,
+                                                ),
+                                              ),
+                                            TextSpan(
+                                              text: body,
+                                              style: TextStyle(
+                                                color: const Color(0xFFCBD5E1),
+                                                fontSize: isMobile
+                                                    ? 12.5
+                                                    : 13.5,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        style: const TextStyle(height: 1.45),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                },
               ),
             ],
           ),
         ),
       ],
     );
+  }
+
+  /// Calculates a snug, height-locked viewport for the card based on actual content dimensions,
+  /// guaranteeing that all 3 modes maintain the exact same height without ugly blank space.
+  double _calculateCardMinHeight(double cardWidth, bool isMobile) {
+    if (isMobile) {
+      // Mobile view: 18px padding, compact typography (~470-510px natural content height)
+      if (cardWidth < 340) return 545; // Very narrow screens (e.g. 320px Fold)
+      if (cardWidth < 380) return 515; // Standard mobile (e.g. 360-375px)
+      return 490; // Modern mobile / phablets (390px - 767px)
+    }
+
+    // Tablet & Desktop view: 32px padding, relaxed typography (~420-460px natural content height)
+    if (cardWidth < 900) return 470; // Tablet
+    return 440; // Desktop
   }
 
   Widget _buildModeSwitcher(bool isMobile) {
@@ -384,10 +435,12 @@ class _ModesAndLevelsSectionState extends State<ModesAndLevelsSection> {
     }
 
     // Desktop pill track
-    return Container(
-      padding: const EdgeInsets.all(5),
-      decoration: BoxDecoration(
-        color: const Color(0xDD0A0D1D),
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      child: Container(
+        padding: const EdgeInsets.all(5),
+        decoration: BoxDecoration(
+          color: const Color(0xDD0A0D1D),
         borderRadius: BorderRadius.circular(9999),
         border: Border.all(
           color: Colors.white.withValues(alpha: 0.10),
@@ -410,6 +463,7 @@ class _ModesAndLevelsSectionState extends State<ModesAndLevelsSection> {
           );
         }),
       ),
+    ),
     );
   }
 
