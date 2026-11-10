@@ -4,7 +4,6 @@ import '../../../widgets/center_toast.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/admin_provider.dart';
-import '../../../../core/providers/theme_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../widgets/shimmer_loading.dart';
@@ -16,7 +15,6 @@ class AnalyticsTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.watch(themeModeProvider);
     final metricsAsync = ref.watch(adminMetricsProvider);
     final isMobile = MediaQuery.of(context).size.width < 600;
 

@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:devzees_edutechai_client/core/constants/responsive.dart';
 import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
+import 'package:devzees_edutechai_client/core/theme/theme_palette.dart';
 import 'package:devzees_edutechai_client/core/theme/text_styles.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/glow_background.dart';
 import 'package:devzees_edutechai_client/core/providers/auth_provider.dart';
-import 'package:devzees_edutechai_client/core/providers/theme_provider.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/shimmer_app_shell.dart';
 import 'widgets/admin_sidebar.dart';
 import 'widgets/user_directory_tab.dart';
@@ -64,11 +64,7 @@ class _AdminPageState extends ConsumerState<AdminPage> {
 
   @override
   Widget build(BuildContext context) {
-    final themeMode = ref.watch(themeModeProvider);
-    final platformBrightness = MediaQuery.platformBrightnessOf(context);
-    final isDark = themeMode == ThemeMode.dark ||
-        (themeMode == ThemeMode.system && platformBrightness == Brightness.dark);
-    AppColors.setBrightness(isDark ? Brightness.dark : Brightness.light);
+    final colors = context.appColors;
 
     final authState = ref.watch(authProvider);
     if (authState.isInitial || (authState.isAuthenticated && authState.user == null)) {
@@ -79,9 +75,9 @@ class _AdminPageState extends ConsumerState<AdminPage> {
 
     if (isMobile) {
       return Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: colors.workspaceBackground,
         appBar: AppBar(
-          backgroundColor: AppColors.surfaceSolidHeader,
+          backgroundColor: colors.topBarBackground,
           elevation: 0,
           leading: Builder(
             builder: (context) => IconButton(
@@ -99,7 +95,7 @@ class _AdminPageState extends ConsumerState<AdminPage> {
           ],
         ),
         drawer: Drawer(
-          backgroundColor: AppColors.sidebarBackground,
+          backgroundColor: colors.sidebarBackground,
           child: AdminSidebar(
             selected: _currentSection,
             onSectionChanged: (section) {
@@ -113,7 +109,7 @@ class _AdminPageState extends ConsumerState<AdminPage> {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colors.workspaceBackground,
       body: GlowBackground(
         child: Row(
           children: [
@@ -124,10 +120,10 @@ class _AdminPageState extends ConsumerState<AdminPage> {
               width: _isSidebarExpanded ? 260 : 80,
               clipBehavior: Clip.hardEdge,
               decoration: BoxDecoration(
-                color: AppColors.sidebarBackground,
+                color: colors.sidebarBackground,
                 border: Border(
                   right: BorderSide(
-                    color: AppColors.glassBorder,
+                    color: colors.border,
                     width: 1,
                   ),
                 ),
@@ -157,10 +153,10 @@ class _AdminPageState extends ConsumerState<AdminPage> {
                     height: 60,
                     padding: const EdgeInsets.symmetric(horizontal: 24),
                     decoration: BoxDecoration(
-                      color: AppColors.surfaceSolidHeader,
+                      color: colors.topBarBackground,
                       border: Border(
                         bottom: BorderSide(
-                          color: AppColors.glassBorder,
+                          color: colors.border,
                           width: 1,
                         ),
                       ),

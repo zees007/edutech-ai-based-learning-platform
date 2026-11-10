@@ -36,6 +36,7 @@ class AppColors {
 
   // ─── Base Backgrounds & Surfaces (Dynamic) ───
   static Color get background => _current.scaffoldBackground;
+  static Color get workspaceBackground => _current.workspaceBackground;
   static Color get secondaryBackground => isDark ? const Color(0xFF151624) : _current.surfaceSubtle;
   static Color get surfaceDark => _current.surface;
   static Color get surfaceMid => isDark ? const Color(0xFF141523) : const Color(0xFFF8F9FA);

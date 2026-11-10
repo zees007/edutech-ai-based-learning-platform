@@ -1083,7 +1083,7 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOutCubic,
       decoration: BoxDecoration(
-        color: colors.scaffoldBackground,
+        color: colors.workspaceBackground,
         border: Border(
           top: BorderSide(
             color: colors.border,

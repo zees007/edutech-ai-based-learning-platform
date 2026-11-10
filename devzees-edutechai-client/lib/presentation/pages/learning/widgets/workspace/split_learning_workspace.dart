@@ -239,7 +239,7 @@ class _SplitLearningWorkspaceState
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOutCubic,
       decoration: BoxDecoration(
-        color: colors.scaffoldBackground,
+        color: colors.workspaceBackground,
       ),
       child: (currentStep.tutorExplanation != null ||
               (currentStep.socraticQuestions != null &&
@@ -322,7 +322,7 @@ class _SplitLearningWorkspaceState
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOutCubic,
       decoration: BoxDecoration(
-        color: colors.scaffoldBackground,
+        color: colors.workspaceBackground,
       ),
       child: LearningResourcesPanel(
         key: ValueKey('resources_${widget.session.sessionId}_step_${currentStep.index}'),
@@ -432,7 +432,7 @@ class _FullscreenPanelOverlay extends ConsumerWidget {
           Expanded(
             child: panel == _MaximizedPanel.left
                 ? _buildFullscreenChat(context)
-                : _buildFullscreenResources(ref),
+                : _buildFullscreenResources(context, ref),
           ),
         ],
       ),
@@ -446,7 +446,7 @@ class _FullscreenPanelOverlay extends ConsumerWidget {
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOutCubic,
       decoration: BoxDecoration(
-        color: colors.scaffoldBackground,
+        color: colors.workspaceBackground,
       ),
       child: (currentStep.tutorExplanation != null ||
               (currentStep.socraticQuestions != null &&
@@ -477,12 +477,13 @@ class _FullscreenPanelOverlay extends ConsumerWidget {
     );
   }
 
-  Widget _buildFullscreenResources(WidgetRef ref) {
-    return Container(
+  Widget _buildFullscreenResources(BuildContext context, WidgetRef ref) {
+    final colors = context.appColors;
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOutCubic,
       decoration: BoxDecoration(
-        color: AppColors.isDark
-            ? AppColors.surfaceDark.withValues(alpha: 0.3)
-            : const Color(0xFFF8F9FA),
+        color: colors.workspaceBackground,
       ),
       child: LearningResourcesPanel(
         key: ValueKey('fullscreen_resources_${session.sessionId}_step_${currentStep.index}'),

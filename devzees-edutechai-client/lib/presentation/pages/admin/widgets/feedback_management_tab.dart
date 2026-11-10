@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/responsive.dart';
 import '../../../../core/providers/feedback_provider.dart';
-import '../../../../core/providers/theme_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../data/models/feedback/feedback_model.dart';
@@ -66,7 +65,6 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
 
   @override
   Widget build(BuildContext context) {
-    ref.watch(themeModeProvider);
     final state = ref.watch(adminFeedbackProvider);
     final metrics = state.metrics;
     final isMobile = Responsive.isMobile(context);

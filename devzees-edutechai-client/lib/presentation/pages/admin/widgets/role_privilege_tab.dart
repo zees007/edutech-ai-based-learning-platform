@@ -3,7 +3,6 @@ import '../../../widgets/center_toast.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/admin_provider.dart';
-import '../../../../core/providers/theme_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../data/models/admin/privilege_response.dart';
@@ -43,7 +42,6 @@ class _RolePrivilegeTabState extends ConsumerState<RolePrivilegeTab> {
 
   @override
   Widget build(BuildContext context) {
-    ref.watch(themeModeProvider);
     final rolesState = ref.watch(adminRolesProvider);
     final privilegesAsync = ref.watch(adminPrivilegesProvider);
 

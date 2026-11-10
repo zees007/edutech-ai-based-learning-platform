@@ -88,7 +88,7 @@ class _StepContentContainerState extends ConsumerState<_StepContentContainer> {
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOutCubic,
       width: double.infinity,
-      color: colors.scaffoldBackground,
+      color: colors.workspaceBackground,
       child: widget.activeState.isLoading
         ? const Padding(
             padding: EdgeInsets.all(48),
