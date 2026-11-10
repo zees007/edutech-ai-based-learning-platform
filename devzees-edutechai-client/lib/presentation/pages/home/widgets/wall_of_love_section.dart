@@ -271,9 +271,12 @@ class _WallOfLoveSectionState extends ConsumerState<WallOfLoveSection>
         // ─── 3D Cylindrical Wheel Carousel ───
         publicFeedbackAsync.when(
           loading: () => _buildShimmerWheel(context, isMobile),
-          error: (err, stack) => _build3dCylindricalWheel(WallOfLoveSection.defaultFallback),
+          error: (err, stack) =>
+              _build3dCylindricalWheel(WallOfLoveSection.defaultFallback),
           data: (items) {
-            final list = items.isNotEmpty ? items : WallOfLoveSection.defaultFallback;
+            final list = items.isNotEmpty
+                ? items
+                : WallOfLoveSection.defaultFallback;
             return _build3dCylindricalWheel(list);
           },
         ),
@@ -326,16 +329,24 @@ class _WallOfLoveSectionState extends ConsumerState<WallOfLoveSection>
                         : _scrollOffset;
 
                     // Transition progress factor between integer cards [0.0 .. 0.5]
-                    final double fractionalShift = (currentOffset - currentOffset.round()).abs();
+                    final double fractionalShift =
+                        (currentOffset - currentOffset.round()).abs();
                     // Bell-curve motion factor peaking at midpoint of slide change:
-                    final double transitionFactor = math.sin(fractionalShift * math.pi);
+                    final double transitionFactor = math.sin(
+                      fractionalShift * math.pi,
+                    );
                     // Dynamic scale compression dip (-6.5%) during active sliding
-                    final double transitionScaleDip = 1.0 - (transitionFactor * 0.065);
+                    final double transitionScaleDip =
+                        1.0 - (transitionFactor * 0.065);
 
                     // Compute exact relative offset and continuous focus weight for each item
                     final visibleData = <_CardRenderData>[];
                     for (int i = 0; i < items.length; i++) {
-                      final double delta = _getCircularDelta(i, currentOffset, items.length);
+                      final double delta = _getCircularDelta(
+                        i,
+                        currentOffset,
+                        items.length,
+                      );
                       final double absDelta = delta.abs();
                       if (absDelta <= maxVisibleDelta) {
                         // Smooth cubic Hermite focus interpolation (0.0 background -> 1.0 center hero)
@@ -343,13 +354,15 @@ class _WallOfLoveSectionState extends ConsumerState<WallOfLoveSection>
                         final double t = (0.85 - clamped) / 0.85;
                         final double focusWeight = t * t * (3.0 - 2.0 * t);
 
-                        visibleData.add(_CardRenderData(
-                          index: i,
-                          item: items[i],
-                          delta: delta,
-                          absDelta: absDelta,
-                          focusWeight: focusWeight,
-                        ));
+                        visibleData.add(
+                          _CardRenderData(
+                            index: i,
+                            item: items[i],
+                            delta: delta,
+                            absDelta: absDelta,
+                            focusWeight: focusWeight,
+                          ),
+                        );
                       }
                     }
 
@@ -357,7 +370,9 @@ class _WallOfLoveSectionState extends ConsumerState<WallOfLoveSection>
                     // Sort by absolute distance from center descending.
                     // Cards furthest in background (largest absDelta) are added FIRST,
                     // and the active center hero card (absDelta ~ 0) is added LAST.
-                    visibleData.sort((a, b) => b.absDelta.compareTo(a.absDelta));
+                    visibleData.sort(
+                      (a, b) => b.absDelta.compareTo(a.absDelta),
+                    );
 
                     return GestureDetector(
                       behavior: HitTestBehavior.opaque,
@@ -365,7 +380,9 @@ class _WallOfLoveSectionState extends ConsumerState<WallOfLoveSection>
                         _animController.stop();
                       },
                       onHorizontalDragUpdate: (details) {
-                        final double sensitivity = viewportWidth >= 800 ? 300.0 : 220.0;
+                        final double sensitivity = viewportWidth >= 800
+                            ? 300.0
+                            : 220.0;
                         setState(() {
                           _scrollOffset -= details.primaryDelta! / sensitivity;
                         });
@@ -404,37 +421,57 @@ class _WallOfLoveSectionState extends ConsumerState<WallOfLoveSection>
 
                             // 3D Cylindrical physics calculations:
                             // Horizontal displacement along cylindrical curve with generous spacing
-                            final double xOffset = spacingRadius * math.sin(delta * angleStep);
+                            final double xOffset =
+                                spacingRadius * math.sin(delta * angleStep);
 
                             // Y-axis perspective rotation: cards on left face right, cards on right face left
-                            final double rotateY = (-delta * 0.36).clamp(-0.85, 0.85);
+                            final double rotateY = (-delta * 0.36).clamp(
+                              -0.85,
+                              0.85,
+                            );
 
                             // Base spatial scale along the 3D cylinder:
                             // Center card has a cosine crown at 1.0, scaling smoothly down to flanks
                             final double baseScale;
                             if (absDelta <= 1.0) {
-                              baseScale = 0.85 + 0.15 * math.cos(absDelta * (math.pi / 2.0));
+                              baseScale =
+                                  0.85 +
+                                  0.15 * math.cos(absDelta * (math.pi / 2.0));
                             } else {
-                              baseScale = (0.85 - ((absDelta - 1.0) * 0.10)).clamp(0.60, 0.85);
+                              baseScale = (0.85 - ((absDelta - 1.0) * 0.10))
+                                  .clamp(0.60, 0.85);
                             }
 
                             // Final scale: dynamic scale down during change, blooming scale up when locking into center
-                            final double scale = (baseScale * transitionScaleDip).clamp(0.56, 1.0);
+                            final double scale =
+                                (baseScale * transitionScaleDip).clamp(
+                                  0.56,
+                                  1.0,
+                                );
 
                             // Pronounced depth translucency falloff:
                             // Center card is 100% solid, while behind cards fade into the background
                             final double opacity = absDelta < 0.35
                                 ? 1.0
-                                : (math.pow(0.50, absDelta).toDouble()).clamp(0.12, 1.0);
+                                : (math.pow(0.50, absDelta).toDouble()).clamp(
+                                    0.12,
+                                    1.0,
+                                  );
 
                             return Center(
-                              key: ValueKey('testimonial_card_${item.feedbackId}'),
+                              key: ValueKey(
+                                'testimonial_card_${item.feedbackId}',
+                              ),
                               child: Transform.translate(
                                 offset: Offset(xOffset, 0),
                                 child: Transform(
                                   alignment: Alignment.center,
                                   transform: Matrix4.identity()
-                                    ..setEntry(3, 2, 0.001) // Camera perspective
+                                    ..setEntry(
+                                      3,
+                                      2,
+                                      0.001,
+                                    ) // Camera perspective
                                     ..rotateY(rotateY),
                                   child: Transform.scale(
                                     scale: scale,
@@ -444,7 +481,9 @@ class _WallOfLoveSectionState extends ConsumerState<WallOfLoveSection>
                                         behavior: HitTestBehavior.opaque,
                                         onTap: () {
                                           if (absDelta > 0.35) {
-                                            _animateToOffset(_scrollOffset + delta);
+                                            _animateToOffset(
+                                              _scrollOffset + delta,
+                                            );
                                           }
                                         },
                                         child: _TestimonialCard(
@@ -517,13 +556,16 @@ class _TestimonialCardState extends State<_TestimonialCard> {
 
   @override
   Widget build(BuildContext context) {
-    final countryText = widget.data.country != null && widget.data.country!.isNotEmpty
+    final countryText =
+        widget.data.country != null && widget.data.country!.isNotEmpty
         ? widget.data.country!
         : 'Global Learner';
 
     // Only the mid/center card on focus qualifies for hover zoom and highlight
     final bool isMidCard = widget.focusWeight > 0.70;
     final bool isZoomed = isMidCard && _isCardHovered;
+    final bool showFullTopic = isZoomed;
+    final double innerCardWidth = (widget.cardWidth ?? 370.0) - 44.0;
     final double w = isMidCard
         ? math.max(widget.focusWeight, _isCardHovered ? 1.0 : 0.0)
         : widget.focusWeight;
@@ -579,179 +621,214 @@ class _TestimonialCardState extends State<_TestimonialCard> {
                 ),
             ],
           ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(22),
-          child: Padding(
-            padding: const EdgeInsets.all(22),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Top Row: Avatar + Info (Fixed height: 44)
-                Row(
-                  children: [
-                    Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: widget.data.avatarColor.withValues(alpha: 0.12 + 0.10 * w),
-                        border: Border.all(
-                          color: widget.data.avatarColor.withValues(alpha: 0.30 + 0.35 * w),
-                          width: 1.5,
-                        ),
-                      ),
-                      child: Center(
-                        child: Text(
-                          widget.data.avatarInitial,
-                          style: TextStyle(
-                            color: widget.data.avatarColor,
-                            fontWeight: FontWeight.w900,
-                            fontSize: 15,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Flexible(
-                                child: Text(
-                                  widget.data.name,
-                                  style: TextStyle(
-                                    color: Color.lerp(
-                                      const Color(0xFFCBD5E1),
-                                      const Color(0xFFF8FAFC),
-                                      w,
-                                    ),
-                                    fontSize: 14.5,
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              const SizedBox(width: 6),
-                              Icon(
-                                Icons.verified_rounded,
-                                color: const Color(0xFF38BDF8).withValues(alpha: 0.50 + 0.50 * w),
-                                size: 14,
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            '${widget.data.educationLevel} • $countryText',
-                            style: TextStyle(
-                              color: Color.lerp(
-                                const Color(0xFF64748B),
-                                const Color(0xFF94A3B8),
-                                w,
-                              ),
-                              fontSize: 11.5,
-                              fontWeight: FontWeight.w500,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-
-                // Stars Row (Fixed height: 16)
-                Row(
-                  children: List.generate(
-                    5,
-                    (index) => Padding(
-                      padding: const EdgeInsets.only(right: 3),
-                      child: Icon(
-                        index < widget.data.rating
-                            ? Icons.star_rounded
-                            : Icons.star_border_rounded,
-                        color: index < widget.data.rating
-                            ? Color.lerp(
-                                const Color(0x99FBBF24),
-                                const Color(0xFFFBBF24),
-                                w,
-                              )
-                            : const Color(0xFF475569),
-                        size: 15,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-
-                // Quote Body (Expanded uniformly, maxLines 4)
-                Expanded(
-                  child: Align(
-                    alignment: Alignment.topLeft,
-                    child: Text(
-                      '"${widget.data.quote}"',
-                      style: TextStyle(
-                        color: Color.lerp(
-                          const Color(0xFF94A3B8),
-                          const Color(0xFFF1F5F9),
-                          w,
-                        ),
-                        fontSize: 13,
-                        height: 1.5,
-                        fontStyle: FontStyle.italic,
-                      ),
-                      maxLines: 4,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 10),
-
-                // Bottom Tag (Pinned to the exact bottom line)
-                Container(
-                  constraints: const BoxConstraints(maxWidth: 300),
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4.5),
-                  decoration: BoxDecoration(
-                    color: widget.data.avatarColor.withValues(alpha: 0.06 + 0.10 * w),
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(
-                      color: widget.data.avatarColor.withValues(alpha: 0.14 + 0.18 * w),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(22),
+            child: Padding(
+              padding: const EdgeInsets.all(22),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Top Row: Avatar + Info (Fixed height: 44)
+                  Row(
                     children: [
-                      Icon(
-                        Icons.school_outlined,
-                        size: 12,
-                        color: widget.data.avatarColor.withValues(alpha: 0.60 + 0.40 * w),
-                      ),
-                      const SizedBox(width: 5),
-                      Flexible(
-                        child: Text(
-                          'Mastered: ${widget.data.topicTag}',
-                          style: TextStyle(
-                            color: widget.data.avatarColor.withValues(alpha: 0.70 + 0.30 * w),
-                            fontSize: 10.5,
-                            fontWeight: FontWeight.w700,
+                      Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: widget.data.avatarColor.withValues(
+                            alpha: 0.12 + 0.10 * w,
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                          border: Border.all(
+                            color: widget.data.avatarColor.withValues(
+                              alpha: 0.30 + 0.35 * w,
+                            ),
+                            width: 1.5,
+                          ),
+                        ),
+                        child: Center(
+                          child: Text(
+                            widget.data.avatarInitial,
+                            style: TextStyle(
+                              color: widget.data.avatarColor,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 15,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    widget.data.name,
+                                    style: TextStyle(
+                                      color: Color.lerp(
+                                        const Color(0xFFCBD5E1),
+                                        const Color(0xFFF8FAFC),
+                                        w,
+                                      ),
+                                      fontSize: 14.5,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Icon(
+                                  Icons.verified_rounded,
+                                  color: const Color(
+                                    0xFF38BDF8,
+                                  ).withValues(alpha: 0.50 + 0.50 * w),
+                                  size: 14,
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              '${widget.data.educationLevel} • $countryText',
+                              style: TextStyle(
+                                color: Color.lerp(
+                                  const Color(0xFF64748B),
+                                  const Color(0xFF94A3B8),
+                                  w,
+                                ),
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
                         ),
                       ),
                     ],
                   ),
-                ),
-              ],
+                  const SizedBox(height: 12),
+
+                  // Stars Row (Fixed height: 16)
+                  Row(
+                    children: List.generate(
+                      5,
+                      (index) => Padding(
+                        padding: const EdgeInsets.only(right: 3),
+                        child: Icon(
+                          index < widget.data.rating
+                              ? Icons.star_rounded
+                              : Icons.star_border_rounded,
+                          color: index < widget.data.rating
+                              ? Color.lerp(
+                                  const Color(0x99FBBF24),
+                                  const Color(0xFFFBBF24),
+                                  w,
+                                )
+                              : const Color(0xFF475569),
+                          size: 15,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Quote Body (Expanded uniformly, maxLines 4)
+                  Expanded(
+                    child: Align(
+                      alignment: Alignment.topLeft,
+                      child: Text(
+                        '"${widget.data.quote}"',
+                        style: TextStyle(
+                          color: Color.lerp(
+                            const Color(0xFF94A3B8),
+                            const Color(0xFFF1F5F9),
+                            w,
+                          ),
+                          fontSize: 13,
+                          height: 1.5,
+                          fontStyle: FontStyle.italic,
+                        ),
+                        maxLines: 4,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+
+                  // Bottom Tag (Pinned to the exact bottom line; expands to show full topic on hover)
+                  AnimatedSize(
+                    duration: const Duration(milliseconds: 220),
+                    curve: Curves.easeOutCubic,
+                    alignment: Alignment.centerLeft,
+                    child: Container(
+                      constraints: BoxConstraints(
+                        maxWidth: showFullTopic
+                            ? innerCardWidth
+                            : math.min(290.0, innerCardWidth),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4.5,
+                      ),
+                      decoration: BoxDecoration(
+                        color: widget.data.avatarColor.withValues(
+                          alpha: showFullTopic ? 0.14 : (0.06 + 0.10 * w),
+                        ),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(
+                          color: widget.data.avatarColor.withValues(
+                            alpha: showFullTopic ? 0.38 : (0.14 + 0.18 * w),
+                          ),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(top: 1.5),
+                            child: Icon(
+                              Icons.school_outlined,
+                              size: 12,
+                              color: widget.data.avatarColor.withValues(
+                                alpha: showFullTopic ? 1.0 : (0.60 + 0.40 * w),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 5),
+                          Flexible(
+                            child: Text(
+                              'Mastered: ${widget.data.topicTag}',
+                              style: TextStyle(
+                                color: widget.data.avatarColor.withValues(
+                                  alpha: showFullTopic
+                                      ? 1.0
+                                      : (0.70 + 0.30 * w),
+                                ),
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.w700,
+                                height: 1.3,
+                              ),
+                              maxLines: showFullTopic ? 3 : 1,
+                              overflow: showFullTopic
+                                  ? TextOverflow.visible
+                                  : TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
       ),
-    ),
-  );
+    );
   }
 }
 
@@ -781,30 +858,58 @@ class _TestimonialShimmerCard extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    ShimmerBox(width: 110, height: 14, borderRadius: BorderRadius.all(Radius.circular(4))),
+                    ShimmerBox(
+                      width: 110,
+                      height: 14,
+                      borderRadius: BorderRadius.all(Radius.circular(4)),
+                    ),
                     SizedBox(height: 6),
-                    ShimmerBox(width: 80, height: 10, borderRadius: BorderRadius.all(Radius.circular(4))),
+                    ShimmerBox(
+                      width: 80,
+                      height: 10,
+                      borderRadius: BorderRadius.all(Radius.circular(4)),
+                    ),
                   ],
                 ),
               ],
             ),
             SizedBox(height: 12),
-            ShimmerBox(width: 90, height: 14, borderRadius: BorderRadius.all(Radius.circular(4))),
+            ShimmerBox(
+              width: 90,
+              height: 14,
+              borderRadius: BorderRadius.all(Radius.circular(4)),
+            ),
             SizedBox(height: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ShimmerBox(width: double.infinity, height: 12, borderRadius: BorderRadius.all(Radius.circular(4))),
+                  ShimmerBox(
+                    width: double.infinity,
+                    height: 12,
+                    borderRadius: BorderRadius.all(Radius.circular(4)),
+                  ),
                   SizedBox(height: 6),
-                  ShimmerBox(width: double.infinity, height: 12, borderRadius: BorderRadius.all(Radius.circular(4))),
+                  ShimmerBox(
+                    width: double.infinity,
+                    height: 12,
+                    borderRadius: BorderRadius.all(Radius.circular(4)),
+                  ),
                   SizedBox(height: 6),
-                  ShimmerBox(width: 180, height: 12, borderRadius: BorderRadius.all(Radius.circular(4))),
+                  ShimmerBox(
+                    width: 180,
+                    height: 12,
+                    borderRadius: BorderRadius.all(Radius.circular(4)),
+                  ),
                 ],
               ),
             ),
             SizedBox(height: 10),
-            ShimmerBox(width: 140, height: 22, borderRadius: BorderRadius.all(Radius.circular(6))),
+            ShimmerBox(
+              width: 140,
+              height: 22,
+              borderRadius: BorderRadius.all(Radius.circular(6)),
+            ),
           ],
         ),
       ),

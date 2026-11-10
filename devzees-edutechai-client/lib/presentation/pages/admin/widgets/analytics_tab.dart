@@ -1,5 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import '../../../widgets/center_toast.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/admin_provider.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -189,20 +191,10 @@ class AnalyticsTab extends ConsumerWidget {
                 ? null
                 : () {
                     ref.invalidate(adminMetricsProvider);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: const Row(
-                          children: [
-                            Icon(Icons.check_circle_outline, color: AppColors.accentGreen, size: 18),
-                            SizedBox(width: 8),
-                            Text('Reloading platform analytics...'),
-                          ],
-                        ),
-                        duration: const Duration(seconds: 1),
-                        backgroundColor: AppColors.surfaceDeep,
-                        behavior: SnackBarBehavior.floating,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                      ),
+                    CenterToast.showInfo(
+                      context,
+                      'Reloading platform analytics...',
+                      title: 'Refreshing Metrics',
                     );
                   },
             child: Container(

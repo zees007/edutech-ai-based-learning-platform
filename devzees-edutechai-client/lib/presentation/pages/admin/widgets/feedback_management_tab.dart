@@ -5,6 +5,7 @@ import '../../../../core/providers/feedback_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../data/models/feedback/feedback_model.dart';
+import '../../../widgets/center_toast.dart';
 import '../../../widgets/shimmer_loading.dart';
 import 'admin_data_table.dart';
 
@@ -101,7 +102,23 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
 
           // Filter bar & Search box
           _buildFilterAndSearchRow(state, isMobile),
-          const SizedBox(height: 20),
+          const SizedBox(height: 12),
+
+          // Background re-fetch subtle indicator
+          if (state.isLoading && state.items.isNotEmpty)
+            const Padding(
+              padding: EdgeInsets.only(bottom: 8),
+              child: ClipRRect(
+                borderRadius: BorderRadius.all(Radius.circular(2)),
+                child: LinearProgressIndicator(
+                  minHeight: 2,
+                  backgroundColor: Colors.transparent,
+                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.purpleLight),
+                ),
+              ),
+            )
+          else
+            const SizedBox(height: 8),
 
           // Data Table / Loading / Error
           if (state.isLoading && state.items.isEmpty)
@@ -477,25 +494,29 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
             ],
           ),
 
-          // Topic Tag
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: AppColors.purple.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(6),
-              border: Border.all(
-                color: AppColors.purple.withValues(alpha: 0.25),
+          // Topic Tag (with hover Tooltip showing full topic)
+          Tooltip(
+            message: item.topicTag,
+            waitDuration: const Duration(milliseconds: 200),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: AppColors.purple.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(
+                  color: AppColors.purple.withValues(alpha: 0.25),
+                ),
               ),
-            ),
-            child: Text(
-              item.topicTag,
-              style: TextStyle(
-                color: AppColors.purpleLight,
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
+              child: Text(
+                item.topicTag,
+                style: TextStyle(
+                  color: AppColors.purpleLight,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                ),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
               ),
-              overflow: TextOverflow.ellipsis,
-              maxLines: 1,
             ),
           ),
 
@@ -553,7 +574,24 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
             mainAxisSize: MainAxisSize.min,
             children: [
               // Feature / Unfeature Button
-              if (item.status == 'featured')
+              if (state.isFeedbackUpdating(item.feedbackId))
+                const SizedBox(
+                  width: 28,
+                  height: 28,
+                  child: Center(
+                    child: SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          Color(0xFFFBBF24),
+                        ),
+                      ),
+                    ),
+                  ),
+                )
+              else if (item.status == 'featured')
                 IconButton(
                   tooltip: 'Unfeature (Archive)',
                   visualDensity: VisualDensity.compact,
@@ -732,30 +770,24 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
 
     if (mounted) {
       if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: AppColors.surfaceMid,
-            content: Text(
-              newStatus == 'featured'
-                  ? '⭐ Feedback featured on Homepage!'
-                  : 'Feedback status updated to $newStatus',
-              style: const TextStyle(color: Colors.white),
-            ),
-          ),
+        CenterToast.showSuccess(
+          context,
+          newStatus == 'featured'
+              ? '⭐ Feedback is now featured on the homepage!'
+              : 'Feedback status updated to $newStatus',
+          title: newStatus == 'featured' ? 'Featured Testimonial' : 'Status Updated',
         );
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            backgroundColor: AppColors.rose,
-            content: Text('Failed to update feedback status.'),
-          ),
+        CenterToast.showError(
+          context,
+          'Failed to update feedback status.',
+          title: 'Update Failed',
         );
       }
     }
   }
 
   void _showModerationDialog(AdminFeedbackModel item) {
-    final messenger = ScaffoldMessenger.of(context);
     final notesController = TextEditingController(text: item.adminNotes ?? '');
     String currentStatus = item.status;
 
@@ -763,7 +795,7 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
       context: context,
       builder: (dialogContext) {
         return StatefulBuilder(
-          builder: (context, setDialogState) {
+          builder: (modalContext, setDialogState) {
             return AlertDialog(
               backgroundColor: AppColors.surfaceMid,
               shape: RoundedRectangleBorder(
@@ -909,13 +941,17 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
                                     ),
                                     const SizedBox(width: 4),
                                     Flexible(
-                                      child: Text(
-                                        item.topicTag,
-                                        style: AppTextStyles.caption.copyWith(
-                                          color: AppColors.purpleLight,
+                                      child: Tooltip(
+                                        message: item.topicTag,
+                                        waitDuration: const Duration(milliseconds: 200),
+                                        child: Text(
+                                          item.topicTag,
+                                          style: AppTextStyles.caption.copyWith(
+                                            color: AppColors.purpleLight,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 2,
                                         ),
-                                        overflow: TextOverflow.ellipsis,
-                                        maxLines: 2,
                                       ),
                                     ),
                                   ],
@@ -1090,19 +1126,19 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
                               : null,
                         );
                     if (mounted) {
-                      messenger.showSnackBar(
-                        SnackBar(
-                          backgroundColor: success
-                              ? AppColors.surfaceMid
-                              : AppColors.rose,
-                          content: Text(
-                            success
-                                ? 'Feedback status and notes saved!'
-                                : 'Failed to save feedback updates.',
-                            style: const TextStyle(color: Colors.white),
-                          ),
-                        ),
-                      );
+                      if (success) {
+                        CenterToast.showSuccess(
+                          context,
+                          'Feedback status and moderation notes saved!',
+                          title: 'Changes Saved',
+                        );
+                      } else {
+                        CenterToast.showError(
+                          context,
+                          'Failed to save feedback updates.',
+                          title: 'Save Failed',
+                        );
+                      }
                     }
                   },
                   child: const Text('Save Changes'),

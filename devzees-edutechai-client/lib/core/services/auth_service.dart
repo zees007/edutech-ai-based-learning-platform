@@ -47,7 +47,7 @@ class AuthService {
       if (e.response != null) {
         throw Exception(_parseError(e, 'Login failed'));
       }
-      throw Exception('Network error occurred. Please check if the server is running on ${ApiConstants.baseUrl}.');
+      throw Exception('Unable to connect to the server. Please check your internet connection and try again.');
     } catch (e) {
       throw Exception(e.toString());
     }
@@ -67,7 +67,7 @@ class AuthService {
       if (e.response != null) {
         throw Exception(_parseError(e, 'Registration failed'));
       }
-      throw Exception('Network error occurred. Please check if the server is running on ${ApiConstants.baseUrl}.');
+      throw Exception('Unable to connect to the server. Please check your internet connection and try again.');
     } catch (e) {
       throw Exception(e.toString());
     }

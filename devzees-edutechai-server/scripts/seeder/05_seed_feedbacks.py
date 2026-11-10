@@ -293,42 +293,38 @@ FEEDBACK_SEEDS = [
 ]
 
 
+ROLE_USER_MAP = {
+    "Admin": "admin@gmail.com",
+    "Free": "free@gmail.com",
+    "Pro": "pro@gmail.com",
+    "Ultra": "ultra@gmail.com",
+}
+
+
 async def seed_feedbacks():
-    print("Starting feedbacks seeding (18 records)...")
-    hashed_pwd = UserService.hash_password(PASSWORD)
+    print("Starting feedbacks seeding (18 records mapped to 4 core users)...")
 
     async with get_db_session() as db:
-        roles_res = await db.execute(select(Role))
-        roles = {r.name: r for r in roles_res.scalars().all()}
+        # Load the 4 core users seeded by 03_seed_users_and_subscriptions.py
+        user_res = await db.execute(
+            select(User).where(User.email.in_(list(ROLE_USER_MAP.values())))
+        )
+        users_map = {u.email: u for u in user_res.scalars().all()}
+
+        if not users_map:
+            raise RuntimeError(
+                "Core users not found! Please run '03_seed_users_and_subscriptions.py' first."
+            )
 
         seeded_count = 0
         for data in FEEDBACK_SEEDS:
-            # 1. Create or get user
-            user_res = await db.execute(
-                select(User).options(selectinload(User.roles)).where(User.email == data["email"])
-            )
-            user = user_res.scalar_one_or_none()
-
+            # Map feedback to corresponding core user based on role
+            target_email = ROLE_USER_MAP.get(data.get("role_name", "Free"), "free@gmail.com")
+            user = users_map.get(target_email)
             if not user:
-                user = User(
-                    email=data["email"],
-                    password_hash=hashed_pwd,
-                    first_name=data["first_name"],
-                    last_name=data["last_name"],
-                    country=data["country"],
-                )
-                if data["role_name"] in roles:
-                    user.roles = [roles[data["role_name"]]]
-                db.add(user)
-                await db.flush()
-            else:
-                user.first_name = data["first_name"]
-                user.last_name = data["last_name"]
-                user.country = data["country"]
-                if data["role_name"] in roles and roles[data["role_name"]] not in user.roles:
-                    user.roles.append(roles[data["role_name"]])
+                user = next(iter(users_map.values()))
 
-            # 2. Create or get completed session
+            # 1. Create or get completed session linked to core user
             session_res = await db.execute(
                 select(SessionRecord).where(SessionRecord.session_id == data["session_id"])
             )
@@ -348,11 +344,12 @@ async def seed_feedbacks():
                 db.add(session)
                 await db.flush()
             else:
+                session.user_id = user.id
                 session.topic = data["topic"]
                 session.student_level = data["education_level"]
                 session.is_complete = True
 
-            # 3. Create or update feedback record
+            # 2. Create or update feedback record linked to core user
             fb_res = await db.execute(
                 select(FeedbackRecord).where(FeedbackRecord.feedback_id == data["feedback_id"])
             )
@@ -374,6 +371,8 @@ async def seed_feedbacks():
                 )
                 db.add(feedback)
             else:
+                feedback.user_id = user.id
+                feedback.session_id = session.session_id
                 feedback.rating = data["rating"]
                 feedback.quote = data["quote"]
                 feedback.education_level = data["education_level"]
@@ -384,8 +383,23 @@ async def seed_feedbacks():
 
             seeded_count += 1
 
+        await db.flush()
+
+        # 3. Clean up any previously created mock users (@example.com)
+        cleanup_res = await db.execute(
+            select(User).where(User.email.like("%@example.com"))
+        )
+        old_mock_users = cleanup_res.scalars().all()
+        if old_mock_users:
+            print(f"Cleaning up {len(old_mock_users)} legacy mock user accounts...")
+            for old_u in old_mock_users:
+                await db.delete(old_u)
+
         await db.commit()
-        print(f"Successfully seeded {seeded_count} feedbacks across featured (6), pending (8), and archived (4) statuses.")
+        print(
+            f"Successfully seeded {seeded_count} feedbacks mapped to {len(users_map)} core user(s). "
+            f"No extra user accounts were created."
+        )
 
 
 if __name__ == "__main__":

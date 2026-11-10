@@ -13,7 +13,7 @@ import uuid
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy import func, or_, select
+from sqlalchemy import case, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.dependencies import get_current_user, require_privilege
@@ -223,28 +223,23 @@ async def list_admin_feedbacks(
     """
     Admin-only endpoint to view, search, and paginate through submitted feedbacks.
     """
-    # 1. Calculate overall metrics
-    total_q = await db.execute(select(func.count(FeedbackRecord.id)))
-    total_count = total_q.scalar() or 0
-
-    pending_q = await db.execute(select(func.count(FeedbackRecord.id)).where(FeedbackRecord.status == "pending"))
-    pending_count = pending_q.scalar() or 0
-
-    featured_q = await db.execute(select(func.count(FeedbackRecord.id)).where(FeedbackRecord.status == "featured"))
-    featured_count = featured_q.scalar() or 0
-
-    archived_q = await db.execute(select(func.count(FeedbackRecord.id)).where(FeedbackRecord.status == "archived"))
-    archived_count = archived_q.scalar() or 0
-
-    avg_q = await db.execute(select(func.avg(FeedbackRecord.rating)))
-    avg_rating = round(float(avg_q.scalar() or 0.0), 1)
+    # 1. Calculate overall metrics in a single consolidated aggregation query
+    metrics_stmt = select(
+        func.count(FeedbackRecord.id).label("total_count"),
+        func.count(case((FeedbackRecord.status == "pending", FeedbackRecord.id))).label("pending_count"),
+        func.count(case((FeedbackRecord.status == "featured", FeedbackRecord.id))).label("featured_count"),
+        func.count(case((FeedbackRecord.status == "archived", FeedbackRecord.id))).label("archived_count"),
+        func.coalesce(func.avg(FeedbackRecord.rating), 0.0).label("avg_rating"),
+    )
+    metrics_res = await db.execute(metrics_stmt)
+    metrics_row = metrics_res.one()
 
     metrics = FeedbackSummaryMetrics(
-        total_count=total_count,
-        pending_count=pending_count,
-        featured_count=featured_count,
-        archived_count=archived_count,
-        average_rating=avg_rating,
+        total_count=metrics_row.total_count or 0,
+        pending_count=metrics_row.pending_count or 0,
+        featured_count=metrics_row.featured_count or 0,
+        archived_count=metrics_row.archived_count or 0,
+        average_rating=round(float(metrics_row.avg_rating or 0.0), 1),
     )
 
     # 2. Build filtered query

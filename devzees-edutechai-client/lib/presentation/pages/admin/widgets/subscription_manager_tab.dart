@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../widgets/center_toast.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/admin_provider.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -351,26 +353,18 @@ class _SubscriptionManagerTabState extends ConsumerState<SubscriptionManagerTab>
       // Refresh users list
       await ref.read(adminUsersProvider.notifier).loadUsers();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Updated ${user.email} to ${_selectedTier.toUpperCase()}. Roles synchronized!',
-            ),
-            backgroundColor: AppColors.accentGreen,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          ),
+        CenterToast.showSuccess(
+          context,
+          'Updated ${user.email} to ${_selectedTier.toUpperCase()}. Roles synchronized!',
+          title: 'Subscription Updated',
         );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: ${e.toString().replaceAll('Exception: ', '')}'),
-            backgroundColor: AppColors.rose,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          ),
+        CenterToast.showError(
+          context,
+          e.toString().replaceAll('Exception: ', ''),
+          title: 'Update Error',
         );
       }
     } finally {

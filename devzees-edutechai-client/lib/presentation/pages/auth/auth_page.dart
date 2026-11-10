@@ -6,6 +6,7 @@ import 'package:devzees_edutechai_client/core/theme/text_styles.dart';
 import 'package:devzees_edutechai_client/core/providers/theme_provider.dart';
 import '../../../core/providers/auth_provider.dart';
 import '../../widgets/glass_loader_overlay.dart';
+import '../../widgets/center_toast.dart';
 
 import 'widgets/auth_canvas.dart';
 import 'widgets/auth_top_navbar.dart';
@@ -23,6 +24,21 @@ class _AuthPageState extends ConsumerState<AuthPage> {
   bool _isLogin = true;
   bool _isFlowchartExpanded = false;
 
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final authError = ref.read(authProvider).error;
+      if (authError != null && authError.isNotEmpty && mounted) {
+        CenterToast.showError(
+          context,
+          authError,
+          title: 'Authentication Notice',
+        );
+      }
+    });
+  }
+
   void _toggleAuthMode() {
     setState(() {
       _isLogin = !_isLogin;
@@ -39,6 +55,19 @@ class _AuthPageState extends ConsumerState<AuthPage> {
   Widget build(BuildContext context) {
     final isMobile = Responsive.isMobile(context);
     final authState = ref.watch(authProvider);
+
+    ref.listen<AuthState>(authProvider, (previous, next) {
+      if (next.error != null &&
+          next.error != previous?.error &&
+          !next.isLoading &&
+          (previous?.status == AuthStatus.authenticated && next.status == AuthStatus.unauthenticated)) {
+        CenterToast.showError(
+          context,
+          next.error!,
+          title: 'Session Expired',
+        );
+      }
+    });
     final themeMode = ref.watch(themeModeProvider);
     final platformBrightness = MediaQuery.platformBrightnessOf(context);
     final isDark = themeMode == ThemeMode.dark ||

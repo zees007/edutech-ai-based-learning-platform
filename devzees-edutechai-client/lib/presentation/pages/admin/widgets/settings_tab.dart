@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../widgets/center_toast.dart';
+
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/responsive.dart';
@@ -172,37 +174,17 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
     // Listen for success/error messages
     ref.listen<AdminSettingsState>(adminSettingsProvider, (prev, next) {
       if (next.successMessage != null && next.successMessage != prev?.successMessage) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Icon(Icons.check_circle_outline, color: Colors.white, size: 20),
-                const SizedBox(width: 10),
-                Expanded(child: Text(next.successMessage!)),
-              ],
-            ),
-            backgroundColor: AppColors.emerald,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            margin: const EdgeInsets.all(16),
-          ),
+        CenterToast.showSuccess(
+          context,
+          next.successMessage!,
+          title: 'Setting Updated',
         );
       }
       if (next.error != null && next.error != prev?.error) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Icon(Icons.error_outline, color: Colors.white, size: 20),
-                const SizedBox(width: 10),
-                Expanded(child: Text(next.error!)),
-              ],
-            ),
-            backgroundColor: AppColors.accentRose,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            margin: const EdgeInsets.all(16),
-          ),
+        CenterToast.showError(
+          context,
+          next.error!,
+          title: 'Settings Error',
         );
       }
     });
@@ -743,12 +725,10 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
                   color: AppColors.textSecondary,
                   onPressed: () {
                     Clipboard.setData(ClipboardData(text: setting.code));
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text("Copied '${setting.code}' to clipboard"),
-                        duration: const Duration(seconds: 2),
-                        behavior: SnackBarBehavior.floating,
-                      ),
+                    CenterToast.showInfo(
+                      context,
+                      "Copied '${setting.code}' to clipboard",
+                      title: 'Copied',
                     );
                   },
                 ),

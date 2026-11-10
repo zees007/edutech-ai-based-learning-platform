@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../widgets/center_toast.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/admin_provider.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -429,13 +431,10 @@ class _RolePrivilegeTabState extends ConsumerState<RolePrivilegeTab> {
   Future<void> _submitRole() async {
     final name = _roleNameController.text.trim();
     if (name.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Role name is required'),
-          backgroundColor: AppColors.rose,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        ),
+      CenterToast.showWarning(
+        context,
+        'Role name is required',
+        title: 'Validation Error',
       );
       return;
     }
@@ -460,24 +459,18 @@ class _RolePrivilegeTabState extends ConsumerState<RolePrivilegeTab> {
       _roleNameController.clear();
       _selectedPrivilegeIds = [];
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Role "$name" saved successfully!'),
-            backgroundColor: AppColors.accentGreen,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          ),
+        CenterToast.showSuccess(
+          context,
+          'Role "$name" saved successfully!',
+          title: 'Role Saved',
         );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: ${e.toString().replaceAll('Exception: ', '')}'),
-            backgroundColor: AppColors.rose,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          ),
+        CenterToast.showError(
+          context,
+          e.toString().replaceAll('Exception: ', ''),
+          title: 'Role Error',
         );
       }
     } finally {

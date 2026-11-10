@@ -154,9 +154,12 @@ def require_privilege(*privilege_codes: str):
                     return current_user
 
         codes_str = ", ".join(f"'{c}'" for c in privilege_codes)
+        logger.warning(
+            f"Access denied for user {current_user.id} ({current_user.email}). Missing required privilege: {codes_str}"
+        )
         raise ForbiddenException(
             error_code="PERMISSION_DENIED",
-            errors=f"Access denied. Missing required privilege: {codes_str}.",
+            errors="Access denied. You do not have permission to perform this action.",
         )
 
     return privilege_checker
@@ -175,9 +178,12 @@ def require_role(role_name: str):
         }
 
         if role_name not in user_role_names:
+            logger.warning(
+                f"Access denied for user {current_user.id} ({current_user.email}). Required role: '{role_name}'."
+            )
             raise ForbiddenException(
                 error_code="ROLE_REQUIRED",
-                errors=f"Access denied. Required role: '{role_name}'.",
+                errors="Access denied. You do not have permission to perform this action.",
             )
         return current_user
 

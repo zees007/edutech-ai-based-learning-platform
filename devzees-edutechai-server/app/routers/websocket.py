@@ -113,7 +113,8 @@ async def learning_websocket(websocket: WebSocket, session_id: str, token: str |
             return
             
         if not has_privilege(user, ET_INTERACT_LEARNING_SESSION):
-            await websocket.send_json({"event_type": "error", "message": "Missing required privilege: ET_INTERACT_LEARNING_SESSION."})
+            logger.warning(f"WebSocket access denied for user {user.id}. Missing required privilege: {ET_INTERACT_LEARNING_SESSION}")
+            await websocket.send_json({"event_type": "error", "message": "Access denied. You do not have permission to perform this action."})
             await websocket.close()
             return
 
