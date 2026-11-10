@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../core/providers/active_session_provider.dart';
 import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/theme/theme_palette.dart';
 import '../../../../../core/theme/text_styles.dart';
 import 'unified_learning_command_hub.dart';
 import 'split_learning_workspace.dart';
@@ -81,9 +82,13 @@ class _StepContentContainerState extends ConsumerState<_StepContentContainer> {
                 (v) => v != null && v.toString().trim().isNotEmpty));
     final isQuizGated = hasQuiz && !isQuizDone;
 
-    return Container(
+    final colors = context.appColors;
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOutCubic,
       width: double.infinity,
-      color: AppColors.isDark ? const Color(0xFF0B0C13) : AppColors.surface,
+      color: colors.scaffoldBackground,
       child: widget.activeState.isLoading
         ? const Padding(
             padding: EdgeInsets.all(48),

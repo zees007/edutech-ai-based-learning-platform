@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../data/models/learning/session_response.dart';
 import '../../../../../core/providers/gamification_provider.dart';
 import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/theme/theme_palette.dart';
 import '../../../../../core/theme/text_styles.dart';
 import 'milestone_roadmap_stepper.dart';
 import '../export/export_session_modal.dart';
@@ -54,21 +55,19 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
           children: [
             // ─── TIER 1: Command Hub Header Bar (Desktop & Tablet only) ───
             if (!isMobile)
-              Container(
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOutCubic,
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 24,
                   vertical: 12,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.isDark
-                      ? const Color(0xFF11121D)
-                      : AppColors.surfaceSolidHeader,
+                  color: context.appColors.topBarBackground,
                   border: Border(
                     bottom: BorderSide(
-                      color: AppColors.isDark
-                          ? const Color(0x14FFFFFF)
-                          : const Color(0xFFE2E8F0),
+                      color: context.appColors.border,
                       width: 1.0,
                     ),
                   ),
@@ -92,7 +91,9 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
 
             // ─── TIER 2: Milestone Learning Roadmap Stepper ─────────
             if (session.steps.isNotEmpty)
-              Container(
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOutCubic,
                 padding: EdgeInsets.fromLTRB(
                   isMobile ? 12 : 24,
                   10,
@@ -100,18 +101,10 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
                   12,
                 ),
                 decoration: BoxDecoration(
-                  color: isMobile
-                      ? AppColors.topBarBackground
-                      : (AppColors.isDark
-                          ? const Color(0xFF11121D)
-                          : AppColors.surfaceSolidHeader),
+                  color: context.appColors.topBarBackground,
                   border: Border(
                     bottom: BorderSide(
-                      color: isMobile
-                          ? AppColors.glassBorder
-                          : (AppColors.isDark
-                              ? const Color(0x14FFFFFF)
-                              : const Color(0xFFE2E8F0)),
+                      color: context.appColors.border,
                       width: 1.0,
                     ),
                   ),

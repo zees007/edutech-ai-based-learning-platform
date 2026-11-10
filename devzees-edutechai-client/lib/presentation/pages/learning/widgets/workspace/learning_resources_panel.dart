@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/theme/theme_palette.dart';
 import '../../../../../core/theme/text_styles.dart';
 import '../../../../../core/providers/active_session_provider.dart';
 import 'recommended_videos.dart';
@@ -241,26 +242,32 @@ class _LearningResourcesPanelState
         (isLastStep && isSessionComplete) ||
         (widget.stepIndex < widget.session.stepsCompleted);
 
+    final colors = context.appColors;
+
     return ScrollbarTheme(
       data: LearningResourcesPanel.workspaceScrollbarTheme,
       child: Column(
         children: [
           // Premium Segmented Tab Bar Header
-          Container(
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOutCubic,
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: AppColors.surfaceSolidHeader.withValues(alpha: 0.65),
+              color: colors.topBarBackground,
               border: Border(
-                bottom: BorderSide(color: AppColors.glassBorder, width: 0.8),
+                bottom: BorderSide(color: colors.border, width: 0.8),
               ),
             ),
-            child: Container(
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOutCubic,
               padding: const EdgeInsets.all(3),
               decoration: BoxDecoration(
-                color: AppColors.surfaceDark.withValues(alpha: 0.55),
+                color: colors.surfaceSubtle,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: AppColors.glassBorderSubtle,
+                  color: colors.border,
                   width: 0.8,
                 ),
               ),
@@ -1071,11 +1078,12 @@ class _ResourceTabItemState extends State<_ResourceTabItem> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     final isActive = widget.isActive;
     final isHovered = _isHovered;
 
     final Color textColor = isActive
-        ? AppColors.textPrimary
+        ? colors.textPrimary
         : (isHovered ? AppColors.textSlate : AppColors.textMuted);
 
     final Color iconColor = isActive
