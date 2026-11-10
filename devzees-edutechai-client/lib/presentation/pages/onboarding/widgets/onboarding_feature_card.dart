@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/theme_palette.dart';
 
 /// Feature highlight card displayed at the bottom of each onboarding slide.
 /// Built with the central AppColors design system for dark theme consistency.
@@ -17,11 +18,13 @@ class OnboardingFeatureCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
+
     return Container(
       constraints: const BoxConstraints(minHeight: 74),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.cardBackground,
+        color: colors.cardBackground,
         borderRadius: BorderRadius.circular(22),
         border: Border.all(color: AppColors.cardGlowBorder.withValues(alpha: 0.3)),
         boxShadow: const [
@@ -40,7 +43,7 @@ class OnboardingFeatureCard extends StatelessWidget {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: AppColors.chipBackground,
+              color: colors.chipBackground,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: AppColors.cardGlowBorder.withValues(alpha: 0.35),
@@ -61,7 +64,7 @@ class OnboardingFeatureCard extends StatelessWidget {
                 Text(
                   title,
                   style: TextStyle(
-                    color: AppColors.textPrimary,
+                    color: colors.textPrimary,
                     fontSize: 14.5,
                     fontWeight: FontWeight.w700,
                     letterSpacing: -0.2,
@@ -71,7 +74,7 @@ class OnboardingFeatureCard extends StatelessWidget {
                 Text(
                   description,
                   style: TextStyle(
-                    color: AppColors.textSecondary,
+                    color: colors.textSecondary,
                     fontSize: 12,
                     fontWeight: FontWeight.w400,
                     height: 1.3,

@@ -248,7 +248,9 @@ class _LearningPageState extends ConsumerState<LearningPage> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Sidebar
-            Container(
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOutCubic,
               width: isExpanded ? 280 : 80,
               decoration: BoxDecoration(
                 color: AppColors.sidebarBackground,
