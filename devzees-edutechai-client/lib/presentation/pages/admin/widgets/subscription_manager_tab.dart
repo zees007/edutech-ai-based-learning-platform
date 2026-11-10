@@ -10,6 +10,7 @@ import '../../../../data/models/admin/user_response.dart';
 import '../../../widgets/shimmer_loading.dart';
 import 'admin_data_table.dart';
 import 'tier_badge.dart';
+import 'searchable_user_dropdown.dart';
 
 /// Subscription Tier Manager tab.
 class SubscriptionManagerTab extends ConsumerStatefulWidget {
@@ -20,6 +21,10 @@ class SubscriptionManagerTab extends ConsumerStatefulWidget {
 }
 
 class _SubscriptionManagerTabState extends ConsumerState<SubscriptionManagerTab> {
+  final ScrollController _scrollController = ScrollController();
+  final GlobalKey _formKey = GlobalKey();
+
+  AdminUserResponse? _selectedUser;
   String? _selectedUserId;
   String _selectedTier = 'free';
   String _selectedStatus = 'active';
@@ -34,10 +39,39 @@ class _SubscriptionManagerTabState extends ConsumerState<SubscriptionManagerTab>
   }
 
   @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _selectUser(AdminUserResponse? user) {
+    setState(() {
+      _selectedUser = user;
+      _selectedUserId = user?.id;
+      if (user != null) {
+        _selectedTier = user.subscription?.tier.toLowerCase() ?? 'free';
+        _selectedStatus = user.subscription?.status.toLowerCase() ?? 'active';
+      }
+    });
+  }
+
+  void _selectUserFromTable(AdminUserResponse user) {
+    _selectUser(user);
+    if (_formKey.currentContext != null) {
+      Scrollable.ensureVisible(
+        _formKey.currentContext!,
+        duration: const Duration(milliseconds: 350),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final usersState = ref.watch(adminUsersProvider);
 
     return SingleChildScrollView(
+      controller: _scrollController,
       padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -85,8 +119,8 @@ class _SubscriptionManagerTabState extends ConsumerState<SubscriptionManagerTab>
   Widget _buildSubscriptionTable(AdminUsersState state) {
     final users = state.data!.items;
     return AdminDataTable(
-      columns: const ['Name', 'Email', 'Current Tier', 'Status', 'Assigned Roles'],
-      columnWidths: const [1.5, 2.0, 1.0, 1.0, 2.5],
+      columns: const ['Name', 'Email', 'Current Tier', 'Status', 'Assigned Roles', 'Actions'],
+      columnWidths: const [1.5, 2.0, 1.0, 1.0, 2.0, 1.0],
       sortBy: state.sortBy,
       isDesc: state.isDesc,
       onSort: (colName) {
@@ -137,6 +171,40 @@ class _SubscriptionManagerTabState extends ConsumerState<SubscriptionManagerTab>
             style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
             overflow: TextOverflow.ellipsis,
           ),
+          Center(
+            child: Tooltip(
+              message: 'Upgrade / Change Tier',
+              child: InkWell(
+                onTap: () => _selectUserFromTable(u),
+                borderRadius: BorderRadius.circular(8),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: AppColors.purple.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: AppColors.purple.withValues(alpha: 0.35),
+                      width: 1,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.edit_calendar_rounded, size: 14, color: AppColors.purple),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Change',
+                        style: AppTextStyles.caption.copyWith(
+                          color: AppColors.purple,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
         ];
       }).toList(),
     );
@@ -144,6 +212,7 @@ class _SubscriptionManagerTabState extends ConsumerState<SubscriptionManagerTab>
 
   Widget _buildTierUpdateForm(List<AdminUserResponse> users) {
     return Container(
+      key: _formKey,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: AppColors.surfaceDark.withValues(alpha: 0.5),
@@ -153,49 +222,33 @@ class _SubscriptionManagerTabState extends ConsumerState<SubscriptionManagerTab>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // User Dropdown
+          // User Dropdown Header
           Text(
             'Select User:',
             style: AppTextStyles.label.copyWith(color: AppColors.textSecondary),
           ),
           const SizedBox(height: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            decoration: BoxDecoration(
-              color: AppColors.glassBase,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.glassBorder),
-            ),
-            child: DropdownButton<String>(
-              value: _selectedUserId,
-              isExpanded: true,
-              dropdownColor: AppColors.popoverBackground,
-              underline: const SizedBox.shrink(),
-              hint: Text(
-                'Choose a user...',
-                style: AppTextStyles.body2.copyWith(color: AppColors.textMuted),
-              ),
-              style: AppTextStyles.body2.copyWith(color: AppColors.textPrimary),
-              items: users.map((u) {
-                return DropdownMenuItem(
-                  value: u.id,
-                  child: Text('${u.firstName} ${u.lastName} (${u.email})'),
-                );
-              }).toList(),
-              onChanged: (value) {
-                setState(() {
-                  _selectedUserId = value;
-                  if (value != null) {
-                    final user = users.firstWhere((u) => u.id == value);
-                    _selectedTier = user.subscription?.tier.toLowerCase() ?? 'free';
-                    _selectedStatus = user.subscription?.status.toLowerCase() ?? 'active';
-                  }
-                });
-              },
-            ),
+
+          // Searchable User Dropdown with live search across users
+          SearchableUserDropdown(
+            users: users,
+            selectedUser: _selectedUser,
+            hintText: 'Search by name, email, or mobile to change tier...',
+            onUserSelected: _selectUser,
+            onSearchRemote: (query) async {
+              final service = ref.read(adminServiceProvider);
+              final result = await service.searchUsers(
+                lookupText: query,
+                size: 20,
+              );
+              return result.items;
+            },
           ),
-          if (_selectedUserId != null) ...[
+
+          if (_selectedUser != null) ...[
             const SizedBox(height: 16),
+            _buildSelectedUserDetails(_selectedUser!),
+            const SizedBox(height: 20),
             Row(
               children: [
                 // Tier Selector
@@ -308,8 +361,116 @@ class _SubscriptionManagerTabState extends ConsumerState<SubscriptionManagerTab>
     );
   }
 
+  Widget _buildSelectedUserDetails(AdminUserResponse user) {
+    final initials =
+        '${user.firstName.isNotEmpty ? user.firstName[0].toUpperCase() : ''}${user.lastName.isNotEmpty ? user.lastName[0].toUpperCase() : ''}';
+    final tier = user.subscription?.tier ?? 'free';
+    final status = user.subscription?.status ?? 'active';
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceDeep.withValues(alpha: 0.6),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.glassBorder.withValues(alpha: 0.6)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          CircleAvatar(
+            radius: 20,
+            backgroundColor: AppColors.purple.withValues(alpha: 0.25),
+            child: Text(
+              initials.isEmpty ? 'U' : initials,
+              style: AppTextStyles.body2.copyWith(
+                color: AppColors.purple,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        '${user.firstName} ${user.lastName}',
+                        style: AppTextStyles.subtitle2.copyWith(color: AppColors.textPrimary),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: status == 'active'
+                            ? AppColors.accentGreen.withValues(alpha: 0.15)
+                            : AppColors.accentAmber.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        status.toUpperCase(),
+                        style: AppTextStyles.badge.copyWith(
+                          color: status == 'active' ? AppColors.accentGreen : AppColors.accentAmber,
+                          fontSize: 10,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 3),
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 4,
+                  children: [
+                    Text(
+                      user.email,
+                      style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+                    ),
+                    if (user.mobile != null && user.mobile!.isNotEmpty)
+                      Text(
+                        '• ${user.mobile}',
+                        style: AppTextStyles.caption.copyWith(color: AppColors.textMuted),
+                      ),
+                    if (user.country != null && user.country!.isNotEmpty)
+                      Text(
+                        '• ${user.country}',
+                        style: AppTextStyles.caption.copyWith(color: AppColors.textMuted),
+                      ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'CURRENT TIER',
+                style: AppTextStyles.caption.copyWith(
+                  color: AppColors.textMuted,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              const SizedBox(height: 4),
+              TierBadge(tier: tier),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _confirmAndApplyTierChange(List<AdminUserResponse> users) async {
-    final user = users.firstWhere((u) => u.id == _selectedUserId);
+    final user = _selectedUser ?? users.firstWhere((u) => u.id == _selectedUserId);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -349,9 +510,21 @@ class _SubscriptionManagerTabState extends ConsumerState<SubscriptionManagerTab>
         tier: _selectedTier,
         status: _selectedStatus,
       );
-      await service.updateSubscriptionTier(_selectedUserId!, request);
+      await service.updateSubscriptionTier(user.id, request);
       // Refresh users list
       await ref.read(adminUsersProvider.notifier).loadUsers();
+
+      // Keep _selectedUser synchronized with refreshed list
+      final updatedUsers = ref.read(adminUsersProvider).data?.items ?? [];
+      final match = updatedUsers.where((u) => u.id == user.id);
+      if (match.isNotEmpty) {
+        setState(() {
+          _selectedUser = match.first;
+          _selectedTier = match.first.subscription?.tier.toLowerCase() ?? _selectedTier;
+          _selectedStatus = match.first.subscription?.status.toLowerCase() ?? _selectedStatus;
+        });
+      }
+
       if (mounted) {
         CenterToast.showSuccess(
           context,
