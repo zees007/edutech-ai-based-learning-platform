@@ -33,8 +33,15 @@ class AuthInterceptor extends QueuedInterceptor {
          isTokenExpired = true; // Fallback assume expired
       }
 
+      final requestPath = err.requestOptions.path;
+      final uriPath = err.requestOptions.uri.path;
+      final isSilentSessionProbe =
+          requestPath.contains('auth/me') || uriPath.contains('auth/me');
+
       if (isTokenRevoked) {
-         apiClient.onSessionExpired?.call();
+         if (!isSilentSessionProbe) {
+           apiClient.onSessionExpired?.call();
+         }
          return handler.next(err);
       }
 
@@ -61,7 +68,9 @@ class AuthInterceptor extends QueuedInterceptor {
           }
         } catch (_) {
           // Refresh failed (e.g. refresh token expired)
-          apiClient.onSessionExpired?.call();
+          if (!isSilentSessionProbe) {
+            apiClient.onSessionExpired?.call();
+          }
           return handler.next(err);
         }
       }

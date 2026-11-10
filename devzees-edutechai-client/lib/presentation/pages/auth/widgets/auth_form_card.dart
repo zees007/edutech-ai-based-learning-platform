@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -202,6 +203,7 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
           context,
           error ?? 'Invalid email address or password.',
           title: 'Authentication Failed',
+          duration: const Duration(milliseconds: 6000),
         );
       }
     }
@@ -259,6 +261,7 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
           error ??
               'Registration failed. Please check your details and try again.',
           title: 'Registration Failed',
+          duration: const Duration(milliseconds: 6000),
         );
       }
     }

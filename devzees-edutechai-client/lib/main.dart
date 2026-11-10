@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:devzees_edutechai_client/core/providers/onboarding_provider.dart';
 import 'package:devzees_edutechai_client/core/router/app_router.dart';
@@ -24,12 +25,29 @@ void main() async {
   );
 }
 
-class MyApp extends ConsumerWidget {
+class MyApp extends ConsumerStatefulWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final router = ref.watch(appRouterProvider);
+  ConsumerState<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends ConsumerState<MyApp> {
+  // Read the router once and cache it. The GoRouter instance is kept alive
+  // by ref.keepAlive() inside appRouterProvider, so this reference stays valid
+  // for the entire app lifetime. Using ref.read (not ref.watch) prevents
+  // MaterialApp.router from being rebuilt when auth state changes, which would
+  // destroy the Navigator overlay and any active CenterToast entries.
+  late final GoRouter _router;
+
+  @override
+  void initState() {
+    super.initState();
+    _router = ref.read(appRouterProvider);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final themeMode = ref.watch(themeModeProvider);
 
     // Sync static AppColors adapter with active theme mode
@@ -39,13 +57,12 @@ class MyApp extends ConsumerWidget {
     AppColors.setBrightness(isDark ? Brightness.dark : Brightness.light);
 
     return MaterialApp.router(
-      key: ValueKey(themeMode),
       title: 'EduTech AI',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
-      routerConfig: router,
+      routerConfig: _router,
     );
   }
 }

@@ -502,10 +502,12 @@ class _MermaidWebViewState extends State<MermaidWebView>
         await file.writeAsString(svgContent);
         debugPrint('SVG saved for sharing at: ${file.path}');
 
-        await Share.shareXFiles(
-          [XFile(file.path, mimeType: 'image/svg+xml', name: fileName)],
-          text: 'Mermaid Diagram',
-          sharePositionOrigin: origin,
+        await SharePlus.instance.share(
+          ShareParams(
+            files: [XFile(file.path, mimeType: 'image/svg+xml', name: fileName)],
+            text: 'Mermaid Diagram',
+            sharePositionOrigin: origin,
+          ),
         );
 
         if (mounted) {

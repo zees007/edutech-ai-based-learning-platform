@@ -47,10 +47,12 @@ class ExportHelper {
         final file = File(filePath);
         await file.writeAsBytes(bytes, flush: true);
 
-        await Share.shareXFiles(
-          [XFile(filePath, mimeType: mimeType, name: filename)],
-          text: filename,
-          sharePositionOrigin: origin,
+        await SharePlus.instance.share(
+          ShareParams(
+            files: [XFile(filePath, mimeType: mimeType, name: filename)],
+            text: filename,
+            sharePositionOrigin: origin,
+          ),
         );
 
         if (context.mounted) {

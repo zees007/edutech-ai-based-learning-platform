@@ -62,6 +62,83 @@ void main() {
     expect(find.text('Authentication Failed'), findsNothing);
   });
 
+  testWidgets('CenterToast stays visible for 6 seconds', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Builder(
+            builder: (context) {
+              return ElevatedButton(
+                onPressed: () {
+                  CenterToast.showError(
+                    context,
+                    'Invalid email address or password.',
+                    title: 'Authentication Failed',
+                  );
+                },
+                child: const Text('Show Error'),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Show Error'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 320));
+
+    expect(find.text('Authentication Failed'), findsOneWidget);
+
+    // At 4 seconds (4000ms), it should STILL be visible!
+    await tester.pump(const Duration(milliseconds: 4000));
+    expect(find.text('Authentication Failed'), findsOneWidget);
+
+    // At > 6 seconds total, it animates out and disappears
+    await tester.pump(const Duration(milliseconds: 2100));
+    await tester.pump(const Duration(milliseconds: 350));
+    expect(find.text('Authentication Failed'), findsNothing);
+  });
+
+  testWidgets('CenterToast.showSuccess stays visible for 4.5 seconds', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Builder(
+            builder: (context) {
+              return ElevatedButton(
+                onPressed: () {
+                  CenterToast.showSuccess(
+                    context,
+                    'Action completed successfully.',
+                    title: 'Success',
+                  );
+                },
+                child: const Text('Show Success'),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Show Success'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 320));
+
+    expect(find.text('Success'), findsOneWidget);
+    expect(find.text('Action completed successfully.'), findsOneWidget);
+
+    // At 3 seconds (3000ms), it should STILL be visible!
+    await tester.pump(const Duration(milliseconds: 3000));
+    expect(find.text('Action completed successfully.'), findsOneWidget);
+
+    // At > 4.5 seconds total, it animates out and disappears
+    await tester.pump(const Duration(milliseconds: 1600));
+    await tester.pump(const Duration(milliseconds: 350));
+    expect(find.text('Action completed successfully.'), findsNothing);
+  });
+
   testWidgets('CenterToast is responsive on mobile viewport', (tester) async {
     // Set small mobile size: 360 x 640
     tester.view.physicalSize = const Size(360, 640);

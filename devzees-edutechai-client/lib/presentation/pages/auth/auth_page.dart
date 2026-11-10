@@ -28,14 +28,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final authError = ref.read(authProvider).error;
-      if (authError != null && authError.isNotEmpty && mounted) {
-        CenterToast.showError(
-          context,
-          authError,
-          title: 'Authentication Notice',
-        );
-      }
+      ref.read(authProvider.notifier).clearError();
     });
   }
 
@@ -65,6 +58,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
           context,
           next.error!,
           title: 'Session Expired',
+          duration: const Duration(milliseconds: 6000),
         );
       }
     });
