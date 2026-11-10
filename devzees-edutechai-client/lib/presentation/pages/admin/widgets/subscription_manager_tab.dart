@@ -3,6 +3,7 @@ import '../../../widgets/center_toast.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/admin_provider.dart';
+import '../../../../core/providers/theme_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../data/models/admin/subscription_update_request.dart';
@@ -17,10 +18,12 @@ class SubscriptionManagerTab extends ConsumerStatefulWidget {
   const SubscriptionManagerTab({super.key});
 
   @override
-  ConsumerState<SubscriptionManagerTab> createState() => _SubscriptionManagerTabState();
+  ConsumerState<SubscriptionManagerTab> createState() =>
+      _SubscriptionManagerTabState();
 }
 
-class _SubscriptionManagerTabState extends ConsumerState<SubscriptionManagerTab> {
+class _SubscriptionManagerTabState
+    extends ConsumerState<SubscriptionManagerTab> {
   final ScrollController _scrollController = ScrollController();
   final GlobalKey _formKey = GlobalKey();
 
@@ -68,6 +71,7 @@ class _SubscriptionManagerTabState extends ConsumerState<SubscriptionManagerTab>
 
   @override
   Widget build(BuildContext context) {
+    ref.watch(themeModeProvider);
     final usersState = ref.watch(adminUsersProvider);
 
     return SingleChildScrollView(
@@ -119,7 +123,14 @@ class _SubscriptionManagerTabState extends ConsumerState<SubscriptionManagerTab>
   Widget _buildSubscriptionTable(AdminUsersState state) {
     final users = state.data!.items;
     return AdminDataTable(
-      columns: const ['Name', 'Email', 'Current Tier', 'Status', 'Assigned Roles', 'Actions'],
+      columns: const [
+        'Name',
+        'Email',
+        'Current Tier',
+        'Status',
+        'Assigned Roles',
+        'Actions',
+      ],
       columnWidths: const [1.5, 2.0, 1.0, 1.0, 2.0, 1.0],
       sortBy: state.sortBy,
       isDesc: state.isDesc,
@@ -138,7 +149,10 @@ class _SubscriptionManagerTabState extends ConsumerState<SubscriptionManagerTab>
       rows: users.map<List<Widget>>((u) {
         final tier = u.subscription?.tier ?? 'free';
         final status = u.subscription?.status ?? 'active';
-        final rolesStr = u.roles.where((r) => !r.retired).map((r) => r.name).join(', ');
+        final rolesStr = u.roles
+            .where((r) => !r.retired)
+            .map((r) => r.name)
+            .join(', ');
         return [
           Text(
             '${u.firstName} ${u.lastName}',
@@ -147,7 +161,9 @@ class _SubscriptionManagerTabState extends ConsumerState<SubscriptionManagerTab>
           ),
           Text(
             u.email,
-            style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+            style: AppTextStyles.caption.copyWith(
+              color: AppColors.textSecondary,
+            ),
             overflow: TextOverflow.ellipsis,
           ),
           TierBadge(tier: tier),
@@ -162,13 +178,17 @@ class _SubscriptionManagerTabState extends ConsumerState<SubscriptionManagerTab>
             child: Text(
               status.toUpperCase(),
               style: AppTextStyles.badge.copyWith(
-                color: status == 'active' ? AppColors.accentGreen : AppColors.accentAmber,
+                color: status == 'active'
+                    ? AppColors.accentGreen
+                    : AppColors.accentAmber,
               ),
             ),
           ),
           Text(
             rolesStr.isEmpty ? 'None' : rolesStr,
-            style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+            style: AppTextStyles.caption.copyWith(
+              color: AppColors.textSecondary,
+            ),
             overflow: TextOverflow.ellipsis,
           ),
           Center(
@@ -178,7 +198,10 @@ class _SubscriptionManagerTabState extends ConsumerState<SubscriptionManagerTab>
                 onTap: () => _selectUserFromTable(u),
                 borderRadius: BorderRadius.circular(8),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.purple.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(8),
@@ -190,7 +213,11 @@ class _SubscriptionManagerTabState extends ConsumerState<SubscriptionManagerTab>
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.edit_calendar_rounded, size: 14, color: AppColors.purple),
+                      const Icon(
+                        Icons.edit_calendar_rounded,
+                        size: 14,
+                        color: AppColors.purple,
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         'Change',
@@ -258,7 +285,9 @@ class _SubscriptionManagerTabState extends ConsumerState<SubscriptionManagerTab>
                     children: [
                       Text(
                         'Target Tier:',
-                        style: AppTextStyles.label.copyWith(color: AppColors.textSecondary),
+                        style: AppTextStyles.label.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
                       ),
                       const SizedBox(height: 8),
                       Container(
@@ -273,14 +302,26 @@ class _SubscriptionManagerTabState extends ConsumerState<SubscriptionManagerTab>
                           isExpanded: true,
                           dropdownColor: AppColors.popoverBackground,
                           underline: const SizedBox.shrink(),
-                          style: AppTextStyles.body2.copyWith(color: AppColors.textPrimary),
+                          style: AppTextStyles.body2.copyWith(
+                            color: AppColors.textPrimary,
+                          ),
                           items: const [
-                            DropdownMenuItem(value: 'free', child: Text('FREE Tier')),
-                            DropdownMenuItem(value: 'pro', child: Text('PRO Tier')),
-                            DropdownMenuItem(value: 'ultra', child: Text('ULTRA Tier')),
+                            DropdownMenuItem(
+                              value: 'free',
+                              child: Text('FREE Tier'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'pro',
+                              child: Text('PRO Tier'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'ultra',
+                              child: Text('ULTRA Tier'),
+                            ),
                           ],
                           onChanged: (value) {
-                            if (value != null) setState(() => _selectedTier = value);
+                            if (value != null)
+                              setState(() => _selectedTier = value);
                           },
                         ),
                       ),
@@ -295,7 +336,9 @@ class _SubscriptionManagerTabState extends ConsumerState<SubscriptionManagerTab>
                     children: [
                       Text(
                         'Status:',
-                        style: AppTextStyles.label.copyWith(color: AppColors.textSecondary),
+                        style: AppTextStyles.label.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
                       ),
                       const SizedBox(height: 8),
                       Container(
@@ -310,15 +353,30 @@ class _SubscriptionManagerTabState extends ConsumerState<SubscriptionManagerTab>
                           isExpanded: true,
                           dropdownColor: AppColors.popoverBackground,
                           underline: const SizedBox.shrink(),
-                          style: AppTextStyles.body2.copyWith(color: AppColors.textPrimary),
+                          style: AppTextStyles.body2.copyWith(
+                            color: AppColors.textPrimary,
+                          ),
                           items: const [
-                            DropdownMenuItem(value: 'active', child: Text('Active')),
-                            DropdownMenuItem(value: 'canceled', child: Text('Canceled')),
-                            DropdownMenuItem(value: 'expired', child: Text('Expired')),
-                            DropdownMenuItem(value: 'past_due', child: Text('Past Due')),
+                            DropdownMenuItem(
+                              value: 'active',
+                              child: Text('Active'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'canceled',
+                              child: Text('Canceled'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'expired',
+                              child: Text('Expired'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'past_due',
+                              child: Text('Past Due'),
+                            ),
                           ],
                           onChanged: (value) {
-                            if (value != null) setState(() => _selectedStatus = value);
+                            if (value != null)
+                              setState(() => _selectedStatus = value);
                           },
                         ),
                       ),
@@ -332,7 +390,9 @@ class _SubscriptionManagerTabState extends ConsumerState<SubscriptionManagerTab>
             SizedBox(
               height: 48,
               child: ElevatedButton.icon(
-                onPressed: _isUpdating ? null : () => _confirmAndApplyTierChange(users),
+                onPressed: _isUpdating
+                    ? null
+                    : () => _confirmAndApplyTierChange(users),
                 icon: _isUpdating
                     ? const SizedBox(
                         width: 20,
@@ -399,13 +459,18 @@ class _SubscriptionManagerTabState extends ConsumerState<SubscriptionManagerTab>
                     Flexible(
                       child: Text(
                         '${user.firstName} ${user.lastName}',
-                        style: AppTextStyles.subtitle2.copyWith(color: AppColors.textPrimary),
+                        style: AppTextStyles.subtitle2.copyWith(
+                          color: AppColors.textPrimary,
+                        ),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     const SizedBox(width: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 7,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: status == 'active'
                             ? AppColors.accentGreen.withValues(alpha: 0.15)
@@ -415,7 +480,9 @@ class _SubscriptionManagerTabState extends ConsumerState<SubscriptionManagerTab>
                       child: Text(
                         status.toUpperCase(),
                         style: AppTextStyles.badge.copyWith(
-                          color: status == 'active' ? AppColors.accentGreen : AppColors.accentAmber,
+                          color: status == 'active'
+                              ? AppColors.accentGreen
+                              : AppColors.accentAmber,
                           fontSize: 10,
                         ),
                       ),
@@ -429,17 +496,23 @@ class _SubscriptionManagerTabState extends ConsumerState<SubscriptionManagerTab>
                   children: [
                     Text(
                       user.email,
-                      style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
                     ),
                     if (user.mobile != null && user.mobile!.isNotEmpty)
                       Text(
                         '• ${user.mobile}',
-                        style: AppTextStyles.caption.copyWith(color: AppColors.textMuted),
+                        style: AppTextStyles.caption.copyWith(
+                          color: AppColors.textMuted,
+                        ),
                       ),
                     if (user.country != null && user.country!.isNotEmpty)
                       Text(
                         '• ${user.country}',
-                        style: AppTextStyles.caption.copyWith(color: AppColors.textMuted),
+                        style: AppTextStyles.caption.copyWith(
+                          color: AppColors.textMuted,
+                        ),
                       ),
                   ],
                 ),
@@ -470,7 +543,8 @@ class _SubscriptionManagerTabState extends ConsumerState<SubscriptionManagerTab>
   }
 
   Future<void> _confirmAndApplyTierChange(List<AdminUserResponse> users) async {
-    final user = _selectedUser ?? users.firstWhere((u) => u.id == _selectedUserId);
+    final user =
+        _selectedUser ?? users.firstWhere((u) => u.id == _selectedUserId);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -487,13 +561,18 @@ class _SubscriptionManagerTabState extends ConsumerState<SubscriptionManagerTab>
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text('Cancel', style: AppTextStyles.button.copyWith(color: AppColors.textMuted)),
+            child: Text(
+              'Cancel',
+              style: AppTextStyles.button.copyWith(color: AppColors.textMuted),
+            ),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(ctx).pop(true),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.purple,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
             child: Text('Apply', style: AppTextStyles.button),
           ),
@@ -520,8 +599,10 @@ class _SubscriptionManagerTabState extends ConsumerState<SubscriptionManagerTab>
       if (match.isNotEmpty) {
         setState(() {
           _selectedUser = match.first;
-          _selectedTier = match.first.subscription?.tier.toLowerCase() ?? _selectedTier;
-          _selectedStatus = match.first.subscription?.status.toLowerCase() ?? _selectedStatus;
+          _selectedTier =
+              match.first.subscription?.tier.toLowerCase() ?? _selectedTier;
+          _selectedStatus =
+              match.first.subscription?.status.toLowerCase() ?? _selectedStatus;
         });
       }
 
@@ -558,11 +639,17 @@ class _SubscriptionManagerTabState extends ConsumerState<SubscriptionManagerTab>
           const Icon(Icons.error_outline, color: AppColors.rose),
           const SizedBox(width: 12),
           Expanded(
-            child: Text(error, style: AppTextStyles.body2.copyWith(color: AppColors.rose)),
+            child: Text(
+              error,
+              style: AppTextStyles.body2.copyWith(color: AppColors.rose),
+            ),
           ),
           TextButton(
             onPressed: () => ref.read(adminUsersProvider.notifier).loadUsers(),
-            child: Text('Retry', style: AppTextStyles.button.copyWith(color: AppColors.rose)),
+            child: Text(
+              'Retry',
+              style: AppTextStyles.button.copyWith(color: AppColors.rose),
+            ),
           ),
         ],
       ),

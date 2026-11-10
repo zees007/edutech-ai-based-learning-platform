@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/responsive.dart';
 import '../../../../core/providers/admin_provider.dart';
+import '../../../../core/providers/theme_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../data/models/admin/system_setting_model.dart';
@@ -165,6 +166,7 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
 
   @override
   Widget build(BuildContext context) {
+    ref.watch(themeModeProvider);
     final state = ref.watch(adminSettingsProvider);
     final isMobile = Responsive.isMobile(context);
 

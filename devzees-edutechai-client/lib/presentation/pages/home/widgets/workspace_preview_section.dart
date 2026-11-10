@@ -708,7 +708,7 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
               children: [
                 Row(
                   children: const [
-                    Icon(Icons.tips_and_updates_rounded, color: Color(0xFFFBBF24), size: 16),
+                    Icon(Icons.tips_and_updates_rounded, color: AppColors.accentAmber, size: 16),
                     SizedBox(width: 8),
                     Text(
                       'Ponder This Before Advancing:',
@@ -834,7 +834,7 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
       children: [
         Row(
           children: [
-            const Icon(Icons.play_circle_fill_rounded, color: Color(0xFFEF4444), size: 20),
+            const Icon(Icons.play_circle_fill_rounded, color: AppColors.accentRose, size: 20),
             const SizedBox(width: 8),
             Text(
               'Curated YouTube Deep-Link',
@@ -848,11 +848,11 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(
-                color: Colors.redAccent.withValues(alpha: 0.2),
+                color: AppColors.accentRose.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.redAccent.withValues(alpha: 0.4)),
+                border: Border.all(color: AppColors.accentRose.withValues(alpha: 0.4)),
               ),
-              child: const Text('AUTO-SEEK: 03:42', style: TextStyle(color: Colors.redAccent, fontSize: 10, fontWeight: FontWeight.w800)),
+              child: const Text('AUTO-SEEK: 03:42', style: TextStyle(color: AppColors.accentRose, fontSize: 10, fontWeight: FontWeight.w800)),
             ),
           ],
         ),
@@ -865,7 +865,7 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
             gradient: const LinearGradient(
-              colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+              colors: [AppColors.slate900, AppColors.slate800],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -959,7 +959,7 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
       children: [
         Row(
           children: [
-            const Icon(Icons.menu_book_rounded, color: Color(0xFF10B981), size: 20),
+            const Icon(Icons.menu_book_rounded, color: AppColors.accentGreen, size: 20),
             const SizedBox(width: 8),
             Text(
               'Curated Academic Literature',
@@ -1074,7 +1074,7 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
       children: [
         Row(
           children: [
-            const Icon(Icons.quiz_rounded, color: Color(0xFFF59E0B), size: 20),
+            const Icon(Icons.quiz_rounded, color: AppColors.accentAmber, size: 20),
             const SizedBox(width: 8),
             Text(
               'Formative Knowledge Check',

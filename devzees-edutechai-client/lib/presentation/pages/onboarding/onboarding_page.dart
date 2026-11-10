@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:devzees_edutechai_client/core/providers/onboarding_provider.dart';
 import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
+import 'package:devzees_edutechai_client/core/theme/app_theme.dart';
 import 'package:devzees_edutechai_client/core/theme/text_styles.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/gradient_text.dart';
 
@@ -34,9 +35,6 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage>
   @override
   void initState() {
     super.initState();
-    // Enforce dark palette for onboarding screens to ensure solid deep canvas
-    AppColors.setBrightness(Brightness.dark);
-
     _pageController = PageController()
       ..addListener(() {
         final page = _pageController.page ?? 0;
@@ -99,46 +97,49 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage>
     final isLastSlide = _currentPage == slides.length - 1;
     final bottomPadding = MediaQuery.of(context).padding.bottom;
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: FadeTransition(
-          opacity: _fadeIn,
-          child: SlideTransition(
-            position: _slideUp,
-            child: Column(
-              children: [
-                // ── Top Navigation Bar ──
-                _buildTopNav(isLastSlide),
+    return Theme(
+      data: AppTheme.darkTheme,
+      child: Scaffold(
+        backgroundColor: AppColors.darkPalette.scaffoldBackground,
+        body: SafeArea(
+          child: FadeTransition(
+            opacity: _fadeIn,
+            child: SlideTransition(
+              position: _slideUp,
+              child: Column(
+                children: [
+                  // ── Top Navigation Bar ──
+                  _buildTopNav(isLastSlide),
 
-                // ── PageView Slides ──
-                Expanded(
-                  child: PageView.builder(
-                    controller: _pageController,
-                    physics: const ClampingScrollPhysics(),
-                    itemCount: slides.length,
-                    itemBuilder: (context, index) {
-                      return AnimatedBuilder(
-                        animation: _pageController,
-                        builder: (context, child) {
-                          double pageOffset = 0.0;
-                          if (_pageController.hasClients &&
-                              _pageController.position.haveDimensions) {
-                            pageOffset = (_pageController.page ?? 0) - index;
-                          }
-                          return OnboardingSlide(
-                            data: slides[index],
-                            pageOffset: pageOffset,
-                          );
-                        },
-                      );
-                    },
+                  // ── PageView Slides ──
+                  Expanded(
+                    child: PageView.builder(
+                      controller: _pageController,
+                      physics: const ClampingScrollPhysics(),
+                      itemCount: slides.length,
+                      itemBuilder: (context, index) {
+                        return AnimatedBuilder(
+                          animation: _pageController,
+                          builder: (context, child) {
+                            double pageOffset = 0.0;
+                            if (_pageController.hasClients &&
+                                _pageController.position.haveDimensions) {
+                              pageOffset = (_pageController.page ?? 0) - index;
+                            }
+                            return OnboardingSlide(
+                              data: slides[index],
+                              pageOffset: pageOffset,
+                            );
+                          },
+                        );
+                      },
+                    ),
                   ),
-                ),
 
-                // ── Bottom Interactive Area ──
-                _buildBottomArea(slides, isLastSlide, bottomPadding),
-              ],
+                  // ── Bottom Interactive Area ──
+                  _buildBottomArea(slides, isLastSlide, bottomPadding),
+                ],
+              ),
             ),
           ),
         ),

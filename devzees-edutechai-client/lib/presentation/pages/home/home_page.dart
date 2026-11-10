@@ -44,34 +44,17 @@ class _HomePageState extends ConsumerState<HomePage> {
   final GlobalKey _aboutKey = GlobalKey();
   final GlobalKey _pricingKey = GlobalKey();
   final GlobalKey _faqKey = GlobalKey();
-  ThemeMode _themeMode = ThemeMode.system;
 
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_scrollListener);
-    // Enforce dark palette for home page
-    AppColors.setBrightness(Brightness.dark);
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _themeMode = ref.read(themeModeProvider);
   }
 
   @override
   void dispose() {
     _scrollController.removeListener(_scrollListener);
     _scrollController.dispose();
-    // Restore AppColors to active user preference when leaving home page
-    final platformBrightness =
-        WidgetsBinding.instance.platformDispatcher.platformBrightness;
-    final isDark =
-        _themeMode == ThemeMode.dark ||
-        (_themeMode == ThemeMode.system &&
-            platformBrightness == Brightness.dark);
-    AppColors.setBrightness(isDark ? Brightness.dark : Brightness.light);
     super.dispose();
   }
 
@@ -149,12 +132,10 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    // Guarantee dark palette while home page is in view
-    AppColors.setBrightness(Brightness.dark);
-
     return Theme(
       data: AppTheme.darkTheme,
       child: Scaffold(
+        backgroundColor: AppColors.darkPalette.scaffoldBackground,
         body: GlowBackground(
           child: CustomScrollView(
             controller: _scrollController,
@@ -288,13 +269,13 @@ class _HomePageState extends ConsumerState<HomePage> {
                 height: 50,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: const Color(0xCC080914),
+                  color: AppColors.darkPalette.surface.withValues(alpha: 0.85),
                   border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.15),
+                    color: AppColors.darkPalette.border,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.5),
+                      color: AppColors.darkPalette.shadowColor,
                       blurRadius: 16,
                       offset: const Offset(0, 4),
                     ),
@@ -311,10 +292,10 @@ class _HomePageState extends ConsumerState<HomePage> {
                       color: Colors.transparent,
                       child: InkWell(
                         onTap: _scrollToTop,
-                        child: const Center(
+                        child: Center(
                           child: Icon(
                             Icons.arrow_upward_rounded,
-                            color: Color(0xFFEEF0F6),
+                            color: AppColors.darkPalette.textPrimary,
                             size: 20,
                           ),
                         ),

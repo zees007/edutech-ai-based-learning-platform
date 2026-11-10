@@ -56,11 +56,14 @@ class _AdminDataTableState extends State<AdminDataTable> {
 
   @override
   Widget build(BuildContext context) {
+    Theme.of(context);
     return ClipRRect(
       borderRadius: BorderRadius.circular(16),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-        child: Container(
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOutCubic,
           decoration: BoxDecoration(
             color: AppColors.surfaceDark.withValues(alpha: 0.6),
             borderRadius: BorderRadius.circular(16),

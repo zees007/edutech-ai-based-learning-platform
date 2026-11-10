@@ -4,6 +4,7 @@ import '../../../widgets/center_toast.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/admin_provider.dart';
+import '../../../../core/providers/theme_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../widgets/shimmer_loading.dart';
@@ -15,6 +16,7 @@ class AnalyticsTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(themeModeProvider);
     final metricsAsync = ref.watch(adminMetricsProvider);
     final isMobile = MediaQuery.of(context).size.width < 600;
 
@@ -59,12 +61,19 @@ class AnalyticsTab extends ConsumerWidget {
                             ),
                           ),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
                             decoration: BoxDecoration(
-                              color: AppColors.accentGreen.withValues(alpha: 0.15),
+                              color: AppColors.accentGreen.withValues(
+                                alpha: 0.15,
+                              ),
                               borderRadius: BorderRadius.circular(6),
                               border: Border.all(
-                                color: AppColors.accentGreen.withValues(alpha: 0.4),
+                                color: AppColors.accentGreen.withValues(
+                                  alpha: 0.4,
+                                ),
                               ),
                             ),
                             child: Row(
@@ -143,7 +152,9 @@ class AnalyticsTab extends ConsumerWidget {
                 decoration: BoxDecoration(
                   color: AppColors.rose.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.rose.withValues(alpha: 0.3)),
+                  border: Border.all(
+                    color: AppColors.rose.withValues(alpha: 0.3),
+                  ),
                 ),
                 child: Row(
                   children: [
@@ -152,14 +163,18 @@ class AnalyticsTab extends ConsumerWidget {
                     Expanded(
                       child: Text(
                         err.toString(),
-                        style: AppTextStyles.body2.copyWith(color: AppColors.rose),
+                        style: AppTextStyles.body2.copyWith(
+                          color: AppColors.rose,
+                        ),
                       ),
                     ),
                     TextButton(
                       onPressed: () => ref.invalidate(adminMetricsProvider),
                       child: Text(
                         'Retry',
-                        style: AppTextStyles.button.copyWith(color: AppColors.rose),
+                        style: AppTextStyles.button.copyWith(
+                          color: AppColors.rose,
+                        ),
                       ),
                     ),
                   ],
@@ -246,7 +261,7 @@ class AnalyticsTab extends ConsumerWidget {
         value: metrics.freeCount,
         icon: Icons.person_outline,
         gradient: const LinearGradient(
-          colors: [Color(0xFF334155), Color(0xFF475569)],
+          colors: [AppColors.slate700, AppColors.slate600],
         ),
         iconColor: AppColors.slate400,
       ),
@@ -278,16 +293,17 @@ class AnalyticsTab extends ConsumerWidget {
         final crossAxisCount = constraints.maxWidth > 900
             ? 5
             : constraints.maxWidth > 600
-                ? 3
-                : constraints.maxWidth > 340
-                    ? 2
-                    : 1;
+            ? 3
+            : constraints.maxWidth > 340
+            ? 2
+            : 1;
         return Wrap(
           spacing: isMobile ? 12 : 16,
           runSpacing: isMobile ? 12 : 16,
           children: cards.map((card) {
             final spacingTotal = (crossAxisCount - 1) * (isMobile ? 12 : 16);
-            final width = (constraints.maxWidth - spacingTotal) / crossAxisCount;
+            final width =
+                (constraints.maxWidth - spacingTotal) / crossAxisCount;
             return SizedBox(
               width: width,
               child: _MetricCard(data: card, isMobile: isMobile),
@@ -324,11 +340,14 @@ class AnalyticsTab extends ConsumerWidget {
       child: BarChart(
         BarChartData(
           alignment: BarChartAlignment.spaceEvenly,
-          maxY: metrics.totalUsers > 0 ? (metrics.totalUsers * 1.2).toDouble() : 10.0,
+          maxY: metrics.totalUsers > 0
+              ? (metrics.totalUsers * 1.2).toDouble()
+              : 10.0,
           barTouchData: BarTouchData(
             enabled: true,
             touchTooltipData: BarTouchTooltipData(
-              getTooltipColor: (_) => AppColors.popoverBackground.withValues(alpha: 0.9),
+              getTooltipColor: (_) =>
+                  AppColors.popoverBackground.withValues(alpha: 0.9),
               tooltipRoundedRadius: 8,
               getTooltipItem: (group, groupIndex, rod, rodIndex) {
                 final labels = ['Normal (Free)', 'Pro', 'Ultra'];
@@ -341,8 +360,12 @@ class AnalyticsTab extends ConsumerWidget {
           ),
           titlesData: FlTitlesData(
             show: true,
-            topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-            rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            topTitles: const AxisTitles(
+              sideTitles: SideTitles(showTitles: false),
+            ),
+            rightTitles: const AxisTitles(
+              sideTitles: SideTitles(showTitles: false),
+            ),
             leftTitles: AxisTitles(
               sideTitles: SideTitles(
                 showTitles: true,
@@ -350,7 +373,9 @@ class AnalyticsTab extends ConsumerWidget {
                 getTitlesWidget: (value, meta) {
                   return Text(
                     value.toInt().toString(),
-                    style: AppTextStyles.caption.copyWith(color: AppColors.textMuted),
+                    style: AppTextStyles.caption.copyWith(
+                      color: AppColors.textMuted,
+                    ),
                   );
                 },
               ),
@@ -366,7 +391,9 @@ class AnalyticsTab extends ConsumerWidget {
                       padding: const EdgeInsets.only(top: 8),
                       child: Text(
                         labels[value.toInt()],
-                        style: AppTextStyles.label.copyWith(color: AppColors.textSecondary),
+                        style: AppTextStyles.label.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
                       ),
                     );
                   }
@@ -378,7 +405,10 @@ class AnalyticsTab extends ConsumerWidget {
           gridData: FlGridData(
             show: true,
             drawVerticalLine: false,
-            horizontalInterval: (metrics.totalUsers / 4).ceilToDouble().clamp(1.0, double.infinity),
+            horizontalInterval: (metrics.totalUsers / 4).ceilToDouble().clamp(
+              1.0,
+              double.infinity,
+            ),
             getDrawingHorizontalLine: (value) => FlLine(
               color: AppColors.glassBorder.withValues(alpha: 0.5),
               strokeWidth: 0.5,
@@ -386,16 +416,36 @@ class AnalyticsTab extends ConsumerWidget {
           ),
           borderData: FlBorderData(show: false),
           barGroups: [
-            _makeBarGroup(0, metrics.freeCount.toDouble(), AppColors.slate500, barWidth),
-            _makeBarGroup(1, metrics.proCount.toDouble(), AppColors.accentBlue, barWidth),
-            _makeBarGroup(2, metrics.ultraCount.toDouble(), AppColors.purpleDeep, barWidth),
+            _makeBarGroup(
+              0,
+              metrics.freeCount.toDouble(),
+              AppColors.slate500,
+              barWidth,
+            ),
+            _makeBarGroup(
+              1,
+              metrics.proCount.toDouble(),
+              AppColors.accentBlue,
+              barWidth,
+            ),
+            _makeBarGroup(
+              2,
+              metrics.ultraCount.toDouble(),
+              AppColors.purpleDeep,
+              barWidth,
+            ),
           ],
         ),
       ),
     );
   }
 
-  BarChartGroupData _makeBarGroup(int x, double y, Color color, double barWidth) {
+  BarChartGroupData _makeBarGroup(
+    int x,
+    double y,
+    Color color,
+    double barWidth,
+  ) {
     return BarChartGroupData(
       x: x,
       barRods: [
@@ -409,10 +459,7 @@ class AnalyticsTab extends ConsumerWidget {
           gradient: LinearGradient(
             begin: Alignment.bottomCenter,
             end: Alignment.topCenter,
-            colors: [
-              color.withValues(alpha: 0.6),
-              color,
-            ],
+            colors: [color.withValues(alpha: 0.6), color],
           ),
           backDrawRodData: BackgroundBarChartRodData(
             show: true,
@@ -444,10 +491,7 @@ class _MetricCard extends StatefulWidget {
   final _MetricCardData data;
   final bool isMobile;
 
-  const _MetricCard({
-    required this.data,
-    this.isMobile = false,
-  });
+  const _MetricCard({required this.data, this.isMobile = false});
 
   @override
   State<_MetricCard> createState() => _MetricCardState();

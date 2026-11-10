@@ -3,6 +3,7 @@ import '../../../widgets/center_toast.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/admin_provider.dart';
+import '../../../../core/providers/theme_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../data/models/admin/user_response.dart';
@@ -93,6 +94,7 @@ class _UserDirectoryTabState extends ConsumerState<UserDirectoryTab> {
 
   @override
   Widget build(BuildContext context) {
+    ref.watch(themeModeProvider);
     final usersState = ref.watch(adminUsersProvider);
     final rolesState = ref.watch(adminRolesProvider);
     final usersList = usersState.data?.items ?? [];

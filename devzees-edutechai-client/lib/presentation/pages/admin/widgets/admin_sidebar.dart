@@ -20,6 +20,7 @@ class AdminSidebar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Theme.of(context);
     return SafeArea(
       child: Column(
         children: [
@@ -260,7 +261,7 @@ class _NavItemTileState extends State<_NavItemTile> {
                               spreadRadius: 1,
                             ),
                             BoxShadow(
-                              color: const Color(0xFFC839F6).withValues(alpha: 0.45),
+                              color: AppColors.primaryPink.withValues(alpha: 0.45),
                               blurRadius: 6,
                               spreadRadius: 0.5,
                             ),

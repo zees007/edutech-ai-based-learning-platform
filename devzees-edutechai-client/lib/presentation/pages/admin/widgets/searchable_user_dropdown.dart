@@ -329,6 +329,7 @@ class _SearchableUserDropdownState extends State<SearchableUserDropdown> {
 
   @override
   Widget build(BuildContext context) {
+    Theme.of(context);
     final user = widget.selectedUser;
 
     return CompositedTransformTarget(

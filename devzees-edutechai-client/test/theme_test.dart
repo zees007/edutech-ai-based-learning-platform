@@ -116,4 +116,61 @@ void main() {
       expect(AppColors.isDark, isTrue);
     });
   });
+
+  group('Scoped Theme & Industry-Level Architecture', () {
+    testWidgets('AppColors.of(context) retrieves correct theme from InheritedTheme', (tester) async {
+      late AppThemeColors resolvedColors;
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: ThemeMode.light,
+          home: Builder(
+            builder: (context) {
+              resolvedColors = AppColors.of(context);
+              return const SizedBox();
+            },
+          ),
+        ),
+      );
+      expect(resolvedColors.scaffoldBackground, AppThemeColors.light.scaffoldBackground);
+    });
+
+    testWidgets('Scoped Theme(data: AppTheme.darkTheme) isolates HomePage subtree as dark even in Light mode', (tester) async {
+      late AppThemeColors globalColors;
+      late AppThemeColors scopedColors;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: ThemeMode.light,
+          home: Column(
+            children: [
+              Builder(
+                builder: (context) {
+                  globalColors = AppColors.of(context);
+                  return const Text('Global Light Page');
+                },
+              ),
+              Theme(
+                data: AppTheme.darkTheme,
+                child: Builder(
+                  builder: (context) {
+                    scopedColors = AppColors.of(context);
+                    return const Text('Scoped Dark HomePage');
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+
+      // Global context remains Light
+      expect(globalColors.scaffoldBackground, AppThemeColors.light.scaffoldBackground);
+      // Scoped HomePage context is strictly Dark
+      expect(scopedColors.scaffoldBackground, AppThemeColors.dark.scaffoldBackground);
+    });
+  });
 }

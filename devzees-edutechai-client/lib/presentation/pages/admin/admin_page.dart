@@ -5,6 +5,7 @@ import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
 import 'package:devzees_edutechai_client/core/theme/text_styles.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/glow_background.dart';
 import 'package:devzees_edutechai_client/core/providers/auth_provider.dart';
+import 'package:devzees_edutechai_client/core/providers/theme_provider.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/shimmer_app_shell.dart';
 import 'widgets/admin_sidebar.dart';
 import 'widgets/user_directory_tab.dart';
@@ -30,17 +31,17 @@ class _AdminPageState extends ConsumerState<AdminPage> {
   Widget _buildContent() {
     switch (_currentSection) {
       case AdminSection.users:
-        return const UserDirectoryTab();
+        return const UserDirectoryTab(key: ValueKey('admin_users_tab'));
       case AdminSection.roles:
-        return const RolePrivilegeTab();
+        return const RolePrivilegeTab(key: ValueKey('admin_roles_tab'));
       case AdminSection.subscriptions:
-        return const SubscriptionManagerTab();
+        return const SubscriptionManagerTab(key: ValueKey('admin_subscriptions_tab'));
       case AdminSection.settings:
-        return const SettingsTab();
+        return const SettingsTab(key: ValueKey('admin_settings_tab'));
       case AdminSection.analytics:
-        return const AnalyticsTab();
+        return const AnalyticsTab(key: ValueKey('admin_analytics_tab'));
       case AdminSection.feedbacks:
-        return const FeedbackManagementTab();
+        return const FeedbackManagementTab(key: ValueKey('admin_feedbacks_tab'));
     }
   }
 
@@ -63,6 +64,12 @@ class _AdminPageState extends ConsumerState<AdminPage> {
 
   @override
   Widget build(BuildContext context) {
+    final themeMode = ref.watch(themeModeProvider);
+    final platformBrightness = MediaQuery.platformBrightnessOf(context);
+    final isDark = themeMode == ThemeMode.dark ||
+        (themeMode == ThemeMode.system && platformBrightness == Brightness.dark);
+    AppColors.setBrightness(isDark ? Brightness.dark : Brightness.light);
+
     final authState = ref.watch(authProvider);
     if (authState.isInitial || (authState.isAuthenticated && authState.user == null)) {
       return const ShimmerAppShell(key: ValueKey('admin_shimmer_skeleton'));
@@ -112,7 +119,8 @@ class _AdminPageState extends ConsumerState<AdminPage> {
           children: [
             // Sidebar
             AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOutCubic,
               width: _isSidebarExpanded ? 260 : 80,
               clipBehavior: Clip.hardEdge,
               decoration: BoxDecoration(
@@ -143,7 +151,9 @@ class _AdminPageState extends ConsumerState<AdminPage> {
               child: Column(
                 children: [
                   // Top Bar
-                  Container(
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOutCubic,
                     height: 60,
                     padding: const EdgeInsets.symmetric(horizontal: 24),
                     decoration: BoxDecoration(

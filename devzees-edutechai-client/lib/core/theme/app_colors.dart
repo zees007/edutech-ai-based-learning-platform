@@ -8,6 +8,16 @@ import 'theme_palette.dart';
 class AppColors {
   static AppThemeColors _current = AppThemeColors.dark;
 
+  /// Returns the reactive [AppThemeColors] for the given [BuildContext].
+  /// Subscribes the widget to theme changes via InheritedTheme.
+  static AppThemeColors of(BuildContext context) => context.appColors;
+
+  /// Centralized canonical dark palette token set.
+  static const AppThemeColors darkPalette = AppThemeColors.dark;
+
+  /// Centralized canonical light palette token set.
+  static const AppThemeColors lightPalette = AppThemeColors.light;
+
   /// Returns the current active theme palette.
   static AppThemeColors get current => _current;
 
@@ -108,6 +118,8 @@ class AppColors {
   static const Color slate500 = Color(0xFF64748B);
   static const Color slate600 = Color(0xFF475569);
   static const Color slate700 = Color(0xFF334155);
+  static const Color slate800 = Color(0xFF1E293B);
+  static const Color slate900 = Color(0xFF0F172A);
 
   static Color get glassSurface => isDark ? const Color(0x08FFFFFF) : const Color(0x08000000);
   static Color get glassBorderSubtle => isDark ? const Color(0x0DFFFFFF) : const Color(0x0F000000);

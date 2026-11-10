@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/responsive.dart';
 import '../../../../core/providers/feedback_provider.dart';
+import '../../../../core/providers/theme_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../data/models/feedback/feedback_model.dart';
@@ -65,6 +66,7 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
 
   @override
   Widget build(BuildContext context) {
+    ref.watch(themeModeProvider);
     final state = ref.watch(adminFeedbackProvider);
     final metrics = state.metrics;
     final isMobile = Responsive.isMobile(context);
@@ -164,7 +166,7 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
             ? '${metrics.averageRating.toStringAsFixed(1)} ★'
             : '0.0 ★',
         icon: Icons.grade_rounded,
-        iconColor: const Color(0xFFFBBF24),
+        iconColor: AppColors.accentAmber,
       ),
     ];
 
@@ -481,7 +483,7 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
             children: [
               const Icon(
                 Icons.star_rounded,
-                color: Color(0xFFFBBF24),
+                color: AppColors.accentAmber,
                 size: 16,
               ),
               const SizedBox(width: 4),
@@ -585,7 +587,7 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
                         valueColor: AlwaysStoppedAnimation<Color>(
-                          Color(0xFFFBBF24),
+                          AppColors.accentAmber,
                         ),
                       ),
                     ),
@@ -602,7 +604,7 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
                   ),
                   icon: const Icon(
                     Icons.star_rounded,
-                    color: Color(0xFFFBBF24),
+                    color: AppColors.accentAmber,
                     size: 18,
                   ),
                   onPressed: () => _updateFeedbackStatus(item, 'archived'),
@@ -895,7 +897,7 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
                                           : Icons.star_border_rounded,
                                       size: 16,
                                       color: i < item.rating
-                                          ? const Color(0xFFFBBF24)
+                                          ? AppColors.accentAmber
                                           : AppColors.slate500,
                                     ),
                                   ),
