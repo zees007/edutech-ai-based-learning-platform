@@ -22,7 +22,8 @@ class LearningMainContent extends ConsumerStatefulWidget {
   const LearningMainContent({super.key, required this.isMobile});
 
   @override
-  ConsumerState<LearningMainContent> createState() => _LearningMainContentState();
+  ConsumerState<LearningMainContent> createState() =>
+      _LearningMainContentState();
 }
 
 class _LearningMainContentState extends ConsumerState<LearningMainContent> {
@@ -58,7 +59,8 @@ class _LearningMainContentState extends ConsumerState<LearningMainContent> {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(24),
                 border: Border.all(
-                  color: (isDark ? AppColors.primary : AppColors.purple).withValues(alpha: 0.45),
+                  color: (isDark ? AppColors.primary : AppColors.purple)
+                      .withValues(alpha: 0.45),
                   width: 1.5,
                 ),
                 color: isMobile
@@ -68,16 +70,19 @@ class _LearningMainContentState extends ConsumerState<LearningMainContent> {
                 boxShadow: [
                   if (!isMobile) ...[
                     BoxShadow(
-                      color: (isDark ? AppColors.primary : AppColors.purple).withValues(alpha: 0.3),
+                      color: (isDark ? AppColors.primary : AppColors.purple)
+                          .withValues(alpha: 0.3),
                       blurRadius: 40,
                       spreadRadius: -10,
                     ),
                     BoxShadow(
-                      color: (isDark ? AppColors.primary.withValues(alpha: 0.2) : AppColors.accentPink.withValues(alpha: 0.2)),
+                      color: (isDark
+                          ? AppColors.primary.withValues(alpha: 0.2)
+                          : AppColors.accentPink.withValues(alpha: 0.2)),
                       blurRadius: 30,
                       spreadRadius: -5,
                     ),
-                  ]
+                  ],
                 ],
               ),
               child: Column(
@@ -127,7 +132,9 @@ class _LearningMainContentState extends ConsumerState<LearningMainContent> {
 
         return NeuralInferenceLoader(title: title, subtitle: subtitle);
       }
-      return ActiveLearningWorkspace(key: ValueKey('active_workspace_${context.isDarkMode}'));
+      return ActiveLearningWorkspace(
+        key: ValueKey('active_workspace_${context.isDarkMode}'),
+      );
     }
 
     final isDark = context.isDarkMode;
@@ -202,7 +209,9 @@ class _LearningMainContentState extends ConsumerState<LearningMainContent> {
                   : (isMobile ? 12.0 : 16.0);
 
               return ScrollConfiguration(
-                behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+                behavior: ScrollConfiguration.of(
+                  context,
+                ).copyWith(scrollbars: false),
                 child: SingleChildScrollView(
                   physics: const ClampingScrollPhysics(),
                   child: ConstrainedBox(
@@ -228,14 +237,21 @@ class _LearningMainContentState extends ConsumerState<LearningMainContent> {
                                 ),
                                 child: Center(
                                   child: ConstrainedBox(
-                                    constraints: const BoxConstraints(maxWidth: 900),
+                                    constraints: const BoxConstraints(
+                                      maxWidth: 1020,
+                                    ),
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
                                       children: [
                                         if (isPromoVisible)
                                           PromoAnnouncementBar(
-                                            margin: const EdgeInsets.only(bottom: 14),
-                                            onDismiss: () => setState(() => _isPromoDismissed = true),
+                                            margin: const EdgeInsets.only(
+                                              bottom: 14,
+                                            ),
+                                            onDismiss: () => setState(
+                                              () => _isPromoDismissed = true,
+                                            ),
                                           ),
                                         Wrap(
                                           alignment: WrapAlignment.center,
@@ -246,7 +262,9 @@ class _LearningMainContentState extends ConsumerState<LearningMainContent> {
                                                   (isMobile
                                                           ? AppTextStyles.h3
                                                           : AppTextStyles.h2)
-                                                      .copyWith(letterSpacing: -0.5),
+                                                      .copyWith(
+                                                        letterSpacing: -0.5,
+                                                      ),
                                             ),
                                             GradientText(
                                               'Learning Workspace',
@@ -254,13 +272,19 @@ class _LearningMainContentState extends ConsumerState<LearningMainContent> {
                                                   (isMobile
                                                           ? AppTextStyles.h3
                                                           : AppTextStyles.h2)
-                                                      .copyWith(letterSpacing: -0.5),
+                                                      .copyWith(
+                                                        letterSpacing: -0.5,
+                                                      ),
                                             ),
                                           ],
                                         ),
-                                        SizedBox(height: isPromoVisible ? 8 : 12),
+                                        SizedBox(
+                                          height: isPromoVisible ? 8 : 12,
+                                        ),
                                         ConstrainedBox(
-                                          constraints: const BoxConstraints(maxWidth: 660),
+                                          constraints: const BoxConstraints(
+                                            maxWidth: 740,
+                                          ),
                                           child: Text(
                                             'An adaptive, intelligent learning studio where specialized AI agents orchestrate personalized roadmaps, intuitive analogies, video deep-dives, and instant mastery checks.',
                                             textAlign: TextAlign.center,
@@ -269,8 +293,11 @@ class _LearningMainContentState extends ConsumerState<LearningMainContent> {
                                                         ? AppTextStyles.body2
                                                         : AppTextStyles.body1)
                                                     .copyWith(
-                                                      color: AppColors.textSecondary,
-                                                      height: isPromoVisible ? 1.45 : 1.55,
+                                                      color: AppColors
+                                                          .textSecondary,
+                                                      height: isPromoVisible
+                                                          ? 1.45
+                                                          : 1.55,
                                                     ),
                                           ),
                                         ),
@@ -284,28 +311,34 @@ class _LearningMainContentState extends ConsumerState<LearningMainContent> {
                                 duration: const Duration(milliseconds: 300),
                                 child: sessionsState.isLoading
                                     ? Padding(
-                                        key: const ValueKey('recent_journeys_loading'),
+                                        key: const ValueKey(
+                                          'recent_journeys_loading',
+                                        ),
                                         padding: EdgeInsets.symmetric(
                                           horizontal: isMobile ? 16.0 : 32.0,
-                                          vertical: recentJourneysVerticalPadding,
+                                          vertical:
+                                              recentJourneysVerticalPadding,
                                         ),
                                         child: Center(
                                           child: ConstrainedBox(
                                             constraints: const BoxConstraints(
-                                              maxWidth: 900,
+                                              maxWidth: 1020,
                                             ),
                                             child: Column(
                                               crossAxisAlignment:
                                                   CrossAxisAlignment.center,
                                               children: [
                                                 Row(
-                                                  mainAxisSize: MainAxisSize.min,
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
                                                   mainAxisAlignment:
                                                       MainAxisAlignment.center,
                                                   children: [
                                                     const Text(
                                                       '⚡ ',
-                                                      style: TextStyle(fontSize: 20),
+                                                      style: TextStyle(
+                                                        fontSize: 20,
+                                                      ),
                                                     ),
                                                     Text(
                                                       'Continue Your Recent Active Journeys',
@@ -318,7 +351,9 @@ class _LearningMainContentState extends ConsumerState<LearningMainContent> {
                                                               .copyWith(
                                                                 color: AppColors
                                                                     .textPrimary,
-                                                                fontWeight: FontWeight.w600,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w600,
                                                               ),
                                                     ),
                                                   ],
@@ -328,19 +363,34 @@ class _LearningMainContentState extends ConsumerState<LearningMainContent> {
                                                   height: 74,
                                                   child: Center(
                                                     child: ListView.separated(
-                                                      scrollDirection: Axis.horizontal,
+                                                      scrollDirection:
+                                                          Axis.horizontal,
                                                       shrinkWrap: true,
                                                       clipBehavior: Clip.none,
-                                                      physics: const NeverScrollableScrollPhysics(),
+                                                      physics:
+                                                          const NeverScrollableScrollPhysics(),
                                                       itemCount: 3,
-                                                      separatorBuilder: (context, index) => const SizedBox(width: 14),
+                                                      separatorBuilder:
+                                                          (context, index) =>
+                                                              const SizedBox(
+                                                                width: 14,
+                                                              ),
                                                       itemBuilder: (context, index) {
-                                                        final widths = [140.0, 115.0, 155.0];
+                                                        final widths = [
+                                                          160.0,
+                                                          130.0,
+                                                          175.0,
+                                                        ];
                                                         return SizedBox(
-                                                          width: isMobile ? 250 : 270,
+                                                          width: isMobile
+                                                              ? 250
+                                                              : 315,
                                                           child: RecentJourneySkeletonCard(
                                                             isMobile: isMobile,
-                                                            titleWidth: widths[index % widths.length],
+                                                            titleWidth:
+                                                                widths[index %
+                                                                    widths
+                                                                        .length],
                                                           ),
                                                         );
                                                       },
@@ -358,22 +408,29 @@ class _LearningMainContentState extends ConsumerState<LearningMainContent> {
                                                 'recent_journeys_loaded',
                                               ),
                                               padding: EdgeInsets.symmetric(
-                                                horizontal: isMobile ? 16.0 : 32.0,
-                                                vertical: recentJourneysVerticalPadding,
+                                                horizontal: isMobile
+                                                    ? 16.0
+                                                    : 32.0,
+                                                vertical:
+                                                    recentJourneysVerticalPadding,
                                               ),
                                               child: Center(
                                                 child: ConstrainedBox(
-                                                  constraints: const BoxConstraints(
-                                                    maxWidth: 900,
-                                                  ),
+                                                  constraints:
+                                                      const BoxConstraints(
+                                                        maxWidth: 1020,
+                                                      ),
                                                   child: Column(
                                                     crossAxisAlignment:
-                                                        CrossAxisAlignment.center,
+                                                        CrossAxisAlignment
+                                                            .center,
                                                     children: [
                                                       Row(
-                                                        mainAxisSize: MainAxisSize.min,
+                                                        mainAxisSize:
+                                                            MainAxisSize.min,
                                                         mainAxisAlignment:
-                                                            MainAxisAlignment.center,
+                                                            MainAxisAlignment
+                                                                .center,
                                                         children: [
                                                           const Text(
                                                             '⚡ ',
@@ -392,29 +449,50 @@ class _LearningMainContentState extends ConsumerState<LearningMainContent> {
                                                                     .copyWith(
                                                                       color: AppColors
                                                                           .textPrimary,
-                                                                      fontWeight: FontWeight.w600,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .w600,
                                                                     ),
                                                           ),
                                                         ],
                                                       ),
-                                                      const SizedBox(height: 12),
+                                                      const SizedBox(
+                                                        height: 12,
+                                                      ),
                                                       SizedBox(
                                                         height: 74,
                                                         child: Center(
                                                           child: ListView.separated(
-                                                            scrollDirection: Axis.horizontal,
+                                                            scrollDirection:
+                                                                Axis.horizontal,
                                                             shrinkWrap: true,
-                                                            clipBehavior: Clip.none,
-                                                            physics: const BouncingScrollPhysics(),
-                                                            itemCount: displaySessions.length,
-                                                            separatorBuilder: (context, index) => const SizedBox(width: 14),
+                                                            clipBehavior:
+                                                                Clip.none,
+                                                            physics:
+                                                                const BouncingScrollPhysics(),
+                                                            itemCount:
+                                                                displaySessions
+                                                                    .length,
+                                                            separatorBuilder:
+                                                                (
+                                                                  context,
+                                                                  index,
+                                                                ) =>
+                                                                    const SizedBox(
+                                                                      width: 14,
+                                                                    ),
                                                             itemBuilder: (context, index) {
-                                                              final session = displaySessions[index];
+                                                              final session =
+                                                                  displaySessions[index];
                                                               return SizedBox(
-                                                                width: isMobile ? 250 : 270,
+                                                                width: isMobile
+                                                                    ? 250
+                                                                    : 315,
                                                                 child: RecentJourneyCard(
-                                                                  session: session,
-                                                                  isMobile: isMobile,
+                                                                  session:
+                                                                      session,
+                                                                  isMobile:
+                                                                      isMobile,
                                                                   onContinue: () {
                                                                     ref
                                                                         .read(
@@ -438,7 +516,9 @@ class _LearningMainContentState extends ConsumerState<LearningMainContent> {
                                               ),
                                             )
                                           : const SizedBox.shrink(
-                                              key: ValueKey('recent_journeys_empty'),
+                                              key: ValueKey(
+                                                'recent_journeys_empty',
+                                              ),
                                             )),
                               ),
                             ],
@@ -452,7 +532,9 @@ class _LearningMainContentState extends ConsumerState<LearningMainContent> {
                             ),
                             child: Center(
                               child: ConstrainedBox(
-                                constraints: const BoxConstraints(maxWidth: 880),
+                                constraints: const BoxConstraints(
+                                  maxWidth: 1020,
+                                ),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   mainAxisSize: MainAxisSize.min,
@@ -466,7 +548,9 @@ class _LearningMainContentState extends ConsumerState<LearningMainContent> {
                                               (isMobile
                                                       ? AppTextStyles.h4
                                                       : AppTextStyles.h3)
-                                                  .copyWith(letterSpacing: -0.5),
+                                                  .copyWith(
+                                                    letterSpacing: -0.5,
+                                                  ),
                                         ),
                                         GradientText(
                                           'learn today?',
@@ -474,7 +558,9 @@ class _LearningMainContentState extends ConsumerState<LearningMainContent> {
                                               (isMobile
                                                       ? AppTextStyles.h4
                                                       : AppTextStyles.h3)
-                                                  .copyWith(letterSpacing: -0.5),
+                                                  .copyWith(
+                                                    letterSpacing: -0.5,
+                                                  ),
                                         ),
                                       ],
                                     ),
@@ -486,13 +572,17 @@ class _LearningMainContentState extends ConsumerState<LearningMainContent> {
                                           (isMobile
                                                   ? AppTextStyles.caption
                                                   : AppTextStyles.body2)
-                                              .copyWith(color: AppColors.textSecondary),
+                                              .copyWith(
+                                                color: AppColors.textSecondary,
+                                              ),
                                     ),
                                     SizedBox(height: isMobile ? 6 : 10),
                                     JourneyPromptCard(
                                       onStartJourney: (topic, mode, level) {
                                         ref
-                                            .read(activeSessionProvider.notifier)
+                                            .read(
+                                              activeSessionProvider.notifier,
+                                            )
                                             .startNewSession(
                                               topic: topic,
                                               mode: mode,
@@ -500,7 +590,9 @@ class _LearningMainContentState extends ConsumerState<LearningMainContent> {
                                             )
                                             .catchError((error) {
                                               if (context.mounted) {
-                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                ScaffoldMessenger.of(
+                                                  context,
+                                                ).showSnackBar(
                                                   SnackBar(
                                                     content: Text(
                                                       'Failed to start journey: $error',
@@ -524,15 +616,15 @@ class _LearningMainContentState extends ConsumerState<LearningMainContent> {
               );
             },
           ),
-      if (!isMobile)
-        const Positioned(
-          top: 16,
-          right: 24,
-          child: ThemeToggleButton(size: 32),
-        ),
-    ],
-  ),
-);
+          if (!isMobile)
+            const Positioned(
+              top: 16,
+              right: 24,
+              child: ThemeToggleButton(size: 32),
+            ),
+        ],
+      ),
+    );
   }
 }
 
@@ -547,47 +639,50 @@ class _AmbientBackgroundPainter extends CustomPainter {
 
     // Soft violet ambient aura at top left
     final paint1 = Paint()
-      ..shader = RadialGradient(
-        colors: [
-          const Color(0xFF8B5CF6).withValues(alpha: 0.07),
-          Colors.transparent,
-        ],
-      ).createShader(
-        Rect.fromCircle(
-          center: Offset(size.width * 0.18, size.height * 0.12),
-          radius: size.width * 0.4,
-        ),
-      );
+      ..shader =
+          RadialGradient(
+            colors: [
+              const Color(0xFF8B5CF6).withValues(alpha: 0.07),
+              Colors.transparent,
+            ],
+          ).createShader(
+            Rect.fromCircle(
+              center: Offset(size.width * 0.18, size.height * 0.12),
+              radius: size.width * 0.4,
+            ),
+          );
     canvas.drawRect(Offset.zero & size, paint1);
 
     // Soft blue ambient aura at mid right
     final paint2 = Paint()
-      ..shader = RadialGradient(
-        colors: [
-          const Color(0xFF3B82F6).withValues(alpha: 0.06),
-          Colors.transparent,
-        ],
-      ).createShader(
-        Rect.fromCircle(
-          center: Offset(size.width * 0.82, size.height * 0.40),
-          radius: size.width * 0.45,
-        ),
-      );
+      ..shader =
+          RadialGradient(
+            colors: [
+              const Color(0xFF3B82F6).withValues(alpha: 0.06),
+              Colors.transparent,
+            ],
+          ).createShader(
+            Rect.fromCircle(
+              center: Offset(size.width * 0.82, size.height * 0.40),
+              radius: size.width * 0.45,
+            ),
+          );
     canvas.drawRect(Offset.zero & size, paint2);
 
     // Soft purple ambient aura at bottom
     final paint3 = Paint()
-      ..shader = RadialGradient(
-        colors: [
-          const Color(0xFFA855F7).withValues(alpha: 0.05),
-          Colors.transparent,
-        ],
-      ).createShader(
-        Rect.fromCircle(
-          center: Offset(size.width * 0.50, size.height * 0.90),
-          radius: size.width * 0.5,
-        ),
-      );
+      ..shader =
+          RadialGradient(
+            colors: [
+              const Color(0xFFA855F7).withValues(alpha: 0.05),
+              Colors.transparent,
+            ],
+          ).createShader(
+            Rect.fromCircle(
+              center: Offset(size.width * 0.50, size.height * 0.90),
+              radius: size.width * 0.5,
+            ),
+          );
     canvas.drawRect(Offset.zero & size, paint3);
   }
 

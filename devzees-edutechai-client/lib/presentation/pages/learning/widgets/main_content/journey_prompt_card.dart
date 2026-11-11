@@ -148,7 +148,7 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
           duration: const Duration(milliseconds: 250),
           curve: Curves.easeOutCubic,
           transform: Matrix4.translationValues(0, _isCardHovered ? -2.0 : 0, 0),
-          constraints: const BoxConstraints(maxWidth: 840),
+          constraints: const BoxConstraints(maxWidth: 1020),
           width: double.infinity,
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           padding: const EdgeInsets.fromLTRB(28, 18, 28, 14),
