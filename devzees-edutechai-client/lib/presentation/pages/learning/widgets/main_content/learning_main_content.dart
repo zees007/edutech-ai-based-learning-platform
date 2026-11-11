@@ -37,23 +37,44 @@ class _LearningMainContentState extends ConsumerState<LearningMainContent> {
   Future<bool?> _showCancelConfirmationDialog({
     required BuildContext context,
     required bool isPremium,
-    required String tier,
   }) {
     final isDark = context.isDarkMode;
+    final isMobile = MediaQuery.of(context).size.width < 600;
+    final accentColor = isPremium
+        ? (isDark ? AppColors.primary : AppColors.purple)
+        : const Color(0xFFF59E0B);
+
     return showDialog<bool>(
       context: context,
       barrierDismissible: false,
       builder: (ctx) {
         return AlertDialog(
           backgroundColor: isDark ? AppColors.canvasBackground : Colors.white,
+          insetPadding: EdgeInsets.symmetric(
+            horizontal: isMobile ? 16 : 24,
+            vertical: 24,
+          ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
             side: BorderSide(
-              color: isPremium
-                  ? (isDark ? AppColors.primary : AppColors.purple).withValues(alpha: 0.3)
-                  : const Color(0xFFEF4444).withValues(alpha: 0.35),
+              color: (isDark ? AppColors.primary : AppColors.purple).withValues(alpha: 0.3),
               width: 1.5,
             ),
+          ),
+          titlePadding: EdgeInsets.fromLTRB(
+            isMobile ? 16 : 20,
+            isMobile ? 16 : 20,
+            isMobile ? 16 : 20,
+            12,
+          ),
+          contentPadding: EdgeInsets.symmetric(
+            horizontal: isMobile ? 16 : 20,
+          ),
+          actionsPadding: EdgeInsets.fromLTRB(
+            isMobile ? 16 : 20,
+            16,
+            isMobile ? 16 : 20,
+            isMobile ? 16 : 20,
           ),
           title: Row(
             children: [
@@ -61,102 +82,109 @@ class _LearningMainContentState extends ConsumerState<LearningMainContent> {
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: isPremium
-                      ? (isDark ? AppColors.primary : AppColors.purple).withValues(alpha: 0.12)
-                      : const Color(0xFFEF4444).withValues(alpha: 0.12),
+                  color: accentColor.withValues(alpha: 0.12),
                 ),
                 child: Icon(
                   isPremium ? Icons.stop_circle_outlined : Icons.warning_amber_rounded,
-                  color: isPremium
-                      ? (isDark ? AppColors.primary : AppColors.purple)
-                      : const Color(0xFFEF4444),
-                  size: 22,
+                  color: accentColor,
+                  size: 20,
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  isPremium ? 'Discard Journey?' : 'Cancel Learning Journey?',
+                  isPremium ? 'Discard Journey?' : 'Cancel Journey?',
                   style: AppTextStyles.h4.copyWith(
                     fontWeight: FontWeight.w700,
-                    fontSize: 18,
+                    fontSize: isMobile ? 16 : 18,
                   ),
                 ),
               ),
             ],
           ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                isPremium
-                    ? 'Are you sure you want to stop? The current milestone synthesis and notes will be discarded.'
-                    : 'AI agents are actively generating your personalized curriculum. Since AI compute has been allocated for this session, cancelling now will still count as 1 of your 10 free monthly sessions.\n\nAre you sure you want to cancel?',
-                style: AppTextStyles.body2.copyWith(
-                  color: isDark ? const Color(0xFF9CA3AF) : AppColors.textSecondary,
-                  height: 1.5,
-                ),
-              ),
-            ],
+          content: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 400),
+            child: isPremium
+                ? Text(
+                    'Are you sure you want to stop? The current milestone synthesis and notes will be discarded.',
+                    style: AppTextStyles.body2.copyWith(
+                      color: isDark ? const Color(0xFF9CA3AF) : AppColors.textSecondary,
+                      height: 1.45,
+                      fontSize: isMobile ? 13 : 14,
+                    ),
+                  )
+                : _ShiningWarningText(
+                    text: 'AI compute has been allocated for this session. Cancelling now will still count as 1 of your 10 free monthly sessions.',
+                    isDark: isDark,
+                    isMobile: isMobile,
+                  ),
           ),
-          actionsPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           actions: [
-            OutlinedButton(
-              onPressed: () => Navigator.of(ctx).pop(false),
-              style: OutlinedButton.styleFrom(
-                side: BorderSide(
-                  color: isDark
-                      ? Colors.white.withValues(alpha: 0.2)
-                      : AppColors.border,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-              ),
-              child: Text(
-                'Keep Generating',
-                style: AppTextStyles.button.copyWith(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: isDark ? Colors.white70 : AppColors.textSecondary,
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            MouseRegion(
-              cursor: SystemMouseCursors.click,
-              child: GestureDetector(
-                onTap: () => Navigator.of(ctx).pop(true),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  decoration: BoxDecoration(
-                    gradient: isPremium
-                        ? AppColors.primaryGradient
-                        : const LinearGradient(
-                            colors: [Color(0xFFDC2626), Color(0xFFEF4444), Color(0xFFF43F5E)],
-                          ),
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: (isPremium ? AppColors.primary : const Color(0xFFEF4444))
-                            .withValues(alpha: 0.35),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.of(ctx).pop(false),
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(
+                        color: isDark
+                            ? Colors.white.withValues(alpha: 0.2)
+                            : AppColors.border,
                       ),
-                    ],
-                  ),
-                  child: Text(
-                    isPremium ? 'Discard Journey' : 'Cancel & Consume Quota',
-                    style: GoogleFonts.inter(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    child: Text(
+                      'Keep Generating',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: AppTextStyles.button.copyWith(
+                        fontSize: isMobile ? 12 : 13,
+                        fontWeight: FontWeight.w600,
+                        color: isDark ? Colors.white70 : AppColors.textSecondary,
+                      ),
                     ),
                   ),
                 ),
-              ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: MouseRegion(
+                    cursor: SystemMouseCursors.click,
+                    child: GestureDetector(
+                      onTap: () => Navigator.of(ctx).pop(true),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          gradient: AppColors.primaryGradient,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.primary.withValues(alpha: 0.35),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Text(
+                          isPremium ? 'Discard Journey' : 'Cancel Anyway',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.inter(
+                            fontSize: isMobile ? 12 : 13,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         );
@@ -194,7 +222,6 @@ class _LearningMainContentState extends ConsumerState<LearningMainContent> {
     final confirmed = await _showCancelConfirmationDialog(
       context: context,
       isPremium: isPremium,
-      tier: tier,
     );
     if (mounted) {
       setState(() => _isConfirmationModalOpen = false);
@@ -893,4 +920,81 @@ class _AmbientBackgroundPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _AmbientBackgroundPainter oldDelegate) =>
       oldDelegate.isDark != isDark;
+}
+
+class _ShiningWarningText extends StatefulWidget {
+  final String text;
+  final bool isDark;
+  final bool isMobile;
+
+  const _ShiningWarningText({
+    required this.text,
+    required this.isDark,
+    required this.isMobile,
+  });
+
+  @override
+  State<_ShiningWarningText> createState() => _ShiningWarningTextState();
+}
+
+class _ShiningWarningTextState extends State<_ShiningWarningText>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _shimmerController;
+
+  @override
+  void initState() {
+    super.initState();
+    _shimmerController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2600),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _shimmerController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final baseColor =
+        widget.isDark ? const Color(0xFFF87171) : const Color(0xFFDC2626);
+    final shineColor =
+        widget.isDark ? const Color(0xFFFFFBEB) : const Color(0xFFEA580C);
+
+    return AnimatedBuilder(
+      animation: _shimmerController,
+      builder: (context, child) {
+        final progress = _shimmerController.value;
+        final start = -3.0 + progress * 6.0;
+
+        return ShaderMask(
+          blendMode: BlendMode.srcIn,
+          shaderCallback: (bounds) {
+            return LinearGradient(
+              begin: Alignment(start - 1.0, 0),
+              end: Alignment(start + 1.0, 0),
+              colors: [
+                baseColor,
+                shineColor,
+                baseColor,
+              ],
+              stops: const [0.0, 0.5, 1.0],
+            ).createShader(bounds);
+          },
+          child: child,
+        );
+      },
+      child: Text(
+        widget.text,
+        style: AppTextStyles.body2.copyWith(
+          color: baseColor,
+          fontWeight: FontWeight.w600,
+          height: 1.45,
+          fontSize: widget.isMobile ? 13 : 14,
+        ),
+      ),
+    );
+  }
 }
