@@ -284,6 +284,7 @@ class LearningMainContent extends ConsumerWidget {
                                                       ),
                                                       child: RecentJourneySkeletonCard(
                                                         isMobile: true,
+                                                        titleWidth: 140,
                                                       ),
                                                     ),
                                                     Padding(
@@ -292,6 +293,7 @@ class LearningMainContent extends ConsumerWidget {
                                                       ),
                                                       child: RecentJourneySkeletonCard(
                                                         isMobile: true,
+                                                        titleWidth: 110,
                                                       ),
                                                     ),
                                                   ],
@@ -307,18 +309,21 @@ class LearningMainContent extends ConsumerWidget {
                                                         width: 280,
                                                         child: RecentJourneySkeletonCard(
                                                           isMobile: false,
+                                                          titleWidth: 140,
                                                         ),
                                                       ),
                                                       SizedBox(
                                                         width: 280,
                                                         child: RecentJourneySkeletonCard(
                                                           isMobile: false,
+                                                          titleWidth: 115,
                                                         ),
                                                       ),
                                                       SizedBox(
                                                         width: 280,
                                                         child: RecentJourneySkeletonCard(
                                                           isMobile: false,
+                                                          titleWidth: 155,
                                                         ),
                                                       ),
                                                     ],
