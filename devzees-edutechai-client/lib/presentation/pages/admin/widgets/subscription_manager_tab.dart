@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../widgets/center_toast.dart';
+import '../../../widgets/gradient_button.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/admin_provider.dart';
@@ -387,33 +388,13 @@ class _SubscriptionManagerTabState
             ),
             const SizedBox(height: 20),
             // Confirmation Dialog + Apply Button
-            SizedBox(
+            GradientButton(
               height: 48,
-              child: ElevatedButton.icon(
-                onPressed: _isUpdating
-                    ? null
-                    : () => _confirmAndApplyTierChange(users),
-                icon: _isUpdating
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : const Icon(Icons.sync, size: 20),
-                label: Text(
-                  'Apply Tier Change & Sync Role',
-                  style: AppTextStyles.button,
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.purple,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
+              isLoading: _isUpdating,
+              icon: Icons.sync,
+              iconFirst: true,
+              text: 'Apply Tier Change & Sync Role',
+              onPressed: () => _confirmAndApplyTierChange(users),
             ),
           ],
         ],
@@ -566,15 +547,10 @@ class _SubscriptionManagerTabState
               style: AppTextStyles.button.copyWith(color: AppColors.textMuted),
             ),
           ),
-          ElevatedButton(
+          GradientButton(
+            height: 38,
+            text: 'Apply',
             onPressed: () => Navigator.of(ctx).pop(true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.purple,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: Text('Apply', style: AppTextStyles.button),
           ),
         ],
       ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../widgets/center_toast.dart';
+import '../../../widgets/gradient_button.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/admin_provider.dart';
@@ -419,31 +420,12 @@ class _RolePrivilegeTabState extends ConsumerState<RolePrivilegeTab> {
             ),
           ),
           const SizedBox(height: 20),
-          SizedBox(
+          GradientButton(
             width: double.infinity,
             height: 44,
-            child: ElevatedButton(
-              onPressed: _isCreating ? null : _submitRole,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.purple,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: _isCreating
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : Text(
-                      _editingRoleId == null ? 'Create Role' : 'Update Role',
-                      style: AppTextStyles.button,
-                    ),
-            ),
+            isLoading: _isCreating,
+            text: _editingRoleId == null ? 'Create Role' : 'Update Role',
+            onPressed: _submitRole,
           ),
         ],
       ),
@@ -693,20 +675,10 @@ class _RolePrivilegeTabState extends ConsumerState<RolePrivilegeTab> {
                 ),
               ),
               actions: [
-                ElevatedButton(
+                GradientButton(
+                  height: 38,
+                  text: 'Done',
                   onPressed: () => Navigator.of(dialogCtx).pop(),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.purple,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 12,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  child: const Text('Done'),
                 ),
               ],
             );

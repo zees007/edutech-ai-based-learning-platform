@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../widgets/center_toast.dart';
+import '../../../widgets/gradient_button.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/admin_provider.dart';
@@ -325,35 +326,13 @@ class _UserDirectoryTabState extends ConsumerState<UserDirectoryTab> {
             // Actions Row
             Row(
               children: [
-                SizedBox(
+                GradientButton(
                   height: 44,
-                  child: ElevatedButton.icon(
-                    icon: _isSavingRoles
-                        ? const SizedBox.shrink()
-                        : const Icon(Icons.check, size: 18),
-                    onPressed: _isSavingRoles ? null : _saveRoleAssignment,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.purple,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                    ),
-                    label: _isSavingRoles
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
-                        : Text(
-                            'Save Role Assignments',
-                            style: AppTextStyles.button,
-                          ),
-                  ),
+                  isLoading: _isSavingRoles,
+                  icon: Icons.check,
+                  iconFirst: true,
+                  text: 'Save Role Assignments',
+                  onPressed: _saveRoleAssignment,
                 ),
                 if (_hasUnsavedRoleChanges) ...[
                   const SizedBox(width: 12),
