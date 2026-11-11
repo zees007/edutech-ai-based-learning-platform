@@ -21,7 +21,7 @@ class RecentJourneySkeletonCard extends StatelessWidget {
     final shimmerHighlight = isDark ? const Color(0xFF353A60) : const Color(0xFFF8FAFC);
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
         color: isDark ? AppColors.canvasBackground : Colors.white,
         border: Border.all(

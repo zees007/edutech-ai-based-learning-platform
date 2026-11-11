@@ -8,6 +8,7 @@ import '../../../../../presentation/widgets/app_gradient_spinner.dart';
 import 'journey_prompt_card.dart';
 import '../../../../../core/providers/learning_provider.dart';
 import '../../../../../core/providers/active_session_provider.dart';
+import '../../../../../core/services/subscription_service.dart';
 import 'recent_journey_card.dart';
 import 'recent_journey_skeleton.dart';
 import '../workspace/active_learning_workspace.dart';
@@ -15,13 +16,21 @@ import 'neural_inference_loader.dart';
 import '../../../../../presentation/widgets/theme_toggle_button.dart';
 import '../../../../widgets/promo_announcement_bar.dart';
 
-class LearningMainContent extends ConsumerWidget {
+class LearningMainContent extends ConsumerStatefulWidget {
   final bool isMobile;
 
   const LearningMainContent({super.key, required this.isMobile});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<LearningMainContent> createState() => _LearningMainContentState();
+}
+
+class _LearningMainContentState extends ConsumerState<LearningMainContent> {
+  bool _isPromoDismissed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final isMobile = widget.isMobile;
     final sessionsState = ref.watch(sessionsProvider);
     // Get top 3 incomplete sessions (or just top 3 if all are complete)
     final recentSessions = sessionsState.items
@@ -123,6 +132,11 @@ class LearningMainContent extends ConsumerWidget {
 
     final isDark = context.isDarkMode;
 
+    // Check if promotional banner is active & not dismissed
+    final catalogAsync = ref.watch(pricingCatalogProvider);
+    final isPromoActive = catalogAsync.value?.promoBanner?.isActive ?? false;
+    final isPromoVisible = isPromoActive && !_isPromoDismissed;
+
     return Container(
       color: isDark
           ? (isMobile ? AppColors.mobileBackground : AppColors.background)
@@ -160,234 +174,244 @@ class LearningMainContent extends ConsumerWidget {
           ),
           LayoutBuilder(
             builder: (context, constraints) {
-              return SingleChildScrollView(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    minHeight: constraints.maxHeight,
-                    minWidth: constraints.maxWidth,
-                  ),
-                  child: SizedBox(
-                    width: constraints.maxWidth,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Padding(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: isMobile ? 16.0 : 32.0,
-                                vertical: isMobile ? 24.0 : 48.0,
-                              ),
-                              child: Center(
-                                child: ConstrainedBox(
-                                  constraints: const BoxConstraints(maxWidth: 900),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                    children: [
-                                      const PromoAnnouncementBar(
-                                        margin: EdgeInsets.only(bottom: 24),
-                                      ),
-                                      Wrap(
-                                        alignment: WrapAlignment.center,
-                                        children: [
-                                          Text(
-                                            'EduTechAI ',
-                                          style:
-                                              (isMobile
-                                                      ? AppTextStyles.h3
-                                                      : AppTextStyles.h2)
-                                                  .copyWith(letterSpacing: -0.5),
+              final availableHeight = constraints.maxHeight;
+
+              // Auto-adjust top & bottom paddings based on promo banner presence and viewport height:
+              // - With promo banner: use compact top padding (16px desktop / 12px mobile) so banner fits cleanly.
+              // - Without promo banner: grant generous headroom (up to 48px desktop / 28px mobile) so
+              //   "EduTechAI Learning Workspace" is comfortably spaced from the top navigation bar.
+              final double heroTopPadding;
+              if (isPromoVisible) {
+                heroTopPadding = isMobile ? 12.0 : 16.0;
+              } else {
+                if (availableHeight >= 850) {
+                  heroTopPadding = isMobile ? 28.0 : 48.0;
+                } else if (availableHeight >= 720) {
+                  heroTopPadding = isMobile ? 22.0 : 38.0;
+                } else {
+                  heroTopPadding = isMobile ? 16.0 : 26.0;
+                }
+              }
+
+              final double heroBottomPadding = isPromoVisible
+                  ? (isMobile ? 8.0 : 12.0)
+                  : (isMobile ? 12.0 : 16.0);
+
+              final double recentJourneysVerticalPadding = isPromoVisible
+                  ? (isMobile ? 8.0 : 10.0)
+                  : (isMobile ? 12.0 : 16.0);
+
+              return ScrollConfiguration(
+                behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+                child: SingleChildScrollView(
+                  physics: const ClampingScrollPhysics(),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight,
+                      minWidth: constraints.maxWidth,
+                    ),
+                    child: SizedBox(
+                      width: constraints.maxWidth,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Padding(
+                                padding: EdgeInsets.fromLTRB(
+                                  isMobile ? 16.0 : 32.0,
+                                  heroTopPadding,
+                                  isMobile ? 16.0 : 32.0,
+                                  heroBottomPadding,
+                                ),
+                                child: Center(
+                                  child: ConstrainedBox(
+                                    constraints: const BoxConstraints(maxWidth: 900),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      children: [
+                                        if (isPromoVisible)
+                                          PromoAnnouncementBar(
+                                            margin: const EdgeInsets.only(bottom: 14),
+                                            onDismiss: () => setState(() => _isPromoDismissed = true),
+                                          ),
+                                        Wrap(
+                                          alignment: WrapAlignment.center,
+                                          children: [
+                                            Text(
+                                              'EduTechAI ',
+                                              style:
+                                                  (isMobile
+                                                          ? AppTextStyles.h3
+                                                          : AppTextStyles.h2)
+                                                      .copyWith(letterSpacing: -0.5),
+                                            ),
+                                            GradientText(
+                                              'Learning Workspace',
+                                              style:
+                                                  (isMobile
+                                                          ? AppTextStyles.h3
+                                                          : AppTextStyles.h2)
+                                                      .copyWith(letterSpacing: -0.5),
+                                            ),
+                                          ],
                                         ),
-                                        GradientText(
-                                          'Learning Workspace',
-                                          style:
-                                              (isMobile
-                                                      ? AppTextStyles.h3
-                                                      : AppTextStyles.h2)
-                                                  .copyWith(letterSpacing: -0.5),
+                                        SizedBox(height: isPromoVisible ? 8 : 12),
+                                        ConstrainedBox(
+                                          constraints: const BoxConstraints(maxWidth: 660),
+                                          child: Text(
+                                            'An adaptive, intelligent learning studio where specialized AI agents orchestrate personalized roadmaps, intuitive analogies, video deep-dives, and instant mastery checks.',
+                                            textAlign: TextAlign.center,
+                                            style:
+                                                (isMobile
+                                                        ? AppTextStyles.body2
+                                                        : AppTextStyles.body1)
+                                                    .copyWith(
+                                                      color: AppColors.textSecondary,
+                                                      height: isPromoVisible ? 1.45 : 1.55,
+                                                    ),
+                                          ),
                                         ),
                                       ],
                                     ),
-                                    const SizedBox(height: 16),
-                                    ConstrainedBox(
-                                      constraints: const BoxConstraints(maxWidth: 660),
-                                      child: Text(
-                                        'An adaptive, intelligent learning studio where specialized AI agents orchestrate personalized roadmaps, intuitive analogies, video deep-dives, and instant mastery checks.',
-                                        textAlign: TextAlign.center,
-                                        style:
-                                            (isMobile
-                                                    ? AppTextStyles.body2
-                                                    : AppTextStyles.body1)
-                                                .copyWith(
-                                                  color: AppColors.textSecondary,
-                                                  height: 1.6,
-                                                ),
-                                      ),
-                                    ),
-                                  ],
+                                  ),
                                 ),
                               ),
-                            ),
-                          ),
 
-                            AnimatedSwitcher(
-                              duration: const Duration(milliseconds: 300),
-                              child: sessionsState.isLoading
-                                  ? Padding(
-                                      key: const ValueKey('recent_journeys_loading'),
-                                      padding: EdgeInsets.symmetric(
-                                        horizontal: isMobile ? 16.0 : 32.0,
-                                        vertical: isMobile ? 16.0 : 24.0,
-                                      ),
-                                      child: Center(
-                                        child: ConstrainedBox(
-                                          constraints: const BoxConstraints(
-                                            maxWidth: 900,
-                                          ),
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.center,
-                                            children: [
-                                              Row(
-                                                mainAxisSize: MainAxisSize.min,
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: [
-                                                  const Text(
-                                                    '⚡ ',
-                                                    style: TextStyle(fontSize: 24),
-                                                  ),
-                                                  Text(
-                                                    'Continue Your Recent Active Journeys',
-                                                    style:
-                                                        (isMobile
-                                                                ? AppTextStyles
-                                                                      .subtitle1
-                                                                : AppTextStyles
-                                                                      .h3)
-                                                            .copyWith(
-                                                              color:
-                                                                  AppColors.textPrimary,
-                                                            ),
-                                                  ),
-                                                ],
-                                              ),
-                                              const SizedBox(height: 24),
-                                              if (isMobile)
-                                                const Column(
+                              AnimatedSwitcher(
+                                duration: const Duration(milliseconds: 300),
+                                child: sessionsState.isLoading
+                                    ? Padding(
+                                        key: const ValueKey('recent_journeys_loading'),
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: isMobile ? 16.0 : 32.0,
+                                          vertical: recentJourneysVerticalPadding,
+                                        ),
+                                        child: Center(
+                                          child: ConstrainedBox(
+                                            constraints: const BoxConstraints(
+                                              maxWidth: 900,
+                                            ),
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.center,
+                                              children: [
+                                                Row(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
                                                   children: [
-                                                    Padding(
-                                                      padding: EdgeInsets.only(
-                                                        bottom: 16.0,
-                                                      ),
-                                                      child: RecentJourneySkeletonCard(
-                                                        isMobile: true,
-                                                        titleWidth: 140,
-                                                      ),
+                                                    const Text(
+                                                      '⚡ ',
+                                                      style: TextStyle(fontSize: 20),
                                                     ),
-                                                    Padding(
-                                                      padding: EdgeInsets.only(
-                                                        bottom: 16.0,
-                                                      ),
-                                                      child: RecentJourneySkeletonCard(
-                                                        isMobile: true,
-                                                        titleWidth: 110,
-                                                      ),
+                                                    Text(
+                                                      'Continue Your Recent Active Journeys',
+                                                      style:
+                                                          (isMobile
+                                                                  ? AppTextStyles
+                                                                        .subtitle2
+                                                                  : AppTextStyles
+                                                                        .subtitle1)
+                                                              .copyWith(
+                                                                color: AppColors
+                                                                    .textPrimary,
+                                                                fontWeight: FontWeight.w600,
+                                                              ),
                                                     ),
                                                   ],
-                                                )
-                                              else
-                                                const Center(
-                                                  child: Wrap(
-                                                    alignment: WrapAlignment.center,
-                                                    spacing: 16.0,
-                                                    runSpacing: 16.0,
-                                                    children: [
-                                                      SizedBox(
-                                                        width: 280,
-                                                        child: RecentJourneySkeletonCard(
-                                                          isMobile: false,
-                                                          titleWidth: 140,
-                                                        ),
-                                                      ),
-                                                      SizedBox(
-                                                        width: 280,
-                                                        child: RecentJourneySkeletonCard(
-                                                          isMobile: false,
-                                                          titleWidth: 115,
-                                                        ),
-                                                      ),
-                                                      SizedBox(
-                                                        width: 280,
-                                                        child: RecentJourneySkeletonCard(
-                                                          isMobile: false,
-                                                          titleWidth: 155,
-                                                        ),
-                                                      ),
-                                                    ],
+                                                ),
+                                                const SizedBox(height: 12),
+                                                SizedBox(
+                                                  height: 74,
+                                                  child: Center(
+                                                    child: ListView.separated(
+                                                      scrollDirection: Axis.horizontal,
+                                                      shrinkWrap: true,
+                                                      clipBehavior: Clip.none,
+                                                      physics: const NeverScrollableScrollPhysics(),
+                                                      itemCount: 3,
+                                                      separatorBuilder: (context, index) => const SizedBox(width: 14),
+                                                      itemBuilder: (context, index) {
+                                                        final widths = [140.0, 115.0, 155.0];
+                                                        return SizedBox(
+                                                          width: isMobile ? 250 : 270,
+                                                          child: RecentJourneySkeletonCard(
+                                                            isMobile: isMobile,
+                                                            titleWidth: widths[index % widths.length],
+                                                          ),
+                                                        );
+                                                      },
+                                                    ),
                                                   ),
                                                 ),
-                                            ],
+                                              ],
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                    )
-                                  : (displaySessions.isNotEmpty
-                                        ? Padding(
-                                            key: const ValueKey(
-                                              'recent_journeys_loaded',
-                                            ),
-                                            padding: EdgeInsets.symmetric(
-                                              horizontal: isMobile ? 16.0 : 32.0,
-                                              vertical: isMobile ? 16.0 : 24.0,
-                                            ),
-                                            child: Center(
-                                              child: ConstrainedBox(
-                                                constraints: const BoxConstraints(
-                                                  maxWidth: 900,
-                                                ),
-                                                child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.center,
-                                                  children: [
-                                                    Row(
-                                                      mainAxisSize: MainAxisSize.min,
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment.center,
-                                                      children: [
-                                                        const Text(
-                                                          '⚡ ',
-                                                          style: TextStyle(
-                                                            fontSize: 24,
+                                      )
+                                    : (displaySessions.isNotEmpty
+                                          ? Padding(
+                                              key: const ValueKey(
+                                                'recent_journeys_loaded',
+                                              ),
+                                              padding: EdgeInsets.symmetric(
+                                                horizontal: isMobile ? 16.0 : 32.0,
+                                                vertical: recentJourneysVerticalPadding,
+                                              ),
+                                              child: Center(
+                                                child: ConstrainedBox(
+                                                  constraints: const BoxConstraints(
+                                                    maxWidth: 900,
+                                                  ),
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment.center,
+                                                    children: [
+                                                      Row(
+                                                        mainAxisSize: MainAxisSize.min,
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment.center,
+                                                        children: [
+                                                          const Text(
+                                                            '⚡ ',
+                                                            style: TextStyle(
+                                                              fontSize: 20,
+                                                            ),
                                                           ),
-                                                        ),
-                                                        Text(
-                                                          'Continue Your Recent Active Journeys',
-                                                          style:
-                                                              (isMobile
-                                                                      ? AppTextStyles
-                                                                            .subtitle1
-                                                                      : AppTextStyles
-                                                                            .h3)
-                                                                  .copyWith(
-                                                                    color: AppColors
-                                                                        .textPrimary,
-                                                                  ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                    const SizedBox(height: 24),
-                                                    if (isMobile)
-                                                      Column(
-                                                        children: displaySessions
-                                                            .map(
-                                                              (session) => Padding(
-                                                                padding:
-                                                                    const EdgeInsets.only(
-                                                                      bottom: 16.0,
+                                                          Text(
+                                                            'Continue Your Recent Active Journeys',
+                                                            style:
+                                                                (isMobile
+                                                                        ? AppTextStyles
+                                                                              .subtitle2
+                                                                        : AppTextStyles
+                                                                              .subtitle1)
+                                                                    .copyWith(
+                                                                      color: AppColors
+                                                                          .textPrimary,
+                                                                      fontWeight: FontWeight.w600,
                                                                     ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      const SizedBox(height: 12),
+                                                      SizedBox(
+                                                        height: 74,
+                                                        child: Center(
+                                                          child: ListView.separated(
+                                                            scrollDirection: Axis.horizontal,
+                                                            shrinkWrap: true,
+                                                            clipBehavior: Clip.none,
+                                                            physics: const BouncingScrollPhysics(),
+                                                            itemCount: displaySessions.length,
+                                                            separatorBuilder: (context, index) => const SizedBox(width: 14),
+                                                            itemBuilder: (context, index) {
+                                                              final session = displaySessions[index];
+                                                              return SizedBox(
+                                                                width: isMobile ? 250 : 270,
                                                                 child: RecentJourneyCard(
                                                                   session: session,
                                                                   isMobile: isMobile,
@@ -403,125 +427,97 @@ class LearningMainContent extends ConsumerWidget {
                                                                         );
                                                                   },
                                                                 ),
-                                                              ),
-                                                            )
-                                                            .toList(),
-                                                      )
-                                                    else
-                                                      Center(
-                                                        child: Wrap(
-                                                          alignment: WrapAlignment.center,
-                                                          spacing: 16.0,
-                                                          runSpacing: 16.0,
-                                                          children: displaySessions
-                                                              .map(
-                                                                (session) => SizedBox(
-                                                                  width: 280,
-                                                                  child: RecentJourneyCard(
-                                                                    session: session,
-                                                                    isMobile: isMobile,
-                                                                    onContinue: () {
-                                                                      ref
-                                                                          .read(
-                                                                            activeSessionProvider
-                                                                                .notifier,
-                                                                          )
-                                                                          .loadSession(
-                                                                            session
-                                                                                .sessionId,
-                                                                          );
-                                                                    },
-                                                                  ),
-                                                                ),
-                                                              )
-                                                              .toList(),
+                                                              );
+                                                            },
+                                                          ),
                                                         ),
                                                       ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-                                          )
-                                        : const SizedBox.shrink(
-                                            key: ValueKey('recent_journeys_empty'),
-                                          )),
-                            ),
-                          ],
-                        ),
-
-                        // Bottom Section
-                        Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: isMobile ? 16.0 : 32.0,
-                            vertical: isMobile ? 8.0 : 16.0,
-                          ),
-                          child: Center(
-                            child: ConstrainedBox(
-                              constraints: const BoxConstraints(maxWidth: 880),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Wrap(
-                                    alignment: WrapAlignment.center,
-                                    children: [
-                                      Text(
-                                        'What do you want to ',
-                                        style:
-                                            (isMobile
-                                                    ? AppTextStyles.h4
-                                                    : AppTextStyles.h3)
-                                                .copyWith(letterSpacing: -0.5),
-                                      ),
-                                      GradientText(
-                                        'learn today?',
-                                        style:
-                                            (isMobile
-                                                    ? AppTextStyles.h4
-                                                    : AppTextStyles.h3)
-                                                .copyWith(letterSpacing: -0.5),
-                                      ),
-                                    ],
-                                  ),
-                                  SizedBox(height: isMobile ? 8 : 12),
-                                  Text(
-                                    'Decompose any concept into adaptive milestones, interactive Socratic lessons, and academic research.',
-                                    textAlign: TextAlign.center,
-                                    style:
-                                        (isMobile
-                                                ? AppTextStyles.caption
-                                                : AppTextStyles.body2)
-                                            .copyWith(color: AppColors.textSecondary),
-                                  ),
-                                  SizedBox(height: isMobile ? 8 : 16),
-                                  JourneyPromptCard(
-                                    onStartJourney: (topic, mode, level) {
-                                      ref
-                                          .read(activeSessionProvider.notifier)
-                                          .startNewSession(
-                                            topic: topic,
-                                            mode: mode,
-                                            level: level,
-                                          )
-                                          .catchError((error) {
-                                            if (context.mounted) {
-                                              ScaffoldMessenger.of(context).showSnackBar(
-                                                SnackBar(
-                                                  content: Text(
-                                                    'Failed to start journey: $error',
+                                                    ],
                                                   ),
                                                 ),
-                                              );
-                                            }
-                                          });
-                                    },
-                                  ),
-                                ],
+                                              ),
+                                            )
+                                          : const SizedBox.shrink(
+                                              key: ValueKey('recent_journeys_empty'),
+                                            )),
+                              ),
+                            ],
+                          ),
+
+                          // Bottom Section
+                          Padding(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: isMobile ? 16.0 : 32.0,
+                              vertical: isMobile ? 6.0 : 8.0,
+                            ),
+                            child: Center(
+                              child: ConstrainedBox(
+                                constraints: const BoxConstraints(maxWidth: 880),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Wrap(
+                                      alignment: WrapAlignment.center,
+                                      children: [
+                                        Text(
+                                          'What do you want to ',
+                                          style:
+                                              (isMobile
+                                                      ? AppTextStyles.h4
+                                                      : AppTextStyles.h3)
+                                                  .copyWith(letterSpacing: -0.5),
+                                        ),
+                                        GradientText(
+                                          'learn today?',
+                                          style:
+                                              (isMobile
+                                                      ? AppTextStyles.h4
+                                                      : AppTextStyles.h3)
+                                                  .copyWith(letterSpacing: -0.5),
+                                        ),
+                                      ],
+                                    ),
+                                    SizedBox(height: isMobile ? 4 : 8),
+                                    Text(
+                                      'Decompose any concept into adaptive milestones, interactive Socratic lessons, and academic research.',
+                                      textAlign: TextAlign.center,
+                                      style:
+                                          (isMobile
+                                                  ? AppTextStyles.caption
+                                                  : AppTextStyles.body2)
+                                              .copyWith(color: AppColors.textSecondary),
+                                    ),
+                                    SizedBox(height: isMobile ? 6 : 10),
+                                    JourneyPromptCard(
+                                      onStartJourney: (topic, mode, level) {
+                                        ref
+                                            .read(activeSessionProvider.notifier)
+                                            .startNewSession(
+                                              topic: topic,
+                                              mode: mode,
+                                              level: level,
+                                            )
+                                            .catchError((error) {
+                                              if (context.mounted) {
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  SnackBar(
+                                                    content: Text(
+                                                      'Failed to start journey: $error',
+                                                    ),
+                                                  ),
+                                                );
+                                              }
+                                            });
+                                      },
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
