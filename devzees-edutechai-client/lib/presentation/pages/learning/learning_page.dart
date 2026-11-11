@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/glow_background.dart';
 import 'package:devzees_edutechai_client/core/constants/responsive.dart';
-import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
 import 'package:devzees_edutechai_client/core/theme/theme_palette.dart';
 import 'package:devzees_edutechai_client/core/providers/learning_provider.dart';
 import 'package:devzees_edutechai_client/core/providers/gamification_provider.dart';
@@ -16,7 +15,6 @@ import 'widgets/gamification/journey_complete_celebration.dart';
 import 'widgets/gamification/session_feedback_dialog.dart';
 import 'package:devzees_edutechai_client/core/providers/feedback_provider.dart';
 import 'package:devzees_edutechai_client/core/providers/active_session_provider.dart';
-import 'package:devzees_edutechai_client/core/providers/theme_provider.dart';
 import 'widgets/mobile/mobile_learning_top_bar.dart';
 import 'widgets/mobile/mobile_command_hub_sheet.dart';
 

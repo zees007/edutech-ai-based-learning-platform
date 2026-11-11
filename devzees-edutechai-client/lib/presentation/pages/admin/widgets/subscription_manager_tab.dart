@@ -318,8 +318,9 @@ class _SubscriptionManagerTabState
                             ),
                           ],
                           onChanged: (value) {
-                            if (value != null)
+                            if (value != null) {
                               setState(() => _selectedTier = value);
+                            }
                           },
                         ),
                       ),
@@ -373,8 +374,9 @@ class _SubscriptionManagerTabState
                             ),
                           ],
                           onChanged: (value) {
-                            if (value != null)
+                            if (value != null) {
                               setState(() => _selectedStatus = value);
+                            }
                           },
                         ),
                       ),

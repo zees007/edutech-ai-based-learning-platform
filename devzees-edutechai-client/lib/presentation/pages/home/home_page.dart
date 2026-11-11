@@ -6,7 +6,6 @@ import 'package:devzees_edutechai_client/presentation/widgets/n8n_canvas.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/scroll_fade_in.dart';
 import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
 import 'package:devzees_edutechai_client/core/theme/app_theme.dart';
-import 'package:devzees_edutechai_client/core/providers/theme_provider.dart';
 
 import 'package:devzees_edutechai_client/presentation/widgets/promo_announcement_bar.dart';
 

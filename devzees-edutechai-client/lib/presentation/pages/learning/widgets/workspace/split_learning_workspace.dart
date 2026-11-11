@@ -13,7 +13,6 @@ import 'keep_alive_wrapper.dart';
 import '../../../../widgets/animated_tutor_icon.dart';
 import '../../../../widgets/step_pill.dart';
 import '../../../../../core/constants/responsive.dart';
-import '../../../../../core/providers/theme_provider.dart';
 
 /// A dual-panel layout that splits the learning workspace into:
 ///   • Left Panel (55%): Socratic Tutor Chat

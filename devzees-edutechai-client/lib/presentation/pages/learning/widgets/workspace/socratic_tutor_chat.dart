@@ -15,7 +15,6 @@ import '../../../../../../core/providers/permission_provider.dart';
 import 'mermaid_web_view.dart';
 import '../../../../../../core/constants/responsive.dart';
 import '../../../../widgets/animated_tutor_icon.dart';
-import '../../../../../../core/providers/theme_provider.dart';
 
 // ═══════════════════════════════════════════════════════════════════
 // Socratic Tutor Chat — Premium Chat Bubble UI
