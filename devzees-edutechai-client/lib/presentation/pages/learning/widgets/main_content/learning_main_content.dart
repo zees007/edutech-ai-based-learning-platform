@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/theme/theme_palette.dart';
 import '../../../../../core/theme/text_styles.dart';
 import '../../../../../presentation/widgets/gradient_text.dart';
 import '../../../../../presentation/widgets/app_gradient_spinner.dart';
@@ -117,30 +118,46 @@ class LearningMainContent extends ConsumerWidget {
 
         return NeuralInferenceLoader(title: title, subtitle: subtitle);
       }
-      return const ActiveLearningWorkspace();
+      return ActiveLearningWorkspace(key: ValueKey('active_workspace_${context.isDarkMode}'));
     }
 
-    final isDark = AppColors.isDark;
+    final isDark = context.isDarkMode;
 
     return Container(
-      decoration: BoxDecoration(
-        color: isDark
-            ? (isMobile ? AppColors.mobileBackground : null)
-            : const Color(0xFFF6F8FC),
-        gradient: isDark
-            ? (isMobile ? null : AppColors.workspaceBackgroundRadial)
-            : null,
-      ),
+      color: isDark
+          ? (isMobile ? AppColors.mobileBackground : AppColors.background)
+          : const Color(0xFFF6F8FC),
       child: Stack(
         children: [
-          if (!isDark)
+          // Dark Mode Ambient Radial Gradient
+          if (!isMobile)
             Positioned.fill(
               child: IgnorePointer(
-                child: CustomPaint(
-                  painter: const _AmbientBackgroundPainter(isDark: false),
+                child: AnimatedOpacity(
+                  opacity: isDark ? 1.0 : 0.0,
+                  duration: const Duration(milliseconds: 250),
+                  curve: Curves.easeInOut,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: AppColors.workspaceBackgroundRadial,
+                    ),
+                  ),
                 ),
               ),
             ),
+          // Light Mode Ambient Background Aura
+          Positioned.fill(
+            child: IgnorePointer(
+              child: AnimatedOpacity(
+                opacity: !isDark ? 1.0 : 0.0,
+                duration: const Duration(milliseconds: 250),
+                curve: Curves.easeInOut,
+                child: const CustomPaint(
+                  painter: _AmbientBackgroundPainter(isDark: false),
+                ),
+              ),
+            ),
+          ),
           LayoutBuilder(
             builder: (context, constraints) {
               return SingleChildScrollView(

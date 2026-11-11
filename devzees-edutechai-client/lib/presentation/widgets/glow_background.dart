@@ -98,9 +98,7 @@ class _GlowBackgroundState extends State<GlowBackground>
 
     return MouseRegion(
       onHover: _onPointerHover,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOutCubic,
+      child: Container(
         width: double.infinity,
         height: double.infinity,
         color: heroBase,

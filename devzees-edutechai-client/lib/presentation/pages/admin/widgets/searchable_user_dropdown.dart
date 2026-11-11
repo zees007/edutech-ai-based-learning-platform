@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/theme_palette.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../data/models/admin/user_response.dart';
 import 'tier_badge.dart';
@@ -333,7 +334,7 @@ class _SearchableUserDropdownState extends State<SearchableUserDropdown> {
 
   @override
   Widget build(BuildContext context) {
-    Theme.of(context);
+    context.appColors;
     final user = widget.selectedUser;
 
     return CompositedTransformTarget(

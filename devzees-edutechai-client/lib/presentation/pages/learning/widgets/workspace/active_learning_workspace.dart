@@ -84,9 +84,7 @@ class _StepContentContainerState extends ConsumerState<_StepContentContainer> {
 
     final colors = context.appColors;
 
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOutCubic,
+    return Container(
       width: double.infinity,
       color: colors.workspaceBackground,
       child: widget.activeState.isLoading
@@ -96,7 +94,7 @@ class _StepContentContainerState extends ConsumerState<_StepContentContainer> {
           )
         : widget.session.steps.isNotEmpty
           ? SplitLearningWorkspace(
-              key: ValueKey('split_${widget.session.sessionId}_step_$currentIndex'),
+              key: ValueKey('split_${widget.session.sessionId}_step_${currentIndex}_${context.isDarkMode}'),
               session: widget.session,
               activeState: widget.activeState,
               currentStepIndex: currentIndex,

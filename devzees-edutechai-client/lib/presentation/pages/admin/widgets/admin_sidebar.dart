@@ -1,9 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/theme_palette.dart';
 import '../../../../core/theme/text_styles.dart';
 
-enum AdminSection { users, roles, subscriptions, settings, analytics, feedbacks }
+enum AdminSection {
+  users,
+  roles,
+  subscriptions,
+  settings,
+  analytics,
+  feedbacks,
+}
 
 /// Admin sidebar navigation with glassmorphic styling.
 class AdminSidebar extends StatelessWidget {
@@ -20,7 +28,7 @@ class AdminSidebar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Theme.of(context);
+    context.appColors;
     return SafeArea(
       child: Column(
         children: [
@@ -197,8 +205,8 @@ class _NavItemTileState extends State<_NavItemTile> {
             color: widget.isSelected
                 ? AppColors.purple.withValues(alpha: 0.16)
                 : _isHovered
-                    ? AppColors.glassHover
-                    : Colors.transparent,
+                ? AppColors.glassHover
+                : Colors.transparent,
             border: widget.isSelected
                 ? Border.all(
                     color: AppColors.purple.withValues(alpha: 0.45),
@@ -223,8 +231,8 @@ class _NavItemTileState extends State<_NavItemTile> {
                       color: widget.isSelected
                           ? AppColors.purple
                           : _isHovered
-                              ? AppColors.textPrimary
-                              : AppColors.textMuted,
+                          ? AppColors.textPrimary
+                          : AppColors.textMuted,
                       size: 20,
                     ),
                     const SizedBox(width: 12),
@@ -237,8 +245,8 @@ class _NavItemTileState extends State<_NavItemTile> {
                           color: widget.isSelected
                               ? AppColors.textPrimary
                               : _isHovered
-                                  ? AppColors.textPrimary
-                                  : AppColors.textSecondary,
+                              ? AppColors.textPrimary
+                              : AppColors.textSecondary,
                           fontWeight: widget.isSelected
                               ? FontWeight.w700
                               : FontWeight.w500,
@@ -261,7 +269,9 @@ class _NavItemTileState extends State<_NavItemTile> {
                               spreadRadius: 1,
                             ),
                             BoxShadow(
-                              color: AppColors.primaryPink.withValues(alpha: 0.45),
+                              color: AppColors.primaryPink.withValues(
+                                alpha: 0.45,
+                              ),
                               blurRadius: 6,
                               spreadRadius: 0.5,
                             ),
@@ -282,8 +292,8 @@ class _NavItemTileState extends State<_NavItemTile> {
                           color: widget.isSelected
                               ? AppColors.purple
                               : _isHovered
-                                  ? AppColors.textPrimary
-                                  : AppColors.textMuted,
+                              ? AppColors.textPrimary
+                              : AppColors.textMuted,
                           size: 22,
                         ),
                       ),
@@ -359,7 +369,9 @@ class _BackToLearningButtonState extends State<_BackToLearningButton> {
                   children: [
                     Icon(
                       Icons.school_outlined,
-                      color: _isHovered ? AppColors.accentGreen : AppColors.textMuted,
+                      color: _isHovered
+                          ? AppColors.accentGreen
+                          : AppColors.textMuted,
                       size: 20,
                     ),
                     const SizedBox(width: 12),
@@ -369,7 +381,9 @@ class _BackToLearningButtonState extends State<_BackToLearningButton> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: AppTextStyles.label.copyWith(
-                          color: _isHovered ? AppColors.accentGreen : AppColors.textSecondary,
+                          color: _isHovered
+                              ? AppColors.accentGreen
+                              : AppColors.textSecondary,
                         ),
                       ),
                     ),
@@ -379,7 +393,9 @@ class _BackToLearningButtonState extends State<_BackToLearningButton> {
                   message: 'Learning Workspace',
                   child: Icon(
                     Icons.school_outlined,
-                    color: _isHovered ? AppColors.accentGreen : AppColors.textMuted,
+                    color: _isHovered
+                        ? AppColors.accentGreen
+                        : AppColors.textMuted,
                     size: 22,
                   ),
                 ),

@@ -28,20 +28,20 @@ class _AdminPageState extends ConsumerState<AdminPage> {
   AdminSection _currentSection = AdminSection.users;
   bool _isSidebarExpanded = true;
 
-  Widget _buildContent() {
+  Widget _buildContent(bool isDark) {
     switch (_currentSection) {
       case AdminSection.users:
-        return const UserDirectoryTab(key: ValueKey('admin_users_tab'));
+        return UserDirectoryTab(key: ValueKey('admin_users_tab_$isDark'));
       case AdminSection.roles:
-        return const RolePrivilegeTab(key: ValueKey('admin_roles_tab'));
+        return RolePrivilegeTab(key: ValueKey('admin_roles_tab_$isDark'));
       case AdminSection.subscriptions:
-        return const SubscriptionManagerTab(key: ValueKey('admin_subscriptions_tab'));
+        return SubscriptionManagerTab(key: ValueKey('admin_subscriptions_tab_$isDark'));
       case AdminSection.settings:
-        return const SettingsTab(key: ValueKey('admin_settings_tab'));
+        return SettingsTab(key: ValueKey('admin_settings_tab_$isDark'));
       case AdminSection.analytics:
-        return const AnalyticsTab(key: ValueKey('admin_analytics_tab'));
+        return AnalyticsTab(key: ValueKey('admin_analytics_tab_$isDark'));
       case AdminSection.feedbacks:
-        return const FeedbackManagementTab(key: ValueKey('admin_feedbacks_tab'));
+        return FeedbackManagementTab(key: ValueKey('admin_feedbacks_tab_$isDark'));
     }
   }
 
@@ -104,7 +104,7 @@ class _AdminPageState extends ConsumerState<AdminPage> {
             },
           ),
         ),
-        body: GlowBackground(child: _buildContent()),
+        body: GlowBackground(child: _buildContent(context.isDarkMode)),
       );
     }
 
@@ -147,9 +147,7 @@ class _AdminPageState extends ConsumerState<AdminPage> {
               child: Column(
                 children: [
                   // Top Bar
-                  AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeInOutCubic,
+                  Container(
                     height: 60,
                     padding: const EdgeInsets.symmetric(horizontal: 24),
                     decoration: BoxDecoration(
@@ -203,7 +201,7 @@ class _AdminPageState extends ConsumerState<AdminPage> {
                     ),
                   ),
                   // Content Area
-                  Expanded(child: _buildContent()),
+                  Expanded(child: _buildContent(context.isDarkMode)),
                 ],
               ),
             ),
