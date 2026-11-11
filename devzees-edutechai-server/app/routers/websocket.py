@@ -43,19 +43,33 @@ from services.session_manager import SessionManager
 
 
 class ConnectionManager:
-    """Manages active WebSocket connections."""
+    """Manages active WebSocket connections and their background tasks."""
 
     def __init__(self):
         self.active_connections: dict[str, WebSocket] = {}
+        self.active_tasks: dict[str, set[asyncio.Task]] = {}
 
     async def connect(self, session_id: str, websocket: WebSocket):
         await websocket.accept()
         self.active_connections[session_id] = websocket
         logger.info(f"WebSocket connected: session={session_id}")
 
+    def register_task(self, session_id: str, task: asyncio.Task):
+        self.active_tasks.setdefault(session_id, set()).add(task)
+        task.add_done_callback(lambda t: self.active_tasks.get(session_id, set()).discard(t))
+
+    def cancel_tasks(self, session_id: str):
+        tasks = self.active_tasks.pop(session_id, set())
+        for task in tasks:
+            if not task.done():
+                task.cancel()
+        if tasks:
+            logger.info(f"Cancelled {len(tasks)} active background tasks for session {session_id}")
+
     def disconnect(self, session_id: str):
         self.active_connections.pop(session_id, None)
-        logger.info(f"WebSocket disconnected: session={session_id}")
+        self.cancel_tasks(session_id)
+        logger.info(f"WebSocket disconnected & tasks cancelled: session={session_id}")
 
     async def send_event(self, session_id: str, event):
         """Send a typed event as JSON to the client."""
@@ -215,9 +229,17 @@ async def _process_step(
     3. Quiz Agent (after tutor completes — needs explanation context)
     4. Step complete event
     """
+    if SessionManager.is_cancelled(session_id):
+        logger.info(f"[WS] Session {session_id} is cancelled. Aborting _process_step.")
+        return
+
     ws = manager.active_connections.get(session_id)
     if not ws:
         return
+
+    current_t = asyncio.current_task()
+    if current_t:
+        manager.register_task(session_id, current_t)
 
     if step_index >= len(memory.steps):
         await ws.send_json({
@@ -349,6 +371,10 @@ async def _process_step(
         await manager.send_event(session_id, sq_event)
 
     # ─── 5. Persist core step BEFORE step_complete ───────────────────────────
+    if SessionManager.is_cancelled(session_id):
+        logger.info(f"[WS] Session {session_id} is cancelled. Skipping DB persist.")
+        return
+
     persist_start = time.time()
     try:
         await SessionManager().update_session(memory)
@@ -407,8 +433,12 @@ async def _process_step(
     # ─── 8. Background video hydration if YouTube Curator is still indexing ──
     if youtube_task is not None and not youtube_already_done:
         async def _finish_youtube_and_notify():
+            if SessionManager.is_cancelled(session_id):
+                return
             try:
                 await youtube_task
+                if SessionManager.is_cancelled(session_id):
+                    return
                 duration_ms = _timings.get("YouTubeCuratorAgent", (time.time() - youtube_start_time) * 1000)
                 # Persist updated videos to DB
                 await SessionManager().update_session(memory)
@@ -443,14 +473,23 @@ async def _process_step(
                     "duration_ms": round(duration_ms, 1),
                 })
 
-        asyncio.create_task(_finish_youtube_and_notify())
+        yt_bg_task = asyncio.create_task(_finish_youtube_and_notify())
+        manager.register_task(session_id, yt_bg_task)
 
 
 async def _handle_chat(session_id: str, memory: SharedMemory, question: str):
     """Handle a follow-up question from the student during a step."""
+    if SessionManager.is_cancelled(session_id):
+        logger.info(f"[WS] Session {session_id} is cancelled. Aborting _process_step.")
+        return
+
     ws = manager.active_connections.get(session_id)
     if not ws:
         return
+
+    current_t = asyncio.current_task()
+    if current_t:
+        manager.register_task(session_id, current_t)
 
     step_index = memory.current_step_index
     step = memory.steps[step_index]

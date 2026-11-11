@@ -55,6 +55,14 @@ class LearningService {
     }
   }
 
+  Future<void> cancelSession(String sessionId) async {
+    try {
+      await _dio.post(ApiConstants.cancelSession(sessionId));
+    } catch (e) {
+      throw Exception('Failed to cancel learning session: $e');
+    }
+  }
+
   Future<String> sendFollowUpQuestion(String sessionId, int stepIndex, String question) async {
     try {
       final response = await _dio.post(
@@ -71,29 +79,39 @@ class LearningService {
     required String topic,
     required String mode,
     required String level,
+    String? sessionId,
+    CancelToken? cancelToken,
   }) async {
     try {
+      final data = <String, dynamic>{
+        'topic': topic,
+        'learning_mode': mode
+            .replaceAll(RegExp(r'[\u{1F300}-\u{1F9FF}]', unicode: true), '')
+            .replaceAll(RegExp(r'[^\w\s-]'), '')
+            .trim()
+            .toLowerCase()
+            .replaceAll(RegExp(r'\s+'), '_')
+            .replaceAll('-', '_'),
+        'student_level': level
+            .replaceAll(RegExp(r'[\u{1F300}-\u{1F9FF}]', unicode: true), '')
+            .replaceAll(RegExp(r'[^\w\s-]'), '')
+            .trim()
+            .toLowerCase()
+            .replaceAll(RegExp(r'\s+'), '_'),
+      };
+      if (sessionId != null) {
+        data['session_id'] = sessionId;
+      }
       final response = await _dio.post(
         ApiConstants.learn,
-        data: {
-          'topic': topic,
-          'learning_mode': mode
-              .replaceAll(RegExp(r'[\u{1F300}-\u{1F9FF}]', unicode: true), '')
-              .replaceAll(RegExp(r'[^\w\s-]'), '')
-              .trim()
-              .toLowerCase()
-              .replaceAll(RegExp(r'\s+'), '_')
-              .replaceAll('-', '_'),
-          'student_level': level
-              .replaceAll(RegExp(r'[\u{1F300}-\u{1F9FF}]', unicode: true), '')
-              .replaceAll(RegExp(r'[^\w\s-]'), '')
-              .trim()
-              .toLowerCase()
-              .replaceAll(RegExp(r'\s+'), '_'),
-        },
+        data: data,
+        cancelToken: cancelToken,
       );
       return SessionResponse.fromJson(response.data);
     } catch (e) {
+      if (e is DioException && CancelToken.isCancel(e)) {
+        throw const FormatException('Session creation was cancelled');
+      }
       throw Exception('Failed to start journey: $e');
     }
   }

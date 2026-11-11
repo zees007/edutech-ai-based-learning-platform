@@ -1,3 +1,5 @@
+import 'dart:math';
+import 'package:dio/dio.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/learning/session_model.dart';
@@ -54,6 +56,12 @@ class ActiveSessionState {
   }
 }
 
+String _generateSessionId() {
+  final random = Random();
+  final values = List<int>.generate(6, (i) => random.nextInt(256));
+  return values.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
+}
+
 class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
   late LearningService _service;
   late LearningWebSocketService _wsService;
@@ -69,6 +77,8 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
   int _currentTrackingStepIndex = 0;
   bool _isStepGenerationActive = false;
   bool _isRegenerating = false;
+  CancelToken? _startJourneyCancelToken;
+  String? _pendingSessionId;
 
   @override
   ActiveSessionState build() {
@@ -289,6 +299,11 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     _wsService.disconnect();
     _isStepGenerationActive = false;
     _isRegenerating = false;
+    _startJourneyCancelToken = CancelToken();
+
+    final clientSessionId = _generateSessionId();
+    _pendingSessionId = clientSessionId;
+
     state = state.copyWith(
       isLoading: true,
       isSynthesizing: true,
@@ -299,9 +314,24 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     );
     try {
       final journeyApiWatch = Stopwatch()..start();
-      final response = await _service.startJourney(topic: topic, mode: mode, level: level);
+      final response = await _service.startJourney(
+        topic: topic,
+        mode: mode,
+        level: level,
+        sessionId: clientSessionId,
+        cancelToken: _startJourneyCancelToken,
+      );
       journeyApiWatch.stop();
       debugPrint('📋 [Client API] Orchestrator milestone plan created in ${journeyApiWatch.elapsedMilliseconds}ms (${(journeyApiWatch.elapsedMilliseconds / 1000).toStringAsFixed(2)}s). Total steps: ${response.steps.length}');
+
+      // If user cancelled while startJourney was returning, clean up immediately
+      if (_startJourneyCancelToken == null || _startJourneyCancelToken!.isCancelled) {
+        debugPrint('🛑 [Client] Journey was cancelled right after API return. Cleaning up session $clientSessionId...');
+        await ref.read(sessionsProvider.notifier).deleteSession(clientSessionId);
+        ref.read(sessionsProvider.notifier).removeSessionLocally(clientSessionId);
+        clearSession();
+        return;
+      }
 
       final updatedCurating = Set<int>.from(state.curatingVideoSteps)..add(0);
       state = state.copyWith(
@@ -332,9 +362,57 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     } catch (e) {
       _isStepGenerationActive = false;
       _stepTotalStopwatch.stop();
+      final errStr = e.toString().toLowerCase();
+      if ((e is FormatException && e.message.contains('cancelled')) ||
+          errStr.contains('cancelled') ||
+          errStr.contains('session_cancelled')) {
+        debugPrint('🛑 [Client] Journey creation was cancelled by user.');
+        if (_pendingSessionId != null) {
+          final sid = _pendingSessionId!;
+          _pendingSessionId = null;
+          await ref.read(sessionsProvider.notifier).deleteSession(sid);
+          ref.read(sessionsProvider.notifier).removeSessionLocally(sid);
+        }
+        clearSession();
+        return;
+      }
+      _pendingSessionId = null;
       state = state.copyWith(isLoading: false, isSynthesizing: false, error: e.toString());
       rethrow;
     }
+  }
+
+  Future<void> cancelSessionCreation({bool isPhase1 = false}) async {
+    debugPrint('🛑 [Client] Cancelling session creation / active synthesis (isPhase1=$isPhase1)...');
+    // 1. Cancel in-flight HTTP POST /learn if still running
+    if (_startJourneyCancelToken != null && !_startJourneyCancelToken!.isCancelled) {
+      _startJourneyCancelToken!.cancel('Session creation cancelled by user');
+      _startJourneyCancelToken = null;
+    }
+
+    // 2. Disconnect WebSocket
+    _wsService.disconnect();
+    _isStepGenerationActive = false;
+    _isRegenerating = false;
+    _stepTotalStopwatch.stop();
+
+    // 3. Delete or cancel the session
+    final sessionId = state.session?.sessionId ?? _pendingSessionId;
+    _pendingSessionId = null;
+
+    if (sessionId != null) {
+      if (isPhase1) {
+        // Phase 1 cancel: Milestones / session deleted completely from DB & history, 0 quota deducted
+        await ref.read(sessionsProvider.notifier).deleteSession(sessionId);
+      } else {
+        // Phase 2 cancel: Active synthesis compute used, quota recorded for Free tier, DB records deleted
+        await ref.read(sessionsProvider.notifier).cancelSession(sessionId);
+      }
+      ref.read(sessionsProvider.notifier).removeSessionLocally(sessionId);
+    }
+
+    // 4. Reset state to dashboard
+    clearSession();
   }
 
   Future<QuizResult?> submitStepQuiz(int stepIndex, Map<int, String> answers) async {

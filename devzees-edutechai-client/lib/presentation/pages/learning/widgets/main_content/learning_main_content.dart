@@ -13,6 +13,9 @@ import 'recent_journey_card.dart';
 import 'recent_journey_skeleton.dart';
 import '../workspace/active_learning_workspace.dart';
 import 'neural_inference_loader.dart';
+import '../../../../../core/providers/auth_provider.dart';
+import '../../../../../presentation/widgets/center_toast.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../../../presentation/widgets/theme_toggle_button.dart';
 import '../../../../widgets/promo_announcement_bar.dart';
 
@@ -28,6 +31,201 @@ class LearningMainContent extends ConsumerStatefulWidget {
 
 class _LearningMainContentState extends ConsumerState<LearningMainContent> {
   bool _isPromoDismissed = false;
+  bool _isCancelling = false;
+  bool _isConfirmationModalOpen = false;
+
+  Future<bool?> _showCancelConfirmationDialog({
+    required BuildContext context,
+    required bool isPremium,
+    required String tier,
+  }) {
+    final isDark = context.isDarkMode;
+    return showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) {
+        return AlertDialog(
+          backgroundColor: isDark ? AppColors.canvasBackground : Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: BorderSide(
+              color: isPremium
+                  ? (isDark ? AppColors.primary : AppColors.purple).withValues(alpha: 0.3)
+                  : const Color(0xFFEF4444).withValues(alpha: 0.35),
+              width: 1.5,
+            ),
+          ),
+          title: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: isPremium
+                      ? (isDark ? AppColors.primary : AppColors.purple).withValues(alpha: 0.12)
+                      : const Color(0xFFEF4444).withValues(alpha: 0.12),
+                ),
+                child: Icon(
+                  isPremium ? Icons.stop_circle_outlined : Icons.warning_amber_rounded,
+                  color: isPremium
+                      ? (isDark ? AppColors.primary : AppColors.purple)
+                      : const Color(0xFFEF4444),
+                  size: 22,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  isPremium ? 'Discard Journey?' : 'Cancel Learning Journey?',
+                  style: AppTextStyles.h4.copyWith(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 18,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                isPremium
+                    ? 'Are you sure you want to stop? The current milestone synthesis and notes will be discarded.'
+                    : 'AI agents are actively generating your personalized curriculum. Since AI compute has been allocated for this session, cancelling now will still count as 1 of your 10 free monthly sessions.\n\nAre you sure you want to cancel?',
+                style: AppTextStyles.body2.copyWith(
+                  color: isDark ? const Color(0xFF9CA3AF) : AppColors.textSecondary,
+                  height: 1.5,
+                ),
+              ),
+            ],
+          ),
+          actionsPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          actions: [
+            OutlinedButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              style: OutlinedButton.styleFrom(
+                side: BorderSide(
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.2)
+                      : AppColors.border,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+              ),
+              child: Text(
+                'Keep Generating',
+                style: AppTextStyles.button.copyWith(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? Colors.white70 : AppColors.textSecondary,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            MouseRegion(
+              cursor: SystemMouseCursors.click,
+              child: GestureDetector(
+                onTap: () => Navigator.of(ctx).pop(true),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  decoration: BoxDecoration(
+                    gradient: isPremium
+                        ? AppColors.primaryGradient
+                        : const LinearGradient(
+                            colors: [Color(0xFFDC2626), Color(0xFFEF4444), Color(0xFFF43F5E)],
+                          ),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: (isPremium ? AppColors.primary : const Color(0xFFEF4444))
+                            .withValues(alpha: 0.35),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Text(
+                    isPremium ? 'Discard Journey' : 'Cancel & Consume Quota',
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _handleCancelJourney(BuildContext context, bool isPhase2) async {
+    if (!isPhase2) {
+      // Phase 1: Instant abort during initial milestone planning
+      setState(() => _isCancelling = true);
+      try {
+        await ref.read(activeSessionProvider.notifier).cancelSessionCreation(isPhase1: true);
+        if (context.mounted) {
+          CenterToast.showInfo(
+            context,
+            'Journey creation cancelled.',
+            title: 'Cancelled',
+            duration: const Duration(seconds: 3),
+          );
+        }
+      } finally {
+        if (mounted) setState(() => _isCancelling = false);
+      }
+      return;
+    }
+
+    // Phase 2: Active synthesis
+    final user = ref.read(authProvider).user;
+    final tier = user?.subscription?.tier.toLowerCase() ?? 'free';
+    final isPremium = tier == 'pro' || tier == 'ultra' || (user?.roles.contains('Admin') ?? false);
+
+    // Hold the loader on screen while modal is presented
+    setState(() => _isConfirmationModalOpen = true);
+    final confirmed = await _showCancelConfirmationDialog(
+      context: context,
+      isPremium: isPremium,
+      tier: tier,
+    );
+    if (mounted) {
+      setState(() => _isConfirmationModalOpen = false);
+    }
+
+    if (confirmed == true && context.mounted) {
+      setState(() => _isCancelling = true);
+      try {
+        await ref.read(activeSessionProvider.notifier).cancelSessionCreation(isPhase1: false);
+        if (context.mounted) {
+          if (isPremium) {
+            CenterToast.showSuccess(
+              context,
+              'Journey discarded successfully.',
+              title: 'Journey Discarded',
+              duration: const Duration(seconds: 3),
+            );
+          } else {
+            CenterToast.showWarning(
+              context,
+              'Journey cancelled. Counted towards your monthly quota.',
+              title: 'Session Cancelled',
+              duration: const Duration(seconds: 4),
+            );
+          }
+        }
+      } finally {
+        if (mounted) setState(() => _isCancelling = false);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,9 +246,9 @@ class _LearningMainContentState extends ConsumerState<LearningMainContent> {
     final activeState = ref.watch(activeSessionProvider);
 
     if (activeState.session != null || activeState.isLoading) {
-      if (activeState.isLoading) {
+      if (activeState.isLoading || _isConfirmationModalOpen) {
         // When switching session from learning history, display the theme gradient spinner in a card
-        if (!activeState.isSynthesizing) {
+        if (!activeState.isSynthesizing && !_isConfirmationModalOpen) {
           final isDark = AppColors.isDark;
           return Center(
             child: Container(
@@ -130,7 +328,13 @@ class _LearningMainContentState extends ConsumerState<LearningMainContent> {
           }
         }
 
-        return NeuralInferenceLoader(title: title, subtitle: subtitle);
+        final isPhase2 = activeState.session != null;
+        return NeuralInferenceLoader(
+          title: title,
+          subtitle: subtitle,
+          isCancelling: _isCancelling,
+          onCancel: () => _handleCancelJourney(context, isPhase2),
+        );
       }
       return ActiveLearningWorkspace(
         key: ValueKey('active_workspace_${context.isDarkMode}'),

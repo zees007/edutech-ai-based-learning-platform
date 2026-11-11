@@ -33,6 +33,7 @@ class ApiConstants {
   static const String academicSearch = '/academic/search';
   
   static String sessionDetails(String sessionId) => '/sessions/$sessionId';
+  static String cancelSession(String sessionId) => '/sessions/$sessionId/cancel';
   static String followUpQuestion(String sessionId, int stepIndex) => '/sessions/$sessionId/step/$stepIndex/followup';
   static String completeStep(String sessionId, int stepIndex) => '/sessions/$sessionId/step/$stepIndex/complete';
   static String regenerateStep(String sessionId, int stepIndex) => '/sessions/$sessionId/step/$stepIndex/regenerate';

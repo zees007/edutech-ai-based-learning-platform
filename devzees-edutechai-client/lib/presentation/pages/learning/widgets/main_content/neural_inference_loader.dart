@@ -2,18 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../widgets/animated_tutor_icon.dart';
+import '../../../../widgets/gradient_text.dart';
 import '../../../../../core/constants/responsive.dart';
 
 class NeuralInferenceLoader extends StatefulWidget {
   final String title;
   final String subtitle;
   final double progressPercent;
+  final VoidCallback? onCancel;
+  final bool isCancelling;
 
   const NeuralInferenceLoader({
     super.key,
     required this.title,
     required this.subtitle,
     this.progressPercent = 0.7, // Equivalent to 70% in Streamlit
+    this.onCancel,
+    this.isCancelling = false,
   });
 
   @override
@@ -153,59 +158,52 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // Top Cluster Bar + Live Inference Badge
+        // Top Bar: Live Pill at Top Left, Glowing Red Cancel Pill at Top Right
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Flexible(
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  GradientSpinner(
-                    size: 11,
-                    backgroundColor: isDark
-                        ? AppColors.canvasBackground
-                        : Colors.white,
-                  ),
-                  const SizedBox(width: 6),
-                  Flexible(
-                    child: Text(
-                      'AI COMPUTE CLUSTER',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(
-                        fontSize: 9.5,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 1.0,
-                        color: isDark
-                            ? const Color(0xFF9CA3AF)
-                            : AppColors.slate500,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 6),
             _buildLiveInferenceBadge(isMobile: true, isDark: isDark),
+            if (widget.onCancel != null)
+              _buildGlowingCancelPill(isMobile: true, isDark: isDark),
           ],
         ),
         const SizedBox(height: 12),
 
-        // Compact Gradient Title
-        ShaderMask(
-          shaderCallback: (bounds) => (isDark
-              ? AppColors.primaryGradient
-              : const LinearGradient(
-                  colors: [Color(0xFFBE185D), Color(0xFF7C3AED)],
-                )).createShader(bounds),
-          child: Text(
+        // Centered AI Compute Cluster Subtitle
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            GradientSpinner(
+              size: 11,
+              backgroundColor: isDark
+                  ? AppColors.canvasBackground
+                  : Colors.white,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              'AI COMPUTE CLUSTER',
+              style: GoogleFonts.inter(
+                fontSize: 9.5,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 1.0,
+                color: isDark
+                    ? const Color(0xFF9CA3AF)
+                    : AppColors.slate500,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+
+        // Compact Signature Gradient Title (matching journey_prompt_card)
+        Center(
+          child: GradientText(
             widget.title,
             textAlign: TextAlign.center,
+            gradient: AppColors.primaryGradient,
             style: GoogleFonts.outfit(
               fontSize: 17,
               fontWeight: FontWeight.w700,
-              color: Colors.white,
               height: 1.2,
             ),
           ),
@@ -541,19 +539,14 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
                   ],
                 ),
                 const SizedBox(height: 12),
-                ShaderMask(
-                  shaderCallback: (bounds) => (isDark
-                      ? AppColors.primaryGradient
-                      : const LinearGradient(
-                          colors: [Color(0xFFBE185D), Color(0xFF7C3AED)],
-                        )).createShader(bounds),
-                  child: Text(
+                Center(
+                  child: GradientText(
                     widget.title,
                     textAlign: TextAlign.center,
+                    gradient: AppColors.primaryGradient,
                     style: GoogleFonts.outfit(
                       fontSize: 24,
                       fontWeight: FontWeight.w700,
-                      color: Colors.white,
                       height: 1.2,
                     ),
                   ),
@@ -571,11 +564,19 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
                 ),
               ],
             ),
+            // Live Pill at Top Left Corner
             Positioned(
-              right: 0,
+              left: 0,
               top: 0,
               child: _buildLiveInferenceBadge(isMobile: false, isDark: isDark),
             ),
+            // Red Big Dot Glowing with Cancel at Top Right Corner
+            if (widget.onCancel != null)
+              Positioned(
+                right: 0,
+                top: 0,
+                child: _buildGlowingCancelPill(isMobile: false, isDark: isDark),
+              ),
           ],
         ),
 
@@ -727,6 +728,108 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
           },
         ),
       ],
+    );
+  }
+
+  Widget _buildGlowingCancelPill({
+    required bool isMobile,
+    required bool isDark,
+  }) {
+    if (widget.onCancel == null) return const SizedBox.shrink();
+
+    final red = isDark ? const Color(0xFFF87171) : const Color(0xFFDC2626);
+    const dotColor = Color(0xFFEF4444);
+
+    return AnimatedBuilder(
+      animation: _pulseDotController,
+      builder: (context, child) {
+        final curveValue = Curves.easeInOut.transform(_pulseDotController.value);
+        final pillScale = widget.isCancelling ? 1.0 : (0.95 + 0.08 * curveValue);
+
+        return Transform.scale(
+          scale: pillScale,
+          child: MouseRegion(
+            cursor: widget.isCancelling ? SystemMouseCursors.basic : SystemMouseCursors.click,
+            child: GestureDetector(
+              onTap: widget.isCancelling ? null : widget.onCancel,
+              child: Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: isMobile ? 10 : 12,
+                  vertical: isMobile ? 4 : 5,
+                ),
+                decoration: BoxDecoration(
+                  color: dotColor.withValues(alpha: isDark ? 0.12 : 0.08),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: dotColor.withValues(
+                      alpha: isDark
+                          ? (0.40 + 0.35 * curveValue)
+                          : (0.35 + 0.30 * curveValue),
+                    ),
+                    width: 1.2,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: dotColor.withValues(
+                        alpha: isDark
+                            ? (0.16 + 0.20 * curveValue)
+                            : (0.10 + 0.16 * curveValue),
+                      ),
+                      blurRadius: 8 + 8 * curveValue,
+                      spreadRadius: 0.5 + 1.8 * curveValue,
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (widget.isCancelling)
+                      SizedBox(
+                        width: isMobile ? 10 : 12,
+                        height: isMobile ? 10 : 12,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: red,
+                        ),
+                      )
+                    else
+                      Transform.scale(
+                        scale: 0.78 + 0.44 * curveValue,
+                        child: Container(
+                          width: isMobile ? 10 : 12,
+                          height: isMobile ? 10 : 12,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: dotColor,
+                            boxShadow: [
+                              BoxShadow(
+                                color: dotColor.withValues(
+                                  alpha: 0.45 + 0.55 * curveValue,
+                                ),
+                                blurRadius: 10 * curveValue + 4,
+                                spreadRadius: 3 * curveValue + 1.2,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    const SizedBox(width: 7),
+                    Text(
+                      widget.isCancelling ? 'Cancelling...' : 'Cancel',
+                      style: GoogleFonts.inter(
+                        fontSize: isMobile ? 10.5 : 12,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.5,
+                        color: red,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 

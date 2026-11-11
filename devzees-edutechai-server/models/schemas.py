@@ -68,6 +68,10 @@ class LearningRequest(BaseModel):
         description="Education level for language calibration.",
         examples=["middle_school", "high_school", "undergraduate", "graduate", "general"],
     )
+    session_id: str | None = Field(
+        default=None,
+        description="Optional pre-assigned session ID for client tracking and cancellation.",
+    )
 
 
 class ModeChangeRequest(BaseModel):
