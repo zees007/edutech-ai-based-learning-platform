@@ -223,12 +223,13 @@ class _LearningMainContentState extends ConsumerState<LearningMainContent> {
       context: context,
       isPremium: isPremium,
     );
-    if (mounted) {
-      setState(() => _isConfirmationModalOpen = false);
-    }
 
     if (confirmed == true && context.mounted) {
-      setState(() => _isCancelling = true);
+      // Transition atomically to cancelling state so workspace never flashes
+      setState(() {
+        _isConfirmationModalOpen = false;
+        _isCancelling = true;
+      });
       try {
         await ref.read(activeSessionProvider.notifier).cancelSessionCreation(isPhase1: false);
         if (context.mounted) {
@@ -250,6 +251,10 @@ class _LearningMainContentState extends ConsumerState<LearningMainContent> {
         }
       } finally {
         if (mounted) setState(() => _isCancelling = false);
+      }
+    } else {
+      if (mounted) {
+        setState(() => _isConfirmationModalOpen = false);
       }
     }
   }
@@ -273,7 +278,7 @@ class _LearningMainContentState extends ConsumerState<LearningMainContent> {
     final activeState = ref.watch(activeSessionProvider);
 
     if (activeState.session != null || activeState.isLoading) {
-      if (activeState.isLoading || _isConfirmationModalOpen) {
+      if (activeState.isLoading || _isConfirmationModalOpen || _isCancelling) {
         // When switching session from learning history, display the theme gradient spinner in a card
         if (!activeState.isSynthesizing && !_isConfirmationModalOpen) {
           final isDark = AppColors.isDark;
