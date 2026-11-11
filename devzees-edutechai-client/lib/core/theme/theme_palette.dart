@@ -72,8 +72,8 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
 
   // ─── Light Theme Palette ───
   static const AppThemeColors light = AppThemeColors(
-    scaffoldBackground: Color(0xFFECE8E8),
-    workspaceBackground: Color(0xFFF8F9FA),
+    scaffoldBackground: Color(0xFFF6F8FC), // Clean, soft off-white SaaS base #F6F8FC
+    workspaceBackground: Color(0xFFF6F8FC),
     surface: Color(0xFFFFFFFF),
     surfaceSubtle: Color(0xFFF3F3F5),
     border: Color(0xFFE5E7EB),

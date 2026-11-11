@@ -120,15 +120,27 @@ class LearningMainContent extends ConsumerWidget {
       return const ActiveLearningWorkspace();
     }
 
+    final isDark = AppColors.isDark;
+
     return Container(
       decoration: BoxDecoration(
-        color: isMobile ? AppColors.mobileBackground : null,
-        gradient: isMobile 
-            ? null 
-            : AppColors.workspaceBackgroundRadial,
+        color: isDark
+            ? (isMobile ? AppColors.mobileBackground : null)
+            : const Color(0xFFF6F8FC),
+        gradient: isDark
+            ? (isMobile ? null : AppColors.workspaceBackgroundRadial)
+            : null,
       ),
       child: Stack(
         children: [
+          if (!isDark)
+            Positioned.fill(
+              child: IgnorePointer(
+                child: CustomPaint(
+                  painter: const _AmbientBackgroundPainter(isDark: false),
+                ),
+              ),
+            ),
           LayoutBuilder(
             builder: (context, constraints) {
               return SingleChildScrollView(
@@ -504,4 +516,64 @@ class LearningMainContent extends ConsumerWidget {
   ),
 );
   }
+}
+
+class _AmbientBackgroundPainter extends CustomPainter {
+  final bool isDark;
+
+  const _AmbientBackgroundPainter({required this.isDark});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (isDark) return;
+
+    // Soft violet ambient aura at top left
+    final paint1 = Paint()
+      ..shader = RadialGradient(
+        colors: [
+          const Color(0xFF8B5CF6).withValues(alpha: 0.07),
+          Colors.transparent,
+        ],
+      ).createShader(
+        Rect.fromCircle(
+          center: Offset(size.width * 0.18, size.height * 0.12),
+          radius: size.width * 0.4,
+        ),
+      );
+    canvas.drawRect(Offset.zero & size, paint1);
+
+    // Soft blue ambient aura at mid right
+    final paint2 = Paint()
+      ..shader = RadialGradient(
+        colors: [
+          const Color(0xFF3B82F6).withValues(alpha: 0.06),
+          Colors.transparent,
+        ],
+      ).createShader(
+        Rect.fromCircle(
+          center: Offset(size.width * 0.82, size.height * 0.40),
+          radius: size.width * 0.45,
+        ),
+      );
+    canvas.drawRect(Offset.zero & size, paint2);
+
+    // Soft purple ambient aura at bottom
+    final paint3 = Paint()
+      ..shader = RadialGradient(
+        colors: [
+          const Color(0xFFA855F7).withValues(alpha: 0.05),
+          Colors.transparent,
+        ],
+      ).createShader(
+        Rect.fromCircle(
+          center: Offset(size.width * 0.50, size.height * 0.90),
+          radius: size.width * 0.5,
+        ),
+      );
+    canvas.drawRect(Offset.zero & size, paint3);
+  }
+
+  @override
+  bool shouldRepaint(covariant _AmbientBackgroundPainter oldDelegate) =>
+      oldDelegate.isDark != isDark;
 }

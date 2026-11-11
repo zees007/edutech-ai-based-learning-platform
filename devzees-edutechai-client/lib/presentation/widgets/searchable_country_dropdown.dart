@@ -274,8 +274,8 @@ class SearchableCountryDropdownState extends State<SearchableCountryDropdown>
 
                                         return InkWell(
                                           onTap: () {
-                                            widget.onCountryChanged(country);
                                             _closeDropdown();
+                                            widget.onCountryChanged(country);
                                           },
                                           hoverColor: AppColors.primary
                                               .withValues(

@@ -56,7 +56,11 @@ class _SearchableUserDropdownState extends State<SearchableUserDropdown> {
     super.didUpdateWidget(oldWidget);
     if (widget.users != oldWidget.users && _searchController.text.trim().isEmpty) {
       _filteredUsers = List.from(widget.users);
-      _overlaySetState?.call(() {});
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _overlayEntry != null) {
+          _overlaySetState?.call(() {});
+        }
+      });
     }
   }
 
@@ -246,8 +250,8 @@ class _SearchableUserDropdownState extends State<SearchableUserDropdown> {
                                           user: user,
                                           isSelected: isSelected,
                                           onTap: () {
-                                            widget.onUserSelected(user);
                                             _closeDropdown();
+                                            widget.onUserSelected(user);
                                           },
                                         );
                                       },

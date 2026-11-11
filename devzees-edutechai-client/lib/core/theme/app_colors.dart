@@ -237,7 +237,7 @@ class AppColors {
       : const RadialGradient(
           center: Alignment(0.0, -0.3),
           radius: 1.2,
-          colors: [Color(0xFFF8F7F7), Color(0xFFF1EDED), Color(0xFFECE8E8)],
+          colors: [Color(0xFFFFFFFF), Color(0xFFF8FAFC), Color(0xFFF6F8FC)],
           stops: [0.0, 0.5, 1.0],
         );
 
@@ -261,8 +261,8 @@ class AppColors {
           end: Alignment.bottomCenter,
           colors: [
             Color(0xFFFFFFFF),
-            Color(0xFFF5F3F3),
-            Color(0xFFECE8E8),
+            Color(0xFFF8FAFC),
+            Color(0xFFF6F8FC),
           ],
           stops: [0.0, 0.5, 1.0],
         );
