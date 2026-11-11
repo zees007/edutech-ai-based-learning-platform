@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/theme/theme_palette.dart';
 import '../../../../../core/theme/text_styles.dart';
 import '../../../../../core/providers/active_session_provider.dart';
 import 'recommended_videos.dart';
@@ -32,33 +33,43 @@ class LearningResourcesPanel extends ConsumerStatefulWidget {
 
   // ─── Scrollbar theme matching Socratic Tutor ──────────────────
 
-  static ScrollbarThemeData get workspaceScrollbarTheme => ScrollbarThemeData(
-        thumbColor: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.dragged) ||
-              states.contains(WidgetState.hovered)) {
-            return const Color(0xFF475569).withValues(alpha: 0.90);
-          }
-          return const Color(0xFF334155).withValues(alpha: 0.65);
-        }),
-        trackColor: WidgetStateProperty.all(
-          AppColors.surfaceDark.withValues(alpha: 0.40),
-        ),
-        trackBorderColor: WidgetStateProperty.all(Colors.transparent),
-        radius: const Radius.circular(6),
-        thickness: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.hovered) ||
-              states.contains(WidgetState.dragged)) {
-            return 6.0;
-          }
-          return 5.0;
-        }),
-        crossAxisMargin: 2.0,
-        mainAxisMargin: 4.0,
-      );
+  static ScrollbarThemeData get workspaceScrollbarTheme {
+    final isDark = AppColors.isDark;
+    return ScrollbarThemeData(
+      thumbColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.dragged) ||
+            states.contains(WidgetState.hovered)) {
+          return (isDark ? const Color(0xFF475569) : const Color(0xFF94A3B8))
+              .withValues(alpha: 0.90);
+        }
+        return (isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1))
+            .withValues(alpha: isDark ? 0.65 : 0.75);
+      }),
+      trackColor: WidgetStateProperty.all(
+        isDark
+            ? AppColors.surfaceDark.withValues(alpha: 0.40)
+            : AppColors.surfaceSubtle.withValues(alpha: 0.50),
+      ),
+      trackBorderColor: WidgetStateProperty.all(Colors.transparent),
+      radius: const Radius.circular(6),
+      thickness: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.hovered) ||
+            states.contains(WidgetState.dragged)) {
+          return 6.0;
+        }
+        return 5.0;
+      }),
+      crossAxisMargin: 2.0,
+      mainAxisMargin: 4.0,
+    );
+  }
 
   // ─── Static builders for mobile tab reuse ─────────────────────
 
-  static Widget buildVideosContent(List<dynamic>? videos, {bool isCurating = false}) {
+  static Widget buildVideosContent(
+    List<dynamic>? videos, {
+    bool isCurating = false,
+  }) {
     if (videos == null || videos.isEmpty) {
       if (isCurating) {
         return const VideoCuratorShimmer();
@@ -97,14 +108,16 @@ class LearningResourcesPanel extends ConsumerStatefulWidget {
                 color: AppColors.accentGreen.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.quiz_outlined,
-                  size: 32, color: AppColors.accentGreen.withValues(alpha: 0.5)),
+              child: Icon(
+                Icons.quiz_outlined,
+                size: 32,
+                color: AppColors.accentGreen.withValues(alpha: 0.5),
+              ),
             ),
             const SizedBox(height: 12),
             Text(
               'No quiz available for this step',
-              style:
-                  AppTextStyles.caption.copyWith(color: AppColors.textMuted),
+              style: AppTextStyles.caption.copyWith(color: AppColors.textMuted),
             ),
           ],
         ),
@@ -129,8 +142,7 @@ class LearningResourcesPanel extends ConsumerStatefulWidget {
   }
 }
 
-class _LearningResourcesPanelState
-    extends ConsumerState<LearningResourcesPanel>
+class _LearningResourcesPanelState extends ConsumerState<LearningResourcesPanel>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   int _activeTabIndex = 0;
@@ -190,7 +202,8 @@ class _LearningResourcesPanelState
   @override
   void didUpdateWidget(covariant LearningResourcesPanel oldWidget) {
     super.didUpdateWidget(oldWidget);
-    final bool sessionChanged = oldWidget.session.sessionId != widget.session.sessionId;
+    final bool sessionChanged =
+        oldWidget.session.sessionId != widget.session.sessionId;
     if (oldWidget.stepIndex != widget.stepIndex ||
         oldWidget.currentStep != widget.currentStep ||
         sessionChanged) {
@@ -233,36 +246,42 @@ class _LearningResourcesPanelState
     final isQuizDone = _quizSubmitted || _isQuizCompleted(step);
 
     final totalSteps = widget.session.steps.length;
-    final bool isLastStep = totalSteps > 0 && widget.stepIndex >= totalSteps - 1;
-    final bool isSessionComplete = widget.session.steps.isNotEmpty &&
+    final bool isLastStep =
+        totalSteps > 0 && widget.stepIndex >= totalSteps - 1;
+    final bool isSessionComplete =
+        widget.session.steps.isNotEmpty &&
         widget.session.stepsCompleted >= totalSteps &&
         totalSteps > 0;
-    final bool isCurrentStepComplete = widget.currentStep.status == 'complete' ||
+    final bool isCurrentStepComplete =
+        widget.currentStep.status == 'complete' ||
         (isLastStep && isSessionComplete) ||
         (widget.stepIndex < widget.session.stepsCompleted);
+
+    final colors = context.appColors;
 
     return ScrollbarTheme(
       data: LearningResourcesPanel.workspaceScrollbarTheme,
       child: Column(
         children: [
           // Premium Segmented Tab Bar Header
-          Container(
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOutCubic,
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: AppColors.surfaceSolidHeader.withValues(alpha: 0.65),
+              color: colors.topBarBackground,
               border: Border(
-                bottom: BorderSide(color: AppColors.glassBorder, width: 0.8),
+                bottom: BorderSide(color: colors.border, width: 0.8),
               ),
             ),
-            child: Container(
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOutCubic,
               padding: const EdgeInsets.all(3),
               decoration: BoxDecoration(
-                color: AppColors.surfaceDark.withValues(alpha: 0.55),
+                color: colors.surfaceSubtle,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: AppColors.glassBorderSubtle,
-                  width: 0.8,
-                ),
+                border: Border.all(color: colors.border, width: 0.8),
               ),
               child: Row(
                 children: [
@@ -303,7 +322,9 @@ class _LearningResourcesPanelState
                               shape: BoxShape.circle,
                               boxShadow: [
                                 BoxShadow(
-                                  color: AppColors.accentGreen.withValues(alpha: 0.4),
+                                  color: AppColors.accentGreen.withValues(
+                                    alpha: 0.4,
+                                  ),
                                   blurRadius: 6,
                                 ),
                               ],
@@ -315,8 +336,8 @@ class _LearningResourcesPanelState
                             ),
                           )
                         : (hasQuiz && !isQuizDone
-                            ? _PulsingDot(color: AppColors.accentGreen)
-                            : null),
+                              ? _PulsingDot(color: AppColors.accentGreen)
+                              : null),
                     onTap: () => _onSelectTab(2),
                   ),
                 ],
@@ -331,17 +352,17 @@ class _LearningResourcesPanelState
               children: [
                 // Videos tab
                 KeepAliveWrapper(
-                  key: ValueKey('tab_videos_${step.index}'),
+                  key: ValueKey('tab_videos_${step.index}_${AppColors.isDark}'),
                   child: _buildVideosTab(step),
                 ),
                 // Papers tab
                 KeepAliveWrapper(
-                  key: ValueKey('tab_papers_${step.index}'),
+                  key: ValueKey('tab_papers_${step.index}_${AppColors.isDark}'),
                   child: _buildPapersTab(step),
                 ),
                 // Quiz tab
                 KeepAliveWrapper(
-                  key: ValueKey('tab_quiz_${step.index}'),
+                  key: ValueKey('tab_quiz_${step.index}_${AppColors.isDark}'),
                   child: _buildQuizTab2(step),
                 ),
               ],
@@ -390,9 +411,7 @@ class _LearningResourcesPanelState
     return SingleChildScrollView(
       controller: _papersScrollController,
       padding: const EdgeInsets.all(20),
-      child: AcademicPapers(
-        papers: step.papers,
-      ),
+      child: AcademicPapers(papers: step.papers),
     );
   }
 
@@ -404,7 +423,9 @@ class _LearningResourcesPanelState
         color: AppColors.accentGreen,
       );
     }
-    final int stepIdx = (step.index is int) ? step.index as int : widget.stepIndex;
+    final int stepIdx = (step.index is int)
+        ? step.index as int
+        : widget.stepIndex;
     return SingleChildScrollView(
       controller: _quizScrollController,
       padding: const EdgeInsets.all(20),
@@ -439,7 +460,10 @@ class _LearningResourcesPanelState
         return Dialog(
           backgroundColor: Colors.transparent,
           elevation: 0,
-          insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 24,
+          ),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 420),
             child: ClipRRect(
@@ -512,7 +536,9 @@ class _LearningResourcesPanelState
                                 decoration: BoxDecoration(
                                   color: Colors.white.withValues(alpha: 0.06),
                                   shape: BoxShape.circle,
-                                  border: Border.all(color: AppColors.glassBorder),
+                                  border: Border.all(
+                                    color: AppColors.glassBorder,
+                                  ),
                                 ),
                                 child: Icon(
                                   Icons.close_rounded,
@@ -551,7 +577,10 @@ class _LearningResourcesPanelState
 
                       // Hint / Info Box
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 10,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.primary.withValues(alpha: 0.08),
                           borderRadius: BorderRadius.circular(10),
@@ -620,7 +649,9 @@ class _LearningResourcesPanelState
                                   borderRadius: BorderRadius.circular(9),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: AppColors.primary.withValues(alpha: 0.35),
+                                      color: AppColors.primary.withValues(
+                                        alpha: 0.35,
+                                      ),
                                       blurRadius: 10,
                                       offset: const Offset(0, 2),
                                     ),
@@ -663,11 +694,14 @@ class _LearningResourcesPanelState
 
   Widget _buildGatingBar(BuildContext context, bool isQuizDone) {
     final totalSteps = widget.session.steps.length;
-    final bool isLastStep = totalSteps > 0 && widget.stepIndex >= totalSteps - 1;
-    final bool isSessionComplete = widget.session.steps.isNotEmpty &&
+    final bool isLastStep =
+        totalSteps > 0 && widget.stepIndex >= totalSteps - 1;
+    final bool isSessionComplete =
+        widget.session.steps.isNotEmpty &&
         widget.session.stepsCompleted >= totalSteps &&
         totalSteps > 0;
-    final bool isCurrentStepComplete = widget.currentStep.status == 'complete' ||
+    final bool isCurrentStepComplete =
+        widget.currentStep.status == 'complete' ||
         (isLastStep && isSessionComplete) ||
         (widget.stepIndex < widget.session.stepsCompleted);
 
@@ -732,8 +766,8 @@ class _LearningResourcesPanelState
                       isLastStep && isCurrentStepComplete
                           ? Icons.emoji_events_rounded
                           : (isQuizDone
-                              ? Icons.check_circle_rounded
-                              : Icons.quiz_rounded),
+                                ? Icons.check_circle_rounded
+                                : Icons.quiz_rounded),
                       size: 14,
                       color: isLastStep && isCurrentStepComplete
                           ? Colors.amber
@@ -774,13 +808,12 @@ class _LearningResourcesPanelState
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 7),
+                      horizontal: 14,
+                      vertical: 7,
+                    ),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [
-                          Colors.amber.shade600,
-                          Colors.orange.shade800,
-                        ],
+                        colors: [Colors.amber.shade600, Colors.orange.shade800],
                       ),
                       borderRadius: BorderRadius.circular(8),
                       boxShadow: [
@@ -820,29 +853,40 @@ class _LearningResourcesPanelState
               child: Tooltip(
                 message: isLastStep
                     ? (isQuizDone
-                        ? 'Finish journey and claim bonus XP'
-                        : 'Complete Knowledge Check quiz first to finish journey')
+                          ? 'Finish journey and claim bonus XP'
+                          : 'Complete Knowledge Check quiz first to finish journey')
                     : (isQuizDone
-                        ? 'Proceed to next step'
-                        : 'Complete Knowledge Check quiz first to advance'),
+                          ? 'Proceed to next step'
+                          : 'Complete Knowledge Check quiz first to advance'),
                 child: GestureDetector(
                   onTap: () => _handleNextStep(context, isQuizDone),
                   child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 7,
+                    ),
                     decoration: BoxDecoration(
                       gradient: isLastStep
                           ? LinearGradient(
-                              colors: [Colors.amber.shade600, Colors.orange.shade800],
+                              colors: [
+                                Colors.amber.shade600,
+                                Colors.orange.shade800,
+                              ],
                             )
                           : LinearGradient(
-                              colors: [AppColors.accentGreen, AppColors.greenDeep],
+                              colors: [
+                                AppColors.accentGreen,
+                                AppColors.greenDeep,
+                              ],
                             ),
                       borderRadius: BorderRadius.circular(8),
                       boxShadow: [
                         BoxShadow(
-                          color: (isLastStep ? Colors.amber : AppColors.accentGreen)
-                              .withValues(alpha: 0.35),
+                          color:
+                              (isLastStep
+                                      ? Colors.amber
+                                      : AppColors.accentGreen)
+                                  .withValues(alpha: 0.35),
                           blurRadius: 8,
                         ),
                       ],
@@ -883,12 +927,7 @@ class _LearningResourcesPanelState
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
         color: AppColors.surfaceSolidHeader,
-        border: Border(
-          top: BorderSide(
-            color: AppColors.glassBorder,
-            width: 1,
-          ),
-        ),
+        border: Border(top: BorderSide(color: AppColors.glassBorder, width: 1)),
       ),
       child: Row(
         children: [
@@ -942,8 +981,11 @@ class _LearningResourcesPanelState
                     ),
                   ),
                   const SizedBox(width: 4),
-                  const Icon(Icons.arrow_forward_rounded,
-                      size: 12, color: Colors.white),
+                  const Icon(
+                    Icons.arrow_forward_rounded,
+                    size: 12,
+                    color: Colors.white,
+                  ),
                 ],
               ),
             ),
@@ -1002,9 +1044,10 @@ class _PulsingDotState extends State<_PulsingDot>
       vsync: this,
       duration: const Duration(milliseconds: 1500),
     )..repeat(reverse: true);
-    _animation = Tween<double>(begin: 0.4, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _animation = Tween<double>(
+      begin: 0.4,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
   @override
@@ -1026,8 +1069,7 @@ class _PulsingDotState extends State<_PulsingDot>
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: widget.color
-                    .withValues(alpha: _animation.value * 0.5),
+                color: widget.color.withValues(alpha: _animation.value * 0.5),
                 blurRadius: 6,
               ),
             ],
@@ -1071,16 +1113,19 @@ class _ResourceTabItemState extends State<_ResourceTabItem> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     final isActive = widget.isActive;
     final isHovered = _isHovered;
 
     final Color textColor = isActive
-        ? AppColors.textPrimary
+        ? colors.textPrimary
         : (isHovered ? AppColors.textSlate : AppColors.textMuted);
 
     final Color iconColor = isActive
         ? widget.accentColor
-        : (isHovered ? widget.accentColor.withValues(alpha: 0.9) : AppColors.textMuted);
+        : (isHovered
+              ? widget.accentColor.withValues(alpha: 0.9)
+              : AppColors.textMuted);
 
     return Expanded(
       child: MouseRegion(
@@ -1100,8 +1145,12 @@ class _ResourceTabItemState extends State<_ResourceTabItem> {
               gradient: isActive
                   ? LinearGradient(
                       colors: [
-                        AppColors.primary.withValues(alpha: isHovered ? 0.28 : 0.22),
-                        AppColors.purpleDeep.withValues(alpha: isHovered ? 0.20 : 0.14),
+                        AppColors.primary.withValues(
+                          alpha: isHovered ? 0.28 : 0.22,
+                        ),
+                        AppColors.purpleDeep.withValues(
+                          alpha: isHovered ? 0.20 : 0.14,
+                        ),
                       ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
@@ -1109,29 +1158,37 @@ class _ResourceTabItemState extends State<_ResourceTabItem> {
                   : null,
               color: isActive
                   ? null
-                  : (isHovered ? AppColors.primary.withValues(alpha: 0.09) : Colors.transparent),
+                  : (isHovered
+                        ? AppColors.primary.withValues(alpha: 0.09)
+                        : Colors.transparent),
               border: Border.all(
                 color: isActive
-                    ? AppColors.primary.withValues(alpha: isHovered ? 0.70 : 0.50)
-                    : (isHovered ? AppColors.primary.withValues(alpha: 0.28) : Colors.transparent),
+                    ? AppColors.primary.withValues(
+                        alpha: isHovered ? 0.70 : 0.50,
+                      )
+                    : (isHovered
+                          ? AppColors.primary.withValues(alpha: 0.28)
+                          : Colors.transparent),
                 width: 1,
               ),
               boxShadow: isActive
                   ? [
                       BoxShadow(
-                        color: AppColors.primary.withValues(alpha: isHovered ? 0.28 : 0.18),
+                        color: AppColors.primary.withValues(
+                          alpha: isHovered ? 0.28 : 0.18,
+                        ),
                         blurRadius: isHovered ? 12 : 8,
                         offset: const Offset(0, 1),
                       ),
                     ]
                   : (isHovered
-                      ? [
-                          BoxShadow(
-                            color: AppColors.primary.withValues(alpha: 0.08),
-                            blurRadius: 8,
-                          ),
-                        ]
-                      : null),
+                        ? [
+                            BoxShadow(
+                              color: AppColors.primary.withValues(alpha: 0.08),
+                              blurRadius: 8,
+                            ),
+                          ]
+                        : null),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -1172,13 +1229,16 @@ class _ResourceTabItemState extends State<_ResourceTabItem> {
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       color: widget.badgeColor ?? AppColors.primary,
-                      shape: widget.badgeCount > 9 ? BoxShape.rectangle : BoxShape.circle,
+                      shape: widget.badgeCount > 9
+                          ? BoxShape.rectangle
+                          : BoxShape.circle,
                       borderRadius: widget.badgeCount > 9
                           ? BorderRadius.circular(9)
                           : null,
                       boxShadow: [
                         BoxShadow(
-                          color: (widget.badgeColor ?? AppColors.primary).withValues(alpha: 0.35),
+                          color: (widget.badgeColor ?? AppColors.primary)
+                              .withValues(alpha: 0.35),
                           blurRadius: 4,
                         ),
                       ],

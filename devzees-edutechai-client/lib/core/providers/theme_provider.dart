@@ -52,6 +52,10 @@ class ThemeModeNotifier extends Notifier<ThemeMode> {
       AppColors.setBrightness(Brightness.light);
     } else if (mode == ThemeMode.dark) {
       AppColors.setBrightness(Brightness.dark);
+    } else {
+      final platformBrightness =
+          WidgetsBinding.instance.platformDispatcher.platformBrightness;
+      AppColors.setBrightness(platformBrightness);
     }
   }
 

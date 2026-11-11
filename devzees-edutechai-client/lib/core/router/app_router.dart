@@ -148,9 +148,19 @@ final appRouterNotifierProvider = Provider<AppRouterNotifier>((ref) {
   return AppRouterNotifier(ref);
 });
 
+/// The GoRouter instance is created exactly once and kept alive for the entire
+/// app lifetime. It MUST NOT be recreated on every auth/onboarding state change
+/// because doing so rebuilds MaterialApp.router, which destroys the Navigator
+/// overlay and removes any active OverlayEntry (e.g. a CenterToast) immediately.
+///
+/// Route-guard decisions are driven by [AppRouterNotifier.notifyListeners] which
+/// calls GoRouter.refresh() internally — no new GoRouter instance is needed.
 final appRouterProvider = Provider<GoRouter>((ref) {
-  final notifier = ref.watch(appRouterNotifierProvider);
-  final hasSeenOnboarding = ref.watch(onboardingProvider);
+  // Keep the provider alive so it is never recreated while the app is running.
+  ref.keepAlive();
+
+  final notifier = ref.read(appRouterNotifierProvider);
+  final hasSeenOnboarding = ref.read(onboardingProvider);
 
   return GoRouter(
     initialLocation: kIsWeb

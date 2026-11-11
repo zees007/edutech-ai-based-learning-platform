@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:devzees_edutechai_client/core/constants/responsive.dart';
 import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
+import 'package:devzees_edutechai_client/core/theme/theme_palette.dart';
 import 'package:devzees_edutechai_client/core/theme/text_styles.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/glow_background.dart';
 import 'package:devzees_edutechai_client/core/providers/auth_provider.dart';
@@ -27,20 +28,20 @@ class _AdminPageState extends ConsumerState<AdminPage> {
   AdminSection _currentSection = AdminSection.users;
   bool _isSidebarExpanded = true;
 
-  Widget _buildContent() {
+  Widget _buildContent(bool isDark) {
     switch (_currentSection) {
       case AdminSection.users:
-        return const UserDirectoryTab();
+        return UserDirectoryTab(key: ValueKey('admin_users_tab_$isDark'));
       case AdminSection.roles:
-        return const RolePrivilegeTab();
+        return RolePrivilegeTab(key: ValueKey('admin_roles_tab_$isDark'));
       case AdminSection.subscriptions:
-        return const SubscriptionManagerTab();
+        return SubscriptionManagerTab(key: ValueKey('admin_subscriptions_tab_$isDark'));
       case AdminSection.settings:
-        return const SettingsTab();
+        return SettingsTab(key: ValueKey('admin_settings_tab_$isDark'));
       case AdminSection.analytics:
-        return const AnalyticsTab();
+        return AnalyticsTab(key: ValueKey('admin_analytics_tab_$isDark'));
       case AdminSection.feedbacks:
-        return const FeedbackManagementTab();
+        return FeedbackManagementTab(key: ValueKey('admin_feedbacks_tab_$isDark'));
     }
   }
 
@@ -63,6 +64,8 @@ class _AdminPageState extends ConsumerState<AdminPage> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
+
     final authState = ref.watch(authProvider);
     if (authState.isInitial || (authState.isAuthenticated && authState.user == null)) {
       return const ShimmerAppShell(key: ValueKey('admin_shimmer_skeleton'));
@@ -72,9 +75,9 @@ class _AdminPageState extends ConsumerState<AdminPage> {
 
     if (isMobile) {
       return Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: colors.workspaceBackground,
         appBar: AppBar(
-          backgroundColor: AppColors.surfaceSolidHeader,
+          backgroundColor: colors.topBarBackground,
           elevation: 0,
           leading: Builder(
             builder: (context) => IconButton(
@@ -92,7 +95,7 @@ class _AdminPageState extends ConsumerState<AdminPage> {
           ],
         ),
         drawer: Drawer(
-          backgroundColor: AppColors.sidebarBackground,
+          backgroundColor: colors.sidebarBackground,
           child: AdminSidebar(
             selected: _currentSection,
             onSectionChanged: (section) {
@@ -101,25 +104,26 @@ class _AdminPageState extends ConsumerState<AdminPage> {
             },
           ),
         ),
-        body: GlowBackground(child: _buildContent()),
+        body: GlowBackground(child: _buildContent(context.isDarkMode)),
       );
     }
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colors.workspaceBackground,
       body: GlowBackground(
         child: Row(
           children: [
             // Sidebar
             AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOutCubic,
               width: _isSidebarExpanded ? 260 : 80,
               clipBehavior: Clip.hardEdge,
               decoration: BoxDecoration(
-                color: AppColors.sidebarBackground,
+                color: colors.sidebarBackground,
                 border: Border(
                   right: BorderSide(
-                    color: AppColors.glassBorder,
+                    color: colors.border,
                     width: 1,
                   ),
                 ),
@@ -147,10 +151,10 @@ class _AdminPageState extends ConsumerState<AdminPage> {
                     height: 60,
                     padding: const EdgeInsets.symmetric(horizontal: 24),
                     decoration: BoxDecoration(
-                      color: AppColors.surfaceSolidHeader,
+                      color: colors.topBarBackground,
                       border: Border(
                         bottom: BorderSide(
-                          color: AppColors.glassBorder,
+                          color: colors.border,
                           width: 1,
                         ),
                       ),
@@ -197,7 +201,7 @@ class _AdminPageState extends ConsumerState<AdminPage> {
                     ),
                   ),
                   // Content Area
-                  Expanded(child: _buildContent()),
+                  Expanded(child: _buildContent(context.isDarkMode)),
                 ],
               ),
             ),

@@ -17,7 +17,7 @@ void main() {
   group('EduTech AI Palette and Theme Specifications', () {
     test('Light theme matches user specifications', () {
       final light = AppThemeColors.light;
-      expect(light.scaffoldBackground, const Color(0xFFECE8E8));
+      expect(light.scaffoldBackground, const Color(0xFFF6F8FC));
       expect(light.surface, const Color(0xFFFFFFFF));
       expect(light.surfaceSubtle, const Color(0xFFF3F3F5));
       expect(light.border, const Color(0xFFE5E7EB));
@@ -28,13 +28,13 @@ void main() {
 
     test('Dark theme matches user specifications', () {
       final dark = AppThemeColors.dark;
-      expect(dark.scaffoldBackground, const Color(0xFF121316));
-      expect(dark.surface, const Color(0xFF1C1E24));
-      expect(dark.surfaceSubtle, const Color(0xFF272A33));
-      expect(dark.border, const Color(0xFF333742));
+      expect(dark.scaffoldBackground, const Color(0xFF0B0C13));
+      expect(dark.surface, const Color(0xFF11121D));
+      expect(dark.surfaceSubtle, const Color(0xFF11121D));
+      expect(dark.border, const Color(0x0DFFFFFF));
       expect(dark.textPrimary, const Color(0xFFFFFFFF));
-      expect(dark.textSecondary, const Color(0xFF8F94A6));
-      expect(dark.trackNeutral, const Color(0xFF2C2F3A));
+      expect(dark.textSecondary, const Color(0xFF94A3B8));
+      expect(dark.trackNeutral, const Color(0xFF1A1B2D));
     });
 
     test('Shared brand accents and gradients match specification', () {
@@ -50,26 +50,26 @@ void main() {
     test('Dynamic AppColors responds immediately to setBrightness', () {
       AppColors.setBrightness(Brightness.light);
       expect(AppColors.isDark, isFalse);
-      expect(AppColors.background, const Color(0xFFECE8E8));
+      expect(AppColors.background, const Color(0xFFF6F8FC));
       expect(AppColors.surface, const Color(0xFFFFFFFF));
       expect(AppColors.textPrimary, const Color(0xFF2B2D42));
 
       AppColors.setBrightness(Brightness.dark);
       expect(AppColors.isDark, isTrue);
-      expect(AppColors.background, const Color(0xFF121316));
-      expect(AppColors.surface, const Color(0xFF1C1E24));
+      expect(AppColors.background, const Color(0xFF0B0C13));
+      expect(AppColors.surface, const Color(0xFF11121D));
       expect(AppColors.textPrimary, const Color(0xFFFFFFFF));
     });
 
     test('AppTheme light and dark ThemeData have correct extensions and brightness', () {
       final lightTheme = AppTheme.lightTheme;
       expect(lightTheme.brightness, Brightness.light);
-      expect(lightTheme.scaffoldBackgroundColor, const Color(0xFFECE8E8));
+      expect(lightTheme.scaffoldBackgroundColor, const Color(0xFFF6F8FC));
       expect(lightTheme.extension<AppThemeColors>(), isNotNull);
 
       final darkTheme = AppTheme.darkTheme;
       expect(darkTheme.brightness, Brightness.dark);
-      expect(darkTheme.scaffoldBackgroundColor, const Color(0xFF121316));
+      expect(darkTheme.scaffoldBackgroundColor, const Color(0xFF0B0C13));
       expect(darkTheme.extension<AppThemeColors>(), isNotNull);
     });
   });
@@ -114,6 +114,63 @@ void main() {
 
       expect(find.byKey(const ValueKey('dark_icon')), findsOneWidget);
       expect(AppColors.isDark, isTrue);
+    });
+  });
+
+  group('Scoped Theme & Industry-Level Architecture', () {
+    testWidgets('AppColors.of(context) retrieves correct theme from InheritedTheme', (tester) async {
+      late AppThemeColors resolvedColors;
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: ThemeMode.light,
+          home: Builder(
+            builder: (context) {
+              resolvedColors = AppColors.of(context);
+              return const SizedBox();
+            },
+          ),
+        ),
+      );
+      expect(resolvedColors.scaffoldBackground, AppThemeColors.light.scaffoldBackground);
+    });
+
+    testWidgets('Scoped Theme(data: AppTheme.darkTheme) isolates HomePage subtree as dark even in Light mode', (tester) async {
+      late AppThemeColors globalColors;
+      late AppThemeColors scopedColors;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: ThemeMode.light,
+          home: Column(
+            children: [
+              Builder(
+                builder: (context) {
+                  globalColors = AppColors.of(context);
+                  return const Text('Global Light Page');
+                },
+              ),
+              Theme(
+                data: AppTheme.darkTheme,
+                child: Builder(
+                  builder: (context) {
+                    scopedColors = AppColors.of(context);
+                    return const Text('Scoped Dark HomePage');
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+
+      // Global context remains Light
+      expect(globalColors.scaffoldBackground, AppThemeColors.light.scaffoldBackground);
+      // Scoped HomePage context is strictly Dark
+      expect(scopedColors.scaffoldBackground, AppThemeColors.dark.scaffoldBackground);
     });
   });
 }

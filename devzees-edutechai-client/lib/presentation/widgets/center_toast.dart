@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:ui';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/text_styles.dart';
@@ -29,7 +31,7 @@ class CenterToast {
     BuildContext context,
     String message, {
     String? title,
-    Duration duration = const Duration(milliseconds: 3500),
+    Duration duration = const Duration(milliseconds: 6000),
     IconData? icon,
   }) {
     show(
@@ -47,7 +49,7 @@ class CenterToast {
     BuildContext context,
     String message, {
     String? title,
-    Duration duration = const Duration(milliseconds: 3500),
+    Duration duration = const Duration(milliseconds: 4500),
     IconData? icon,
   }) {
     show(
@@ -65,7 +67,7 @@ class CenterToast {
     BuildContext context,
     String message, {
     String? title,
-    Duration duration = const Duration(milliseconds: 3500),
+    Duration duration = const Duration(milliseconds: 4500),
     IconData? icon,
   }) {
     show(
@@ -83,7 +85,7 @@ class CenterToast {
     BuildContext context,
     String message, {
     String? title,
-    Duration duration = const Duration(milliseconds: 3500),
+    Duration duration = const Duration(milliseconds: 4500),
     IconData? icon,
   }) {
     show(
@@ -102,13 +104,24 @@ class CenterToast {
     required String message,
     String? title,
     CenterToastType type = CenterToastType.error,
-    Duration duration = const Duration(milliseconds: 3500),
+    Duration? duration,
     IconData? icon,
   }) {
+    // Ensure that if any call-site passed the legacy 3500ms default or omitted it,
+    // we use the full 6000ms for errors and 4500ms for warnings/success/info.
+    final Duration effectiveDuration;
+    if (duration != null && duration != const Duration(milliseconds: 3500)) {
+      effectiveDuration = duration;
+    } else {
+      effectiveDuration = (type == CenterToastType.error)
+          ? const Duration(milliseconds: 6000)
+          : const Duration(milliseconds: 4500);
+    }
+
     final now = DateTime.now();
     if (_lastMessage == message &&
         _lastDisplayTime != null &&
-        now.difference(_lastDisplayTime!) < const Duration(milliseconds: 1200)) {
+        now.difference(_lastDisplayTime!) < const Duration(milliseconds: 1500)) {
       return; // Deduplicate rapid repeated calls
     }
     _lastMessage = message;
@@ -127,7 +140,7 @@ class CenterToast {
           message: message,
           title: title,
           type: type,
-          duration: duration,
+          duration: effectiveDuration,
           icon: icon,
           onDismiss: () {
             _removeEntry(entry);
@@ -141,6 +154,12 @@ class CenterToast {
   }
 
   /// Immediately dismisses the currently active toast.
+  ///
+  /// NOTE: intentionally does NOT clear [_lastMessage] / [_lastDisplayTime].
+  /// Those dedup guards must stay alive so that a rapid second call with the
+  /// same message (e.g. caused by a web router rebuild) is suppressed instead
+  /// of removing the brand-new overlay and re-inserting it, which made the
+  /// toast appear to vanish within milliseconds on web.
   static void dismiss() {
     if (_activeEntry != null) {
       final entry = _activeEntry!;
@@ -156,6 +175,10 @@ class CenterToast {
   static void _removeEntry(OverlayEntry entry) {
     if (_activeEntry == entry) {
       _activeEntry = null;
+      // Safe to clear dedup guards now — the toast has fully played out,
+      // so the same message should be allowed to show again on next error.
+      _lastMessage = null;
+      _lastDisplayTime = null;
     }
     try {
       if (entry.mounted) {
@@ -194,6 +217,7 @@ class _CenterToastOverlayHostState extends State<_CenterToastOverlayHost>
   late final Animation<Offset> _slideAnimation;
 
   late final AnimationController _progressController;
+  Timer? _dismissTimer;
   bool _isDismissing = false;
 
   @override
@@ -237,8 +261,11 @@ class _CenterToastOverlayHostState extends State<_CenterToastOverlayHost>
       duration: widget.duration,
     );
 
-    _progressController.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
+    // Wall-clock Dart Timer guarantees the toast stays visible for the FULL duration
+    // (6000ms for errors, 4500ms for warnings/success), regardless of browser animation
+    // frame pacing, TickerMode, or platform peculiarities.
+    _dismissTimer = Timer(widget.duration, () {
+      if (mounted) {
         _dismissWithAnimation();
       }
     });
@@ -250,6 +277,7 @@ class _CenterToastOverlayHostState extends State<_CenterToastOverlayHost>
   void _dismissWithAnimation() {
     if (_isDismissing || !mounted) return;
     _isDismissing = true;
+    _dismissTimer?.cancel();
     _animController.reverse().then((_) {
       if (mounted) {
         widget.onDismiss();
@@ -259,6 +287,7 @@ class _CenterToastOverlayHostState extends State<_CenterToastOverlayHost>
 
   @override
   void dispose() {
+    _dismissTimer?.cancel();
     _progressController.dispose();
     _animController.dispose();
     super.dispose();
@@ -274,6 +303,50 @@ class _CenterToastOverlayHostState extends State<_CenterToastOverlayHost>
 
     final horizontalMargin = isSmallScreen ? 16.0 : 24.0;
     final toastWidth = (screenWidth - (horizontalMargin * 2)).clamp(280.0, 430.0);
+
+    final Widget toastCard = MouseRegion(
+      onEnter: (_) {
+        _dismissTimer?.cancel();
+        _progressController.stop();
+      },
+      onExit: (_) {
+        if (!_isDismissing && mounted) {
+          final remainingFactor = (1.0 - _progressController.value).clamp(0.0, 1.0);
+          final remainingMs = (widget.duration.inMilliseconds * remainingFactor).round();
+          final effectiveRemaining = Duration(
+            milliseconds: remainingMs.clamp(500, widget.duration.inMilliseconds),
+          );
+          _dismissTimer?.cancel();
+          _dismissTimer = Timer(effectiveRemaining, () {
+            if (mounted) _dismissWithAnimation();
+          });
+          _progressController.forward();
+        }
+      },
+      child: _buildToastCard(context, isSmallScreen),
+    );
+
+    // On mobile touch devices (!kIsWeb), enable swipe-to-dismiss and tap-to-dismiss.
+    // On Web (kIsWeb), bypass Dismissible so mouse clicks, pointer gestures,
+    // and trackpad scrolling never trigger premature dismissals.
+    final Widget interactiveToast;
+    if (!kIsWeb) {
+      interactiveToast = Dismissible(
+        key: const ValueKey('center_bottom_toast_dismissible'),
+        direction: DismissDirection.horizontal,
+        onDismissed: (_) {
+          _dismissTimer?.cancel();
+          widget.onDismiss();
+        },
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: _dismissWithAnimation,
+          child: toastCard,
+        ),
+      );
+    } else {
+      interactiveToast = toastCard;
+    }
 
     return Material(
       type: MaterialType.transparency,
@@ -306,17 +379,7 @@ class _CenterToastOverlayHostState extends State<_CenterToastOverlayHost>
               },
               child: SizedBox(
                 width: toastWidth,
-                child: Dismissible(
-                  key: const ValueKey('center_bottom_toast_dismissible'),
-                  direction: DismissDirection.horizontal,
-                  onDismissed: (_) {
-                    widget.onDismiss();
-                  },
-                  child: GestureDetector(
-                    onTap: _dismissWithAnimation,
-                    child: _buildToastCard(context, isSmallScreen),
-                  ),
-                ),
+                child: interactiveToast,
               ),
             ),
           ),

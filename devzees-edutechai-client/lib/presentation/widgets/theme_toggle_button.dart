@@ -28,8 +28,10 @@ class _ThemeToggleButtonState extends ConsumerState<ThemeToggleButton>
   @override
   void initState() {
     super.initState();
+    final initialDark = ref.read(themeModeProvider) == ThemeMode.dark;
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 350),
+      duration: const Duration(milliseconds: 250),
+      value: initialDark ? 1.0 : 0.0,
       vsync: this,
     );
     _rotationAnimation = CurvedAnimation(
@@ -52,9 +54,9 @@ class _ThemeToggleButtonState extends ConsumerState<ThemeToggleButton>
             MediaQuery.platformBrightnessOf(context) == Brightness.dark);
     final colors = context.appColors;
 
-    if (isDark && _controller.status != AnimationStatus.forward && _controller.value == 0.0) {
+    if (isDark && _controller.value < 1.0 && _controller.status != AnimationStatus.forward) {
       _controller.forward();
-    } else if (!isDark && _controller.status != AnimationStatus.reverse && _controller.value == 1.0) {
+    } else if (!isDark && _controller.value > 0.0 && _controller.status != AnimationStatus.reverse) {
       _controller.reverse();
     }
 
@@ -71,14 +73,10 @@ class _ThemeToggleButtonState extends ConsumerState<ThemeToggleButton>
             borderRadius: BorderRadius.circular(widget.size / 2),
             onTap: () {
               ref.read(themeModeProvider.notifier).toggleTheme();
-              if (isDark) {
-                _controller.reverse();
-              } else {
-                _controller.forward();
-              }
             },
             child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
+              duration: const Duration(milliseconds: 250),
+              curve: Curves.easeInOutCubic,
               width: widget.size,
               height: widget.size,
               padding: widget.padding,

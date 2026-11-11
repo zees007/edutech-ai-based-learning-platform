@@ -6,7 +6,6 @@ import '../../../../../core/services/academic_service.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/text_styles.dart';
 import '../../../../../core/providers/permission_provider.dart';
-import '../../../../../core/providers/theme_provider.dart';
 
 class AcademicPapers extends ConsumerStatefulWidget {
   final List<dynamic>? papers;
@@ -91,7 +90,6 @@ class _AcademicPapersState extends ConsumerState<AcademicPapers> {
 
   @override
   Widget build(BuildContext context) {
-    ref.watch(themeModeProvider);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:devzees_edutechai_client/core/constants/responsive.dart';
 import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
+import 'package:devzees_edutechai_client/core/theme/theme_palette.dart';
 import 'package:devzees_edutechai_client/core/theme/text_styles.dart';
-import 'package:devzees_edutechai_client/core/providers/theme_provider.dart';
 import '../../../core/providers/auth_provider.dart';
 import '../../widgets/glass_loader_overlay.dart';
 import '../../widgets/center_toast.dart';
@@ -28,14 +28,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final authError = ref.read(authProvider).error;
-      if (authError != null && authError.isNotEmpty && mounted) {
-        CenterToast.showError(
-          context,
-          authError,
-          title: 'Authentication Notice',
-        );
-      }
+      ref.read(authProvider.notifier).clearError();
     });
   }
 
@@ -65,14 +58,11 @@ class _AuthPageState extends ConsumerState<AuthPage> {
           context,
           next.error!,
           title: 'Session Expired',
+          duration: const Duration(milliseconds: 6000),
         );
       }
     });
-    final themeMode = ref.watch(themeModeProvider);
-    final platformBrightness = MediaQuery.platformBrightnessOf(context);
-    final isDark = themeMode == ThemeMode.dark ||
-        (themeMode == ThemeMode.system && platformBrightness == Brightness.dark);
-    AppColors.setBrightness(isDark ? Brightness.dark : Brightness.light);
+    final isDark = context.isDarkMode;
 
     return Scaffold(
       backgroundColor: isDark ? AppColors.background : const Color(0xFFF6F8FC),
@@ -81,14 +71,19 @@ class _AuthPageState extends ConsumerState<AuthPage> {
         title: authState.loadingMessage ?? 'Authenticating',
         child: Stack(
           children: [
-            if (!isDark) ...[
-              // Light Mode Ambient Background
-              Positioned.fill(
-                child: CustomPaint(
-                  painter: _AmbientBackgroundPainter(isDark: false),
+            // Light Mode Ambient Background
+            Positioned.fill(
+              child: IgnorePointer(
+                child: AnimatedOpacity(
+                  opacity: !isDark ? 1.0 : 0.0,
+                  duration: const Duration(milliseconds: 250),
+                  curve: Curves.easeInOut,
+                  child: CustomPaint(
+                    painter: _AmbientBackgroundPainter(isDark: false),
+                  ),
                 ),
               ),
-            ],
+            ),
             SafeArea(
               child: Column(
                 children: [

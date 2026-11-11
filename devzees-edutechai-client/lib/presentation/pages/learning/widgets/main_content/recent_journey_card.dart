@@ -25,8 +25,11 @@ class _RecentJourneyCardState extends State<RecentJourneyCard> {
 
   @override
   Widget build(BuildContext context) {
-    final double progress = (widget.session.totalSteps ?? 0) > 0 
-        ? (widget.session.stepsCompleted / widget.session.totalSteps!).clamp(0.0, 1.0) 
+    final double progress = (widget.session.totalSteps ?? 0) > 0
+        ? (widget.session.stepsCompleted / widget.session.totalSteps!).clamp(
+            0.0,
+            1.0,
+          )
         : 0.0;
 
     final isDark = AppColors.isDark;
@@ -40,8 +43,12 @@ class _RecentJourneyCardState extends State<RecentJourneyCard> {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 250),
           curve: Curves.easeOutCubic,
-          transform: Matrix4.translationValues(0.0, _isHovered ? -2.5 : 0.0, 0.0),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          transform: Matrix4.translationValues(
+            0.0,
+            _isHovered ? -2.5 : 0.0,
+            0.0,
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           decoration: BoxDecoration(
             color: isDark ? AppColors.canvasBackground : Colors.white,
             borderRadius: BorderRadius.circular(100), // Pill Shape
@@ -84,7 +91,7 @@ class _RecentJourneyCardState extends State<RecentJourneyCard> {
                 strokeWidth: 3.0,
               ),
               const SizedBox(width: 12),
-              
+
               // Topic Text & XP
               Expanded(
                 child: Column(
@@ -96,13 +103,19 @@ class _RecentJourneyCardState extends State<RecentJourneyCard> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: AppTextStyles.label.copyWith(
-                        fontWeight: _isHovered ? FontWeight.w600 : FontWeight.w500,
+                        fontWeight: _isHovered
+                            ? FontWeight.w600
+                            : FontWeight.w500,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Row(
                       children: [
-                        const Icon(Icons.star, color: AppColors.accentAmber, size: 10),
+                        const Icon(
+                          Icons.star,
+                          color: AppColors.accentAmber,
+                          size: 10,
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           '${widget.session.xpEarned} XP',
@@ -119,7 +132,9 @@ class _RecentJourneyCardState extends State<RecentJourneyCard> {
                           decoration: BoxDecoration(
                             color: isDark
                                 ? AppColors.accentGreen.withValues(alpha: 0.15)
-                                : const Color(0xFFD1FAE5).withValues(alpha: 0.7),
+                                : const Color(
+                                    0xFFD1FAE5,
+                                  ).withValues(alpha: 0.7),
                             borderRadius: BorderRadius.circular(6),
                             border: Border.all(
                               color: AppColors.accentGreen.withValues(
@@ -145,17 +160,23 @@ class _RecentJourneyCardState extends State<RecentJourneyCard> {
                   ],
                 ),
               ),
-              
+
               const SizedBox(width: 8),
-              
+
               // Subtle Action Arrow
               AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                transform: Matrix4.translationValues(_isHovered ? 4.0 : 0.0, 0.0, 0.0),
+                transform: Matrix4.translationValues(
+                  _isHovered ? 4.0 : 0.0,
+                  0.0,
+                  0.0,
+                ),
                 child: Icon(
                   Icons.arrow_forward_ios_rounded,
                   size: 14,
-                  color: _isHovered ? AppColors.primary : AppColors.textMuted.withValues(alpha: 0.4),
+                  color: _isHovered
+                      ? AppColors.primary
+                      : AppColors.textMuted.withValues(alpha: 0.4),
                 ),
               ),
             ],

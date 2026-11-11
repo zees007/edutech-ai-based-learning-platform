@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/theme_palette.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../data/models/admin/user_response.dart';
 import 'tier_badge.dart';
@@ -56,7 +57,11 @@ class _SearchableUserDropdownState extends State<SearchableUserDropdown> {
     super.didUpdateWidget(oldWidget);
     if (widget.users != oldWidget.users && _searchController.text.trim().isEmpty) {
       _filteredUsers = List.from(widget.users);
-      _overlaySetState?.call(() {});
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _overlayEntry != null) {
+          _overlaySetState?.call(() {});
+        }
+      });
     }
   }
 
@@ -246,8 +251,8 @@ class _SearchableUserDropdownState extends State<SearchableUserDropdown> {
                                           user: user,
                                           isSelected: isSelected,
                                           onTap: () {
-                                            widget.onUserSelected(user);
                                             _closeDropdown();
+                                            widget.onUserSelected(user);
                                           },
                                         );
                                       },
@@ -329,6 +334,7 @@ class _SearchableUserDropdownState extends State<SearchableUserDropdown> {
 
   @override
   Widget build(BuildContext context) {
+    context.appColors;
     final user = widget.selectedUser;
 
     return CompositedTransformTarget(

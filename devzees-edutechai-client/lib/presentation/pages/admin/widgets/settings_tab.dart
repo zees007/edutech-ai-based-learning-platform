@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../widgets/center_toast.dart';
+import '../../../widgets/gradient_button.dart';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -275,14 +276,12 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
           const SizedBox(height: 6),
           Text(error, style: AppTextStyles.body2.copyWith(color: AppColors.textMuted), textAlign: TextAlign.center),
           const SizedBox(height: 16),
-          ElevatedButton.icon(
+          GradientButton(
+            height: 40,
+            icon: Icons.refresh,
+            iconFirst: true,
+            text: 'Try Again',
             onPressed: () => ref.read(adminSettingsProvider.notifier).loadSettings(),
-            icon: const Icon(Icons.refresh, size: 18),
-            label: const Text('Try Again'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.accentViolet,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            ),
           ),
         ],
       ),
@@ -894,27 +893,13 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
                   child: const Text('Reset'),
                 ),
                 const SizedBox(width: 12),
-                ElevatedButton.icon(
-                  onPressed: state.isSaving ? null : () => _submitUpdate(setting),
-                  icon: state.isSaving
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : const Icon(Icons.save_outlined, size: 18),
-                  label: Text(state.isSaving ? 'Saving...' : 'Save Changes'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.purple,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
+                GradientButton(
+                  height: 44,
+                  isLoading: state.isSaving,
+                  icon: Icons.save_outlined,
+                  iconFirst: true,
+                  text: 'Save Changes',
+                  onPressed: () => _submitUpdate(setting),
                 ),
               ],
             ),

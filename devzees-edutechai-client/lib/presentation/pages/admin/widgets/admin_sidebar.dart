@@ -1,9 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/theme_palette.dart';
 import '../../../../core/theme/text_styles.dart';
 
-enum AdminSection { users, roles, subscriptions, settings, analytics, feedbacks }
+enum AdminSection {
+  users,
+  roles,
+  subscriptions,
+  settings,
+  analytics,
+  feedbacks,
+}
 
 /// Admin sidebar navigation with glassmorphic styling.
 class AdminSidebar extends StatelessWidget {
@@ -20,6 +28,7 @@ class AdminSidebar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    context.appColors;
     return SafeArea(
       child: Column(
         children: [
@@ -27,32 +36,30 @@ class AdminSidebar extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 24, 20, 8),
             child: expanded
-                ? SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    physics: const NeverScrollableScrollPhysics(),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 36,
-                          height: 36,
-                          decoration: BoxDecoration(
-                            gradient: AppColors.primaryGradient,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: const Icon(
-                            Icons.admin_panel_settings,
-                            color: Colors.white,
-                            size: 20,
-                          ),
+                ? Row(
+                    children: [
+                      Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          gradient: AppColors.primaryGradient,
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                        const SizedBox(width: 12),
-                        Column(
+                        child: const Icon(
+                          Icons.admin_panel_settings,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               'Admin Console',
                               maxLines: 1,
-                              overflow: TextOverflow.clip,
+                              overflow: TextOverflow.ellipsis,
                               style: AppTextStyles.subtitle2.copyWith(
                                 fontWeight: FontWeight.w700,
                               ),
@@ -60,15 +67,15 @@ class AdminSidebar extends StatelessWidget {
                             Text(
                               'Manage your platform',
                               maxLines: 1,
-                              overflow: TextOverflow.clip,
+                              overflow: TextOverflow.ellipsis,
                               style: AppTextStyles.caption.copyWith(
                                 color: AppColors.textMuted,
                               ),
                             ),
                           ],
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   )
                 : Center(
                     child: Container(
@@ -188,83 +195,129 @@ class _NavItemTileState extends State<_NavItemTile> {
         onTap: widget.onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
+          constraints: const BoxConstraints(minHeight: 46),
           padding: EdgeInsets.symmetric(
-            horizontal: widget.expanded ? 16 : 12,
-            vertical: 12,
+            horizontal: widget.expanded ? 14 : 10,
+            vertical: 11,
           ),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
             color: widget.isSelected
-                ? AppColors.purple.withValues(alpha: 0.12)
+                ? AppColors.purple.withValues(alpha: 0.16)
                 : _isHovered
-                    ? AppColors.glassHover
-                    : Colors.transparent,
+                ? AppColors.glassHover
+                : Colors.transparent,
             border: widget.isSelected
                 ? Border.all(
-                    color: AppColors.purple.withValues(alpha: 0.3),
-                    width: 1,
+                    color: AppColors.purple.withValues(alpha: 0.45),
+                    width: 1.2,
                   )
+                : null,
+            boxShadow: widget.isSelected
+                ? [
+                    BoxShadow(
+                      color: AppColors.purple.withValues(alpha: 0.12),
+                      blurRadius: 10,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
                 : null,
           ),
           child: widget.expanded
-              ? SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  physics: const NeverScrollableScrollPhysics(),
-                  child: SizedBox(
-                    width: 204,
-                    child: Row(
-                      children: [
-                        Icon(
+              ? Row(
+                  children: [
+                    Icon(
+                      widget.icon,
+                      color: widget.isSelected
+                          ? AppColors.purple
+                          : _isHovered
+                          ? AppColors.textPrimary
+                          : AppColors.textMuted,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        widget.label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.label.copyWith(
+                          color: widget.isSelected
+                              ? AppColors.textPrimary
+                              : _isHovered
+                              ? AppColors.textPrimary
+                              : AppColors.textSecondary,
+                          fontWeight: widget.isSelected
+                              ? FontWeight.w700
+                              : FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                    if (widget.isSelected) ...[
+                      const SizedBox(width: 8),
+                      // Prominent, glowing active vertical indicator
+                      Container(
+                        width: 5.5,
+                        height: 26,
+                        decoration: BoxDecoration(
+                          gradient: AppColors.pinkPurpleGradient,
+                          borderRadius: BorderRadius.circular(3),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.purple.withValues(alpha: 0.65),
+                              blurRadius: 10,
+                              spreadRadius: 1,
+                            ),
+                            BoxShadow(
+                              color: AppColors.primaryPink.withValues(
+                                alpha: 0.45,
+                              ),
+                              blurRadius: 6,
+                              spreadRadius: 0.5,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ],
+                )
+              : Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Center(
+                      child: Tooltip(
+                        message: widget.label,
+                        child: Icon(
                           widget.icon,
                           color: widget.isSelected
                               ? AppColors.purple
                               : _isHovered
-                                  ? AppColors.textPrimary
-                                  : AppColors.textMuted,
-                          size: 20,
+                              ? AppColors.textPrimary
+                              : AppColors.textMuted,
+                          size: 22,
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            widget.label,
-                            maxLines: 1,
-                            overflow: TextOverflow.clip,
-                            style: AppTextStyles.label.copyWith(
-                              color: widget.isSelected
-                                  ? AppColors.textPrimary
-                                  : _isHovered
-                                      ? AppColors.textPrimary
-                                      : AppColors.textSecondary,
-                              fontWeight: widget.isSelected
-                                  ? FontWeight.w700
-                                  : FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                        if (widget.isSelected)
-                          Container(
-                            width: 4,
-                            height: 20,
-                            decoration: BoxDecoration(
-                              gradient: AppColors.pinkPurpleGradient,
-                              borderRadius: BorderRadius.circular(2),
-                            ),
-                          ),
-                      ],
+                      ),
                     ),
-                  ),
-                )
-              : Tooltip(
-                  message: widget.label,
-                  child: Icon(
-                    widget.icon,
-                    color: widget.isSelected
-                        ? AppColors.purple
-                        : _isHovered
-                            ? AppColors.textPrimary
-                            : AppColors.textMuted,
-                    size: 22,
-                  ),
+                    if (widget.isSelected)
+                      Positioned(
+                        right: 0,
+                        child: Container(
+                          width: 4.5,
+                          height: 24,
+                          decoration: BoxDecoration(
+                            gradient: AppColors.pinkPurpleGradient,
+                            borderRadius: BorderRadius.circular(3),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.purple.withValues(alpha: 0.65),
+                                blurRadius: 8,
+                                spreadRadius: 1,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
         ),
       ),
@@ -294,9 +347,10 @@ class _BackToLearningButtonState extends State<_BackToLearningButton> {
         onTap: () => context.go('/learning'),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
+          constraints: const BoxConstraints(minHeight: 46),
           padding: EdgeInsets.symmetric(
-            horizontal: widget.expanded ? 16 : 12,
-            vertical: 12,
+            horizontal: widget.expanded ? 14 : 10,
+            vertical: 11,
           ),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
@@ -311,38 +365,37 @@ class _BackToLearningButtonState extends State<_BackToLearningButton> {
             ),
           ),
           child: widget.expanded
-              ? SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  physics: const NeverScrollableScrollPhysics(),
-                  child: SizedBox(
-                    width: 204,
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.school_outlined,
-                          color: _isHovered ? AppColors.accentGreen : AppColors.textMuted,
-                          size: 20,
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            'Learning Workspace',
-                            maxLines: 1,
-                            overflow: TextOverflow.clip,
-                            style: AppTextStyles.label.copyWith(
-                              color: _isHovered ? AppColors.accentGreen : AppColors.textSecondary,
-                            ),
-                          ),
-                        ),
-                      ],
+              ? Row(
+                  children: [
+                    Icon(
+                      Icons.school_outlined,
+                      color: _isHovered
+                          ? AppColors.accentGreen
+                          : AppColors.textMuted,
+                      size: 20,
                     ),
-                  ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'Learning Workspace',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.label.copyWith(
+                          color: _isHovered
+                              ? AppColors.accentGreen
+                              : AppColors.textSecondary,
+                        ),
+                      ),
+                    ),
+                  ],
                 )
               : Tooltip(
                   message: 'Learning Workspace',
                   child: Icon(
                     Icons.school_outlined,
-                    color: _isHovered ? AppColors.accentGreen : AppColors.textMuted,
+                    color: _isHovered
+                        ? AppColors.accentGreen
+                        : AppColors.textMuted,
                     size: 22,
                   ),
                 ),

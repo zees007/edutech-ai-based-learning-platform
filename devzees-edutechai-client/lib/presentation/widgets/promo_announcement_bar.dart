@@ -13,11 +13,13 @@ import 'promo_countdown_clock.dart';
 class PromoAnnouncementBar extends ConsumerStatefulWidget {
   final EdgeInsetsGeometry? margin;
   final VoidCallback? onClaim;
+  final VoidCallback? onDismiss;
 
   const PromoAnnouncementBar({
     super.key,
     this.margin,
     this.onClaim,
+    this.onDismiss,
   });
 
   @override
@@ -292,7 +294,10 @@ class _PromoAnnouncementBarState extends ConsumerState<PromoAnnouncementBar> {
 
         // Dismiss X button
         IconButton(
-          onPressed: () => setState(() => _dismissed = true),
+          onPressed: () {
+            setState(() => _dismissed = true);
+            widget.onDismiss?.call();
+          },
           icon: const Icon(Icons.close_rounded, size: 18, color: Colors.white70),
           splashRadius: 16,
           tooltip: 'Dismiss banner',
@@ -330,7 +335,10 @@ class _PromoAnnouncementBarState extends ConsumerState<PromoAnnouncementBar> {
               ),
             ),
             InkWell(
-              onTap: () => setState(() => _dismissed = true),
+              onTap: () {
+                setState(() => _dismissed = true);
+                widget.onDismiss?.call();
+              },
               child: const Padding(
                 padding: EdgeInsets.all(2.0),
                 child: Icon(Icons.close_rounded, size: 16, color: Colors.white70),

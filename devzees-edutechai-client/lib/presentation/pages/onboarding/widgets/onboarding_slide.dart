@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/theme_palette.dart';
 import '../models/onboarding_slide_data.dart';
 
 /// Renders a single onboarding slide with:
@@ -20,6 +21,8 @@ class OnboardingSlide extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -44,7 +47,7 @@ class OnboardingSlide extends StatelessWidget {
               Text(
                 data.titleLine1,
                 style: TextStyle(
-                  color: AppColors.textPrimary,
+                  color: colors.textPrimary,
                   fontSize: 30,
                   fontWeight: FontWeight.w800,
                   height: 1.18,
@@ -60,7 +63,7 @@ class OnboardingSlide extends StatelessWidget {
                       colors: [Colors.transparent, Colors.transparent],
                     ).createShader(const Rect.fromLTWH(0, 0, 1, 1));
                   }
-                  return AppColors.primaryGradient.createShader(
+                  return colors.primaryGradient.createShader(
                     Rect.fromLTWH(0, 0, bounds.width, bounds.height),
                   );
                 },
@@ -80,7 +83,7 @@ class OnboardingSlide extends StatelessWidget {
               Text(
                 data.subtitle,
                 style: TextStyle(
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                   fontSize: 13.5,
                   fontWeight: FontWeight.w400,
                   height: 1.45,
@@ -109,9 +112,9 @@ class OnboardingSlide extends StatelessWidget {
                         width: 280,
                         height: 280,
                         decoration: BoxDecoration(
-                          color: AppColors.cardBackground,
+                          color: colors.cardBackground,
                           borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: AppColors.border),
+                          border: Border.all(color: colors.border),
                         ),
                         child: Icon(
                           Icons.image_outlined,
@@ -136,8 +139,8 @@ class OnboardingSlide extends StatelessWidget {
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                           colors: [
-                            AppColors.background,
-                            AppColors.background.withValues(alpha: 0.0),
+                            colors.scaffoldBackground,
+                            colors.scaffoldBackground.withValues(alpha: 0.0),
                           ],
                         ),
                       ),
@@ -158,8 +161,8 @@ class OnboardingSlide extends StatelessWidget {
                           begin: Alignment.bottomCenter,
                           end: Alignment.topCenter,
                           colors: [
-                            AppColors.background,
-                            AppColors.background.withValues(alpha: 0.0),
+                            colors.scaffoldBackground,
+                            colors.scaffoldBackground.withValues(alpha: 0.0),
                           ],
                         ),
                       ),

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../core/providers/active_session_provider.dart';
 import '../../../../../core/providers/permission_provider.dart';
 import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/theme/theme_palette.dart';
 import '../../../../../core/theme/text_styles.dart';
 import '../../../../widgets/app_gradient_spinner.dart';
 import 'learning_resources_panel.dart';
@@ -12,7 +13,6 @@ import 'keep_alive_wrapper.dart';
 import '../../../../widgets/animated_tutor_icon.dart';
 import '../../../../widgets/step_pill.dart';
 import '../../../../../core/constants/responsive.dart';
-import '../../../../../core/providers/theme_provider.dart';
 
 /// A dual-panel layout that splits the learning workspace into:
 ///   • Left Panel (55%): Socratic Tutor Chat
@@ -119,7 +119,6 @@ class _SplitLearningWorkspaceState
 
   @override
   Widget build(BuildContext context) {
-    ref.watch(themeModeProvider);
     final currentStep = widget.session.steps[widget.currentStepIndex];
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 800;
@@ -234,11 +233,12 @@ class _SplitLearningWorkspaceState
   }
 
   Widget _buildChatPanel(dynamic currentStep) {
-    return Container(
+    final colors = context.appColors;
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOutCubic,
       decoration: BoxDecoration(
-        color: AppColors.isDark
-            ? const Color(0xFF0B0C13)
-            : const Color(0xFFF8F9FA),
+        color: colors.workspaceBackground,
       ),
       child: (currentStep.tutorExplanation != null ||
               (currentStep.socraticQuestions != null &&
@@ -316,11 +316,12 @@ class _SplitLearningWorkspaceState
   }
 
   Widget _buildResourcesPanel(dynamic currentStep) {
-    return Container(
+    final colors = context.appColors;
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOutCubic,
       decoration: BoxDecoration(
-        color: AppColors.isDark
-            ? AppColors.surfaceDark.withValues(alpha: 0.3)
-            : const Color(0xFFF8F9FA),
+        color: colors.workspaceBackground,
       ),
       child: LearningResourcesPanel(
         key: ValueKey('resources_${widget.session.sessionId}_step_${currentStep.index}'),
@@ -347,12 +348,12 @@ class _SplitLearningWorkspaceState
           width: 9,
           color: Colors.transparent,
           child: Center(
-            child: Container(
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOutCubic,
               width: 1,
               height: double.infinity,
-              color: AppColors.isDark
-                  ? const Color(0x14FFFFFF)
-                  : const Color(0xFFE2E8F0),
+              color: context.appColors.border,
             ),
           ),
         ),
@@ -396,8 +397,9 @@ class _FullscreenPanelOverlay extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final colors = context.appColors;
     return Material(
-      color: AppColors.background, // Base color
+      color: colors.scaffoldBackground, // Base color
       child: Container(
         decoration: BoxDecoration(
           color: Responsive.isMobile(context) ? AppColors.mobileCommandHubSolid : null,
@@ -428,8 +430,8 @@ class _FullscreenPanelOverlay extends ConsumerWidget {
           // Content
           Expanded(
             child: panel == _MaximizedPanel.left
-                ? _buildFullscreenChat()
-                : _buildFullscreenResources(ref),
+                ? _buildFullscreenChat(context)
+                : _buildFullscreenResources(context, ref),
           ),
         ],
       ),
@@ -437,12 +439,13 @@ class _FullscreenPanelOverlay extends ConsumerWidget {
   );
 }
 
-  Widget _buildFullscreenChat() {
-    return Container(
+  Widget _buildFullscreenChat(BuildContext context) {
+    final colors = context.appColors;
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOutCubic,
       decoration: BoxDecoration(
-        color: AppColors.isDark
-            ? const Color(0xFF0B0C13)
-            : const Color(0xFFF8F9FA),
+        color: colors.workspaceBackground,
       ),
       child: (currentStep.tutorExplanation != null ||
               (currentStep.socraticQuestions != null &&
@@ -473,12 +476,13 @@ class _FullscreenPanelOverlay extends ConsumerWidget {
     );
   }
 
-  Widget _buildFullscreenResources(WidgetRef ref) {
-    return Container(
+  Widget _buildFullscreenResources(BuildContext context, WidgetRef ref) {
+    final colors = context.appColors;
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOutCubic,
       decoration: BoxDecoration(
-        color: AppColors.isDark
-            ? AppColors.surfaceDark.withValues(alpha: 0.3)
-            : const Color(0xFFF8F9FA),
+        color: colors.workspaceBackground,
       ),
       child: LearningResourcesPanel(
         key: ValueKey('fullscreen_resources_${session.sessionId}_step_${currentStep.index}'),
@@ -537,16 +541,18 @@ class _TutorPanelHeaderState extends State<_TutorPanelHeader> {
     final isReviewing = widget.currentIndex < widget.maxUnlockedIndex || isComplete;
     final canGoBack = widget.currentIndex > 0;
 
-    return Container(
+    final colors = context.appColors;
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOutCubic,
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
       decoration: BoxDecoration(
-        color: AppColors.isDark ? const Color(0xFF11121D) : AppColors.surface,
+        color: colors.topBarBackground,
         border: Border(
           bottom: BorderSide(
-            color: AppColors.isDark
-                ? const Color(0x14FFFFFF)
-                : const Color(0xFFE2E8F0),
+            color: colors.border,
             width: 1.0,
           ),
         ),
@@ -755,15 +761,17 @@ class _ResourcesPanelHeaderState extends State<_ResourcesPanelHeader> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final colors = context.appColors;
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOutCubic,
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
       decoration: BoxDecoration(
-        color: AppColors.isDark ? const Color(0xFF11121D) : AppColors.surface,
+        color: colors.topBarBackground,
         border: Border(
           bottom: BorderSide(
-            color: AppColors.isDark
-                ? const Color(0x14FFFFFF)
-                : const Color(0xFFE2E8F0),
+            color: colors.border,
             width: 1.0,
           ),
         ),
@@ -1753,21 +1761,25 @@ class _MobileTabbedWorkspaceState
         _buildMobileStepHeader(),
 
         // Premium Segmented Tab Bar Header (Mobile)
-        Container(
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOutCubic,
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
           decoration: BoxDecoration(
-            color: AppColors.topBarBackground,
+            color: context.appColors.topBarBackground,
             border: Border(
-              bottom: BorderSide(color: AppColors.glassBorder, width: 0.8),
+              bottom: BorderSide(color: context.appColors.border, width: 0.8),
             ),
           ),
-          child: Container(
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOutCubic,
             padding: const EdgeInsets.all(3),
             decoration: BoxDecoration(
-              color: AppColors.surfaceDark.withValues(alpha: 0.55),
+              color: context.appColors.surfaceSubtle,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: AppColors.glassBorderSubtle,
+                color: context.appColors.border,
                 width: 0.8,
               ),
             ),
@@ -2089,11 +2101,12 @@ class _MobileWorkspaceTabItemState extends State<_MobileWorkspaceTabItem> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     final isActive = widget.isActive;
     final isHovered = _isHovered;
 
     final Color textColor = isActive
-        ? AppColors.textPrimary
+        ? colors.textPrimary
         : (isHovered ? AppColors.textSlate : AppColors.textMuted);
 
     final Color iconColor = isActive

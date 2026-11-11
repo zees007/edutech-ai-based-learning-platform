@@ -84,9 +84,10 @@ class AuthNotifier extends Notifier<AuthState> {
   }
 
   void forceLogout() {
+    final wasAuthenticated = state.status == AuthStatus.authenticated || state.user != null;
     state = AuthState(
       status: AuthStatus.unauthenticated, 
-      error: "Session expired. Please log in again."
+      error: wasAuthenticated ? "Session expired. Please log in again." : null,
     );
     ref.invalidate(activeSessionProvider);
     ref.invalidate(sessionsProvider);
@@ -116,6 +117,7 @@ class AuthNotifier extends Notifier<AuthState> {
       status: AuthStatus.unauthenticated,
       clearUser: true,
       isLoading: false,
+      clearError: true,
     );
     return false;
   }
@@ -213,6 +215,10 @@ class AuthNotifier extends Notifier<AuthState> {
     await _authService.logoutAll();
     forceLogout();
     state = AuthState(status: AuthStatus.unauthenticated);
+  }
+
+  void clearError() {
+    state = state.copyWith(clearError: true);
   }
 
   void setUser(UserCurrentProfileResponse user) {

@@ -40,9 +40,6 @@ class SearchableCountryDropdownState extends State<SearchableCountryDropdown>
   late AnimationController _chevronController;
   late Animation<double> _chevronAnimation;
 
-  // Callback to trigger setState inside the overlay
-  void Function(void Function())? _overlaySetState;
-
   @override
   void initState() {
     super.initState();
@@ -117,7 +114,6 @@ class SearchableCountryDropdownState extends State<SearchableCountryDropdown>
                 color: Colors.transparent,
                 child: StatefulBuilder(
                   builder: (context, setOverlayState) {
-                    _overlaySetState = setOverlayState;
                     final isDark = widget.isDark;
                     final textPrimary =
                         isDark ? Colors.white : AppColors.textPrimary;
@@ -262,7 +258,7 @@ class SearchableCountryDropdownState extends State<SearchableCountryDropdown>
                                         vertical: 4,
                                       ),
                                       itemCount: _filtered.length,
-                                      separatorBuilder: (_, __) => Divider(
+                                      separatorBuilder: (_, _) => Divider(
                                         height: 1,
                                         color: isDark
                                             ? Colors.white.withValues(
@@ -278,8 +274,8 @@ class SearchableCountryDropdownState extends State<SearchableCountryDropdown>
 
                                         return InkWell(
                                           onTap: () {
-                                            widget.onCountryChanged(country);
                                             _closeDropdown();
+                                            widget.onCountryChanged(country);
                                           },
                                           hoverColor: AppColors.primary
                                               .withValues(
@@ -408,7 +404,6 @@ class SearchableCountryDropdownState extends State<SearchableCountryDropdown>
     if (!_isOpen && _overlayEntry == null) return;
     _overlayEntry?.remove();
     _overlayEntry = null;
-    _overlaySetState = null;
     if (notify && mounted) {
       setState(() => _isOpen = false);
       _chevronController.reverse();

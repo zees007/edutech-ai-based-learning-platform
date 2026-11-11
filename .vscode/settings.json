@@ -3,5 +3,9 @@
   "python.analysis.extraPaths": [
     "devzees-edutechai-server"
   ],
-  "java.compile.nullAnalysis.mode": "automatic"
+  "java.compile.nullAnalysis.mode": "automatic",
+  "git.ignoredRepositories": [
+    "C:\\Users\\mhmdz\\Documents\\Softwares\\flutter",
+    "C:/Users/mhmdz/Documents/Softwares/flutter"
+  ]
 }

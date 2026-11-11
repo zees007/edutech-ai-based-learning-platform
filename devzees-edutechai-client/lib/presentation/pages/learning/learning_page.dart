@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/glow_background.dart';
 import 'package:devzees_edutechai_client/core/constants/responsive.dart';
-import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
+import 'package:devzees_edutechai_client/core/theme/theme_palette.dart';
 import 'package:devzees_edutechai_client/core/providers/learning_provider.dart';
 import 'package:devzees_edutechai_client/core/providers/gamification_provider.dart';
 import 'package:devzees_edutechai_client/core/providers/auth_provider.dart';
@@ -15,7 +15,6 @@ import 'widgets/gamification/journey_complete_celebration.dart';
 import 'widgets/gamification/session_feedback_dialog.dart';
 import 'package:devzees_edutechai_client/core/providers/feedback_provider.dart';
 import 'package:devzees_edutechai_client/core/providers/active_session_provider.dart';
-import 'package:devzees_edutechai_client/core/providers/theme_provider.dart';
 import 'widgets/mobile/mobile_learning_top_bar.dart';
 import 'widgets/mobile/mobile_command_hub_sheet.dart';
 
@@ -151,11 +150,6 @@ class _LearningPageState extends ConsumerState<LearningPage> {
 
   @override
   Widget build(BuildContext context) {
-    final themeMode = ref.watch(themeModeProvider);
-    final platformBrightness = MediaQuery.platformBrightnessOf(context);
-    final isDark = themeMode == ThemeMode.dark ||
-        (themeMode == ThemeMode.system && platformBrightness == Brightness.dark);
-    AppColors.setBrightness(isDark ? Brightness.dark : Brightness.light);
     final isAuthInitial = ref.watch(authProvider.select((s) => s.isInitial));
 
     ref.listen<GamificationEvent?>(gamificationEventProvider, (previous, next) {
@@ -190,13 +184,14 @@ class _LearningPageState extends ConsumerState<LearningPage> {
       child: isAuthInitial
           ? const ShimmerAppShell(key: ValueKey('shimmer_skeleton'))
           : KeyedSubtree(
-              key: ValueKey('learning_content_${themeMode.name}'),
+              key: const ValueKey('learning_content'),
               child: _buildScaffold(context),
             ),
     );
   }
 
   Widget _buildScaffold(BuildContext context) {
+    final colors = context.appColors;
     final bool isMobile = Responsive.isMobile(context);
 
     if (isMobile) {
@@ -210,7 +205,7 @@ class _LearningPageState extends ConsumerState<LearningPage> {
           : 0;
 
       return Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: colors.scaffoldBackground,
         appBar: MobileLearningTopBar(
           session: session,
           activeStepIndex: activeState.activeStepIndex,
@@ -229,7 +224,7 @@ class _LearningPageState extends ConsumerState<LearningPage> {
               : null,
         ),
         drawer: Drawer(
-          backgroundColor: AppColors.sidebarBackground,
+          backgroundColor: colors.sidebarBackground,
           child: LearningSidebar(
             expanded: true,
             isMobile: true,
@@ -242,19 +237,21 @@ class _LearningPageState extends ConsumerState<LearningPage> {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colors.scaffoldBackground,
       body: GlowBackground(
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Sidebar
-            Container(
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOutCubic,
               width: isExpanded ? 280 : 80,
               decoration: BoxDecoration(
-                color: AppColors.sidebarBackground,
+                color: colors.sidebarBackground,
                 border: Border(
                   right: BorderSide(
-                    color: AppColors.glassBorder,
+                    color: colors.border,
                     width: 1,
                   ),
                 ),

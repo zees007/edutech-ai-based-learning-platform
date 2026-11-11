@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../core/providers/active_session_provider.dart';
 import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/theme/theme_palette.dart';
 import '../../../../../core/theme/text_styles.dart';
 import 'unified_learning_command_hub.dart';
 import 'split_learning_workspace.dart';
@@ -81,9 +82,11 @@ class _StepContentContainerState extends ConsumerState<_StepContentContainer> {
                 (v) => v != null && v.toString().trim().isNotEmpty));
     final isQuizGated = hasQuiz && !isQuizDone;
 
+    final colors = context.appColors;
+
     return Container(
       width: double.infinity,
-      color: AppColors.isDark ? const Color(0xFF0B0C13) : AppColors.surface,
+      color: colors.workspaceBackground,
       child: widget.activeState.isLoading
         ? const Padding(
             padding: EdgeInsets.all(48),
@@ -91,7 +94,7 @@ class _StepContentContainerState extends ConsumerState<_StepContentContainer> {
           )
         : widget.session.steps.isNotEmpty
           ? SplitLearningWorkspace(
-              key: ValueKey('split_${widget.session.sessionId}_step_$currentIndex'),
+              key: ValueKey('split_${widget.session.sessionId}_step_${currentIndex}_${context.isDarkMode}'),
               session: widget.session,
               activeState: widget.activeState,
               currentStepIndex: currentIndex,

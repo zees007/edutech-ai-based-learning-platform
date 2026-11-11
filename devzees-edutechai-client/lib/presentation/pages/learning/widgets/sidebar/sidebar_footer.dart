@@ -7,6 +7,7 @@ import '../../../../../core/providers/auth_provider.dart';
 import '../../../../../core/providers/permission_provider.dart';
 import '../../../../../core/providers/user_provider.dart';
 import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/theme/theme_palette.dart';
 import '../../../../../core/theme/text_styles.dart';
 import '../../../../../core/providers/theme_provider.dart';
 import '../../../../widgets/account_settings_dialog.dart';
@@ -83,28 +84,7 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
                     color: AppColors.glassBorder,
                     width: 1.0,
                   ),
-                  boxShadow: isDark
-                      ? [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.45),
-                            blurRadius: 24,
-                            offset: const Offset(0, 8),
-                          ),
-                        ]
-                      : const [
-                          BoxShadow(
-                            color: Color(0x18000000),
-                            blurRadius: 24,
-                            offset: Offset(0, 8),
-                            spreadRadius: 0,
-                          ),
-                          BoxShadow(
-                            color: Color(0x0A000000),
-                            blurRadius: 8,
-                            offset: Offset(0, 2),
-                            spreadRadius: 0,
-                          ),
-                        ],
+                  boxShadow: context.appColors.cardShadow,
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -113,9 +93,7 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       child: Divider(
-                        color: isDark
-                            ? AppColors.glassBorder
-                            : const Color(0xFFF1F5F9),
+                        color: AppColors.glassBorder,
                         height: 12,
                       ),
                     ),
@@ -140,9 +118,7 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       child: Divider(
-                        color: isDark
-                            ? AppColors.glassBorder
-                            : const Color(0xFFF1F5F9),
+                        color: AppColors.glassBorder,
                         height: 12,
                       ),
                     ),
@@ -169,9 +145,7 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       child: Divider(
-                        color: isDark
-                            ? AppColors.glassBorder
-                            : const Color(0xFFF1F5F9),
+                        color: AppColors.glassBorder,
                         height: 12,
                       ),
                     ),
@@ -189,9 +163,7 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       child: Divider(
-                        color: isDark
-                            ? AppColors.glassBorder
-                            : const Color(0xFFF1F5F9),
+                        color: AppColors.glassBorder,
                         height: 12,
                       ),
                     ),
@@ -279,7 +251,7 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
                       child: Container(
                         padding: const EdgeInsets.all(4),
                         decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF1E2235) : Colors.white,
+                          color: isDark ? AppColors.surfaceSubtle : AppColors.cardBackground,
                           shape: BoxShape.circle,
                           border: Border.all(
                             color: AppColors.glassBorder,
@@ -367,7 +339,7 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
 
         // Dark primary blue in light mode for crisp contrast against light blue hover background
         final Color darkPrimary =
-            isDark ? AppColors.textPrimary : const Color(0xFF1D4ED8);
+            isDark ? AppColors.textPrimary : AppColors.blueRoyal;
 
         final Color activeHoverColor = textColor ?? darkPrimary;
 
@@ -376,7 +348,7 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
         final Color targetTextColor = isHovered
             ? activeHoverColor
             : (textColor ??
-                (isDark ? const Color(0xFFCBD5E1) : const Color(0xFF334155)));
+                (isDark ? AppColors.slate200 : AppColors.slate700));
 
         return MouseRegion(
           onEnter: (_) => setItemState(() => isHovered = true),
@@ -469,10 +441,10 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
                     child: Icon(
                       Icons.settings_rounded,
                       color: isHovered
-                          ? (isDark ? AppColors.textPrimary : const Color(0xFF1D4ED8))
+                          ? (isDark ? AppColors.textPrimary : AppColors.blueRoyal)
                           : (isDark
                               ? AppColors.textSecondary
-                              : const Color(0xFF475569)),
+                              : AppColors.slate600),
                       size: 20,
                     ),
                   ),

@@ -9,12 +9,12 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_math_fork/flutter_math.dart';
 import '../../../../../../core/theme/app_colors.dart';
+import '../../../../../../core/theme/theme_palette.dart';
 import '../../../../../../core/providers/active_session_provider.dart';
 import '../../../../../../core/providers/permission_provider.dart';
 import 'mermaid_web_view.dart';
 import '../../../../../../core/constants/responsive.dart';
 import '../../../../widgets/animated_tutor_icon.dart';
-import '../../../../../../core/providers/theme_provider.dart';
 
 // ═══════════════════════════════════════════════════════════════════
 // Socratic Tutor Chat — Premium Chat Bubble UI
@@ -517,7 +517,6 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
 
   @override
   Widget build(BuildContext context) {
-    ref.watch(themeModeProvider);
     return Column(
       children: [
         Expanded(child: _buildChatArea()),
@@ -1077,48 +1076,46 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
         ? 'Follow-up limit ($limit) reached. Upgrade for more.'
         : 'Ask Socratic Tutor a follow-up question...';
 
-    return Container(
+    final colors = context.appColors;
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOutCubic,
       decoration: BoxDecoration(
-        color: AppColors.isDark
-            ? const Color(0xFF0B0C13)
-            : const Color(0xFFF8F9FA),
+        color: colors.workspaceBackground,
         border: Border(
           top: BorderSide(
-            color: AppColors.isDark
-                ? const Color(0x14FFFFFF)
-                : const Color(0xFFE2E8F0),
+            color: colors.border,
             width: 1.0,
           ),
         ),
       ),
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeOutCubic,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOutCubic,
         padding: const EdgeInsets.fromLTRB(8, 4, 6, 4),
         decoration: BoxDecoration(
-          color: AppColors.isDark ? const Color(0xFF141624) : Colors.white,
+          color: colors.surface,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: _isInputFocused
                 ? AppColors.purple
-                : (AppColors.isDark
-                      ? const Color(0x22FFFFFF)
-                      : const Color(0xFFE2E8F0)),
+                : colors.border,
             width: _isInputFocused ? 1.5 : 1.0,
           ),
           boxShadow: _isInputFocused
               ? [
                   BoxShadow(
                     color: AppColors.purple.withValues(
-                      alpha: AppColors.isDark ? 0.35 : 0.15,
+                      alpha: context.isDarkMode ? 0.35 : 0.15,
                     ),
                     blurRadius: 14,
                     spreadRadius: 1,
                   ),
                 ]
               : [
-                  if (!AppColors.isDark)
+                  if (!context.isDarkMode)
                     const BoxShadow(
                       color: Color(0x0A000000),
                       blurRadius: 8,

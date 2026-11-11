@@ -6,6 +6,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../data/models/feedback/feedback_model.dart';
 import '../../../widgets/center_toast.dart';
+import '../../../widgets/gradient_button.dart';
 import '../../../widgets/shimmer_loading.dart';
 import 'admin_data_table.dart';
 
@@ -164,7 +165,7 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
             ? '${metrics.averageRating.toStringAsFixed(1)} ★'
             : '0.0 ★',
         icon: Icons.grade_rounded,
-        iconColor: const Color(0xFFFBBF24),
+        iconColor: AppColors.accentAmber,
       ),
     ];
 
@@ -481,7 +482,7 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
             children: [
               const Icon(
                 Icons.star_rounded,
-                color: Color(0xFFFBBF24),
+                color: AppColors.accentAmber,
                 size: 16,
               ),
               const SizedBox(width: 4),
@@ -585,7 +586,7 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
                         valueColor: AlwaysStoppedAnimation<Color>(
-                          Color(0xFFFBBF24),
+                          AppColors.accentAmber,
                         ),
                       ),
                     ),
@@ -602,7 +603,7 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
                   ),
                   icon: const Icon(
                     Icons.star_rounded,
-                    color: Color(0xFFFBBF24),
+                    color: AppColors.accentAmber,
                     size: 18,
                   ),
                   onPressed: () => _updateFeedbackStatus(item, 'archived'),
@@ -895,7 +896,7 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
                                           : Icons.star_border_rounded,
                                       size: 16,
                                       color: i < item.rating
-                                          ? const Color(0xFFFBBF24)
+                                          ? AppColors.accentAmber
                                           : AppColors.slate500,
                                     ),
                                   ),
@@ -1106,14 +1107,9 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
                     style: TextStyle(color: AppColors.textMuted),
                   ),
                 ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.purple,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
+                GradientButton(
+                  height: 38,
+                  text: 'Save Moderation',
                   onPressed: () async {
                     Navigator.of(dialogContext).pop();
                     final success = await ref
@@ -1141,7 +1137,6 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
                       }
                     }
                   },
-                  child: const Text('Save Changes'),
                 ),
               ],
             );

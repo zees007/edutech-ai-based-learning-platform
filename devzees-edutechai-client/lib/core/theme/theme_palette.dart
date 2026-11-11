@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 class AppThemeColors extends ThemeExtension<AppThemeColors> {
   // ─── Theme Specific Canvas & Surfaces ───
   final Color scaffoldBackground;
+  final Color workspaceBackground;
   final Color surface;
   final Color surfaceSubtle;
   final Color border;
@@ -36,6 +37,7 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
 
   const AppThemeColors({
     required this.scaffoldBackground,
+    required this.workspaceBackground,
     required this.surface,
     required this.surfaceSubtle,
     required this.border,
@@ -70,7 +72,8 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
 
   // ─── Light Theme Palette ───
   static const AppThemeColors light = AppThemeColors(
-    scaffoldBackground: Color(0xFFECE8E8),
+    scaffoldBackground: Color(0xFFF6F8FC), // Clean, soft off-white SaaS base #F6F8FC
+    workspaceBackground: Color(0xFFF6F8FC),
     surface: Color(0xFFFFFFFF),
     surfaceSubtle: Color(0xFFF3F3F5),
     border: Color(0xFFE5E7EB),
@@ -109,6 +112,7 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
   // ─── Dark Theme Palette ───
   static const AppThemeColors dark = AppThemeColors(
     scaffoldBackground: Color(0xFF0B0C13), // Unified Deep Canvas Base #0B0C13
+    workspaceBackground: Color(0xFF0B0C13), // Deep Workspace Panel Canvas #0B0C13
     surface: Color(0xFF11121D),            // Desktop Panel Surface #11121d
     surfaceSubtle: Color(0xFF11121D),      // Unified with surface #11121d
     border: Color(0x0DFFFFFF),             // Feathered Hairline Border rgba(255, 255, 255, 0.045)
@@ -147,6 +151,7 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
   @override
   AppThemeColors copyWith({
     Color? scaffoldBackground,
+    Color? workspaceBackground,
     Color? surface,
     Color? surfaceSubtle,
     Color? border,
@@ -170,6 +175,7 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
   }) {
     return AppThemeColors(
       scaffoldBackground: scaffoldBackground ?? this.scaffoldBackground,
+      workspaceBackground: workspaceBackground ?? this.workspaceBackground,
       surface: surface ?? this.surface,
       surfaceSubtle: surfaceSubtle ?? this.surfaceSubtle,
       border: border ?? this.border,
@@ -202,6 +208,9 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
       scaffoldBackground:
           Color.lerp(scaffoldBackground, other.scaffoldBackground, t) ??
           scaffoldBackground,
+      workspaceBackground:
+          Color.lerp(workspaceBackground, other.workspaceBackground, t) ??
+          workspaceBackground,
       surface: Color.lerp(surface, other.surface, t) ?? surface,
       surfaceSubtle:
           Color.lerp(surfaceSubtle, other.surfaceSubtle, t) ?? surfaceSubtle,
