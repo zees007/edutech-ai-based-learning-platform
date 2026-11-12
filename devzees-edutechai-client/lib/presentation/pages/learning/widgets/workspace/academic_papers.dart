@@ -414,7 +414,9 @@ class _PaperCardState extends State<_PaperCard> {
 
     if (!widget.canAccessFullText) {
       actionIcon = Icons.lock_rounded;
-      actionTooltip = 'Unlock Full Text Research with ULTRA';
+      actionTooltip = widget.userTier == 'pro'
+          ? 'Upgrade to Ultra to unlock Full Text Research'
+          : 'Unlock Full Text Research with Ultra';
     }
 
     // Extract summary with comprehensive fallback keys
@@ -866,6 +868,12 @@ class _PaperCardState extends State<_PaperCard> {
                     child: InkWell(
                       onTap: () {
                         if (!widget.canAccessFullText) {
+                          CenterToast.showWarning(
+                            context,
+                            'Full Text Research is an Ultra feature. Upgrade your plan to unlock complete papers and direct PDFs.',
+                            title: 'Ultra Feature',
+                            icon: Icons.lock_outline_rounded,
+                          );
                           context.push('/subscription');
                           return;
                         }
@@ -906,13 +914,29 @@ class _PaperCardState extends State<_PaperCard> {
                           children: [
                             if (!widget.canAccessFullText) ...[
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 5,
+                                  vertical: 2,
+                                ),
                                 margin: const EdgeInsets.only(right: 6),
                                 decoration: BoxDecoration(
-                                  gradient: AppColors.primaryGradient,
+                                  gradient: const LinearGradient(
+                                    colors: [
+                                      AppColors.accentViolet,
+                                      AppColors.accentPink,
+                                    ],
+                                  ),
                                   borderRadius: BorderRadius.circular(4),
                                 ),
-                                child: Text('ULTRA', style: AppTextStyles.badge.copyWith(fontSize: 8, color: Colors.white, fontWeight: FontWeight.bold)),
+                                child: Text(
+                                  'ULTRA',
+                                  style: AppTextStyles.badge.copyWith(
+                                    fontSize: 8.5,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
                               ),
                             ],
                             Icon(
