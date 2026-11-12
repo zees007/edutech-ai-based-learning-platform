@@ -19,6 +19,7 @@ Adaptive AI-powered learning platform with multi-agent Socratic tutoring, YouTub
     *   `POST /api/v1/users/create`
 *   **Sessions & Learning** (`learning_service.dart`):
     *   `POST /api/v1/learn`
+    *   `GET /api/v1/sessions/quota`
     *   `GET /api/v1/sessions`
     *   `GET /api/v1/sessions/{session_id}`
     *   `DELETE /api/v1/sessions/{session_id}`
@@ -401,6 +402,47 @@ Affects how subsequent steps are generated (content depth, media emphasis).
 
 ```json
 "any"
+```
+
+---
+
+## Get Monthly Session Quota
+**Endpoint:** `GET /api/v1/sessions/quota`
+
+Retrieve the current monthly AI learning session quota status for the authenticated user.
+Protected by `ET_VIEW_QUOTA` privilege.
+- **Free Tier:** Limited to 10 AI sessions per calendar month. Returns current usage count, limit (`10`), and remaining count (`max(0, 10 - used)`).
+- **Pro / Ultra Tier:** Unlimited sessions. Returns `is_unlimited: true`, `limit: null`, `remaining: null`.
+
+### Request
+
+**Parameters:**
+- `access_token` (cookie) *(Required)*
+
+### Response
+
+**200 Successful Response**
+
+Free Tier User Example:
+```json
+{
+  "tier": "free",
+  "is_unlimited": false,
+  "used": 3,
+  "limit": 10,
+  "remaining": 7
+}
+```
+
+Pro / Ultra User Example:
+```json
+{
+  "tier": "pro",
+  "is_unlimited": true,
+  "used": 15,
+  "limit": null,
+  "remaining": null
+}
 ```
 
 ---

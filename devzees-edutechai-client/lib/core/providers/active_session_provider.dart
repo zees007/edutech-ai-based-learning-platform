@@ -11,8 +11,11 @@ import '../services/learning_service.dart';
 import '../services/learning_websocket_service.dart';
 import 'gamification_provider.dart';
 import 'feedback_provider.dart';
+import 'session_quota_provider.dart';
 
-final learningWebSocketServiceProvider = Provider<LearningWebSocketService>((ref) {
+final learningWebSocketServiceProvider = Provider<LearningWebSocketService>((
+  ref,
+) {
   final service = LearningWebSocketService();
   ref.onDispose(() => service.disconnect());
   return service;
@@ -84,10 +87,10 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
   ActiveSessionState build() {
     _service = ref.watch(learningServiceProvider);
     _wsService = ref.watch(learningWebSocketServiceProvider);
-    
+
     // Listen to websocket events
     _wsService.events.listen(_onWebSocketEvent);
-    
+
     return ActiveSessionState();
   }
 
@@ -104,8 +107,11 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
           // Guard: block only if generation is already running for a DIFFERENT step.
           // When setActiveStep() reconnects the WS and returns early, it sets
           // _isStepGenerationActive=true for THIS step — we must allow that through.
-          if (_isStepGenerationActive && _currentTrackingStepIndex != state.activeStepIndex) {
-            debugPrint('⚠️ [Client WS] "plan" guard blocked — generation already active for Step $_currentTrackingStepIndex.');
+          if (_isStepGenerationActive &&
+              _currentTrackingStepIndex != state.activeStepIndex) {
+            debugPrint(
+              '⚠️ [Client WS] "plan" guard blocked — generation already active for Step $_currentTrackingStepIndex.',
+            );
             return;
           }
 
@@ -118,20 +124,32 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
           _backendStopwatch.start();
           _isStepGenerationActive = true;
 
-          debugPrint('🚀 [Client] Triggering backend agents for Step $_currentTrackingStepIndex via plan event...');
-          
-          final updatedCurating = Set<int>.from(state.curatingVideoSteps)..add(state.activeStepIndex);
+          debugPrint(
+            '🚀 [Client] Triggering backend agents for Step $_currentTrackingStepIndex via plan event...',
+          );
+
+          final updatedCurating = Set<int>.from(state.curatingVideoSteps)
+            ..add(state.activeStepIndex);
 
           // Only show the massive full-screen neural loader for the very first step of a new journey.
           // For all other steps (e.g. regenerating), use the seamless inline workspace loader.
-          final isBrandNewJourney = state.activeStepIndex == 0 && session.stepsCompleted == 0 && !_isRegenerating;
+          final isBrandNewJourney =
+              state.activeStepIndex == 0 &&
+              session.stepsCompleted == 0 &&
+              !_isRegenerating;
           if (isBrandNewJourney) {
-            state = state.copyWith(isLoading: true, isSynthesizing: true, curatingVideoSteps: updatedCurating);
+            state = state.copyWith(
+              isLoading: true,
+              isSynthesizing: true,
+              curatingVideoSteps: updatedCurating,
+            );
           } else {
             state = state.copyWith(curatingVideoSteps: updatedCurating);
           }
-          
-          debugPrint('📤 [Client WS] Sending start_step for Step ${state.activeStepIndex}...');
+
+          debugPrint(
+            '📤 [Client WS] Sending start_step for Step ${state.activeStepIndex}...',
+          );
           _wsService.sendStartStep(state.activeStepIndex);
         }
       }
@@ -140,7 +158,9 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
 
     if (type == 'status') {
       final statusMsg = event['status'] ?? '';
-      debugPrint('⏳ [Client WS] Agent Progress: $statusMsg (+${_backendStopwatch.elapsedMilliseconds}ms)');
+      debugPrint(
+        '⏳ [Client WS] Agent Progress: $statusMsg (+${_backendStopwatch.elapsedMilliseconds}ms)',
+      );
       return;
     }
 
@@ -164,10 +184,15 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
 ╚════════════════════════════════════════════════════════════════════''');
 
       final currentSession = state.session;
-      if (currentSession != null && stepIdx >= 0 && stepIdx < currentSession.steps.length) {
+      if (currentSession != null &&
+          stepIdx >= 0 &&
+          stepIdx < currentSession.steps.length) {
         final updatedSteps = List<MilestoneStep>.from(currentSession.steps);
-        updatedSteps[stepIdx] = updatedSteps[stepIdx].copyWith(videos: rawVideos);
-        final updatedCurating = Set<int>.from(state.curatingVideoSteps)..remove(stepIdx);
+        updatedSteps[stepIdx] = updatedSteps[stepIdx].copyWith(
+          videos: rawVideos,
+        );
+        final updatedCurating = Set<int>.from(state.curatingVideoSteps)
+          ..remove(stepIdx);
 
         state = state.copyWith(
           session: currentSession.copyWith(steps: updatedSteps),
@@ -182,7 +207,9 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       _backendStopwatch.stop();
       _isRegenerating = false;
       _lastBackendMs = _backendStopwatch.elapsedMilliseconds;
-      debugPrint('✅ [Client WS] "step_complete" received for Step $_currentTrackingStepIndex in ${_lastBackendMs}ms (${(_lastBackendMs / 1000).toStringAsFixed(2)}s). Fetching full session data...');
+      debugPrint(
+        '✅ [Client WS] "step_complete" received for Step $_currentTrackingStepIndex in ${_lastBackendMs}ms (${(_lastBackendMs / 1000).toStringAsFixed(2)}s). Fetching full session data...',
+      );
       loadSession(session.sessionId, fromStepComplete: true, silent: true);
       return;
     }
@@ -194,10 +221,12 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       final total = (timings['total_backend_ms'] as num?)?.toDouble() ?? 0;
       final tutor = (timings['SocraticTutorAgent'] as num?)?.toDouble() ?? 0;
       final youtubeNum = (timings['YouTubeCuratorAgent'] as num?)?.toDouble();
-      final academic = (timings['AcademicResearcherAgent'] as num?)?.toDouble() ?? 0;
+      final academic =
+          (timings['AcademicResearcherAgent'] as num?)?.toDouble() ?? 0;
       final quiz = (timings['QuizAgent'] as num?)?.toDouble() ?? 0;
       final dbPersist = (timings['db_persist'] as num?)?.toDouble() ?? 0;
-      final parallelGather = (timings['parallel_gather_wall'] as num?)?.toDouble() ?? 0;
+      final parallelGather =
+          (timings['parallel_gather_wall'] as num?)?.toDouble() ?? 0;
 
       String youtubeLine;
       if (youtubeNum != null && youtubeNum > 0) {
@@ -229,27 +258,32 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     if (type == 'xp_update') {
       final xpEarned = event['xp_earned'] as int? ?? 0;
       final totalXp = event['total_xp'] as int? ?? session.xpEarned;
-      final newLevel = event['level'] as int? ?? GamificationUtils.calculateLevel(totalXp);
-      final levelTitle = event['level_title'] as String? ?? GamificationUtils.getLevelTitle(newLevel);
-      
-      debugPrint('🌟 [Client WS] XP Update: +$xpEarned XP (Total: $totalXp) - $levelTitle (Lvl $newLevel)');
-      
-      final oldLevel = GamificationUtils.calculateLevel(session.xpEarned);
-      
-      // Update the local session state with the new XP
-      final updatedSession = session.copyWith(
-        xpEarned: totalXp,
+      final newLevel =
+          event['level'] as int? ?? GamificationUtils.calculateLevel(totalXp);
+      final levelTitle =
+          event['level_title'] as String? ??
+          GamificationUtils.getLevelTitle(newLevel);
+
+      debugPrint(
+        '🌟 [Client WS] XP Update: +$xpEarned XP (Total: $totalXp) - $levelTitle (Lvl $newLevel)',
       );
+
+      final oldLevel = GamificationUtils.calculateLevel(session.xpEarned);
+
+      // Update the local session state with the new XP
+      final updatedSession = session.copyWith(xpEarned: totalXp);
       state = state.copyWith(session: updatedSession);
-      
+
       // Only trigger celebration if level actually increased
       if (newLevel > oldLevel) {
-        ref.read(gamificationEventProvider.notifier).triggerEvent(
-          xpEarned: xpEarned,
-          totalXp: totalXp,
-          level: newLevel,
-          levelTitle: levelTitle,
-        );
+        ref
+            .read(gamificationEventProvider.notifier)
+            .triggerEvent(
+              xpEarned: xpEarned,
+              totalXp: totalXp,
+              level: newLevel,
+              levelTitle: levelTitle,
+            );
       }
       return;
     }
@@ -263,7 +297,9 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       state = state.copyWith(
         isLoading: false,
         isSynthesizing: false,
-        error: event['message']?.toString() ?? 'An error occurred during step synthesis',
+        error:
+            event['message']?.toString() ??
+            'An error occurred during step synthesis',
       );
       return;
     }
@@ -278,7 +314,8 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
         state = state.copyWith(
           isLoading: false,
           isSynthesizing: false,
-          error: 'Connection to learning server was closed. Please try reloading or regenerating the step.',
+          error:
+              'Connection to learning server was closed. Please try reloading or regenerating the step.',
         );
       }
       return;
@@ -290,8 +327,12 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     required String mode,
     required String level,
   }) async {
-    debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    debugPrint('🚀 [Client] Starting new journey for "$topic" ($mode, $level)...');
+    debugPrint(
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+    );
+    debugPrint(
+      '🚀 [Client] Starting new journey for "$topic" ($mode, $level)...',
+    );
     _stepTotalStopwatch.reset();
     _stepTotalStopwatch.start();
     _currentTrackingStepIndex = 0;
@@ -322,13 +363,22 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
         cancelToken: _startJourneyCancelToken,
       );
       journeyApiWatch.stop();
-      debugPrint('📋 [Client API] Orchestrator milestone plan created in ${journeyApiWatch.elapsedMilliseconds}ms (${(journeyApiWatch.elapsedMilliseconds / 1000).toStringAsFixed(2)}s). Total steps: ${response.steps.length}');
+      debugPrint(
+        '📋 [Client API] Orchestrator milestone plan created in ${journeyApiWatch.elapsedMilliseconds}ms (${(journeyApiWatch.elapsedMilliseconds / 1000).toStringAsFixed(2)}s). Total steps: ${response.steps.length}',
+      );
 
       // If user cancelled while startJourney was returning, clean up immediately
-      if (_startJourneyCancelToken == null || _startJourneyCancelToken!.isCancelled) {
-        debugPrint('🛑 [Client] Journey was cancelled right after API return. Cleaning up session $clientSessionId...');
-        await ref.read(sessionsProvider.notifier).deleteSession(clientSessionId);
-        ref.read(sessionsProvider.notifier).removeSessionLocally(clientSessionId);
+      if (_startJourneyCancelToken == null ||
+          _startJourneyCancelToken!.isCancelled) {
+        debugPrint(
+          '🛑 [Client] Journey was cancelled right after API return. Cleaning up session $clientSessionId...',
+        );
+        await ref
+            .read(sessionsProvider.notifier)
+            .deleteSession(clientSessionId);
+        ref
+            .read(sessionsProvider.notifier)
+            .removeSessionLocally(clientSessionId);
         clearSession();
         return;
       }
@@ -338,24 +388,30 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
         session: response,
         activeStepIndex: 0,
         isLoading: true,
-        isSynthesizing: true, // Keep neural loader visible while step 0 agents run
+        isSynthesizing:
+            true, // Keep neural loader visible while step 0 agents run
         curatingVideoSteps: updatedCurating,
       );
-      
+
       // Prepend to sessionsProvider immediately so history sidebar & recent journeys update in real time
-      ref.read(sessionsProvider.notifier).prependSession(
-        SessionModel(
-          sessionId: response.sessionId,
-          topic: response.topic,
-          learningMode: response.learningMode,
-          studentLevel: response.studentLevel,
-          isComplete: false,
-          stepsCompleted: response.stepsCompleted,
-          totalSteps: response.steps.length,
-          xpEarned: response.xpEarned,
-          createdAt: response.createdAt,
-        ),
-      );
+      ref
+          .read(sessionsProvider.notifier)
+          .prependSession(
+            SessionModel(
+              sessionId: response.sessionId,
+              topic: response.topic,
+              learningMode: response.learningMode,
+              studentLevel: response.studentLevel,
+              isComplete: false,
+              stepsCompleted: response.stepsCompleted,
+              totalSteps: response.steps.length,
+              xpEarned: response.xpEarned,
+              createdAt: response.createdAt,
+            ),
+          );
+
+      // Refresh session quota after starting new journey
+      ref.read(sessionQuotaProvider.notifier).refreshQuota();
 
       // Connect to WebSocket and start the first step automatically via plan event
       _wsService.connect(response.sessionId);
@@ -377,15 +433,22 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
         return;
       }
       _pendingSessionId = null;
-      state = state.copyWith(isLoading: false, isSynthesizing: false, error: e.toString());
+      state = state.copyWith(
+        isLoading: false,
+        isSynthesizing: false,
+        error: e.toString(),
+      );
       rethrow;
     }
   }
 
   Future<void> cancelSessionCreation({bool isPhase1 = false}) async {
-    debugPrint('🛑 [Client] Cancelling session creation / active synthesis (isPhase1=$isPhase1)...');
+    debugPrint(
+      '🛑 [Client] Cancelling session creation / active synthesis (isPhase1=$isPhase1)...',
+    );
     // 1. Cancel in-flight HTTP POST /learn if still running
-    if (_startJourneyCancelToken != null && !_startJourneyCancelToken!.isCancelled) {
+    if (_startJourneyCancelToken != null &&
+        !_startJourneyCancelToken!.isCancelled) {
       _startJourneyCancelToken!.cancel('Session creation cancelled by user');
       _startJourneyCancelToken = null;
     }
@@ -407,6 +470,8 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       } else {
         // Phase 2 cancel: Active synthesis compute used, quota recorded for Free tier, DB records deleted
         await ref.read(sessionsProvider.notifier).cancelSession(sessionId);
+        // Refresh session quota for free tier
+        ref.read(sessionQuotaProvider.notifier).refreshQuota();
       }
       ref.read(sessionsProvider.notifier).removeSessionLocally(sessionId);
     }
@@ -415,17 +480,26 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     clearSession();
   }
 
-  Future<QuizResult?> submitStepQuiz(int stepIndex, Map<int, String> answers) async {
+  Future<QuizResult?> submitStepQuiz(
+    int stepIndex,
+    Map<int, String> answers,
+  ) async {
     final session = state.session;
     if (session == null) return null;
-    
+
     state = state.copyWith(clearError: true);
     try {
       final quizWatch = Stopwatch()..start();
-      final result = await _service.submitQuiz(session.sessionId, stepIndex, answers);
+      final result = await _service.submitQuiz(
+        session.sessionId,
+        stepIndex,
+        answers,
+      );
       quizWatch.stop();
-      debugPrint('📝 [Client API] Quiz evaluated in ${quizWatch.elapsedMilliseconds}ms. Awarded XP: ${result.xpEarned}');
-      
+      debugPrint(
+        '📝 [Client API] Quiz evaluated in ${quizWatch.elapsedMilliseconds}ms. Awarded XP: ${result.xpEarned}',
+      );
+
       final oldLevel = GamificationUtils.calculateLevel(session.xpEarned);
       final totalXp = session.xpEarned + result.xpEarned;
       final newLevel = GamificationUtils.calculateLevel(totalXp);
@@ -435,7 +509,9 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       final updatedSteps = List<MilestoneStep>.from(session.steps);
       if (stepIndex >= 0 && stepIndex < updatedSteps.length) {
         final currentStep = updatedSteps[stepIndex];
-        final stringKeyAnswers = answers.map((k, v) => MapEntry(k.toString(), v));
+        final stringKeyAnswers = answers.map(
+          (k, v) => MapEntry(k.toString(), v),
+        );
         updatedSteps[stepIndex] = currentStep.copyWith(
           quizScore: result.score,
           userAnswers: stringKeyAnswers,
@@ -447,35 +523,39 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
         xpEarned: totalXp,
         steps: updatedSteps,
       );
-      
+
       _uiRenderStopwatch.reset();
       _uiRenderStopwatch.start();
 
-      state = state.copyWith(
-        session: updatedSession,
-      );
+      state = state.copyWith(session: updatedSession);
 
       // Sync progress with learning history list
-      ref.read(sessionsProvider.notifier).updateSessionProgress(
-        sessionId: session.sessionId,
-        stepsCompleted: updatedSession.stepsCompleted,
-        xpEarned: updatedSession.xpEarned,
-      );
+      ref
+          .read(sessionsProvider.notifier)
+          .updateSessionProgress(
+            sessionId: session.sessionId,
+            stepsCompleted: updatedSession.stepsCompleted,
+            xpEarned: updatedSession.xpEarned,
+          );
 
       // Instant level-up celebration trigger for quiz submit
       if (leveledUp) {
         final levelTitle = GamificationUtils.getLevelTitle(newLevel);
-        ref.read(gamificationEventProvider.notifier).triggerEvent(
-          xpEarned: result.xpEarned,
-          totalXp: totalXp,
-          level: newLevel,
-          levelTitle: levelTitle,
-        );
+        ref
+            .read(gamificationEventProvider.notifier)
+            .triggerEvent(
+              xpEarned: result.xpEarned,
+              totalXp: totalXp,
+              level: newLevel,
+              levelTitle: levelTitle,
+            );
       }
 
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _uiRenderStopwatch.stop();
-        debugPrint('🎨 [Client UI] Quiz results rendered to screen in ${_uiRenderStopwatch.elapsedMilliseconds}ms');
+        debugPrint(
+          '🎨 [Client UI] Quiz results rendered to screen in ${_uiRenderStopwatch.elapsedMilliseconds}ms',
+        );
       });
 
       return result;
@@ -488,27 +568,30 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
   Future<bool> markStepComplete(int stepIndex) async {
     final session = state.session;
     if (session == null) return false;
-    
+
     state = state.copyWith(clearError: true);
     try {
       final oldLevel = GamificationUtils.calculateLevel(session.xpEarned);
       final data = await _service.completeStep(session.sessionId, stepIndex);
-      
+
       // Update XP locally
       final awardedXp = data['xp_earned'] as int? ?? 0;
-      final totalXp = data['total_xp'] as int? ?? (session.xpEarned + awardedXp);
+      final totalXp =
+          data['total_xp'] as int? ?? (session.xpEarned + awardedXp);
       final newLevel = GamificationUtils.calculateLevel(totalXp);
       final bool leveledUp = newLevel > oldLevel;
 
-      final nextStepIdx = data['next_step_index'] as int? ?? session.currentStepIndex;
-      final newStepsCompleted = (session.stepsCompleted + 1).clamp(0, session.steps.length);
+      final nextStepIdx =
+          data['next_step_index'] as int? ?? session.currentStepIndex;
+      final newStepsCompleted = (session.stepsCompleted + 1).clamp(
+        0,
+        session.steps.length,
+      );
 
       final updatedSteps = List<MilestoneStep>.from(session.steps);
       if (stepIndex >= 0 && stepIndex < updatedSteps.length) {
         final currentStep = updatedSteps[stepIndex];
-        updatedSteps[stepIndex] = currentStep.copyWith(
-          status: 'complete',
-        );
+        updatedSteps[stepIndex] = currentStep.copyWith(status: 'complete');
       }
 
       final updatedSession = session.copyWith(
@@ -517,27 +600,30 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
         currentStepIndex: nextStepIdx,
         steps: updatedSteps,
       );
-      
-      state = state.copyWith(
-        session: updatedSession,
-      );
+
+      state = state.copyWith(session: updatedSession);
 
       // Sync progress with learning history list
-      ref.read(sessionsProvider.notifier).updateSessionProgress(
-        sessionId: session.sessionId,
-        stepsCompleted: updatedSession.stepsCompleted,
-        xpEarned: updatedSession.xpEarned,
-        isComplete: updatedSession.stepsCompleted >= updatedSession.steps.length,
-      );
+      ref
+          .read(sessionsProvider.notifier)
+          .updateSessionProgress(
+            sessionId: session.sessionId,
+            stepsCompleted: updatedSession.stepsCompleted,
+            xpEarned: updatedSession.xpEarned,
+            isComplete:
+                updatedSession.stepsCompleted >= updatedSession.steps.length,
+          );
 
       if (leveledUp) {
         final levelTitle = GamificationUtils.getLevelTitle(newLevel);
-        ref.read(gamificationEventProvider.notifier).triggerEvent(
-          xpEarned: awardedXp,
-          totalXp: totalXp,
-          level: newLevel,
-          levelTitle: levelTitle,
-        );
+        ref
+            .read(gamificationEventProvider.notifier)
+            .triggerEvent(
+              xpEarned: awardedXp,
+              totalXp: totalXp,
+              level: newLevel,
+              levelTitle: levelTitle,
+            );
       }
 
       return leveledUp;
@@ -559,7 +645,9 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     if (currentStep.status != 'complete') {
       leveledUp = await markStepComplete(stepIndex);
     } else {
-      debugPrint('⏭️ [Client] Step $stepIndex is already complete. Skipping completion API call.');
+      debugPrint(
+        '⏭️ [Client] Step $stepIndex is already complete. Skipping completion API call.',
+      );
     }
 
     // If level-up occurred or celebration overlay is active, wait for user to dismiss
@@ -575,7 +663,9 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
 
     if (isLastStep) {
       // 1. Optimistic completion: ensure all steps are marked complete in local state
-      final completedSteps = updatedSession.steps.map((s) => s.copyWith(status: 'complete')).toList();
+      final completedSteps = updatedSession.steps
+          .map((s) => s.copyWith(status: 'complete'))
+          .toList();
       final fullyCompletedSession = updatedSession.copyWith(
         stepsCompleted: updatedSession.steps.length,
         steps: completedSteps,
@@ -583,12 +673,14 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       state = state.copyWith(session: fullyCompletedSession);
 
       // Sync progress with learning history list
-      ref.read(sessionsProvider.notifier).updateSessionProgress(
-        sessionId: updatedSession.sessionId,
-        stepsCompleted: updatedSession.steps.length,
-        xpEarned: fullyCompletedSession.xpEarned,
-        isComplete: true,
-      );
+      ref
+          .read(sessionsProvider.notifier)
+          .updateSessionProgress(
+            sessionId: updatedSession.sessionId,
+            stepsCompleted: updatedSession.steps.length,
+            xpEarned: fullyCompletedSession.xpEarned,
+            isComplete: true,
+          );
 
       // Calculate average quiz score across steps
       double totalScore = 0.0;
@@ -601,14 +693,16 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       }
       final avgScore = quizCount > 0 ? (totalScore / quizCount) : null;
 
-      ref.read(feedbackPromptProvider.notifier).triggerEvent(
-        sessionId: updatedSession.sessionId,
-        topic: updatedSession.topic,
-        totalSteps: updatedSession.steps.length,
-        totalXp: updatedSession.xpEarned,
-        bonusXp: 100,
-        averageQuizScore: avgScore,
-      );
+      ref
+          .read(feedbackPromptProvider.notifier)
+          .triggerEvent(
+            sessionId: updatedSession.sessionId,
+            topic: updatedSession.topic,
+            totalSteps: updatedSession.steps.length,
+            totalXp: updatedSession.xpEarned,
+            bonusXp: 100,
+            averageQuizScore: avgScore,
+          );
 
       // 2. Fire silent background sync immediately while celebration modal is animating
       loadSession(updatedSession.sessionId, silent: true);
@@ -629,12 +723,14 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     state = state.copyWith(session: updatedSession);
 
     // Sync with sessionsProvider
-    ref.read(sessionsProvider.notifier).updateSessionProgress(
-      sessionId: session.sessionId,
-      stepsCompleted: session.stepsCompleted,
-      xpEarned: updatedXp,
-      isComplete: true,
-    );
+    ref
+        .read(sessionsProvider.notifier)
+        .updateSessionProgress(
+          sessionId: session.sessionId,
+          stepsCompleted: session.stepsCompleted,
+          xpEarned: updatedXp,
+          isComplete: true,
+        );
 
     double totalScore = 0.0;
     int quizCount = 0;
@@ -646,14 +742,16 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     }
     final avgScore = quizCount > 0 ? (totalScore / quizCount) : null;
 
-    ref.read(journeyCompleteProvider.notifier).triggerEvent(
-      sessionId: session.sessionId,
-      topic: session.topic,
-      totalSteps: session.steps.length,
-      totalXp: updatedXp,
-      bonusXp: 100 + bonusXp,
-      averageQuizScore: avgScore,
-    );
+    ref
+        .read(journeyCompleteProvider.notifier)
+        .triggerEvent(
+          sessionId: session.sessionId,
+          topic: session.topic,
+          totalSteps: session.steps.length,
+          totalXp: updatedXp,
+          bonusXp: 100 + bonusXp,
+          averageQuizScore: avgScore,
+        );
   }
 
   /// Called when learner skips session feedback to proceed to celebration with standard rewards
@@ -671,14 +769,16 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     }
     final avgScore = quizCount > 0 ? (totalScore / quizCount) : null;
 
-    ref.read(journeyCompleteProvider.notifier).triggerEvent(
-      sessionId: session.sessionId,
-      topic: session.topic,
-      totalSteps: session.steps.length,
-      totalXp: session.xpEarned,
-      bonusXp: 100,
-      averageQuizScore: avgScore,
-    );
+    ref
+        .read(journeyCompleteProvider.notifier)
+        .triggerEvent(
+          sessionId: session.sessionId,
+          topic: session.topic,
+          totalSteps: session.steps.length,
+          totalXp: session.xpEarned,
+          bonusXp: 100,
+          averageQuizScore: avgScore,
+        );
   }
 
   /// Displays the Journey Complete celebration modal with summary metrics and stats.
@@ -697,14 +797,16 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     }
     final avgScore = quizCount > 0 ? (totalScore / quizCount) : null;
 
-    ref.read(journeyCompleteProvider.notifier).triggerEvent(
-      sessionId: session.sessionId,
-      topic: session.topic,
-      totalSteps: session.steps.length,
-      totalXp: session.xpEarned,
-      bonusXp: 0,
-      averageQuizScore: avgScore,
-    );
+    ref
+        .read(journeyCompleteProvider.notifier)
+        .triggerEvent(
+          sessionId: session.sessionId,
+          topic: session.topic,
+          totalSteps: session.steps.length,
+          totalXp: session.xpEarned,
+          bonusXp: 0,
+          averageQuizScore: avgScore,
+        );
   }
 
   /// Failsafe invoked when the Journey Complete celebration is dismissed.
@@ -713,7 +815,9 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     final session = state.session;
     if (session == null || session.steps.isEmpty) return;
 
-    final completedSteps = session.steps.map((s) => s.copyWith(status: 'complete')).toList();
+    final completedSteps = session.steps
+        .map((s) => s.copyWith(status: 'complete'))
+        .toList();
     final fullyCompletedSession = session.copyWith(
       stepsCompleted: session.steps.length,
       steps: completedSteps,
@@ -721,12 +825,14 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     state = state.copyWith(session: fullyCompletedSession);
 
     // Sync progress with learning history list
-    ref.read(sessionsProvider.notifier).updateSessionProgress(
-      sessionId: session.sessionId,
-      stepsCompleted: session.steps.length,
-      xpEarned: fullyCompletedSession.xpEarned,
-      isComplete: true,
-    );
+    ref
+        .read(sessionsProvider.notifier)
+        .updateSessionProgress(
+          sessionId: session.sessionId,
+          stepsCompleted: session.steps.length,
+          xpEarned: fullyCompletedSession.xpEarned,
+          isComplete: true,
+        );
 
     // Reconcile with server silently in background
     loadSession(session.sessionId, silent: true);
@@ -735,7 +841,8 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
   /// Regenerates the content for a specific step.
   Future<void> regenerateCurrentStep(int stepIndex) async {
     final session = state.session;
-    if (session == null || stepIndex < 0 || stepIndex >= session.steps.length) return;
+    if (session == null || stepIndex < 0 || stepIndex >= session.steps.length)
+      return;
 
     _isRegenerating = true;
     _isStepGenerationActive = true;
@@ -761,11 +868,12 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       followUpCount: 0,
     );
 
-    final updatedSteps = List<MilestoneStep>.from(session.steps)..[stepIndex] = clearedStep;
+    final updatedSteps = List<MilestoneStep>.from(session.steps)
+      ..[stepIndex] = clearedStep;
     final updatedSession = session.copyWith(steps: updatedSteps);
-    
+
     state = state.copyWith(session: updatedSession);
-    
+
     // 3. Re-fetch session to poll for newly generated content
     loadSession(session.sessionId, silent: true);
 
@@ -790,7 +898,8 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
         (step.userAnswers != null &&
             step.userAnswers!.isNotEmpty &&
             step.userAnswers!.values.any(
-                (v) => v != null && v.toString().trim().isNotEmpty));
+              (v) => v != null && v.toString().trim().isNotEmpty,
+            ));
   }
 
   void sendFollowUpChat(String content) {
@@ -802,11 +911,16 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     _wsService.sendChat(content);
   }
 
-  Future<void> loadSession(String sessionId, {bool fromStepComplete = false, bool silent = false}) async {
+  Future<void> loadSession(
+    String sessionId, {
+    bool fromStepComplete = false,
+    bool silent = false,
+  }) async {
     _apiFetchStopwatch.reset();
     _apiFetchStopwatch.start();
 
-    final isDifferentSession = state.session != null && state.session!.sessionId != sessionId;
+    final isDifferentSession =
+        state.session != null && state.session!.sessionId != sessionId;
 
     if (!silent) {
       if (isDifferentSession) {
@@ -834,7 +948,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       var response = await _service.fetchSessionById(sessionId);
       _apiFetchStopwatch.stop();
       _lastApiFetchMs = _apiFetchStopwatch.elapsedMilliseconds;
-      
+
       int stepIndex = response.currentStepIndex;
       // Safety check: ensure index is within bounds (stay on final milestone upon completion)
       if (response.steps.isNotEmpty && stepIndex >= response.steps.length) {
@@ -844,16 +958,25 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       // Preserve quiz results from local state ONLY when reloading the EXACT SAME session
       // and when the server response has empty quiz fields (prevents wiping submitted answers on session reload).
       final existingSession = state.session;
-      final bool isSameSession = existingSession != null && existingSession.sessionId == response.sessionId;
+      final bool isSameSession =
+          existingSession != null &&
+          existingSession.sessionId == response.sessionId;
 
       if (isSameSession && existingSession.steps.isNotEmpty) {
-        for (int i = 0; i < response.steps.length && i < existingSession.steps.length; i++) {
+        for (
+          int i = 0;
+          i < response.steps.length && i < existingSession.steps.length;
+          i++
+        ) {
           final localStep = existingSession.steps[i];
           final serverStep = response.steps[i];
 
-          final bool localHasQuiz = localStep.quizScore != null ||
-              (localStep.userAnswers != null && localStep.userAnswers!.isNotEmpty);
-          final bool serverLacksQuiz = serverStep.quizScore == null ||
+          final bool localHasQuiz =
+              localStep.quizScore != null ||
+              (localStep.userAnswers != null &&
+                  localStep.userAnswers!.isNotEmpty);
+          final bool serverLacksQuiz =
+              serverStep.quizScore == null ||
               serverStep.userAnswers == null ||
               serverStep.userAnswers!.isEmpty;
 
@@ -862,10 +985,14 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
               steps: List.from(response.steps)
                 ..[i] = serverStep.copyWith(
                   quizScore: serverStep.quizScore ?? localStep.quizScore,
-                  userAnswers: (serverStep.userAnswers != null && serverStep.userAnswers!.isNotEmpty)
+                  userAnswers:
+                      (serverStep.userAnswers != null &&
+                          serverStep.userAnswers!.isNotEmpty)
                       ? serverStep.userAnswers
                       : localStep.userAnswers,
-                  userFullAnswers: (serverStep.userFullAnswers != null && serverStep.userFullAnswers!.isNotEmpty)
+                  userFullAnswers:
+                      (serverStep.userFullAnswers != null &&
+                          serverStep.userFullAnswers!.isNotEmpty)
                       ? serverStep.userFullAnswers
                       : (localStep.userFullAnswers ?? localStep.userAnswers),
                 ),
@@ -884,7 +1011,9 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
         }
       }
 
-      debugPrint('📥 [Client API] Session payload retrieved in ${_lastApiFetchMs}ms (silent: $silent). Initiating UI render for Step $stepIndex...');
+      debugPrint(
+        '📥 [Client API] Session payload retrieved in ${_lastApiFetchMs}ms (silent: $silent). Initiating UI render for Step $stepIndex...',
+      );
 
       _uiRenderStopwatch.reset();
       _uiRenderStopwatch.start();
@@ -940,7 +1069,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
 ╚════════════════════════════════════════════════════════════════════''');
         }
       });
-      
+
       // Only connect to WebSocket if it's a new session load, to avoid double "plan" events
       // when refreshing the session data after step_complete or silent sync.
       if (!fromStepComplete && !silent) {
@@ -951,16 +1080,24 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       _stepTotalStopwatch.stop();
       _isStepGenerationActive = false;
       if (!silent) {
-        state = state.copyWith(isLoading: false, isSynthesizing: false, error: e.toString());
+        state = state.copyWith(
+          isLoading: false,
+          isSynthesizing: false,
+          error: e.toString(),
+        );
       }
     }
   }
 
   void setActiveStep(int index) {
-    if (state.session != null && index >= 0 && index < state.session!.steps.length) {
+    if (state.session != null &&
+        index >= 0 &&
+        index < state.session!.steps.length) {
       final step = state.session!.steps[index];
       if (step.tutorExplanation == null) {
-        debugPrint('🚀 [Client] Switching to ungenerated Step $index. Requesting backend generation...');
+        debugPrint(
+          '🚀 [Client] Switching to ungenerated Step $index. Requesting backend generation...',
+        );
         _currentTrackingStepIndex = index;
         _stepTotalStopwatch.reset();
         _stepTotalStopwatch.start();
@@ -968,7 +1105,8 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
         _backendStopwatch.start();
         _isStepGenerationActive = true;
 
-        final updatedCurating = Set<int>.from(state.curatingVideoSteps)..add(index);
+        final updatedCurating = Set<int>.from(state.curatingVideoSteps)
+          ..add(index);
         state = state.copyWith(
           activeStepIndex: index,
           isLoading: true,
@@ -981,14 +1119,18 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
         // start_step, the message is silently dropped and the loader spins forever.
         final session = state.session!;
         if (!_wsService.isConnected) {
-          debugPrint('🔌 [Client WS] Connection is closed. Reconnecting before sending start_step for Step $index...');
+          debugPrint(
+            '🔌 [Client WS] Connection is closed. Reconnecting before sending start_step for Step $index...',
+          );
           _wsService.connect(session.sessionId);
           // The WS will emit a "plan" event on connect; sendStartStep is handled there.
           // We return here to avoid a double start_step send.
           return;
         }
 
-        debugPrint('📤 [Client WS] Sending start_step for Step $index (connection already open)');
+        debugPrint(
+          '📤 [Client WS] Sending start_step for Step $index (connection already open)',
+        );
         _wsService.sendStartStep(index);
       } else {
         debugPrint('🔄 [Client] Switching to cached Step $index...');
@@ -999,7 +1141,9 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
 
         WidgetsBinding.instance.addPostFrameCallback((_) {
           _uiRenderStopwatch.stop();
-          debugPrint('🎨 [Client UI] Step $index UI rendered to screen in ${_uiRenderStopwatch.elapsedMilliseconds}ms (frame layout & paint)');
+          debugPrint(
+            '🎨 [Client UI] Step $index UI rendered to screen in ${_uiRenderStopwatch.elapsedMilliseconds}ms (frame layout & paint)',
+          );
         });
       }
     }
@@ -1018,6 +1162,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
   }
 }
 
-final activeSessionProvider = NotifierProvider<ActiveSessionNotifier, ActiveSessionState>(() {
-  return ActiveSessionNotifier();
-});
+final activeSessionProvider =
+    NotifierProvider<ActiveSessionNotifier, ActiveSessionState>(() {
+      return ActiveSessionNotifier();
+    });

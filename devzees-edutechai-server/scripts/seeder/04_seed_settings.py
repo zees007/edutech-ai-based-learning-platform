@@ -108,6 +108,11 @@ DEFAULT_SETTINGS = [
         "value": "5",
         "order_number": 130,
     },
+    {
+        "code": "FREE_MONTHLY_SESSION_LIMIT",
+        "value": "10",
+        "order_number": 140,
+    },
 ]
 
 

@@ -60,6 +60,7 @@ This document maps all privileges across the system, explains their functionalit
 | `ET_START_LEARNING_SESSION` | **Start Learning Session**. Initiate a new topic session. | ✅ | ✅ | ✅ | ✅ |
 | `ET_INTERACT_LEARNING_SESSION` | **Interact Learning Session**. Stream agent responses and chat. | ✅ | ✅ | ✅ | ✅ |
 | `ET_VIEW_LEARNING_HISTORY` | **View Learning History**. Access past saved sessions. | ✅ | ✅ | ✅ | ✅ |
+| `ET_VIEW_QUOTA` | **View Monthly Session Quota**. Access monthly session quota limits and remaining usage. | ✅ | ✅ | ✅ | ✅ |
 | `ET_ACCESS_VISUAL_MODE` | **Visual Learning Mode**. Unlock the Visual 🎬 mode with rich media-first explanations. | ✅ | ✅ | ✅ | ✅ |
 | `ET_ACCESS_DEEP_DIVE_MODE` | **Deep Dive Learning Mode**. Unlock the Deep Dive 🔬 mode with rigorous, research-level depth. | - | ✅ | ✅ | ✅ |
 | `ET_REGENERATE_STEP` | **Regenerate Step**. Re-generate a step's Socratic explanation, questions, and quiz with a fresh perspective. | - | ✅ | ✅ | ✅ |

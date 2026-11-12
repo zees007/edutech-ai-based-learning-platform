@@ -3,6 +3,7 @@ EduTechAI — Learning REST Endpoints
 
 REST API for managing learning sessions:
 - POST /api/learn — Start a new learning session
+- GET /api/sessions/quota — Get user monthly session quota
 - GET /api/sessions/{session_id} — Get session state & progress
 - POST /api/sessions/{session_id}/step/{step_index}/complete — Mark step done
 - POST /api/sessions/{session_id}/mode — Switch learning mode
@@ -26,6 +27,7 @@ from app.privileges_config import (
     ET_INTERACT_LEARNING_SESSION,
     ET_START_LEARNING_SESSION,
     ET_VIEW_LEARNING_HISTORY,
+    ET_VIEW_QUOTA,
     ET_ACCESS_DEEP_DIVE_MODE,
     ET_REGENERATE_STEP,
     ET_ACCESS_ACADEMIC_SEARCH,
@@ -36,12 +38,14 @@ from models.schemas import (
     LearningMode,
     LearningRequest,
     ModeChangeRequest,
+    SessionQuotaResponse,
     SessionResponse,
     StepStatus,
 )
 from models.shared_memory import SharedMemory
 from models.user_schemas import SearchDTO
 from services.session_manager import SessionManager
+from config import get_settings
 
 class FollowUpRequest(BaseModel):
     question: str
@@ -49,6 +53,7 @@ class FollowUpRequest(BaseModel):
 logger = logging.getLogger(__name__)
 router = APIRouter()
 session_manager = SessionManager()
+settings = get_settings()
 
 # ─── In-memory session store ─────────────────────────────────────
 _sessions: dict[str, SharedMemory] = {}
@@ -73,6 +78,35 @@ async def get_session_or_404(session_id: str) -> SharedMemory:
 
 # Backward-compatible alias
 get_session = get_session_or_404
+
+
+def get_user_tier_and_is_unlimited(user: User) -> tuple[str, bool]:
+    """
+    Determine the user's billing tier and whether they have unlimited sessions.
+    Evaluates role and subscription directly from the database entity, avoiding
+    fragile coupling to individual feature privileges.
+    """
+    active_role_names = {r.name.lower() for r in user.roles if not r.retired}
+
+    # 1. Admin role always gets unlimited sessions
+    if "admin" in active_role_names:
+        return "admin", True
+
+    # 2. Check active subscription record
+    if user.subscription and user.subscription.status == "active":
+        sub_tier = user.subscription.tier.lower()
+        if sub_tier in ("pro", "ultra"):
+            return sub_tier, True
+        if sub_tier == "free":
+            return "free", False
+
+    # 3. Fallback to assigned role if subscription record is missing or pending
+    if "ultra" in active_role_names:
+        return "ultra", True
+    if "pro" in active_role_names:
+        return "pro", True
+
+    return "free", False
 
 
 def _build_session_response(memory: SharedMemory) -> SessionResponse:
@@ -130,14 +164,14 @@ async def start_learning_session(
             )
 
     # 2. Enforce Monthly Session Quota for Free Tier
-    # Users with Deep Dive access are on Pro/Ultra tier → unlimited sessions
-    is_premium = has_privilege(current_user, ET_ACCESS_DEEP_DIVE_MODE)
-    if not is_premium:
+    tier, is_unlimited = get_user_tier_and_is_unlimited(current_user)
+    if not is_unlimited:
+        free_limit = settings.free_monthly_session_limit
         monthly_sessions = await session_manager.get_monthly_session_count(current_user.id)
-        if monthly_sessions >= 10:
+        if monthly_sessions >= free_limit:
             raise ForbiddenException(
                 error_code="SESSION_QUOTA_EXCEEDED",
-                errors="You have reached your limit of 10 free AI sessions this month. Upgrade to Pro for unlimited sessions."
+                errors=f"You have reached your limit of {free_limit} free AI sessions this month. Upgrade to Pro for unlimited sessions."
             )
 
     # Create SharedMemory for this session
@@ -208,6 +242,42 @@ async def start_learning_session(
         except Exception as e:
             logger.warning(f"Failed to cleanup cancelled session {memory.session_id}: {e}")
         raise
+
+
+@router.get(
+    "/sessions/quota",
+    response_model=SessionQuotaResponse,
+    dependencies=[Depends(require_privilege(ET_VIEW_QUOTA))],
+)
+async def get_session_quota(
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Retrieve the monthly AI session quota status for the authenticated user.
+    - Free tier: 10 sessions/month limit, returns used and remaining count.
+    - Pro / Ultra / Admin tier: unlimited sessions (is_unlimited=True).
+    """
+    tier, is_unlimited = get_user_tier_and_is_unlimited(current_user)
+    used = await session_manager.get_monthly_session_count(current_user.id)
+
+    if is_unlimited:
+        return SessionQuotaResponse(
+            tier=tier,
+            is_unlimited=True,
+            used=used,
+            limit=None,
+            remaining=None,
+        )
+
+    free_limit = settings.free_monthly_session_limit
+    remaining = max(0, free_limit - used)
+    return SessionQuotaResponse(
+        tier="free",
+        is_unlimited=False,
+        used=used,
+        limit=free_limit,
+        remaining=remaining,
+    )
 
 
 @router.get(
@@ -528,8 +598,8 @@ async def cancel_learning_session(
             errors="You do not have permission to cancel this session.",
         )
 
-    is_premium = has_privilege(current_user, ET_ACCESS_DEEP_DIVE_MODE)
-    if not is_premium:
+    tier, is_unlimited = get_user_tier_and_is_unlimited(current_user)
+    if not is_unlimited:
         await session_manager.record_session_usage(
             user_id=current_user.id,
             session_id=session_id,
@@ -558,12 +628,12 @@ async def cancel_learning_session(
     _sessions.pop(session_id, None)
 
     logger.info(
-        f"Session {session_id} cancelled by user {current_user.id} (deleted={deleted}, quota_consumed={not is_premium})"
+        f"Session {session_id} cancelled by user {current_user.id} (deleted={deleted}, quota_consumed={not is_unlimited})"
     )
 
     return {
         "message": f"Session '{session_id}' cancelled and cleaned up successfully.",
-        "quota_consumed": not is_premium,
+        "quota_consumed": not is_unlimited,
     }
 
 
