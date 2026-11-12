@@ -9,6 +9,7 @@
 //   if (perms.canExportPdf) { /* show PDF button */ }
 //   if (perms.has(PrivilegeCodes.etAccessDeepDiveMode)) { /* unlock deep dive */ }
 
+import '../../data/models/auth/user_current_profile_response.dart';
 import '../constants/app_config.dart';
 
 // ─── Privilege Code Constants ───────────────────────────────────────
@@ -78,14 +79,15 @@ abstract class PrivilegeCodes {
 }
 
 // ─── Permission Checker ─────────────────────────────────────────────
-/// Immutable checker built from the user's `privilegeCodes` list.
+/// Immutable checker built from the user's `privilegeCodes` list and optional profile.
 ///
 /// Every check automatically cascades through `ET_ALL` (super-admin bypass),
 /// so widgets never need to manually check for super-admin status.
 class PermissionChecker {
   final Set<String> _codes;
+  final UserCurrentProfileResponse? _user;
 
-  PermissionChecker(List<String> privilegeCodes)
+  PermissionChecker(List<String> privilegeCodes, [this._user])
       : _codes = Set<String>.from(privilegeCodes);
 
   /// Returns `true` if the user has the given privilege code, or is a super-admin.
@@ -94,6 +96,39 @@ class PermissionChecker {
   // ─── Admin ─────────────────────────────────────────────────────
   bool get isSuperAdmin => _codes.contains(PrivilegeCodes.etAll);
   bool get isAdmin => has(PrivilegeCodes.etFullAccessAdmin);
+
+  // ─── Tier & Membership Resolution ──────────────────────────────
+  /// Effective billing / membership tier ('admin', 'ultra', 'pro', or 'free').
+  ///
+  /// Priority:
+  /// 1. Super-admin or 'admin' in assigned roles -> 'admin'.
+  /// 2. Active subscription with status == 'active' -> tier from subscription ('ultra' or 'pro').
+  /// 3. Assigned database roles fallback ('ultra' or 'pro').
+  /// 4. Defaults to 'free'.
+  String get effectiveTier {
+    if (isSuperAdmin) return 'admin';
+    if (_user == null) return 'free';
+
+    final roles = _user.roles.map((r) => r.toLowerCase()).toList();
+    if (roles.contains('admin')) return 'admin';
+
+    final sub = _user.subscription;
+    final bool isSubActive = sub != null && sub.status.toLowerCase() == 'active';
+    if (isSubActive) {
+      final subTier = sub.tier.toLowerCase();
+      if (subTier == 'ultra' || subTier == 'pro') {
+        return subTier;
+      }
+    }
+
+    if (roles.contains('ultra')) return 'ultra';
+    if (roles.contains('pro')) return 'pro';
+
+    return 'free';
+  }
+
+  /// Whether the user is on an active premium tier (Pro, Ultra, or Admin).
+  bool get isPremium => effectiveTier != 'free';
 
   // ─── Account & User Management ──────────────────────────────────
   bool get canChangePassword => has(PrivilegeCodes.etChangePassword);
@@ -121,13 +156,17 @@ class PermissionChecker {
 
   // ─── Follow-Up Limit ───────────────────────────────────────────
   /// Returns the maximum follow-up questions allowed per step for this user.
-  /// Ultra users (with `ET_UNLIMITED_FOLLOW_UPS`) get `null` (no limit).
-  /// Pro users (with `ET_ACCESS_DEEP_DIVE_MODE`) get the Pro limit.
-  /// Free users get the Free limit.
+  /// Ultra and Admin users (or users with explicit [canUnlimitedFollowUps] privilege) get `null` (unlimited).
+  /// Pro users get [AppConfig.proFollowUpLimit].
+  /// Free users get [AppConfig.freeFollowUpLimit].
   /// Values are sourced from [AppConfig] (configurable via `--dart-define`).
   int? get followUpLimitPerStep {
-    if (canUnlimitedFollowUps) return null; // Unlimited
-    if (canAccessDeepDiveMode) return AppConfig.proFollowUpLimit;
+    if (isSuperAdmin || isAdmin || effectiveTier == 'ultra' || effectiveTier == 'admin' || canUnlimitedFollowUps) {
+      return null; // Unlimited
+    }
+    if (effectiveTier == 'pro') {
+      return AppConfig.proFollowUpLimit;
+    }
     return AppConfig.freeFollowUpLimit;
   }
 

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../../core/providers/auth_provider.dart';
 import '../../../../../core/providers/permission_provider.dart';
 import '../../../../../core/providers/session_quota_provider.dart';
 import '../../../../../core/theme/app_colors.dart';
@@ -52,18 +51,8 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        final authState = ref.read(authProvider);
-        final user = authState.user;
-        final roles = user?.roles ?? [];
-        final bool isAdmin = roles.any((r) => r.toLowerCase() == 'admin');
-        final String tier =
-            user?.subscription?.tier.toLowerCase() ??
-            (roles.any((r) => r.toLowerCase() == 'ultra')
-                ? 'ultra'
-                : (roles.any((r) => r.toLowerCase() == 'pro')
-                      ? 'pro'
-                      : 'free'));
-        final bool isFreeTier = !isAdmin && tier == 'free';
+        final perms = ref.read(permissionProvider);
+        final bool isFreeTier = perms.effectiveTier == 'free';
         final quotaState = ref.read(sessionQuotaProvider);
         if (isFreeTier && quotaState.quota == null && !quotaState.isLoading) {
           ref.read(sessionQuotaProvider.notifier).fetchQuota();
@@ -119,21 +108,11 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
   void _handleStartJourney() {
     final text = _promptController.text.trim();
     if (text.isNotEmpty) {
-      final authState = ref.read(authProvider);
-      final user = authState.user;
-      final roles = user?.roles ?? [];
-      final bool isAdmin = roles.any((r) => r.toLowerCase() == 'admin');
-      final String tier =
-          user?.subscription?.tier.toLowerCase() ??
-          (roles.any((r) => r.toLowerCase() == 'ultra')
-              ? 'ultra'
-              : (roles.any((r) => r.toLowerCase() == 'pro') ? 'pro' : 'free'));
+      final perms = ref.read(permissionProvider);
       final quotaState = ref.read(sessionQuotaProvider);
-      final bool isFreeTier =
-          !isAdmin &&
-          (quotaState.quota != null
-              ? !quotaState.quota!.isUnlimited
-              : tier == 'free');
+      final bool isFreeTier = quotaState.quota != null
+          ? !quotaState.quota!.isUnlimited
+          : perms.effectiveTier == 'free';
 
       if (isFreeTier &&
           quotaState.quota != null &&
@@ -281,6 +260,15 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
     );
   }
 
+  void _handleLockedModeSelected(String mode) {
+    CenterToast.showWarning(
+      context,
+      '$mode unlocks with Pro plan — upgrade to unlock multi-step deep research!',
+      title: 'Pro Feature',
+      icon: Icons.lock_outline_rounded,
+    );
+  }
+
   Widget _buildDropdownRow(bool isMobile) {
     final perms = ref.watch(permissionProvider);
     final Set<String> lockedModes = perms.canAccessDeepDiveMode
@@ -296,6 +284,8 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
             items: _modes,
             onChanged: (val) => setState(() => _selectedMode = val!),
             lockedItems: lockedModes,
+            lockedItemBadges: const {_deepDiveMode: 'PRO'},
+            onLockedTap: _handleLockedModeSelected,
           ),
           const SizedBox(height: 12),
           _buildCustomDropdown(
@@ -317,6 +307,8 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
             items: _modes,
             onChanged: (val) => setState(() => _selectedMode = val!),
             lockedItems: lockedModes,
+            lockedItemBadges: const {_deepDiveMode: 'PRO'},
+            onLockedTap: _handleLockedModeSelected,
           ),
         ),
         const SizedBox(width: 16),
@@ -338,6 +330,8 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
     required List<String> items,
     required ValueChanged<String?> onChanged,
     Set<String> lockedItems = const {},
+    Map<String, String> lockedItemBadges = const {},
+    void Function(String)? onLockedTap,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -416,8 +410,8 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
                                     ),
                                     const SizedBox(width: 3),
                                     Text(
-                                      'PRO',
-                                      style: TextStyle(
+                                      lockedItemBadges[item] ?? 'PRO',
+                                      style: const TextStyle(
                                         color: AppColors.accentAmber,
                                         fontSize: 10,
                                         fontWeight: FontWeight.w800,
@@ -433,12 +427,16 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
                     }).toList(),
                     onChanged: (val) {
                       if (lockedItems.contains(val)) {
-                        CenterToast.showWarning(
-                          context,
-                          'Deep Dive mode unlocks with Pro plan — go deeper into any topic!',
-                          title: 'Pro Feature',
-                          icon: Icons.lock_outline_rounded,
-                        );
+                        if (onLockedTap != null && val != null) {
+                          onLockedTap(val);
+                        } else {
+                          CenterToast.showWarning(
+                            context,
+                            '$val requires a plan upgrade.',
+                            title: 'Upgrade Required',
+                            icon: Icons.lock_outline_rounded,
+                          );
+                        }
                         return;
                       }
                       onChanged(val);
@@ -466,21 +464,10 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
     final isDark = AppColors.isDark;
     final expandedHeight = isMobile ? 280.0 : 340.0;
     final perms = ref.watch(permissionProvider);
-    final authState = ref.watch(authProvider);
-    final user = authState.user;
-    final roles = user?.roles ?? [];
-    final bool isAdmin = roles.any((r) => r.toLowerCase() == 'admin');
-    final String tier =
-        user?.subscription?.tier.toLowerCase() ??
-        (roles.any((r) => r.toLowerCase() == 'ultra')
-            ? 'ultra'
-            : (roles.any((r) => r.toLowerCase() == 'pro') ? 'pro' : 'free'));
     final quotaState = ref.watch(sessionQuotaProvider);
-    final bool isFreeTier =
-        !isAdmin &&
-        (quotaState.quota != null
-            ? !quotaState.quota!.isUnlimited
-            : tier == 'free');
+    final bool isFreeTier = quotaState.quota != null
+        ? !quotaState.quota!.isUnlimited
+        : perms.effectiveTier == 'free';
     final Set<String> lockedModes = perms.canAccessDeepDiveMode
         ? {}
         : {_deepDiveMode};
@@ -658,6 +645,8 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
                                   value: _selectedMode,
                                   items: _modes,
                                   lockedItems: lockedModes,
+                                  lockedItemBadges: const {_deepDiveMode: 'PRO'},
+                                  onLockedTap: _handleLockedModeSelected,
                                   isMobile: isMobile,
                                   onChanged: (val) =>
                                       setState(() => _selectedMode = val!),
@@ -824,6 +813,8 @@ class _CompactThemeDropdown extends StatefulWidget {
   final List<String> items;
   final ValueChanged<String?> onChanged;
   final Set<String> lockedItems;
+  final Map<String, String> lockedItemBadges;
+  final void Function(String)? onLockedTap;
   final bool isMobile;
 
   const _CompactThemeDropdown({
@@ -831,6 +822,8 @@ class _CompactThemeDropdown extends StatefulWidget {
     required this.items,
     required this.onChanged,
     this.lockedItems = const {},
+    this.lockedItemBadges = const {},
+    this.onLockedTap,
     this.isMobile = false,
   });
 
@@ -946,16 +939,16 @@ class _CompactThemeDropdownState extends State<_CompactThemeDropdown> {
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
-                            children: const [
-                              Icon(
+                            children: [
+                              const Icon(
                                 Icons.lock_rounded,
                                 size: 10,
                                 color: AppColors.accentAmber,
                               ),
-                              SizedBox(width: 3),
+                              const SizedBox(width: 3),
                               Text(
-                                'PRO',
-                                style: TextStyle(
+                                widget.lockedItemBadges[item] ?? 'PRO',
+                                style: const TextStyle(
                                   color: AppColors.accentAmber,
                                   fontSize: 9,
                                   fontWeight: FontWeight.w800,
@@ -971,12 +964,16 @@ class _CompactThemeDropdownState extends State<_CompactThemeDropdown> {
               }).toList(),
               onChanged: (val) {
                 if (widget.lockedItems.contains(val)) {
-                  CenterToast.showWarning(
-                    context,
-                    'Deep Dive mode unlocks with Pro plan — go deeper into any topic!',
-                    title: 'Pro Feature',
-                    icon: Icons.lock_outline_rounded,
-                  );
+                  if (widget.onLockedTap != null && val != null) {
+                    widget.onLockedTap!(val);
+                  } else {
+                    CenterToast.showWarning(
+                      context,
+                      '$val requires a plan upgrade.',
+                      title: 'Upgrade Required',
+                      icon: Icons.lock_outline_rounded,
+                    );
+                  }
                   return;
                 }
                 widget.onChanged(val);

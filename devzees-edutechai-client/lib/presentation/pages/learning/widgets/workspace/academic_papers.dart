@@ -6,6 +6,7 @@ import '../../../../../core/services/academic_service.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/text_styles.dart';
 import '../../../../../core/providers/permission_provider.dart';
+import '../../../../widgets/center_toast.dart';
 
 class AcademicPapers extends ConsumerStatefulWidget {
   final List<dynamic>? papers;
@@ -295,8 +296,13 @@ class _AcademicPapersState extends ConsumerState<AcademicPapers> {
             itemCount: _displayedPapers.length,
             itemBuilder: (context, index) {
               final paper = _displayedPapers[index];
-              final canAccessFullText = ref.watch(permissionProvider).canAccessFullTextResearch;
-              return _PaperCard(paper: paper, index: index, canAccessFullText: canAccessFullText);
+              final perms = ref.watch(permissionProvider);
+              return _PaperCard(
+                paper: paper,
+                index: index,
+                canAccessFullText: perms.canAccessFullTextResearch,
+                userTier: perms.effectiveTier,
+              );
             },
           ),
       ],
@@ -308,8 +314,14 @@ class _PaperCard extends StatefulWidget {
   final dynamic paper;
   final int index;
   final bool canAccessFullText;
+  final String userTier;
 
-  const _PaperCard({required this.paper, required this.index, required this.canAccessFullText});
+  const _PaperCard({
+    required this.paper,
+    required this.index,
+    required this.canAccessFullText,
+    required this.userTier,
+  });
 
   @override
   State<_PaperCard> createState() => _PaperCardState();
