@@ -6,6 +6,7 @@ import '../../../../../core/services/academic_service.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/text_styles.dart';
 import '../../../../../core/providers/permission_provider.dart';
+import '../../../../widgets/center_toast.dart';
 
 class AcademicPapers extends ConsumerStatefulWidget {
   final List<dynamic>? papers;
@@ -295,8 +296,13 @@ class _AcademicPapersState extends ConsumerState<AcademicPapers> {
             itemCount: _displayedPapers.length,
             itemBuilder: (context, index) {
               final paper = _displayedPapers[index];
-              final canAccessFullText = ref.watch(permissionProvider).canAccessFullTextResearch;
-              return _PaperCard(paper: paper, index: index, canAccessFullText: canAccessFullText);
+              final perms = ref.watch(permissionProvider);
+              return _PaperCard(
+                paper: paper,
+                index: index,
+                canAccessFullText: perms.canAccessFullTextResearch,
+                userTier: perms.effectiveTier,
+              );
             },
           ),
       ],
@@ -308,8 +314,14 @@ class _PaperCard extends StatefulWidget {
   final dynamic paper;
   final int index;
   final bool canAccessFullText;
+  final String userTier;
 
-  const _PaperCard({required this.paper, required this.index, required this.canAccessFullText});
+  const _PaperCard({
+    required this.paper,
+    required this.index,
+    required this.canAccessFullText,
+    required this.userTier,
+  });
 
   @override
   State<_PaperCard> createState() => _PaperCardState();
@@ -402,7 +414,9 @@ class _PaperCardState extends State<_PaperCard> {
 
     if (!widget.canAccessFullText) {
       actionIcon = Icons.lock_rounded;
-      actionTooltip = 'Unlock Full Text Research with ULTRA';
+      actionTooltip = widget.userTier == 'pro'
+          ? 'Upgrade to Ultra to unlock Full Text Research'
+          : 'Unlock Full Text Research with Ultra';
     }
 
     // Extract summary with comprehensive fallback keys
@@ -854,6 +868,12 @@ class _PaperCardState extends State<_PaperCard> {
                     child: InkWell(
                       onTap: () {
                         if (!widget.canAccessFullText) {
+                          CenterToast.showWarning(
+                            context,
+                            'Full Text Research is an Ultra feature. Upgrade your plan to unlock complete papers and direct PDFs.',
+                            title: 'Ultra Feature',
+                            icon: Icons.lock_outline_rounded,
+                          );
                           context.push('/subscription');
                           return;
                         }
@@ -894,13 +914,29 @@ class _PaperCardState extends State<_PaperCard> {
                           children: [
                             if (!widget.canAccessFullText) ...[
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 5,
+                                  vertical: 2,
+                                ),
                                 margin: const EdgeInsets.only(right: 6),
                                 decoration: BoxDecoration(
-                                  gradient: AppColors.primaryGradient,
+                                  gradient: const LinearGradient(
+                                    colors: [
+                                      AppColors.accentViolet,
+                                      AppColors.accentPink,
+                                    ],
+                                  ),
                                   borderRadius: BorderRadius.circular(4),
                                 ),
-                                child: Text('ULTRA', style: AppTextStyles.badge.copyWith(fontSize: 8, color: Colors.white, fontWeight: FontWeight.bold)),
+                                child: Text(
+                                  'ULTRA',
+                                  style: AppTextStyles.badge.copyWith(
+                                    fontSize: 8.5,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
                               ),
                             ],
                             Icon(

@@ -251,6 +251,36 @@ void main() {
       expect(tutorIcon.showHalo, isFalse);
     });
 
+    testWidgets('NeuralInferenceLoader renders Cancel Journey button and triggers onCancel', (tester) async {
+      tester.view.physicalSize = const Size(400, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      bool cancelled = false;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: NeuralInferenceLoader(
+              title: 'Synthesizing Step 1: Python',
+              subtitle: 'Agents working...',
+              onCancel: () {
+                cancelled = true;
+              },
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('Cancel'), findsOneWidget);
+      await tester.tap(find.text('Cancel'));
+      await tester.pump();
+      expect(cancelled, isTrue);
+    });
+
     testWidgets('MilestoneRoadmapStepper in mobile width auto-scrolls to center active step cleanly without edge overlays', (tester) async {
       tester.view.physicalSize = const Size(360, 800);
       tester.view.devicePixelRatio = 1.0;

@@ -7,6 +7,7 @@ import '../services/api_client.dart';
 import 'active_session_provider.dart';
 import 'learning_provider.dart';
 import 'gamification_provider.dart';
+import 'session_quota_provider.dart';
 
 final authServiceProvider = Provider<AuthService>((ref) {
   return AuthService();
@@ -93,6 +94,7 @@ class AuthNotifier extends Notifier<AuthState> {
     ref.invalidate(sessionsProvider);
     ref.invalidate(gamificationEventProvider);
     ref.invalidate(journeyCompleteProvider);
+    ref.invalidate(sessionQuotaProvider);
   }
 
   /// Restores session on cold boot or browser refresh (F5) by verifying the HTTP-only
@@ -107,6 +109,7 @@ class AuthNotifier extends Notifier<AuthState> {
           isLoading: false,
           clearError: true,
         );
+        ref.read(sessionQuotaProvider.notifier).fetchQuota();
         return true;
       }
     } catch (_) {
@@ -146,6 +149,7 @@ class AuthNotifier extends Notifier<AuthState> {
           isLoading: false,
           clearError: true,
         );
+        ref.read(sessionQuotaProvider.notifier).fetchQuota();
 
         return true;
       }

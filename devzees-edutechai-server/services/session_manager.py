@@ -17,7 +17,12 @@ from datetime import datetime
 from sqlalchemy import delete, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from models.db_models import GamificationRecord, SessionRecord, StepProgress
+from models.db_models import (
+    GamificationRecord,
+    SessionRecord,
+    SessionUsageLog,
+    StepProgress,
+)
 from models.shared_memory import SharedMemory
 from models.user_schemas import SearchDTO
 from services.database import get_db_session
@@ -33,10 +38,23 @@ class SessionManager:
     `state_json` column, enabling complete session recovery on reconnect.
     """
 
+    _cancelled_session_ids: set[str] = set()
+
+    @classmethod
+    def mark_cancelled(cls, session_id: str) -> None:
+        cls._cancelled_session_ids.add(session_id)
+
+    @classmethod
+    def is_cancelled(cls, session_id: str) -> bool:
+        return session_id in cls._cancelled_session_ids
+
     async def create_session(
         self, memory: SharedMemory, user_id: str | None = None
-    ) -> SessionRecord:
+    ) -> SessionRecord | None:
         """Persist a new learning session to the database associated with a user."""
+        if self.is_cancelled(memory.session_id):
+            logger.info(f"[SessionManager.create_session] Session {memory.session_id} is cancelled. Discarding persistence.")
+            return None
         effective_user_id = user_id or getattr(memory, "user_id", None)
         if not effective_user_id:
             raise ValueError("user_id is required to create a learning session.")
@@ -85,16 +103,43 @@ class SessionManager:
             return record
 
     async def get_monthly_session_count(self, user_id: str) -> int:
-        """Count how many sessions the user created in the current calendar month."""
+        """Count active sessions + consumed cancelled sessions for the current calendar month."""
         now = datetime.utcnow()
         start_of_month = datetime(now.year, now.month, 1)
         async with get_db_session() as db:
-            query = select(func.count(SessionRecord.id)).where(
+            # 1. Count active sessions created this month
+            query_sessions = select(func.count(SessionRecord.id)).where(
                 SessionRecord.user_id == user_id,
-                SessionRecord.created_at >= start_of_month
+                SessionRecord.created_at >= start_of_month,
             )
-            res = await db.execute(query)
-            return res.scalar_one() or 0
+            res_sessions = await db.execute(query_sessions)
+            active_count = res_sessions.scalar_one() or 0
+
+            # 2. Count consumed sessions logged this month (e.g. cancelled during active compute)
+            query_logs = select(func.count(SessionUsageLog.id)).where(
+                SessionUsageLog.user_id == user_id,
+                SessionUsageLog.created_at >= start_of_month,
+            )
+            res_logs = await db.execute(query_logs)
+            consumed_count = res_logs.scalar_one() or 0
+
+            return active_count + consumed_count
+
+    async def record_session_usage(
+        self, user_id: str, session_id: str, action: str = "cancelled_in_synthesis"
+    ) -> None:
+        """Record a session usage entry so it continues to count against the monthly quota."""
+        async with get_db_session() as db:
+            log_entry = SessionUsageLog(
+                user_id=user_id,
+                session_id=session_id,
+                action=action,
+            )
+            db.add(log_entry)
+            await db.commit()
+            logger.info(
+                f"Recorded session usage log for user={user_id} session={session_id} (action={action})"
+            )
 
     async def get_session(self, session_id: str) -> SharedMemory | None:
         """Retrieve a session from the database and reconstruct SharedMemory."""
@@ -130,6 +175,10 @@ class SessionManager:
         session_id = memory.session_id
         logger.debug(f"[SessionManager.update_session] START session={session_id} steps={len(memory.steps)}")
 
+        if self.is_cancelled(session_id):
+            logger.info(f"[SessionManager.update_session] Session {session_id} is cancelled. Discarding update.")
+            return
+
         async with get_db_session() as db:
             # ── 1. Fetch SessionRecord ───────────────────────────────────
             t0 = time.perf_counter()
@@ -140,8 +189,7 @@ class SessionManager:
             logger.debug(f"[SessionManager.update_session] session_record fetch: {(time.perf_counter()-t0)*1000:.1f}ms")
 
             if record is None:
-                logger.warning(f"[SessionManager.update_session] Session {session_id} not found — creating instead.")
-                await self.create_session(memory)
+                logger.warning(f"[SessionManager.update_session] Session {session_id} not found in DB (cancelled or deleted). Skipping update.")
                 return
 
             if memory.user_id and not record.user_id:
@@ -310,25 +358,32 @@ class SessionManager:
         Delete a session and all its associated progress and gamification records.
         If user_id is provided, guarantees ownership before deletion.
         """
+        self.mark_cancelled(session_id)
         async with get_db_session() as db:
             query = select(SessionRecord).where(SessionRecord.session_id == session_id)
-            if user_id:
-                query = query.where(SessionRecord.user_id == user_id)
-
             res = await db.execute(query)
             record = res.scalar_one_or_none()
-            if not record:
-                return False
 
-            # Delete related step progress and gamification
+            # Always purge related step progress and gamification records regardless
             await db.execute(
                 delete(StepProgress).where(StepProgress.session_id == session_id)
             )
             await db.execute(
                 delete(GamificationRecord).where(GamificationRecord.session_id == session_id)
             )
+
+            if not record:
+                logger.info(f"Session {session_id} not found in DB to delete (already deleted or never persisted).")
+                return False
+
+            if user_id and record.user_id and record.user_id != user_id:
+                logger.warning(
+                    f"delete_session: user {user_id} unauthorized to delete session {session_id} owned by {record.user_id}"
+                )
+                return False
+
             await db.delete(record)
-            logger.info(f"Session {session_id} successfully deleted.")
+            logger.info(f"Session {session_id} successfully deleted from database.")
             return True
 
     async def save_step_progress(

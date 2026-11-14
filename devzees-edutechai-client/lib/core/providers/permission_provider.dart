@@ -20,5 +20,8 @@ final permissionProvider = Provider<PermissionChecker>((ref) {
   // on F5 refresh evaluate immediately without waiting for FutureProvider.
   final authUser = ref.watch(authProvider.select((s) => s.user));
   final userProfile = authUser ?? ref.watch(userProvider).asData?.value;
-  return PermissionChecker(userProfile?.privilegeCodes ?? []);
+  return PermissionChecker(
+    userProfile?.privilegeCodes ?? [],
+    userProfile,
+  );
 });

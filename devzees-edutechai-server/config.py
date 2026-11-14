@@ -111,6 +111,15 @@ class Settings(BaseSettings):
         except Exception:
             return 5
 
+    # ─── Monthly Session Quota Limits ────────────────────────────
+    @property
+    def free_monthly_session_limit(self) -> int:
+        try:
+            from services.setting_service import SettingService
+            return int(SettingService.get_value("FREE_MONTHLY_SESSION_LIMIT", "10"))
+        except Exception:
+            return 10
+
 
     # ─── Academic APIs ───────────────────────────────────────────
     openalex_email: str = ""

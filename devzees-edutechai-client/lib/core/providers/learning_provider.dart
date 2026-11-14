@@ -148,6 +148,28 @@ class SessionsNotifier extends Notifier<SessionsState> {
     }
   }
 
+  Future<void> cancelSession(String sessionId) async {
+    try {
+      await _service.cancelSession(sessionId);
+    } catch (e) {
+      debugPrint("Failed to cancel session on server: $e");
+    }
+    // Always remove from list locally so UI updates immediately
+    final updatedItems = state.items.where((s) => s.sessionId != sessionId).toList();
+    state = state.copyWith(
+      items: updatedItems,
+      total: state.total > 0 ? state.total - 1 : 0,
+    );
+  }
+
+  void removeSessionLocally(String sessionId) {
+    final updatedItems = state.items.where((s) => s.sessionId != sessionId).toList();
+    state = state.copyWith(
+      items: updatedItems,
+      total: state.total > 0 ? state.total - 1 : 0,
+    );
+  }
+
   /// Prepend a newly started journey session to the history list immediately.
   void prependSession(SessionModel newSession) {
     final existingFiltered = state.items.where((s) => s.sessionId != newSession.sessionId).toList();

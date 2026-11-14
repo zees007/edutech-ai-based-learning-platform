@@ -13,6 +13,9 @@ import 'recent_journey_card.dart';
 import 'recent_journey_skeleton.dart';
 import '../workspace/active_learning_workspace.dart';
 import 'neural_inference_loader.dart';
+import '../../../../../core/providers/auth_provider.dart';
+import '../../../../../presentation/widgets/center_toast.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../../../presentation/widgets/theme_toggle_button.dart';
 import '../../../../widgets/promo_announcement_bar.dart';
 
@@ -28,6 +31,233 @@ class LearningMainContent extends ConsumerStatefulWidget {
 
 class _LearningMainContentState extends ConsumerState<LearningMainContent> {
   bool _isPromoDismissed = false;
+  bool _isCancelling = false;
+  bool _isConfirmationModalOpen = false;
+
+  Future<bool?> _showCancelConfirmationDialog({
+    required BuildContext context,
+    required bool isPremium,
+  }) {
+    final isDark = context.isDarkMode;
+    final isMobile = MediaQuery.of(context).size.width < 600;
+    final accentColor = isPremium
+        ? (isDark ? AppColors.primary : AppColors.purple)
+        : const Color(0xFFF59E0B);
+
+    return showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) {
+        return AlertDialog(
+          backgroundColor: isDark ? AppColors.canvasBackground : Colors.white,
+          insetPadding: EdgeInsets.symmetric(
+            horizontal: isMobile ? 16 : 24,
+            vertical: 24,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: BorderSide(
+              color: (isDark ? AppColors.primary : AppColors.purple).withValues(alpha: 0.3),
+              width: 1.5,
+            ),
+          ),
+          titlePadding: EdgeInsets.fromLTRB(
+            isMobile ? 16 : 20,
+            isMobile ? 16 : 20,
+            isMobile ? 16 : 20,
+            12,
+          ),
+          contentPadding: EdgeInsets.symmetric(
+            horizontal: isMobile ? 16 : 20,
+          ),
+          actionsPadding: EdgeInsets.fromLTRB(
+            isMobile ? 16 : 20,
+            16,
+            isMobile ? 16 : 20,
+            isMobile ? 16 : 20,
+          ),
+          title: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: accentColor.withValues(alpha: 0.12),
+                ),
+                child: Icon(
+                  isPremium ? Icons.stop_circle_outlined : Icons.warning_amber_rounded,
+                  color: accentColor,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  isPremium ? 'Discard Journey?' : 'Cancel Journey?',
+                  style: AppTextStyles.h4.copyWith(
+                    fontWeight: FontWeight.w700,
+                    fontSize: isMobile ? 16 : 18,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          content: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 400),
+            child: isPremium
+                ? Text(
+                    'Are you sure you want to stop? The current milestone synthesis and notes will be discarded.',
+                    style: AppTextStyles.body2.copyWith(
+                      color: isDark ? const Color(0xFF9CA3AF) : AppColors.textSecondary,
+                      height: 1.45,
+                      fontSize: isMobile ? 13 : 14,
+                    ),
+                  )
+                : _ShiningWarningText(
+                    text: 'AI compute has been allocated for this session. Cancelling now will still count as 1 of your 10 free monthly sessions.',
+                    isDark: isDark,
+                    isMobile: isMobile,
+                  ),
+          ),
+          actions: [
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.of(ctx).pop(false),
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(
+                        color: isDark
+                            ? Colors.white.withValues(alpha: 0.2)
+                            : AppColors.border,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    child: Text(
+                      'Keep Generating',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: AppTextStyles.button.copyWith(
+                        fontSize: isMobile ? 12 : 13,
+                        fontWeight: FontWeight.w600,
+                        color: isDark ? Colors.white70 : AppColors.textSecondary,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: MouseRegion(
+                    cursor: SystemMouseCursors.click,
+                    child: GestureDetector(
+                      onTap: () => Navigator.of(ctx).pop(true),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          gradient: AppColors.primaryGradient,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.primary.withValues(alpha: 0.35),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Text(
+                          isPremium ? 'Discard Journey' : 'Cancel Anyway',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.inter(
+                            fontSize: isMobile ? 12 : 13,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _handleCancelJourney(BuildContext context, bool isPhase2) async {
+    if (!isPhase2) {
+      // Phase 1: Instant abort during initial milestone planning
+      setState(() => _isCancelling = true);
+      try {
+        await ref.read(activeSessionProvider.notifier).cancelSessionCreation(isPhase1: true);
+        if (context.mounted) {
+          CenterToast.showInfo(
+            context,
+            'Journey creation cancelled.',
+            title: 'Cancelled',
+            duration: const Duration(seconds: 3),
+          );
+        }
+      } finally {
+        if (mounted) setState(() => _isCancelling = false);
+      }
+      return;
+    }
+
+    // Phase 2: Active synthesis
+    final user = ref.read(authProvider).user;
+    final tier = user?.subscription?.tier.toLowerCase() ?? 'free';
+    final isPremium = tier == 'pro' || tier == 'ultra' || (user?.roles.contains('Admin') ?? false);
+
+    // Hold the loader on screen while modal is presented
+    setState(() => _isConfirmationModalOpen = true);
+    final confirmed = await _showCancelConfirmationDialog(
+      context: context,
+      isPremium: isPremium,
+    );
+
+    if (confirmed == true && context.mounted) {
+      // Transition atomically to cancelling state so workspace never flashes
+      setState(() {
+        _isConfirmationModalOpen = false;
+        _isCancelling = true;
+      });
+      try {
+        await ref.read(activeSessionProvider.notifier).cancelSessionCreation(isPhase1: false);
+        if (context.mounted) {
+          if (isPremium) {
+            CenterToast.showSuccess(
+              context,
+              'Journey discarded successfully.',
+              title: 'Journey Discarded',
+              duration: const Duration(seconds: 3),
+            );
+          } else {
+            CenterToast.showWarning(
+              context,
+              'Journey cancelled. Counted towards your monthly quota.',
+              title: 'Session Cancelled',
+              duration: const Duration(seconds: 4),
+            );
+          }
+        }
+      } finally {
+        if (mounted) setState(() => _isCancelling = false);
+      }
+    } else {
+      if (mounted) {
+        setState(() => _isConfirmationModalOpen = false);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,9 +278,9 @@ class _LearningMainContentState extends ConsumerState<LearningMainContent> {
     final activeState = ref.watch(activeSessionProvider);
 
     if (activeState.session != null || activeState.isLoading) {
-      if (activeState.isLoading) {
+      if (activeState.isLoading || _isConfirmationModalOpen || _isCancelling) {
         // When switching session from learning history, display the theme gradient spinner in a card
-        if (!activeState.isSynthesizing) {
+        if (!activeState.isSynthesizing && !_isConfirmationModalOpen) {
           final isDark = AppColors.isDark;
           return Center(
             child: Container(
@@ -130,7 +360,13 @@ class _LearningMainContentState extends ConsumerState<LearningMainContent> {
           }
         }
 
-        return NeuralInferenceLoader(title: title, subtitle: subtitle);
+        final isPhase2 = activeState.session != null;
+        return NeuralInferenceLoader(
+          title: title,
+          subtitle: subtitle,
+          isCancelling: _isCancelling,
+          onCancel: () => _handleCancelJourney(context, isPhase2),
+        );
       }
       return ActiveLearningWorkspace(
         key: ValueKey('active_workspace_${context.isDarkMode}'),
@@ -689,4 +925,81 @@ class _AmbientBackgroundPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _AmbientBackgroundPainter oldDelegate) =>
       oldDelegate.isDark != isDark;
+}
+
+class _ShiningWarningText extends StatefulWidget {
+  final String text;
+  final bool isDark;
+  final bool isMobile;
+
+  const _ShiningWarningText({
+    required this.text,
+    required this.isDark,
+    required this.isMobile,
+  });
+
+  @override
+  State<_ShiningWarningText> createState() => _ShiningWarningTextState();
+}
+
+class _ShiningWarningTextState extends State<_ShiningWarningText>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _shimmerController;
+
+  @override
+  void initState() {
+    super.initState();
+    _shimmerController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2600),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _shimmerController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final baseColor =
+        widget.isDark ? const Color(0xFFF87171) : const Color(0xFFDC2626);
+    final shineColor =
+        widget.isDark ? const Color(0xFFFFFBEB) : const Color(0xFFEA580C);
+
+    return AnimatedBuilder(
+      animation: _shimmerController,
+      builder: (context, child) {
+        final progress = _shimmerController.value;
+        final start = -3.0 + progress * 6.0;
+
+        return ShaderMask(
+          blendMode: BlendMode.srcIn,
+          shaderCallback: (bounds) {
+            return LinearGradient(
+              begin: Alignment(start - 1.0, 0),
+              end: Alignment(start + 1.0, 0),
+              colors: [
+                baseColor,
+                shineColor,
+                baseColor,
+              ],
+              stops: const [0.0, 0.5, 1.0],
+            ).createShader(bounds);
+          },
+          child: child,
+        );
+      },
+      child: Text(
+        widget.text,
+        style: AppTextStyles.body2.copyWith(
+          color: baseColor,
+          fontWeight: FontWeight.w600,
+          height: 1.45,
+          fontSize: widget.isMobile ? 13 : 14,
+        ),
+      ),
+    );
+  }
 }

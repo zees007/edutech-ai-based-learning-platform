@@ -68,6 +68,10 @@ class LearningRequest(BaseModel):
         description="Education level for language calibration.",
         examples=["middle_school", "high_school", "undergraduate", "graduate", "general"],
     )
+    session_id: str | None = Field(
+        default=None,
+        description="Optional pre-assigned session ID for client tracking and cancellation.",
+    )
 
 
 class ModeChangeRequest(BaseModel):
@@ -385,6 +389,16 @@ class SessionResponse(BaseModel):
     xp_earned: int = 0
     steps_completed: int = 0
     conversation_history: list[ConversationTurn] = Field(default_factory=list)
+
+
+class SessionQuotaResponse(BaseModel):
+    """Monthly session quota status for the authenticated user."""
+
+    tier: str = Field(description="User's current subscription tier (free, pro, ultra).")
+    is_unlimited: bool = Field(description="Whether the user has unlimited sessions.")
+    used: int = Field(description="Number of AI sessions used/consumed this month.")
+    limit: int | None = Field(default=None, description="Monthly session limit (10 for free, null if unlimited).")
+    remaining: int | None = Field(default=None, description="Remaining sessions available this month.")
 
 
 class HealthResponse(BaseModel):

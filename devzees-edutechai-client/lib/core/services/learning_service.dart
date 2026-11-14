@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import '../../data/models/learning/session_model.dart';
 import '../../data/models/learning/session_response.dart';
+import '../../data/models/learning/session_quota.dart';
 import '../../data/models/learning/quiz_result.dart';
 import '../constants/api_constants.dart';
 import 'api_client.dart';
@@ -38,6 +39,15 @@ class LearningService {
     }
   }
 
+  Future<SessionQuota> fetchSessionQuota() async {
+    try {
+      final response = await _dio.get(ApiConstants.sessionQuota);
+      return SessionQuota.fromJson(response.data as Map<String, dynamic>);
+    } catch (e) {
+      throw Exception('Failed to fetch session quota: $e');
+    }
+  }
+
   Future<SessionResponse> fetchSessionById(String sessionId) async {
     try {
       final response = await _dio.get(ApiConstants.sessionDetails(sessionId));
@@ -55,7 +65,19 @@ class LearningService {
     }
   }
 
-  Future<String> sendFollowUpQuestion(String sessionId, int stepIndex, String question) async {
+  Future<void> cancelSession(String sessionId) async {
+    try {
+      await _dio.post(ApiConstants.cancelSession(sessionId));
+    } catch (e) {
+      throw Exception('Failed to cancel learning session: $e');
+    }
+  }
+
+  Future<String> sendFollowUpQuestion(
+    String sessionId,
+    int stepIndex,
+    String question,
+  ) async {
     try {
       final response = await _dio.post(
         ApiConstants.followUpQuestion(sessionId, stepIndex),
@@ -71,38 +93,52 @@ class LearningService {
     required String topic,
     required String mode,
     required String level,
+    String? sessionId,
+    CancelToken? cancelToken,
   }) async {
     try {
+      final data = <String, dynamic>{
+        'topic': topic,
+        'learning_mode': mode
+            .replaceAll(RegExp(r'[\u{1F300}-\u{1F9FF}]', unicode: true), '')
+            .replaceAll(RegExp(r'[^\w\s-]'), '')
+            .trim()
+            .toLowerCase()
+            .replaceAll(RegExp(r'\s+'), '_')
+            .replaceAll('-', '_'),
+        'student_level': level
+            .replaceAll(RegExp(r'[\u{1F300}-\u{1F9FF}]', unicode: true), '')
+            .replaceAll(RegExp(r'[^\w\s-]'), '')
+            .trim()
+            .toLowerCase()
+            .replaceAll(RegExp(r'\s+'), '_'),
+      };
+      if (sessionId != null) {
+        data['session_id'] = sessionId;
+      }
       final response = await _dio.post(
         ApiConstants.learn,
-        data: {
-          'topic': topic,
-          'learning_mode': mode
-              .replaceAll(RegExp(r'[\u{1F300}-\u{1F9FF}]', unicode: true), '')
-              .replaceAll(RegExp(r'[^\w\s-]'), '')
-              .trim()
-              .toLowerCase()
-              .replaceAll(RegExp(r'\s+'), '_')
-              .replaceAll('-', '_'),
-          'student_level': level
-              .replaceAll(RegExp(r'[\u{1F300}-\u{1F9FF}]', unicode: true), '')
-              .replaceAll(RegExp(r'[^\w\s-]'), '')
-              .trim()
-              .toLowerCase()
-              .replaceAll(RegExp(r'\s+'), '_'),
-        },
+        data: data,
+        cancelToken: cancelToken,
       );
       return SessionResponse.fromJson(response.data);
     } catch (e) {
+      if (e is DioException && CancelToken.isCancel(e)) {
+        throw const FormatException('Session creation was cancelled');
+      }
       throw Exception('Failed to start journey: $e');
     }
   }
 
-  Future<QuizResult> submitQuiz(String sessionId, int stepIndex, Map<int, String> answers) async {
+  Future<QuizResult> submitQuiz(
+    String sessionId,
+    int stepIndex,
+    Map<int, String> answers,
+  ) async {
     try {
       // Dio/jsonEncode requires Map keys to be Strings
       final stringKeyAnswers = answers.map((k, v) => MapEntry(k.toString(), v));
-      
+
       final response = await _dio.post(
         ApiConstants.quizSubmit,
         data: {
@@ -117,7 +153,10 @@ class LearningService {
     }
   }
 
-  Future<Map<String, dynamic>> completeStep(String sessionId, int stepIndex) async {
+  Future<Map<String, dynamic>> completeStep(
+    String sessionId,
+    int stepIndex,
+  ) async {
     try {
       final response = await _dio.post(
         ApiConstants.completeStep(sessionId, stepIndex),
@@ -130,9 +169,7 @@ class LearningService {
 
   Future<void> regenerateStep(String sessionId, int stepIndex) async {
     try {
-      await _dio.post(
-        ApiConstants.regenerateStep(sessionId, stepIndex),
-      );
+      await _dio.post(ApiConstants.regenerateStep(sessionId, stepIndex));
     } catch (e) {
       throw Exception('Failed to regenerate step: $e');
     }

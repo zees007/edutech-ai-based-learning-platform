@@ -405,3 +405,26 @@ class SystemSetting(Base):
     def __repr__(self) -> str:
         return f"<SystemSetting {self.code}={self.value}>"
 
+
+class SessionUsageLog(Base):
+    """
+    Audit record for consumed sessions (e.g. sessions cancelled during active synthesis)
+    to ensure free-tier monthly session quotas are accurately enforced.
+    """
+
+    __tablename__ = "session_usage_logs"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    user_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    session_id: Mapped[str] = mapped_column(String(24), index=True, nullable=False)
+    action: Mapped[str] = mapped_column(String(50), nullable=False, default="cancelled_in_synthesis")
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, server_default=func.now()
+    )
+
+    def __repr__(self) -> str:
+        return f"<SessionUsageLog user={self.user_id} session={self.session_id} action={self.action}>"
+
+

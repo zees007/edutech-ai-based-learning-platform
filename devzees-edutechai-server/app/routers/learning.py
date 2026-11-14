@@ -3,6 +3,7 @@ EduTechAI — Learning REST Endpoints
 
 REST API for managing learning sessions:
 - POST /api/learn — Start a new learning session
+- GET /api/sessions/quota — Get user monthly session quota
 - GET /api/sessions/{session_id} — Get session state & progress
 - POST /api/sessions/{session_id}/step/{step_index}/complete — Mark step done
 - POST /api/sessions/{session_id}/mode — Switch learning mode
@@ -15,7 +16,7 @@ from __future__ import annotations
 import asyncio
 import logging
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Request
 
 from pydantic import BaseModel
 from agents.orchestrator import OrchestratorAgent
@@ -26,6 +27,7 @@ from app.privileges_config import (
     ET_INTERACT_LEARNING_SESSION,
     ET_START_LEARNING_SESSION,
     ET_VIEW_LEARNING_HISTORY,
+    ET_VIEW_QUOTA,
     ET_ACCESS_DEEP_DIVE_MODE,
     ET_REGENERATE_STEP,
     ET_ACCESS_ACADEMIC_SEARCH,
@@ -36,12 +38,14 @@ from models.schemas import (
     LearningMode,
     LearningRequest,
     ModeChangeRequest,
+    SessionQuotaResponse,
     SessionResponse,
     StepStatus,
 )
 from models.shared_memory import SharedMemory
 from models.user_schemas import SearchDTO
 from services.session_manager import SessionManager
+from config import get_settings
 
 class FollowUpRequest(BaseModel):
     question: str
@@ -49,9 +53,11 @@ class FollowUpRequest(BaseModel):
 logger = logging.getLogger(__name__)
 router = APIRouter()
 session_manager = SessionManager()
+settings = get_settings()
 
 # ─── In-memory session store ─────────────────────────────────────
 _sessions: dict[str, SharedMemory] = {}
+_cancelled_session_ids: set[str] = set()
 
 
 async def get_session_or_404(session_id: str) -> SharedMemory:
@@ -72,6 +78,35 @@ async def get_session_or_404(session_id: str) -> SharedMemory:
 
 # Backward-compatible alias
 get_session = get_session_or_404
+
+
+def get_user_tier_and_is_unlimited(user: User) -> tuple[str, bool]:
+    """
+    Determine the user's billing tier and whether they have unlimited sessions.
+    Evaluates role and subscription directly from the database entity, avoiding
+    fragile coupling to individual feature privileges.
+    """
+    active_role_names = {r.name.lower() for r in user.roles if not r.retired}
+
+    # 1. Admin role always gets unlimited sessions
+    if "admin" in active_role_names:
+        return "admin", True
+
+    # 2. Check active subscription record
+    if user.subscription and user.subscription.status == "active":
+        sub_tier = user.subscription.tier.lower()
+        if sub_tier in ("pro", "ultra"):
+            return sub_tier, True
+        if sub_tier == "free":
+            return "free", False
+
+    # 3. Fallback to assigned role if subscription record is missing or pending
+    if "ultra" in active_role_names:
+        return "ultra", True
+    if "pro" in active_role_names:
+        return "pro", True
+
+    return "free", False
 
 
 def _build_session_response(memory: SharedMemory) -> SessionResponse:
@@ -107,6 +142,7 @@ def _build_session_response(memory: SharedMemory) -> SessionResponse:
 )
 async def start_learning_session(
     request: LearningRequest,
+    http_request: Request,
     current_user: User = Depends(get_current_user),
 ):
     """
@@ -128,38 +164,120 @@ async def start_learning_session(
             )
 
     # 2. Enforce Monthly Session Quota for Free Tier
-    # Users with Deep Dive access are on Pro/Ultra tier → unlimited sessions
-    is_premium = has_privilege(current_user, ET_ACCESS_DEEP_DIVE_MODE)
-    if not is_premium:
+    tier, is_unlimited = get_user_tier_and_is_unlimited(current_user)
+    if not is_unlimited:
+        free_limit = settings.free_monthly_session_limit
         monthly_sessions = await session_manager.get_monthly_session_count(current_user.id)
-        if monthly_sessions >= 10:
+        if monthly_sessions >= free_limit:
             raise ForbiddenException(
                 error_code="SESSION_QUOTA_EXCEEDED",
-                errors="You have reached your limit of 10 free AI sessions this month. Upgrade to Pro for unlimited sessions."
+                errors=f"You have reached your limit of {free_limit} free AI sessions this month. Upgrade to Pro for unlimited sessions."
             )
 
     # Create SharedMemory for this session
-    memory = SharedMemory(
-        user_id=current_user.id,
-        topic=request.topic,
-        learning_mode=request.learning_mode,
-        student_level=request.student_level,
-    )
+    memory_kwargs = {
+        "user_id": current_user.id,
+        "topic": request.topic,
+        "learning_mode": request.learning_mode,
+        "student_level": request.student_level,
+    }
+    if request.session_id:
+        memory_kwargs["session_id"] = request.session_id
 
-    # Run the Orchestrator to create the learning plan
-    orchestrator = OrchestratorAgent()
-    await orchestrator.execute(memory)
+    memory = SharedMemory(**memory_kwargs)
 
-    # Store in-memory and persist to Supabase database
-    _sessions[memory.session_id] = memory
+    # Check if session was pre-cancelled before starting
+    if memory.session_id in _cancelled_session_ids:
+        logger.info(f"Session {memory.session_id} pre-cancelled before orchestrator. Aborting.")
+        _cancelled_session_ids.discard(memory.session_id)
+        raise BadRequestException(
+            error_code="SESSION_CANCELLED",
+            errors=f"Session '{memory.session_id}' was cancelled.",
+        )
+
     try:
-        await session_manager.create_session(memory, user_id=current_user.id)
-    except Exception as e:
-        logger.warning(f"Failed to persist session {memory.session_id} to DB: {e}")
+        # Run the Orchestrator to create the learning plan
+        orchestrator = OrchestratorAgent()
+        await orchestrator.execute(memory)
 
-    logger.info(f"Session {memory.session_id} created with {len(memory.steps)} steps")
+        # Check if cancelled during orchestrator execution
+        if memory.session_id in _cancelled_session_ids or await http_request.is_disconnected():
+            logger.info(f"Session {memory.session_id} cancelled during milestone creation. Discarding...")
+            _cancelled_session_ids.discard(memory.session_id)
+            _sessions.pop(memory.session_id, None)
+            raise BadRequestException(
+                error_code="SESSION_CANCELLED",
+                errors=f"Session '{memory.session_id}' was cancelled by user.",
+            )
 
-    return _build_session_response(memory)
+        # Store in-memory and persist to database
+        _sessions[memory.session_id] = memory
+        try:
+            await session_manager.create_session(memory, user_id=current_user.id)
+        except Exception as e:
+            logger.warning(f"Failed to persist session {memory.session_id} to DB: {e}")
+
+        # Check if cancelled right after DB persistence
+        if memory.session_id in _cancelled_session_ids or await http_request.is_disconnected():
+            logger.info(f"Session {memory.session_id} cancelled right after DB persistence. Cleaning up DB...")
+            _cancelled_session_ids.discard(memory.session_id)
+            _sessions.pop(memory.session_id, None)
+            try:
+                await session_manager.delete_session(memory.session_id, user_id=current_user.id)
+            except Exception as e:
+                logger.warning(f"Failed to delete cancelled session {memory.session_id}: {e}")
+            raise BadRequestException(
+                error_code="SESSION_CANCELLED",
+                errors=f"Session '{memory.session_id}' was cancelled by user.",
+            )
+
+        logger.info(f"Session {memory.session_id} created with {len(memory.steps)} steps")
+
+        return _build_session_response(memory)
+    except asyncio.CancelledError:
+        logger.info(f"Client disconnected during /learn for session {memory.session_id}. Cleaning up...")
+        _sessions.pop(memory.session_id, None)
+        try:
+            await session_manager.delete_session(memory.session_id, user_id=current_user.id)
+        except Exception as e:
+            logger.warning(f"Failed to cleanup cancelled session {memory.session_id}: {e}")
+        raise
+
+
+@router.get(
+    "/sessions/quota",
+    response_model=SessionQuotaResponse,
+    dependencies=[Depends(require_privilege(ET_VIEW_QUOTA))],
+)
+async def get_session_quota(
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Retrieve the monthly AI session quota status for the authenticated user.
+    - Free tier: 10 sessions/month limit, returns used and remaining count.
+    - Pro / Ultra / Admin tier: unlimited sessions (is_unlimited=True).
+    """
+    tier, is_unlimited = get_user_tier_and_is_unlimited(current_user)
+    used = await session_manager.get_monthly_session_count(current_user.id)
+
+    if is_unlimited:
+        return SessionQuotaResponse(
+            tier=tier,
+            is_unlimited=True,
+            used=used,
+            limit=None,
+            remaining=None,
+        )
+
+    free_limit = settings.free_monthly_session_limit
+    remaining = max(0, free_limit - used)
+    return SessionQuotaResponse(
+        tier="free",
+        is_unlimited=False,
+        used=used,
+        limit=free_limit,
+        remaining=remaining,
+    )
 
 
 @router.get(
@@ -450,17 +568,74 @@ async def delete_user_session(
     """
     Delete a learning session and associated progress records belonging to the current user.
     """
-    deleted = await session_manager.delete_session(session_id=session_id, user_id=current_user.id)
-    if not deleted:
-        raise NotFoundException(
-            error_code="SESSION_NOT_FOUND",
-            errors=f"Session '{session_id}' not found or not owned by user.",
-        )
-
-    # Remove from in-memory cache if present
+    _cancelled_session_ids.add(session_id)
     _sessions.pop(session_id, None)
 
-    return {"message": f"Session '{session_id}' deleted successfully"}
+    deleted = await session_manager.delete_session(session_id=session_id, user_id=current_user.id)
+
+    return {"message": f"Session '{session_id}' deleted successfully", "deleted": deleted}
+
+
+@router.post(
+    "/sessions/{session_id}/cancel",
+    dependencies=[Depends(require_privilege(ET_INTERACT_LEARNING_SESSION))],
+)
+async def cancel_learning_session(
+    session_id: str,
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Cancel an in-progress learning session during active synthesis.
+    - If user is on Free tier: logs usage against the monthly session quota.
+    - Atomically deletes the session, gamification, and step progress records from DB.
+    - Cleans up in-memory session and active WebSocket.
+    """
+    _cancelled_session_ids.add(session_id)
+    memory = _sessions.get(session_id) or await session_manager.get_session(session_id)
+    if memory and memory.user_id and memory.user_id != current_user.id:
+        raise ForbiddenException(
+            error_code="SESSION_ACCESS_DENIED",
+            errors="You do not have permission to cancel this session.",
+        )
+
+    tier, is_unlimited = get_user_tier_and_is_unlimited(current_user)
+    if not is_unlimited:
+        await session_manager.record_session_usage(
+            user_id=current_user.id,
+            session_id=session_id,
+            action="cancelled_in_synthesis",
+        )
+
+    # Disconnect active WebSocket if connected and cancel background tasks
+    try:
+        from app.routers.websocket import manager as ws_manager
+        ws = ws_manager.active_connections.get(session_id)
+        if ws:
+            try:
+                await ws.close()
+            except Exception:
+                pass
+            ws_manager.disconnect(session_id)
+        else:
+            ws_manager.cancel_tasks(session_id)
+    except Exception as e:
+        logger.warning(f"Error disconnecting WebSocket during session cancel: {e}")
+
+    # Delete session records atomically from DB
+    deleted = await session_manager.delete_session(session_id=session_id, user_id=current_user.id)
+
+    # Remove from in-memory cache
+    _sessions.pop(session_id, None)
+
+    logger.info(
+        f"Session {session_id} cancelled by user {current_user.id} (deleted={deleted}, quota_consumed={not is_unlimited})"
+    )
+
+    return {
+        "message": f"Session '{session_id}' cancelled and cleaned up successfully.",
+        "quota_consumed": not is_unlimited,
+    }
+
 
 
 @router.get(

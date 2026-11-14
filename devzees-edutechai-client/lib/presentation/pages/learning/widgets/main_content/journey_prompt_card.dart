@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../../core/providers/permission_provider.dart';
+import '../../../../../core/providers/session_quota_provider.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/text_styles.dart';
+import '../../../../../data/models/learning/session_quota.dart';
+import '../../../../widgets/center_toast.dart';
 import '../../../../widgets/gradient_button.dart';
 import '../../../../widgets/gradient_text.dart';
 
@@ -44,6 +48,17 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
     _promptController.addListener(_onPromptChanged);
     _collapsedFocusNode.addListener(_onFocusChanged);
     _expandedFocusNode.addListener(_onFocusChanged);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        final perms = ref.read(permissionProvider);
+        final bool isFreeTier = perms.effectiveTier == 'free';
+        final quotaState = ref.read(sessionQuotaProvider);
+        if (isFreeTier && quotaState.quota == null && !quotaState.isLoading) {
+          ref.read(sessionQuotaProvider.notifier).fetchQuota();
+        }
+      }
+    });
   }
 
   void _onPromptChanged() {
@@ -93,11 +108,26 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
   void _handleStartJourney() {
     final text = _promptController.text.trim();
     if (text.isNotEmpty) {
-      widget.onStartJourney(
-        text,
-        _selectedMode,
-        _selectedLevel,
-      );
+      final perms = ref.read(permissionProvider);
+      final quotaState = ref.read(sessionQuotaProvider);
+      final bool isFreeTier = quotaState.quota != null
+          ? !quotaState.quota!.isUnlimited
+          : perms.effectiveTier == 'free';
+
+      if (isFreeTier &&
+          quotaState.quota != null &&
+          (quotaState.quota!.remaining ?? 0) <= 0) {
+        final limit = quotaState.quota?.limit ?? 10;
+        CenterToast.showWarning(
+          context,
+          'You have reached your limit of $limit free AI sessions this month. Upgrade to Pro for unlimited sessions.',
+          title: 'Session Limit Reached',
+          icon: Icons.lock_outline_rounded,
+        );
+        return;
+      }
+
+      widget.onStartJourney(text, _selectedMode, _selectedLevel);
     } else {
       if (_isExpanded) {
         _expandedFocusNode.requestFocus();
@@ -120,10 +150,7 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
       final textPainter = TextPainter(
         text: TextSpan(
           text: text,
-          style: AppTextStyles.bodyPrimary.copyWith(
-            fontSize: 15,
-            height: 1.45,
-          ),
+          style: AppTextStyles.bodyPrimary.copyWith(fontSize: 15, height: 1.45),
         ),
         textDirection: TextDirection.ltr,
       );
@@ -233,6 +260,15 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
     );
   }
 
+  void _handleLockedModeSelected(String mode) {
+    CenterToast.showWarning(
+      context,
+      '$mode unlocks with Pro plan — upgrade to unlock multi-step deep research!',
+      title: 'Pro Feature',
+      icon: Icons.lock_outline_rounded,
+    );
+  }
+
   Widget _buildDropdownRow(bool isMobile) {
     final perms = ref.watch(permissionProvider);
     final Set<String> lockedModes = perms.canAccessDeepDiveMode
@@ -248,6 +284,8 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
             items: _modes,
             onChanged: (val) => setState(() => _selectedMode = val!),
             lockedItems: lockedModes,
+            lockedItemBadges: const {_deepDiveMode: 'PRO'},
+            onLockedTap: _handleLockedModeSelected,
           ),
           const SizedBox(height: 12),
           _buildCustomDropdown(
@@ -269,6 +307,8 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
             items: _modes,
             onChanged: (val) => setState(() => _selectedMode = val!),
             lockedItems: lockedModes,
+            lockedItemBadges: const {_deepDiveMode: 'PRO'},
+            onLockedTap: _handleLockedModeSelected,
           ),
         ),
         const SizedBox(width: 16),
@@ -290,6 +330,8 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
     required List<String> items,
     required ValueChanged<String?> onChanged,
     Set<String> lockedItems = const {},
+    Map<String, String> lockedItemBadges = const {},
+    void Function(String)? onLockedTap,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -368,8 +410,8 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
                                     ),
                                     const SizedBox(width: 3),
                                     Text(
-                                      'PRO',
-                                      style: TextStyle(
+                                      lockedItemBadges[item] ?? 'PRO',
+                                      style: const TextStyle(
                                         color: AppColors.accentAmber,
                                         fontSize: 10,
                                         fontWeight: FontWeight.w800,
@@ -385,18 +427,16 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
                     }).toList(),
                     onChanged: (val) {
                       if (lockedItems.contains(val)) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: const Text(
-                              '🔬 Deep Dive mode unlocks with Pro plan — go deeper into any topic!',
-                            ),
-                            backgroundColor: AppColors.surfaceDark,
-                            behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                        );
+                        if (onLockedTap != null && val != null) {
+                          onLockedTap(val);
+                        } else {
+                          CenterToast.showWarning(
+                            context,
+                            '$val requires a plan upgrade.',
+                            title: 'Upgrade Required',
+                            icon: Icons.lock_outline_rounded,
+                          );
+                        }
                         return;
                       }
                       onChanged(val);
@@ -424,6 +464,10 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
     final isDark = AppColors.isDark;
     final expandedHeight = isMobile ? 280.0 : 340.0;
     final perms = ref.watch(permissionProvider);
+    final quotaState = ref.watch(sessionQuotaProvider);
+    final bool isFreeTier = quotaState.quota != null
+        ? !quotaState.quota!.isUnlimited
+        : perms.effectiveTier == 'free';
     final Set<String> lockedModes = perms.canAccessDeepDiveMode
         ? {}
         : {_deepDiveMode};
@@ -442,8 +486,8 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
             color: _isInputFocused
                 ? AppColors.primary
                 : (_isInputHovered
-                    ? AppColors.primary.withValues(alpha: 0.55)
-                    : AppColors.border),
+                      ? AppColors.primary.withValues(alpha: 0.55)
+                      : AppColors.border),
             width: _isInputFocused ? 1.5 : 1.0,
           ),
           boxShadow: [
@@ -489,10 +533,12 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
                                 );
                               }
                               return isDark
-                                  ? const Color(0xFF475569)
-                                      .withValues(alpha: 0.70)
-                                  : const Color(0xFFCBD5E1)
-                                      .withValues(alpha: 0.90);
+                                  ? const Color(
+                                      0xFF475569,
+                                    ).withValues(alpha: 0.70)
+                                  : const Color(
+                                      0xFFCBD5E1,
+                                    ).withValues(alpha: 0.90);
                             }),
                             radius: const Radius.circular(6),
                             thickness: WidgetStateProperty.all(6.0),
@@ -560,9 +606,7 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
                         hintText:
                             'Ask EduTechAI anything... (e.g., I want to learn Python programming from zero)',
                         hintStyle: AppTextStyles.body2.copyWith(
-                          color: AppColors.textSecondary.withValues(
-                            alpha: 0.6,
-                          ),
+                          color: AppColors.textSecondary.withValues(alpha: 0.6),
                           fontSize: 14.5,
                         ),
                         border: InputBorder.none,
@@ -577,11 +621,19 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
                       ),
                     ),
                   ),
-                // Bottom action bar: Dropdowns on left when expanded, Start button on right
+                // Bottom action bar: Free Tier Quota on left, Dropdowns when expanded, Start button on right
                 Padding(
                   padding: const EdgeInsets.fromLTRB(14, 4, 12, 10),
                   child: Row(
                     children: [
+                      if (isFreeTier && quotaState.quota != null) ...[
+                        _FreeTierQuotaPill(
+                          quota: quotaState.quota!,
+                          isMobile: isMobile,
+                          isCompact: isCompact,
+                        ),
+                        const SizedBox(width: 8),
+                      ],
                       if (_isExpanded) ...[
                         Expanded(
                           child: SingleChildScrollView(
@@ -593,6 +645,8 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
                                   value: _selectedMode,
                                   items: _modes,
                                   lockedItems: lockedModes,
+                                  lockedItemBadges: const {_deepDiveMode: 'PRO'},
+                                  onLockedTap: _handleLockedModeSelected,
                                   isMobile: isMobile,
                                   onChanged: (val) =>
                                       setState(() => _selectedMode = val!),
@@ -665,11 +719,9 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
         builder: (context) {
           return InkWell(
             onTap: () {
-              final RenderBox button =
-                  context.findRenderObject() as RenderBox;
-              final RenderBox overlay = Overlay.of(context)
-                  .context
-                  .findRenderObject() as RenderBox;
+              final RenderBox button = context.findRenderObject() as RenderBox;
+              final RenderBox overlay =
+                  Overlay.of(context).context.findRenderObject() as RenderBox;
               final RelativeRect position = RelativeRect.fromRect(
                 Rect.fromPoints(
                   button.localToGlobal(Offset.zero, ancestor: overlay),
@@ -721,8 +773,10 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
             },
             borderRadius: BorderRadius.circular(8),
             child: Padding(
-              padding:
-                  const EdgeInsets.symmetric(vertical: 6.0, horizontal: 4.0),
+              padding: const EdgeInsets.symmetric(
+                vertical: 6.0,
+                horizontal: 4.0,
+              ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -734,9 +788,7 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
                   const SizedBox(width: 8),
                   GradientText(
                     'Browse Suggested Topics',
-                    style: AppTextStyles.captionBold.copyWith(
-                      fontSize: 13,
-                    ),
+                    style: AppTextStyles.captionBold.copyWith(fontSize: 13),
                   ),
                   const SizedBox(width: 4),
                   Icon(
@@ -761,6 +813,8 @@ class _CompactThemeDropdown extends StatefulWidget {
   final List<String> items;
   final ValueChanged<String?> onChanged;
   final Set<String> lockedItems;
+  final Map<String, String> lockedItemBadges;
+  final void Function(String)? onLockedTap;
   final bool isMobile;
 
   const _CompactThemeDropdown({
@@ -768,6 +822,8 @@ class _CompactThemeDropdown extends StatefulWidget {
     required this.items,
     required this.onChanged,
     this.lockedItems = const {},
+    this.lockedItemBadges = const {},
+    this.onLockedTap,
     this.isMobile = false,
   });
 
@@ -871,25 +927,28 @@ class _CompactThemeDropdownState extends State<_CompactThemeDropdown> {
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.accentAmber.withValues(alpha: 0.15),
+                            color: AppColors.accentAmber.withValues(
+                              alpha: 0.15,
+                            ),
                             borderRadius: BorderRadius.circular(6),
                             border: Border.all(
-                              color:
-                                  AppColors.accentAmber.withValues(alpha: 0.35),
+                              color: AppColors.accentAmber.withValues(
+                                alpha: 0.35,
+                              ),
                             ),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
-                            children: const [
-                              Icon(
+                            children: [
+                              const Icon(
                                 Icons.lock_rounded,
                                 size: 10,
                                 color: AppColors.accentAmber,
                               ),
-                              SizedBox(width: 3),
+                              const SizedBox(width: 3),
                               Text(
-                                'PRO',
-                                style: TextStyle(
+                                widget.lockedItemBadges[item] ?? 'PRO',
+                                style: const TextStyle(
                                   color: AppColors.accentAmber,
                                   fontSize: 9,
                                   fontWeight: FontWeight.w800,
@@ -905,18 +964,16 @@ class _CompactThemeDropdownState extends State<_CompactThemeDropdown> {
               }).toList(),
               onChanged: (val) {
                 if (widget.lockedItems.contains(val)) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: const Text(
-                        '🔬 Deep Dive mode unlocks with Pro plan — go deeper into any topic!',
-                      ),
-                      backgroundColor: AppColors.surfaceDark,
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  );
+                  if (widget.onLockedTap != null && val != null) {
+                    widget.onLockedTap!(val);
+                  } else {
+                    CenterToast.showWarning(
+                      context,
+                      '$val requires a plan upgrade.',
+                      title: 'Upgrade Required',
+                      icon: Icons.lock_outline_rounded,
+                    );
+                  }
                   return;
                 }
                 widget.onChanged(val);
@@ -935,10 +992,7 @@ class _ZoomIconButton extends StatefulWidget {
   final bool isExpanded;
   final VoidCallback onTap;
 
-  const _ZoomIconButton({
-    required this.isExpanded,
-    required this.onTap,
-  });
+  const _ZoomIconButton({required this.isExpanded, required this.onTap});
 
   @override
   State<_ZoomIconButton> createState() => _ZoomIconButtonState();
@@ -968,8 +1022,8 @@ class _ZoomIconButtonState extends State<_ZoomIconButton> {
             decoration: BoxDecoration(
               color: _isHovered
                   ? (isDark
-                      ? Colors.white.withValues(alpha: 0.12)
-                      : Colors.black.withValues(alpha: 0.08))
+                        ? Colors.white.withValues(alpha: 0.12)
+                        : Colors.black.withValues(alpha: 0.08))
                   : Colors.transparent,
               borderRadius: BorderRadius.circular(8),
             ),
@@ -983,6 +1037,129 @@ class _ZoomIconButtonState extends State<_ZoomIconButton> {
                     ? (isDark ? Colors.white : AppColors.textPrimary)
                     : AppColors.textSecondary.withValues(alpha: 0.8),
               ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Compact quota indicator pill shown exclusively to Free tier users on the JourneyPromptCard.
+/// Clicking navigates directly to the Subscription page to upgrade.
+class _FreeTierQuotaPill extends StatefulWidget {
+  final SessionQuota quota;
+  final bool isMobile;
+  final bool isCompact;
+
+  const _FreeTierQuotaPill({
+    required this.quota,
+    required this.isMobile,
+    required this.isCompact,
+  });
+
+  @override
+  State<_FreeTierQuotaPill> createState() => _FreeTierQuotaPillState();
+}
+
+class _FreeTierQuotaPillState extends State<_FreeTierQuotaPill> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = AppColors.isDark;
+    final remaining = widget.quota.remaining ?? 0;
+    final limit = widget.quota.limit ?? 10;
+    final isExhausted = remaining <= 0;
+    final isLow = remaining > 0 && remaining <= 2;
+
+    final Color badgeColor = isExhausted
+        ? AppColors.accentRose
+        : (isLow ? AppColors.accentAmber : AppColors.primary);
+
+    final String label = widget.isCompact
+        ? (isExhausted
+              ? '🔑 0 Left'
+              : (isLow ? '⏳ $remaining Left' : '✨ $remaining/$limit'))
+        : (isExhausted
+              ? '🔑 0 Left • Upgrade'
+              : (isLow
+                    ? '⏳ Only $remaining Left'
+                    : '✨ $remaining/$limit Left'));
+
+    final String tooltip = isExhausted
+        ? 'Monthly session limit reached (0/$limit). Upgrade to Pro for unlimited AI sessions.'
+        : (isLow
+              ? 'Only $remaining free AI session(s) left this month. Upgrade to Pro for unlimited access.'
+              : '$remaining of $limit free monthly sessions remaining.');
+
+    return Tooltip(
+      message: tooltip,
+      waitDuration: const Duration(milliseconds: 300),
+      child: MouseRegion(
+        onEnter: (_) => setState(() => _isHovered = true),
+        onExit: (_) => setState(() => _isHovered = false),
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(
+          onTap: () {
+            context.push('/subscription');
+          },
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOutCubic,
+            height: 38,
+            padding: EdgeInsets.symmetric(
+              horizontal: widget.isCompact ? 10 : 14,
+            ),
+            decoration: BoxDecoration(
+              color: isExhausted
+                  ? AppColors.accentRose.withValues(alpha: isDark ? 0.15 : 0.08)
+                  : (isLow
+                        ? AppColors.accentAmber.withValues(
+                            alpha: isDark ? 0.15 : 0.08,
+                          )
+                        : (isDark
+                              ? (_isHovered
+                                    ? const Color(0xFF262842)
+                                    : const Color(0xFF1A1B2C))
+                              : (_isHovered
+                                    ? Colors.white
+                                    : const Color(0xFFF1F5F9)))),
+              borderRadius: BorderRadius.circular(999),
+              border: Border.all(
+                color: badgeColor.withValues(
+                  alpha: isDark
+                      ? (_isHovered ? 0.80 : 0.45)
+                      : (_isHovered ? 0.70 : 0.40),
+                ),
+                width: 1.2,
+              ),
+              boxShadow: [
+                if (_isHovered || isExhausted)
+                  BoxShadow(
+                    color: badgeColor.withValues(alpha: isDark ? 0.25 : 0.15),
+                    blurRadius: 10,
+                    spreadRadius: 1,
+                    offset: Offset.zero,
+                  ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  label,
+                  style: AppTextStyles.body2.copyWith(
+                    color: isExhausted
+                        ? AppColors.accentRose
+                        : (isLow
+                              ? AppColors.accentAmber
+                              : AppColors.textPrimary),
+                    fontWeight: FontWeight.w600,
+                    fontSize: widget.isMobile ? 12 : 13,
+                  ),
+                ),
+              ],
             ),
           ),
         ),
