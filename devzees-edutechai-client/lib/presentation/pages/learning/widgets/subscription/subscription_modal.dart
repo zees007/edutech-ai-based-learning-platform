@@ -267,16 +267,13 @@ class _SubscriptionModalState extends ConsumerState<SubscriptionModal>
   }
 
   Widget _buildTierBadge(String tier) {
-    Color color1 = AppColors.primary;
-    Color color2 = AppColors.primaryViolet;
-
-    if (tier == 'pro') {
-      color1 = const Color(0xFF2563EB);
-      color2 = const Color(0xFF7C3AED);
-    } else if (tier == 'ultra') {
-      color1 = const Color(0xFF9333EA);
-      color2 = const Color(0xFFEC4899);
-    }
+    // Gradient pairs for well-known tiers; new tiers use the default gradient.
+    const gradients = <String, (Color, Color)>{
+      'pro': (Color(0xFF2563EB), Color(0xFF7C3AED)),
+      'ultra': (Color(0xFF9333EA), Color(0xFFEC4899)),
+    };
+    final (color1, color2) = gradients[tier.toLowerCase()] ??
+        (AppColors.primary, AppColors.primaryViolet);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -494,7 +491,10 @@ class _SubscriptionModalState extends ConsumerState<SubscriptionModal>
   ) {
     final bool isDark = AppColors.isDark;
 
-    if (currentTier == 'free') {
+    final hasActivePaidSub = user?.subscription != null &&
+        (user.subscription.status?.toLowerCase() ?? '') == 'active' &&
+        (user.subscription.priceAmount ?? 0) > 0;
+    if (!hasActivePaidSub) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -504,7 +504,7 @@ class _SubscriptionModalState extends ConsumerState<SubscriptionModal>
             Text('No Active Paid Subscription', style: AppTextStyles.h4),
             const SizedBox(height: 8),
             Text(
-              'Upgrade to Pro or Ultra in the Plans tab to unlock higher limits and manage recurring billing.',
+              'Upgrade your plan in the Plans tab to unlock higher limits and manage recurring billing.',
               textAlign: TextAlign.center,
               style: AppTextStyles.body2.copyWith(color: AppColors.textSecondary),
             ),

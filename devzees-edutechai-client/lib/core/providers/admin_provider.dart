@@ -263,6 +263,8 @@ class AdminMetrics {
   final int proCount;
   final int ultraCount;
   final int totalRoles;
+  final Map<String, int> tierCounts;
+  final Map<String, String> tierNames;
 
   AdminMetrics({
     required this.totalUsers,
@@ -270,15 +272,41 @@ class AdminMetrics {
     required this.proCount,
     required this.ultraCount,
     required this.totalRoles,
+    this.tierCounts = const {},
+    this.tierNames = const {},
   });
 
   factory AdminMetrics.fromJson(Map<String, dynamic> json) {
+    final free = (json['free_count'] ?? json['freeCount']) as int? ?? 0;
+    final pro = (json['pro_count'] ?? json['proCount']) as int? ?? 0;
+    final ultra = (json['ultra_count'] ?? json['ultraCount']) as int? ?? 0;
+
+    final rawTierCounts = (json['tier_counts'] ?? json['tierCounts']) as Map<String, dynamic>? ?? {};
+    final tierCounts = rawTierCounts.map((k, v) => MapEntry(k.toString().toLowerCase(), (v as num).toInt()));
+
+    final rawTierNames = (json['tier_names'] ?? json['tierNames']) as Map<String, dynamic>? ?? {};
+    final tierNames = rawTierNames.map((k, v) => MapEntry(k.toString().toLowerCase(), v.toString()));
+
+    // Fallback if tier_counts wasn't sent
+    if (tierCounts.isEmpty) {
+      tierCounts['free'] = free;
+      tierCounts['pro'] = pro;
+      tierCounts['ultra'] = ultra;
+    }
+    if (tierNames.isEmpty) {
+      tierNames['free'] = 'Free Tier';
+      tierNames['pro'] = 'Pro Subscribers';
+      tierNames['ultra'] = 'Ultra Subscribers';
+    }
+
     return AdminMetrics(
       totalUsers: (json['total_users'] ?? json['totalUsers']) as int? ?? 0,
-      freeCount: (json['free_count'] ?? json['freeCount']) as int? ?? 0,
-      proCount: (json['pro_count'] ?? json['proCount']) as int? ?? 0,
-      ultraCount: (json['ultra_count'] ?? json['ultraCount']) as int? ?? 0,
+      freeCount: free,
+      proCount: pro,
+      ultraCount: ultra,
       totalRoles: (json['total_roles'] ?? json['totalRoles']) as int? ?? 0,
+      tierCounts: tierCounts,
+      tierNames: tierNames,
     );
   }
 }

@@ -350,14 +350,13 @@ class _SubscriptionManagerTabState
         );
       }
     } else {
-      tierMenuItems = const [
-        DropdownMenuItem(value: 'free', child: Text('FREE Tier')),
-        DropdownMenuItem(value: 'pro', child: Text('PRO Tier')),
-        DropdownMenuItem(value: 'ultra', child: Text('ULTRA Tier')),
+      // No active tiers loaded — show current selection only as a fallback.
+      tierMenuItems = [
+        DropdownMenuItem<String>(
+          value: _selectedTier,
+          child: Text('${_selectedTier.toUpperCase()} (No tiers loaded)'),
+        ),
       ];
-      if (!tierMenuItems.any((item) => item.value == _selectedTier)) {
-        _selectedTier = 'free';
-      }
     }
 
     return Container(
@@ -1208,8 +1207,8 @@ class _SubscriptionManagerTabState
   }
 
   Future<void> _confirmRetireTier(BuildContext context, SubscriptionTierModel tier) async {
-    if (tier.slug == 'free') {
-      CenterToast.showWarning(context, "Default 'free' tier cannot be retired.");
+    if (tier.priceMonthly <= 0 && tier.priceAnnual <= 0) {
+      CenterToast.showWarning(context, "The default free tier '${tier.name}' cannot be retired.");
       return;
     }
 

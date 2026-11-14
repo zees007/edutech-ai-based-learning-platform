@@ -101,6 +101,9 @@ class PermissionChecker {
   // ─── Tier & Membership Resolution ──────────────────────────────
   /// Effective billing / membership tier ('admin', 'ultra', 'pro', or 'free').
   ///
+  /// **Display / billing purposes only.** Do NOT use this for feature gating —
+  /// use [has] with a [PrivilegeCodes] constant instead.
+  ///
   /// Priority:
   /// 1. Super-admin or 'admin' in assigned roles -> 'admin'.
   /// 2. Active subscription with status == 'active' -> tier from subscription ('ultra' or 'pro').
@@ -128,6 +131,9 @@ class PermissionChecker {
   }
 
   /// Whether the user is on an active premium tier (Pro, Ultra, or Admin).
+  ///
+  /// **For display / billing UI only** (e.g., upgrade-button labels, cancel-dialog
+  /// text). Feature gating must use [has] with a [PrivilegeCodes] constant.
   bool get isPremium => effectiveTier != 'free';
 
   // ─── Account & User Management ──────────────────────────────────
@@ -163,17 +169,12 @@ class PermissionChecker {
     if (isSuperAdmin || isAdmin || effectiveTier == 'admin') {
       return null; // Unlimited
     }
-    // Dynamic quota from backend SubscriptionTier
+    // Dynamic quota from backend SubscriptionTier — the authoritative source.
     if (_hasQuotaInfo) {
       return _dynamicFollowUpLimit; // null if unlimited, or integer limit
     }
-    // Fallback based on AppConfig
-    if (effectiveTier == 'ultra') {
-      return null;
-    }
-    if (effectiveTier == 'pro') {
-      return AppConfig.proFollowUpLimit;
-    }
+    // Conservative fallback when quota hasn't loaded yet.
+    // Does NOT branch on tier names — actual limits come from the backend.
     return AppConfig.freeFollowUpLimit;
   }
 

@@ -110,7 +110,7 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
       final quotaState = ref.read(sessionQuotaProvider);
       final bool hasFiniteQuota = quotaState.quota != null
           ? !quotaState.quota!.isUnlimited
-          : !perms.isAdmin && perms.effectiveTier == 'free';
+          : !perms.isAdmin;
 
       if (hasFiniteQuota &&
           quotaState.quota != null &&
@@ -465,7 +465,7 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
     final quotaState = ref.watch(sessionQuotaProvider);
     final bool hasFiniteQuota = quotaState.quota != null
         ? !quotaState.quota!.isUnlimited
-        : !perms.isAdmin && perms.effectiveTier == 'free';
+        : !perms.isAdmin;
     final Set<String> lockedModes = perms.canAccessDeepDiveMode
         ? {}
         : {_deepDiveMode};

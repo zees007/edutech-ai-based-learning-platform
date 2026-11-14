@@ -11,26 +11,15 @@ class TierBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = tier.toLowerCase();
-    Color bgColor;
-    String label;
 
-    switch (t) {
-      case 'pro':
-        bgColor = AppColors.accentBlue;
-        label = 'PRO';
-        break;
-      case 'ultra':
-        bgColor = AppColors.purpleDeep;
-        label = 'ULTRA';
-        break;
-      case 'free':
-        bgColor = AppColors.slate700;
-        label = 'FREE';
-        break;
-      default:
-        bgColor = AppColors.accentCyan;
-        label = t.toUpperCase();
-    }
+    // Well-known tier colors; new tiers added via admin panel get the default color.
+    const tierColors = <String, Color>{
+      'free': AppColors.slate700,
+      'pro': AppColors.accentBlue,
+      'ultra': AppColors.purpleDeep,
+    };
+    final bgColor = tierColors[t] ?? AppColors.accentCyan;
+    final label = t.toUpperCase();
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),

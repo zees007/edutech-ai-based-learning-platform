@@ -32,11 +32,10 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
     final bool isDark = AppColors.isDark;
 
     final perms = ref.read(permissionProvider);
-    final bool isTopTier = perms.effectiveTier == 'ultra' || perms.isAdmin;
 
     Widget? upgradeButton;
-    if (perms.canUpgradeSubscription && !isTopTier) {
-      final label = perms.isPremium ? 'Upgrade Plan' : 'Upgrade to PRO';
+    if (perms.canUpgradeSubscription) {
+      final label = perms.canDowngradeSubscription ? 'Upgrade Plan' : 'Upgrade';
       upgradeButton = _buildMenuItem(
         context,
         label,

@@ -23,6 +23,29 @@ class AdminService:
         roles_stmt = select(func.count(Role.id)).where(Role.retired == False)
         total_roles = (await db.execute(roles_stmt)).scalar() or 0
 
+        # Fetch all defined tiers from the database (ordered by order_index)
+        tiers_stmt = (
+            select(SubscriptionTier)
+            .where(SubscriptionTier.retired == False)
+            .order_by(SubscriptionTier.order_index)
+        )
+        tiers_res = await db.execute(tiers_stmt)
+        active_tiers = tiers_res.scalars().all()
+
+        tier_names: dict[str, str] = {}
+        tier_counts: dict[str, int] = {}
+
+        # Pre-populate known active tiers
+        for t in active_tiers:
+            slug = t.slug.lower().strip()
+            tier_names[slug] = t.name
+            tier_counts[slug] = 0
+
+        # Always ensure 'free' is present
+        if "free" not in tier_counts:
+            tier_counts["free"] = 0
+            tier_names["free"] = "Free Tier"
+
         # Subscription Tiers for active users and active subscriptions
         subs_stmt = (
             select(Subscription.tier, func.count(Subscription.id))
@@ -35,29 +58,29 @@ class AdminService:
         )
         subs_res = await db.execute(subs_stmt)
         
-        free_count = 0
-        pro_count = 0
-        ultra_count = 0
-        
+        paid_accounted = 0
         for tier, count in subs_res.all():
-            if tier.lower() == 'free':
-                free_count += count
-            elif tier.lower() == 'pro':
-                pro_count += count
-            elif tier.lower() == 'ultra':
-                ultra_count += count
+            slug = (tier or "free").lower().strip()
+            tier_counts[slug] = tier_counts.get(slug, 0) + count
+            if slug not in tier_names:
+                tier_names[slug] = f"{slug.capitalize()} Tier"
+            if slug != "free":
+                paid_accounted += count
 
         # Active users without an active paid subscription belong to the default free tier
-        accounted_users = free_count + pro_count + ultra_count
-        if total_users > accounted_users:
-            free_count += (total_users - accounted_users)
+        unaccounted_free_users = max(0, total_users - paid_accounted)
+        tier_counts["free"] = unaccounted_free_users
+        if "free" not in tier_names:
+            tier_names["free"] = "Free Tier"
 
         return AdminMetricsResponse(
             total_users=total_users,
-            free_count=free_count,
-            pro_count=pro_count,
-            ultra_count=ultra_count,
+            free_count=tier_counts.get("free", 0),
+            pro_count=tier_counts.get("pro", 0),
+            ultra_count=tier_counts.get("ultra", 0),
             total_roles=total_roles,
+            tier_counts=tier_counts,
+            tier_names=tier_names,
         )
 
     # ─── Dynamic Subscription Tiers CRUD ──────────────────────────────
