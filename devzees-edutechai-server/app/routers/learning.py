@@ -276,8 +276,8 @@ async def get_session_quota(
         follow_up_limit = None
         youtube_limit = None
     else:
-        has_unlimited_followups = has_privilege(current_user, "ET_UNLIMITED_FOLLOW_UPS") or (tier_ref is not None and tier_ref.follow_up_limit_per_step is None)
-        follow_up_limit = None if has_unlimited_followups else (tier_ref.follow_up_limit_per_step if tier_ref else 2)
+        has_unlimited_followups = (tier_ref is not None and tier_ref.follow_up_limit_per_step is None)
+        follow_up_limit = None if has_unlimited_followups else (tier_ref.follow_up_limit_per_step if tier_ref else 1)
         youtube_limit = tier_ref.youtube_limit_per_step if tier_ref else 1
 
     if is_unlimited:

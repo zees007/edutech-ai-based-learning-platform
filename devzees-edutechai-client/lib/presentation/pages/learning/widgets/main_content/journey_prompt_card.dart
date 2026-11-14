@@ -108,11 +108,11 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
     if (text.isNotEmpty) {
       final perms = ref.read(permissionProvider);
       final quotaState = ref.read(sessionQuotaProvider);
-      final bool isFreeTier = quotaState.quota != null
+      final bool hasFiniteQuota = quotaState.quota != null
           ? !quotaState.quota!.isUnlimited
-          : perms.effectiveTier == 'free';
+          : !perms.isAdmin && perms.effectiveTier == 'free';
 
-      if (isFreeTier &&
+      if (hasFiniteQuota &&
           quotaState.quota != null &&
           (quotaState.quota!.remaining ?? 0) <= 0) {
         final limit = quotaState.quota?.limit ?? 10;
@@ -463,9 +463,9 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
     final expandedHeight = isMobile ? 280.0 : 340.0;
     final perms = ref.watch(permissionProvider);
     final quotaState = ref.watch(sessionQuotaProvider);
-    final bool isFreeTier = quotaState.quota != null
+    final bool hasFiniteQuota = quotaState.quota != null
         ? !quotaState.quota!.isUnlimited
-        : perms.effectiveTier == 'free';
+        : !perms.isAdmin && perms.effectiveTier == 'free';
     final Set<String> lockedModes = perms.canAccessDeepDiveMode
         ? {}
         : {_deepDiveMode};
@@ -624,7 +624,7 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
                   padding: const EdgeInsets.fromLTRB(14, 4, 12, 10),
                   child: Row(
                     children: [
-                      if (isFreeTier && quotaState.quota != null) ...[
+                      if (hasFiniteQuota && quotaState.quota != null) ...[
                         _FreeTierQuotaPill(
                           quota: quotaState.quota!,
                           isMobile: isMobile,

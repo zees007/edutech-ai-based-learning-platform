@@ -22,6 +22,15 @@ PASSWORD = "Test2day@"
 async def seed_users_and_subscriptions():
     print("Starting user and subscription seeding...")
     async with get_db_session() as db:
+        # Prune rogue users not in canonical USERS list
+        canonical_emails = {u["email"] for u in USERS}
+        all_db_users = (await db.execute(select(User))).scalars().all()
+        for u in all_db_users:
+            if u.email not in canonical_emails:
+                print(f"Pruning rogue user: {u.email}")
+                await db.delete(u)
+        await db.flush()
+
         roles_res = await db.execute(select(Role))
         roles = {r.name: r for r in roles_res.scalars().all()}
         

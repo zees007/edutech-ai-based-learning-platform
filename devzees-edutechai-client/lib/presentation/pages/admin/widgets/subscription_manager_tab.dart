@@ -332,10 +332,32 @@ class _SubscriptionManagerTabState
     final tiersState = ref.watch(adminTiersProvider);
     final activeTiers = tiersState.tiers.where((t) => !t.retired).toList();
 
-    // Ensure _selectedTier is a valid option in the list
-    final validSlugs = activeTiers.map((t) => t.slug).toList();
-    if (validSlugs.isNotEmpty && !validSlugs.contains(_selectedTier.toLowerCase())) {
-      _selectedTier = validSlugs.first;
+    // Prepare dropdown items with safety fallback
+    final List<DropdownMenuItem<String>> tierMenuItems;
+    if (activeTiers.isNotEmpty) {
+      tierMenuItems = activeTiers.map((t) {
+        return DropdownMenuItem<String>(
+          value: t.slug,
+          child: Text('${t.name} (${t.slug.toUpperCase()})'),
+        );
+      }).toList();
+      if (!tierMenuItems.any((item) => item.value == _selectedTier)) {
+        tierMenuItems.add(
+          DropdownMenuItem<String>(
+            value: _selectedTier,
+            child: Text('${_selectedTier.toUpperCase()} (Current/Custom)'),
+          ),
+        );
+      }
+    } else {
+      tierMenuItems = const [
+        DropdownMenuItem(value: 'free', child: Text('FREE Tier')),
+        DropdownMenuItem(value: 'pro', child: Text('PRO Tier')),
+        DropdownMenuItem(value: 'ultra', child: Text('ULTRA Tier')),
+      ];
+      if (!tierMenuItems.any((item) => item.value == _selectedTier)) {
+        _selectedTier = 'free';
+      }
     }
 
     return Container(
@@ -395,18 +417,7 @@ class _SubscriptionManagerTabState
                           style: AppTextStyles.body2.copyWith(
                             color: AppColors.textPrimary,
                           ),
-                          items: activeTiers.isNotEmpty
-                              ? activeTiers.map((t) {
-                                  return DropdownMenuItem(
-                                    value: t.slug,
-                                    child: Text('${t.name} (${t.slug.toUpperCase()})'),
-                                  );
-                                }).toList()
-                              : const [
-                                  DropdownMenuItem(value: 'free', child: Text('FREE Tier')),
-                                  DropdownMenuItem(value: 'pro', child: Text('PRO Tier')),
-                                  DropdownMenuItem(value: 'ultra', child: Text('ULTRA Tier')),
-                                ],
+                          items: tierMenuItems,
                           onChanged: (value) {
                             if (value != null) {
                               setState(() => _selectedTier = value);

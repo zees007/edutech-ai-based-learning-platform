@@ -399,26 +399,43 @@ class PricingCatalogModel {
   }
 
   /// Returns a smart badge label for the global monthly/annual toggle switch.
-  /// If both Pro and Ultra offer the same discount, displays e.g. "20% OFF".
-  /// If they differ, displays e.g. "UP TO 21% OFF".
+  /// Scans all configured paid tiers to determine the optimal discount highlight.
   String getGlobalAnnualDiscountBadge() {
-    final pro = getAnnualSavingsPercent('pro');
-    final ultra = getAnnualSavingsPercent('ultra');
-    if (pro <= 0 && ultra <= 0) return 'ANNUAL';
-    if (pro == ultra) return '$pro% OFF';
-    final maxPct = pro > ultra ? pro : ultra;
+    final paidTiers = tiers.keys.where((k) => k.toLowerCase() != 'free').toList();
+    if (paidTiers.isEmpty) {
+      final pro = getAnnualSavingsPercent('pro');
+      final ultra = getAnnualSavingsPercent('ultra');
+      if (pro <= 0 && ultra <= 0) return 'ANNUAL';
+      if (pro == ultra) return '$pro% OFF';
+      final maxPct = pro > ultra ? pro : ultra;
+      return 'UP TO $maxPct% OFF';
+    }
+
+    final discounts = paidTiers.map((t) => getAnnualSavingsPercent(t)).where((d) => d > 0).toSet().toList();
+    if (discounts.isEmpty) return 'ANNUAL';
+    if (discounts.length == 1) return '${discounts.first}% OFF';
+
+    final maxPct = discounts.reduce((a, b) => a > b ? a : b);
     return 'UP TO $maxPct% OFF';
   }
 
   /// Returns a smart savings label for the global monthly/annual toggle switch.
-  /// If both Pro and Ultra offer the same discount, displays e.g. "SAVE 20%".
-  /// If they differ, displays e.g. "SAVE UP TO 21%".
   String getGlobalAnnualSavingsLabel() {
-    final pro = getAnnualSavingsPercent('pro');
-    final ultra = getAnnualSavingsPercent('ultra');
-    if (pro <= 0 && ultra <= 0) return 'ANNUAL';
-    if (pro == ultra) return 'SAVE $pro%';
-    final maxPct = pro > ultra ? pro : ultra;
+    final paidTiers = tiers.keys.where((k) => k.toLowerCase() != 'free').toList();
+    if (paidTiers.isEmpty) {
+      final pro = getAnnualSavingsPercent('pro');
+      final ultra = getAnnualSavingsPercent('ultra');
+      if (pro <= 0 && ultra <= 0) return 'ANNUAL';
+      if (pro == ultra) return 'SAVE $pro%';
+      final maxPct = pro > ultra ? pro : ultra;
+      return 'SAVE UP TO $maxPct%';
+    }
+
+    final discounts = paidTiers.map((t) => getAnnualSavingsPercent(t)).where((d) => d > 0).toSet().toList();
+    if (discounts.isEmpty) return 'ANNUAL';
+    if (discounts.length == 1) return 'SAVE ${discounts.first}%';
+
+    final maxPct = discounts.reduce((a, b) => a > b ? a : b);
     return 'SAVE UP TO $maxPct%';
   }
 }

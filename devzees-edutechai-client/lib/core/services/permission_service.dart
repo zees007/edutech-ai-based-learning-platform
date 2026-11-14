@@ -60,7 +60,6 @@ abstract class PrivilegeCodes {
   static const etRegenerateStep = 'ET_REGENERATE_STEP';
   static const etAccessAcademicSearch = 'ET_ACCESS_ACADEMIC_SEARCH';
   static const etAccessFullTextResearch = 'ET_ACCESS_FULL_TEXT_RESEARCH';
-  static const etUnlimitedFollowUps = 'ET_UNLIMITED_FOLLOW_UPS';
 
   // Export
   static const etFullAccessExport = 'ET_FULL_ACCESS_EXPORT';
@@ -143,7 +142,6 @@ class PermissionChecker {
   bool get canRegenerateStep => has(PrivilegeCodes.etRegenerateStep);
   bool get canAccessAcademicSearch => has(PrivilegeCodes.etAccessAcademicSearch);
   bool get canAccessFullTextResearch => has(PrivilegeCodes.etAccessFullTextResearch);
-  bool get canUnlimitedFollowUps => has(PrivilegeCodes.etUnlimitedFollowUps);
 
   // ─── Export ────────────────────────────────────────────────────
   bool get canExportMarkdown => has(PrivilegeCodes.etExportMarkdown);
@@ -158,12 +156,11 @@ class PermissionChecker {
 
   // ─── Follow-Up Limit ───────────────────────────────────────────
   /// Returns the maximum follow-up questions allowed per step for this user.
-  /// Admin users (or users with explicit [canUnlimitedFollowUps] privilege or unlimited tier quota)
-  /// get `null` (unlimited).
+  /// Admin users get `null` (unlimited).
   /// If dynamic quota is loaded, uses the tier's [followUpLimit].
   /// Otherwise, falls back to [AppConfig] defaults.
   int? get followUpLimitPerStep {
-    if (isSuperAdmin || isAdmin || effectiveTier == 'admin' || canUnlimitedFollowUps) {
+    if (isSuperAdmin || isAdmin || effectiveTier == 'admin') {
       return null; // Unlimited
     }
     // Dynamic quota from backend SubscriptionTier

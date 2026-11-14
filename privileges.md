@@ -67,7 +67,6 @@ This document maps all privileges across the system, explains their functionalit
 | `ET_REGENERATE_STEP` | **Regenerate Step**. Re-generate a step's Socratic explanation, questions, and quiz with a fresh perspective. | - | ✅ | ✅ | ✅ |
 | `ET_ACCESS_ACADEMIC_SEARCH` | **Academic Search**. Search OpenAlex, ArXiv, and Semantic Scholar for curated paper summaries. | ✅ | ✅ | ✅ | ✅ |
 | `ET_ACCESS_FULL_TEXT_RESEARCH` | **Full Text Research**. Extract and read full PDF text from academic papers. | - | - | ✅ | ✅ |
-| `ET_UNLIMITED_FOLLOW_UPS` | **Unlimited Follow Ups**. Bypass the chat message cap. | - | - | ✅ | ✅ |
 | `ET_MANAGE_KNOWLEDGE_BASE` | **Manage Knowledge Base**. Manually curate vector DB documents. | - | - | - | ✅ |
 
 

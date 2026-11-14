@@ -169,12 +169,11 @@ class AuthService:
                 youtube_limit_per_step=None,
             )
         elif tier_ref:
-            has_unlimited_followups_priv = "ET_UNLIMITED_FOLLOW_UPS" in privilege_codes_list
             entitlements = UserEntitlementsInfo(
                 monthly_session_limit=tier_ref.monthly_session_limit,
                 is_unlimited_sessions=tier_ref.monthly_session_limit is None,
-                follow_up_limit_per_step=None if has_unlimited_followups_priv else tier_ref.follow_up_limit_per_step,
-                is_unlimited_follow_ups=has_unlimited_followups_priv or (tier_ref.follow_up_limit_per_step is None),
+                follow_up_limit_per_step=tier_ref.follow_up_limit_per_step,
+                is_unlimited_follow_ups=(tier_ref.follow_up_limit_per_step is None),
                 youtube_limit_per_step=tier_ref.youtube_limit_per_step,
             )
         else:
@@ -182,7 +181,7 @@ class AuthService:
             entitlements = UserEntitlementsInfo(
                 monthly_session_limit=10,
                 is_unlimited_sessions=False,
-                follow_up_limit_per_step=2,
+                follow_up_limit_per_step=1,
                 is_unlimited_follow_ups=False,
                 youtube_limit_per_step=1,
             )

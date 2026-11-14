@@ -62,8 +62,7 @@ TREE = {
                     "ET_ACCESS_DEEP_DIVE_MODE": "Access Deep Dive Mode",
                     "ET_REGENERATE_STEP": "Regenerate Step",
                     "ET_ACCESS_ACADEMIC_SEARCH": "Access Academic Search",
-                    "ET_ACCESS_FULL_TEXT_RESEARCH": "Access Full Text Research",
-                    "ET_UNLIMITED_FOLLOW_UPS": "Unlimited Follow Ups"
+                    "ET_ACCESS_FULL_TEXT_RESEARCH": "Access Full Text Research"
                 }
             },
             "ET_FULL_ACCESS_EXPORT": {
@@ -120,7 +119,7 @@ ROLE_PRIVILEGES = {
         "ET_ACCESS_VISUAL_MODE", "ET_ACCESS_DEEP_DIVE_MODE",
         "ET_REGENERATE_STEP",
         "ET_ACCESS_ACADEMIC_SEARCH", "ET_EXPORT_MARKDOWN", "ET_EXPORT_HTML",
-        "ET_ACCESS_FULL_TEXT_RESEARCH", "ET_UNLIMITED_FOLLOW_UPS", "ET_EXPORT_PDF", "ET_SUBMIT_FEEDBACK",
+        "ET_ACCESS_FULL_TEXT_RESEARCH", "ET_EXPORT_PDF", "ET_SUBMIT_FEEDBACK",
         "ET_CHANGE_PASSWORD"
     ]
 }
@@ -178,6 +177,14 @@ async def seed_privileges_and_roles():
             # Update privileges for the role
             role.privileges = [code_to_priv[code] for code in priv_codes if code in code_to_priv]
 
+        # Prune rogue roles not in ROLE_PRIVILEGES
+        canonical_role_names = set(ROLE_PRIVILEGES.keys())
+        all_db_roles = (await db.execute(select(Role))).scalars().all()
+        for r in all_db_roles:
+            if r.name not in canonical_role_names:
+                print(f"Pruning rogue role: {r.name}")
+                await db.delete(r)
+
         await db.flush()
 
         print("3. Inserting default subscription tiers...")
@@ -193,7 +200,7 @@ async def seed_privileges_and_roles():
                 "price_monthly": 0.0,
                 "price_annual": 0.0,
                 "monthly_session_limit": 10,
-                "follow_up_limit_per_step": 2,
+                "follow_up_limit_per_step": 1,
                 "youtube_limit_per_step": 1,
                 "is_public": True,
                 "order_index": 1,
@@ -225,6 +232,15 @@ async def seed_privileges_and_roles():
                 "order_index": 3,
             },
         ]
+
+        # Prune rogue tiers not in DEFAULT_TIERS
+        canonical_tier_slugs = {t["slug"] for t in DEFAULT_TIERS}
+        all_db_tiers = (await db.execute(select(SubscriptionTier))).scalars().all()
+        for t in all_db_tiers:
+            if t.slug not in canonical_tier_slugs:
+                print(f"Pruning rogue tier: {t.slug}")
+                await db.delete(t)
+        await db.flush()
 
         for t_data in DEFAULT_TIERS:
             t_res = await db.execute(select(SubscriptionTier).where(SubscriptionTier.slug == t_data["slug"]))

@@ -500,7 +500,6 @@ async def _handle_chat(session_id: str, memory: SharedMemory, question: str):
     from sqlalchemy import select
     from models.db_models import User, Role, Subscription
     from app.dependencies import has_privilege
-    from app.privileges_config import ET_UNLIMITED_FOLLOW_UPS
     from config import get_settings
 
     settings = get_settings()
@@ -523,7 +522,7 @@ async def _handle_chat(session_id: str, memory: SharedMemory, question: str):
                 is_admin = has_privilege(user, "ET_ALL") or any(r.name.lower() == "admin" for r in user.roles if not r.retired)
                 tier_ref = user.subscription.tier_ref if user.subscription and user.subscription.status == "active" else None
 
-                if is_admin or has_privilege(user, ET_UNLIMITED_FOLLOW_UPS) or (tier_ref is not None and tier_ref.follow_up_limit_per_step is None):
+                if is_admin or (tier_ref is not None and tier_ref.follow_up_limit_per_step is None):
                     is_unlimited = True
                 elif tier_ref is not None and tier_ref.follow_up_limit_per_step is not None:
                     limit = tier_ref.follow_up_limit_per_step
