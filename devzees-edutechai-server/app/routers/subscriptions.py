@@ -18,7 +18,7 @@ from app.privileges_config import (
     ET_UPGRADE_SUBSCRIPTION,
     ET_VIEW_SUBSCRIPTION,
 )
-from models.db_models import User
+from models.db_models import SubscriptionTier, User
 from models.subscription_schemas import (
     CancelSubscriptionRequest,
     CheckoutRequest,
@@ -31,6 +31,7 @@ from models.subscription_schemas import (
     PricingCatalogResponse,
     PromoBannerInfo,
     SubscriptionResponse,
+    SubscriptionTierResponse,
     SubscriptionUpdateRequest,
     TierPriceInfo,
 )
@@ -46,14 +47,43 @@ router = APIRouter()
     "/subscriptions/pricing-catalog",
     response_model=PricingCatalogResponse,
 )
-async def get_pricing_catalog():
+async def get_pricing_catalog(
+    db: AsyncSession = Depends(get_db),
+):
     """
     Public endpoint providing current catalog pricing for all tiers and billing cycles.
-    Dynamically loads values from system settings (PRO_MONTHLY, PRO_ANNUALLY, etc.).
+    Dynamically loads values from database subscription_tiers with fallback to system settings.
     Includes active promotional campaign banner information.
     """
-    raw_catalog = SettingService.get_pricing_catalog()
+    from sqlalchemy import select
+    from sqlalchemy.orm import selectinload
+
+    tiers_stmt = (
+        select(SubscriptionTier)
+        .options(selectinload(SubscriptionTier.role))
+        .where(SubscriptionTier.retired == False, SubscriptionTier.is_public == True)
+        .order_by(SubscriptionTier.order_index.asc())
+    )
+    db_tiers = (await db.execute(tiers_stmt)).scalars().all()
+
     promo_info = SettingService.get_promo_banner_info()
+
+    if db_tiers:
+        tier_price_map = {
+            t.slug.lower(): TierPriceInfo(
+                monthly=float(t.price_monthly),
+                annual=float(t.price_annual),
+            )
+            for t in db_tiers
+        }
+        return PricingCatalogResponse(
+            currency=db_tiers[0].currency if db_tiers else "USD",
+            tiers=tier_price_map,
+            promo_banner=PromoBannerInfo(**promo_info),
+        )
+
+    # Fallback to system settings
+    raw_catalog = SettingService.get_pricing_catalog()
     return PricingCatalogResponse(
         currency="USD",
         tiers={
@@ -65,6 +95,48 @@ async def get_pricing_catalog():
         },
         promo_banner=PromoBannerInfo(**promo_info),
     )
+
+
+@router.get(
+    "/subscriptions/tiers",
+    response_model=List[SubscriptionTierResponse],
+)
+async def get_public_subscription_tiers(
+    db: AsyncSession = Depends(get_db),
+):
+    """Public endpoint listing active, public subscription tiers with limits and features."""
+    from sqlalchemy import select
+    from sqlalchemy.orm import selectinload
+
+    tiers_stmt = (
+        select(SubscriptionTier)
+        .options(selectinload(SubscriptionTier.role))
+        .where(SubscriptionTier.retired == False, SubscriptionTier.is_public == True)
+        .order_by(SubscriptionTier.order_index.asc())
+    )
+    db_tiers = (await db.execute(tiers_stmt)).scalars().all()
+    return [
+        SubscriptionTierResponse(
+            id=t.id,
+            slug=t.slug,
+            name=t.name,
+            description=t.description,
+            role_id=t.role_id,
+            role_name=t.role.name if t.role else None,
+            price_monthly=t.price_monthly,
+            price_annual=t.price_annual,
+            currency=t.currency,
+            monthly_session_limit=t.monthly_session_limit,
+            follow_up_limit_per_step=t.follow_up_limit_per_step,
+            youtube_limit_per_step=t.youtube_limit_per_step,
+            is_public=t.is_public,
+            order_index=t.order_index,
+            retired=t.retired,
+            created_at=t.created_at,
+            active_subscribers_count=0,
+        )
+        for t in db_tiers
+    ]
 
 
 @router.get(

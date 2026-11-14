@@ -6,7 +6,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(
 
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
-from models.db_models import User, Role, Subscription
+from models.db_models import User, Role, Subscription, SubscriptionTier
 from services.user_service import UserService
 from services.database import get_db_session
 from datetime import datetime, timezone, timedelta
@@ -51,11 +51,16 @@ async def seed_users_and_subscriptions():
             # Assign subscription
             res_sub = await db.execute(select(Subscription).where(Subscription.user_id == user.id))
             sub = res_sub.scalar_one_or_none()
+
+            tier_res = await db.execute(select(SubscriptionTier).where(SubscriptionTier.slug == u_data["tier"]))
+            tier_obj = tier_res.scalar_one_or_none()
+            tier_id = tier_obj.id if tier_obj else None
             
             if not sub:
                 sub = Subscription(
                     user_id=user.id,
                     tier=u_data["tier"],
+                    tier_id=tier_id,
                     status="active",
                     billing_cycle="monthly",
                     gateway_provider="razorpay",
@@ -66,6 +71,7 @@ async def seed_users_and_subscriptions():
                 db.add(sub)
             else:
                 sub.tier = u_data["tier"]
+                sub.tier_id = tier_id
                 sub.status = "active"
                 sub.gateway_provider = "razorpay"
 

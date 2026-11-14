@@ -51,10 +51,8 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        final perms = ref.read(permissionProvider);
-        final bool isFreeTier = perms.effectiveTier == 'free';
         final quotaState = ref.read(sessionQuotaProvider);
-        if (isFreeTier && quotaState.quota == null && !quotaState.isLoading) {
+        if (quotaState.quota == null && !quotaState.isLoading) {
           ref.read(sessionQuotaProvider.notifier).fetchQuota();
         }
       }
@@ -120,7 +118,7 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
         final limit = quotaState.quota?.limit ?? 10;
         CenterToast.showWarning(
           context,
-          'You have reached your limit of $limit free AI sessions this month. Upgrade to Pro for unlimited sessions.',
+          'You have reached your limit of $limit AI sessions this month. Upgrade your plan for unlimited sessions.',
           title: 'Session Limit Reached',
           icon: Icons.lock_outline_rounded,
         );
@@ -1088,10 +1086,10 @@ class _FreeTierQuotaPillState extends State<_FreeTierQuotaPill> {
                     : '✨ $remaining/$limit Left'));
 
     final String tooltip = isExhausted
-        ? 'Monthly session limit reached (0/$limit). Upgrade to Pro for unlimited AI sessions.'
+        ? 'Monthly session limit reached (0/$limit). Upgrade your plan for unlimited AI sessions.'
         : (isLow
-              ? 'Only $remaining free AI session(s) left this month. Upgrade to Pro for unlimited access.'
-              : '$remaining of $limit free monthly sessions remaining.');
+              ? 'Only $remaining AI session(s) left this month. Upgrade your plan for unlimited access.'
+              : '$remaining of $limit monthly sessions remaining.');
 
     return Tooltip(
       message: tooltip,

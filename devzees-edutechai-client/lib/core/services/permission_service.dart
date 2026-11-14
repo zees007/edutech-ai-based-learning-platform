@@ -47,6 +47,7 @@ abstract class PrivilegeCodes {
   static const etUpgradeSubscription = 'ET_UPGRADE_SUBSCRIPTION';
   static const etDowngradeSubscription = 'ET_DOWNGRADE_SUBSCRIPTION';
   static const etManageBilling = 'ET_MANAGE_BILLING';
+  static const etManageTiers = 'ET_MANAGE_TIERS';
 
   // Learning
   static const etFullAccessLearning = 'ET_FULL_ACCESS_LEARNING';
@@ -60,11 +61,6 @@ abstract class PrivilegeCodes {
   static const etAccessAcademicSearch = 'ET_ACCESS_ACADEMIC_SEARCH';
   static const etAccessFullTextResearch = 'ET_ACCESS_FULL_TEXT_RESEARCH';
   static const etUnlimitedFollowUps = 'ET_UNLIMITED_FOLLOW_UPS';
-
-  // Video
-  static const etFullAccessVideo = 'ET_FULL_ACCESS_VIDEO';
-  static const etAccessYoutubeBasic = 'ET_ACCESS_YOUTUBE_BASIC';
-  static const etAccessYoutubeAdvanced = 'ET_ACCESS_YOUTUBE_ADVANCED';
 
   // Export
   static const etFullAccessExport = 'ET_FULL_ACCESS_EXPORT';
@@ -86,9 +82,15 @@ abstract class PrivilegeCodes {
 class PermissionChecker {
   final Set<String> _codes;
   final UserCurrentProfileResponse? _user;
+  final int? _dynamicFollowUpLimit;
+  final bool _hasQuotaInfo;
 
-  PermissionChecker(List<String> privilegeCodes, [this._user])
-      : _codes = Set<String>.from(privilegeCodes);
+  PermissionChecker(
+    List<String> privilegeCodes, [
+    this._user,
+    this._dynamicFollowUpLimit,
+    this._hasQuotaInfo = false,
+  ])  : _codes = Set<String>.from(privilegeCodes);
 
   /// Returns `true` if the user has the given privilege code, or is a super-admin.
   bool has(String code) => _codes.contains(PrivilegeCodes.etAll) || _codes.contains(code);
@@ -115,14 +117,13 @@ class PermissionChecker {
     final sub = _user.subscription;
     final bool isSubActive = sub != null && sub.status.toLowerCase() == 'active';
     if (isSubActive) {
-      final subTier = sub.tier.toLowerCase();
-      if (subTier == 'ultra' || subTier == 'pro') {
-        return subTier;
-      }
+      return sub.tier.toLowerCase();
     }
 
-    if (roles.contains('ultra')) return 'ultra';
-    if (roles.contains('pro')) return 'pro';
+    if (roles.isNotEmpty) {
+      final tierRoles = roles.where((r) => r != 'admin').toList();
+      if (tierRoles.isNotEmpty) return tierRoles.first;
+    }
 
     return 'free';
   }
@@ -153,16 +154,25 @@ class PermissionChecker {
   bool get canViewSubscription => has(PrivilegeCodes.etViewSubscription);
   bool get canUpgradeSubscription => has(PrivilegeCodes.etUpgradeSubscription);
   bool get canDowngradeSubscription => has(PrivilegeCodes.etDowngradeSubscription);
+  bool get canManageTiers => has(PrivilegeCodes.etManageTiers) || has(PrivilegeCodes.etFullAccessSubscription);
 
   // ─── Follow-Up Limit ───────────────────────────────────────────
   /// Returns the maximum follow-up questions allowed per step for this user.
-  /// Ultra and Admin users (or users with explicit [canUnlimitedFollowUps] privilege) get `null` (unlimited).
-  /// Pro users get [AppConfig.proFollowUpLimit].
-  /// Free users get [AppConfig.freeFollowUpLimit].
-  /// Values are sourced from [AppConfig] (configurable via `--dart-define`).
+  /// Admin users (or users with explicit [canUnlimitedFollowUps] privilege or unlimited tier quota)
+  /// get `null` (unlimited).
+  /// If dynamic quota is loaded, uses the tier's [followUpLimit].
+  /// Otherwise, falls back to [AppConfig] defaults.
   int? get followUpLimitPerStep {
-    if (isSuperAdmin || isAdmin || effectiveTier == 'ultra' || effectiveTier == 'admin' || canUnlimitedFollowUps) {
+    if (isSuperAdmin || isAdmin || effectiveTier == 'admin' || canUnlimitedFollowUps) {
       return null; // Unlimited
+    }
+    // Dynamic quota from backend SubscriptionTier
+    if (_hasQuotaInfo) {
+      return _dynamicFollowUpLimit; // null if unlimited, or integer limit
+    }
+    // Fallback based on AppConfig
+    if (effectiveTier == 'ultra') {
+      return null;
     }
     if (effectiveTier == 'pro') {
       return AppConfig.proFollowUpLimit;

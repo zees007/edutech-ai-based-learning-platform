@@ -841,8 +841,9 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
   /// Regenerates the content for a specific step.
   Future<void> regenerateCurrentStep(int stepIndex) async {
     final session = state.session;
-    if (session == null || stepIndex < 0 || stepIndex >= session.steps.length)
+    if (session == null || stepIndex < 0 || stepIndex >= session.steps.length) {
       return;
+    }
 
     _isRegenerating = true;
     _isStepGenerationActive = true;

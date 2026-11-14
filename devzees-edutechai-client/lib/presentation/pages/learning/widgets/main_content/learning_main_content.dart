@@ -13,7 +13,7 @@ import 'recent_journey_card.dart';
 import 'recent_journey_skeleton.dart';
 import '../workspace/active_learning_workspace.dart';
 import 'neural_inference_loader.dart';
-import '../../../../../core/providers/auth_provider.dart';
+import '../../../../../core/providers/permission_provider.dart';
 import '../../../../../presentation/widgets/center_toast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../../presentation/widgets/theme_toggle_button.dart';
@@ -213,9 +213,8 @@ class _LearningMainContentState extends ConsumerState<LearningMainContent> {
     }
 
     // Phase 2: Active synthesis
-    final user = ref.read(authProvider).user;
-    final tier = user?.subscription?.tier.toLowerCase() ?? 'free';
-    final isPremium = tier == 'pro' || tier == 'ultra' || (user?.roles.contains('Admin') ?? false);
+    final perms = ref.read(permissionProvider);
+    final isPremium = perms.isPremium;
 
     // Hold the loader on screen while modal is presented
     setState(() => _isConfirmationModalOpen = true);

@@ -19,7 +19,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.exceptions import UnauthorizedException
 from config import get_settings
-from models.auth_schemas import UserCurrentProfileResponse
+from models.auth_schemas import UserCurrentProfileResponse, UserEntitlementsInfo
 from models.db_models import User, Role, RefreshToken
 from models.subscription_schemas import SubscriptionResponse
 from services.user_service import UserService
@@ -155,6 +155,38 @@ class AuthService:
             else None
         )
 
+        # Compute dynamic entitlements from bound subscription tier or admin status
+        is_super_admin = "ET_ALL" in privilege_codes_list
+        is_admin_role = any(r.lower() == "admin" for r in role_names)
+        tier_ref = user.subscription.tier_ref if user.subscription else None
+
+        if is_super_admin or is_admin_role:
+            entitlements = UserEntitlementsInfo(
+                monthly_session_limit=None,
+                is_unlimited_sessions=True,
+                follow_up_limit_per_step=None,
+                is_unlimited_follow_ups=True,
+                youtube_limit_per_step=None,
+            )
+        elif tier_ref:
+            has_unlimited_followups_priv = "ET_UNLIMITED_FOLLOW_UPS" in privilege_codes_list
+            entitlements = UserEntitlementsInfo(
+                monthly_session_limit=tier_ref.monthly_session_limit,
+                is_unlimited_sessions=tier_ref.monthly_session_limit is None,
+                follow_up_limit_per_step=None if has_unlimited_followups_priv else tier_ref.follow_up_limit_per_step,
+                is_unlimited_follow_ups=has_unlimited_followups_priv or (tier_ref.follow_up_limit_per_step is None),
+                youtube_limit_per_step=tier_ref.youtube_limit_per_step,
+            )
+        else:
+            # Fallback for users with no tier
+            entitlements = UserEntitlementsInfo(
+                monthly_session_limit=10,
+                is_unlimited_sessions=False,
+                follow_up_limit_per_step=2,
+                is_unlimited_follow_ups=False,
+                youtube_limit_per_step=1,
+            )
+
         return UserCurrentProfileResponse(
             id=user.id,
             first_name=user.first_name,
@@ -166,6 +198,7 @@ class AuthService:
             roles=role_names,
             subscription=subscription_response,
             privilege_codes=privilege_codes_list,
+            entitlements=entitlements,
         )
 
     @staticmethod

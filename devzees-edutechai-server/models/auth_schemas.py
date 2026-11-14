@@ -21,12 +21,22 @@ class LoginRequest(BaseModel):
     password: str = Field(..., min_length=1, max_length=72, description="User password")
 
 
+class UserEntitlementsInfo(BaseModel):
+    """Dynamic computed entitlements and limits for the user."""
+
+    monthly_session_limit: int | None = None
+    is_unlimited_sessions: bool = False
+    follow_up_limit_per_step: int | None = None
+    is_unlimited_follow_ups: bool = False
+    youtube_limit_per_step: int | None = None
+
+
 class UserCurrentProfileResponse(BaseModel):
     """
     Unified user current profile response returned by GET /api/v1/auth/me.
 
     Includes user details, assigned active roles, subscription details,
-    and a flat list of active privilege codes across all assigned roles.
+    entitlements, and a flat list of active privilege codes across all assigned roles.
     """
 
     id: str
@@ -42,5 +52,6 @@ class UserCurrentProfileResponse(BaseModel):
         default_factory=list,
         description="Flat deduplicated list of active privilege codes granted to the user",
     )
+    entitlements: UserEntitlementsInfo | None = None
 
     model_config = ConfigDict(from_attributes=True)

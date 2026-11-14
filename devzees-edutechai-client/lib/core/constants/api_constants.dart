@@ -57,6 +57,9 @@ class ApiConstants {
 
   // Admin — Subscription Management
   static String userSubscriptionTier(String userId) => '/subscriptions/users/$userId/tier';
+  static const String adminTiers = '/admin/tiers';
+  static String adminTier(String tierId) => '/admin/tiers/$tierId';
+  static const String subscriptionTiers = '/subscriptions/tiers';
 
   // Admin — Metrics
   static const String adminMetrics = '/admin/metrics';

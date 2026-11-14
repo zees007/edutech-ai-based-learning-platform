@@ -6,7 +6,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(
 
 from sqlalchemy import select
 from services.database import get_db_session
-from models.db_models import Privilege, Role
+from models.db_models import Privilege, Role, SubscriptionTier
 
 TREE = {
     "ET_ALL": {
@@ -46,7 +46,8 @@ TREE = {
                     "ET_VIEW_SUBSCRIPTION": "View Subscription",
                     "ET_UPGRADE_SUBSCRIPTION": "Upgrade Subscription",
                     "ET_DOWNGRADE_SUBSCRIPTION": "Downgrade Subscription",
-                    "ET_MANAGE_BILLING": "Manage Global Billing & Transactions"
+                    "ET_MANAGE_BILLING": "Manage Global Billing & Transactions",
+                    "ET_MANAGE_TIERS": "Manage Subscription Tiers"
                 }
             },
             "ET_FULL_ACCESS_LEARNING": {
@@ -63,13 +64,6 @@ TREE = {
                     "ET_ACCESS_ACADEMIC_SEARCH": "Access Academic Search",
                     "ET_ACCESS_FULL_TEXT_RESEARCH": "Access Full Text Research",
                     "ET_UNLIMITED_FOLLOW_UPS": "Unlimited Follow Ups"
-                }
-            },
-            "ET_FULL_ACCESS_VIDEO": {
-                "name": "Video Management",
-                "children": {
-                    "ET_ACCESS_YOUTUBE_BASIC": "Access Youtube Basic",
-                    "ET_ACCESS_YOUTUBE_ADVANCED": "Access Youtube Advanced"
                 }
             },
             "ET_FULL_ACCESS_EXPORT": {
@@ -103,7 +97,7 @@ ROLE_PRIVILEGES = {
     "Free": [
         "ET_VIEW_SUBSCRIPTION", "ET_UPGRADE_SUBSCRIPTION",
         "ET_START_LEARNING_SESSION", "ET_INTERACT_LEARNING_SESSION",
-        "ET_VIEW_LEARNING_HISTORY", "ET_VIEW_QUOTA", "ET_ACCESS_YOUTUBE_BASIC",
+        "ET_VIEW_LEARNING_HISTORY", "ET_VIEW_QUOTA",
         "ET_GENERATE_QUIZ", "ET_SUBMIT_QUIZ",
         "ET_ACCESS_VISUAL_MODE", "ET_ACCESS_ACADEMIC_SEARCH", "ET_SUBMIT_FEEDBACK",
         "ET_CHANGE_PASSWORD"
@@ -111,20 +105,20 @@ ROLE_PRIVILEGES = {
     "Pro": [
         "ET_VIEW_SUBSCRIPTION", "ET_UPGRADE_SUBSCRIPTION", "ET_DOWNGRADE_SUBSCRIPTION",
         "ET_START_LEARNING_SESSION", "ET_INTERACT_LEARNING_SESSION",
-        "ET_VIEW_LEARNING_HISTORY", "ET_VIEW_QUOTA", "ET_ACCESS_YOUTUBE_BASIC",
+        "ET_VIEW_LEARNING_HISTORY", "ET_VIEW_QUOTA",
         "ET_GENERATE_QUIZ", "ET_SUBMIT_QUIZ",
         "ET_ACCESS_VISUAL_MODE", "ET_ACCESS_DEEP_DIVE_MODE",
-        "ET_REGENERATE_STEP", "ET_ACCESS_YOUTUBE_ADVANCED",
+        "ET_REGENERATE_STEP",
         "ET_ACCESS_ACADEMIC_SEARCH", "ET_EXPORT_MARKDOWN", "ET_EXPORT_HTML", "ET_SUBMIT_FEEDBACK",
         "ET_CHANGE_PASSWORD"
     ],
     "Ultra": [
         "ET_VIEW_SUBSCRIPTION", "ET_UPGRADE_SUBSCRIPTION", "ET_DOWNGRADE_SUBSCRIPTION",
         "ET_START_LEARNING_SESSION", "ET_INTERACT_LEARNING_SESSION",
-        "ET_VIEW_LEARNING_HISTORY", "ET_VIEW_QUOTA", "ET_ACCESS_YOUTUBE_BASIC",
+        "ET_VIEW_LEARNING_HISTORY", "ET_VIEW_QUOTA",
         "ET_GENERATE_QUIZ", "ET_SUBMIT_QUIZ",
         "ET_ACCESS_VISUAL_MODE", "ET_ACCESS_DEEP_DIVE_MODE",
-        "ET_REGENERATE_STEP", "ET_ACCESS_YOUTUBE_ADVANCED",
+        "ET_REGENERATE_STEP",
         "ET_ACCESS_ACADEMIC_SEARCH", "ET_EXPORT_MARKDOWN", "ET_EXPORT_HTML",
         "ET_ACCESS_FULL_TEXT_RESEARCH", "ET_UNLIMITED_FOLLOW_UPS", "ET_EXPORT_PDF", "ET_SUBMIT_FEEDBACK",
         "ET_CHANGE_PASSWORD"
@@ -144,6 +138,14 @@ async def seed_privileges_and_roles():
                     required_nodes.append({"code": code, "name": data, "parent_code": parent_code})
 
         traverse(TREE)
+
+        # 0. Clean up any rogue/test/obsolete privileges not in official TREE
+        valid_codes = {node["code"] for node in required_nodes}
+        existing_privs = (await db.execute(select(Privilege))).scalars().all()
+        for p in existing_privs:
+            if p.code not in valid_codes:
+                await db.delete(p)
+        await db.flush()
 
         print("1. Inserting privileges...")
         for node in required_nodes:
@@ -176,8 +178,91 @@ async def seed_privileges_and_roles():
             # Update privileges for the role
             role.privileges = [code_to_priv[code] for code in priv_codes if code in code_to_priv]
 
+        await db.flush()
+
+        print("3. Inserting default subscription tiers...")
+        all_roles_res = await db.execute(select(Role))
+        name_to_role = {r.name: r for r in all_roles_res.scalars().all()}
+
+        DEFAULT_TIERS = [
+            {
+                "slug": "free",
+                "name": "Free Tier",
+                "description": "Essential learning journey with monthly AI credits and basic quizzes.",
+                "role_name": "Free",
+                "price_monthly": 0.0,
+                "price_annual": 0.0,
+                "monthly_session_limit": 10,
+                "follow_up_limit_per_step": 2,
+                "youtube_limit_per_step": 1,
+                "is_public": True,
+                "order_index": 1,
+            },
+            {
+                "slug": "pro",
+                "name": "Pro Tier",
+                "description": "Deep-dive learning mode, advanced YouTube curation, and step regeneration.",
+                "role_name": "Pro",
+                "price_monthly": 19.0,
+                "price_annual": 180.0,
+                "monthly_session_limit": None,
+                "follow_up_limit_per_step": 5,
+                "youtube_limit_per_step": 3,
+                "is_public": True,
+                "order_index": 2,
+            },
+            {
+                "slug": "ultra",
+                "name": "Ultra Tier",
+                "description": "Unlimited follow-ups, full-text research papers, PDF exports, and top AI models.",
+                "role_name": "Ultra",
+                "price_monthly": 49.0,
+                "price_annual": 470.0,
+                "monthly_session_limit": None,
+                "follow_up_limit_per_step": None,
+                "youtube_limit_per_step": 5,
+                "is_public": True,
+                "order_index": 3,
+            },
+        ]
+
+        for t_data in DEFAULT_TIERS:
+            t_res = await db.execute(select(SubscriptionTier).where(SubscriptionTier.slug == t_data["slug"]))
+            tier_obj = t_res.scalar_one_or_none()
+            bound_role = name_to_role.get(t_data["role_name"])
+            if not bound_role:
+                continue
+
+            if not tier_obj:
+                tier_obj = SubscriptionTier(
+                    slug=t_data["slug"],
+                    name=t_data["name"],
+                    description=t_data["description"],
+                    role_id=bound_role.id,
+                    price_monthly=t_data["price_monthly"],
+                    price_annual=t_data["price_annual"],
+                    monthly_session_limit=t_data["monthly_session_limit"],
+                    follow_up_limit_per_step=t_data["follow_up_limit_per_step"],
+                    youtube_limit_per_step=t_data["youtube_limit_per_step"],
+                    is_public=t_data["is_public"],
+                    order_index=t_data["order_index"],
+                )
+                db.add(tier_obj)
+            else:
+                tier_obj.name = t_data["name"]
+                tier_obj.description = t_data["description"]
+                tier_obj.role_id = bound_role.id
+                tier_obj.price_monthly = t_data["price_monthly"]
+                tier_obj.price_annual = t_data["price_annual"]
+                tier_obj.monthly_session_limit = t_data["monthly_session_limit"]
+                tier_obj.follow_up_limit_per_step = t_data["follow_up_limit_per_step"]
+                tier_obj.youtube_limit_per_step = t_data["youtube_limit_per_step"]
+                tier_obj.is_public = t_data["is_public"]
+                tier_obj.order_index = t_data["order_index"]
+                tier_obj.retired = False
+
         await db.commit()
-        print("Privileges and Roles seeded successfully!")
+        print("Privileges, Roles, and Subscription Tiers seeded successfully!")
 
 if __name__ == "__main__":
     asyncio.run(seed_privileges_and_roles())

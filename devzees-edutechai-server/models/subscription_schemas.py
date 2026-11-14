@@ -17,7 +17,8 @@ class SubscriptionResponse(BaseModel):
 
     id: int
     user_id: str
-    tier: str = Field(..., description="Subscription tier: free, pro, ultra")
+    tier: str = Field(..., description="Subscription tier slug: free, pro, ultra or custom")
+    tier_id: str | None = Field(default=None, description="Bound subscription tier UUID")
     status: str = Field(..., description="Subscription status: active, canceled, expired, past_due")
     billing_cycle: str = Field(default="monthly", description="Billing cycle: monthly, annual")
     price_amount: float = Field(default=0.0, description="Current tier recurring price")
@@ -173,3 +174,62 @@ class PricingCatalogResponse(BaseModel):
     currency: str = "USD"
     tiers: dict[str, TierPriceInfo]
     promo_banner: PromoBannerInfo | None = None
+
+
+# ─── Dynamic Subscription Tier Schemas ───────────────────────────────
+
+class SubscriptionTierResponse(BaseModel):
+    """DTO for a dynamic subscription tier record."""
+
+    id: str
+    slug: str
+    name: str
+    description: str | None = None
+    role_id: str
+    role_name: str | None = None
+    price_monthly: float = 0.0
+    price_annual: float = 0.0
+    currency: str = "USD"
+    monthly_session_limit: int | None = None
+    follow_up_limit_per_step: int | None = None
+    youtube_limit_per_step: int | None = None
+    is_public: bool = True
+    order_index: int = 0
+    retired: bool = False
+    created_at: datetime
+    active_subscribers_count: int = 0
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class SubscriptionTierCreateRequest(BaseModel):
+    """Payload to create a new dynamic subscription tier."""
+
+    slug: str = Field(..., min_length=2, max_length=50, description="Unique slug identifier (e.g. 'enterprise')")
+    name: str = Field(..., min_length=2, max_length=100, description="Human readable display name")
+    description: str | None = None
+    role_id: str = Field(..., description="ID of the Role to bind to this tier")
+    price_monthly: float = Field(default=0.0, ge=0.0)
+    price_annual: float = Field(default=0.0, ge=0.0)
+    currency: str = Field(default="USD", max_length=10)
+    monthly_session_limit: int | None = Field(default=None, description="Monthly AI session limit (null = unlimited)")
+    follow_up_limit_per_step: int | None = Field(default=None, description="Max follow-up chat turns per step (null = unlimited)")
+    youtube_limit_per_step: int | None = Field(default=None, description="Max curated videos per step (null = unlimited)")
+    is_public: bool = Field(default=True, description="Whether visible on landing/pricing catalog")
+    order_index: int = Field(default=0, description="Display order sequence")
+
+
+class SubscriptionTierUpdateRequest(BaseModel):
+    """Payload to update an existing subscription tier."""
+
+    name: str | None = None
+    description: str | None = None
+    role_id: str | None = None
+    price_monthly: float | None = None
+    price_annual: float | None = None
+    currency: str | None = None
+    monthly_session_limit: int | None = None
+    follow_up_limit_per_step: int | None = None
+    youtube_limit_per_step: int | None = None
+    is_public: bool | None = None
+    order_index: int | None = None

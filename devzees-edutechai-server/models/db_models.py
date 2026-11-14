@@ -164,13 +164,56 @@ class Role(LoggedEntity, Base):
         back_populates="roles",
     )
 
+    tiers: Mapped[list[SubscriptionTier]] = relationship(
+        "SubscriptionTier",
+        back_populates="role",
+    )
+
     def __repr__(self) -> str:
         return f"<Role {self.id} '{self.name}'>"
 
 
+class SubscriptionTier(LoggedEntity, Base):
+    """
+    Dynamic subscription tier defined and managed by admins.
+    Binds commercial packaging (pricing & limits) to a database Role (privileges).
+    """
+
+    __tablename__ = "subscription_tiers"
+
+    slug: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, index=True)
+    name: Mapped[str] = mapped_column(String(100), nullable=False)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    # ── Role Binding ──
+    role_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("roles.id", ondelete="RESTRICT"), nullable=False, index=True
+    )
+    role: Mapped[Role] = relationship("Role", back_populates="tiers", lazy="selectin")
+
+    # ── Pricing & Commerce ──
+    price_monthly: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+    price_annual: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+    currency: Mapped[str] = mapped_column(String(10), nullable=False, default="USD")
+    is_public: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    order_index: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+
+    # ── Entitlements / Quotas (None means Unlimited) ──
+    monthly_session_limit: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    follow_up_limit_per_step: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    youtube_limit_per_step: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
+    subscriptions: Mapped[list[Subscription]] = relationship(
+        "Subscription", back_populates="tier_ref"
+    )
+
+    def __repr__(self) -> str:
+        return f"<SubscriptionTier {self.slug} ('{self.name}') role_id={self.role_id}>"
+
+
 class Subscription(Base):
     """
-    Tracks user subscription tier (Free, Pro, Ultra) and billing status.
+    Tracks user subscription tier (Free, Pro, Ultra, or custom dynamic tier) and billing status.
     """
 
     __tablename__ = "subscriptions"
@@ -180,6 +223,9 @@ class Subscription(Base):
         String(36), ForeignKey("users.id", ondelete="CASCADE"), unique=True, nullable=False, index=True
     )
     tier: Mapped[str] = mapped_column(String(50), nullable=False, default="free", index=True)
+    tier_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("subscription_tiers.id", ondelete="SET NULL"), nullable=True, index=True
+    )
     status: Mapped[str] = mapped_column(String(50), nullable=False, default="active")
     billing_cycle: Mapped[str] = mapped_column(String(20), nullable=False, default="monthly")
     price_amount: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
@@ -196,6 +242,9 @@ class Subscription(Base):
     auto_renew: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
 
     user: Mapped[User] = relationship("User", back_populates="subscription")
+    tier_ref: Mapped[SubscriptionTier | None] = relationship(
+        "SubscriptionTier", back_populates="subscriptions", lazy="selectin"
+    )
     transactions: Mapped[list[PaymentTransaction]] = relationship("PaymentTransaction", back_populates="subscription", cascade="all, delete-orphan")
 
     def __repr__(self) -> str:

@@ -83,8 +83,8 @@ get_session = get_session_or_404
 def get_user_tier_and_is_unlimited(user: User) -> tuple[str, bool]:
     """
     Determine the user's billing tier and whether they have unlimited sessions.
-    Evaluates role and subscription directly from the database entity, avoiding
-    fragile coupling to individual feature privileges.
+    Evaluates role and subscription directly from the database entity, checking
+    dynamic tier limits if available.
     """
     active_role_names = {r.name.lower() for r in user.roles if not r.retired}
 
@@ -92,9 +92,13 @@ def get_user_tier_and_is_unlimited(user: User) -> tuple[str, bool]:
     if "admin" in active_role_names:
         return "admin", True
 
-    # 2. Check active subscription record
+    # 2. Check active subscription record and bound tier limits
     if user.subscription and user.subscription.status == "active":
         sub_tier = user.subscription.tier.lower()
+        if user.subscription.tier_ref:
+            is_unlimited = user.subscription.tier_ref.monthly_session_limit is None
+            return sub_tier, is_unlimited
+
         if sub_tier in ("pro", "ultra"):
             return sub_tier, True
         if sub_tier == "free":
@@ -163,15 +167,20 @@ async def start_learning_session(
                 errors="Upgrade to Pro or Ultra to access Deep Dive mode."
             )
 
-    # 2. Enforce Monthly Session Quota for Free Tier
+    # 2. Enforce Monthly Session Quota
     tier, is_unlimited = get_user_tier_and_is_unlimited(current_user)
     if not is_unlimited:
-        free_limit = settings.free_monthly_session_limit
+        tier_ref = current_user.subscription.tier_ref if current_user.subscription else None
+        session_limit = (
+            tier_ref.monthly_session_limit
+            if tier_ref and tier_ref.monthly_session_limit is not None
+            else settings.free_monthly_session_limit
+        )
         monthly_sessions = await session_manager.get_monthly_session_count(current_user.id)
-        if monthly_sessions >= free_limit:
+        if monthly_sessions >= session_limit:
             raise ForbiddenException(
                 error_code="SESSION_QUOTA_EXCEEDED",
-                errors=f"You have reached your limit of {free_limit} free AI sessions this month. Upgrade to Pro for unlimited sessions."
+                errors=f"You have reached your limit of {session_limit} AI sessions this month. Upgrade your plan for higher limits."
             )
 
     # Create SharedMemory for this session
@@ -260,6 +269,17 @@ async def get_session_quota(
     tier, is_unlimited = get_user_tier_and_is_unlimited(current_user)
     used = await session_manager.get_monthly_session_count(current_user.id)
 
+    tier_ref = current_user.subscription.tier_ref if current_user.subscription else None
+    is_admin = has_privilege(current_user, "ET_ALL") or any(r.name.lower() == "admin" for r in current_user.roles if not r.retired)
+
+    if is_admin:
+        follow_up_limit = None
+        youtube_limit = None
+    else:
+        has_unlimited_followups = has_privilege(current_user, "ET_UNLIMITED_FOLLOW_UPS") or (tier_ref is not None and tier_ref.follow_up_limit_per_step is None)
+        follow_up_limit = None if has_unlimited_followups else (tier_ref.follow_up_limit_per_step if tier_ref else 2)
+        youtube_limit = tier_ref.youtube_limit_per_step if tier_ref else 1
+
     if is_unlimited:
         return SessionQuotaResponse(
             tier=tier,
@@ -267,16 +287,24 @@ async def get_session_quota(
             used=used,
             limit=None,
             remaining=None,
+            follow_up_limit=follow_up_limit,
+            youtube_limit=youtube_limit,
         )
 
-    free_limit = settings.free_monthly_session_limit
-    remaining = max(0, free_limit - used)
+    session_limit = (
+        tier_ref.monthly_session_limit
+        if tier_ref and tier_ref.monthly_session_limit is not None
+        else settings.free_monthly_session_limit
+    )
+    remaining = max(0, session_limit - used)
     return SessionQuotaResponse(
-        tier="free",
+        tier=tier,
         is_unlimited=False,
         used=used,
-        limit=free_limit,
+        limit=session_limit,
         remaining=remaining,
+        follow_up_limit=follow_up_limit,
+        youtube_limit=youtube_limit,
     )
 
 

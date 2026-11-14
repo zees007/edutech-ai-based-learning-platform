@@ -248,7 +248,7 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Exporting $format is an exclusive feature available on the $requiredTier tier.',
+              'Exporting $format is an exclusive feature available on upgraded plans.',
               style: AppTextStyles.body2.copyWith(color: AppColors.textSlate),
             ),
             const SizedBox(height: 14),
@@ -265,7 +265,7 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Upgrade to $requiredTier for unlimited exports, deep-dive academic search, and advanced AI models.',
+                      'Upgrade your plan for unlimited exports, deep-dive academic search, and advanced AI models.',
                       style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
                     ),
                   ),
@@ -436,7 +436,7 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
                           title: 'Markdown Notes (.md)',
                           description:
                               'Compact, structured study notes. Ideal for Obsidian, Notion, Typora, and GitHub.',
-                          tierBadge: 'PRO / ULTRA',
+                          tierBadge: 'PREMIUM',
                           isUnlocked: canExportMd,
                           isEnabled: isComplete,
                           isLoading: _isLoadingMd,
@@ -445,7 +445,7 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
                           onPreview: _handlePreviewMarkdown,
                           onCopy: _handleCopyMarkdown,
                           onDownload: _handleDownloadMarkdown,
-                          onLockedTap: () => _showUpgradeInfo(context, 'Markdown', 'Pro or Ultra'),
+                          onLockedTap: () => _showUpgradeInfo(context, 'Markdown', 'Premium'),
                         ),
 
                         const SizedBox(height: 12),
@@ -457,7 +457,7 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
                           title: 'Interactive Web Report (.html)',
                           description:
                               'Modern responsive report with syntax styling, interactive quizzes, and one-click "Save as PDF".',
-                          tierBadge: 'PRO / ULTRA',
+                          tierBadge: 'PREMIUM',
                           isUnlocked: canExportHtml,
                           isEnabled: isComplete,
                           isLoading: _isLoadingHtml,
@@ -466,7 +466,7 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
                           openLabel: 'View & Print',
                           onOpen: _handleOpenHtml,
                           onDownload: _handleDownloadHtml,
-                          onLockedTap: () => _showUpgradeInfo(context, 'Interactive Web Report', 'Pro or Ultra'),
+                          onLockedTap: () => _showUpgradeInfo(context, 'Interactive Web Report', 'Premium'),
                         ),
 
                         const SizedBox(height: 12),
@@ -478,7 +478,7 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
                           title: 'PDF Study Guide (.pdf)',
                           description:
                               'Official executive study report with EduTechAI logo, quiz tables, and curated sources.',
-                          tierBadge: 'ULTRA',
+                          tierBadge: 'PREMIUM',
                           isUnlocked: canExportPdf,
                           isEnabled: isComplete,
                           isLoading: _isLoadingPdf,
@@ -486,7 +486,7 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
                           isMobile: isMobile,
                           downloadLabel: 'Download PDF',
                           onDownload: _handleDownloadPdf,
-                          onLockedTap: () => _showUpgradeInfo(context, 'PDF', 'Ultra'),
+                          onLockedTap: () => _showUpgradeInfo(context, 'PDF', 'Premium'),
                         ),
                       ],
                     ),

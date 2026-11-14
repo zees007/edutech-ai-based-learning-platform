@@ -1,19 +1,23 @@
 import 'package:flutter/material.dart';
-import '../../../widgets/center_toast.dart';
-import '../../../widgets/gradient_button.dart';
-
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../../core/providers/admin_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/text_styles.dart';
+import '../../../../data/models/admin/subscription_tier_model.dart';
 import '../../../../data/models/admin/subscription_update_request.dart';
 import '../../../../data/models/admin/user_response.dart';
+import '../../../widgets/center_toast.dart';
+import '../../../widgets/gradient_button.dart';
 import '../../../widgets/shimmer_loading.dart';
 import 'admin_data_table.dart';
-import 'tier_badge.dart';
 import 'searchable_user_dropdown.dart';
+import 'tier_badge.dart';
 
-/// Subscription Tier Manager tab.
+/// Subscription & Tier Manager hub with dual tabs:
+/// Tab 0: User Subscriptions (assign/change user tier dynamically)
+/// Tab 1: Subscription Tiers CRUD (manage commercial plans, limits, and role bindings)
 class SubscriptionManagerTab extends ConsumerStatefulWidget {
   const SubscriptionManagerTab({super.key});
 
@@ -27,6 +31,8 @@ class _SubscriptionManagerTabState
   final ScrollController _scrollController = ScrollController();
   final GlobalKey _formKey = GlobalKey();
 
+  int _activeSubTab = 0; // 0 = User Subscriptions, 1 = Subscription Tiers
+
   AdminUserResponse? _selectedUser;
   String? _selectedUserId;
   String _selectedTier = 'free';
@@ -38,6 +44,8 @@ class _SubscriptionManagerTabState
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(adminUsersProvider.notifier).loadUsers();
+      ref.read(adminTiersProvider.notifier).loadTiers(includeRetired: true);
+      ref.read(adminRolesProvider.notifier).loadRoles(size: 100);
     });
   }
 
@@ -71,51 +79,135 @@ class _SubscriptionManagerTabState
 
   @override
   Widget build(BuildContext context) {
-    final usersState = ref.watch(adminUsersProvider);
-
     return SingleChildScrollView(
       controller: _scrollController,
       padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Subscription Tier Management',
-            style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'View and manage user subscription tiers with automatic role synchronization',
-            style: AppTextStyles.body2.copyWith(color: AppColors.textMuted),
-          ),
+          // Sub-Tab Segmented Selector
+          _buildSegmentedHeader(),
           const SizedBox(height: 24),
 
-          // Subscription Table
-          if (usersState.isLoading && usersState.data == null)
-            const ShimmerLoading(child: ShimmerBox(height: 300))
-          else if (usersState.error != null)
-            _buildErrorCard(usersState.error!)
-          else if (usersState.data != null)
-            _buildSubscriptionTable(usersState),
-
-          const SizedBox(height: 32),
-          Container(
-            width: double.infinity,
-            height: 1,
-            color: AppColors.glassBorder,
-          ),
-          const SizedBox(height: 24),
-
-          // Tier Update Section
-          Text(
-            'Upgrade / Change User Subscription Tier',
-            style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
-          ),
-          const SizedBox(height: 16),
-          if (usersState.data != null)
-            _buildTierUpdateForm(usersState.data!.items),
+          if (_activeSubTab == 0)
+            _buildUserSubscriptionsView()
+          else
+            _buildTierPlansCrudView(),
         ],
       ),
+    );
+  }
+
+  // ─── Header & Segmented Tabs ─────────────────────────────────────────
+
+  Widget _buildSegmentedHeader() {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        _buildSegmentButton(
+          tabIndex: 0,
+          label: 'User Subscriptions',
+          icon: Icons.people_alt_outlined,
+        ),
+        const SizedBox(width: 12),
+        _buildSegmentButton(
+          tabIndex: 1,
+          label: 'Subscription Tiers (Plans)',
+          icon: Icons.loyalty_outlined,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSegmentButton({
+    required int tabIndex,
+    required String label,
+    required IconData icon,
+  }) {
+    final bool isSelected = _activeSubTab == tabIndex;
+    return InkWell(
+      onTap: () {
+        setState(() => _activeSubTab = tabIndex);
+      },
+      borderRadius: BorderRadius.circular(12),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppColors.purple.withValues(alpha: 0.18)
+              : AppColors.glassBase,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? AppColors.purple : AppColors.glassBorder,
+            width: isSelected ? 1.5 : 1.0,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 18,
+              color: isSelected ? AppColors.purpleLight : AppColors.textMuted,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: AppTextStyles.subtitle2.copyWith(
+                color: isSelected ? AppColors.textPrimary : AppColors.textMuted,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ─── TAB 0: USER SUBSCRIPTIONS ───────────────────────────────────────
+
+  Widget _buildUserSubscriptionsView() {
+    final usersState = ref.watch(adminUsersProvider);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'User Subscription Directory',
+          style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'View and manage user subscription tiers with automatic role synchronization',
+          style: AppTextStyles.body2.copyWith(color: AppColors.textMuted),
+        ),
+        const SizedBox(height: 24),
+
+        if (usersState.isLoading && usersState.data == null)
+          const ShimmerLoading(child: ShimmerBox(height: 300))
+        else if (usersState.error != null)
+          _buildErrorCard(usersState.error!)
+        else if (usersState.data != null)
+          _buildSubscriptionTable(usersState),
+
+        const SizedBox(height: 32),
+        Container(
+          width: double.infinity,
+          height: 1,
+          color: AppColors.glassBorder,
+        ),
+        const SizedBox(height: 24),
+
+        // Tier Update Section
+        Text(
+          'Upgrade / Change User Subscription Tier',
+          style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
+        ),
+        const SizedBox(height: 16),
+        if (usersState.data != null)
+          _buildTierUpdateForm(usersState.data!.items),
+      ],
     );
   }
 
@@ -237,6 +329,15 @@ class _SubscriptionManagerTabState
   }
 
   Widget _buildTierUpdateForm(List<AdminUserResponse> users) {
+    final tiersState = ref.watch(adminTiersProvider);
+    final activeTiers = tiersState.tiers.where((t) => !t.retired).toList();
+
+    // Ensure _selectedTier is a valid option in the list
+    final validSlugs = activeTiers.map((t) => t.slug).toList();
+    if (validSlugs.isNotEmpty && !validSlugs.contains(_selectedTier.toLowerCase())) {
+      _selectedTier = validSlugs.first;
+    }
+
     return Container(
       key: _formKey,
       padding: const EdgeInsets.all(20),
@@ -248,42 +349,32 @@ class _SubscriptionManagerTabState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // User Dropdown Header
           Text(
             'Select User:',
             style: AppTextStyles.label.copyWith(color: AppColors.textSecondary),
           ),
           const SizedBox(height: 8),
 
-          // Searchable User Dropdown with live search across users
           SearchableUserDropdown(
             users: users,
             selectedUser: _selectedUser,
-            hintText: 'Search by name, email, or mobile to change tier...',
             onUserSelected: _selectUser,
-            onSearchRemote: (query) async {
-              final service = ref.read(adminServiceProvider);
-              final result = await service.searchUsers(
-                lookupText: query,
-                size: 20,
-              );
-              return result.items;
-            },
           ),
+          const SizedBox(height: 16),
 
           if (_selectedUser != null) ...[
-            const SizedBox(height: 16),
             _buildSelectedUserDetails(_selectedUser!),
             const SizedBox(height: 20),
+
             Row(
               children: [
-                // Tier Selector
+                // Dynamic Tier Selector
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Target Tier:',
+                        'New Subscription Tier:',
                         style: AppTextStyles.label.copyWith(
                           color: AppColors.textSecondary,
                         ),
@@ -304,20 +395,18 @@ class _SubscriptionManagerTabState
                           style: AppTextStyles.body2.copyWith(
                             color: AppColors.textPrimary,
                           ),
-                          items: const [
-                            DropdownMenuItem(
-                              value: 'free',
-                              child: Text('FREE Tier'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'pro',
-                              child: Text('PRO Tier'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'ultra',
-                              child: Text('ULTRA Tier'),
-                            ),
-                          ],
+                          items: activeTiers.isNotEmpty
+                              ? activeTiers.map((t) {
+                                  return DropdownMenuItem(
+                                    value: t.slug,
+                                    child: Text('${t.name} (${t.slug.toUpperCase()})'),
+                                  );
+                                }).toList()
+                              : const [
+                                  DropdownMenuItem(value: 'free', child: Text('FREE Tier')),
+                                  DropdownMenuItem(value: 'pro', child: Text('PRO Tier')),
+                                  DropdownMenuItem(value: 'ultra', child: Text('ULTRA Tier')),
+                                ],
                           onChanged: (value) {
                             if (value != null) {
                               setState(() => _selectedTier = value);
@@ -357,22 +446,10 @@ class _SubscriptionManagerTabState
                             color: AppColors.textPrimary,
                           ),
                           items: const [
-                            DropdownMenuItem(
-                              value: 'active',
-                              child: Text('Active'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'canceled',
-                              child: Text('Canceled'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'expired',
-                              child: Text('Expired'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'past_due',
-                              child: Text('Past Due'),
-                            ),
+                            DropdownMenuItem(value: 'active', child: Text('Active')),
+                            DropdownMenuItem(value: 'canceled', child: Text('Canceled')),
+                            DropdownMenuItem(value: 'expired', child: Text('Expired')),
+                            DropdownMenuItem(value: 'past_due', child: Text('Past Due')),
                           ],
                           onChanged: (value) {
                             if (value != null) {
@@ -387,7 +464,6 @@ class _SubscriptionManagerTabState
               ],
             ),
             const SizedBox(height: 20),
-            // Confirmation Dialog + Apply Button
             GradientButton(
               height: 48,
               isLoading: _isUpdating,
@@ -448,10 +524,7 @@ class _SubscriptionManagerTabState
                     ),
                     const SizedBox(width: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 7,
-                        vertical: 2,
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
                         color: status == 'active'
                             ? AppColors.accentGreen.withValues(alpha: 0.15)
@@ -460,42 +533,24 @@ class _SubscriptionManagerTabState
                       ),
                       child: Text(
                         status.toUpperCase(),
-                        style: AppTextStyles.badge.copyWith(
+                        style: AppTextStyles.caption.copyWith(
                           color: status == 'active'
                               ? AppColors.accentGreen
                               : AppColors.accentAmber,
-                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 9,
                         ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 3),
-                Wrap(
-                  spacing: 12,
-                  runSpacing: 4,
-                  children: [
-                    Text(
-                      user.email,
-                      style: AppTextStyles.caption.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                    if (user.mobile != null && user.mobile!.isNotEmpty)
-                      Text(
-                        '• ${user.mobile}',
-                        style: AppTextStyles.caption.copyWith(
-                          color: AppColors.textMuted,
-                        ),
-                      ),
-                    if (user.country != null && user.country!.isNotEmpty)
-                      Text(
-                        '• ${user.country}',
-                        style: AppTextStyles.caption.copyWith(
-                          color: AppColors.textMuted,
-                        ),
-                      ),
-                  ],
+                const SizedBox(height: 2),
+                Text(
+                  user.email,
+                  style: AppTextStyles.caption.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
@@ -536,7 +591,7 @@ class _SubscriptionManagerTabState
           style: AppTextStyles.subtitle1.copyWith(color: AppColors.textPrimary),
         ),
         content: Text(
-          'Change ${user.firstName} ${user.lastName}\'s subscription to ${_selectedTier.toUpperCase()} ($_selectedStatus)?\n\nThis will automatically synchronize their database roles.',
+          'Change ${user.firstName} ${user.lastName}\'s subscription to ${_selectedTier.toUpperCase()} ($_selectedStatus)?\n\nThis will automatically synchronize their database roles and grant corresponding privileges.',
           style: AppTextStyles.body2.copyWith(color: AppColors.textSecondary),
         ),
         actions: [
@@ -566,10 +621,9 @@ class _SubscriptionManagerTabState
         status: _selectedStatus,
       );
       await service.updateSubscriptionTier(user.id, request);
-      // Refresh users list
       await ref.read(adminUsersProvider.notifier).loadUsers();
+      await ref.read(adminTiersProvider.notifier).loadTiers(includeRetired: true);
 
-      // Keep _selectedUser synchronized with refreshed list
       final updatedUsers = ref.read(adminUsersProvider).data?.items ?? [];
       final match = updatedUsers.where((u) => u.id == user.id);
       if (match.isNotEmpty) {
@@ -585,7 +639,7 @@ class _SubscriptionManagerTabState
       if (mounted) {
         CenterToast.showSuccess(
           context,
-          'Updated ${user.email} to ${_selectedTier.toUpperCase()}. Roles synchronized!',
+          'Updated ${user.email} to ${_selectedTier.toUpperCase()}. Roles & privileges synchronized!',
           title: 'Subscription Updated',
         );
       }
@@ -599,6 +653,606 @@ class _SubscriptionManagerTabState
       }
     } finally {
       if (mounted) setState(() => _isUpdating = false);
+    }
+  }
+
+  // ─── TAB 1: SUBSCRIPTION TIERS (PLANS CRUD) ──────────────────────────
+
+  Widget _buildTierPlansCrudView() {
+    final tiersState = ref.watch(adminTiersProvider);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Subscription Plans & Tiers',
+                  style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Create custom commercial plans, configure pricing and limits, and bind to database roles.',
+                  style: AppTextStyles.body2.copyWith(color: AppColors.textMuted),
+                ),
+              ],
+            ),
+            GradientButton(
+              height: 42,
+              icon: Icons.add_circle_outline_rounded,
+              iconFirst: true,
+              text: '+ Create New Tier',
+              onPressed: () => _showCreateTierDialog(context),
+            ),
+          ],
+        ),
+        const SizedBox(height: 24),
+
+        if (tiersState.isLoading && tiersState.tiers.isEmpty)
+          const ShimmerLoading(child: ShimmerBox(height: 300))
+        else if (tiersState.error != null)
+          _buildErrorCard(tiersState.error!)
+        else if (tiersState.tiers.isEmpty)
+          _buildEmptyTiersCard()
+        else
+          _buildTiersTable(tiersState.tiers),
+      ],
+    );
+  }
+
+  Widget _buildTiersTable(List<SubscriptionTierModel> tiers) {
+    return AdminDataTable(
+      columns: const [
+        'Tier Name',
+        'Slug',
+        'Bound Role',
+        'Price (Mo / Yr)',
+        'Sessions Quota',
+        'Follow-ups',
+        'YouTube',
+        'Subscribers',
+        'Actions',
+      ],
+      columnWidths: const [1.8, 1.0, 1.4, 1.3, 1.2, 1.1, 1.0, 1.0, 1.3],
+      rows: tiers.map<List<Widget>>((t) {
+        return [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                t.name,
+                style: AppTextStyles.body2.copyWith(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.bold,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+              if (t.description != null && t.description!.isNotEmpty)
+                Text(
+                  t.description!,
+                  style: AppTextStyles.caption.copyWith(color: AppColors.textMuted, fontSize: 10),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
+            ],
+          ),
+          TierBadge(tier: t.slug),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+            decoration: BoxDecoration(
+              color: AppColors.purple.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: AppColors.purple.withValues(alpha: 0.3)),
+            ),
+            child: Text(
+              t.roleName ?? 'None',
+              style: AppTextStyles.badge.copyWith(color: AppColors.purpleLight),
+            ),
+          ),
+          Text(
+            '\$${t.priceMonthly.toInt()} / \$${t.priceAnnual.toInt()}',
+            style: AppTextStyles.body2.copyWith(color: AppColors.emerald, fontWeight: FontWeight.bold),
+          ),
+          _buildLimitChip(
+            isUnlimited: t.isUnlimitedSessions,
+            limitText: '${t.monthlySessionLimit ?? 0}/mo',
+          ),
+          _buildLimitChip(
+            isUnlimited: t.isUnlimitedFollowUps,
+            limitText: '${t.followUpLimitPerStep ?? 0}/step',
+          ),
+          _buildLimitChip(
+            isUnlimited: t.isUnlimitedYoutube,
+            limitText: '${t.youtubeLimitPerStep ?? 0}/step',
+          ),
+          Text(
+            '${t.activeSubscribersCount} users',
+            style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+          ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.edit_outlined, size: 18, color: AppColors.purpleLight),
+                tooltip: 'Edit Tier',
+                onPressed: () => _showEditTierDialog(context, t),
+              ),
+              if (t.slug != 'free')
+                IconButton(
+                  icon: const Icon(Icons.delete_outline_rounded, size: 18, color: AppColors.rose),
+                  tooltip: 'Retire Tier',
+                  onPressed: () => _confirmRetireTier(context, t),
+                ),
+            ],
+          ),
+        ];
+      }).toList(),
+    );
+  }
+
+  Widget _buildLimitChip({required bool isUnlimited, required String limitText}) {
+    if (isUnlimited) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+        decoration: BoxDecoration(
+          color: AppColors.accentGreen.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Text(
+          'Unlimited',
+          style: AppTextStyles.caption.copyWith(
+            color: AppColors.accentGreen,
+            fontWeight: FontWeight.bold,
+            fontSize: 10,
+          ),
+        ),
+      );
+    }
+    return Text(
+      limitText,
+      style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+    );
+  }
+
+  Widget _buildEmptyTiersCard() {
+    return Container(
+      padding: const EdgeInsets.all(40),
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: AppColors.glassBase,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.glassBorder),
+      ),
+      child: Column(
+        children: [
+          Icon(Icons.loyalty_outlined, size: 48, color: AppColors.textMuted),
+          const SizedBox(height: 16),
+          Text(
+            'No Subscription Tiers Found',
+            style: AppTextStyles.subtitle1.copyWith(color: AppColors.textPrimary),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Click "+ Create New Tier" to define your first subscription plan.',
+            style: AppTextStyles.body2.copyWith(color: AppColors.textMuted),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ─── TIER CREATION & EDIT DIALOGS ────────────────────────────────────
+
+  void _showCreateTierDialog(BuildContext context) {
+    _showTierFormDialog(context: context);
+  }
+
+  void _showEditTierDialog(BuildContext context, SubscriptionTierModel tier) {
+    _showTierFormDialog(context: context, existingTier: tier);
+  }
+
+  void _showTierFormDialog({
+    required BuildContext context,
+    SubscriptionTierModel? existingTier,
+  }) {
+    final bool isEdit = existingTier != null;
+    final nameCtrl = TextEditingController(text: existingTier?.name ?? '');
+    final slugCtrl = TextEditingController(text: existingTier?.slug ?? '');
+    final descCtrl = TextEditingController(text: existingTier?.description ?? '');
+    final priceMoCtrl = TextEditingController(text: existingTier?.priceMonthly.toString() ?? '19.0');
+    final priceYrCtrl = TextEditingController(text: existingTier?.priceAnnual.toString() ?? '180.0');
+
+    bool unlimitedSessions = existingTier?.isUnlimitedSessions ?? false;
+    final sessionsCtrl = TextEditingController(
+      text: existingTier?.monthlySessionLimit?.toString() ?? '25',
+    );
+
+    bool unlimitedFollowups = existingTier?.isUnlimitedFollowUps ?? false;
+    final followupsCtrl = TextEditingController(
+      text: existingTier?.followUpLimitPerStep?.toString() ?? '5',
+    );
+
+    bool unlimitedYoutube = existingTier?.isUnlimitedYoutube ?? false;
+    final youtubeCtrl = TextEditingController(
+      text: existingTier?.youtubeLimitPerStep?.toString() ?? '3',
+    );
+
+    bool isPublic = existingTier?.isPublic ?? true;
+
+    final rolesState = ref.read(adminRolesProvider);
+    final activeRoles = rolesState.data?.items.where((r) => !r.retired).toList() ?? [];
+    String selectedRoleId = existingTier?.roleId ?? (activeRoles.isNotEmpty ? activeRoles.first.id : '');
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) {
+          return Dialog(
+            backgroundColor: AppColors.popoverBackground,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            child: Container(
+              width: 580,
+              padding: const EdgeInsets.all(24),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          isEdit ? 'Edit Subscription Tier' : 'Create New Subscription Tier',
+                          style: AppTextStyles.subtitle1.copyWith(
+                            color: AppColors.textPrimary,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.close, color: AppColors.textMuted),
+                          onPressed: () => Navigator.of(ctx).pop(),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Tier Name & Slug
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildDialogTextField(
+                            label: 'Tier Name',
+                            controller: nameCtrl,
+                            hint: 'e.g. Researcher Pro',
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: _buildDialogTextField(
+                            label: 'Slug Identifier',
+                            controller: slugCtrl,
+                            hint: 'e.g. researcher-pro',
+                            enabled: !isEdit,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+
+                    // Bound Role Dropdown
+                    Text('Bound Database Role (Grants Privileges):', style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary)),
+                    const SizedBox(height: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        color: AppColors.glassBase,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: AppColors.glassBorder),
+                      ),
+                      child: DropdownButton<String>(
+                        value: selectedRoleId.isNotEmpty && activeRoles.any((r) => r.id == selectedRoleId)
+                            ? selectedRoleId
+                            : (activeRoles.isNotEmpty ? activeRoles.first.id : null),
+                        isExpanded: true,
+                        dropdownColor: AppColors.popoverBackground,
+                        underline: const SizedBox.shrink(),
+                        style: AppTextStyles.body2.copyWith(color: AppColors.textPrimary),
+                        items: activeRoles.map((r) {
+                          return DropdownMenuItem(
+                            value: r.id,
+                            child: Text('${r.name} (${r.privileges.length} privileges)'),
+                          );
+                        }).toList(),
+                        onChanged: (val) {
+                          if (val != null) setDialogState(() => selectedRoleId = val);
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+
+                    // Pricing
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildDialogTextField(
+                            label: 'Monthly Price (\$)',
+                            controller: priceMoCtrl,
+                            hint: '0.0',
+                            keyboardType: TextInputType.number,
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: _buildDialogTextField(
+                            label: 'Annual Price (\$)',
+                            controller: priceYrCtrl,
+                            hint: '0.0',
+                            keyboardType: TextInputType.number,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Quota Limits Section
+                    Text('Entitlements & Feature Limits:', style: AppTextStyles.label.copyWith(color: AppColors.purpleLight)),
+                    const SizedBox(height: 10),
+
+                    // Monthly Session Quota
+                    _buildQuotaRow(
+                      label: 'Monthly Sessions',
+                      isUnlimited: unlimitedSessions,
+                      controller: sessionsCtrl,
+                      onToggle: (val) => setDialogState(() => unlimitedSessions = val),
+                    ),
+                    const SizedBox(height: 10),
+
+                    // Follow-ups Quota
+                    _buildQuotaRow(
+                      label: 'Follow-ups / Step',
+                      isUnlimited: unlimitedFollowups,
+                      controller: followupsCtrl,
+                      onToggle: (val) => setDialogState(() => unlimitedFollowups = val),
+                    ),
+                    const SizedBox(height: 10),
+
+                    // YouTube Videos Quota
+                    _buildQuotaRow(
+                      label: 'YouTube Videos / Step',
+                      isUnlimited: unlimitedYoutube,
+                      controller: youtubeCtrl,
+                      onToggle: (val) => setDialogState(() => unlimitedYoutube = val),
+                    ),
+                    const SizedBox(height: 14),
+
+                    // Public Catalog Switch
+                    Row(
+                      children: [
+                        Switch(
+                          value: isPublic,
+                          activeThumbColor: AppColors.purpleLight,
+                          onChanged: (val) => setDialogState(() => isPublic = val),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Show on Public Pricing Page',
+                          style: AppTextStyles.body2.copyWith(color: AppColors.textPrimary),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Buttons
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          onPressed: () => Navigator.of(ctx).pop(),
+                          child: Text('Cancel', style: AppTextStyles.button.copyWith(color: AppColors.textMuted)),
+                        ),
+                        const SizedBox(width: 12),
+                        GradientButton(
+                          height: 42,
+                          text: isEdit ? 'Save Changes' : 'Create Tier',
+                          onPressed: () async {
+                            final name = nameCtrl.text.trim();
+                            final slug = slugCtrl.text.trim().toLowerCase();
+                            if (name.isEmpty || slug.isEmpty || selectedRoleId.isEmpty) {
+                              CenterToast.showWarning(context, 'Name, Slug, and Bound Role are required.');
+                              return;
+                            }
+
+                            final payload = {
+                              'name': name,
+                              'slug': slug,
+                              'description': descCtrl.text.trim(),
+                              'role_id': selectedRoleId,
+                              'price_monthly': double.tryParse(priceMoCtrl.text.trim()) ?? 0.0,
+                              'price_annual': double.tryParse(priceYrCtrl.text.trim()) ?? 0.0,
+                              'currency': 'USD',
+                              'monthly_session_limit': unlimitedSessions ? null : int.tryParse(sessionsCtrl.text.trim()),
+                              'follow_up_limit_per_step': unlimitedFollowups ? null : int.tryParse(followupsCtrl.text.trim()),
+                              'youtube_limit_per_step': unlimitedYoutube ? null : int.tryParse(youtubeCtrl.text.trim()),
+                              'is_public': isPublic,
+                            };
+
+                            bool success;
+                            if (isEdit) {
+                              success = await ref.read(adminTiersProvider.notifier).updateTier(existingTier.id, payload);
+                            } else {
+                              success = await ref.read(adminTiersProvider.notifier).createTier(payload);
+                            }
+
+                            if (success && ctx.mounted) {
+                              Navigator.of(ctx).pop();
+                              CenterToast.showSuccess(
+                                context,
+                                isEdit ? "Tier '$name' updated." : "Tier '$name' created successfully.",
+                              );
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildDialogTextField({
+    required String label,
+    required TextEditingController controller,
+    required String hint,
+    bool enabled = true,
+    TextInputType keyboardType = TextInputType.text,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary)),
+        const SizedBox(height: 6),
+        TextField(
+          controller: controller,
+          enabled: enabled,
+          keyboardType: keyboardType,
+          style: AppTextStyles.body2.copyWith(color: enabled ? AppColors.textPrimary : AppColors.textMuted),
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: AppTextStyles.caption.copyWith(color: AppColors.textMuted),
+            filled: true,
+            fillColor: AppColors.glassBase,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(color: AppColors.glassBorder),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(color: AppColors.glassBorder),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildQuotaRow({
+    required String label,
+    required bool isUnlimited,
+    required TextEditingController controller,
+    required ValueChanged<bool> onToggle,
+  }) {
+    return Row(
+      children: [
+        SizedBox(
+          width: 160,
+          child: Text(label, style: AppTextStyles.body2.copyWith(color: AppColors.textPrimary)),
+        ),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Checkbox(
+              value: isUnlimited,
+              activeColor: AppColors.accentGreen,
+              onChanged: (val) => onToggle(val ?? false),
+            ),
+            Text('Unlimited', style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary)),
+          ],
+        ),
+        const SizedBox(width: 14),
+        if (!isUnlimited)
+          SizedBox(
+            width: 90,
+            child: TextField(
+              controller: controller,
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              style: AppTextStyles.body2.copyWith(color: AppColors.textPrimary),
+              decoration: InputDecoration(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                filled: true,
+                fillColor: AppColors.glassBase,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+            ),
+          )
+        else
+          Text(
+            '(No limit)',
+            style: AppTextStyles.caption.copyWith(color: AppColors.accentGreen, fontStyle: FontStyle.italic),
+          ),
+      ],
+    );
+  }
+
+  Future<void> _confirmRetireTier(BuildContext context, SubscriptionTierModel tier) async {
+    if (tier.slug == 'free') {
+      CenterToast.showWarning(context, "Default 'free' tier cannot be retired.");
+      return;
+    }
+
+    if (tier.activeSubscribersCount > 0) {
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          backgroundColor: AppColors.popoverBackground,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Text('Cannot Retire Tier', style: AppTextStyles.subtitle1.copyWith(color: AppColors.rose)),
+          content: Text(
+            "There are currently ${tier.activeSubscribersCount} active subscribers on '${tier.name}'. Please reassign them to another tier in User Subscriptions before retiring.",
+            style: AppTextStyles.body2.copyWith(color: AppColors.textSecondary),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: Text('OK', style: AppTextStyles.button.copyWith(color: AppColors.textPrimary)),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.popoverBackground,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text('Confirm Retire Tier', style: AppTextStyles.subtitle1.copyWith(color: AppColors.rose)),
+        content: Text(
+          "Are you sure you want to retire tier '${tier.name}' (${tier.slug})? It will no longer be visible or purchasable.",
+          style: AppTextStyles.body2.copyWith(color: AppColors.textSecondary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text('Cancel', style: AppTextStyles.button.copyWith(color: AppColors.textMuted)),
+          ),
+          GradientButton(
+            height: 38,
+            text: 'Retire Tier',
+            onPressed: () => Navigator.of(ctx).pop(true),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      final success = await ref.read(adminTiersProvider.notifier).retireTier(tier.id);
+      if (success && context.mounted) {
+        CenterToast.showSuccess(context, "Tier '${tier.name}' retired.");
+      }
     }
   }
 
@@ -621,7 +1275,10 @@ class _SubscriptionManagerTabState
             ),
           ),
           TextButton(
-            onPressed: () => ref.read(adminUsersProvider.notifier).loadUsers(),
+            onPressed: () {
+              ref.read(adminUsersProvider.notifier).loadUsers();
+              ref.read(adminTiersProvider.notifier).loadTiers(includeRetired: true);
+            },
             child: Text(
               'Retry',
               style: AppTextStyles.button.copyWith(color: AppColors.rose),

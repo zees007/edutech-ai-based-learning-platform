@@ -23,9 +23,13 @@ class TierBadge extends StatelessWidget {
         bgColor = AppColors.purpleDeep;
         label = 'ULTRA';
         break;
-      default:
+      case 'free':
         bgColor = AppColors.slate700;
         label = 'FREE';
+        break;
+      default:
+        bgColor = AppColors.accentCyan;
+        label = t.toUpperCase();
     }
 
     return Container(

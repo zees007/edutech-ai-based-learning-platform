@@ -159,7 +159,7 @@ def require_privilege(*privilege_codes: str):
         )
         raise ForbiddenException(
             error_code="PERMISSION_DENIED",
-            errors="Access denied. You do not have permission to perform this action.",
+            errors=f"Access denied. Missing required privilege: {codes_str}",
         )
 
     return privilege_checker

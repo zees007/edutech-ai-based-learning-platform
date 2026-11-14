@@ -51,6 +51,7 @@ This document maps all privileges across the system, explains their functionalit
 | `ET_UPGRADE_SUBSCRIPTION` | **Upgrade Subscription**. Process a tier upgrade checkout. | ✅ | ✅ | ✅ | ✅ |
 | `ET_DOWNGRADE_SUBSCRIPTION` | **Downgrade Subscription**. Process a tier downgrade. | - | ✅ | ✅ | ✅ |
 | `ET_MANAGE_BILLING` | **Manage Global Billing**. View system-wide transactions and process refunds. | - | - | - | ✅ |
+| `ET_MANAGE_TIERS` | **Manage Subscription Tiers**. Create, update, view, and retire dynamic subscription plans and limit packages. | - | - | - | ✅ |
 
 ## 5. Learning Module
 
@@ -70,15 +71,7 @@ This document maps all privileges across the system, explains their functionalit
 | `ET_MANAGE_KNOWLEDGE_BASE` | **Manage Knowledge Base**. Manually curate vector DB documents. | - | - | - | ✅ |
 
 
-## 5.1 Video Module
-
-| Code | Name & Explanation | Free | Pro | Ultra | Admin |
-| :--- | :--- | :---: | :---: | :---: | :---: |
-| `ET_FULL_ACCESS_VIDEO` | **Video Management**. Parent node for video integrations. | - | - | - | ✅ |
-| `ET_ACCESS_YOUTUBE_BASIC` | **Basic YouTube Search**. 1 curated video clip per learning step. | ✅ | ✅ | ✅ | ✅ |
-| `ET_ACCESS_YOUTUBE_ADVANCED` | **Advanced YouTube Search**. Up to 5 curated video clips per step (3 for Pro, 5 for Ultra). | - | ✅ | ✅ | ✅ |
-
-## 5.2 Export Module
+## 5.1 Export Module
 
 | Code | Name & Explanation | Free | Pro | Ultra | Admin |
 | :--- | :--- | :---: | :---: | :---: | :---: |

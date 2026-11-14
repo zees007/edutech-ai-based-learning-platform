@@ -392,13 +392,15 @@ class SessionResponse(BaseModel):
 
 
 class SessionQuotaResponse(BaseModel):
-    """Monthly session quota status for the authenticated user."""
+    """Monthly session quota and dynamic limits for the authenticated user."""
 
-    tier: str = Field(description="User's current subscription tier (free, pro, ultra).")
+    tier: str = Field(description="User's current subscription tier slug.")
     is_unlimited: bool = Field(description="Whether the user has unlimited sessions.")
     used: int = Field(description="Number of AI sessions used/consumed this month.")
-    limit: int | None = Field(default=None, description="Monthly session limit (10 for free, null if unlimited).")
+    limit: int | None = Field(default=None, description="Monthly session limit (null if unlimited).")
     remaining: int | None = Field(default=None, description="Remaining sessions available this month.")
+    follow_up_limit: int | None = Field(default=None, description="Max follow-ups per step (null if unlimited).")
+    youtube_limit: int | None = Field(default=None, description="Max videos per step (null if unlimited).")
 
 
 class HealthResponse(BaseModel):

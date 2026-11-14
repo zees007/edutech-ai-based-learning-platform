@@ -34,6 +34,12 @@ Adaptive AI-powered learning platform with multi-agent Socratic tutoring, YouTub
     *   `GET /api/v1/academic/search`
 *   **Quiz** (`learning_service.dart`):
     *   `POST /api/v1/quiz/submit`
+*   **Admin & Subscription Tiers** (`admin_service.dart`):
+    *   `GET /api/v1/admin/metrics`
+    *   `GET /api/v1/admin/tiers`
+    *   `POST /api/v1/admin/tiers`
+    *   `PUT /api/v1/admin/tiers/{tier_id}`
+    *   `DELETE /api/v1/admin/tiers/{tier_id}`
 
 **Pending / Not Integrated APIs:**
 
@@ -1705,6 +1711,227 @@ Update the value and optional display order for a system setting.
   "order_number": 10,
   "created_at": "2026-10-25T10:00:00Z",
   "updated_at": "2026-10-25T10:05:00Z"
+}
+```
+
+---
+
+## List Subscription Tiers (Admin)
+**Endpoint:** `GET /api/v1/admin/tiers`
+
+Retrieve all registered subscription tiers and commercial packages, including role bindings, usage limits, pricing, and active subscriber counts.
+
+**Privilege Required:** `ET_MANAGE_TIERS` or `ET_FULL_ACCESS_SUBSCRIPTION`
+
+### Query Parameters
+- `include_retired` *(optional, bool, default=false)*: Include retired/soft-deleted tiers.
+
+### Response
+**200 Successful Response**
+```json
+[
+  {
+    "id": "8717d06d-2ac5-49d3-8b2a-c8ce88f7238d",
+    "slug": "free",
+    "name": "Free Tier",
+    "description": "Essential learning journey with monthly AI credits and basic quizzes.",
+    "role_id": "e049ec66-70b5-4a5c-9336-0c0f8ecef1d0",
+    "role_name": "Free",
+    "price_monthly": 0.0,
+    "price_annual": 0.0,
+    "currency": "USD",
+    "monthly_session_limit": 10,
+    "follow_up_limit_per_step": 2,
+    "youtube_limit_per_step": 1,
+    "is_public": true,
+    "order_index": 1,
+    "retired": false,
+    "created_at": "2026-11-14T20:32:02.712000",
+    "active_subscribers_count": 1
+  },
+  {
+    "id": "c8840179-a9ee-4b5f-84c2-e90e44ff171e",
+    "slug": "pro",
+    "name": "Pro Tier",
+    "description": "Deep-dive learning mode, advanced YouTube curation, and step regeneration.",
+    "role_id": "6aaec1b9-f48c-4e32-acce-cad6aca12cc8",
+    "role_name": "Pro",
+    "price_monthly": 19.0,
+    "price_annual": 180.0,
+    "currency": "USD",
+    "monthly_session_limit": null,
+    "follow_up_limit_per_step": 5,
+    "youtube_limit_per_step": 3,
+    "is_public": true,
+    "order_index": 2,
+    "retired": false,
+    "created_at": "2026-11-14T20:32:03.831000",
+    "active_subscribers_count": 1
+  },
+  {
+    "id": "105f555f-ab4b-4146-bc63-aa1022e14d98",
+    "slug": "ultra",
+    "name": "Ultra Tier",
+    "description": "Unlimited follow-ups, full-text research papers, PDF exports, and top AI models.",
+    "role_id": "fbfbe848-ef2c-4b42-9e03-46db6cab1940",
+    "role_name": "Ultra",
+    "price_monthly": 49.0,
+    "price_annual": 470.0,
+    "currency": "USD",
+    "monthly_session_limit": null,
+    "follow_up_limit_per_step": null,
+    "youtube_limit_per_step": 5,
+    "is_public": true,
+    "order_index": 3,
+    "retired": false,
+    "created_at": "2026-11-14T20:32:04.753000",
+    "active_subscribers_count": 2
+  }
+]
+```
+
+**403 Forbidden**
+```json
+{
+  "detail": "Access denied. Missing required privilege: ET_MANAGE_TIERS, ET_FULL_ACCESS_SUBSCRIPTION"
+}
+```
+
+---
+
+## Create Subscription Tier (Admin)
+**Endpoint:** `POST /api/v1/admin/tiers`
+
+Create a new dynamic subscription tier with assigned role permissions, billing prices, and usage constraints.
+
+**Privilege Required:** `ET_MANAGE_TIERS` or `ET_FULL_ACCESS_SUBSCRIPTION`
+
+### Request Body (application/json)
+```json
+{
+  "slug": "enterprise",
+  "name": "Enterprise Plan",
+  "description": "Unlimited sessions, team collaboration, and priority LLM routing.",
+  "role_id": "fbfbe848-ef2c-4b42-9e03-46db6cab1940",
+  "price_monthly": 99.0,
+  "price_annual": 990.0,
+  "currency": "USD",
+  "monthly_session_limit": null,
+  "follow_up_limit_per_step": null,
+  "youtube_limit_per_step": 5,
+  "is_public": true,
+  "order_index": 4
+}
+```
+
+### Response
+**201 Created**
+```json
+{
+  "id": "e3057161-5b9c-48c0-bc66-3d237198bbda",
+  "slug": "enterprise",
+  "name": "Enterprise Plan",
+  "description": "Unlimited sessions, team collaboration, and priority LLM routing.",
+  "role_id": "fbfbe848-ef2c-4b42-9e03-46db6cab1940",
+  "role_name": "Ultra",
+  "price_monthly": 99.0,
+  "price_annual": 990.0,
+  "currency": "USD",
+  "monthly_session_limit": null,
+  "follow_up_limit_per_step": null,
+  "youtube_limit_per_step": 5,
+  "is_public": true,
+  "order_index": 4,
+  "retired": false,
+  "created_at": "2026-11-14T20:45:00.000000",
+  "active_subscribers_count": 0
+}
+```
+
+**400 Bad Request**
+```json
+{
+  "error_code": "TIER_SLUG_EXISTS",
+  "message": "Subscription tier with slug 'enterprise' already exists."
+}
+```
+
+---
+
+## Update Subscription Tier (Admin)
+**Endpoint:** `PUT /api/v1/admin/tiers/{tier_id}`
+
+Update configuration, display details, role bindings, or feature limits of an existing subscription tier. Note that tier `slug` is immutable once created.
+
+**Privilege Required:** `ET_MANAGE_TIERS` or `ET_FULL_ACCESS_SUBSCRIPTION`
+
+### Path Parameters
+- `tier_id` *(string, required)*: Unique UUID of the tier.
+
+### Request Body (application/json)
+```json
+{
+  "name": "Pro Tier Plus",
+  "description": "Updated Pro package with 10 follow-ups per step.",
+  "price_monthly": 24.0,
+  "price_annual": 220.0,
+  "follow_up_limit_per_step": 10,
+  "youtube_limit_per_step": 4,
+  "is_public": true,
+  "order_index": 2
+}
+```
+
+### Response
+**200 Successful Response**
+```json
+{
+  "id": "c8840179-a9ee-4b5f-84c2-e90e44ff171e",
+  "slug": "pro",
+  "name": "Pro Tier Plus",
+  "description": "Updated Pro package with 10 follow-ups per step.",
+  "role_id": "6aaec1b9-f48c-4e32-acce-cad6aca12cc8",
+  "role_name": "Pro",
+  "price_monthly": 24.0,
+  "price_annual": 220.0,
+  "currency": "USD",
+  "monthly_session_limit": null,
+  "follow_up_limit_per_step": 10,
+  "youtube_limit_per_step": 4,
+  "is_public": true,
+  "order_index": 2,
+  "retired": false,
+  "created_at": "2026-11-14T20:32:03.831000",
+  "active_subscribers_count": 1
+}
+```
+
+---
+
+## Retire Subscription Tier (Admin)
+**Endpoint:** `DELETE /api/v1/admin/tiers/{tier_id}`
+
+Soft-retire an existing tier (`retired=true`). Prevents future subscriptions to this plan while keeping historical records intact.
+
+**Privilege Required:** `ET_MANAGE_TIERS` or `ET_FULL_ACCESS_SUBSCRIPTION`
+
+### Constraints & Guardrails
+- **Default System Tiers Safeguard:** Core system tiers (`free`, `pro`, `ultra`) cannot be retired. Returns `400 Bad Request` with `CANNOT_RETIRE_DEFAULT_TIER`.
+- **Active Subscriber Safeguard:** A tier with active paying subscribers cannot be retired until members are migrated or their subscriptions expire. Returns `400 Bad Request` with `ACTIVE_SUBSCRIBERS_EXIST`.
+
+### Response
+**200 Successful Response**
+```json
+{
+  "message": "Subscription tier 'enterprise' has been retired successfully."
+}
+```
+
+**400 Bad Request**
+```json
+{
+  "error_code": "CANNOT_RETIRE_DEFAULT_TIER",
+  "message": "Cannot retire default system tier 'free'."
 }
 ```
 

@@ -8,6 +8,7 @@ import '../../data/models/admin/role_edit_request.dart';
 import '../../data/models/admin/subscription_update_request.dart';
 import '../../data/models/admin/system_setting_model.dart';
 import '../../data/models/admin/setting_update_request.dart';
+import '../../data/models/admin/subscription_tier_model.dart';
 import '../services/admin_service.dart';
 import '../services/subscription_service.dart';
 
@@ -439,5 +440,152 @@ class AdminSettingsNotifier extends Notifier<AdminSettingsState> {
 final adminSettingsProvider =
     NotifierProvider<AdminSettingsNotifier, AdminSettingsState>(() {
   return AdminSettingsNotifier();
+});
+
+// ─── Dynamic Subscription Tiers State & Notifier ────────────────────
+
+class AdminTiersState {
+  final List<SubscriptionTierModel> tiers;
+  final bool isLoading;
+  final bool isSaving;
+  final String? error;
+  final String? successMessage;
+  final SubscriptionTierModel? selectedTier;
+
+  AdminTiersState({
+    this.tiers = const [],
+    this.isLoading = false,
+    this.isSaving = false,
+    this.error,
+    this.successMessage,
+    this.selectedTier,
+  });
+
+  AdminTiersState copyWith({
+    List<SubscriptionTierModel>? tiers,
+    bool? isLoading,
+    bool? isSaving,
+    String? error,
+    String? successMessage,
+    SubscriptionTierModel? selectedTier,
+    bool clearSelected = false,
+  }) {
+    return AdminTiersState(
+      tiers: tiers ?? this.tiers,
+      isLoading: isLoading ?? this.isLoading,
+      isSaving: isSaving ?? this.isSaving,
+      error: error,
+      successMessage: successMessage,
+      selectedTier: clearSelected ? null : (selectedTier ?? this.selectedTier),
+    );
+  }
+}
+
+class AdminTiersNotifier extends Notifier<AdminTiersState> {
+  @override
+  AdminTiersState build() {
+    return AdminTiersState();
+  }
+
+  void selectTier(SubscriptionTierModel? tier) {
+    state = state.copyWith(selectedTier: tier, clearSelected: tier == null);
+  }
+
+  Future<void> loadTiers({bool includeRetired = false}) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final service = ref.read(adminServiceProvider);
+      final tiers = await service.getSubscriptionTiers(includeRetired: includeRetired);
+      state = state.copyWith(
+        tiers: tiers,
+        isLoading: false,
+        selectedTier: state.selectedTier != null
+            ? tiers.firstWhere(
+                (t) => t.id == state.selectedTier!.id,
+                orElse: () => tiers.isNotEmpty ? tiers.first : state.selectedTier!,
+              )
+            : (tiers.isNotEmpty ? tiers.first : null),
+      );
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: e.toString().replaceFirst('Exception: ', ''),
+      );
+    }
+  }
+
+  Future<bool> createTier(Map<String, dynamic> data) async {
+    state = state.copyWith(isSaving: true, error: null, successMessage: null);
+    try {
+      final service = ref.read(adminServiceProvider);
+      final newTier = await service.createSubscriptionTier(data);
+      final updatedList = [...state.tiers, newTier];
+      state = state.copyWith(
+        tiers: updatedList,
+        selectedTier: newTier,
+        isSaving: false,
+        successMessage: "Subscription tier '${newTier.name}' created successfully!",
+      );
+      ref.invalidate(pricingCatalogProvider);
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isSaving: false,
+        error: e.toString().replaceFirst('Exception: ', ''),
+      );
+      return false;
+    }
+  }
+
+  Future<bool> updateTier(String tierId, Map<String, dynamic> data) async {
+    state = state.copyWith(isSaving: true, error: null, successMessage: null);
+    try {
+      final service = ref.read(adminServiceProvider);
+      final updated = await service.updateSubscriptionTierDetails(tierId, data);
+      final updatedList = state.tiers.map((t) => t.id == tierId ? updated : t).toList();
+      state = state.copyWith(
+        tiers: updatedList,
+        selectedTier: updated,
+        isSaving: false,
+        successMessage: "Subscription tier '${updated.name}' updated successfully!",
+      );
+      ref.invalidate(pricingCatalogProvider);
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isSaving: false,
+        error: e.toString().replaceFirst('Exception: ', ''),
+      );
+      return false;
+    }
+  }
+
+  Future<bool> retireTier(String tierId) async {
+    state = state.copyWith(isSaving: true, error: null, successMessage: null);
+    try {
+      final service = ref.read(adminServiceProvider);
+      await service.retireSubscriptionTier(tierId);
+      final updatedList = state.tiers.where((t) => t.id != tierId).toList();
+      state = state.copyWith(
+        tiers: updatedList,
+        clearSelected: state.selectedTier?.id == tierId,
+        isSaving: false,
+        successMessage: 'Subscription tier retired successfully.',
+      );
+      ref.invalidate(pricingCatalogProvider);
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isSaving: false,
+        error: e.toString().replaceFirst('Exception: ', ''),
+      );
+      return false;
+    }
+  }
+}
+
+final adminTiersProvider =
+    NotifierProvider<AdminTiersNotifier, AdminTiersState>(() {
+  return AdminTiersNotifier();
 });
 

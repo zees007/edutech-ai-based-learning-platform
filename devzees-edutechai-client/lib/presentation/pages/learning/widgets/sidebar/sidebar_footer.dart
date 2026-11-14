@@ -39,11 +39,10 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
 
     final bool isAdmin = roles.contains('admin') || perms.isSuperAdmin;
     final bool isUltra = (isSubActive && sub.tier.toLowerCase() == 'ultra') || roles.contains('ultra');
-    final bool isPro = (isSubActive && sub.tier.toLowerCase() == 'pro') || roles.contains('pro');
 
     Widget? upgradeButton;
     if (perms.canUpgradeSubscription && !isAdmin && !isUltra) {
-      final label = isPro ? 'Upgrade to Ultra' : 'Upgrade to PRO';
+      final label = perms.isPremium ? 'Upgrade Plan' : 'Upgrade to PRO';
       upgradeButton = _buildMenuItem(
         context,
         label,

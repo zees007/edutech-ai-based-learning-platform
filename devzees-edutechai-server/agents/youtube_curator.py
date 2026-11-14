@@ -89,25 +89,47 @@ class YouTubeCuratorAgent(BaseAgent):
             from models.db_models import User, Role
             from sqlalchemy.orm import selectinload
             from sqlalchemy import select
+            from models.db_models import Subscription
 
             user_roles = []
+            tier_youtube_limit: int | None = 1
+            is_unlimited_youtube = False
+
             async with get_db_session() as db:
                 res = await db.execute(
-                    select(User).options(selectinload(User.roles).selectinload(Role.privileges))
+                    select(User)
+                    .options(
+                        selectinload(User.roles).selectinload(Role.privileges),
+                        selectinload(User.subscription).selectinload(Subscription.tier_ref)
+                    )
                     .where(User.id == memory.user_id)
                 )
                 u = res.scalar_one_or_none()
                 if u:
                     user_roles = [r.name for r in u.roles if not r.retired]
+                    if "Admin" in user_roles:
+                        is_unlimited_youtube = True
+                    elif u.subscription and u.subscription.tier_ref:
+                        if u.subscription.tier_ref.youtube_limit_per_step is None:
+                            is_unlimited_youtube = True
+                        else:
+                            tier_youtube_limit = u.subscription.tier_ref.youtube_limit_per_step
+                    else:
+                        tier_youtube_limit = None
 
             from config import get_settings
             settings = get_settings()
 
-            limit = settings.free_youtube_limit
-            if "Ultra" in user_roles or "Admin" in user_roles:
+            if is_unlimited_youtube:
+                limit = len(videos)
+            elif tier_youtube_limit is not None:
+                limit = tier_youtube_limit
+            elif "Ultra" in user_roles or "Admin" in user_roles:
                 limit = settings.ultra_youtube_limit
             elif "Pro" in user_roles:
                 limit = settings.pro_youtube_limit
+            else:
+                limit = settings.free_youtube_limit
 
             query_text = f"{step.title} {step.description}"
             selected_videos = videos[:limit]

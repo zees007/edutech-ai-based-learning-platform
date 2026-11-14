@@ -16,7 +16,6 @@ enum SettingCategory {
   all('All', Icons.grid_view),
   models('AI Models', Icons.psychology_outlined),
   limits('Limits & Quotas', Icons.speed_outlined),
-  pricing('Pricing', Icons.attach_money),
   coupons('Promotions', Icons.local_offer_outlined),
   other('Other', Icons.tune_outlined);
 
@@ -72,12 +71,6 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
     final upper = code.toUpperCase();
     if (upper.contains('MODEL') || upper.contains('LLM')) return SettingCategory.models;
     if (upper.contains('LIMIT')) return SettingCategory.limits;
-    if (upper.contains('PRICE') ||
-        upper.contains('MONTHLY') ||
-        upper.contains('ANNUALLY') ||
-        upper.contains('YEARLY')) {
-      return SettingCategory.pricing;
-    }
     if (upper.contains('COUPON') || upper.contains('PROMO')) return SettingCategory.coupons;
     return SettingCategory.other;
   }
@@ -88,8 +81,6 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
         return AppColors.purpleLight;
       case SettingCategory.limits:
         return AppColors.accentCyan;
-      case SettingCategory.pricing:
-        return AppColors.emerald;
       case SettingCategory.coupons:
         return AppColors.accentPink;
       case SettingCategory.other:
@@ -229,7 +220,7 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
               ),
               const SizedBox(height: 6),
               Text(
-                'Configure platform runtime parameters, AI LLM models, tier limits, pricing, and promotional coupons.',
+                'Configure platform runtime parameters, AI LLM models, system limits, and promotional coupons.',
                 style: AppTextStyles.body2.copyWith(color: AppColors.textMuted),
               ),
             ],
@@ -774,7 +765,7 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
             ),
             const SizedBox(height: 4),
             Text(
-              'Direct string value. For LLMs, enter the exact model name. For limits, enter an integer. For pricing, enter a decimal amount.',
+              'Direct string value. For LLMs, enter the exact model name. For limits, enter an integer. For promos, enter text.',
               style: AppTextStyles.caption.copyWith(color: AppColors.textMuted),
             ),
             const SizedBox(height: 8),
