@@ -398,8 +398,8 @@ class FeedbackRecord(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     feedback_id: Mapped[str] = mapped_column(String(36), unique=True, index=True, nullable=False)
-    session_id: Mapped[str] = mapped_column(
-        String(24), ForeignKey("sessions.session_id", ondelete="CASCADE"), nullable=False, index=True
+    session_id: Mapped[str | None] = mapped_column(
+        String(24), ForeignKey("sessions.session_id", ondelete="CASCADE"), nullable=True, index=True
     )
     user_id: Mapped[str] = mapped_column(
         String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
@@ -426,7 +426,7 @@ class FeedbackRecord(Base):
     )
 
     user: Mapped[User] = relationship("User", back_populates="feedbacks")
-    session: Mapped[SessionRecord] = relationship("SessionRecord", back_populates="feedback")
+    session: Mapped[SessionRecord | None] = relationship("SessionRecord", back_populates="feedback")
 
     def __repr__(self) -> str:
         return f"<Feedback {self.feedback_id} session={self.session_id} rating={self.rating} status={self.status}>"

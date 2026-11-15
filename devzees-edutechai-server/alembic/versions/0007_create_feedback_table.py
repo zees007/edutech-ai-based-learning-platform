@@ -24,7 +24,7 @@ def upgrade() -> None:
         "feedbacks",
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
         sa.Column("feedback_id", sa.String(length=36), nullable=False),
-        sa.Column("session_id", sa.String(length=24), nullable=False),
+        sa.Column("session_id", sa.String(length=24), nullable=True),
         sa.Column("user_id", sa.String(length=36), nullable=False),
         sa.Column("rating", sa.Integer(), nullable=False),
         sa.Column("quote", sa.String(length=250), nullable=False),
