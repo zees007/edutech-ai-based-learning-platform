@@ -133,7 +133,7 @@ class SessionsNotifier extends Notifier<SessionsState> {
     }
   }
 
-  Future<void> deleteSession(String sessionId) async {
+  Future<bool> deleteSession(String sessionId) async {
     try {
       await _service.deleteSession(sessionId);
       // Remove from list locally to avoid refetching
@@ -142,9 +142,10 @@ class SessionsNotifier extends Notifier<SessionsState> {
         items: updatedItems,
         total: state.total > 0 ? state.total - 1 : 0,
       );
+      return true;
     } catch (e) {
-      // Could show error in UI or snackbar, here we just ignore or log
       debugPrint("Failed to delete session: $e");
+      return false;
     }
   }
 
