@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../core/providers/active_session_provider.dart';
+import '../../../../../core/services/quiz_store.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/theme_palette.dart';
 import '../../../../../core/theme/text_styles.dart';
@@ -76,6 +77,7 @@ class _StepContentContainerState extends ConsumerState<_StepContentContainer> {
     // Check quiz gating: disable forward navigation if quiz is pending
     final hasQuiz = currentStep.quiz != null && currentStep.quiz!.isNotEmpty;
     final isQuizDone = currentStep.quizScore != null ||
+        QuizSubmissionStore.hasSubmission(widget.session.sessionId, currentIndex) ||
         (currentStep.userAnswers != null &&
             currentStep.userAnswers!.isNotEmpty &&
             currentStep.userAnswers!.values.any(

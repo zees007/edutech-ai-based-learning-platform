@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/learning/session_model.dart';
 import '../services/learning_service.dart';
+import '../services/quiz_store.dart';
 
 final learningServiceProvider = Provider<LearningService>((ref) {
   return LearningService();
@@ -135,6 +136,8 @@ class SessionsNotifier extends Notifier<SessionsState> {
 
   Future<bool> deleteSession(String sessionId) async {
     try {
+      QuizSubmissionStore.clearSession(sessionId);
+      QuizDraftStore.clearSession(sessionId);
       await _service.deleteSession(sessionId);
       // Remove from list locally to avoid refetching
       final updatedItems = state.items.where((s) => s.sessionId != sessionId).toList();
@@ -151,6 +154,8 @@ class SessionsNotifier extends Notifier<SessionsState> {
 
   Future<void> cancelSession(String sessionId) async {
     try {
+      QuizSubmissionStore.clearSession(sessionId);
+      QuizDraftStore.clearSession(sessionId);
       await _service.cancelSession(sessionId);
     } catch (e) {
       debugPrint("Failed to cancel session on server: $e");
@@ -164,6 +169,8 @@ class SessionsNotifier extends Notifier<SessionsState> {
   }
 
   void removeSessionLocally(String sessionId) {
+    QuizSubmissionStore.clearSession(sessionId);
+    QuizDraftStore.clearSession(sessionId);
     final updatedItems = state.items.where((s) => s.sessionId != sessionId).toList();
     state = state.copyWith(
       items: updatedItems,

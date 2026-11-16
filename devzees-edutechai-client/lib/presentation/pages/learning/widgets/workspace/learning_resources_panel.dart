@@ -153,6 +153,12 @@ class _LearningResourcesPanelState extends ConsumerState<LearningResourcesPanel>
 
   bool _isQuizCompleted(dynamic step) {
     if (step == null) return false;
+    final sessionId = widget.session.sessionId?.toString() ?? '';
+    final stepIdx = (step.index is int) ? step.index as int : widget.stepIndex;
+    if (QuizSubmissionStore.hasSubmission(sessionId, stepIdx) ||
+        QuizSubmissionStore.hasSubmission(sessionId, widget.stepIndex)) {
+      return true;
+    }
     if (step.quizScore != null) return true;
     if (step.userAnswers != null && step.userAnswers is Map) {
       final map = step.userAnswers as Map;
@@ -174,14 +180,25 @@ class _LearningResourcesPanelState extends ConsumerState<LearningResourcesPanel>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
-    _tabController.addListener(_onTabControllerChanged);
-
-    // Check if quiz is already completed
     final step = widget.currentStep;
-    if (_isQuizCompleted(step)) {
+    final bool isCompleted = _isQuizCompleted(step);
+    if (isCompleted) {
       _quizSubmitted = true;
     }
+    final bool isCurrentMilestone =
+        widget.stepIndex == widget.session.currentStepIndex;
+    final bool isStepNotComplete =
+        widget.currentStep != null && widget.currentStep.status != 'complete';
+    final bool shouldOpenQuiz =
+        isCompleted && (isStepNotComplete || isCurrentMilestone);
+    final int initialIndex = shouldOpenQuiz ? 2 : 0;
+    _activeTabIndex = initialIndex;
+    _tabController = TabController(
+      length: 3,
+      vsync: this,
+      initialIndex: initialIndex,
+    );
+    _tabController.addListener(_onTabControllerChanged);
   }
 
   void _onTabControllerChanged() {
@@ -208,12 +225,22 @@ class _LearningResourcesPanelState extends ConsumerState<LearningResourcesPanel>
         oldWidget.currentStep != widget.currentStep ||
         sessionChanged) {
       final step = widget.currentStep;
-      _quizSubmitted = _isQuizCompleted(step);
-      // Reset to first tab on step change or session switch
+      final bool isCompleted = _isQuizCompleted(step);
+      _quizSubmitted = isCompleted;
+      // Adjust tab on step change or session switch:
+      // If returning to the current milestone whose quiz is completed, show the Quiz tab
       if (oldWidget.stepIndex != widget.stepIndex || sessionChanged) {
-        _tabController.animateTo(0);
+        final bool isCurrentMilestone =
+            widget.stepIndex == widget.session.currentStepIndex;
+        final bool isStepNotComplete =
+            widget.currentStep != null &&
+            widget.currentStep.status != 'complete';
+        final bool shouldOpenQuiz =
+            isCompleted && (isStepNotComplete || isCurrentMilestone);
+        final int targetIndex = shouldOpenQuiz ? 2 : 0;
+        _tabController.animateTo(targetIndex);
         setState(() {
-          _activeTabIndex = 0;
+          _activeTabIndex = targetIndex;
         });
       }
     } else if (!_quizSubmitted && _isQuizCompleted(widget.currentStep)) {
@@ -430,7 +457,7 @@ class _LearningResourcesPanelState extends ConsumerState<LearningResourcesPanel>
       controller: _quizScrollController,
       padding: const EdgeInsets.all(20),
       child: KnowledgeCheckQuiz(
-        key: ValueKey('quiz_${widget.session.sessionId}_step_${step.index}'),
+        key: ValueKey('quiz_${widget.session.sessionId}_step_$stepIdx'),
         quiz: step.quiz,
         stepIndex: stepIdx,
         onNextStep: widget.onNextStep,
