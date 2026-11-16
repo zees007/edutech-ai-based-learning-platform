@@ -1657,9 +1657,13 @@ class _MobileTabbedWorkspaceState extends ConsumerState<_MobileTabbedWorkspace>
               ),
             )
           else
-            GestureDetector(
-              onTap: () => _handleNextStep(context, isQuizDone),
-              child: Container(
+            MouseRegion(
+              cursor: SystemMouseCursors.click,
+              hitTestBehavior: HitTestBehavior.opaque,
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => _handleNextStep(context, isQuizDone),
+                child: Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 13,
                   vertical: 7,
@@ -1712,6 +1716,7 @@ class _MobileTabbedWorkspaceState extends ConsumerState<_MobileTabbedWorkspace>
                 ),
               ),
             ),
+          ),
         ],
       ),
     );
@@ -1810,9 +1815,13 @@ class _MobileTabbedWorkspaceState extends ConsumerState<_MobileTabbedWorkspace>
               ),
             )
           else
-            GestureDetector(
-              onTap: () => _handleNextStep(context, true),
-              child: Container(
+            MouseRegion(
+              cursor: SystemMouseCursors.click,
+              hitTestBehavior: HitTestBehavior.opaque,
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => _handleNextStep(context, true),
+                child: Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 13,
                   vertical: 7,
@@ -1861,6 +1870,7 @@ class _MobileTabbedWorkspaceState extends ConsumerState<_MobileTabbedWorkspace>
                 ),
               ),
             ),
+          ),
         ],
       ),
     );

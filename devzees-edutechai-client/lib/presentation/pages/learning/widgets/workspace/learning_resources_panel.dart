@@ -10,6 +10,7 @@ import 'academic_papers.dart';
 import 'knowledge_check_quiz.dart';
 import 'keep_alive_wrapper.dart';
 import 'video_curator_shimmer.dart';
+import '../../../../widgets/gradient_button.dart';
 
 /// Tabbed resource panel with 3 tabs: Videos, Papers, Quiz.
 /// Includes a pinned quiz gating bar at the bottom.
@@ -822,125 +823,69 @@ class _LearningResourcesPanelState extends ConsumerState<LearningResourcesPanel>
           const SizedBox(width: 12),
           // Right Button or Completion Badge
           if (isLastStep && isCurrentStepComplete)
-            MouseRegion(
-              cursor: SystemMouseCursors.click,
-              child: Tooltip(
-                message: 'View Completed Journey Summary & Stats',
-                child: GestureDetector(
-                  onTap: () {
-                    ref
-                        .read(activeSessionProvider.notifier)
-                        .showJourneySummary();
-                  },
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 7,
-                    ),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [Colors.amber.shade600, Colors.orange.shade800],
-                      ),
-                      borderRadius: BorderRadius.circular(8),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.amber.withValues(alpha: 0.35),
-                          blurRadius: 8,
-                          offset: const Offset(0, 1),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.emoji_events_rounded,
-                          size: 14,
-                          color: Colors.white,
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          'Journey Completed 🎉',
-                          style: AppTextStyles.badge.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 11,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+            Tooltip(
+              message: 'View Completed Journey Summary & Stats',
+              child: GradientButton(
+                text: 'Journey Completed 🎉',
+                icon: Icons.emoji_events_rounded,
+                iconFirst: true,
+                height: 34,
+                borderRadius: BorderRadius.circular(8),
+                gradient: LinearGradient(
+                  colors: [Colors.amber.shade600, Colors.orange.shade800],
                 ),
+                glowColor: Colors.amber,
+                textStyle: AppTextStyles.badge.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 11,
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                onPressed: () {
+                  ref
+                      .read(activeSessionProvider.notifier)
+                      .showJourneySummary();
+                },
               ),
             )
           else
-            MouseRegion(
-              cursor: SystemMouseCursors.click,
-              child: Tooltip(
-                message: isLastStep
-                    ? (isQuizDone
-                          ? 'Finish journey and claim bonus XP'
-                          : 'Complete Knowledge Check quiz first to finish journey')
-                    : (isQuizDone
-                          ? 'Proceed to next step'
-                          : 'Complete Knowledge Check quiz first to advance'),
-                child: GestureDetector(
-                  onTap: () => _handleNextStep(context, isQuizDone),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 7,
-                    ),
-                    decoration: BoxDecoration(
-                      gradient: isLastStep
-                          ? LinearGradient(
-                              colors: [
-                                Colors.amber.shade600,
-                                Colors.orange.shade800,
-                              ],
-                            )
-                          : LinearGradient(
-                              colors: [
-                                AppColors.accentGreen,
-                                AppColors.greenDeep,
-                              ],
-                            ),
-                      borderRadius: BorderRadius.circular(8),
-                      boxShadow: [
-                        BoxShadow(
-                          color:
-                              (isLastStep
-                                      ? Colors.amber
-                                      : AppColors.accentGreen)
-                                  .withValues(alpha: 0.35),
-                          blurRadius: 8,
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          isLastStep ? 'Complete Journey' : 'Next Step',
-                          style: AppTextStyles.badge.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 11,
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        Icon(
-                          isLastStep
-                              ? Icons.emoji_events_rounded
-                              : Icons.arrow_forward_rounded,
-                          size: 12,
-                          color: Colors.white,
-                        ),
-                      ],
-                    ),
-                  ),
+            Tooltip(
+              message: isLastStep
+                  ? (isQuizDone
+                        ? 'Finish journey and claim bonus XP'
+                        : 'Complete Knowledge Check quiz first to finish journey')
+                  : (isQuizDone
+                        ? 'Proceed to next step'
+                        : 'Complete Knowledge Check quiz first to advance'),
+              child: GradientButton(
+                text: isLastStep ? 'Complete Journey' : 'Next Step',
+                icon: isLastStep
+                    ? Icons.emoji_events_rounded
+                    : Icons.arrow_forward_rounded,
+                iconFirst: false,
+                height: 34,
+                borderRadius: BorderRadius.circular(8),
+                gradient: isLastStep
+                    ? LinearGradient(
+                        colors: [
+                          Colors.amber.shade600,
+                          Colors.orange.shade800,
+                        ],
+                      )
+                    : LinearGradient(
+                        colors: [
+                          AppColors.accentGreen,
+                          AppColors.greenDeep,
+                        ],
+                      ),
+                glowColor: isLastStep ? Colors.amber : AppColors.accentGreen,
+                textStyle: AppTextStyles.badge.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 11,
                 ),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                onPressed: () => _handleNextStep(context, isQuizDone),
               ),
             ),
         ],
@@ -980,42 +925,21 @@ class _LearningResourcesPanelState extends ConsumerState<LearningResourcesPanel>
               ),
             ),
           ),
-          GestureDetector(
-            onTap: () async {
+          GradientButton(
+            text: 'Next Step',
+            icon: Icons.arrow_forward_rounded,
+            iconFirst: false,
+            height: 32,
+            borderRadius: BorderRadius.circular(8),
+            textStyle: AppTextStyles.badge.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+              fontSize: 11,
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            onPressed: () async {
               await widget.onNextStep();
             },
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                gradient: AppColors.primaryGradient,
-                borderRadius: BorderRadius.circular(8),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.3),
-                    blurRadius: 8,
-                  ),
-                ],
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Next Step',
-                    style: AppTextStyles.badge.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 11,
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  const Icon(
-                    Icons.arrow_forward_rounded,
-                    size: 12,
-                    color: Colors.white,
-                  ),
-                ],
-              ),
-            ),
           ),
         ],
       ),

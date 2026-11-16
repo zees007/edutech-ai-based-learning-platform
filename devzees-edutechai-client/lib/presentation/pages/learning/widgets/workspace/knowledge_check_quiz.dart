@@ -6,6 +6,7 @@ import '../../../../../../core/theme/app_colors.dart';
 import '../../../../../../core/theme/text_styles.dart';
 import '../../../../../../data/models/learning/quiz_result.dart';
 import '../../../../widgets/center_toast.dart';
+import '../../../../widgets/gradient_button.dart';
 
 export '../../../../../../core/services/quiz_store.dart';
 
@@ -1395,142 +1396,57 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
             Align(
               alignment: Alignment.centerRight,
               child: isLastStep && isCurrentStepComplete
-                  ? MouseRegion(
-                      cursor: SystemMouseCursors.click,
-                      child: Tooltip(
-                        message: 'View Completed Journey Summary & Stats',
-                        child: GestureDetector(
-                          onTap: () {
-                            ref
-                                .read(activeSessionProvider.notifier)
-                                .showJourneySummary();
-                          },
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 200),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 18, vertical: 10),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  Colors.amber.shade600,
-                                  Colors.orange.shade800,
-                                ],
-                              ),
-                              borderRadius: BorderRadius.circular(10),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.amber.withValues(alpha: 0.35),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(
-                                  Icons.emoji_events_rounded,
-                                  color: Colors.white,
-                                  size: 16,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'Journey Completed 🎉',
-                                  style: AppTextStyles.badge.copyWith(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+                  ? Tooltip(
+                      message: 'View Completed Journey Summary & Stats',
+                      child: GradientButton(
+                        text: 'Journey Completed 🎉',
+                        icon: Icons.emoji_events_rounded,
+                        iconFirst: true,
+                        height: 42,
+                        borderRadius: BorderRadius.circular(12),
+                        gradient: const LinearGradient(
+                          colors: [
+                            Color(0xFFD97706),
+                            Color(0xFFB45309),
+                          ],
                         ),
+                        glowColor: const Color(0xFFF59E0B),
+                        onPressed: () {
+                          ref
+                              .read(activeSessionProvider.notifier)
+                              .showJourneySummary();
+                        },
                       ),
                     )
-                  : MouseRegion(
-                      cursor: SystemMouseCursors.click,
-                      child: GestureDetector(
-                        onTap: _isAdvancing
-                            ? null
-                            : () async {
-                                setState(() {
-                                  _isAdvancing = true;
-                                });
-                                await widget.onNextStep!();
-                                if (mounted) {
-                                  setState(() {
-                                    _isAdvancing = false;
-                                  });
-                                }
-                              },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 10),
-                          decoration: BoxDecoration(
-                            gradient: isLastStep
-                                ? LinearGradient(
-                                    colors: [
-                                      Colors.amber.shade600,
-                                      Colors.orange.shade800,
-                                    ],
-                                  )
-                                : (isPassed
-                                    ? const LinearGradient(
-                                        colors: [
-                                          AppColors.accentGreen,
-                                          AppColors.greenDeep,
-                                        ],
-                                      )
-                                    : AppColors.primaryGradient),
-                            borderRadius: BorderRadius.circular(10),
-                            boxShadow: [
-                              BoxShadow(
-                                color: (isLastStep
-                                        ? Colors.amber
-                                        : (isPassed
-                                            ? AppColors.accentGreen
-                                            : AppColors.primary))
-                                    .withValues(alpha: 0.35),
-                                blurRadius: 10,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: _isAdvancing
-                              ? const SizedBox(
-                                  width: 16,
-                                  height: 16,
-                                  child: CircularProgressIndicator(
-                                    color: Colors.white,
-                                    strokeWidth: 2,
-                                  ),
-                                )
-                              : Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      isLastStep
-                                          ? 'Complete Journey 🏆'
-                                          : 'Next Step',
-                                      style: AppTextStyles.badge.copyWith(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w700,
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 6),
-                                    Icon(
-                                      isLastStep
-                                          ? Icons.emoji_events_rounded
-                                          : Icons.arrow_forward_rounded,
-                                      size: 14,
-                                      color: Colors.white,
-                                    ),
-                                  ],
-                                ),
-                        ),
-                      ),
+                  : GradientButton(
+                      text: isLastStep ? 'Complete Journey 🏆' : 'Next Step',
+                      icon: isLastStep
+                          ? Icons.emoji_events_rounded
+                          : Icons.arrow_forward_rounded,
+                      iconFirst: false,
+                      height: 42,
+                      borderRadius: BorderRadius.circular(12),
+                      isLoading: _isAdvancing,
+                      gradient: isLastStep
+                          ? const LinearGradient(
+                              colors: [
+                                Color(0xFFD97706),
+                                Color(0xFFB45309),
+                              ],
+                            )
+                          : AppColors.primaryGradient,
+                      glowColor: isLastStep ? const Color(0xFFF59E0B) : null,
+                      onPressed: () async {
+                        setState(() {
+                          _isAdvancing = true;
+                        });
+                        await widget.onNextStep!();
+                        if (mounted) {
+                          setState(() {
+                            _isAdvancing = false;
+                          });
+                        }
+                      },
                     ),
             ),
           ],
@@ -1542,66 +1458,22 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
   Widget _buildSubmitActionRow(List<dynamic> quizList, bool isAllAnswered) {
     return Align(
       alignment: Alignment.centerRight,
-      child: MouseRegion(
-        cursor: SystemMouseCursors.click,
-        child: GestureDetector(
-          onTap: _isSubmitting ? null : () => _handleSubmit(quizList),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            padding:
-                const EdgeInsets.symmetric(horizontal: 22, vertical: 11),
-            decoration: BoxDecoration(
-              gradient: isAllAnswered
-                  ? AppColors.primaryGradient
-                  : LinearGradient(
-                      colors: [
-                        AppColors.primary.withValues(alpha: 0.6),
-                        AppColors.purpleDeep.withValues(alpha: 0.6),
-                      ],
-                    ),
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primary
-                      .withValues(alpha: isAllAnswered ? 0.35 : 0.15),
-                  blurRadius: 12,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (_isSubmitting) ...[
-                  const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(
-                      color: Colors.white,
-                      strokeWidth: 2,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                ] else ...[
-                  const Icon(
-                    Icons.send_rounded,
-                    size: 15,
-                    color: Colors.white,
-                  ),
-                  const SizedBox(width: 8),
+      child: GradientButton(
+        text: _isSubmitting ? 'Evaluating...' : 'Submit Answers',
+        icon: Icons.send_rounded,
+        iconFirst: false,
+        height: 44,
+        borderRadius: BorderRadius.circular(12),
+        isLoading: _isSubmitting,
+        gradient: isAllAnswered
+            ? AppColors.primaryGradient
+            : LinearGradient(
+                colors: [
+                  AppColors.primary.withValues(alpha: 0.6),
+                  AppColors.purpleDeep.withValues(alpha: 0.6),
                 ],
-                Text(
-                  _isSubmitting ? 'Evaluating...' : 'Submit Answers',
-                  style: AppTextStyles.label.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 13,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+              ),
+        onPressed: () => _handleSubmit(quizList),
       ),
     );
   }
