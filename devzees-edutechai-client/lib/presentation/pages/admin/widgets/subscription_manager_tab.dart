@@ -125,41 +125,46 @@ class _SubscriptionManagerTabState
     required IconData icon,
   }) {
     final bool isSelected = _activeSubTab == tabIndex;
-    return InkWell(
-      onTap: () {
-        setState(() => _activeSubTab = tabIndex);
-      },
-      borderRadius: BorderRadius.circular(12),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.purple.withValues(alpha: 0.18)
-              : AppColors.glassBase,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected ? AppColors.purple : AppColors.glassBorder,
-            width: isSelected ? 1.5 : 1.0,
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      opaque: true,
+      child: InkWell(
+        onTap: () {
+          setState(() => _activeSubTab = tabIndex);
+        },
+        mouseCursor: SystemMouseCursors.click,
+        borderRadius: BorderRadius.circular(12),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? AppColors.purple.withValues(alpha: 0.18)
+                : AppColors.glassBase,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isSelected ? AppColors.purple : AppColors.glassBorder,
+              width: isSelected ? 1.5 : 1.0,
+            ),
           ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              size: 18,
-              color: isSelected ? AppColors.purpleLight : AppColors.textMuted,
-            ),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: AppTextStyles.subtitle2.copyWith(
-                color: isSelected ? AppColors.textPrimary : AppColors.textMuted,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                size: 18,
+                color: isSelected ? AppColors.purpleLight : AppColors.textMuted,
               ),
-            ),
-          ],
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: AppTextStyles.subtitle2.copyWith(
+                  color: isSelected ? AppColors.textPrimary : AppColors.textMuted,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

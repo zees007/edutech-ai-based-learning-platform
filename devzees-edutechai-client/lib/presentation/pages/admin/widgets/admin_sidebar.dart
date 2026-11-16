@@ -31,6 +31,7 @@ class AdminSidebar extends StatelessWidget {
     context.appColors;
     return SafeArea(
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // Header
           Padding(
@@ -189,12 +190,15 @@ class _NavItemTileState extends State<_NavItemTile> {
   Widget build(BuildContext context) {
     return MouseRegion(
       cursor: SystemMouseCursors.click,
+      opaque: true,
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
       child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
         onTap: widget.onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
+          width: double.infinity,
           constraints: const BoxConstraints(minHeight: 46),
           padding: EdgeInsets.symmetric(
             horizontal: widget.expanded ? 14 : 10,
@@ -211,6 +215,11 @@ class _NavItemTileState extends State<_NavItemTile> {
                 ? Border.all(
                     color: AppColors.purple.withValues(alpha: 0.45),
                     width: 1.2,
+                  )
+                : _isHovered
+                ? Border.all(
+                    color: AppColors.glassBorder,
+                    width: 1.0,
                   )
                 : null,
             boxShadow: widget.isSelected
@@ -341,12 +350,15 @@ class _BackToLearningButtonState extends State<_BackToLearningButton> {
   Widget build(BuildContext context) {
     return MouseRegion(
       cursor: SystemMouseCursors.click,
+      opaque: true,
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
       child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
         onTap: () => context.go('/learning'),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
+          width: double.infinity,
           constraints: const BoxConstraints(minHeight: 46),
           padding: EdgeInsets.symmetric(
             horizontal: widget.expanded ? 14 : 10,
