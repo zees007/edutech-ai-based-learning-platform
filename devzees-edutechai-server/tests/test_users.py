@@ -298,3 +298,29 @@ async def test_change_password_security(app):
         assert no_priv_res.json()["error_code"] == "PERMISSION_DENIED"
         assert "ET_CHANGE_PASSWORD" in str(no_priv_res.json()["errors"])
 
+
+@pytest.mark.asyncio
+async def test_password_validation_rules(app):
+    """Verify that password complexity rules (min 8 chars, uppercase, lowercase, digit, symbol) are strictly enforced."""
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://testserver"
+    ) as client:
+        invalid_passwords = [
+            "short1!",        # < 8 chars
+            "nouppercase123!", # no uppercase
+            "NOLOWERCASE123!", # no lowercase
+            "NoDigitsHere!@",  # no digit
+            "NoSpecialChar12", # no special character
+        ]
+
+        for bad_pwd in invalid_passwords:
+            res = await client.post("/api/v1/users/create", json={
+                "first_name": "Invalid",
+                "last_name": "Password",
+                "email": f"bad_{uuid4().hex[:8]}@example.com",
+                "password": bad_pwd,
+            })
+            assert res.status_code == 422, f"Expected 422 for password: {bad_pwd}, got {res.status_code}"
+            assert res.json()["error_code"] == "VALIDATION_ERROR"
+
+

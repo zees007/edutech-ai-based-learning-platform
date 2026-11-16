@@ -40,15 +40,37 @@ def _normalize_and_validate_mobile(mobile: str | None) -> str | None:
         raise ValueError("Could not parse phone number. Please include a valid country dial code (e.g. +1...).")
 
 
+def validate_password_complexity(password: str) -> str:
+    """Validate password meets security complexity rules."""
+    if len(password) < 8:
+        raise ValueError("Password must be at least 8 characters long.")
+    if len(password) > 72:
+        raise ValueError("Password cannot exceed 72 characters.")
+    if not re.search(r"[A-Z]", password):
+        raise ValueError("Password must contain at least one uppercase letter.")
+    if not re.search(r"[a-z]", password):
+        raise ValueError("Password must contain at least one lowercase letter.")
+    if not re.search(r"\d", password):
+        raise ValueError("Password must contain at least one digit.")
+    if not re.search(r"[!@#$%^&*()_+\-=\[\]{}|;':\",./<>?`~]", password):
+        raise ValueError("Password must contain at least one special character.")
+    return password
+
+
 class UserCreateRequest(BaseModel):
     """Payload for creating a new user."""
 
     first_name: str = Field(..., min_length=1, max_length=100, description="User's first name")
     last_name: str = Field(..., min_length=1, max_length=100, description="User's last name")
     email: EmailStr = Field(..., max_length=255, description="Unique email address")
-    password: str = Field(..., min_length=6, max_length=72, description="User password")
+    password: str = Field(..., min_length=8, max_length=72, description="User password")
     mobile: str | None = Field(default=None, max_length=25, description="Contact mobile number")
     country: str | None = Field(default=None, max_length=100, description="Country of residence")
+
+    @field_validator("password")
+    @classmethod
+    def validate_password(cls, v: str) -> str:
+        return validate_password_complexity(v)
 
     @field_validator("mobile")
     @classmethod
@@ -75,8 +97,13 @@ class ChangePasswordRequest(BaseModel):
     """Payload for changing a user's password."""
 
     old_password: str = Field(..., min_length=1, max_length=72, description="Old password")
-    new_password: str = Field(..., min_length=6, max_length=72, description="New password")
-    confirm_password: str = Field(..., min_length=6, max_length=72, description="Confirm new password")
+    new_password: str = Field(..., min_length=8, max_length=72, description="New password")
+    confirm_password: str = Field(..., min_length=8, max_length=72, description="Confirm new password")
+
+    @field_validator("new_password")
+    @classmethod
+    def validate_new_password(cls, v: str) -> str:
+        return validate_password_complexity(v)
 
     @model_validator(mode="after")
     def validate_passwords_match(self) -> ChangePasswordRequest:

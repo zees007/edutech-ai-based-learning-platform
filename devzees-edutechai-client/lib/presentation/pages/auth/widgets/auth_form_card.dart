@@ -31,6 +31,7 @@ class AuthFormCard extends ConsumerStatefulWidget {
 class _AuthFormCardState extends ConsumerState<AuthFormCard> {
   final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
+  final _confirmPasswordCtrl = TextEditingController();
 
   final _firstNameCtrl = TextEditingController();
   final _lastNameCtrl = TextEditingController();
@@ -42,6 +43,7 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
   final GlobalKey<SearchableCountryDropdownState> _countryDropdownKey =
       GlobalKey();
   bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
 
   final _loginFormKey = GlobalKey<FormState>();
   final _signUpFormKey = GlobalKey<FormState>();
@@ -85,8 +87,33 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
     if (value == null || value.isEmpty) {
       return 'Please enter a password.';
     }
-    if (value.length < 6) {
-      return 'Password must be at least 6 characters long.';
+    if (value.length < 8) {
+      return 'Password must be at least 8 characters long.';
+    }
+    if (value.length > 72) {
+      return 'Password cannot exceed 72 characters.';
+    }
+    if (!value.contains(RegExp(r'[A-Z]'))) {
+      return 'Password must contain at least one uppercase letter.';
+    }
+    if (!value.contains(RegExp(r'[a-z]'))) {
+      return 'Password must contain at least one lowercase letter.';
+    }
+    if (!value.contains(RegExp(r'[0-9]'))) {
+      return 'Password must contain at least one digit.';
+    }
+    if (!value.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>\-_+=\[\]\\;`~]'))) {
+      return 'Password must contain at least one special character.';
+    }
+    return null;
+  }
+
+  String? _validateConfirmPassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please confirm your password.';
+    }
+    if (value != _passwordCtrl.text) {
+      return 'Passwords do not match.';
     }
     return null;
   }
@@ -128,6 +155,7 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
   void dispose() {
     _emailCtrl.dispose();
     _passwordCtrl.dispose();
+    _confirmPasswordCtrl.dispose();
     _firstNameCtrl.dispose();
     _lastNameCtrl.dispose();
     _mobileCtrl.dispose();
@@ -251,6 +279,8 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
           'Account created successfully! Please sign in.',
           title: 'Registration Successful',
         );
+        _passwordCtrl.clear();
+        _confirmPasswordCtrl.clear();
         widget.onToggleMode(); // Switch to login
       }
     } else {
@@ -725,7 +755,7 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
           ),
           const SizedBox(height: 14),
           _buildInputField(
-            label: "PASSWORD * (MIN 6 CHARACTERS)",
+            label: "PASSWORD * (MIN 8 CHARACTERS)",
             hint: "••••••••••••",
             controller: _passwordCtrl,
             isObscure: _obscurePassword,
@@ -734,21 +764,47 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
             autofillHints: const [AutofillHints.newPassword],
             isDark: isDark,
             validator: _validateSignUpPassword,
-          suffixIcon: IconButton(
-            icon: Icon(
-              _obscurePassword
-                  ? Icons.visibility_outlined
-                  : Icons.visibility_off_outlined,
-              size: 18,
-              color: isDark ? AppColors.textSecondary : const Color(0xFF94A3B8),
+            suffixIcon: IconButton(
+              icon: Icon(
+                _obscurePassword
+                    ? Icons.visibility_outlined
+                    : Icons.visibility_off_outlined,
+                size: 18,
+                color: isDark ? AppColors.textSecondary : const Color(0xFF94A3B8),
+              ),
+              onPressed: () {
+                setState(() {
+                  _obscurePassword = !_obscurePassword;
+                });
+              },
             ),
-            onPressed: () {
-              setState(() {
-                _obscurePassword = !_obscurePassword;
-              });
-            },
           ),
-        ),
+          const SizedBox(height: 14),
+          _buildInputField(
+            label: "CONFIRM PASSWORD *",
+            hint: "••••••••••••",
+            controller: _confirmPasswordCtrl,
+            isObscure: _obscureConfirmPassword,
+            prefixIcon: Icons.lock_outline_rounded,
+            textInputAction: TextInputAction.next,
+            autofillHints: const [AutofillHints.newPassword],
+            isDark: isDark,
+            validator: _validateConfirmPassword,
+            suffixIcon: IconButton(
+              icon: Icon(
+                _obscureConfirmPassword
+                    ? Icons.visibility_outlined
+                    : Icons.visibility_off_outlined,
+                size: 18,
+                color: isDark ? AppColors.textSecondary : const Color(0xFF94A3B8),
+              ),
+              onPressed: () {
+                setState(() {
+                  _obscureConfirmPassword = !_obscureConfirmPassword;
+                });
+              },
+            ),
+          ),
         const SizedBox(height: 14),
         if (isMobile) ...[
           _buildCountryPickerField(isDark),
