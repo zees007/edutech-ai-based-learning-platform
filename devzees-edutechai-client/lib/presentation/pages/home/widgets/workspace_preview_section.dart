@@ -235,64 +235,69 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
     required VoidCallback onTap,
     required bool isMobile,
   }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: EdgeInsets.symmetric(
-          horizontal: isMobile ? 12 : 16,
-          vertical: isMobile ? 7 : 8,
-        ),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary : Colors.transparent,
-          borderRadius: BorderRadius.circular(9999),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.45),
-                    blurRadius: 14,
-                  ),
-                ]
-              : null,
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              size: isMobile ? 13 : 15,
-              color: isSelected ? Colors.white : const Color(0xFF94A3B8),
-            ),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: TextStyle(
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      opaque: true,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: EdgeInsets.symmetric(
+            horizontal: isMobile ? 12 : 16,
+            vertical: isMobile ? 7 : 8,
+          ),
+          decoration: BoxDecoration(
+            color: isSelected ? AppColors.primary : Colors.transparent,
+            borderRadius: BorderRadius.circular(9999),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.45),
+                      blurRadius: 14,
+                    ),
+                  ]
+                : null,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                size: isMobile ? 13 : 15,
                 color: isSelected ? Colors.white : const Color(0xFF94A3B8),
-                fontSize: isMobile ? 11 : 12.5,
-                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
               ),
-            ),
-            if (badge != null) ...[
               const SizedBox(width: 6),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? Colors.white.withValues(alpha: 0.25)
-                      : const Color(0xFF00F5D4).withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(4),
+              Text(
+                label,
+                style: TextStyle(
+                  color: isSelected ? Colors.white : const Color(0xFF94A3B8),
+                  fontSize: isMobile ? 11 : 12.5,
+                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
                 ),
-                child: Text(
-                  badge,
-                  style: TextStyle(
-                    color: isSelected ? Colors.white : const Color(0xFF00F5D4),
-                    fontSize: 8.5,
-                    fontWeight: FontWeight.w900,
+              ),
+              if (badge != null) ...[
+                const SizedBox(width: 6),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? Colors.white.withValues(alpha: 0.25)
+                        : const Color(0xFF00F5D4).withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    badge,
+                    style: TextStyle(
+                      color: isSelected ? Colors.white : const Color(0xFF00F5D4),
+                      fontSize: 8.5,
+                      fontWeight: FontWeight.w900,
+                    ),
                   ),
                 ),
-              ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
@@ -407,14 +412,18 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
     required String badge,
   }) {
     final bool isSelected = _activeContextTab == index;
-    return InkWell(
-      onTap: () {
-        setState(() {
-          _activeContextTab = index;
-        });
-      },
-      borderRadius: BorderRadius.circular(16),
-      child: AnimatedContainer(
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      opaque: true,
+      child: InkWell(
+        onTap: () {
+          setState(() {
+            _activeContextTab = index;
+          });
+        },
+        mouseCursor: SystemMouseCursors.click,
+        borderRadius: BorderRadius.circular(16),
+        child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
@@ -475,8 +484,9 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildMockWorkspaceHeader(bool isMobile) {
     return Container(

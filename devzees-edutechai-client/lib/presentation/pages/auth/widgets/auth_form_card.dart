@@ -555,10 +555,13 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
   }) {
     return MouseRegion(
       cursor: SystemMouseCursors.click,
+      opaque: true,
       child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
         onTap: onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
+          width: double.infinity,
           padding: const EdgeInsets.symmetric(vertical: 8.5),
           decoration: BoxDecoration(
             color: isSelected
@@ -1111,15 +1114,20 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
           const SizedBox(width: 6),
           MouseRegion(
             cursor: SystemMouseCursors.click,
+            opaque: true,
             child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
               onTap: widget.onToggleMode,
-              child: Text(
-                widget.isLogin ? "Sign Up for Free" : "Sign In",
-                style: TextStyle(
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.w700,
-                  color: isDark ? Colors.white : AppColors.primary,
-                  decoration: TextDecoration.underline,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+                child: Text(
+                  widget.isLogin ? "Sign Up for Free" : "Sign In",
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w700,
+                    color: isDark ? Colors.white : AppColors.primary,
+                    decoration: TextDecoration.underline,
+                  ),
                 ),
               ),
             ),

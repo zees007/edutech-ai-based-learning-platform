@@ -303,6 +303,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                     child: Material(
                       color: Colors.transparent,
                       child: InkWell(
+                        mouseCursor: SystemMouseCursors.click,
                         onTap: _scrollToTop,
                         child: Center(
                           child: Icon(

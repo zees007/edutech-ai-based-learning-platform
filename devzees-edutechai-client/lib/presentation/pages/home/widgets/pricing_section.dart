@@ -273,56 +273,65 @@ class _PricingSectionState extends ConsumerState<PricingSection>
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              InkWell(
-                onTap: () => setState(() => _isAnnual = false),
-                borderRadius: BorderRadius.circular(9999),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 180),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: !_isAnnual ? Colors.white : Colors.transparent,
-                    borderRadius: BorderRadius.circular(9999),
-                    boxShadow: !_isAnnual
-                        ? [
-                            BoxShadow(
-                              color: Colors.white.withValues(alpha: 0.25),
-                              blurRadius: 10,
-                            ),
-                          ]
-                        : null,
-                  ),
-                  child: Text(
-                    'Monthly',
-                    style: TextStyle(
-                      color: !_isAnnual
-                          ? const Color(0xFF060814)
-                          : const Color(0xFF94A3B8),
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
+              MouseRegion(
+                cursor: SystemMouseCursors.click,
+                opaque: true,
+                child: InkWell(
+                  onTap: () => setState(() => _isAnnual = false),
+                  mouseCursor: SystemMouseCursors.click,
+                  borderRadius: BorderRadius.circular(9999),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: !_isAnnual ? Colors.white : Colors.transparent,
+                      borderRadius: BorderRadius.circular(9999),
+                      boxShadow: !_isAnnual
+                          ? [
+                              BoxShadow(
+                                color: Colors.white.withValues(alpha: 0.25),
+                                blurRadius: 10,
+                              ),
+                            ]
+                          : null,
+                    ),
+                    child: Text(
+                      'Monthly',
+                      style: TextStyle(
+                        color: !_isAnnual
+                            ? const Color(0xFF060814)
+                            : const Color(0xFF94A3B8),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                 ),
               ),
-              InkWell(
-                onTap: () => setState(() => _isAnnual = true),
-                borderRadius: BorderRadius.circular(9999),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 180),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: _isAnnual ? Colors.white : Colors.transparent,
-                    borderRadius: BorderRadius.circular(9999),
-                    boxShadow: _isAnnual
-                        ? [
-                            BoxShadow(
-                              color: Colors.white.withValues(alpha: 0.25),
-                              blurRadius: 10,
-                            ),
-                          ]
-                        : null,
-                  ),
+              MouseRegion(
+                cursor: SystemMouseCursors.click,
+                opaque: true,
+                child: InkWell(
+                  onTap: () => setState(() => _isAnnual = true),
+                  mouseCursor: SystemMouseCursors.click,
+                  borderRadius: BorderRadius.circular(9999),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: _isAnnual ? Colors.white : Colors.transparent,
+                      borderRadius: BorderRadius.circular(9999),
+                      boxShadow: _isAnnual
+                          ? [
+                              BoxShadow(
+                                color: Colors.white.withValues(alpha: 0.25),
+                                blurRadius: 10,
+                              ),
+                            ]
+                          : null,
+                    ),
                   child: Row(
                     children: [
                       Text(
@@ -357,7 +366,8 @@ class _PricingSectionState extends ConsumerState<PricingSection>
                   ),
                 ),
               ),
-            ],
+            ),
+          ],
           ),
         ),
         const SizedBox(height: 22),
@@ -454,6 +464,7 @@ class _PricingSectionState extends ConsumerState<PricingSection>
                       label: const Text('Contact Solutions Architect',
                           style: TextStyle(fontWeight: FontWeight.bold)),
                       style: OutlinedButton.styleFrom(
+                        enabledMouseCursor: SystemMouseCursors.click,
                         foregroundColor: Colors.white,
                         side: const BorderSide(
                             color: Color(0xFF3B82F6), width: 1.2),
@@ -525,6 +536,7 @@ class _PricingSectionState extends ConsumerState<PricingSection>
                       label: const Text('Contact Solutions Architect',
                           style: TextStyle(fontWeight: FontWeight.bold)),
                       style: OutlinedButton.styleFrom(
+                        enabledMouseCursor: SystemMouseCursors.click,
                         foregroundColor: Colors.white,
                         side: const BorderSide(
                             color: Color(0xFF3B82F6), width: 1.2),
@@ -1143,6 +1155,7 @@ class _PricingCardState extends State<_PricingCard> {
             child: ElevatedButton(
               onPressed: () => context.go('/auth'),
               style: ElevatedButton.styleFrom(
+                enabledMouseCursor: SystemMouseCursors.click,
                 backgroundColor: const Color(0xFF2563EB),
                 foregroundColor: Colors.white,
                 elevation: 6,
@@ -1178,6 +1191,7 @@ class _PricingCardState extends State<_PricingCard> {
             child: OutlinedButton(
               onPressed: () => context.go('/auth'),
               style: OutlinedButton.styleFrom(
+                enabledMouseCursor: SystemMouseCursors.click,
                 foregroundColor: const Color(0xFFF1F5F9),
                 side: BorderSide(
                   color: Colors.white.withValues(alpha: 0.15),

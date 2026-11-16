@@ -13,7 +13,7 @@ def test_user_create_request_valid_mobile():
         first_name="John",
         last_name="Doe",
         email="john.doe@example.com",
-        password="SecurePassword123",
+        password="SecurePassword123!",
         mobile="+14155552671",
         country="United States",
     )
@@ -27,7 +27,7 @@ def test_user_create_request_nri_mobile_normalization():
         first_name="Raj",
         last_name="Patel",
         email="raj.patel@example.com",
-        password="SecurePassword123",
+        password="SecurePassword123!",
         mobile="+1 415 555 2671",
         country="United States",
     )
@@ -38,7 +38,7 @@ def test_user_create_request_nri_mobile_normalization():
         first_name="Aarav",
         last_name="Sharma",
         email="aarav@example.com",
-        password="SecurePassword123",
+        password="SecurePassword123!",
         mobile="+91 9876543210",
         country="India",
     )
@@ -50,7 +50,7 @@ def test_user_create_request_optional_mobile():
         first_name="Jane",
         last_name="Smith",
         email="jane.smith@example.com",
-        password="SecurePassword123",
+        password="SecurePassword123!",
         mobile=None,
         country=None,
     )

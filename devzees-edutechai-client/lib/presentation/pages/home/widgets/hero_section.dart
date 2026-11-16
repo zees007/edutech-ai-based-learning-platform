@@ -364,10 +364,12 @@ class _HeroSectionState extends State<HeroSection> {
                 mainAxisSize: MainAxisSize.min,
                 children: List.generate(_bgImages.length, (index) {
                   final bool isActive = _currentBgIndex == index;
-                  return GestureDetector(
-                    onTap: () => _setBgIndex(index),
-                    child: MouseRegion(
-                      cursor: SystemMouseCursors.click,
+                  return MouseRegion(
+                    cursor: SystemMouseCursors.click,
+                    opaque: true,
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () => _setBgIndex(index),
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 400),
                         curve: Curves.easeOutCubic,
@@ -459,7 +461,9 @@ class _HeroPrimaryButtonState extends State<_HeroPrimaryButton>
         _shimmerController.reset();
       },
       cursor: SystemMouseCursors.click,
+      opaque: true,
       child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
         onTap: widget.onTap,
         child: AnimatedScale(
           scale: _isHovered ? 1.03 : 1.0,
@@ -571,7 +575,9 @@ class _HeroSecondaryDemoButtonState extends State<_HeroSecondaryDemoButton> {
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
       cursor: SystemMouseCursors.click,
+      opaque: true,
       child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
         onTap: widget.onTap,
         child: AnimatedScale(
           scale: _isHovered ? 1.03 : 1.0,

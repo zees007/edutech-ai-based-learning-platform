@@ -243,50 +243,55 @@ class _ComparisonSectionState extends State<ComparisonSection> {
     required String label,
     required VoidCallback onTap,
   }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(9999),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? const Color(0xFF3B82F6).withValues(alpha: 0.25)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(9999),
-          border: Border.all(
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      opaque: true,
+      child: InkWell(
+        onTap: onTap,
+        mouseCursor: SystemMouseCursors.click,
+        borderRadius: BorderRadius.circular(9999),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          decoration: BoxDecoration(
             color: isSelected
-                ? const Color(0xFF3B82F6).withValues(alpha: 0.6)
+                ? const Color(0xFF3B82F6).withValues(alpha: 0.25)
                 : Colors.transparent,
-            width: 1,
+            borderRadius: BorderRadius.circular(9999),
+            border: Border.all(
+              color: isSelected
+                  ? const Color(0xFF3B82F6).withValues(alpha: 0.6)
+                  : Colors.transparent,
+              width: 1,
+            ),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: const Color(0xFF3B82F6).withValues(alpha: 0.35),
+                      blurRadius: 10,
+                    ),
+                  ]
+                : null,
           ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: const Color(0xFF3B82F6).withValues(alpha: 0.35),
-                    blurRadius: 10,
-                  ),
-                ]
-              : null,
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              size: 15,
-              color: isSelected ? Colors.white : const Color(0xFF94A3B8),
-            ),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: TextStyle(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                size: 15,
                 color: isSelected ? Colors.white : const Color(0xFF94A3B8),
-                fontSize: 12,
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
               ),
-            ),
-          ],
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: TextStyle(
+                  color: isSelected ? Colors.white : const Color(0xFF94A3B8),
+                  fontSize: 12,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

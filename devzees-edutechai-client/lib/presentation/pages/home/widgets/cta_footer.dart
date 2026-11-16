@@ -293,7 +293,9 @@ class _FooterWhiteActionPillState extends State<_FooterWhiteActionPill>
         _shimmerController.stop();
       },
       cursor: SystemMouseCursors.click,
+      opaque: true,
       child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
         onTap: widget.onTap,
         child: AnimatedScale(
           scale: _isHovered ? 1.03 : 1.0,
@@ -475,7 +477,9 @@ class _FooterLinkState extends State<_FooterLink> {
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
       cursor: SystemMouseCursors.click,
+      opaque: true,
       child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
         onTap: () {},
         child: Text(
           widget.text,
