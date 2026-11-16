@@ -1465,14 +1465,6 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
         height: 44,
         borderRadius: BorderRadius.circular(12),
         isLoading: _isSubmitting,
-        gradient: isAllAnswered
-            ? AppColors.primaryGradient
-            : LinearGradient(
-                colors: [
-                  AppColors.primary.withValues(alpha: 0.6),
-                  AppColors.purpleDeep.withValues(alpha: 0.6),
-                ],
-              ),
         onPressed: () => _handleSubmit(quizList),
       ),
     );
