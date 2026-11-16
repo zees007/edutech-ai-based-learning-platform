@@ -1,0 +1,91 @@
+info:
+  name: Create Subscription Tier
+  type: http
+  seq: 3
+  tags:
+    - Admin
+    - Tiers
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/v1/admin/tiers"
+  auth: inherit
+  body:
+    type: json
+    data: |-
+      {
+        "slug": "enterprise",
+        "name": "Enterprise Plan",
+        "description": "Unlimited team sessions, priority support, and bespoke custom curriculum.",
+        "role_id": "{{roleId}}",
+        "price_monthly": 99.0,
+        "price_annual": 990.0,
+        "currency": "USD",
+        "monthly_session_limit": null,
+        "follow_up_limit_per_step": null,
+        "youtube_limit_per_step": 5,
+        "is_public": true,
+        "order_index": 4
+      }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+examples:
+  - name: 201 Response
+    description: Subscription Tier Created
+    request:
+      url: "{{baseUrl}}/api/v1/admin/tiers"
+      method: POST
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "slug": "enterprise",
+            "name": "Enterprise Plan",
+            "description": "Unlimited team sessions, priority support, and bespoke custom curriculum.",
+            "role_id": "fbfbe848-ef2c-4b42-9e03-46db6cab1940",
+            "price_monthly": 99.0,
+            "price_annual": 990.0,
+            "currency": "USD",
+            "monthly_session_limit": null,
+            "follow_up_limit_per_step": null,
+            "youtube_limit_per_step": 5,
+            "is_public": true,
+            "order_index": 4
+          }
+    response:
+      status: 201
+      statusText: Created
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "id": "e3057161-5b9c-48c0-bc66-3d237198bbda",
+            "slug": "enterprise",
+            "name": "Enterprise Plan",
+            "description": "Unlimited team sessions, priority support, and bespoke custom curriculum.",
+            "role_id": "fbfbe848-ef2c-4b42-9e03-46db6cab1940",
+            "role_name": "Ultra",
+            "price_monthly": 99.0,
+            "price_annual": 990.0,
+            "currency": "USD",
+            "monthly_session_limit": null,
+            "follow_up_limit_per_step": null,
+            "youtube_limit_per_step": 5,
+            "is_public": true,
+            "order_index": 4,
+            "retired": false,
+            "created_at": "2026-11-14T20:45:00.000000",
+            "active_subscribers_count": 0
+          }

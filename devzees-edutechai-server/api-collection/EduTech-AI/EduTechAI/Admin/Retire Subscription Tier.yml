@@ -1,0 +1,60 @@
+info:
+  name: Retire Subscription Tier
+  type: http
+  seq: 5
+  tags:
+    - Admin
+    - Tiers
+
+http:
+  method: DELETE
+  url: "{{baseUrl}}/api/v1/admin/tiers/:tierId"
+  auth: inherit
+  params:
+    - name: tierId
+      value: "e3057161-5b9c-48c0-bc66-3d237198bbda"
+      type: path
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+examples:
+  - name: 200 Response
+    description: Subscription Tier Retired
+    request:
+      url: "{{baseUrl}}/api/v1/admin/tiers/e3057161-5b9c-48c0-bc66-3d237198bbda"
+      method: DELETE
+    response:
+      status: 200
+      statusText: OK
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "message": "Subscription tier 'enterprise' has been retired successfully."
+          }
+  - name: 400 Bad Request
+    description: Cannot retire tier with active subscribers or default tier
+    request:
+      url: "{{baseUrl}}/api/v1/admin/tiers/8717d06d-2ac5-49d3-8b2a-c8ce88f7238d"
+      method: DELETE
+    response:
+      status: 400
+      statusText: Bad Request
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error_code": "CANNOT_RETIRE_DEFAULT_TIER",
+            "message": "Cannot retire default system tier 'free'."
+          }

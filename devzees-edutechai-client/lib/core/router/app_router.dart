@@ -169,38 +169,45 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     refreshListenable: notifier,
     redirect: notifier.redirect,
     routes: [
-      GoRoute(
-        path: '/',
-        name: 'home',
-        builder: (context, state) => const HomePage(),
-      ),
-      GoRoute(
-        path: '/onboarding',
-        name: 'onboarding',
-        builder: (context, state) => const OnboardingPage(),
-      ),
-      GoRoute(
-        path: '/auth',
-        name: 'auth',
-        builder: (context, state) => const AuthPage(),
-      ),
-      GoRoute(
-        path: '/learning',
-        name: 'learning',
-        builder: (context, state) => const LearningPage(),
-      ),
-      GoRoute(
-        path: '/admin',
-        name: 'admin',
-        builder: (context, state) => const AdminPage(),
-      ),
-      GoRoute(
-        path: '/subscription',
-        name: 'subscription',
-        builder: (context, state) {
-          final autoClaim = state.uri.queryParameters['claim'] == 'true';
-          return SubscriptionPage(autoClaim: autoClaim);
+      ShellRoute(
+        builder: (context, state, child) {
+          return SelectionArea(child: child);
         },
+        routes: [
+          GoRoute(
+            path: '/',
+            name: 'home',
+            builder: (context, state) => const HomePage(),
+          ),
+          GoRoute(
+            path: '/onboarding',
+            name: 'onboarding',
+            builder: (context, state) => const OnboardingPage(),
+          ),
+          GoRoute(
+            path: '/auth',
+            name: 'auth',
+            builder: (context, state) => const AuthPage(),
+          ),
+          GoRoute(
+            path: '/learning',
+            name: 'learning',
+            builder: (context, state) => const LearningPage(),
+          ),
+          GoRoute(
+            path: '/admin',
+            name: 'admin',
+            builder: (context, state) => const AdminPage(),
+          ),
+          GoRoute(
+            path: '/subscription',
+            name: 'subscription',
+            builder: (context, state) {
+              final autoClaim = state.uri.queryParameters['claim'] == 'true';
+              return SubscriptionPage(autoClaim: autoClaim);
+            },
+          ),
+        ],
       ),
     ],
   );

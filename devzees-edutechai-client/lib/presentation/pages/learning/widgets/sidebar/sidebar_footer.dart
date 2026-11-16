@@ -32,18 +32,10 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
     final bool isDark = AppColors.isDark;
 
     final perms = ref.read(permissionProvider);
-    final user = ref.read(authProvider).user ?? ref.read(userProvider).asData?.value;
-    final sub = user?.subscription;
-    final bool isSubActive = sub != null && sub.status.toLowerCase() == 'active';
-    final roles = (user?.roles ?? []).map((r) => r.toLowerCase()).toList();
-
-    final bool isAdmin = roles.contains('admin') || perms.isSuperAdmin;
-    final bool isUltra = (isSubActive && sub.tier.toLowerCase() == 'ultra') || roles.contains('ultra');
-    final bool isPro = (isSubActive && sub.tier.toLowerCase() == 'pro') || roles.contains('pro');
 
     Widget? upgradeButton;
-    if (perms.canUpgradeSubscription && !isAdmin && !isUltra) {
-      final label = isPro ? 'Upgrade to Ultra' : 'Upgrade to PRO';
+    if (perms.canUpgradeSubscription) {
+      final label = perms.canDowngradeSubscription ? 'Upgrade Plan' : 'Upgrade';
       upgradeButton = _buildMenuItem(
         context,
         label,
@@ -219,9 +211,8 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
         : '';
     final name = '${user.firstName} ${user.lastName}'.trim();
     final email = user.email;
-    final plan = user.subscription?.tier != null
-        ? '${user.subscription!.tier.toUpperCase()} MEMBER'
-        : 'FREE MEMBER';
+    final perms = ref.read(permissionProvider);
+    final plan = '${perms.effectiveTier.toUpperCase()} MEMBER';
 
     return MouseRegion(
       cursor: SystemMouseCursors.click,
@@ -499,7 +490,8 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
         ? user.firstName[0].toUpperCase()
         : '';
     final name = '${user.firstName} ${user.lastName}'.trim();
-    final plan = user.subscription?.tier ?? 'Free';
+    final perms = ref.watch(permissionProvider);
+    final plan = perms.effectiveTier;
     final planCapitalized = plan.isNotEmpty
         ? '${plan[0].toUpperCase()}${plan.substring(1).toLowerCase()} Plan'
         : 'Free Plan';

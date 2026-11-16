@@ -414,9 +414,7 @@ class _PaperCardState extends State<_PaperCard> {
 
     if (!widget.canAccessFullText) {
       actionIcon = Icons.lock_rounded;
-      actionTooltip = widget.userTier == 'pro'
-          ? 'Upgrade to Ultra to unlock Full Text Research'
-          : 'Unlock Full Text Research with Ultra';
+      actionTooltip = 'Upgrade your plan to unlock Full Text Research';
     }
 
     // Extract summary with comprehensive fallback keys
@@ -870,8 +868,8 @@ class _PaperCardState extends State<_PaperCard> {
                         if (!widget.canAccessFullText) {
                           CenterToast.showWarning(
                             context,
-                            'Full Text Research is an Ultra feature. Upgrade your plan to unlock complete papers and direct PDFs.',
-                            title: 'Ultra Feature',
+                            'Full Text Research is an upgraded plan feature. Upgrade your plan to unlock complete papers and direct PDFs.',
+                            title: 'Premium Feature',
                             icon: Icons.lock_outline_rounded,
                           );
                           context.push('/subscription');
@@ -929,7 +927,7 @@ class _PaperCardState extends State<_PaperCard> {
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: Text(
-                                  'ULTRA',
+                                  'PREMIUM',
                                   style: AppTextStyles.badge.copyWith(
                                     fontSize: 8.5,
                                     color: Colors.white,

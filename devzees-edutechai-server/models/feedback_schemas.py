@@ -54,7 +54,7 @@ class FeedbackAdminResponse(BaseModel):
 
     id: int
     feedback_id: str
-    session_id: str
+    session_id: str | None = None
     user_id: str
     user_name: str
     user_email: str

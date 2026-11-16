@@ -498,32 +498,44 @@ async def _handle_chat(session_id: str, memory: SharedMemory, question: str):
     from services.database import get_db_session
     from sqlalchemy.orm import selectinload
     from sqlalchemy import select
-    from models.db_models import User, Role
+    from models.db_models import User, Role, Subscription
     from app.dependencies import has_privilege
-    from app.privileges_config import ET_UNLIMITED_FOLLOW_UPS
-    
+    from config import get_settings
+
+    settings = get_settings()
     is_unlimited = False
-    user_roles = []
+    limit = settings.free_followup_limit
+
     if memory.user_id:
         try:
             async with get_db_session() as db:
                 res = await db.execute(
-                    select(User).options(selectinload(User.roles).selectinload(Role.privileges))
+                    select(User)
+                    .options(
+                        selectinload(User.roles).selectinload(Role.privileges),
+                        selectinload(User.subscription).selectinload(Subscription.tier_ref),
+                    )
                     .where(User.id == memory.user_id)
                 )
                 user = res.scalar_one_or_none()
             if user:
-                is_unlimited = has_privilege(user, ET_UNLIMITED_FOLLOW_UPS)
-                user_roles = [r.name for r in user.roles if not r.retired]
+                is_admin = has_privilege(user, "ET_ALL") or any(r.name.lower() == "admin" for r in user.roles if not r.retired)
+                tier_ref = user.subscription.tier_ref if user.subscription and user.subscription.status == "active" else None
+
+                if is_admin or (tier_ref is not None and tier_ref.follow_up_limit_per_step is None):
+                    is_unlimited = True
+                elif tier_ref is not None and tier_ref.follow_up_limit_per_step is not None:
+                    limit = tier_ref.follow_up_limit_per_step
+                else:
+                    user_roles = [r.name.lower() for r in user.roles if not r.retired]
+                    if "ultra" in user_roles:
+                        is_unlimited = True
+                    elif "pro" in user_roles:
+                        limit = settings.pro_followup_limit
+                    else:
+                        limit = settings.free_followup_limit
         except Exception as e:
             logger.warning(f"Failed to check user privileges for chat: {e}")
-        
-    from config import get_settings
-    settings = get_settings()
-    
-    limit = settings.free_followup_limit
-    if "Pro" in user_roles:
-        limit = settings.pro_followup_limit
         
     if not is_unlimited and step.follow_up_count >= limit:
         await ws.send_json({

@@ -324,32 +324,7 @@ async def seed_feedbacks():
             if not user:
                 user = next(iter(users_map.values()))
 
-            # 1. Create or get completed session linked to core user
-            session_res = await db.execute(
-                select(SessionRecord).where(SessionRecord.session_id == data["session_id"])
-            )
-            session = session_res.scalar_one_or_none()
-
-            if not session:
-                session = SessionRecord(
-                    session_id=data["session_id"],
-                    user_id=user.id,
-                    topic=data["topic"],
-                    learning_mode="visual",
-                    student_level=data["education_level"],
-                    total_steps=3,
-                    current_step_index=3,
-                    is_complete=True,
-                )
-                db.add(session)
-                await db.flush()
-            else:
-                session.user_id = user.id
-                session.topic = data["topic"]
-                session.student_level = data["education_level"]
-                session.is_complete = True
-
-            # 2. Create or update feedback record linked to core user
+            # 1. Create or update feedback record linked to core user (no SessionRecord created!)
             fb_res = await db.execute(
                 select(FeedbackRecord).where(FeedbackRecord.feedback_id == data["feedback_id"])
             )
@@ -358,7 +333,7 @@ async def seed_feedbacks():
             if not feedback:
                 feedback = FeedbackRecord(
                     feedback_id=data["feedback_id"],
-                    session_id=session.session_id,
+                    session_id=None,
                     user_id=user.id,
                     rating=data["rating"],
                     quote=data["quote"],
@@ -372,7 +347,7 @@ async def seed_feedbacks():
                 db.add(feedback)
             else:
                 feedback.user_id = user.id
-                feedback.session_id = session.session_id
+                feedback.session_id = None
                 feedback.rating = data["rating"]
                 feedback.quote = data["quote"]
                 feedback.education_level = data["education_level"]
@@ -384,6 +359,16 @@ async def seed_feedbacks():
             seeded_count += 1
 
         await db.flush()
+
+        # 2. Clean up any previously seeded mock sessions (sess_seed_fb_%)
+        clean_sess_res = await db.execute(
+            select(SessionRecord).where(SessionRecord.session_id.like("sess_seed_fb_%"))
+        )
+        old_mock_sessions = clean_sess_res.scalars().all()
+        if old_mock_sessions:
+            print(f"Cleaning up {len(old_mock_sessions)} legacy mock session records...")
+            for s in old_mock_sessions:
+                await db.delete(s)
 
         # 3. Clean up any previously created mock users (@example.com)
         cleanup_res = await db.execute(
@@ -398,7 +383,7 @@ async def seed_feedbacks():
         await db.commit()
         print(
             f"Successfully seeded {seeded_count} feedbacks mapped to {len(users_map)} core user(s). "
-            f"No extra user accounts were created."
+            f"Zero mock sessions were created."
         )
 
 

@@ -830,7 +830,7 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
                           ),
                         ),
                         Text(
-                          'ID: ${item.feedbackId.substring(0, item.feedbackId.length > 8 ? 8 : item.feedbackId.length)}... • Session: ${item.sessionId}',
+                          'ID: ${item.feedbackId.substring(0, item.feedbackId.length > 8 ? 8 : item.feedbackId.length)}... • Session: ${item.sessionId.isNotEmpty ? item.sessionId : 'N/A (External / Seed)'}',
                           style: AppTextStyles.caption.copyWith(
                             color: AppColors.textMuted,
                           ),

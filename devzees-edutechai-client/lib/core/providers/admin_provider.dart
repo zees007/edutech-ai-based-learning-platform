@@ -8,6 +8,7 @@ import '../../data/models/admin/role_edit_request.dart';
 import '../../data/models/admin/subscription_update_request.dart';
 import '../../data/models/admin/system_setting_model.dart';
 import '../../data/models/admin/setting_update_request.dart';
+import '../../data/models/admin/subscription_tier_model.dart';
 import '../services/admin_service.dart';
 import '../services/subscription_service.dart';
 
@@ -262,6 +263,8 @@ class AdminMetrics {
   final int proCount;
   final int ultraCount;
   final int totalRoles;
+  final Map<String, int> tierCounts;
+  final Map<String, String> tierNames;
 
   AdminMetrics({
     required this.totalUsers,
@@ -269,15 +272,41 @@ class AdminMetrics {
     required this.proCount,
     required this.ultraCount,
     required this.totalRoles,
+    this.tierCounts = const {},
+    this.tierNames = const {},
   });
 
   factory AdminMetrics.fromJson(Map<String, dynamic> json) {
+    final free = (json['free_count'] ?? json['freeCount']) as int? ?? 0;
+    final pro = (json['pro_count'] ?? json['proCount']) as int? ?? 0;
+    final ultra = (json['ultra_count'] ?? json['ultraCount']) as int? ?? 0;
+
+    final rawTierCounts = (json['tier_counts'] ?? json['tierCounts']) as Map<String, dynamic>? ?? {};
+    final tierCounts = rawTierCounts.map((k, v) => MapEntry(k.toString().toLowerCase(), (v as num).toInt()));
+
+    final rawTierNames = (json['tier_names'] ?? json['tierNames']) as Map<String, dynamic>? ?? {};
+    final tierNames = rawTierNames.map((k, v) => MapEntry(k.toString().toLowerCase(), v.toString()));
+
+    // Fallback if tier_counts wasn't sent
+    if (tierCounts.isEmpty) {
+      tierCounts['free'] = free;
+      tierCounts['pro'] = pro;
+      tierCounts['ultra'] = ultra;
+    }
+    if (tierNames.isEmpty) {
+      tierNames['free'] = 'Free Tier';
+      tierNames['pro'] = 'Pro Subscribers';
+      tierNames['ultra'] = 'Ultra Subscribers';
+    }
+
     return AdminMetrics(
       totalUsers: (json['total_users'] ?? json['totalUsers']) as int? ?? 0,
-      freeCount: (json['free_count'] ?? json['freeCount']) as int? ?? 0,
-      proCount: (json['pro_count'] ?? json['proCount']) as int? ?? 0,
-      ultraCount: (json['ultra_count'] ?? json['ultraCount']) as int? ?? 0,
+      freeCount: free,
+      proCount: pro,
+      ultraCount: ultra,
       totalRoles: (json['total_roles'] ?? json['totalRoles']) as int? ?? 0,
+      tierCounts: tierCounts,
+      tierNames: tierNames,
     );
   }
 }
@@ -439,5 +468,152 @@ class AdminSettingsNotifier extends Notifier<AdminSettingsState> {
 final adminSettingsProvider =
     NotifierProvider<AdminSettingsNotifier, AdminSettingsState>(() {
   return AdminSettingsNotifier();
+});
+
+// ─── Dynamic Subscription Tiers State & Notifier ────────────────────
+
+class AdminTiersState {
+  final List<SubscriptionTierModel> tiers;
+  final bool isLoading;
+  final bool isSaving;
+  final String? error;
+  final String? successMessage;
+  final SubscriptionTierModel? selectedTier;
+
+  AdminTiersState({
+    this.tiers = const [],
+    this.isLoading = false,
+    this.isSaving = false,
+    this.error,
+    this.successMessage,
+    this.selectedTier,
+  });
+
+  AdminTiersState copyWith({
+    List<SubscriptionTierModel>? tiers,
+    bool? isLoading,
+    bool? isSaving,
+    String? error,
+    String? successMessage,
+    SubscriptionTierModel? selectedTier,
+    bool clearSelected = false,
+  }) {
+    return AdminTiersState(
+      tiers: tiers ?? this.tiers,
+      isLoading: isLoading ?? this.isLoading,
+      isSaving: isSaving ?? this.isSaving,
+      error: error,
+      successMessage: successMessage,
+      selectedTier: clearSelected ? null : (selectedTier ?? this.selectedTier),
+    );
+  }
+}
+
+class AdminTiersNotifier extends Notifier<AdminTiersState> {
+  @override
+  AdminTiersState build() {
+    return AdminTiersState();
+  }
+
+  void selectTier(SubscriptionTierModel? tier) {
+    state = state.copyWith(selectedTier: tier, clearSelected: tier == null);
+  }
+
+  Future<void> loadTiers({bool includeRetired = false}) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final service = ref.read(adminServiceProvider);
+      final tiers = await service.getSubscriptionTiers(includeRetired: includeRetired);
+      state = state.copyWith(
+        tiers: tiers,
+        isLoading: false,
+        selectedTier: state.selectedTier != null
+            ? tiers.firstWhere(
+                (t) => t.id == state.selectedTier!.id,
+                orElse: () => tiers.isNotEmpty ? tiers.first : state.selectedTier!,
+              )
+            : (tiers.isNotEmpty ? tiers.first : null),
+      );
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: e.toString().replaceFirst('Exception: ', ''),
+      );
+    }
+  }
+
+  Future<bool> createTier(Map<String, dynamic> data) async {
+    state = state.copyWith(isSaving: true, error: null, successMessage: null);
+    try {
+      final service = ref.read(adminServiceProvider);
+      final newTier = await service.createSubscriptionTier(data);
+      final updatedList = [...state.tiers, newTier];
+      state = state.copyWith(
+        tiers: updatedList,
+        selectedTier: newTier,
+        isSaving: false,
+        successMessage: "Subscription tier '${newTier.name}' created successfully!",
+      );
+      ref.invalidate(pricingCatalogProvider);
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isSaving: false,
+        error: e.toString().replaceFirst('Exception: ', ''),
+      );
+      return false;
+    }
+  }
+
+  Future<bool> updateTier(String tierId, Map<String, dynamic> data) async {
+    state = state.copyWith(isSaving: true, error: null, successMessage: null);
+    try {
+      final service = ref.read(adminServiceProvider);
+      final updated = await service.updateSubscriptionTierDetails(tierId, data);
+      final updatedList = state.tiers.map((t) => t.id == tierId ? updated : t).toList();
+      state = state.copyWith(
+        tiers: updatedList,
+        selectedTier: updated,
+        isSaving: false,
+        successMessage: "Subscription tier '${updated.name}' updated successfully!",
+      );
+      ref.invalidate(pricingCatalogProvider);
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isSaving: false,
+        error: e.toString().replaceFirst('Exception: ', ''),
+      );
+      return false;
+    }
+  }
+
+  Future<bool> retireTier(String tierId) async {
+    state = state.copyWith(isSaving: true, error: null, successMessage: null);
+    try {
+      final service = ref.read(adminServiceProvider);
+      await service.retireSubscriptionTier(tierId);
+      final updatedList = state.tiers.where((t) => t.id != tierId).toList();
+      state = state.copyWith(
+        tiers: updatedList,
+        clearSelected: state.selectedTier?.id == tierId,
+        isSaving: false,
+        successMessage: 'Subscription tier retired successfully.',
+      );
+      ref.invalidate(pricingCatalogProvider);
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isSaving: false,
+        error: e.toString().replaceFirst('Exception: ', ''),
+      );
+      return false;
+    }
+  }
+}
+
+final adminTiersProvider =
+    NotifierProvider<AdminTiersNotifier, AdminTiersState>(() {
+  return AdminTiersNotifier();
 });
 

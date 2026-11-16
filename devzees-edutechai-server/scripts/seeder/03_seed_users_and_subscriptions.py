@@ -6,7 +6,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(
 
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
-from models.db_models import User, Role, Subscription
+from models.db_models import User, Role, Subscription, SubscriptionTier
 from services.user_service import UserService
 from services.database import get_db_session
 from datetime import datetime, timezone, timedelta
@@ -22,6 +22,15 @@ PASSWORD = "Test2day@"
 async def seed_users_and_subscriptions():
     print("Starting user and subscription seeding...")
     async with get_db_session() as db:
+        # Prune rogue users not in canonical USERS list
+        canonical_emails = {u["email"] for u in USERS}
+        all_db_users = (await db.execute(select(User))).scalars().all()
+        for u in all_db_users:
+            if u.email not in canonical_emails:
+                print(f"Pruning rogue user: {u.email}")
+                await db.delete(u)
+        await db.flush()
+
         roles_res = await db.execute(select(Role))
         roles = {r.name: r for r in roles_res.scalars().all()}
         
@@ -51,11 +60,16 @@ async def seed_users_and_subscriptions():
             # Assign subscription
             res_sub = await db.execute(select(Subscription).where(Subscription.user_id == user.id))
             sub = res_sub.scalar_one_or_none()
+
+            tier_res = await db.execute(select(SubscriptionTier).where(SubscriptionTier.slug == u_data["tier"]))
+            tier_obj = tier_res.scalar_one_or_none()
+            tier_id = tier_obj.id if tier_obj else None
             
             if not sub:
                 sub = Subscription(
                     user_id=user.id,
                     tier=u_data["tier"],
+                    tier_id=tier_id,
                     status="active",
                     billing_cycle="monthly",
                     gateway_provider="razorpay",
@@ -66,6 +80,7 @@ async def seed_users_and_subscriptions():
                 db.add(sub)
             else:
                 sub.tier = u_data["tier"]
+                sub.tier_id = tier_id
                 sub.status = "active"
                 sub.gateway_provider = "razorpay"
 

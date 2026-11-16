@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/permission_service.dart';
 import 'auth_provider.dart';
+import 'session_quota_provider.dart';
 import 'user_provider.dart';
 
 /// Riverpod provider that exposes a [PermissionChecker] derived from the
@@ -20,8 +21,11 @@ final permissionProvider = Provider<PermissionChecker>((ref) {
   // on F5 refresh evaluate immediately without waiting for FutureProvider.
   final authUser = ref.watch(authProvider.select((s) => s.user));
   final userProfile = authUser ?? ref.watch(userProvider).asData?.value;
+  final quotaState = ref.watch(sessionQuotaProvider);
   return PermissionChecker(
     userProfile?.privilegeCodes ?? [],
     userProfile,
+    quotaState.quota?.followUpLimit,
+    quotaState.quota != null,
   );
 });

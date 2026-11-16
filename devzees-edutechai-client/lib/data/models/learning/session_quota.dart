@@ -4,6 +4,8 @@ class SessionQuota {
   final int used;
   final int? limit;
   final int? remaining;
+  final int? followUpLimit;
+  final int? youtubeLimit;
 
   const SessionQuota({
     required this.tier,
@@ -11,6 +13,8 @@ class SessionQuota {
     required this.used,
     this.limit,
     this.remaining,
+    this.followUpLimit,
+    this.youtubeLimit,
   });
 
   factory SessionQuota.fromJson(Map<String, dynamic> json) {
@@ -20,6 +24,8 @@ class SessionQuota {
       used: (json['used'] as num?)?.toInt() ?? 0,
       limit: (json['limit'] as num?)?.toInt(),
       remaining: (json['remaining'] as num?)?.toInt(),
+      followUpLimit: (json['follow_up_limit'] as num?)?.toInt(),
+      youtubeLimit: (json['youtube_limit'] as num?)?.toInt(),
     );
   }
 
@@ -29,6 +35,8 @@ class SessionQuota {
     'used': used,
     'limit': limit,
     'remaining': remaining,
+    'follow_up_limit': followUpLimit,
+    'youtube_limit': youtubeLimit,
   };
 
   SessionQuota copyWith({
@@ -37,6 +45,8 @@ class SessionQuota {
     int? used,
     int? limit,
     int? remaining,
+    int? followUpLimit,
+    int? youtubeLimit,
   }) {
     return SessionQuota(
       tier: tier ?? this.tier,
@@ -44,6 +54,8 @@ class SessionQuota {
       used: used ?? this.used,
       limit: limit ?? this.limit,
       remaining: remaining ?? this.remaining,
+      followUpLimit: followUpLimit ?? this.followUpLimit,
+      youtubeLimit: youtubeLimit ?? this.youtubeLimit,
     );
   }
 }

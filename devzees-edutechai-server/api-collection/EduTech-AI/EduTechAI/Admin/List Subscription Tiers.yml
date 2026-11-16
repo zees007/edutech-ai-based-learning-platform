@@ -1,0 +1,56 @@
+info:
+  name: List Subscription Tiers
+  type: http
+  seq: 2
+  tags:
+    - Admin
+    - Tiers
+
+http:
+  method: GET
+  url: "{{baseUrl}}/api/v1/admin/tiers"
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+examples:
+  - name: 200 Response
+    description: List of dynamic subscription tiers
+    request:
+      url: "{{baseUrl}}/api/v1/admin/tiers"
+      method: GET
+    response:
+      status: 200
+      statusText: OK
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          [
+            {
+              "id": "8717d06d-2ac5-49d3-8b2a-c8ce88f7238d",
+              "slug": "free",
+              "name": "Free Tier",
+              "description": "Essential learning journey with monthly AI credits and basic quizzes.",
+              "role_id": "e049ec66-70b5-4a5c-9336-0c0f8ecef1d0",
+              "role_name": "Free",
+              "price_monthly": 0.0,
+              "price_annual": 0.0,
+              "currency": "USD",
+              "monthly_session_limit": 10,
+              "follow_up_limit_per_step": 2,
+              "youtube_limit_per_step": 1,
+              "is_public": true,
+              "order_index": 1,
+              "retired": false,
+              "created_at": "2026-11-14T20:32:02.712000",
+              "active_subscribers_count": 1
+            }
+          ]

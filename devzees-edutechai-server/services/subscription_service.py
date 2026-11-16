@@ -15,7 +15,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.exceptions import BadRequestException, NotFoundException
-from models.db_models import PaymentTransaction, Role, Subscription, User
+from models.db_models import PaymentTransaction, Role, Subscription, SubscriptionTier, User
 from models.subscription_schemas import (
     CancelSubscriptionRequest,
     CheckoutRequest,
@@ -51,10 +51,16 @@ class SubscriptionService:
         user = await UserService.get_user_by_id(db, user_id)
         target_tier = dto.tier.lower().strip()
 
-        if target_tier not in TIER_ROLE_NAME_MAP:
+        tier_stmt = select(SubscriptionTier).where(
+            SubscriptionTier.slug == target_tier,
+            SubscriptionTier.retired == False
+        )
+        tier_obj = (await db.execute(tier_stmt)).scalar_one_or_none()
+
+        if not tier_obj and target_tier not in ("pro", "ultra"):
             raise BadRequestException(
                 error_code="INVALID_TIER",
-                errors=f"Invalid target tier '{dto.tier}'. Must be 'pro' or 'ultra'.",
+                errors=f"Invalid target tier '{dto.tier}'. Tier not found or retired.",
             )
 
         coupon_res = PaymentService.validate_coupon(dto.coupon_code, target_tier, dto.billing_cycle)
@@ -139,10 +145,16 @@ class SubscriptionService:
         user = await UserService.get_user_by_id(db, user_id)
         target_tier = dto.tier.lower().strip()
 
-        if target_tier not in TIER_ROLE_NAME_MAP:
+        tier_stmt = select(SubscriptionTier).where(
+            SubscriptionTier.slug == target_tier,
+            SubscriptionTier.retired == False
+        )
+        tier_obj = (await db.execute(tier_stmt)).scalar_one_or_none()
+
+        if not tier_obj and target_tier not in ("pro", "ultra"):
             raise BadRequestException(
                 error_code="INVALID_TIER",
-                errors=f"Invalid target tier '{dto.tier}'. Must be 'pro' or 'ultra'.",
+                errors=f"Invalid target tier '{dto.tier}'. Tier not found or retired.",
             )
 
         # 1. Compute price after coupon validation
@@ -295,11 +307,19 @@ class SubscriptionService:
         user = await UserService.get_user_by_id(db, user_id)
         target_tier = dto.tier.lower().strip()
 
-        if target_tier not in TIER_ROLE_NAME_MAP:
+        tier_stmt = select(SubscriptionTier).where(
+            SubscriptionTier.slug == target_tier,
+            SubscriptionTier.retired == False
+        )
+        tier_obj = (await db.execute(tier_stmt)).scalar_one_or_none()
+
+        if not tier_obj and target_tier not in ("free", "pro", "ultra"):
             raise BadRequestException(
                 error_code="INVALID_SUBSCRIPTION_TIER",
-                errors=f"Invalid tier '{dto.tier}'. Must be one of {list(TIER_ROLE_NAME_MAP.keys())}.",
+                errors=f"Invalid tier '{dto.tier}'. Tier not found or retired.",
             )
+
+        tier_id = tier_obj.id if tier_obj else None
 
         stmt = select(Subscription).where(Subscription.user_id == user_id)
         res = await db.execute(stmt)
@@ -309,6 +329,7 @@ class SubscriptionService:
             sub = Subscription(
                 user_id=user_id,
                 tier=target_tier,
+                tier_id=tier_id,
                 status=dto.status,
                 billing_cycle=dto.billing_cycle,
                 gateway_provider=dto.gateway_provider or "razorpay",
@@ -318,6 +339,7 @@ class SubscriptionService:
             db.add(sub)
         else:
             sub.tier = target_tier
+            sub.tier_id = tier_id
             sub.status = dto.status
             sub.billing_cycle = dto.billing_cycle
             if dto.gateway_provider:
@@ -384,17 +406,37 @@ class SubscriptionService:
 
     @staticmethod
     async def _sync_user_role(db: AsyncSession, user: User, target_tier: str) -> None:
-        """Helper to sync DB roles (Free, Pro, Ultra) for a User entity."""
-        target_role_name = TIER_ROLE_NAME_MAP[target_tier.lower()]
-        r_stmt = select(Role).where(Role.name == target_role_name, Role.retired == False)
-        r_res = await db.execute(r_stmt)
-        target_role = r_res.scalar_one_or_none()
+        """Helper to sync DB roles dynamically for a User entity based on bound SubscriptionTier."""
+        tier_stmt = select(SubscriptionTier).where(
+            SubscriptionTier.slug == target_tier.lower(),
+            SubscriptionTier.retired == False
+        )
+        tier_obj = (await db.execute(tier_stmt)).scalar_one_or_none()
 
+        target_role = None
+        if tier_obj and tier_obj.role_id:
+            r_stmt = select(Role).where(Role.id == tier_obj.role_id, Role.retired == False)
+            target_role = (await db.execute(r_stmt)).scalar_one_or_none()
+
+        # Fallback to legacy role name matching if tier not in subscription_tiers yet
+        if not target_role:
+            target_role_name = TIER_ROLE_NAME_MAP.get(target_tier.lower(), target_tier.capitalize())
+            r_stmt = select(Role).where(Role.name == target_role_name, Role.retired == False)
+            target_role = (await db.execute(r_stmt)).scalar_one_or_none()
+
+        # Collect all role IDs associated with any active subscription tier
+        all_tier_roles_stmt = select(SubscriptionTier.role_id).where(SubscriptionTier.retired == False)
+        tier_role_ids = set((await db.execute(all_tier_roles_stmt)).scalars().all())
+
+        # Also exclude known default tier role names
         tier_role_names = set(TIER_ROLE_NAME_MAP.values())
-        non_tier_roles = [r for r in user.roles if r.name not in tier_role_names]
+        non_tier_roles = [
+            r for r in user.roles
+            if r.id not in tier_role_ids and r.name not in tier_role_names
+        ]
 
         if target_role:
             user.roles = non_tier_roles + [target_role]
         else:
             user.roles = non_tier_roles
-            logger.warning(f"Target role '{target_role_name}' not found in DB during role sync.")
+            logger.warning(f"Target role for tier '{target_tier}' not found in DB during role sync.")

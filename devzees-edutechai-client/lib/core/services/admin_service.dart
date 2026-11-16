@@ -10,6 +10,7 @@ import '../../data/models/admin/user_response.dart';
 import '../../data/models/admin/user_role_assign_request.dart';
 import '../../data/models/admin/system_setting_model.dart';
 import '../../data/models/admin/setting_update_request.dart';
+import '../../data/models/admin/subscription_tier_model.dart';
 import '../../data/models/auth/subscription_response.dart';
 import '../constants/api_constants.dart';
 import 'api_client.dart';
@@ -211,6 +212,61 @@ class AdminService {
       return SystemSettingModel.fromJson(response.data as Map<String, dynamic>);
     } on DioException catch (e) {
       throw Exception(_parseError(e, 'Failed to update system setting'));
+    }
+  }
+
+  // ─── Dynamic Subscription Tier Management ──────────────────────────
+
+  /// Fetch all dynamic subscription tiers.
+  Future<List<SubscriptionTierModel>> getSubscriptionTiers({bool includeRetired = false}) async {
+    try {
+      final response = await _dio.get(
+        ApiConstants.adminTiers,
+        queryParameters: {'include_retired': includeRetired},
+      );
+      return (response.data as List)
+          .map((json) => SubscriptionTierModel.fromJson(json as Map<String, dynamic>))
+          .toList();
+    } on DioException catch (e) {
+      throw Exception(_parseError(e, 'Failed to fetch subscription tiers'));
+    }
+  }
+
+  /// Create a new dynamic subscription tier.
+  Future<SubscriptionTierModel> createSubscriptionTier(Map<String, dynamic> data) async {
+    try {
+      final response = await _dio.post(
+        ApiConstants.adminTiers,
+        data: data,
+      );
+      return SubscriptionTierModel.fromJson(response.data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      throw Exception(_parseError(e, 'Failed to create subscription tier'));
+    }
+  }
+
+  /// Update an existing subscription tier.
+  Future<SubscriptionTierModel> updateSubscriptionTierDetails(
+    String tierId,
+    Map<String, dynamic> data,
+  ) async {
+    try {
+      final response = await _dio.put(
+        ApiConstants.adminTier(tierId),
+        data: data,
+      );
+      return SubscriptionTierModel.fromJson(response.data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      throw Exception(_parseError(e, 'Failed to update subscription tier'));
+    }
+  }
+
+  /// Retire a subscription tier.
+  Future<void> retireSubscriptionTier(String tierId) async {
+    try {
+      await _dio.delete(ApiConstants.adminTier(tierId));
+    } on DioException catch (e) {
+      throw Exception(_parseError(e, 'Failed to retire subscription tier'));
     }
   }
 }

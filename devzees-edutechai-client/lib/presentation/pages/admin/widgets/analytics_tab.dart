@@ -246,7 +246,7 @@ class AnalyticsTab extends ConsumerWidget {
   }
 
   Widget _buildMetricCardsRow(AdminMetrics metrics, bool isMobile) {
-    final cards = [
+    final cards = <_MetricCardData>[
       _MetricCardData(
         label: 'Total Users',
         value: metrics.totalUsers,
@@ -254,29 +254,75 @@ class AnalyticsTab extends ConsumerWidget {
         gradient: AppColors.primaryGradient,
         iconColor: AppColors.purple,
       ),
-      _MetricCardData(
-        label: 'Free Tier',
-        value: metrics.freeCount,
-        icon: Icons.person_outline,
-        gradient: const LinearGradient(
-          colors: [AppColors.slate700, AppColors.slate600],
-        ),
-        iconColor: AppColors.slate400,
-      ),
-      _MetricCardData(
-        label: 'Pro Subscribers',
-        value: metrics.proCount,
-        icon: Icons.star_outline,
-        gradient: AppColors.royalBlueIndigoGradient,
-        iconColor: AppColors.accentBlue,
-      ),
-      _MetricCardData(
-        label: 'Ultra Subscribers',
-        value: metrics.ultraCount,
-        icon: Icons.diamond_outlined,
-        gradient: AppColors.pinkPurpleGradient,
-        iconColor: AppColors.purpleDeep,
-      ),
+    ];
+
+    // Determine tiers to display dynamically
+    final tierKeys = metrics.tierCounts.isNotEmpty
+        ? metrics.tierCounts.keys.toList()
+        : ['free', 'pro', 'ultra'];
+
+    final customGradients = [
+      const LinearGradient(colors: [Color(0xFF0D9488), Color(0xFF0284C7)]),
+      const LinearGradient(colors: [Color(0xFFF59E0B), Color(0xFFD97706)]),
+      const LinearGradient(colors: [Color(0xFFEC4899), Color(0xFFBE185D)]),
+      const LinearGradient(colors: [Color(0xFF10B981), Color(0xFF059669)]),
+    ];
+
+    int customIndex = 0;
+    for (final tier in tierKeys) {
+      if (tier == 'free') {
+        cards.add(
+          _MetricCardData(
+            label: 'Free Tier',
+            value: metrics.tierCounts['free'] ?? metrics.freeCount,
+            icon: Icons.person_outline,
+            gradient: const LinearGradient(
+              colors: [AppColors.slate700, AppColors.slate600],
+            ),
+            iconColor: AppColors.slate400,
+          ),
+        );
+      } else if (tier == 'pro') {
+        cards.add(
+          _MetricCardData(
+            label: 'Pro Subscribers',
+            value: metrics.tierCounts['pro'] ?? metrics.proCount,
+            icon: Icons.star_outline,
+            gradient: AppColors.royalBlueIndigoGradient,
+            iconColor: AppColors.accentBlue,
+          ),
+        );
+      } else if (tier == 'ultra') {
+        cards.add(
+          _MetricCardData(
+            label: 'Ultra Subscribers',
+            value: metrics.tierCounts['ultra'] ?? metrics.ultraCount,
+            icon: Icons.diamond_outlined,
+            gradient: AppColors.pinkPurpleGradient,
+            iconColor: AppColors.purpleDeep,
+          ),
+        );
+      } else {
+        final tierName =
+            metrics.tierNames[tier] ?? '${tier.toUpperCase()} Subscribers';
+        final gradient = customGradients[customIndex % customGradients.length];
+        customIndex++;
+        cards.add(
+          _MetricCardData(
+            label: tierName.endsWith('Tier') || tierName.endsWith('Subscribers')
+                ? tierName
+                : '$tierName Subscribers',
+            value: metrics.tierCounts[tier] ?? 0,
+            icon: Icons.workspace_premium_outlined,
+            gradient: gradient,
+            iconColor: AppColors.accentCyan,
+          ),
+        );
+      }
+    }
+
+    // System roles card at the end
+    cards.add(
       _MetricCardData(
         label: 'System Roles',
         value: metrics.totalRoles,
@@ -284,12 +330,12 @@ class AnalyticsTab extends ConsumerWidget {
         gradient: AppColors.emeraldGradient,
         iconColor: AppColors.accentGreen,
       ),
-    ];
+    );
 
     return LayoutBuilder(
       builder: (context, constraints) {
         final crossAxisCount = constraints.maxWidth > 900
-            ? 5
+            ? (cards.length > 5 ? 5 : cards.length)
             : constraints.maxWidth > 600
             ? 3
             : constraints.maxWidth > 340
@@ -313,7 +359,15 @@ class AnalyticsTab extends ConsumerWidget {
   }
 
   Widget _buildDistributionChart(AdminMetrics metrics, bool isMobile) {
-    final total = metrics.freeCount + metrics.proCount + metrics.ultraCount;
+    final tiers = metrics.tierCounts.isNotEmpty
+        ? metrics.tierCounts.keys.toList()
+        : ['free', 'pro', 'ultra'];
+
+    final total = tiers.fold<int>(
+      0,
+      (sum, t) => sum + (metrics.tierCounts[t] ?? 0),
+    );
+
     if (total == 0) {
       return Container(
         height: 280,
@@ -325,7 +379,21 @@ class AnalyticsTab extends ConsumerWidget {
       );
     }
 
-    final barWidth = isMobile ? 28.0 : 40.0;
+    final barWidth = isMobile
+        ? (tiers.length > 4 ? 20.0 : 28.0)
+        : (tiers.length > 4 ? 28.0 : 40.0);
+
+    final tierColors = <String, Color>{
+      'free': AppColors.slate500,
+      'pro': AppColors.accentBlue,
+      'ultra': AppColors.purpleDeep,
+    };
+    const defaultColors = [
+      AppColors.accentCyan,
+      AppColors.accentAmber,
+      AppColors.accentPink,
+      Color(0xFF10B981),
+    ];
 
     return Container(
       height: 320,
@@ -348,9 +416,12 @@ class AnalyticsTab extends ConsumerWidget {
                   AppColors.popoverBackground.withValues(alpha: 0.9),
               tooltipRoundedRadius: 8,
               getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                final labels = ['Normal (Free)', 'Pro', 'Ultra'];
+                if (groupIndex < 0 || groupIndex >= tiers.length) return null;
+                final tierKey = tiers[groupIndex];
+                final name =
+                    metrics.tierNames[tierKey] ?? tierKey.toUpperCase();
                 return BarTooltipItem(
-                  '${labels[groupIndex]}\n${rod.toY.toInt()} users',
+                  '$name\n${rod.toY.toInt()} users',
                   AppTextStyles.caption.copyWith(color: AppColors.textPrimary),
                 );
               },
@@ -383,12 +454,18 @@ class AnalyticsTab extends ConsumerWidget {
                 showTitles: true,
                 reservedSize: 36,
                 getTitlesWidget: (value, meta) {
-                  final labels = ['Free', 'Pro', 'Ultra'];
-                  if (value.toInt() >= 0 && value.toInt() < labels.length) {
+                  final idx = value.toInt();
+                  if (idx >= 0 && idx < tiers.length) {
+                    final tierKey = tiers[idx];
+                    final rawName = metrics.tierNames[tierKey] ?? tierKey;
+                    final shortName = rawName.replaceAll(
+                      RegExp(r'\s+(Tier|Subscribers)', caseSensitive: false),
+                      '',
+                    );
                     return Padding(
                       padding: const EdgeInsets.only(top: 8),
                       child: Text(
-                        labels[value.toInt()],
+                        shortName,
                         style: AppTextStyles.label.copyWith(
                           color: AppColors.textSecondary,
                         ),
@@ -413,26 +490,19 @@ class AnalyticsTab extends ConsumerWidget {
             ),
           ),
           borderData: FlBorderData(show: false),
-          barGroups: [
-            _makeBarGroup(
-              0,
-              metrics.freeCount.toDouble(),
-              AppColors.slate500,
+          barGroups: tiers.asMap().entries.map((entry) {
+            final idx = entry.key;
+            final tierKey = entry.value;
+            final count = (metrics.tierCounts[tierKey] ?? 0).toDouble();
+            final color = tierColors[tierKey] ??
+                defaultColors[idx % defaultColors.length];
+            return _makeBarGroup(
+              idx,
+              count,
+              color,
               barWidth,
-            ),
-            _makeBarGroup(
-              1,
-              metrics.proCount.toDouble(),
-              AppColors.accentBlue,
-              barWidth,
-            ),
-            _makeBarGroup(
-              2,
-              metrics.ultraCount.toDouble(),
-              AppColors.purpleDeep,
-              barWidth,
-            ),
-          ],
+            );
+          }).toList(),
         ),
       ),
     );
