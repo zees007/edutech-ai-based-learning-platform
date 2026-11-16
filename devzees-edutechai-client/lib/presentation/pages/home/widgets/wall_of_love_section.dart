@@ -490,6 +490,7 @@ class _WallOfLoveSectionState extends ConsumerState<WallOfLoveSection>
                                           data: item,
                                           focusWeight: focusWeight,
                                           cardWidth: cardWidth,
+                                          index: data.index,
                                         ),
                                       ),
                                     ),
@@ -540,11 +541,13 @@ class _TestimonialCard extends StatefulWidget {
   final PublicFeedbackModel data;
   final double focusWeight;
   final double? cardWidth;
+  final int index;
 
   const _TestimonialCard({
     required this.data,
     this.focusWeight = 1.0,
     this.cardWidth,
+    this.index = 0,
   });
 
   @override
@@ -554,12 +557,26 @@ class _TestimonialCard extends StatefulWidget {
 class _TestimonialCardState extends State<_TestimonialCard> {
   bool _isCardHovered = false;
 
+  static const List<Color> _kCardPalette = [
+    Color(0xFF2B68F6), // 0: Electric Blue
+    Color(0xFF10B981), // 1: Emerald Green
+    Color(0xFF8B5CF6), // 2: Vivid Purple
+    Color(0xFFF59E0B), // 3: Amber Gold
+    Color(0xFF00F5D4), // 4: Cyan Neon
+    Color(0xFFEC4899), // 5: Magenta Pink
+  ];
+
   @override
   Widget build(BuildContext context) {
     final countryText =
         widget.data.country != null && widget.data.country!.isNotEmpty
         ? widget.data.country!
         : 'Global Learner';
+
+    // Cycle cleanly through palette so every card has its own distinct accent color
+    final Color cardAccentColor = (widget.data.avatarColor != const Color(0xFF10B981) || widget.index % _kCardPalette.length == 1)
+        ? widget.data.avatarColor
+        : _kCardPalette[widget.index % _kCardPalette.length];
 
     // Only the mid/center card on focus qualifies for hover zoom and highlight
     final bool isMidCard = widget.focusWeight > 0.70;
@@ -598,7 +615,7 @@ class _TestimonialCardState extends State<_TestimonialCard> {
             border: Border.all(
               color: Color.lerp(
                 Colors.white.withValues(alpha: 0.08),
-                widget.data.avatarColor.withValues(alpha: 0.70),
+                cardAccentColor.withValues(alpha: 0.70),
                 w,
               )!,
               width: 1.0 + 0.5 * w,
@@ -613,7 +630,7 @@ class _TestimonialCardState extends State<_TestimonialCard> {
               ),
               if (w > 0.05 || isZoomed)
                 BoxShadow(
-                  color: widget.data.avatarColor.withValues(
+                  color: cardAccentColor.withValues(
                     alpha: isZoomed ? 0.38 : (0.30 * w),
                   ),
                   blurRadius: 20 + 18 * w + (isZoomed ? 10 : 0),
@@ -636,11 +653,11 @@ class _TestimonialCardState extends State<_TestimonialCard> {
                         height: 44,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: widget.data.avatarColor.withValues(
+                          color: cardAccentColor.withValues(
                             alpha: 0.12 + 0.10 * w,
                           ),
                           border: Border.all(
-                            color: widget.data.avatarColor.withValues(
+                            color: cardAccentColor.withValues(
                               alpha: 0.30 + 0.35 * w,
                             ),
                             width: 1.5,
@@ -650,7 +667,7 @@ class _TestimonialCardState extends State<_TestimonialCard> {
                           child: Text(
                             widget.data.avatarInitial,
                             style: TextStyle(
-                              color: widget.data.avatarColor,
+                              color: cardAccentColor,
                               fontWeight: FontWeight.w900,
                               fontSize: 15,
                             ),
@@ -774,12 +791,12 @@ class _TestimonialCardState extends State<_TestimonialCard> {
                         vertical: 4.5,
                       ),
                       decoration: BoxDecoration(
-                        color: widget.data.avatarColor.withValues(
+                        color: cardAccentColor.withValues(
                           alpha: showFullTopic ? 0.14 : (0.06 + 0.10 * w),
                         ),
                         borderRadius: BorderRadius.circular(6),
                         border: Border.all(
-                          color: widget.data.avatarColor.withValues(
+                          color: cardAccentColor.withValues(
                             alpha: showFullTopic ? 0.38 : (0.14 + 0.18 * w),
                           ),
                         ),
@@ -793,7 +810,7 @@ class _TestimonialCardState extends State<_TestimonialCard> {
                             child: Icon(
                               Icons.school_outlined,
                               size: 12,
-                              color: widget.data.avatarColor.withValues(
+                              color: cardAccentColor.withValues(
                                 alpha: showFullTopic ? 1.0 : (0.60 + 0.40 * w),
                               ),
                             ),
@@ -803,7 +820,7 @@ class _TestimonialCardState extends State<_TestimonialCard> {
                             child: Text(
                               'Mastered: ${widget.data.topicTag}',
                               style: TextStyle(
-                                color: widget.data.avatarColor.withValues(
+                                color: cardAccentColor.withValues(
                                   alpha: showFullTopic
                                       ? 1.0
                                       : (0.70 + 0.30 * w),

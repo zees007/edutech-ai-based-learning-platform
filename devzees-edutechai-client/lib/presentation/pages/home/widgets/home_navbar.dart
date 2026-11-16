@@ -18,7 +18,13 @@ import 'package:go_router/go_router.dart';
 /// - Kinetic gradient action pill button ('Get Started') with electric fuchsia/royal blue sweep.
 class HomeNavbar extends ConsumerWidget {
   final Function(String)? onNavTap;
-  const HomeNavbar({super.key, this.onNavTap});
+  final bool isScrolled;
+
+  const HomeNavbar({
+    super.key,
+    this.onNavTap,
+    this.isScrolled = false,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -32,24 +38,30 @@ class HomeNavbar extends ConsumerWidget {
       delayMs: 120,
       durationMs: 700,
       fromOffset: const Offset(0, -22),
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOutCubic,
         constraints: const BoxConstraints(minHeight: 56),
         decoration: BoxDecoration(
-          color: const Color(0xCC080914), // Frosted near-black
+          color: isScrolled
+              ? const Color(0xE8080914) // Deeper frosted near-black when scrolled
+              : const Color(0xCC080914), // Frosted near-black at rest
           borderRadius: BorderRadius.circular(9999),
           border: Border.all(
-            color: Colors.white.withValues(alpha: 0.12),
+            color: isScrolled
+                ? Colors.white.withValues(alpha: 0.18)
+                : Colors.white.withValues(alpha: 0.12),
             width: 1.0,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.55),
-              blurRadius: 32,
+              color: Colors.black.withValues(alpha: isScrolled ? 0.65 : 0.55),
+              blurRadius: isScrolled ? 36 : 32,
               offset: const Offset(0, 10),
             ),
             BoxShadow(
-              color: AppColors.primary.withValues(alpha: 0.12),
-              blurRadius: 24,
+              color: AppColors.primary.withValues(alpha: isScrolled ? 0.16 : 0.12),
+              blurRadius: isScrolled ? 28 : 24,
               spreadRadius: -4,
               offset: const Offset(0, 4),
             ),
@@ -58,7 +70,10 @@ class HomeNavbar extends ConsumerWidget {
         child: ClipRRect(
           borderRadius: BorderRadius.circular(9999),
           child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+            filter: ImageFilter.blur(
+              sigmaX: isScrolled ? 24 : 20,
+              sigmaY: isScrolled ? 24 : 20,
+            ),
             child: Padding(
               padding: EdgeInsets.symmetric(
                 horizontal: isMobile ? 12 : 24,

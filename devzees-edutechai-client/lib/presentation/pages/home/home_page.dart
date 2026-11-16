@@ -6,6 +6,8 @@ import 'package:devzees_edutechai_client/presentation/widgets/n8n_canvas.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/scroll_fade_in.dart';
 import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
 import 'package:devzees_edutechai_client/core/theme/app_theme.dart';
+import 'package:devzees_edutechai_client/core/constants/responsive.dart';
+import 'package:devzees_edutechai_client/core/services/subscription_service.dart';
 
 import 'package:devzees_edutechai_client/presentation/widgets/promo_announcement_bar.dart';
 
@@ -117,6 +119,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         targetContext,
         duration: const Duration(milliseconds: 600),
         curve: Curves.easeInOutCubic,
+        alignment: 0.08,
       );
     }
   }
@@ -136,21 +139,18 @@ class _HomePageState extends ConsumerState<HomePage> {
       child: Scaffold(
         backgroundColor: AppColors.darkPalette.scaffoldBackground,
         body: GlowBackground(
-          child: CustomScrollView(
-            controller: _scrollController,
-            slivers: [
-              // ─── 1. Cinematic Full-Width Header & Hero (Zero Margin / Edge-to-Edge) ───
-              SliverToBoxAdapter(
-                child: HeroSection(
-                  header: Column(
-                    children: [
-                      const PromoAnnouncementBar(),
-                      HomeNavbar(onNavTap: _scrollToSection),
-                    ],
+          child: Stack(
+            children: [
+              CustomScrollView(
+                controller: _scrollController,
+                slivers: [
+                  // ─── 1. Cinematic Full-Width Header & Hero (Zero Margin / Edge-to-Edge) ───
+                  SliverToBoxAdapter(
+                    child: HeroSection(
+                      header: const _HeroHeaderSpacer(),
+                      onExploreTap: () => _scrollToSection('architecture'),
+                    ),
                   ),
-                  onExploreTap: () => _scrollToSection('architecture'),
-                ),
-              ),
 
               // ─── 2. Rest of Sections (Centered maxWidth: 1200) ───
               SliverToBoxAdapter(
@@ -261,8 +261,21 @@ class _HomePageState extends ConsumerState<HomePage> {
               ),
             ],
           ),
-        ),
-        floatingActionButton: _showScrollToTop
+
+          // ─── Floating Sticky Navigation Header (Pinned at top on scroll) ───
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: _StickyHomeHeader(
+              scrollController: _scrollController,
+              onNavTap: _scrollToSection,
+            ),
+          ),
+        ],
+      ),
+    ),
+    floatingActionButton: _showScrollToTop
             ? Container(
                 width: 50,
                 height: 50,
@@ -305,6 +318,115 @@ class _HomePageState extends ConsumerState<HomePage> {
               )
             : null,
       ),
+    );
+  }
+}
+
+/// Invisible placeholder in the Hero section foreground that reserves exact vertical space
+/// for the floating sticky header at initial rest position.
+class _HeroHeaderSpacer extends ConsumerWidget {
+  const _HeroHeaderSpacer();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final catalogAsync = ref.watch(pricingCatalogProvider);
+    final hasPromo = catalogAsync.value?.promoBanner?.isActive ?? false;
+    final isMobile = Responsive.isMobile(context);
+
+    // Height of HomeNavbar (minHeight 56 + vertical padding 16 = ~72px, 64px on mobile)
+    final double navbarHeight = isMobile ? 64.0 : 72.0;
+    // Height of PromoAnnouncementBar when active (~48px + 12px margin)
+    final double promoHeight = hasPromo ? (isMobile ? 70.0 : 62.0) : 0.0;
+
+    return SizedBox(
+      height: navbarHeight + promoHeight,
+    );
+  }
+}
+
+/// Ultra-premium sticky navigation header layer for the Home Page.
+///
+/// Features:
+/// - Floats fixed above the scrollable page using frosted glass blur.
+/// - When at the top of page, displays the promotional announcement bar (if active) above the navbar capsule.
+/// - As the user scrolls down, the promo bar smoothly collapses and fades out over the initial scroll range,
+///   allowing the navbar capsule to dock stickily at the top of the viewport.
+/// - Once scrolled, the navbar capsule transitions to a deeper frosted tint, crisper border, and ambient shadow.
+class _StickyHomeHeader extends ConsumerWidget {
+  final ScrollController scrollController;
+  final Function(String)? onNavTap;
+
+  const _StickyHomeHeader({
+    required this.scrollController,
+    this.onNavTap,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final catalogAsync = ref.watch(pricingCatalogProvider);
+    final hasPromo = catalogAsync.value?.promoBanner?.isActive ?? false;
+    final isMobile = Responsive.isMobile(context);
+    final isTablet = Responsive.isTablet(context);
+
+    final double horizontalPadding = isMobile ? 16.0 : (isTablet ? 28.0 : 40.0);
+    final double topPadding = isMobile ? 12.0 : 20.0;
+
+    return AnimatedBuilder(
+      animation: scrollController,
+      builder: (context, _) {
+        final double scrollOffset = scrollController.hasClients
+            ? scrollController.offset.clamp(0.0, double.infinity)
+            : 0.0;
+
+        final bool isScrolled = scrollOffset > 10.0;
+
+        // When promo banner is active, it takes ~62px on desktop / ~70px on mobile
+        final double promoHeight = hasPromo ? (isMobile ? 70.0 : 62.0) : 0.0;
+
+        // Progressively collapse promo banner over the first [promoHeight] pixels of scroll
+        final double promoFactor = hasPromo
+            ? (1.0 - (scrollOffset / promoHeight)).clamp(0.0, 1.0)
+            : 0.0;
+
+        return SafeArea(
+          bottom: false,
+          child: Padding(
+            padding: EdgeInsets.only(
+              left: horizontalPadding,
+              right: horizontalPadding,
+              top: topPadding,
+            ),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1320),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (hasPromo && promoFactor > 0.0)
+                      ClipRect(
+                        child: Align(
+                          alignment: Alignment.bottomCenter,
+                          heightFactor: promoFactor,
+                          child: Opacity(
+                            opacity: promoFactor,
+                            child: const PromoAnnouncementBar(
+                              margin: EdgeInsets.only(bottom: 12),
+                            ),
+                          ),
+                        ),
+                      ),
+                    HomeNavbar(
+                      key: const ValueKey('home_sticky_navbar'),
+                      onNavTap: onNavTap,
+                      isScrolled: isScrolled,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }
