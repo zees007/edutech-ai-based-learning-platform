@@ -31,7 +31,12 @@ from app.privileges_config import (
     ET_ACCESS_DEEP_DIVE_MODE,
     ET_REGENERATE_STEP,
     ET_ACCESS_ACADEMIC_SEARCH,
+    ET_DASHBOARD,
 )
+from models.dashboard_schemas import LearningDashboardResponse
+from services.analytics_service import AnalyticsService
+from services.database import get_db
+from sqlalchemy.ext.asyncio import AsyncSession
 from models.db_models import User
 from models.schemas import (
     AcademicPaper,
@@ -583,6 +588,27 @@ async def list_user_sessions(
         "page": page,
         "size": size,
     }
+
+
+@router.get(
+    "/learning/analytics/dashboard",
+    response_model=LearningDashboardResponse,
+    dependencies=[Depends(require_privilege(ET_DASHBOARD))],
+)
+async def get_learning_dashboard(
+    time_range: str = Query("30d", pattern="^(7d|30d|90d|all)$", description="Analytics time window"),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Retrieve consolidated learning performance, 3-question quiz accuracy trends,
+    topic & mode distribution, and dynamic milestone achievements for the authenticated user.
+    """
+    return await AnalyticsService.get_user_dashboard(
+        db=db,
+        user_id=current_user.id,
+        time_range=time_range,
+    )
 
 
 @router.delete(

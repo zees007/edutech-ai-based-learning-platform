@@ -53,6 +53,21 @@ This document provides comprehensive technical documentation for the EduTechAI a
     - [Optimistic State & Silent Background Synchronization](#optimistic-state--silent-background-synchronization)
     - [Formative Knowledge Check Quiz Engine](#formative-knowledge-check-quiz-engine)
     - [UI Performance & 60FPS Rendering Optimizations](#ui-performance--60fps-rendering-optimizations)
+12. [Authentication & Token Management Architecture](#12-authentication--token-management-architecture)
+    - [Dual-Token Strategy](#121-dual-token-strategy)
+    - [Transparent Token Refresh & Queued Interceptor](#122-transparent-token-refresh--queued-interceptor-client)
+    - [Token Rotation & Replay Detection](#123-token-rotation--replay-detection)
+    - [Global Invalidation](#124-global-invalidation-logout-all)
+13. [Database Migrations (Alembic) Workflow](#13-database-migrations-alembic-workflow)
+    - [Migration Auto-Generation](#131-migration-auto-generation)
+    - [Automatic Startup Migrations](#132-automatic-startup-migrations)
+14. [Unified Learner Performance & Analytics Dashboard Engine](#14-unified-learner-performance--analytics-dashboard-engine)
+    - [Architecture & Design Rationale](#141-architecture--design-rationale)
+    - [AnalyticsService Calculation Pipeline & Active Duration Clamping](#142-analyticsservice-calculation-pipeline--active-duration-clamping)
+    - [Formative 3-Question Quiz Metrics & Weak Concept Identification](#143-formative-3-question-quiz-metrics--weak-concept-identification)
+    - [Tri-Mode Learning Distribution & Milestone Achievements](#144-tri-mode-learning-distribution--milestone-achievements)
+    - [Privilege Enforcement & Database Seeder Integration](#145-privilege-enforcement--database-seeder-integration)
+    - [Flutter Client Architecture, Data Visualization & Glassmorphism](#146-flutter-client-architecture-data-visualization--glassmorphism)
 
 ---
 
@@ -424,7 +439,7 @@ OPENALEX_EMAIL=your-email@domain.com
 
 ## 8. Role-Based Access Control (RBAC) & Subscription Tiers
 
-EduTechAI employs a fine-grained RBAC architecture defining **33 privilege constants** grouped into 6 system domains (`app/privileges_config.py`).
+EduTechAI employs a fine-grained RBAC architecture defining **34 privilege constants** grouped into 6 system domains (`app/privileges_config.py`).
 
 ### Privilege Catalog & Domain Grouping
 
@@ -436,6 +451,7 @@ EduTechAI employs a fine-grained RBAC architecture defining **33 privilege const
    - `ET_START_LEARNING_SESSION`: Initiate topic journeys
    - `ET_INTERACT_LEARNING_SESSION`: Step progression & quiz interaction
    - `ET_VIEW_LEARNING_HISTORY`: Historical session retrieval
+   - `ET_DASHBOARD`: Access comprehensive learning performance, metrics, and stats dashboard
    - `ET_ACCESS_ADVANCED_MODES`: Unlocks **Visual** & **Deep Dive** modes
    - `ET_ACCESS_YOUTUBE_BASIC` & `ET_ACCESS_YOUTUBE_ADVANCED`: Tier-based YouTube video curation limits
    - `ET_ACCESS_ACADEMIC_SEARCH`: Access open-access research papers & TL;DRs
@@ -455,6 +471,7 @@ EduTechAI employs a fine-grained RBAC architecture defining **33 privilege const
 │ ET_START_LEARNING_SESSION     │ Yes  │ Yes │ Yes   │ All   │
 │ ET_INTERACT_LEARNING_SESSION  │ Yes  │ Yes │ Yes   │ All   │
 │ ET_VIEW_LEARNING_HISTORY      │ Yes  │ Yes │ Yes   │ All   │
+│ ET_DASHBOARD                  │ Yes  │ Yes │ Yes   │ All   │
 │ ET_GENERATE_QUIZ              │ Yes  │ Yes │ Yes   │ All   │
 │ ET_SUBMIT_QUIZ                │ Yes  │ Yes │ Yes   │ All   │
 │ ET_VIEW_SUBSCRIPTION          │ Yes  │ Yes │ Yes   │ All   │
@@ -888,32 +905,32 @@ To balance flexibility with API cost-efficiency, the client features a highly op
 
 ---
 
-## 10. Authentication & Token Management Architecture
+## 12. Authentication & Token Management Architecture
 
 EduTechAI employs a highly secure, dual-token stateless/stateful hybrid authentication system designed to support seamless user experiences while maintaining strict security controls across mobile and web clients.
 
-### 10.1 Dual-Token Strategy
+### 12.1 Dual-Token Strategy
 - **Access Tokens (JWT):** Short-lived (15 minutes), stateless tokens containing user claims (`sub`, `role`, `tier`). Used for extremely low-latency authorization on every request without requiring a database round-trip.
 - **Refresh Tokens (Database-Backed):** Long-lived (7 days), stateful tokens stored securely in the `refresh_tokens` table. Contains a hashed secret, a `family_id` for rotation tracking, and expiration timestamps.
 
-### 10.2 Transparent Token Refresh & Queued Interceptor (Client)
+### 12.2 Transparent Token Refresh & Queued Interceptor (Client)
 On the Flutter client, the `ApiClient` utilizes a powerful `QueuedInterceptor` (via the `dio` package).
 - When a `401 Unauthorized` response is received, the interceptor automatically halts and queues all outgoing API requests.
 - A single background request is dispatched to `/auth/refresh` using the secure `refresh_token` HTTP-only cookie (or secured storage).
 - If successful, the new short-lived Access Token is extracted, and all paused requests in the queue are retried transparently. The user never notices the token rotation.
 - If the refresh fails (e.g., token expired or revoked), the user is gracefully logged out via `AuthProvider.forceLogout()`.
 
-### 10.3 Token Rotation & Replay Detection
+### 12.3 Token Rotation & Replay Detection
 - Every time a refresh token is used, it is rotated. A new token is issued, and the old token is invalidated (`revoked_at` timestamp set).
 - **Token Families:** All tokens in a rotation chain share a `family_id`.
 - **Theft Detection:** If a revoked refresh token is presented to the `/auth/refresh` endpoint (indicating potential token theft), the backend immediately revokes **all** tokens in that `family_id`, requiring the user to re-authenticate fully.
 
-### 10.4 Global Invalidation (Logout All)
+### 12.4 Global Invalidation (Logout All)
 - The `users` table includes a `tokens_invalidated_before` timestamp column.
 - When a user triggers `/auth/logout-all`, this timestamp is updated to the current time.
 - The `get_current_user` FastAPI dependency intercepts incoming JWT Access Tokens and compares the token's `iat` (Issued At) claim against the user's `tokens_invalidated_before`. If `iat` is older, the request is rejected as `401 Unauthorized`, instantly neutralizing all active JWTs globally without requiring a centralized blacklist cache (e.g., Redis).
 
-### 10.5 Step-by-Step Flow Example
+### 12.5 Step-by-Step Flow Example
 **Scenario:** Ram logs in at **September 30, 2026 at 8:00 PM**.
 1. **Initial Login:** The server issues an Access Token (expires 8:15 PM) and a Refresh Token (expires Oct 7, 8:00 PM) tied to a unique `family_id`.
 2. **Normal Usage (8:00 PM - 8:14 PM):** The Flutter app attaches the Access Token to API requests. The server validates the JWT cryptographically without hitting the database, providing maximum performance.
@@ -926,18 +943,112 @@ On the Flutter client, the `ApiClient` utilizes a powerful `QueuedInterceptor` (
 
 ---
 
-## 11. Database Migrations (Alembic) Workflow
+## 13. Database Migrations (Alembic) Workflow
 
 EduTechAI utilizes `alembic` to strictly version control and propagate PostgreSQL database schema changes.
 
-### 11.1 Migration Auto-Generation
+### 13.1 Migration Auto-Generation
 When DDL updates are required (e.g., adding `refresh_tokens` or `tokens_invalidated_before`), we rely on Alembic's autogenerate capability to detect changes in the SQLAlchemy `db_models.py` definitions:
 ```bash
 alembic revision --autogenerate -m "Add refresh tokens"
 ```
 *Note on Renaming:* Alembic generates a random hash ID (e.g., `c2debcfa4613`) for the revision. You can safely rename the physical Python script (e.g., to `0005_add_refresh_tokens.py`), but you **must** preserve the internal `revision: str = '...'` variable exactly as generated unless you are also manually updating the `alembic_version` tracking table to match.
 
-### 11.2 Automatic Startup Migrations
+### 13.2 Automatic Startup Migrations
 - Upon starting the FastAPI backend, `database.py` evaluates the `AUTO_CREATE_TABLES` environment variable.
 - If true, `asyncio.to_thread(command.upgrade, alembic_cfg, "head")` is invoked, programmatically executing all pending migrations before the application accepts traffic.
 - This ensures the database schema is perfectly synchronized with the codebase upon deployment.
+
+---
+
+## 14. Unified Learner Performance & Analytics Dashboard Engine
+
+The Learner Performance & Analytics Dashboard consolidates distributed pedagogical interactions across all sessions, milestone steps, quizzes, and learning modes into an executive, glassmorphic analytics center.
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                       Flutter Client Dashboard UI                           │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  [Time Range Filter: 7d | 30d | 90d | All]         [Active Level HUD Badge]  │
+│                                                                             │
+│  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐ ┌────────────────────┐  │
+│  │ Total Hours  │ │ Quizzes Done │ │ Avg Accuracy │ │ Mastered Concepts  │  │
+│  └──────────────┘ └──────────────┘ └──────────────┘ └────────────────────┘  │
+│                                                                             │
+│  ┌───────────────────────────────┐ ┌──────────────────────────────────────┐ │
+│  │ Formative Accuracy Trendline  │ │ Weak Concepts (1-Click Remediation)  │ │
+│  │ (fl_chart 3-Question Trend)   │ │ (Concepts scoring <= 50%)            │ │
+│  └───────────────────────────────┘ └──────────────────────────────────────┘ │
+│                                                                             │
+│  ┌───────────────────────────────┐ ┌──────────────────────────────────────┐ │
+│  │ Tri-Mode Distribution (Donut) │ │ Topic Mastery & Progress Breakdown   │ │
+│  │ Visual | Deep Dive | Bite-Size│ │ Percentages & Last Studied Timestamps│ │
+│  └───────────────────────────────┘ └──────────────────────────────────────┘ │
+│                                                                             │
+│  ┌────────────────────────────────────────────────────────────────────────┐ │
+│  │ Milestone Achievement Badges & 90-Day Study Activity Stream            │ │
+│  └────────────────────────────────────────────────────────────────────────┘ │
+└──────────────────────────────────────▲──────────────────────────────────────┘
+                                       │ HTTP GET /learning/analytics/dashboard
+                                       │ Protected by require_privilege(ET_DASHBOARD)
+┌──────────────────────────────────────▼──────────────────────────────────────┐
+│                    FastAPI Backend (AnalyticsService)                       │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  1. Step-Delta Idle Clamping Algorithm (Clamps inactive breaks > 30m)       │
+│  2. 3-Question Quiz Assessment Accuracy & Chronological Trendline           │
+│  3. Weak Concept Detection Engine (Quiz score <= 50% threshold)             │
+│  4. Tri-Mode Aggregation (Visual 🎬, Deep Dive 🔬, Bite-Sized ⚡)           │
+│  5. All-Time User Level Derivation via calculate_level(total_xp)            │
+│  6. Dynamic Milestone Achievements Calculation                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 14.1 Architecture & Design Rationale
+- **Decoupled Analytics Layer:** Learner stats are dynamically computed by `AnalyticsService` (`services/analytics_service.py`) querying existing production tables (`learning_sessions`, `step_progress`, and `gamification_records`). No heavy OLAP database or external ETL pipeline is required for sub-second responses.
+- **Strict Role-Based Access Control:** Gated behind `ET_DASHBOARD` privilege. Seeded for all standard roles (`Free`, `Pro`, `Ultra`, `Admin`), giving every learner visibility into their progression while allowing fine-grained administrative restriction if desired.
+- **Client Route & Menu Placement:** Integrated via GoRouter at `/dashboard`, accessible via the Learning Sidebar top action button and the User Profile popover menu (`Icons.insights_rounded`).
+
+### 14.2 AnalyticsService Calculation Pipeline & Active Duration Clamping
+To prevent skewed time statistics when users leave browser tabs or apps open overnight, `AnalyticsService` implements a **step-delta idle clamping algorithm**:
+1. Within each session, steps completed by the user are sorted chronologically by `completed_at`.
+2. The duration of step 0 is estimated from the session start time to step 0 completion.
+3. Subsequent step durations are calculated as $\Delta t = \text{completed\_at}_{i} - \text{completed\_at}_{i-1}$.
+4. If $\Delta t \le 30\text{ minutes}$, the exact duration is added.
+5. If $\Delta t > 30\text{ minutes}$ (idle break or multi-day gap), the duration is clamped to the platform median for that learning mode:
+   - **Bite-Sized Mode:** 5 minutes
+   - **Visual Mode:** 12 minutes
+   - **Deep Dive Mode:** 20 minutes
+
+### 14.3 Formative 3-Question Quiz Metrics & Weak Concept Identification
+Milestone quizzes are evaluated at the step level:
+- Each step quiz consists of exactly 3 formative multiple-choice questions.
+- **Accuracy Calculation:**
+  $$\text{Accuracy} = \frac{\sum \text{Questions Correct}}{\sum \text{Total Questions Answered}} \times 100\%$$
+- **Weak Concept Identification:** Steps where the user scored $\le 50\%$ (0/3 or 1/3 correct) are flagged as requiring reinforcement. Checkpoints where the user scored 2/3 (66.7%) or 3/3 (100%) are considered passing milestones.
+- **1-Click Remediation (Client):** Tapping "Review" on any weak concept loads the exact historical session via `activeSessionProvider.loadSession(sessionId)` and jumps immediately to that milestone step (`setActiveStep(stepIndex)`).
+
+### 14.4 Tri-Mode Learning Distribution & Milestone Achievements
+- **Tri-Mode Breakdown:** Tracks user preference across all 3 learning modes:
+  - `visual`: High visual immersion with curated YouTube time-anchored clips.
+  - `deep_dive`: Scholarly rigor, in-depth academic preprints, and deep proofs.
+  - `bite_sized`: Rapid high-yield concepts designed for micro-learning sessions.
+- **Milestone Achievements:** Computes dynamic learner achievements including:
+  - `first_step`: First milestone completed.
+  - `journey_master`: 3+ full journeys finished.
+  - `quiz_ace`: 5+ perfect quizzes (3/3 score).
+  - `scholar`: 50+ total milestone steps mastered.
+  - `century_xp`: 1,000+ total cumulative XP.
+
+### 14.5 Privilege Enforcement & Database Seeder Integration
+- `privileges_config.py`: `ET_DASHBOARD = "ET_DASHBOARD"` registered in `ALL_PRIVILEGE_CODES` and mapped to `GET /api/v1/learning/analytics/dashboard`.
+- `02_seed_privileges_and_roles.py`: `ET_DASHBOARD` added to the privilege hierarchy under `Learning Features` and assigned to `Free`, `Pro`, `Ultra`, and `Admin`.
+- `permission_service.dart`: `canAccessDashboard` checks for `PrivilegeCodes.etDashboard`.
+
+### 14.6 Flutter Client Architecture, Data Visualization & Glassmorphism
+The frontend dashboard is built with Riverpod, GoRouter, and `fl_chart`:
+- **Header (`DashboardHeader`):** Glassmorphic header featuring time-range filter pills (`7d`, `30d`, `90d`, `all`), level badge with animated progress bar, and instant refresh trigger.
+- **KPI Summary Grid (`DashboardKpiCards`):** 6 responsive pulse cards showing Total Active Study Hours, Sessions Completed, Milestone Steps Mastered, Overall Quiz Accuracy, Total XP, and Current Daily Streak.
+- **Chronological Trendline (`QuizTrendCard`):** Interactive `fl_chart` LineChart plotting quiz performance across milestone checkpoints with custom touch tooltips detailing topic, step, and question breakdowns.
+- **Weak Concepts Remediation (`WeakConceptsCard`):** Highlights flagged concepts scoring $\le 50\%$ with contextual scores and a 1-click "Review" button that restores the session into the active workspace.
+- **Mode & Topic Mastery (`ModeAndTopicCards`):** Modern donut chart (`fl_chart` PieChart) showing mode preference alongside progress bars for top studied topics.
+- **Milestones & Activity Stream (`ActivityAndAchievementsCard`):** Visual badge showcase indicating unlocked/locked badges alongside a recent daily activity log.
