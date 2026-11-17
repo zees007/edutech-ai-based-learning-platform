@@ -237,7 +237,11 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
                 color: AppColors.primary.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.lock_rounded, color: AppColors.accentAmber, size: 22),
+              child: const Icon(
+                Icons.lock_rounded,
+                color: AppColors.accentAmber,
+                size: 22,
+              ),
             ),
             const SizedBox(width: 12),
             Text('Unlock $format Export', style: AppTextStyles.h3),
@@ -255,7 +259,9 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.isDark ? Colors.white.withValues(alpha: 0.05) : AppColors.surfaceSubtle,
+                color: AppColors.isDark
+                    ? Colors.white.withValues(alpha: 0.05)
+                    : AppColors.surfaceSubtle,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: AppColors.border),
               ),
@@ -265,8 +271,10 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Upgrade your plan for unlimited exports, deep-dive academic search, and advanced AI models.',
-                      style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+                      'Upgrade your plan to unlock styled PDF & Markdown exports, deep-dive academic research, and unlimited learning sessions.',
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
                     ),
                   ),
                 ],
@@ -348,7 +356,10 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
                   decoration: BoxDecoration(
                     color: AppColors.surfaceSolidHeader,
                     border: Border(
-                      bottom: BorderSide(color: AppColors.glassBorder, width: 1),
+                      bottom: BorderSide(
+                        color: AppColors.glassBorder,
+                        width: 1,
+                      ),
                     ),
                   ),
                   child: Row(
@@ -363,7 +374,9 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
                             ],
                           ),
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: AppColors.primary.withValues(alpha: 0.35)),
+                          border: Border.all(
+                            color: AppColors.primary.withValues(alpha: 0.35),
+                          ),
                         ),
                         child: Icon(
                           Icons.ios_share_rounded,
@@ -398,9 +411,15 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
                         ),
                       ),
                       IconButton(
-                        icon: Icon(Icons.close_rounded, color: AppColors.textMuted),
+                        icon: Icon(
+                          Icons.close_rounded,
+                          color: AppColors.textMuted,
+                        ),
                         padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                        constraints: const BoxConstraints(
+                          minWidth: 36,
+                          minHeight: 36,
+                        ),
                         onPressed: () => Navigator.of(context).pop(),
                       ),
                     ],
@@ -445,7 +464,8 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
                           onPreview: _handlePreviewMarkdown,
                           onCopy: _handleCopyMarkdown,
                           onDownload: _handleDownloadMarkdown,
-                          onLockedTap: () => _showUpgradeInfo(context, 'Markdown', 'Premium'),
+                          onLockedTap: () =>
+                              _showUpgradeInfo(context, 'Markdown', 'Premium'),
                         ),
 
                         const SizedBox(height: 12),
@@ -466,7 +486,11 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
                           openLabel: 'View & Print',
                           onOpen: _handleOpenHtml,
                           onDownload: _handleDownloadHtml,
-                          onLockedTap: () => _showUpgradeInfo(context, 'Interactive Web Report', 'Premium'),
+                          onLockedTap: () => _showUpgradeInfo(
+                            context,
+                            'Interactive Web Report',
+                            'Premium',
+                          ),
                         ),
 
                         const SizedBox(height: 12),
@@ -486,7 +510,8 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
                           isMobile: isMobile,
                           downloadLabel: 'Download PDF',
                           onDownload: _handleDownloadPdf,
-                          onLockedTap: () => _showUpgradeInfo(context, 'PDF', 'Premium'),
+                          onLockedTap: () =>
+                              _showUpgradeInfo(context, 'PDF', 'Premium'),
                         ),
                       ],
                     ),
@@ -519,7 +544,11 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
         children: [
           Row(
             children: [
-              const Icon(Icons.info_outline_rounded, color: AppColors.accentAmber, size: 20),
+              const Icon(
+                Icons.info_outline_rounded,
+                color: AppColors.accentAmber,
+                size: 20,
+              ),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
@@ -544,9 +573,13 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
           ClipRRect(
             borderRadius: BorderRadius.circular(6),
             child: LinearProgressIndicator(
-              value: widget.totalSteps > 0 ? widget.stepsCompleted / widget.totalSteps : 0.0,
+              value: widget.totalSteps > 0
+                  ? widget.stepsCompleted / widget.totalSteps
+                  : 0.0,
               backgroundColor: Colors.white.withValues(alpha: 0.08),
-              valueColor: const AlwaysStoppedAnimation<Color>(AppColors.accentAmber),
+              valueColor: const AlwaysStoppedAnimation<Color>(
+                AppColors.accentAmber,
+              ),
               minHeight: 6,
             ),
           ),
@@ -588,7 +621,11 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
               color: AppColors.rose.withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.error_outline_rounded, color: AppColors.rose, size: 18),
+            child: const Icon(
+              Icons.error_outline_rounded,
+              color: AppColors.rose,
+              size: 18,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -617,7 +654,11 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
           ),
           const SizedBox(width: 8),
           IconButton(
-            icon: Icon(Icons.close_rounded, size: 18, color: AppColors.textSecondary),
+            icon: Icon(
+              Icons.close_rounded,
+              size: 18,
+              color: AppColors.textSecondary,
+            ),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
             splashRadius: 16,
@@ -634,9 +675,7 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
       decoration: BoxDecoration(
         color: AppColors.emerald.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: AppColors.emerald.withValues(alpha: 0.35),
-        ),
+        border: Border.all(color: AppColors.emerald.withValues(alpha: 0.35)),
       ),
       child: Row(
         children: [
@@ -646,7 +685,11 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
               color: AppColors.emerald.withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.emoji_events_rounded, color: AppColors.emerald, size: 18),
+            child: const Icon(
+              Icons.emoji_events_rounded,
+              color: AppColors.emerald,
+              size: 18,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -662,7 +705,9 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
                 ),
                 Text(
                   'All ${widget.totalSteps} milestones finished • +${widget.xpEarned} XP • ${_getLevelGradeTitle(widget.xpEarned)}',
-                  style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+                  style: AppTextStyles.caption.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
                 ),
               ],
             ),
@@ -697,8 +742,8 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
       onTap: !isEnabled
           ? null
           : !isUnlocked
-              ? onLockedTap
-              : null,
+          ? onLockedTap
+          : null,
       borderRadius: BorderRadius.circular(18),
       child: Container(
         padding: EdgeInsets.all(isMobile ? 12 : 16),
@@ -747,7 +792,10 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
                           const SizedBox(width: 8),
                           // Tier Badge
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 7,
+                              vertical: 2.5,
+                            ),
                             decoration: BoxDecoration(
                               color: isUnlocked
                                   ? AppColors.emerald.withValues(alpha: 0.15)
@@ -763,14 +811,20 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 if (!isUnlocked) ...[
-                                  const Icon(Icons.lock_rounded, size: 10, color: AppColors.accentAmber),
+                                  const Icon(
+                                    Icons.lock_rounded,
+                                    size: 10,
+                                    color: AppColors.accentAmber,
+                                  ),
                                   const SizedBox(width: 3),
                                 ],
                                 Text(
                                   tierBadge,
                                   style: AppTextStyles.badge.copyWith(
                                     fontSize: 9.5,
-                                    color: isUnlocked ? AppColors.emerald : AppColors.textSecondary,
+                                    color: isUnlocked
+                                        ? AppColors.emerald
+                                        : AppColors.textSecondary,
                                     fontWeight: FontWeight.w700,
                                   ),
                                 ),
@@ -818,17 +872,26 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
                     if (onOpen != null && openLabel != null)
                       OutlinedButton.icon(
                         onPressed: interactive ? onOpen : null,
-                        icon: const Icon(Icons.open_in_browser_rounded, size: 14),
+                        icon: const Icon(
+                          Icons.open_in_browser_rounded,
+                          size: 14,
+                        ),
                         label: Text(openLabel),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColors.purpleLight,
-                          side: BorderSide(color: AppColors.purpleLight.withValues(alpha: 0.4)),
+                          side: BorderSide(
+                            color: AppColors.purpleLight.withValues(alpha: 0.4),
+                          ),
                           padding: EdgeInsets.symmetric(
                             horizontal: isMobile ? 8 : 12,
                             vertical: isMobile ? 6 : 8,
                           ),
-                          visualDensity: isMobile ? VisualDensity.compact : VisualDensity.standard,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          visualDensity: isMobile
+                              ? VisualDensity.compact
+                              : VisualDensity.standard,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
                         ),
                       ),
                     if (!isPdf && onPreview != null)
@@ -838,13 +901,19 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
                         label: const Text('Preview'),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColors.textSlate,
-                          side: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
+                          side: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.2),
+                          ),
                           padding: EdgeInsets.symmetric(
                             horizontal: isMobile ? 8 : 12,
                             vertical: isMobile ? 6 : 8,
                           ),
-                          visualDensity: isMobile ? VisualDensity.compact : VisualDensity.standard,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          visualDensity: isMobile
+                              ? VisualDensity.compact
+                              : VisualDensity.standard,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
                         ),
                       ),
                     if (!isPdf && onCopy != null)
@@ -854,32 +923,46 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
                         label: const Text('Copy'),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColors.accentCyan,
-                          side: BorderSide(color: AppColors.accentCyan.withValues(alpha: 0.3)),
+                          side: BorderSide(
+                            color: AppColors.accentCyan.withValues(alpha: 0.3),
+                          ),
                           padding: EdgeInsets.symmetric(
                             horizontal: isMobile ? 8 : 12,
                             vertical: isMobile ? 6 : 8,
                           ),
-                          visualDensity: isMobile ? VisualDensity.compact : VisualDensity.standard,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          visualDensity: isMobile
+                              ? VisualDensity.compact
+                              : VisualDensity.standard,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
                         ),
                       ),
                     ElevatedButton.icon(
                       onPressed: interactive ? onDownload : null,
                       icon: const Icon(Icons.download_rounded, size: 14),
-                      label: Text(downloadLabel ?? (isPdf ? 'Download PDF' : 'Download .md')),
+                      label: Text(
+                        downloadLabel ??
+                            (isPdf ? 'Download PDF' : 'Download .md'),
+                      ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: isPdf
                             ? AppColors.rose
-                            : (downloadLabel != null && downloadLabel.contains('HTML')
-                                ? const Color(0xFF6366F1)
-                                : AppColors.primary),
+                            : (downloadLabel != null &&
+                                      downloadLabel.contains('HTML')
+                                  ? const Color(0xFF6366F1)
+                                  : AppColors.primary),
                         foregroundColor: Colors.white,
                         padding: EdgeInsets.symmetric(
                           horizontal: isMobile ? 10 : 14,
                           vertical: isMobile ? 6 : 8,
                         ),
-                        visualDensity: isMobile ? VisualDensity.compact : VisualDensity.standard,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        visualDensity: isMobile
+                            ? VisualDensity.compact
+                            : VisualDensity.standard,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
                     ),
                   ],
@@ -901,7 +984,11 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
                       ),
                     ),
                     const SizedBox(width: 4),
-                    const Icon(Icons.arrow_forward_ios_rounded, size: 10, color: AppColors.accentAmber),
+                    const Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      size: 10,
+                      color: AppColors.accentAmber,
+                    ),
                   ],
                 ),
               ),
