@@ -31,6 +31,7 @@ class AdminSidebar extends StatelessWidget {
     context.appColors;
     return SafeArea(
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // Header
           Padding(
@@ -189,40 +190,55 @@ class _NavItemTileState extends State<_NavItemTile> {
   Widget build(BuildContext context) {
     return MouseRegion(
       cursor: SystemMouseCursors.click,
+      opaque: true,
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
-      child: GestureDetector(
-        onTap: widget.onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          constraints: const BoxConstraints(minHeight: 46),
-          padding: EdgeInsets.symmetric(
-            horizontal: widget.expanded ? 14 : 10,
-            vertical: 11,
-          ),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            color: widget.isSelected
-                ? AppColors.purple.withValues(alpha: 0.16)
-                : _isHovered
-                ? AppColors.glassHover
-                : Colors.transparent,
-            border: widget.isSelected
-                ? Border.all(
-                    color: AppColors.purple.withValues(alpha: 0.45),
-                    width: 1.2,
-                  )
-                : null,
-            boxShadow: widget.isSelected
-                ? [
-                    BoxShadow(
-                      color: AppColors.purple.withValues(alpha: 0.12),
-                      blurRadius: 10,
-                      offset: const Offset(0, 2),
-                    ),
-                  ]
-                : null,
-          ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(12),
+        child: InkWell(
+          onTap: widget.onTap,
+          mouseCursor: SystemMouseCursors.click,
+          borderRadius: BorderRadius.circular(12),
+          hoverColor: Colors.transparent,
+          splashColor: AppColors.purple.withValues(alpha: 0.15),
+          highlightColor: Colors.transparent,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            width: double.infinity,
+            constraints: const BoxConstraints(minHeight: 46),
+            padding: EdgeInsets.symmetric(
+              horizontal: widget.expanded ? 14 : 10,
+              vertical: 11,
+            ),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              color: widget.isSelected
+                  ? AppColors.purple.withValues(alpha: 0.16)
+                  : _isHovered
+                  ? AppColors.glassHover
+                  : Colors.transparent,
+              border: widget.isSelected
+                  ? Border.all(
+                      color: AppColors.purple.withValues(alpha: 0.45),
+                      width: 1.2,
+                    )
+                  : _isHovered
+                  ? Border.all(
+                      color: AppColors.glassBorder,
+                      width: 1.0,
+                    )
+                  : null,
+              boxShadow: widget.isSelected
+                  ? [
+                      BoxShadow(
+                        color: AppColors.purple.withValues(alpha: 0.12),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
+                      ),
+                    ]
+                  : null,
+            ),
           child: widget.expanded
               ? Row(
                   children: [
@@ -319,6 +335,7 @@ class _NavItemTileState extends State<_NavItemTile> {
                       ),
                   ],
                 ),
+          ),
         ),
       ),
     );
@@ -341,64 +358,75 @@ class _BackToLearningButtonState extends State<_BackToLearningButton> {
   Widget build(BuildContext context) {
     return MouseRegion(
       cursor: SystemMouseCursors.click,
+      opaque: true,
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
-      child: GestureDetector(
-        onTap: () => context.go('/learning'),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          constraints: const BoxConstraints(minHeight: 46),
-          padding: EdgeInsets.symmetric(
-            horizontal: widget.expanded ? 14 : 10,
-            vertical: 11,
-          ),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            color: _isHovered
-                ? AppColors.accentGreen.withValues(alpha: 0.1)
-                : Colors.transparent,
-            border: Border.all(
-              color: _isHovered
-                  ? AppColors.accentGreen.withValues(alpha: 0.3)
-                  : AppColors.glassBorder,
-              width: 1,
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(12),
+        child: InkWell(
+          onTap: () => context.go('/learning'),
+          mouseCursor: SystemMouseCursors.click,
+          borderRadius: BorderRadius.circular(12),
+          hoverColor: Colors.transparent,
+          splashColor: AppColors.accentGreen.withValues(alpha: 0.15),
+          highlightColor: Colors.transparent,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            width: double.infinity,
+            constraints: const BoxConstraints(minHeight: 46),
+            padding: EdgeInsets.symmetric(
+              horizontal: widget.expanded ? 14 : 10,
+              vertical: 11,
             ),
-          ),
-          child: widget.expanded
-              ? Row(
-                  children: [
-                    Icon(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              color: _isHovered
+                  ? AppColors.accentGreen.withValues(alpha: 0.1)
+                  : Colors.transparent,
+              border: Border.all(
+                color: _isHovered
+                    ? AppColors.accentGreen.withValues(alpha: 0.3)
+                    : AppColors.glassBorder,
+                width: 1,
+              ),
+            ),
+            child: widget.expanded
+                ? Row(
+                    children: [
+                      Icon(
+                        Icons.school_outlined,
+                        color: _isHovered
+                            ? AppColors.accentGreen
+                            : AppColors.textMuted,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Learning Workspace',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTextStyles.label.copyWith(
+                            color: _isHovered
+                                ? AppColors.accentGreen
+                                : AppColors.textSecondary,
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
+                : Tooltip(
+                    message: 'Learning Workspace',
+                    child: Icon(
                       Icons.school_outlined,
                       color: _isHovered
                           ? AppColors.accentGreen
                           : AppColors.textMuted,
-                      size: 20,
+                      size: 22,
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        'Learning Workspace',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.label.copyWith(
-                          color: _isHovered
-                              ? AppColors.accentGreen
-                              : AppColors.textSecondary,
-                        ),
-                      ),
-                    ),
-                  ],
-                )
-              : Tooltip(
-                  message: 'Learning Workspace',
-                  child: Icon(
-                    Icons.school_outlined,
-                    color: _isHovered
-                        ? AppColors.accentGreen
-                        : AppColors.textMuted,
-                    size: 22,
                   ),
-                ),
+          ),
         ),
       ),
     );

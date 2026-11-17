@@ -9,6 +9,7 @@ import '../../data/models/learning/quiz_result.dart';
 import 'learning_provider.dart';
 import '../services/learning_service.dart';
 import '../services/learning_websocket_service.dart';
+import '../services/quiz_store.dart';
 import 'gamification_provider.dart';
 import 'feedback_provider.dart';
 import 'session_quota_provider.dart';
@@ -507,12 +508,18 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
 
       // Update session XP and step quiz score/answers locally
       final updatedSteps = List<MilestoneStep>.from(session.steps);
+      int targetIdx = -1;
       if (stepIndex >= 0 && stepIndex < updatedSteps.length) {
-        final currentStep = updatedSteps[stepIndex];
+        targetIdx = stepIndex;
+      } else {
+        targetIdx = updatedSteps.indexWhere((s) => s.index == stepIndex);
+      }
+      if (targetIdx != -1) {
+        final currentStep = updatedSteps[targetIdx];
         final stringKeyAnswers = answers.map(
           (k, v) => MapEntry(k.toString(), v),
         );
-        updatedSteps[stepIndex] = currentStep.copyWith(
+        updatedSteps[targetIdx] = currentStep.copyWith(
           quizScore: result.score,
           userAnswers: stringKeyAnswers,
           userFullAnswers: stringKeyAnswers,
@@ -850,6 +857,8 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
 
     // 1. Trigger backend API
     try {
+      QuizSubmissionStore.clearSubmission(session.sessionId, stepIndex);
+      QuizDraftStore.clearDraft(session.sessionId, stepIndex);
       await _service.regenerateStep(session.sessionId, stepIndex);
     } catch (e) {
       _isRegenerating = false;
@@ -891,6 +900,9 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     final session = state.session;
     if (session == null) return true; // No session = no gating
     if (stepIndex < 0 || stepIndex >= session.steps.length) return true;
+    if (QuizSubmissionStore.hasSubmission(session.sessionId, stepIndex)) {
+      return true;
+    }
     final step = session.steps[stepIndex];
     // No quiz means no gating
     if (step.quiz == null || step.quiz!.isEmpty) return true;
@@ -1154,6 +1166,8 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     _wsService.disconnect();
     _isStepGenerationActive = false;
     _isRegenerating = false;
+    QuizDraftStore.clearAll();
+    QuizSubmissionStore.clearAll();
     state = state.copyWith(
       clearSession: true,
       activeStepIndex: 0,

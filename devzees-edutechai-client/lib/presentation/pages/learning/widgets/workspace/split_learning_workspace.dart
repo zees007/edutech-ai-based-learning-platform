@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../core/providers/active_session_provider.dart';
 import '../../../../../core/providers/permission_provider.dart';
+import '../../../../../core/services/quiz_store.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/theme_palette.dart';
 import '../../../../../core/theme/text_styles.dart';
@@ -134,7 +135,9 @@ class _SplitLearningWorkspaceState
         totalSteps: widget.totalSteps,
         maxUnlockedIndex: widget.maxUnlockedIndex,
         onStepChange: widget.onStepChange,
-        onRegenerateStep: canRegen ? () => _handleRegenerateStep(currentStep) : null,
+        onRegenerateStep: canRegen
+            ? () => _handleRegenerateStep(currentStep)
+            : null,
       );
     }
 
@@ -149,7 +152,10 @@ class _SplitLearningWorkspaceState
 
         const dividerWidth = 9.0;
         final availableWidth = totalWidth - dividerWidth;
-        final leftWidth = (availableWidth * _splitRatio).clamp(250.0, availableWidth - 250.0);
+        final leftWidth = (availableWidth * _splitRatio).clamp(
+          250.0,
+          availableWidth - 250.0,
+        );
         final rightWidth = availableWidth - leftWidth;
 
         return Row(
@@ -195,8 +201,7 @@ class _SplitLearningWorkspaceState
     required dynamic currentStep,
     required bool canRegen,
   }) {
-    final panelType =
-        isLeft ? _MaximizedPanel.left : _MaximizedPanel.right;
+    final panelType = isLeft ? _MaximizedPanel.left : _MaximizedPanel.right;
 
     return SizedBox(
       width: width,
@@ -215,7 +220,9 @@ class _SplitLearningWorkspaceState
                   isQuizGated: widget.isQuizGated,
                   onStepChange: widget.onStepChange,
                   onNextStep: () => _handleNextStep(currentStep),
-                  onRegenerateStep: canRegen ? () => _handleRegenerateStep(currentStep) : null,
+                  onRegenerateStep: canRegen
+                      ? () => _handleRegenerateStep(currentStep)
+                      : null,
                   onToggleFullscreen: () => _toggleFullscreen(panelType),
                 )
               : _ResourcesPanelHeader(
@@ -237,10 +244,9 @@ class _SplitLearningWorkspaceState
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOutCubic,
-      decoration: BoxDecoration(
-        color: colors.workspaceBackground,
-      ),
-      child: (currentStep.tutorExplanation != null ||
+      decoration: BoxDecoration(color: colors.workspaceBackground),
+      child:
+          (currentStep.tutorExplanation != null ||
               (currentStep.socraticQuestions != null &&
                   currentStep.socraticQuestions!.isNotEmpty))
           ? SocraticTutorChat(
@@ -248,7 +254,11 @@ class _SplitLearningWorkspaceState
               stepIndex: currentStep.index,
               tutorExplanation: currentStep.tutorExplanation,
               socraticQuestions: currentStep.socraticQuestions,
-              conversationHistory: widget.session.conversationHistory?.where((turn) => (turn as Map)['step_index'] == currentStep.index).toList(),
+              conversationHistory: widget.session.conversationHistory
+                  ?.where(
+                    (turn) => (turn as Map)['step_index'] == currentStep.index,
+                  )
+                  .toList(),
               stepTitle: currentStep.title,
             )
           : Padding(
@@ -263,7 +273,10 @@ class _SplitLearningWorkspaceState
                   const SizedBox(width: 12),
                   Flexible(
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 16,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.isDark ? null : Colors.white,
                         gradient: AppColors.isDark
@@ -280,15 +293,17 @@ class _SplitLearningWorkspaceState
                         border: AppColors.isDark
                             ? null
                             : Border.all(color: const Color(0xFFE2E8F0)),
-                        boxShadow: Responsive.isMobile(context) ? null : [
-                          BoxShadow(
-                            color: AppColors.isDark
-                                ? Colors.black.withValues(alpha: 0.3)
-                                : const Color(0x0C000000),
-                            blurRadius: AppColors.isDark ? 20 : 10,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
+                        boxShadow: Responsive.isMobile(context)
+                            ? null
+                            : [
+                                BoxShadow(
+                                  color: AppColors.isDark
+                                      ? Colors.black.withValues(alpha: 0.3)
+                                      : const Color(0x0C000000),
+                                  blurRadius: AppColors.isDark ? 20 : 10,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -320,11 +335,11 @@ class _SplitLearningWorkspaceState
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOutCubic,
-      decoration: BoxDecoration(
-        color: colors.workspaceBackground,
-      ),
+      decoration: BoxDecoration(color: colors.workspaceBackground),
       child: LearningResourcesPanel(
-        key: ValueKey('resources_${widget.session.sessionId}_step_${currentStep.index}'),
+        key: ValueKey(
+          'resources_${widget.session.sessionId}_step_${currentStep.index}',
+        ),
         currentStep: currentStep,
         session: widget.session,
         stepIndex: widget.currentStepIndex,
@@ -402,52 +417,55 @@ class _FullscreenPanelOverlay extends ConsumerWidget {
       color: colors.scaffoldBackground, // Base color
       child: Container(
         decoration: BoxDecoration(
-          color: Responsive.isMobile(context) ? AppColors.mobileCommandHubSolid : null,
-          gradient: Responsive.isMobile(context) ? null : AppColors.commandHubGradient,
+          color: Responsive.isMobile(context)
+              ? AppColors.mobileCommandHubSolid
+              : null,
+          gradient: Responsive.isMobile(context)
+              ? null
+              : AppColors.commandHubGradient,
         ),
         child: Column(
           children: [
             // Header
-          panel == _MaximizedPanel.left
-              ? _TutorPanelHeader(
-                  currentIndex: stepIndex,
-                  totalSteps: totalSteps,
-                  maxUnlockedIndex: maxUnlockedIndex,
-                  isPrerequisite: currentStep.isPrerequisite,
-                  prerequisiteNote: currentStep.prerequisite,
-                  status: currentStep.status,
-                  isQuizGated: isQuizGated,
-                  onStepChange: onStepChange,
-                  onNextStep: onNextStep,
-                  onRegenerateStep: onRegenerateStep,
-                  isFullscreen: true,
-                  onToggleFullscreen: onClose,
-                )
-              : _ResourcesPanelHeader(
-                  isFullscreen: true,
-                  onToggleFullscreen: onClose,
-                ),
-          // Content
-          Expanded(
-            child: panel == _MaximizedPanel.left
-                ? _buildFullscreenChat(context)
-                : _buildFullscreenResources(context, ref),
-          ),
-        ],
+            panel == _MaximizedPanel.left
+                ? _TutorPanelHeader(
+                    currentIndex: stepIndex,
+                    totalSteps: totalSteps,
+                    maxUnlockedIndex: maxUnlockedIndex,
+                    isPrerequisite: currentStep.isPrerequisite,
+                    prerequisiteNote: currentStep.prerequisite,
+                    status: currentStep.status,
+                    isQuizGated: isQuizGated,
+                    onStepChange: onStepChange,
+                    onNextStep: onNextStep,
+                    onRegenerateStep: onRegenerateStep,
+                    isFullscreen: true,
+                    onToggleFullscreen: onClose,
+                  )
+                : _ResourcesPanelHeader(
+                    isFullscreen: true,
+                    onToggleFullscreen: onClose,
+                  ),
+            // Content
+            Expanded(
+              child: panel == _MaximizedPanel.left
+                  ? _buildFullscreenChat(context)
+                  : _buildFullscreenResources(context, ref),
+            ),
+          ],
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   Widget _buildFullscreenChat(BuildContext context) {
     final colors = context.appColors;
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOutCubic,
-      decoration: BoxDecoration(
-        color: colors.workspaceBackground,
-      ),
-      child: (currentStep.tutorExplanation != null ||
+      decoration: BoxDecoration(color: colors.workspaceBackground),
+      child:
+          (currentStep.tutorExplanation != null ||
               (currentStep.socraticQuestions != null &&
                   currentStep.socraticQuestions!.isNotEmpty))
           ? SocraticTutorChat(
@@ -455,7 +473,11 @@ class _FullscreenPanelOverlay extends ConsumerWidget {
               stepIndex: currentStep.index,
               tutorExplanation: currentStep.tutorExplanation,
               socraticQuestions: currentStep.socraticQuestions,
-              conversationHistory: session.conversationHistory?.where((turn) => (turn as Map)['step_index'] == currentStep.index).toList(),
+              conversationHistory: session.conversationHistory
+                  ?.where(
+                    (turn) => (turn as Map)['step_index'] == currentStep.index,
+                  )
+                  .toList(),
               stepTitle: currentStep.title,
             )
           : Center(
@@ -481,11 +503,11 @@ class _FullscreenPanelOverlay extends ConsumerWidget {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOutCubic,
-      decoration: BoxDecoration(
-        color: colors.workspaceBackground,
-      ),
+      decoration: BoxDecoration(color: colors.workspaceBackground),
       child: LearningResourcesPanel(
-        key: ValueKey('fullscreen_resources_${session.sessionId}_step_${currentStep.index}'),
+        key: ValueKey(
+          'fullscreen_resources_${session.sessionId}_step_${currentStep.index}',
+        ),
         currentStep: currentStep,
         session: session,
         stepIndex: stepIndex,
@@ -538,7 +560,8 @@ class _TutorPanelHeaderState extends State<_TutorPanelHeader> {
   @override
   Widget build(BuildContext context) {
     final bool isComplete = widget.status.toLowerCase() == 'complete';
-    final isReviewing = widget.currentIndex < widget.maxUnlockedIndex || isComplete;
+    final isReviewing =
+        widget.currentIndex < widget.maxUnlockedIndex || isComplete;
     final canGoBack = widget.currentIndex > 0;
 
     final colors = context.appColors;
@@ -550,12 +573,7 @@ class _TutorPanelHeaderState extends State<_TutorPanelHeader> {
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
       decoration: BoxDecoration(
         color: colors.topBarBackground,
-        border: Border(
-          bottom: BorderSide(
-            color: colors.border,
-            width: 1.0,
-          ),
-        ),
+        border: Border(bottom: BorderSide(color: colors.border, width: 1.0)),
       ),
       child: Row(
         children: [
@@ -573,12 +591,14 @@ class _TutorPanelHeaderState extends State<_TutorPanelHeader> {
             decoration: BoxDecoration(
               color: AppColors.accentGreen,
               shape: BoxShape.circle,
-              boxShadow: Responsive.isMobile(context) ? null : [
-                BoxShadow(
-                  color: AppColors.accentGreen.withValues(alpha: 0.6),
-                  blurRadius: 6,
-                ),
-              ],
+              boxShadow: Responsive.isMobile(context)
+                  ? null
+                  : [
+                      BoxShadow(
+                        color: AppColors.accentGreen.withValues(alpha: 0.6),
+                        blurRadius: 6,
+                      ),
+                    ],
             ),
           ),
           const SizedBox(width: 4),
@@ -605,8 +625,10 @@ class _TutorPanelHeaderState extends State<_TutorPanelHeader> {
                       _StepNavButton(
                         icon: Icons.arrow_back_ios_new_rounded,
                         label: 'Prev',
-                        tooltip: 'Go back to previous step (${widget.currentIndex})',
-                        onTap: () => widget.onStepChange(widget.currentIndex - 1),
+                        tooltip:
+                            'Go back to previous step (${widget.currentIndex})',
+                        onTap: () =>
+                            widget.onStepChange(widget.currentIndex - 1),
                         useGradient: true,
                       ),
                       const SizedBox(width: 6),
@@ -621,12 +643,16 @@ class _TutorPanelHeaderState extends State<_TutorPanelHeader> {
                     if (widget.isPrerequisite) ...[
                       const SizedBox(width: 6),
                       Tooltip(
-                        message: widget.prerequisiteNote != null &&
+                        message:
+                            widget.prerequisiteNote != null &&
                                 widget.prerequisiteNote!.trim().isNotEmpty
                             ? 'Prerequisite: ${widget.prerequisiteNote}'
                             : 'Foundational prerequisite step',
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 7,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             gradient: AppColors.amberGradient,
                             borderRadius: BorderRadius.circular(6),
@@ -634,7 +660,11 @@ class _TutorPanelHeaderState extends State<_TutorPanelHeader> {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.school_rounded, size: 10, color: Colors.white),
+                              const Icon(
+                                Icons.school_rounded,
+                                size: 10,
+                                color: Colors.white,
+                              ),
                               const SizedBox(width: 4),
                               Text(
                                 'Prereq',
@@ -658,7 +688,8 @@ class _TutorPanelHeaderState extends State<_TutorPanelHeader> {
                         icon: Icons.arrow_forward_ios_rounded,
                         label: 'Next',
                         tooltip: 'Go to Step ${widget.currentIndex + 2}',
-                        onTap: () => widget.onStepChange(widget.currentIndex + 1),
+                        onTap: () =>
+                            widget.onStepChange(widget.currentIndex + 1),
                         iconAfterLabel: true,
                         useGradient: true,
                       ),
@@ -683,33 +714,45 @@ class _TutorPanelHeaderState extends State<_TutorPanelHeader> {
                       child: GestureDetector(
                         onTap: widget.onToggleFullscreen,
                         child: Tooltip(
-                          message: widget.isFullscreen ? 'Exit Fullscreen' : 'Fullscreen',
+                          message: widget.isFullscreen
+                              ? 'Exit Fullscreen'
+                              : 'Fullscreen',
                           child: AnimatedContainer(
                             duration: const Duration(milliseconds: 200),
                             padding: const EdgeInsets.all(5),
                             decoration: BoxDecoration(
                               color: _isMaxHovered
                                   ? (AppColors.isDark
-                                      ? AppColors.primary.withValues(alpha: 0.16)
-                                      : const Color(0xFFF3E8FF))
+                                        ? AppColors.primary.withValues(
+                                            alpha: 0.16,
+                                          )
+                                        : const Color(0xFFF3E8FF))
                                   : (AppColors.isDark
-                                      ? AppColors.primary.withValues(alpha: 0.08)
-                                      : Colors.transparent),
+                                        ? AppColors.primary.withValues(
+                                            alpha: 0.08,
+                                          )
+                                        : Colors.transparent),
                               borderRadius: BorderRadius.circular(6),
                               border: Border.all(
                                 color: _isMaxHovered
                                     ? (AppColors.isDark
-                                        ? AppColors.primary.withValues(alpha: 0.50)
-                                        : const Color(0xFFDDD6FE))
+                                          ? AppColors.primary.withValues(
+                                              alpha: 0.50,
+                                            )
+                                          : const Color(0xFFDDD6FE))
                                     : (AppColors.isDark
-                                        ? AppColors.primary.withValues(alpha: 0.25)
-                                        : const Color(0xFFE2E8F0)),
+                                          ? AppColors.primary.withValues(
+                                              alpha: 0.25,
+                                            )
+                                          : const Color(0xFFE2E8F0)),
                                 width: 1,
                               ),
                               boxShadow: _isMaxHovered && AppColors.isDark
                                   ? [
                                       BoxShadow(
-                                        color: AppColors.primary.withValues(alpha: 0.30),
+                                        color: AppColors.primary.withValues(
+                                          alpha: 0.30,
+                                        ),
                                         blurRadius: 8,
                                       ),
                                     ]
@@ -721,8 +764,12 @@ class _TutorPanelHeaderState extends State<_TutorPanelHeader> {
                                   : Icons.open_in_full_rounded,
                               size: 13,
                               color: _isMaxHovered
-                                  ? (AppColors.isDark ? AppColors.purpleLight : AppColors.primaryViolet)
-                                  : (AppColors.isDark ? AppColors.primary : const Color(0xFF64748B)),
+                                  ? (AppColors.isDark
+                                        ? AppColors.purpleLight
+                                        : AppColors.primaryViolet)
+                                  : (AppColors.isDark
+                                        ? AppColors.primary
+                                        : const Color(0xFF64748B)),
                             ),
                           ),
                         ),
@@ -769,12 +816,7 @@ class _ResourcesPanelHeaderState extends State<_ResourcesPanelHeader> {
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
       decoration: BoxDecoration(
         color: colors.topBarBackground,
-        border: Border(
-          bottom: BorderSide(
-            color: colors.border,
-            width: 1.0,
-          ),
-        ),
+        border: Border(bottom: BorderSide(color: colors.border, width: 1.0)),
       ),
       child: Row(
         children: [
@@ -811,20 +853,20 @@ class _ResourcesPanelHeaderState extends State<_ResourcesPanelHeader> {
                   decoration: BoxDecoration(
                     color: _isMaxHovered
                         ? (AppColors.isDark
-                            ? AppColors.primary.withValues(alpha: 0.16)
-                            : const Color(0xFFF3E8FF))
+                              ? AppColors.primary.withValues(alpha: 0.16)
+                              : const Color(0xFFF3E8FF))
                         : (AppColors.isDark
-                            ? AppColors.primary.withValues(alpha: 0.08)
-                            : Colors.transparent),
+                              ? AppColors.primary.withValues(alpha: 0.08)
+                              : Colors.transparent),
                     borderRadius: BorderRadius.circular(6),
                     border: Border.all(
                       color: _isMaxHovered
                           ? (AppColors.isDark
-                              ? AppColors.primary.withValues(alpha: 0.50)
-                              : const Color(0xFFDDD6FE))
+                                ? AppColors.primary.withValues(alpha: 0.50)
+                                : const Color(0xFFDDD6FE))
                           : (AppColors.isDark
-                              ? AppColors.primary.withValues(alpha: 0.25)
-                              : const Color(0xFFE2E8F0)),
+                                ? AppColors.primary.withValues(alpha: 0.25)
+                                : const Color(0xFFE2E8F0)),
                       width: 1,
                     ),
                     boxShadow: _isMaxHovered && AppColors.isDark
@@ -842,8 +884,12 @@ class _ResourcesPanelHeaderState extends State<_ResourcesPanelHeader> {
                         : Icons.open_in_full_rounded,
                     size: 13,
                     color: _isMaxHovered
-                        ? (AppColors.isDark ? AppColors.purpleLight : AppColors.primaryViolet)
-                        : (AppColors.isDark ? AppColors.primary : const Color(0xFF64748B)),
+                        ? (AppColors.isDark
+                              ? AppColors.purpleLight
+                              : AppColors.primaryViolet)
+                        : (AppColors.isDark
+                              ? AppColors.primary
+                              : const Color(0xFF64748B)),
                   ),
                 ),
               ),
@@ -956,8 +1002,7 @@ class _MobileTabbedWorkspace extends ConsumerStatefulWidget {
       _MobileTabbedWorkspaceState();
 }
 
-class _MobileTabbedWorkspaceState
-    extends ConsumerState<_MobileTabbedWorkspace>
+class _MobileTabbedWorkspaceState extends ConsumerState<_MobileTabbedWorkspace>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   int _activeTabIndex = 0;
@@ -966,9 +1011,22 @@ class _MobileTabbedWorkspaceState
 
   bool _isQuizCompleted(dynamic step) {
     if (step == null) return false;
+    final sessionId = widget.session.sessionId?.toString() ?? '';
+    final stepIdx = (step.index is int) ? step.index as int : widget.stepIndex;
+    if (QuizSubmissionStore.hasSubmission(sessionId, stepIdx) ||
+        QuizSubmissionStore.hasSubmission(sessionId, widget.stepIndex)) {
+      return true;
+    }
     if (step.quizScore != null) return true;
     if (step.userAnswers != null && step.userAnswers is Map) {
       final map = step.userAnswers as Map;
+      if (map.isNotEmpty &&
+          map.values.any((v) => v != null && v.toString().trim().isNotEmpty)) {
+        return true;
+      }
+    }
+    if (step.userFullAnswers != null && step.userFullAnswers is Map) {
+      final map = step.userFullAnswers as Map;
       if (map.isNotEmpty &&
           map.values.any((v) => v != null && v.toString().trim().isNotEmpty)) {
         return true;
@@ -980,11 +1038,23 @@ class _MobileTabbedWorkspaceState
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
-    _tabController.addListener(_onTabControllerChanged);
-    if (_isQuizCompleted(widget.currentStep)) {
+    final isCompleted = _isQuizCompleted(widget.currentStep);
+    if (isCompleted) {
       _quizSubmitted = true;
     }
+    final bool isCurrentMilestone =
+        widget.stepIndex == widget.session.currentStepIndex;
+    final bool isStepNotComplete = widget.currentStep != null &&
+        widget.currentStep.status != 'complete';
+    final bool shouldOpenQuiz = isCompleted && (isStepNotComplete || isCurrentMilestone);
+    final int initialIndex = shouldOpenQuiz ? 3 : 0;
+    _activeTabIndex = initialIndex;
+    _tabController = TabController(
+      length: 4,
+      vsync: this,
+      initialIndex: initialIndex,
+    );
+    _tabController.addListener(_onTabControllerChanged);
   }
 
   void _onTabControllerChanged() {
@@ -1030,16 +1100,21 @@ class _MobileTabbedWorkspaceState
   @override
   void didUpdateWidget(covariant _MobileTabbedWorkspace oldWidget) {
     super.didUpdateWidget(oldWidget);
-    final bool sessionChanged = oldWidget.session.sessionId != widget.session.sessionId;
+    final bool sessionChanged =
+        oldWidget.session.sessionId != widget.session.sessionId;
     if (oldWidget.stepIndex != widget.stepIndex || sessionChanged) {
       _isRegenerating = false;
-      _quizSubmitted = false;
-      if (_isQuizCompleted(widget.currentStep)) {
-        _quizSubmitted = true;
-      }
-      _tabController.animateTo(0);
+      final isCompleted = _isQuizCompleted(widget.currentStep);
+      _quizSubmitted = isCompleted;
+      final bool isCurrentMilestone =
+          widget.stepIndex == widget.session.currentStepIndex;
+      final bool isStepNotComplete = widget.currentStep != null &&
+          widget.currentStep.status != 'complete';
+      final bool shouldOpenQuiz = isCompleted && (isStepNotComplete || isCurrentMilestone);
+      final int targetIndex = shouldOpenQuiz ? 3 : 0;
+      _tabController.animateTo(targetIndex);
       setState(() {
-        _activeTabIndex = 0;
+        _activeTabIndex = targetIndex;
       });
     } else if (!_quizSubmitted && _isQuizCompleted(widget.currentStep)) {
       _quizSubmitted = true;
@@ -1073,7 +1148,10 @@ class _MobileTabbedWorkspaceState
         return Dialog(
           backgroundColor: Colors.transparent,
           elevation: 0,
-          insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 24,
+          ),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 420),
             child: ClipRRect(
@@ -1096,18 +1174,20 @@ class _MobileTabbedWorkspaceState
                       color: AppColors.primary.withValues(alpha: 0.35),
                       width: 1.2,
                     ),
-                    boxShadow: Responsive.isMobile(context) ? null : [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.55),
-                        blurRadius: 32,
-                        offset: const Offset(0, 12),
-                      ),
-                      BoxShadow(
-                        color: AppColors.primary.withValues(alpha: 0.15),
-                        blurRadius: 24,
-                        spreadRadius: 2,
-                      ),
-                    ],
+                    boxShadow: Responsive.isMobile(context)
+                        ? null
+                        : [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.55),
+                              blurRadius: 32,
+                              offset: const Offset(0, 12),
+                            ),
+                            BoxShadow(
+                              color: AppColors.primary.withValues(alpha: 0.15),
+                              blurRadius: 24,
+                              spreadRadius: 2,
+                            ),
+                          ],
                   ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -1146,7 +1226,9 @@ class _MobileTabbedWorkspaceState
                                 decoration: BoxDecoration(
                                   color: Colors.white.withValues(alpha: 0.06),
                                   shape: BoxShape.circle,
-                                  border: Border.all(color: AppColors.glassBorder),
+                                  border: Border.all(
+                                    color: AppColors.glassBorder,
+                                  ),
                                 ),
                                 child: Icon(
                                   Icons.close_rounded,
@@ -1185,7 +1267,10 @@ class _MobileTabbedWorkspaceState
 
                       // Hint / Info Box
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 10,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.primary.withValues(alpha: 0.08),
                           borderRadius: BorderRadius.circular(10),
@@ -1252,13 +1337,17 @@ class _MobileTabbedWorkspaceState
                                 decoration: BoxDecoration(
                                   gradient: AppColors.primaryGradient,
                                   borderRadius: BorderRadius.circular(9),
-                                  boxShadow: Responsive.isMobile(context) ? null : [
-                                    BoxShadow(
-                                      color: AppColors.primary.withValues(alpha: 0.35),
-                                      blurRadius: 10,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ],
+                                  boxShadow: Responsive.isMobile(context)
+                                      ? null
+                                      : [
+                                          BoxShadow(
+                                            color: AppColors.primary.withValues(
+                                              alpha: 0.35,
+                                            ),
+                                            blurRadius: 10,
+                                            offset: const Offset(0, 2),
+                                          ),
+                                        ],
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
@@ -1298,16 +1387,21 @@ class _MobileTabbedWorkspaceState
   Widget _buildMobileStepHeader() {
     final step = widget.currentStep;
     final totalSteps = widget.totalSteps;
-    final bool isLastStep = totalSteps > 0 && widget.stepIndex >= totalSteps - 1;
-    final bool isSessionComplete = widget.session.steps.isNotEmpty &&
+    final bool isLastStep =
+        totalSteps > 0 && widget.stepIndex >= totalSteps - 1;
+    final bool isSessionComplete =
+        widget.session.steps.isNotEmpty &&
         widget.session.stepsCompleted >= totalSteps &&
         totalSteps > 0;
-    final bool isCurrentStepComplete = widget.currentStep.status == 'complete' ||
+    final bool isCurrentStepComplete =
+        widget.currentStep.status == 'complete' ||
         (isLastStep && isSessionComplete) ||
         (widget.stepIndex < widget.session.stepsCompleted);
-    final bool isReviewing = widget.stepIndex < widget.maxUnlockedIndex || isCurrentStepComplete;
+    final bool isReviewing =
+        widget.stepIndex < widget.maxUnlockedIndex || isCurrentStepComplete;
     final bool canGoBack = widget.stepIndex > 0;
-    final bool canGoForward = widget.stepIndex < totalSteps - 1 &&
+    final bool canGoForward =
+        widget.stepIndex < totalSteps - 1 &&
         (isCurrentStepComplete || widget.stepIndex < widget.maxUnlockedIndex);
 
     return Container(
@@ -1315,10 +1409,7 @@ class _MobileTabbedWorkspaceState
       decoration: BoxDecoration(
         color: AppColors.topBarBackground,
         border: Border(
-          bottom: BorderSide(
-            color: AppColors.glassBorder,
-            width: 0.8,
-          ),
+          bottom: BorderSide(color: AppColors.glassBorder, width: 0.8),
         ),
       ),
       child: Row(
@@ -1380,13 +1471,17 @@ class _MobileTabbedWorkspaceState
                     border: Border.all(
                       color: AppColors.purpleLight.withValues(alpha: 0.5),
                     ),
-                    boxShadow: Responsive.isMobile(context) ? null : [
-                      BoxShadow(
-                        color: AppColors.accentBlue.withValues(alpha: 0.35),
-                        blurRadius: 8,
-                        offset: const Offset(0, 1),
-                      ),
-                    ],
+                    boxShadow: Responsive.isMobile(context)
+                        ? null
+                        : [
+                            BoxShadow(
+                              color: AppColors.accentBlue.withValues(
+                                alpha: 0.35,
+                              ),
+                              blurRadius: 8,
+                              offset: const Offset(0, 1),
+                            ),
+                          ],
                   ),
                   child: _isRegenerating
                       ? const SizedBox(
@@ -1434,10 +1529,14 @@ class _MobileTabbedWorkspaceState
 
   Widget _buildMobileGatingBar(BuildContext context, bool isQuizDone) {
     final totalSteps = widget.totalSteps;
-    final bool isLastStep = totalSteps > 0 && widget.stepIndex >= totalSteps - 1;
-    final bool isSessionComplete = widget.session.steps.isNotEmpty &&
-        widget.session.stepsCompleted >= totalSteps && totalSteps > 0;
-    final bool isCurrentStepComplete = widget.currentStep.status == 'complete' ||
+    final bool isLastStep =
+        totalSteps > 0 && widget.stepIndex >= totalSteps - 1;
+    final bool isSessionComplete =
+        widget.session.steps.isNotEmpty &&
+        widget.session.stepsCompleted >= totalSteps &&
+        totalSteps > 0;
+    final bool isCurrentStepComplete =
+        widget.currentStep.status == 'complete' ||
         (isLastStep && isSessionComplete) ||
         (widget.stepIndex < widget.session.stepsCompleted);
 
@@ -1474,141 +1573,165 @@ class _MobileTabbedWorkspaceState
         ),
       ),
       child: Row(
-          children: [
-            Expanded(
-              child: GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: () {
-                  if (!isQuizDone && !isCurrentStepComplete) {
-                    _handleNextStep(context, isQuizDone);
-                  }
-                },
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        color: isLastStep && isCurrentStepComplete
-                            ? Colors.amber.withValues(alpha: 0.2)
-                            : AppColors.accentGreen.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Icon(
-                        isLastStep && isCurrentStepComplete
-                            ? Icons.emoji_events_rounded
-                            : (isQuizDone
+        children: [
+          Expanded(
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () {
+                if (!isQuizDone && !isCurrentStepComplete) {
+                  _handleNextStep(context, isQuizDone);
+                }
+              },
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: isLastStep && isCurrentStepComplete
+                          ? Colors.amber.withValues(alpha: 0.2)
+                          : AppColors.accentGreen.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Icon(
+                      isLastStep && isCurrentStepComplete
+                          ? Icons.emoji_events_rounded
+                          : (isQuizDone
                                 ? Icons.check_circle_rounded
                                 : Icons.quiz_rounded),
-                        size: 14,
+                      size: 14,
+                      color: isLastStep && isCurrentStepComplete
+                          ? Colors.amber
+                          : AppColors.accentGreen,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      guidanceText,
+                      style: AppTextStyles.captionBold.copyWith(
                         color: isLastStep && isCurrentStepComplete
-                            ? Colors.amber
+                            ? Colors.amber.shade200
                             : AppColors.accentGreen,
+                        fontSize: 11.5,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          if (isLastStep && isCurrentStepComplete)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.amber.withValues(alpha: 0.25),
+                    AppColors.accentGreen.withValues(alpha: 0.2),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.amber.withValues(alpha: 0.4)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.emoji_events_rounded,
+                    size: 12,
+                    color: Colors.amber,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Journey Completed 🎉',
+                    style: AppTextStyles.badge.copyWith(
+                      color: Colors.amber.shade100,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 11,
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else
+            MouseRegion(
+              cursor: SystemMouseCursors.click,
+              hitTestBehavior: HitTestBehavior.opaque,
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => _handleNextStep(context, isQuizDone),
+                child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 13,
+                  vertical: 7,
+                ),
+                decoration: BoxDecoration(
+                  gradient: isLastStep
+                      ? LinearGradient(
+                          colors: [
+                            Colors.amber.shade600,
+                            Colors.orange.shade800,
+                          ],
+                        )
+                      : LinearGradient(
+                          colors: [AppColors.accentGreen, AppColors.greenDeep],
+                        ),
+                  borderRadius: BorderRadius.circular(8),
+                  boxShadow: Responsive.isMobile(context)
+                      ? null
+                      : [
+                          BoxShadow(
+                            color:
+                                (isLastStep
+                                        ? Colors.amber
+                                        : AppColors.accentGreen)
+                                    .withValues(alpha: 0.35),
+                            blurRadius: 8,
+                          ),
+                        ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      isLastStep ? 'Complete Journey' : 'Next Step',
+                      style: AppTextStyles.badge.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 11,
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        guidanceText,
-                        style: AppTextStyles.captionBold.copyWith(
-                          color: isLastStep && isCurrentStepComplete
-                              ? Colors.amber.shade200
-                              : AppColors.accentGreen,
-                          fontSize: 11.5,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                    const SizedBox(width: 4),
+                    Icon(
+                      isLastStep
+                          ? Icons.emoji_events_rounded
+                          : Icons.arrow_forward_rounded,
+                      size: 12,
+                      color: Colors.white,
                     ),
                   ],
                 ),
               ),
             ),
-            const SizedBox(width: 8),
-            if (isLastStep && isCurrentStepComplete)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.amber.withValues(alpha: 0.25),
-                      AppColors.accentGreen.withValues(alpha: 0.2),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.amber.withValues(alpha: 0.4)),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.emoji_events_rounded, size: 12, color: Colors.amber),
-                    const SizedBox(width: 4),
-                    Text(
-                      'Journey Completed 🎉',
-                      style: AppTextStyles.badge.copyWith(
-                        color: Colors.amber.shade100,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 11,
-                      ),
-                    ),
-                  ],
-                ),
-              )
-            else
-              GestureDetector(
-                onTap: () => _handleNextStep(context, isQuizDone),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
-                  decoration: BoxDecoration(
-                    gradient: isLastStep
-                        ? LinearGradient(
-                            colors: [Colors.amber.shade600, Colors.orange.shade800],
-                          )
-                        : LinearGradient(
-                            colors: [AppColors.accentGreen, AppColors.greenDeep],
-                          ),
-                    borderRadius: BorderRadius.circular(8),
-                    boxShadow: Responsive.isMobile(context) ? null : [
-                      BoxShadow(
-                        color: (isLastStep ? Colors.amber : AppColors.accentGreen)
-                            .withValues(alpha: 0.35),
-                        blurRadius: 8,
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        isLastStep ? 'Complete Journey' : 'Next Step',
-                        style: AppTextStyles.badge.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 11,
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      Icon(
-                        isLastStep
-                            ? Icons.emoji_events_rounded
-                            : Icons.arrow_forward_rounded,
-                        size: 12,
-                        color: Colors.white,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-          ],
-        ),
-      );
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildMobileNoQuizAdvanceBar(BuildContext context) {
     final totalSteps = widget.totalSteps;
-    final bool isLastStep = totalSteps > 0 && widget.stepIndex >= totalSteps - 1;
-    final bool isSessionComplete = widget.session.steps.isNotEmpty &&
-        widget.session.stepsCompleted >= totalSteps && totalSteps > 0;
-    final bool isCurrentStepComplete = widget.currentStep.status == 'complete' ||
+    final bool isLastStep =
+        totalSteps > 0 && widget.stepIndex >= totalSteps - 1;
+    final bool isSessionComplete =
+        widget.session.steps.isNotEmpty &&
+        widget.session.stepsCompleted >= totalSteps &&
+        totalSteps > 0;
+    final bool isCurrentStepComplete =
+        widget.currentStep.status == 'complete' ||
         (isLastStep && isSessionComplete) ||
         (widget.stepIndex < widget.session.stepsCompleted);
 
@@ -1617,125 +1740,140 @@ class _MobileTabbedWorkspaceState
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
         color: AppColors.surfaceSolidHeader,
-        border: Border(
-          top: BorderSide(
-            color: AppColors.glassBorder,
-            width: 1,
-          ),
-        ),
+        border: Border(top: BorderSide(color: AppColors.glassBorder, width: 1)),
       ),
       child: Row(
-          children: [
+        children: [
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: isLastStep && isCurrentStepComplete
+                  ? Colors.amber.withValues(alpha: 0.15)
+                  : AppColors.accentCyan.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Icon(
+              isLastStep && isCurrentStepComplete
+                  ? Icons.emoji_events_rounded
+                  : Icons.auto_awesome_rounded,
+              size: 14,
+              color: isLastStep && isCurrentStepComplete
+                  ? Colors.amber
+                  : AppColors.accentCyan,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              isLastStep && isCurrentStepComplete
+                  ? 'Journey Mastered! 🎉'
+                  : (isLastStep
+                        ? 'Ready to finish journey'
+                        : 'Ready to continue learning'),
+              style: AppTextStyles.caption.copyWith(
+                color: isLastStep && isCurrentStepComplete
+                    ? Colors.amber.shade200
+                    : AppColors.textSecondary,
+                fontSize: 11.5,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          const SizedBox(width: 8),
+          if (isLastStep && isCurrentStepComplete)
             Container(
-              padding: const EdgeInsets.all(6),
+              padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
               decoration: BoxDecoration(
-                color: isLastStep && isCurrentStepComplete
-                    ? Colors.amber.withValues(alpha: 0.15)
-                    : AppColors.accentCyan.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: Icon(
-                isLastStep && isCurrentStepComplete
-                    ? Icons.emoji_events_rounded
-                    : Icons.auto_awesome_rounded,
-                size: 14,
-                color: isLastStep && isCurrentStepComplete
-                    ? Colors.amber
-                    : AppColors.accentCyan,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                isLastStep && isCurrentStepComplete
-                    ? 'Journey Mastered! 🎉'
-                    : (isLastStep ? 'Ready to finish journey' : 'Ready to continue learning'),
-                style: AppTextStyles.caption.copyWith(
-                  color: isLastStep && isCurrentStepComplete
-                      ? Colors.amber.shade200
-                      : AppColors.textSecondary,
-                  fontSize: 11.5,
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.amber.withValues(alpha: 0.25),
+                    AppColors.accentGreen.withValues(alpha: 0.2),
+                  ],
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.amber.withValues(alpha: 0.4)),
               ),
-            ),
-            const SizedBox(width: 8),
-            if (isLastStep && isCurrentStepComplete)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.amber.withValues(alpha: 0.25),
-                      AppColors.accentGreen.withValues(alpha: 0.2),
-                    ],
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.emoji_events_rounded,
+                    size: 12,
+                    color: Colors.amber,
                   ),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Journey Completed 🎉',
+                    style: AppTextStyles.badge.copyWith(
+                      color: Colors.amber.shade100,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 11,
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else
+            MouseRegion(
+              cursor: SystemMouseCursors.click,
+              hitTestBehavior: HitTestBehavior.opaque,
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => _handleNextStep(context, true),
+                child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 13,
+                  vertical: 7,
+                ),
+                decoration: BoxDecoration(
+                  gradient: isLastStep
+                      ? LinearGradient(
+                          colors: [
+                            Colors.amber.shade600,
+                            Colors.orange.shade800,
+                          ],
+                        )
+                      : AppColors.primaryGradient,
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.amber.withValues(alpha: 0.4)),
+                  boxShadow: Responsive.isMobile(context)
+                      ? null
+                      : [
+                          BoxShadow(
+                            color:
+                                (isLastStep ? Colors.amber : AppColors.primary)
+                                    .withValues(alpha: 0.3),
+                            blurRadius: 8,
+                          ),
+                        ],
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.emoji_events_rounded, size: 12, color: Colors.amber),
-                    const SizedBox(width: 4),
                     Text(
-                      'Journey Completed 🎉',
+                      isLastStep ? 'Complete Journey' : 'Next Step',
                       style: AppTextStyles.badge.copyWith(
-                        color: Colors.amber.shade100,
+                        color: Colors.white,
                         fontWeight: FontWeight.w700,
                         fontSize: 11,
                       ),
                     ),
+                    const SizedBox(width: 4),
+                    Icon(
+                      isLastStep
+                          ? Icons.emoji_events_rounded
+                          : Icons.arrow_forward_rounded,
+                      size: 12,
+                      color: Colors.white,
+                    ),
                   ],
                 ),
-              )
-            else
-              GestureDetector(
-                onTap: () => _handleNextStep(context, true),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
-                  decoration: BoxDecoration(
-                    gradient: isLastStep
-                        ? LinearGradient(
-                            colors: [Colors.amber.shade600, Colors.orange.shade800],
-                          )
-                        : AppColors.primaryGradient,
-                    borderRadius: BorderRadius.circular(8),
-                    boxShadow: Responsive.isMobile(context) ? null : [
-                      BoxShadow(
-                        color: (isLastStep ? Colors.amber : AppColors.primary)
-                            .withValues(alpha: 0.3),
-                        blurRadius: 8,
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        isLastStep ? 'Complete Journey' : 'Next Step',
-                        style: AppTextStyles.badge.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 11,
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      Icon(
-                        isLastStep
-                            ? Icons.emoji_events_rounded
-                            : Icons.arrow_forward_rounded,
-                        size: 12,
-                        color: Colors.white,
-                      ),
-                    ],
-                  ),
-                ),
               ),
-          ],
-        ),
-      );
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -1747,11 +1885,14 @@ class _MobileTabbedWorkspaceState
     final isQuizDone = _quizSubmitted || _isQuizCompleted(step);
 
     final totalSteps = widget.totalSteps;
-    final bool isLastStep = totalSteps > 0 && widget.stepIndex >= totalSteps - 1;
-    final bool isSessionComplete = widget.session.steps.isNotEmpty &&
+    final bool isLastStep =
+        totalSteps > 0 && widget.stepIndex >= totalSteps - 1;
+    final bool isSessionComplete =
+        widget.session.steps.isNotEmpty &&
         widget.session.stepsCompleted >= totalSteps &&
         totalSteps > 0;
-    final bool isCurrentStepComplete = widget.currentStep.status == 'complete' ||
+    final bool isCurrentStepComplete =
+        widget.currentStep.status == 'complete' ||
         (isLastStep && isSessionComplete) ||
         (widget.stepIndex < widget.session.stepsCompleted);
 
@@ -1778,10 +1919,7 @@ class _MobileTabbedWorkspaceState
             decoration: BoxDecoration(
               color: context.appColors.surfaceSubtle,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: context.appColors.border,
-                width: 0.8,
-              ),
+              border: Border.all(color: context.appColors.border, width: 0.8),
             ),
             child: Row(
               children: [
@@ -1824,39 +1962,45 @@ class _MobileTabbedWorkspaceState
                   accentColor: AppColors.accentGreen,
                   leadingWidget: hasQuiz
                       ? (isQuizDone
-                          ? Container(
-                              width: 15,
-                              height: 15,
-                              decoration: BoxDecoration(
-                                color: AppColors.accentGreen,
-                                shape: BoxShape.circle,
-                                boxShadow: Responsive.isMobile(context) ? null : [
-                                  BoxShadow(
-                                    color: AppColors.accentGreen.withValues(alpha: 0.4),
-                                    blurRadius: 6,
-                                  ),
-                                ],
-                              ),
-                              child: const Icon(
-                                Icons.check_rounded,
-                                size: 10,
-                                color: Colors.white,
-                              ),
-                            )
-                          : Container(
-                              width: 8,
-                              height: 8,
-                              decoration: BoxDecoration(
-                                color: AppColors.accentGreen,
-                                shape: BoxShape.circle,
-                                boxShadow: Responsive.isMobile(context) ? null : [
-                                  BoxShadow(
-                                    color: AppColors.accentGreen.withValues(alpha: 0.5),
-                                    blurRadius: 4,
-                                  ),
-                                ],
-                              ),
-                            ))
+                            ? Container(
+                                width: 15,
+                                height: 15,
+                                decoration: BoxDecoration(
+                                  color: AppColors.accentGreen,
+                                  shape: BoxShape.circle,
+                                  boxShadow: Responsive.isMobile(context)
+                                      ? null
+                                      : [
+                                          BoxShadow(
+                                            color: AppColors.accentGreen
+                                                .withValues(alpha: 0.4),
+                                            blurRadius: 6,
+                                          ),
+                                        ],
+                                ),
+                                child: const Icon(
+                                  Icons.check_rounded,
+                                  size: 10,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : Container(
+                                width: 8,
+                                height: 8,
+                                decoration: BoxDecoration(
+                                  color: AppColors.accentGreen,
+                                  shape: BoxShape.circle,
+                                  boxShadow: Responsive.isMobile(context)
+                                      ? null
+                                      : [
+                                          BoxShadow(
+                                            color: AppColors.accentGreen
+                                                .withValues(alpha: 0.5),
+                                            blurRadius: 4,
+                                          ),
+                                        ],
+                                ),
+                              ))
                       : null,
                   onTap: () => _onSelectTab(3),
                 ),
@@ -1876,17 +2020,23 @@ class _MobileTabbedWorkspaceState
               ),
               // Videos tab
               KeepAliveWrapper(
-                key: ValueKey('mobile_tab_videos_${widget.session.sessionId}_${step.index}'),
+                key: ValueKey(
+                  'mobile_tab_videos_${widget.session.sessionId}_${step.index}',
+                ),
                 child: _buildVideosTab(step),
               ),
               // Papers tab
               KeepAliveWrapper(
-                key: ValueKey('mobile_tab_papers_${widget.session.sessionId}_${step.index}'),
+                key: ValueKey(
+                  'mobile_tab_papers_${widget.session.sessionId}_${step.index}',
+                ),
                 child: _buildPapersTab(step),
               ),
               // Quiz tab
               KeepAliveWrapper(
-                key: ValueKey('mobile_tab_quiz_${widget.session.sessionId}_${step.index}'),
+                key: ValueKey(
+                  'mobile_tab_quiz_${widget.session.sessionId}_${step.index}',
+                ),
                 child: _buildQuizTab(step),
               ),
             ],
@@ -1911,11 +2061,18 @@ class _MobileTabbedWorkspaceState
             (step.socraticQuestions != null &&
                 step.socraticQuestions!.isNotEmpty))) {
       return SocraticTutorChat(
-        key: ValueKey('mobile_socratic_${widget.session.sessionId}_${step.index}'),
+        key: ValueKey(
+          'mobile_socratic_${widget.session.sessionId}_${step.index}',
+        ),
         stepIndex: step.index,
         tutorExplanation: step.tutorExplanation,
         socraticQuestions: step.socraticQuestions,
-        conversationHistory: ref.read(activeSessionProvider).session?.conversationHistory?.where((turn) => (turn as Map)['step_index'] == step.index).toList(),
+        conversationHistory: ref
+            .read(activeSessionProvider)
+            .session
+            ?.conversationHistory
+            ?.where((turn) => (turn as Map)['step_index'] == step.index)
+            .toList(),
         stepTitle: step.title,
       );
     }
@@ -1948,15 +2105,17 @@ class _MobileTabbedWorkspaceState
                 border: AppColors.isDark
                     ? null
                     : Border.all(color: const Color(0xFFE2E8F0)),
-                boxShadow: Responsive.isMobile(context) ? null : [
-                  BoxShadow(
-                    color: AppColors.isDark
-                        ? Colors.black.withValues(alpha: 0.3)
-                        : const Color(0x0C000000),
-                    blurRadius: AppColors.isDark ? 20 : 10,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
+                boxShadow: Responsive.isMobile(context)
+                    ? null
+                    : [
+                        BoxShadow(
+                          color: AppColors.isDark
+                              ? Colors.black.withValues(alpha: 0.3)
+                              : const Color(0x0C000000),
+                          blurRadius: AppColors.isDark ? 20 : 10,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1989,7 +2148,10 @@ class _MobileTabbedWorkspaceState
 
     if (step.videos == null || step.videos!.isEmpty) {
       if (isCurating) {
-        return LearningResourcesPanel.buildVideosContent(step.videos, isCurating: true);
+        return LearningResourcesPanel.buildVideosContent(
+          step.videos,
+          isCurating: true,
+        );
       }
       return _buildEmptyState(
         icon: Icons.play_circle_outline_rounded,
@@ -2000,7 +2162,9 @@ class _MobileTabbedWorkspaceState
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 350),
       child: SingleChildScrollView(
-        key: ValueKey('mobile_videos_${widget.session.sessionId}_${step.index}_${step.videos!.length}'),
+        key: ValueKey(
+          'mobile_videos_${widget.session.sessionId}_${step.index}_${step.videos!.length}',
+        ),
         padding: const EdgeInsets.all(16),
         child: LearningResourcesPanel.buildVideosContent(step.videos),
       ),
@@ -2010,9 +2174,7 @@ class _MobileTabbedWorkspaceState
   Widget _buildPapersTab(dynamic step) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
-      child: LearningResourcesPanel.buildPapersContent(
-        step.papers,
-      ),
+      child: LearningResourcesPanel.buildPapersContent(step.papers),
     );
   }
 
@@ -2024,7 +2186,9 @@ class _MobileTabbedWorkspaceState
         color: AppColors.accentGreen,
       );
     }
-    final int stepIdx = (step.index is int) ? step.index as int : widget.stepIndex;
+    final int stepIdx = (step.index is int)
+        ? step.index as int
+        : widget.stepIndex;
     return LearningResourcesPanel.buildQuizContent(
       quiz: step.quiz,
       stepIndex: stepIdx,
@@ -2112,8 +2276,8 @@ class _MobileWorkspaceTabItemState extends State<_MobileWorkspaceTabItem> {
     final Color iconColor = isActive
         ? widget.accentColor
         : (isHovered
-            ? widget.accentColor.withValues(alpha: 0.85)
-            : AppColors.textMuted);
+              ? widget.accentColor.withValues(alpha: 0.85)
+              : AppColors.textMuted);
 
     return Expanded(
       child: MouseRegion(
@@ -2133,10 +2297,12 @@ class _MobileWorkspaceTabItemState extends State<_MobileWorkspaceTabItem> {
               gradient: isActive
                   ? LinearGradient(
                       colors: [
-                        AppColors.primary
-                            .withValues(alpha: isHovered ? 0.28 : 0.22),
-                        AppColors.purpleDeep
-                            .withValues(alpha: isHovered ? 0.20 : 0.14),
+                        AppColors.primary.withValues(
+                          alpha: isHovered ? 0.28 : 0.22,
+                        ),
+                        AppColors.purpleDeep.withValues(
+                          alpha: isHovered ? 0.20 : 0.14,
+                        ),
                       ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
@@ -2145,34 +2311,36 @@ class _MobileWorkspaceTabItemState extends State<_MobileWorkspaceTabItem> {
               color: isActive
                   ? null
                   : (isHovered
-                      ? AppColors.primary.withValues(alpha: 0.09)
-                      : Colors.transparent),
+                        ? AppColors.primary.withValues(alpha: 0.09)
+                        : Colors.transparent),
               border: Border.all(
                 color: isActive
-                    ? AppColors.primary
-                        .withValues(alpha: isHovered ? 0.70 : 0.50)
+                    ? AppColors.primary.withValues(
+                        alpha: isHovered ? 0.70 : 0.50,
+                      )
                     : (isHovered
-                        ? AppColors.primary.withValues(alpha: 0.28)
-                        : Colors.transparent),
+                          ? AppColors.primary.withValues(alpha: 0.28)
+                          : Colors.transparent),
                 width: 1,
               ),
               boxShadow: isActive
                   ? [
                       BoxShadow(
-                        color: AppColors.primary
-                            .withValues(alpha: isHovered ? 0.28 : 0.18),
+                        color: AppColors.primary.withValues(
+                          alpha: isHovered ? 0.28 : 0.18,
+                        ),
                         blurRadius: isHovered ? 12 : 8,
                         offset: const Offset(0, 1),
                       ),
                     ]
                   : (isHovered
-                      ? [
-                          BoxShadow(
-                            color: AppColors.primary.withValues(alpha: 0.08),
-                            blurRadius: 8,
-                          ),
-                        ]
-                      : null),
+                        ? [
+                            BoxShadow(
+                              color: AppColors.primary.withValues(alpha: 0.08),
+                              blurRadius: 8,
+                            ),
+                          ]
+                        : null),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -2204,13 +2372,15 @@ class _MobileWorkspaceTabItemState extends State<_MobileWorkspaceTabItem> {
                     decoration: BoxDecoration(
                       color: widget.badgeColor ?? AppColors.primary,
                       shape: BoxShape.circle,
-                      boxShadow: Responsive.isMobile(context) ? null : [
-                        BoxShadow(
-                          color: (widget.badgeColor ?? AppColors.primary)
-                              .withValues(alpha: 0.5),
-                          blurRadius: 3,
-                        ),
-                      ],
+                      boxShadow: Responsive.isMobile(context)
+                          ? null
+                          : [
+                              BoxShadow(
+                                color: (widget.badgeColor ?? AppColors.primary)
+                                    .withValues(alpha: 0.5),
+                                blurRadius: 3,
+                              ),
+                            ],
                     ),
                   ),
                 ],
@@ -2268,10 +2438,11 @@ class _RegeneratingDotsState extends State<_RegeneratingDots>
                   height: 8,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: (AppColors.isDark
-                            ? const Color(0xFFC084FC)
-                            : AppColors.primaryViolet)
-                        .withValues(alpha: 0.4 + 0.5 * bounce),
+                    color:
+                        (AppColors.isDark
+                                ? const Color(0xFFC084FC)
+                                : AppColors.primaryViolet)
+                            .withValues(alpha: 0.4 + 0.5 * bounce),
                   ),
                 ),
               ),

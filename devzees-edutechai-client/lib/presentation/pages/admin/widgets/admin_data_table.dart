@@ -132,7 +132,9 @@ class _AdminDataTableState extends State<AdminDataTable> {
 
                                 headerContent = MouseRegion(
                                   cursor: SystemMouseCursors.click,
+                                  opaque: true,
                                   child: GestureDetector(
+                                    behavior: HitTestBehavior.opaque,
                                     onTap: () => widget.onSort!(colName),
                                     child: headerContent,
                                   ),

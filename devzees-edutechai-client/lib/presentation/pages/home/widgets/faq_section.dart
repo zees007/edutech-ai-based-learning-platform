@@ -161,6 +161,7 @@ class _FaqSectionState extends State<FaqSection> {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(18),
                     child: InkWell(
+                      mouseCursor: SystemMouseCursors.click,
                       onTap: () {
                         setState(() {
                           if (isExpanded) {

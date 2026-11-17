@@ -18,7 +18,13 @@ import 'package:go_router/go_router.dart';
 /// - Kinetic gradient action pill button ('Get Started') with electric fuchsia/royal blue sweep.
 class HomeNavbar extends ConsumerWidget {
   final Function(String)? onNavTap;
-  const HomeNavbar({super.key, this.onNavTap});
+  final bool isScrolled;
+
+  const HomeNavbar({
+    super.key,
+    this.onNavTap,
+    this.isScrolled = false,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -32,24 +38,30 @@ class HomeNavbar extends ConsumerWidget {
       delayMs: 120,
       durationMs: 700,
       fromOffset: const Offset(0, -22),
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOutCubic,
         constraints: const BoxConstraints(minHeight: 56),
         decoration: BoxDecoration(
-          color: const Color(0xCC080914), // Frosted near-black
+          color: isScrolled
+              ? const Color(0xE8080914) // Deeper frosted near-black when scrolled
+              : const Color(0xCC080914), // Frosted near-black at rest
           borderRadius: BorderRadius.circular(9999),
           border: Border.all(
-            color: Colors.white.withValues(alpha: 0.12),
+            color: isScrolled
+                ? Colors.white.withValues(alpha: 0.18)
+                : Colors.white.withValues(alpha: 0.12),
             width: 1.0,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.55),
-              blurRadius: 32,
+              color: Colors.black.withValues(alpha: isScrolled ? 0.65 : 0.55),
+              blurRadius: isScrolled ? 36 : 32,
               offset: const Offset(0, 10),
             ),
             BoxShadow(
-              color: AppColors.primary.withValues(alpha: 0.12),
-              blurRadius: 24,
+              color: AppColors.primary.withValues(alpha: isScrolled ? 0.16 : 0.12),
+              blurRadius: isScrolled ? 28 : 24,
               spreadRadius: -4,
               offset: const Offset(0, 4),
             ),
@@ -58,7 +70,10 @@ class HomeNavbar extends ConsumerWidget {
         child: ClipRRect(
           borderRadius: BorderRadius.circular(9999),
           child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+            filter: ImageFilter.blur(
+              sigmaX: isScrolled ? 24 : 20,
+              sigmaY: isScrolled ? 24 : 20,
+            ),
             child: Padding(
               padding: EdgeInsets.symmetric(
                 horizontal: isMobile ? 12 : 24,
@@ -66,54 +81,64 @@ class HomeNavbar extends ConsumerWidget {
               ),
               child: Builder(
                 builder: (context) {
-                  final brandWidget = MouseRegion(
-                    cursor: SystemMouseCursors.click,
-                    child: GestureDetector(
-                      onTap: () => onNavTap?.call('top'),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            '⚡ ',
-                            style: AppTextStyles.h4.copyWith(
-                              fontWeight: FontWeight.w900,
-                              fontSize: isMobile ? 18 : 22,
-                            ),
+                  final brandWidget = SelectionContainer.disabled(
+                    child: MouseRegion(
+                      cursor: SystemMouseCursors.click,
+                      opaque: true,
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () => onNavTap?.call('top'),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 4,
+                            horizontal: 4,
                           ),
-                          GradientText(
-                            'EduTech',
-                            style: AppTextStyles.h3.copyWith(
-                              fontSize: isMobile ? 18 : 22,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: -0.5,
-                            ),
-                          ),
-                          const SizedBox(width: 5),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.primary.withValues(
-                                alpha: 0.2,
-                              ),
-                              border: Border.all(
-                                color: AppColors.primary.withValues(
-                                  alpha: 0.4,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                '⚡ ',
+                                style: AppTextStyles.h4.copyWith(
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: isMobile ? 18 : 22,
                                 ),
                               ),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              'AI',
-                              style: AppTextStyles.labelSmall.copyWith(
-                                color: AppColors.primary,
-                                fontWeight: FontWeight.w800,
+                              GradientText(
+                                'EduTech',
+                                style: AppTextStyles.h3.copyWith(
+                                  fontSize: isMobile ? 18 : 22,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: -0.5,
+                                ),
                               ),
-                            ),
+                              const SizedBox(width: 5),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primary.withValues(
+                                    alpha: 0.2,
+                                  ),
+                                  border: Border.all(
+                                    color: AppColors.primary.withValues(
+                                      alpha: 0.4,
+                                    ),
+                                  ),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  'AI',
+                                  style: AppTextStyles.labelSmall.copyWith(
+                                    color: AppColors.primary,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
                     ),
                   );
@@ -255,46 +280,52 @@ class _NavPillState extends State<_NavPill> {
 
   @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: widget.onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
-          curve: Curves.easeOutCubic,
-          margin: const EdgeInsets.symmetric(horizontal: 4),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
-            color: _isHovered
-                ? Colors.white.withValues(alpha: 0.08)
-                : Colors.transparent,
-            border: Border.all(
-              color: _isHovered
-                  ? Colors.white.withValues(alpha: 0.12)
-                  : Colors.transparent,
-              width: 1.0,
-            ),
-            boxShadow: _isHovered
-                ? [
-                    BoxShadow(
-                      color: Colors.white.withValues(alpha: 0.03),
-                      blurRadius: 8,
-                    ),
-                  ]
-                : null,
-          ),
-          child: Text(
-            widget.title,
-            style: TextStyle(
-              color: _isHovered
-                  ? const Color(0xFFF8FAFC)
-                  : const Color(0xFF94A3B8),
-              fontSize: 15.0,
-              fontWeight: _isHovered ? FontWeight.w700 : FontWeight.w600,
-              letterSpacing: -0.1,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: SelectionContainer.disabled(
+        child: MouseRegion(
+          cursor: SystemMouseCursors.click,
+          opaque: true,
+          onEnter: (_) => setState(() => _isHovered = true),
+          onExit: (_) => setState(() => _isHovered = false),
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: widget.onTap,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              curve: Curves.easeOutCubic,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                color: _isHovered
+                    ? Colors.white.withValues(alpha: 0.08)
+                    : Colors.transparent,
+                border: Border.all(
+                  color: _isHovered
+                      ? Colors.white.withValues(alpha: 0.12)
+                      : Colors.transparent,
+                  width: 1.0,
+                ),
+                boxShadow: _isHovered
+                    ? [
+                        BoxShadow(
+                          color: Colors.white.withValues(alpha: 0.03),
+                          blurRadius: 8,
+                        ),
+                      ]
+                    : null,
+              ),
+              child: Text(
+                widget.title,
+                style: TextStyle(
+                  color: _isHovered
+                      ? const Color(0xFFF8FAFC)
+                      : const Color(0xFF94A3B8),
+                  fontSize: 15.0,
+                  fontWeight: _isHovered ? FontWeight.w700 : FontWeight.w600,
+                  letterSpacing: -0.1,
+                ),
+              ),
             ),
           ),
         ),
@@ -318,51 +349,55 @@ class _NavbarSignInButtonState extends State<_NavbarSignInButton> {
 
   @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: widget.onTap,
-        child: AnimatedScale(
-          scale: _isHovered ? 1.03 : 1.0,
-          duration: const Duration(milliseconds: 180),
-          curve: Curves.easeOutCubic,
-          child: AnimatedContainer(
+    return SelectionContainer.disabled(
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        opaque: true,
+        onEnter: (_) => setState(() => _isHovered = true),
+        onExit: (_) => setState(() => _isHovered = false),
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: widget.onTap,
+          child: AnimatedScale(
+            scale: _isHovered ? 1.03 : 1.0,
             duration: const Duration(milliseconds: 180),
             curve: Curves.easeOutCubic,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(9999),
-              color: _isHovered
-                  ? Colors.white.withValues(alpha: 0.09)
-                  : Colors.transparent,
-              border: Border.all(
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              curve: Curves.easeOutCubic,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(9999),
                 color: _isHovered
-                    ? Colors.white.withValues(alpha: 0.16)
+                    ? Colors.white.withValues(alpha: 0.09)
                     : Colors.transparent,
-                width: 1.0,
+                border: Border.all(
+                  color: _isHovered
+                      ? Colors.white.withValues(alpha: 0.16)
+                      : Colors.transparent,
+                  width: 1.0,
+                ),
+                boxShadow: _isHovered
+                    ? [
+                        BoxShadow(
+                          color: Colors.white.withValues(alpha: 0.04),
+                          blurRadius: 10,
+                        ),
+                        BoxShadow(
+                          color: AppColors.primary.withValues(alpha: 0.12),
+                          blurRadius: 14,
+                        ),
+                      ]
+                    : null,
               ),
-              boxShadow: _isHovered
-                  ? [
-                      BoxShadow(
-                        color: Colors.white.withValues(alpha: 0.04),
-                        blurRadius: 10,
-                      ),
-                      BoxShadow(
-                        color: AppColors.primary.withValues(alpha: 0.12),
-                        blurRadius: 14,
-                      ),
-                    ]
-                  : null,
-            ),
-            child: Text(
-              'Sign In',
-              style: TextStyle(
-                color: _isHovered ? Colors.white : const Color(0xFFCBD5E1),
-                fontSize: 14.5,
-                fontWeight: _isHovered ? FontWeight.w700 : FontWeight.w600,
-                letterSpacing: -0.1,
+              child: Text(
+                'Sign In',
+                style: TextStyle(
+                  color: _isHovered ? Colors.white : const Color(0xFFCBD5E1),
+                  fontSize: 14.5,
+                  fontWeight: _isHovered ? FontWeight.w700 : FontWeight.w600,
+                  letterSpacing: -0.1,
+                ),
               ),
             ),
           ),
@@ -411,85 +446,89 @@ class _NavbarGradientActionPillState extends State<_NavbarGradientActionPill>
 
   @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      onEnter: (_) {
-        setState(() => _isHovered = true);
-        _shimmerController.repeat();
-      },
-      onExit: (_) {
-        setState(() => _isHovered = false);
-        _shimmerController.stop();
-        _shimmerController.reset();
-      },
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: widget.onTap,
-        child: AnimatedScale(
-          scale: _isHovered ? 1.03 : 1.0,
-          duration: const Duration(milliseconds: 180),
-          curve: Curves.easeOutCubic,
-          child: Container(
-            clipBehavior: Clip.antiAlias,
-            decoration: BoxDecoration(
-              gradient: AppColors.primaryGradient,
-              borderRadius: BorderRadius.circular(9999),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primary.withValues(
-                    alpha: _isHovered ? 0.55 : 0.35,
-                  ),
-                  blurRadius: _isHovered ? 24 : 16,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: widget.isMobile ? 14 : 20,
-                    vertical: widget.isMobile ? 8 : 9.5,
-                  ),
-                  child: Text(
-                    widget.text,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: widget.isMobile ? 12.5 : 14.5,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.2,
+    return SelectionContainer.disabled(
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        opaque: true,
+        onEnter: (_) {
+          setState(() => _isHovered = true);
+          _shimmerController.repeat();
+        },
+        onExit: (_) {
+          setState(() => _isHovered = false);
+          _shimmerController.stop();
+          _shimmerController.reset();
+        },
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: widget.onTap,
+          child: AnimatedScale(
+            scale: _isHovered ? 1.03 : 1.0,
+            duration: const Duration(milliseconds: 180),
+            curve: Curves.easeOutCubic,
+            child: Container(
+              clipBehavior: Clip.antiAlias,
+              decoration: BoxDecoration(
+                gradient: AppColors.primaryGradient,
+                borderRadius: BorderRadius.circular(9999),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withValues(
+                      alpha: _isHovered ? 0.55 : 0.35,
                     ),
+                    blurRadius: _isHovered ? 24 : 16,
+                    offset: const Offset(0, 4),
                   ),
-                ),
-                if (_isHovered)
-                  Positioned.fill(
-                    child: IgnorePointer(
-                      child: AnimatedBuilder(
-                        animation: _shimmerController,
-                        builder: (context, _) {
-                          return FractionallySizedBox(
-                            widthFactor: 0.45,
-                            alignment: Alignment(
-                              -1.5 + _shimmerController.value * 3.0,
-                              0,
-                            ),
-                            child: DecoratedBox(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    Colors.white.withValues(alpha: 0.0),
-                                    Colors.white.withValues(alpha: 0.35),
-                                    Colors.white.withValues(alpha: 0.0),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          );
-                        },
+                ],
+              ),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: widget.isMobile ? 14 : 20,
+                      vertical: widget.isMobile ? 8 : 9.5,
+                    ),
+                    child: Text(
+                      widget.text,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: widget.isMobile ? 12.5 : 14.5,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.2,
                       ),
                     ),
                   ),
-              ],
+                  if (_isHovered)
+                    Positioned.fill(
+                      child: IgnorePointer(
+                        child: AnimatedBuilder(
+                          animation: _shimmerController,
+                          builder: (context, _) {
+                            return FractionallySizedBox(
+                              widthFactor: 0.45,
+                              alignment: Alignment(
+                                -1.5 + _shimmerController.value * 3.0,
+                                0,
+                              ),
+                              child: DecoratedBox(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      Colors.white.withValues(alpha: 0.0),
+                                      Colors.white.withValues(alpha: 0.35),
+                                      Colors.white.withValues(alpha: 0.0),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
         ),
@@ -523,75 +562,80 @@ class _MobileMenuButtonState extends State<_MobileMenuButton> {
           splashColor: Colors.transparent,
           highlightColor: Colors.transparent,
         ),
-        child: PopupMenuButton<String>(
-          onOpened: () => setState(() => _isOpen = true),
-          onCanceled: () => setState(() => _isOpen = false),
-          onSelected: (value) {
-            setState(() => _isOpen = false);
-            if (value == 'workspace') {
-              context.go('/learning');
-            } else if (value == 'signin') {
-              context.go('/auth');
-            } else {
-              widget.onNavTap?.call(value);
-            }
-          },
-          icon: Icon(
-            _isOpen ? Icons.close : Icons.menu,
-            color: const Color(0xFFEEF0F6),
-            size: 20,
-          ),
-          color: Colors.transparent,
-          elevation: 0,
-          offset: const Offset(0, 54),
-          padding: EdgeInsets.zero,
-          itemBuilder: (context) => [
-            PopupMenuItem(
-              padding: EdgeInsets.zero,
-              enabled: false,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                  child: Container(
-                    width: 220,
-                    decoration: BoxDecoration(
-                      color: const Color(0xEE090A14),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.12),
+        child: MouseRegion(
+          cursor: SystemMouseCursors.click,
+          opaque: true,
+          child: PopupMenuButton<String>(
+            tooltip: 'Navigation Menu',
+            onOpened: () => setState(() => _isOpen = true),
+            onCanceled: () => setState(() => _isOpen = false),
+            onSelected: (value) {
+              setState(() => _isOpen = false);
+              if (value == 'workspace') {
+                context.go('/learning');
+              } else if (value == 'signin') {
+                context.go('/auth');
+              } else {
+                widget.onNavTap?.call(value);
+              }
+            },
+            icon: Icon(
+              _isOpen ? Icons.close : Icons.menu,
+              color: const Color(0xFFEEF0F6),
+              size: 20,
+            ),
+            color: Colors.transparent,
+            elevation: 0,
+            offset: const Offset(0, 54),
+            padding: EdgeInsets.zero,
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                padding: EdgeInsets.zero,
+                enabled: false,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                    child: Container(
+                      width: 220,
+                      decoration: BoxDecoration(
+                        color: const Color(0xEE090A14),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.12),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.6),
+                            blurRadius: 30,
+                            offset: const Offset(0, 10),
+                          ),
+                        ],
                       ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.6),
-                          blurRadius: 30,
-                          offset: const Offset(0, 10),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        _buildMenuItem('Workspace Preview', 'preview'),
-                        _buildMenuItem('Learning Modes', 'modes'),
-                        _buildMenuItem('Why Us vs Chatbots', 'comparison'),
-                        _buildMenuItem('AI Agents', 'agents'),
-                        _buildMenuItem('Pricing', 'pricing'),
-                        _buildMenuItem('FAQ', 'faq'),
-                        Divider(
-                          color: Colors.white.withValues(alpha: 0.10),
-                          height: 1,
-                        ),
-                        widget.isAuthenticated
-                            ? _buildMenuItem('Open Workspace', 'workspace')
-                            : _buildMenuItem('Sign In', 'signin'),
-                      ],
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _buildMenuItem('Workspace Preview', 'preview'),
+                          _buildMenuItem('Learning Modes', 'modes'),
+                          _buildMenuItem('Why Us vs Chatbots', 'comparison'),
+                          _buildMenuItem('AI Agents', 'agents'),
+                          _buildMenuItem('Pricing', 'pricing'),
+                          _buildMenuItem('FAQ', 'faq'),
+                          Divider(
+                            color: Colors.white.withValues(alpha: 0.10),
+                            height: 1,
+                          ),
+                          widget.isAuthenticated
+                              ? _buildMenuItem('Open Workspace', 'workspace')
+                              : _buildMenuItem('Sign In', 'signin'),
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -622,31 +666,36 @@ class _MobileMenuItemState extends State<_MobileMenuItem> {
 
   @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isActive = true),
-      onExit: (_) => setState(() => _isActive = false),
-      child: GestureDetector(
-        onTapDown: (_) => setState(() => _isActive = true),
-        onTapUp: (_) => setState(() => _isActive = false),
-        onTapCancel: () => setState(() => _isActive = false),
-        onTap: widget.onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-          decoration: BoxDecoration(
-            color: _isActive
-                ? Colors.white.withValues(alpha: 0.08)
-                : Colors.transparent,
-          ),
-          child: Text(
-            widget.title,
-            style: TextStyle(
+    return SelectionContainer.disabled(
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        opaque: true,
+        onEnter: (_) => setState(() => _isActive = true),
+        onExit: (_) => setState(() => _isActive = false),
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTapDown: (_) => setState(() => _isActive = true),
+          onTapUp: (_) => setState(() => _isActive = false),
+          onTapCancel: () => setState(() => _isActive = false),
+          onTap: widget.onTap,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+            decoration: BoxDecoration(
               color: _isActive
-                  ? const Color(0xFFEEF0F6)
-                  : const Color(0xFFB9BECF),
-              fontSize: 15.5,
-              fontWeight: FontWeight.w600,
+                  ? Colors.white.withValues(alpha: 0.08)
+                  : Colors.transparent,
+            ),
+            child: Text(
+              widget.title,
+              style: TextStyle(
+                color: _isActive
+                    ? const Color(0xFFEEF0F6)
+                    : const Color(0xFFB9BECF),
+                fontSize: 15.5,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ),

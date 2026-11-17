@@ -10,6 +10,7 @@ import 'academic_papers.dart';
 import 'knowledge_check_quiz.dart';
 import 'keep_alive_wrapper.dart';
 import 'video_curator_shimmer.dart';
+import '../../../../widgets/gradient_button.dart';
 
 /// Tabbed resource panel with 3 tabs: Videos, Papers, Quiz.
 /// Includes a pinned quiz gating bar at the bottom.
@@ -153,6 +154,12 @@ class _LearningResourcesPanelState extends ConsumerState<LearningResourcesPanel>
 
   bool _isQuizCompleted(dynamic step) {
     if (step == null) return false;
+    final sessionId = widget.session.sessionId?.toString() ?? '';
+    final stepIdx = (step.index is int) ? step.index as int : widget.stepIndex;
+    if (QuizSubmissionStore.hasSubmission(sessionId, stepIdx) ||
+        QuizSubmissionStore.hasSubmission(sessionId, widget.stepIndex)) {
+      return true;
+    }
     if (step.quizScore != null) return true;
     if (step.userAnswers != null && step.userAnswers is Map) {
       final map = step.userAnswers as Map;
@@ -174,14 +181,25 @@ class _LearningResourcesPanelState extends ConsumerState<LearningResourcesPanel>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
-    _tabController.addListener(_onTabControllerChanged);
-
-    // Check if quiz is already completed
     final step = widget.currentStep;
-    if (_isQuizCompleted(step)) {
+    final bool isCompleted = _isQuizCompleted(step);
+    if (isCompleted) {
       _quizSubmitted = true;
     }
+    final bool isCurrentMilestone =
+        widget.stepIndex == widget.session.currentStepIndex;
+    final bool isStepNotComplete =
+        widget.currentStep != null && widget.currentStep.status != 'complete';
+    final bool shouldOpenQuiz =
+        isCompleted && (isStepNotComplete || isCurrentMilestone);
+    final int initialIndex = shouldOpenQuiz ? 2 : 0;
+    _activeTabIndex = initialIndex;
+    _tabController = TabController(
+      length: 3,
+      vsync: this,
+      initialIndex: initialIndex,
+    );
+    _tabController.addListener(_onTabControllerChanged);
   }
 
   void _onTabControllerChanged() {
@@ -208,12 +226,22 @@ class _LearningResourcesPanelState extends ConsumerState<LearningResourcesPanel>
         oldWidget.currentStep != widget.currentStep ||
         sessionChanged) {
       final step = widget.currentStep;
-      _quizSubmitted = _isQuizCompleted(step);
-      // Reset to first tab on step change or session switch
+      final bool isCompleted = _isQuizCompleted(step);
+      _quizSubmitted = isCompleted;
+      // Adjust tab on step change or session switch:
+      // If returning to the current milestone whose quiz is completed, show the Quiz tab
       if (oldWidget.stepIndex != widget.stepIndex || sessionChanged) {
-        _tabController.animateTo(0);
+        final bool isCurrentMilestone =
+            widget.stepIndex == widget.session.currentStepIndex;
+        final bool isStepNotComplete =
+            widget.currentStep != null &&
+            widget.currentStep.status != 'complete';
+        final bool shouldOpenQuiz =
+            isCompleted && (isStepNotComplete || isCurrentMilestone);
+        final int targetIndex = shouldOpenQuiz ? 2 : 0;
+        _tabController.animateTo(targetIndex);
         setState(() {
-          _activeTabIndex = 0;
+          _activeTabIndex = targetIndex;
         });
       }
     } else if (!_quizSubmitted && _isQuizCompleted(widget.currentStep)) {
@@ -430,7 +458,7 @@ class _LearningResourcesPanelState extends ConsumerState<LearningResourcesPanel>
       controller: _quizScrollController,
       padding: const EdgeInsets.all(20),
       child: KnowledgeCheckQuiz(
-        key: ValueKey('quiz_${widget.session.sessionId}_step_${step.index}'),
+        key: ValueKey('quiz_${widget.session.sessionId}_step_$stepIdx'),
         quiz: step.quiz,
         stepIndex: stepIdx,
         onNextStep: widget.onNextStep,
@@ -795,125 +823,69 @@ class _LearningResourcesPanelState extends ConsumerState<LearningResourcesPanel>
           const SizedBox(width: 12),
           // Right Button or Completion Badge
           if (isLastStep && isCurrentStepComplete)
-            MouseRegion(
-              cursor: SystemMouseCursors.click,
-              child: Tooltip(
-                message: 'View Completed Journey Summary & Stats',
-                child: GestureDetector(
-                  onTap: () {
-                    ref
-                        .read(activeSessionProvider.notifier)
-                        .showJourneySummary();
-                  },
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 7,
-                    ),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [Colors.amber.shade600, Colors.orange.shade800],
-                      ),
-                      borderRadius: BorderRadius.circular(8),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.amber.withValues(alpha: 0.35),
-                          blurRadius: 8,
-                          offset: const Offset(0, 1),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.emoji_events_rounded,
-                          size: 14,
-                          color: Colors.white,
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          'Journey Completed 🎉',
-                          style: AppTextStyles.badge.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 11,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+            Tooltip(
+              message: 'View Completed Journey Summary & Stats',
+              child: GradientButton(
+                text: 'Journey Completed 🎉',
+                icon: Icons.emoji_events_rounded,
+                iconFirst: true,
+                height: 34,
+                borderRadius: BorderRadius.circular(8),
+                gradient: LinearGradient(
+                  colors: [Colors.amber.shade600, Colors.orange.shade800],
                 ),
+                glowColor: Colors.amber,
+                textStyle: AppTextStyles.badge.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 11,
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                onPressed: () {
+                  ref
+                      .read(activeSessionProvider.notifier)
+                      .showJourneySummary();
+                },
               ),
             )
           else
-            MouseRegion(
-              cursor: SystemMouseCursors.click,
-              child: Tooltip(
-                message: isLastStep
-                    ? (isQuizDone
-                          ? 'Finish journey and claim bonus XP'
-                          : 'Complete Knowledge Check quiz first to finish journey')
-                    : (isQuizDone
-                          ? 'Proceed to next step'
-                          : 'Complete Knowledge Check quiz first to advance'),
-                child: GestureDetector(
-                  onTap: () => _handleNextStep(context, isQuizDone),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 7,
-                    ),
-                    decoration: BoxDecoration(
-                      gradient: isLastStep
-                          ? LinearGradient(
-                              colors: [
-                                Colors.amber.shade600,
-                                Colors.orange.shade800,
-                              ],
-                            )
-                          : LinearGradient(
-                              colors: [
-                                AppColors.accentGreen,
-                                AppColors.greenDeep,
-                              ],
-                            ),
-                      borderRadius: BorderRadius.circular(8),
-                      boxShadow: [
-                        BoxShadow(
-                          color:
-                              (isLastStep
-                                      ? Colors.amber
-                                      : AppColors.accentGreen)
-                                  .withValues(alpha: 0.35),
-                          blurRadius: 8,
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          isLastStep ? 'Complete Journey' : 'Next Step',
-                          style: AppTextStyles.badge.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 11,
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        Icon(
-                          isLastStep
-                              ? Icons.emoji_events_rounded
-                              : Icons.arrow_forward_rounded,
-                          size: 12,
-                          color: Colors.white,
-                        ),
-                      ],
-                    ),
-                  ),
+            Tooltip(
+              message: isLastStep
+                  ? (isQuizDone
+                        ? 'Finish journey and claim bonus XP'
+                        : 'Complete Knowledge Check quiz first to finish journey')
+                  : (isQuizDone
+                        ? 'Proceed to next step'
+                        : 'Complete Knowledge Check quiz first to advance'),
+              child: GradientButton(
+                text: isLastStep ? 'Complete Journey' : 'Next Step',
+                icon: isLastStep
+                    ? Icons.emoji_events_rounded
+                    : Icons.arrow_forward_rounded,
+                iconFirst: false,
+                height: 34,
+                borderRadius: BorderRadius.circular(8),
+                gradient: isLastStep
+                    ? LinearGradient(
+                        colors: [
+                          Colors.amber.shade600,
+                          Colors.orange.shade800,
+                        ],
+                      )
+                    : LinearGradient(
+                        colors: [
+                          AppColors.accentGreen,
+                          AppColors.greenDeep,
+                        ],
+                      ),
+                glowColor: isLastStep ? Colors.amber : AppColors.accentGreen,
+                textStyle: AppTextStyles.badge.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 11,
                 ),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                onPressed: () => _handleNextStep(context, isQuizDone),
               ),
             ),
         ],
@@ -953,42 +925,21 @@ class _LearningResourcesPanelState extends ConsumerState<LearningResourcesPanel>
               ),
             ),
           ),
-          GestureDetector(
-            onTap: () async {
+          GradientButton(
+            text: 'Next Step',
+            icon: Icons.arrow_forward_rounded,
+            iconFirst: false,
+            height: 32,
+            borderRadius: BorderRadius.circular(8),
+            textStyle: AppTextStyles.badge.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+              fontSize: 11,
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            onPressed: () async {
               await widget.onNextStep();
             },
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                gradient: AppColors.primaryGradient,
-                borderRadius: BorderRadius.circular(8),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.3),
-                    blurRadius: 8,
-                  ),
-                ],
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Next Step',
-                    style: AppTextStyles.badge.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 11,
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  const Icon(
-                    Icons.arrow_forward_rounded,
-                    size: 12,
-                    color: Colors.white,
-                  ),
-                ],
-              ),
-            ),
           ),
         ],
       ),

@@ -2,11 +2,11 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../data/models/learning/session_model.dart';
-import '../../../../../core/providers/learning_provider.dart';
 import '../../../../../core/providers/active_session_provider.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/text_styles.dart';
 import '../export/export_session_modal.dart';
+import 'delete_session_dialog.dart';
 
 class LearningHistoryItem extends ConsumerStatefulWidget {
   final SessionModel session;
@@ -21,7 +21,8 @@ class LearningHistoryItem extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<LearningHistoryItem> createState() => _LearningHistoryItemState();
+  ConsumerState<LearningHistoryItem> createState() =>
+      _LearningHistoryItemState();
 }
 
 class _LearningHistoryItemState extends ConsumerState<LearningHistoryItem> {
@@ -47,8 +48,9 @@ class _LearningHistoryItemState extends ConsumerState<LearningHistoryItem> {
             : AppColors.primary.withValues(alpha: 0.08);
 
         // Dark primary blue in light mode for crisp contrast against light blue hover background
-        final Color darkPrimary =
-            isDark ? AppColors.textPrimary : const Color(0xFF1D4ED8);
+        final Color darkPrimary = isDark
+            ? AppColors.textPrimary
+            : const Color(0xFF1D4ED8);
 
         final Color activeHoverColor = textColor ?? darkPrimary;
 
@@ -57,7 +59,7 @@ class _LearningHistoryItemState extends ConsumerState<LearningHistoryItem> {
         final Color targetTextColor = isHovered
             ? activeHoverColor
             : (textColor ??
-                (isDark ? const Color(0xFFCBD5E1) : const Color(0xFF334155)));
+                  (isDark ? const Color(0xFFCBD5E1) : const Color(0xFF334155)));
 
         return MouseRegion(
           onEnter: (_) => setActionState(() => isHovered = true),
@@ -90,7 +92,9 @@ class _LearningHistoryItemState extends ConsumerState<LearningHistoryItem> {
                       curve: Curves.easeOut,
                       style: AppTextStyles.label.copyWith(
                         color: targetTextColor,
-                        fontWeight: isHovered ? FontWeight.w600 : FontWeight.w500,
+                        fontWeight: isHovered
+                            ? FontWeight.w600
+                            : FontWeight.w500,
                       ),
                       child: Text(
                         label,
@@ -109,7 +113,8 @@ class _LearningHistoryItemState extends ConsumerState<LearningHistoryItem> {
   }
 
   void _showActionMenu() {
-    final RenderBox renderBox = _menuKey.currentContext!.findRenderObject() as RenderBox;
+    final RenderBox renderBox =
+        _menuKey.currentContext!.findRenderObject() as RenderBox;
     final size = renderBox.size;
     final offset = renderBox.localToGlobal(Offset.zero);
     final bool isDark = AppColors.isDark;
@@ -137,104 +142,119 @@ class _LearningHistoryItemState extends ConsumerState<LearningHistoryItem> {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(12),
               child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-              child: Container(
-                width: 145,
-                padding: const EdgeInsets.symmetric(vertical: 6),
-                decoration: BoxDecoration(
-                  color: AppColors.popoverBackground,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: AppColors.glassBorder,
-                    width: 1.0,
+                filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+                child: Container(
+                  width: 145,
+                  padding: const EdgeInsets.symmetric(vertical: 6),
+                  decoration: BoxDecoration(
+                    color: AppColors.popoverBackground,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: AppColors.glassBorder,
+                      width: 1.0,
+                    ),
+                    boxShadow: isDark
+                        ? [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.4),
+                              blurRadius: 20,
+                              offset: const Offset(0, 6),
+                            ),
+                          ]
+                        : const [
+                            BoxShadow(
+                              color: Color(0x18000000),
+                              blurRadius: 20,
+                              offset: Offset(0, 8),
+                              spreadRadius: 0,
+                            ),
+                            BoxShadow(
+                              color: Color(0x0A000000),
+                              blurRadius: 6,
+                              offset: Offset(0, 2),
+                              spreadRadius: 0,
+                            ),
+                          ],
                   ),
-                  boxShadow: isDark
-                      ? [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.4),
-                            blurRadius: 20,
-                            offset: const Offset(0, 6),
-                          ),
-                        ]
-                      : const [
-                          BoxShadow(
-                            color: Color(0x18000000),
-                            blurRadius: 20,
-                            offset: Offset(0, 8),
-                            spreadRadius: 0,
-                          ),
-                          BoxShadow(
-                            color: Color(0x0A000000),
-                            blurRadius: 6,
-                            offset: Offset(0, 2),
-                            spreadRadius: 0,
-                          ),
-                        ],
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _buildPopoverAction(
-                      context: context,
-                      label: 'Export',
-                      icon: Icons.ios_share_rounded,
-                      iconColor: isDark ? AppColors.blueSoft : AppColors.primary,
-                      onTap: () {
-                        final total = widget.session.totalSteps ?? widget.session.stepsCompleted;
-                        final bool isCompleted = total > 0 && widget.session.stepsCompleted >= total;
-                        ExportSessionModal.show(
-                          context,
-                          sessionId: widget.session.sessionId,
-                          topic: widget.session.topic,
-                          totalSteps: total,
-                          stepsCompleted: widget.session.stepsCompleted,
-                          xpEarned: widget.session.xpEarned,
-                          isCompleted: isCompleted,
-                        );
-                      },
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      child: Divider(
-                        color: isDark
-                            ? AppColors.glassBorder
-                            : const Color(0xFFF1F5F9),
-                        height: 1,
-                        thickness: 1,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _buildPopoverAction(
+                        context: context,
+                        label: 'Export',
+                        icon: Icons.ios_share_rounded,
+                        iconColor: isDark
+                            ? AppColors.blueSoft
+                            : AppColors.primary,
+                        onTap: () {
+                          final total =
+                              widget.session.totalSteps ??
+                              widget.session.stepsCompleted;
+                          final bool isCompleted =
+                              total > 0 &&
+                              widget.session.stepsCompleted >= total;
+                          ExportSessionModal.show(
+                            context,
+                            sessionId: widget.session.sessionId,
+                            topic: widget.session.topic,
+                            totalSteps: total,
+                            stepsCompleted: widget.session.stepsCompleted,
+                            xpEarned: widget.session.xpEarned,
+                            isCompleted: isCompleted,
+                          );
+                        },
                       ),
-                    ),
-                    _buildPopoverAction(
-                      context: context,
-                      label: 'Delete',
-                      icon: Icons.delete_outline_rounded,
-                      iconColor: AppColors.rose,
-                      textColor: AppColors.rose,
-                      onTap: () {
-                        ref.read(sessionsProvider.notifier).deleteSession(widget.session.sessionId);
-                      },
-                    ),
-                  ],
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        child: Divider(
+                          color: isDark
+                              ? AppColors.glassBorder
+                              : const Color(0xFFF1F5F9),
+                          height: 1,
+                          thickness: 1,
+                        ),
+                      ),
+                      _buildPopoverAction(
+                        context: context,
+                        label: 'Delete',
+                        icon: Icons.delete_outline_rounded,
+                        iconColor: AppColors.rose,
+                        textColor: AppColors.rose,
+                        onTap: () {
+                          DeleteSessionConfirmationDialog.show(
+                            context,
+                            session: widget.session,
+                          );
+                        },
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
         ),
-      ),
-    ],
+      ],
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final activeSessionId = ref.watch(activeSessionProvider).session?.sessionId;
-    final bool isActive = activeSessionId != null && activeSessionId == widget.session.sessionId;
+    final bool isActive =
+        activeSessionId != null && activeSessionId == widget.session.sessionId;
 
     if (!widget.expanded) {
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 8.0),
         child: InkWell(
           onTap: () {
-            ref.read(activeSessionProvider.notifier).loadSession(widget.session.sessionId);
+            ref
+                .read(activeSessionProvider.notifier)
+                .loadSession(widget.session.sessionId);
             // Close drawer if on mobile
             if (Scaffold.maybeOf(context)?.hasDrawer ?? false) {
               Scaffold.of(context).closeDrawer();
@@ -282,7 +302,9 @@ class _LearningHistoryItemState extends ConsumerState<LearningHistoryItem> {
         onExit: (_) => setState(() => _isHovered = false),
         child: InkWell(
           onTap: () {
-            ref.read(activeSessionProvider.notifier).loadSession(widget.session.sessionId);
+            ref
+                .read(activeSessionProvider.notifier)
+                .loadSession(widget.session.sessionId);
             // Close drawer if on mobile
             if (Scaffold.maybeOf(context)?.hasDrawer ?? false) {
               Scaffold.of(context).closeDrawer();
@@ -295,11 +317,15 @@ class _LearningHistoryItemState extends ConsumerState<LearningHistoryItem> {
               borderRadius: BorderRadius.circular(8),
               color: isActive
                   ? AppColors.primary.withValues(alpha: 0.14)
-                  : (_isHovered ? AppColors.primary.withValues(alpha: 0.05) : Colors.transparent),
+                  : (_isHovered
+                        ? AppColors.primary.withValues(alpha: 0.05)
+                        : Colors.transparent),
               border: Border.all(
                 color: isActive
                     ? AppColors.primary.withValues(alpha: 0.38)
-                    : (_isHovered ? AppColors.primary.withValues(alpha: 0.1) : Colors.transparent),
+                    : (_isHovered
+                          ? AppColors.primary.withValues(alpha: 0.1)
+                          : Colors.transparent),
               ),
               boxShadow: isActive
                   ? [
@@ -318,7 +344,9 @@ class _LearningHistoryItemState extends ConsumerState<LearningHistoryItem> {
                   isActive ? Icons.chat_bubble : Icons.chat_bubble_outline,
                   color: isActive
                       ? AppColors.primary
-                      : (_isHovered ? AppColors.primary.withValues(alpha: 0.8) : AppColors.textMuted.withValues(alpha: 0.6)),
+                      : (_isHovered
+                            ? AppColors.primary.withValues(alpha: 0.8)
+                            : AppColors.textMuted.withValues(alpha: 0.6)),
                   size: 16,
                 ),
                 const SizedBox(width: 12),
@@ -329,8 +357,12 @@ class _LearningHistoryItemState extends ConsumerState<LearningHistoryItem> {
                       Text(
                         widget.session.topic,
                         style: AppTextStyles.label.copyWith(
-                          color: (isActive || _isHovered) ? AppColors.textPrimary : AppColors.textSecondary,
-                          fontWeight: (isActive || _isHovered) ? FontWeight.w600 : FontWeight.normal,
+                          color: (isActive || _isHovered)
+                              ? AppColors.textPrimary
+                              : AppColors.textSecondary,
+                          fontWeight: (isActive || _isHovered)
+                              ? FontWeight.w600
+                              : FontWeight.normal,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -339,11 +371,16 @@ class _LearningHistoryItemState extends ConsumerState<LearningHistoryItem> {
                       Row(
                         children: [
                           _buildBadge(
-                              Icons.check_circle_outline,
-                              '${widget.session.stepsCompleted}/${widget.session.totalSteps ?? widget.session.stepsCompleted} Steps',
-                              AppColors.accentGreen),
+                            Icons.check_circle_outline,
+                            '${widget.session.stepsCompleted}/${widget.session.totalSteps ?? widget.session.stepsCompleted} Steps',
+                            AppColors.accentGreen,
+                          ),
                           const SizedBox(width: 8),
-                          _buildBadge(Icons.star_outline, '${widget.session.xpEarned} XP', AppColors.accentAmber),
+                          _buildBadge(
+                            Icons.star_outline,
+                            '${widget.session.xpEarned} XP',
+                            AppColors.accentAmber,
+                          ),
                         ],
                       ),
                     ],
@@ -364,18 +401,22 @@ class _LearningHistoryItemState extends ConsumerState<LearningHistoryItem> {
                         decoration: BoxDecoration(
                           color: _isDotsHovered
                               ? (AppColors.isDark
-                                  ? Colors.white.withValues(alpha: 0.1)
-                                  : AppColors.primary.withValues(alpha: 0.1))
+                                    ? Colors.white.withValues(alpha: 0.1)
+                                    : AppColors.primary.withValues(alpha: 0.1))
                               : Colors.transparent,
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Icon(
                           Icons.more_vert_rounded,
                           color: _isDotsHovered
-                              ? (AppColors.isDark ? AppColors.textPrimary : const Color(0xFF1D4ED8))
+                              ? (AppColors.isDark
+                                    ? AppColors.textPrimary
+                                    : const Color(0xFF1D4ED8))
                               : ((isActive || _isHovered)
-                                  ? AppColors.textSecondary
-                                  : AppColors.textMuted.withValues(alpha: 0.4)),
+                                    ? AppColors.textSecondary
+                                    : AppColors.textMuted.withValues(
+                                        alpha: 0.4,
+                                      )),
                           size: 16,
                         ),
                       ),
@@ -404,10 +445,7 @@ class _LearningHistoryItemState extends ConsumerState<LearningHistoryItem> {
           const SizedBox(width: 4),
           Text(
             text,
-            style: AppTextStyles.badge.copyWith(
-              color: color,
-              fontSize: 9,
-            ),
+            style: AppTextStyles.badge.copyWith(color: color, fontSize: 9),
           ),
         ],
       ),

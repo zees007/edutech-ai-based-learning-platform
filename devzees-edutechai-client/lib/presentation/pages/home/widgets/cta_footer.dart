@@ -283,17 +283,20 @@ class _FooterWhiteActionPillState extends State<_FooterWhiteActionPill>
 
   @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      onEnter: (_) {
-        setState(() => _isHovered = true);
-        _shimmerController.forward(from: 0);
-      },
-      onExit: (_) {
-        setState(() => _isHovered = false);
-        _shimmerController.stop();
-      },
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
+    return SelectionContainer.disabled(
+      child: MouseRegion(
+        onEnter: (_) {
+          setState(() => _isHovered = true);
+          _shimmerController.forward(from: 0);
+        },
+        onExit: (_) {
+          setState(() => _isHovered = false);
+          _shimmerController.stop();
+        },
+        cursor: SystemMouseCursors.click,
+        opaque: true,
+        child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
         onTap: widget.onTap,
         child: AnimatedScale(
           scale: _isHovered ? 1.03 : 1.0,
@@ -357,8 +360,9 @@ class _FooterWhiteActionPillState extends State<_FooterWhiteActionPill>
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }
 
 /// Floating sparkle particles around the CTA action button
@@ -471,11 +475,14 @@ class _FooterLinkState extends State<_FooterLink> {
 
   @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
+    return SelectionContainer.disabled(
+      child: MouseRegion(
+        onEnter: (_) => setState(() => _isHovered = true),
+        onExit: (_) => setState(() => _isHovered = false),
+        cursor: SystemMouseCursors.click,
+        opaque: true,
+        child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
         onTap: () {},
         child: Text(
           widget.text,
@@ -487,6 +494,7 @@ class _FooterLinkState extends State<_FooterLink> {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }

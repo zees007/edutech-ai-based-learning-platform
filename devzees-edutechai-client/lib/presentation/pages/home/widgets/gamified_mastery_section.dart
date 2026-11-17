@@ -389,6 +389,7 @@ class _GamifiedMasterySectionState extends State<GamifiedMasterySection> {
               child: Center(
                 child: MouseRegion(
                   cursor: SystemMouseCursors.click,
+                  opaque: true,
                   onEnter: (_) => _onChevronEntered(-1),
                   onExit: (_) => _onChevronExited(-1),
                   child: GestureDetector(
@@ -446,6 +447,7 @@ class _GamifiedMasterySectionState extends State<GamifiedMasterySection> {
               child: Center(
                 child: MouseRegion(
                   cursor: SystemMouseCursors.click,
+                  opaque: true,
                   onEnter: (_) => _onChevronEntered(1),
                   onExit: (_) => _onChevronExited(1),
                   child: GestureDetector(
@@ -592,9 +594,11 @@ class _HighlightableFeatureCardState extends State<_HighlightableFeatureCard> {
 
     return MouseRegion(
       cursor: SystemMouseCursors.click,
+      opaque: true,
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
       child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
         onTap: widget.onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),

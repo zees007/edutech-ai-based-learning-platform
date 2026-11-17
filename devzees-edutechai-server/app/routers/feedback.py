@@ -46,8 +46,10 @@ AVATAR_PALETTE = [
 ]
 
 
-def _pick_avatar_color(seed: str) -> str:
-    """Deterministically select an avatar color based on user identity."""
+def _pick_avatar_color(seed: str, index: int | None = None) -> str:
+    """Select a vibrant avatar color from the palette, cycling cleanly if index is provided."""
+    if index is not None:
+        return AVATAR_PALETTE[index % len(AVATAR_PALETTE)]
     idx = int(hashlib.md5(seed.encode("utf-8")).hexdigest(), 16) % len(AVATAR_PALETTE)
     return AVATAR_PALETTE[idx]
 
@@ -184,10 +186,10 @@ async def get_public_featured_feedback(
     rows = res.all()
 
     result: list[FeedbackPublicResponse] = []
-    for feedback, user in rows:
+    for i, (feedback, user) in enumerate(rows):
         name = f"{user.first_name} {user.last_name}"
         initial = f"{user.first_name[0]}{user.last_name[0]}".upper() if user.first_name and user.last_name else "ET"
-        avatar_color = _pick_avatar_color(f"{user.id}-{name}")
+        avatar_color = _pick_avatar_color(feedback.feedback_id, index=i)
 
         result.append(
             FeedbackPublicResponse(

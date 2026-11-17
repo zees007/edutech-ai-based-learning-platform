@@ -5,12 +5,17 @@ import 'package:devzees_edutechai_client/core/theme/text_styles.dart';
 /// A modern kinetic CTA button with magnetic cursor pull and specular shimmer sweep.
 class GradientButton extends StatefulWidget {
   final String text;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
   final bool isLoading;
   final IconData? icon;
   final bool iconFirst;
   final double? width;
   final double height;
+  final Gradient? gradient;
+  final BorderRadius? borderRadius;
+  final TextStyle? textStyle;
+  final EdgeInsetsGeometry? padding;
+  final Color? glowColor;
 
   const GradientButton({
     super.key,
@@ -21,6 +26,11 @@ class GradientButton extends StatefulWidget {
     this.iconFirst = false,
     this.width,
     this.height = 48.0,
+    this.gradient,
+    this.borderRadius,
+    this.textStyle,
+    this.padding,
+    this.glowColor,
   });
 
   @override
@@ -83,8 +93,14 @@ class _GradientButtonState extends State<GradientButton>
 
   @override
   Widget build(BuildContext context) {
+    final bool isDisabled = widget.isLoading || widget.onPressed == null;
+    final BorderRadius effectiveRadius =
+        widget.borderRadius ?? BorderRadius.circular(24);
+    final Gradient effectiveGradient =
+        widget.gradient ?? AppColors.primaryGradient;
+
     final Widget buttonContent = Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      padding: widget.padding ?? const EdgeInsets.symmetric(horizontal: 16.0),
       child: widget.isLoading
           ? const SizedBox(
               width: 20,
@@ -117,11 +133,13 @@ class _GradientButtonState extends State<GradientButton>
                     widget.text,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: AppTextStyles.button.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.3,
-                    ),
+                    style:
+                        widget.textStyle ??
+                        AppTextStyles.button.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.3,
+                        ),
                   ),
                 ),
                 if (widget.icon != null && !widget.iconFirst) ...[
@@ -143,35 +161,38 @@ class _GradientButtonState extends State<GradientButton>
     );
 
     return MouseRegion(
-      onHover: _onHover,
-      onExit: _onExit,
-      cursor: widget.isLoading
-          ? SystemMouseCursors.basic
-          : SystemMouseCursors.click,
+      onHover: isDisabled ? null : _onHover,
+      onExit: isDisabled ? null : _onExit,
+      hitTestBehavior: HitTestBehavior.opaque,
+      cursor: isDisabled ? SystemMouseCursors.basic : SystemMouseCursors.click,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
         curve: Curves.easeOutCubic,
-        transform: Matrix4.translationValues(_magneticX, _magneticY, 0.0),
+        transform: Matrix4.translationValues(
+          isDisabled ? 0.0 : _magneticX,
+          isDisabled ? 0.0 : _magneticY,
+          0.0,
+        ),
         child: AnimatedScale(
-          scale: _isHovered ? 1.025 : 1.0,
+          scale: _isHovered && !isDisabled ? 1.025 : 1.0,
           duration: const Duration(milliseconds: 200),
           curve: Curves.easeOutCubic,
           child: Container(
             width: widget.width,
             height: widget.height,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(24),
-              gradient: AppColors.primaryGradient,
+              borderRadius: effectiveRadius,
+              gradient: effectiveGradient,
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.accentPink.withValues(
-                    alpha: _isHovered ? 0.65 : 0.35,
+                  color: (widget.glowColor ?? AppColors.accentPink).withValues(
+                    alpha: _isHovered && !isDisabled ? 0.65 : 0.35,
                   ),
-                  blurRadius: _isHovered ? 32 : 20,
-                  spreadRadius: _isHovered ? 2 : 0,
-                  offset: Offset(0, _isHovered ? 6 : 4),
+                  blurRadius: _isHovered && !isDisabled ? 32 : 20,
+                  spreadRadius: _isHovered && !isDisabled ? 2 : 0,
+                  offset: Offset(0, _isHovered && !isDisabled ? 6 : 4),
                 ),
-                if (_isHovered)
+                if (_isHovered && !isDisabled)
                   BoxShadow(
                     color: AppColors.accentCyan.withValues(alpha: 0.45),
                     blurRadius: 18,
@@ -180,7 +201,7 @@ class _GradientButtonState extends State<GradientButton>
               ],
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: effectiveRadius,
               child: Stack(
                 alignment: Alignment.center,
                 children: [
@@ -188,18 +209,26 @@ class _GradientButtonState extends State<GradientButton>
                   Material(
                     color: Colors.transparent,
                     child: InkWell(
-                      borderRadius: BorderRadius.circular(24),
-                      onTap: widget.isLoading ? null : widget.onPressed,
+                      borderRadius: effectiveRadius,
+                      mouseCursor: isDisabled
+                          ? SystemMouseCursors.basic
+                          : SystemMouseCursors.click,
+                      onTap: isDisabled ? null : widget.onPressed,
                       child: SizedBox(
                         width: widget.width,
                         height: widget.height,
-                        child: Center(child: buttonContent),
+                        child: Center(
+                          widthFactor: widget.width == null ? 1.0 : null,
+                          child: SelectionContainer.disabled(
+                            child: buttonContent,
+                          ),
+                        ),
                       ),
                     ),
                   ),
 
                   // Specular Shimmer Sweep
-                  if (_isHovered)
+                  if (_isHovered && !isDisabled)
                     Positioned.fill(
                       child: IgnorePointer(
                         child: AnimatedBuilder(
@@ -208,10 +237,7 @@ class _GradientButtonState extends State<GradientButton>
                             final double value = _shimmerController.value;
                             return FractionallySizedBox(
                               widthFactor: 0.5,
-                              alignment: Alignment(
-                                -2.0 + (value * 4.0),
-                                0.0,
-                              ),
+                              alignment: Alignment(-2.0 + (value * 4.0), 0.0),
                               child: Container(
                                 decoration: BoxDecoration(
                                   gradient: LinearGradient(

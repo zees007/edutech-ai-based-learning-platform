@@ -472,13 +472,17 @@ class _ModesAndLevelsSectionState extends State<ModesAndLevelsSection> {
     final isSelected = _selectedMode == i;
     final Color color = m['color'];
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () => _onModeSelected(i),
-        borderRadius: BorderRadius.circular(9999),
-        splashColor: color.withValues(alpha: 0.20),
-        hoverColor: color.withValues(alpha: 0.08),
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      opaque: true,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _onModeSelected(i),
+          mouseCursor: SystemMouseCursors.click,
+          borderRadius: BorderRadius.circular(9999),
+          splashColor: color.withValues(alpha: 0.20),
+          hoverColor: color.withValues(alpha: 0.08),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           curve: Curves.easeOutCubic,
@@ -531,6 +535,7 @@ class _ModesAndLevelsSectionState extends State<ModesAndLevelsSection> {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }

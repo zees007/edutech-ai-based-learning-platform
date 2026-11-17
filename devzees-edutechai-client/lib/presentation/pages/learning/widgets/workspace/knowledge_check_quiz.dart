@@ -1,51 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../../core/providers/active_session_provider.dart';
+import '../../../../../../core/services/quiz_store.dart';
 import '../../../../../../core/theme/app_colors.dart';
 import '../../../../../../core/theme/text_styles.dart';
 import '../../../../../../data/models/learning/quiz_result.dart';
+import '../../../../widgets/center_toast.dart';
+import '../../../../widgets/gradient_button.dart';
 
-/// In-memory cache for unsubmitted quiz draft answers across tab/step switches.
-class QuizDraftStore {
-  static final Map<String, Map<int, int>> _selectedAnswers = {};
-  static final Map<String, Map<int, String>> _textAnswers = {};
-
-  static String _key(String sessionId, int stepIndex) => '${sessionId}_$stepIndex';
-
-  static Map<int, int>? getSelectedAnswers(String sessionId, int stepIndex) {
-    final key = _key(sessionId, stepIndex);
-    final data = _selectedAnswers[key];
-    return data != null ? Map<int, int>.from(data) : null;
-  }
-
-  static Map<int, String>? getTextAnswers(String sessionId, int stepIndex) {
-    final key = _key(sessionId, stepIndex);
-    final data = _textAnswers[key];
-    return data != null ? Map<int, String>.from(data) : null;
-  }
-
-  static void saveDraft({
-    required String sessionId,
-    required int stepIndex,
-    required Map<int, int> selectedAnswers,
-    required Map<int, String> textAnswers,
-  }) {
-    final key = _key(sessionId, stepIndex);
-    _selectedAnswers[key] = Map<int, int>.from(selectedAnswers);
-    _textAnswers[key] = Map<int, String>.from(textAnswers);
-  }
-
-  static void clearDraft(String sessionId, int stepIndex) {
-    final key = _key(sessionId, stepIndex);
-    _selectedAnswers.remove(key);
-    _textAnswers.remove(key);
-  }
-
-  static void clearAll() {
-    _selectedAnswers.clear();
-    _textAnswers.clear();
-  }
-}
+export '../../../../../../core/services/quiz_store.dart';
 
 /// Redesigned Knowledge Check Quiz matching the EduTech AI dark glassmorphic theme.
 /// Features discrete question cards, animated option tiles, live progress tracking,
@@ -90,6 +53,7 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
   @override
   void didUpdateWidget(covariant KnowledgeCheckQuiz oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (_isSubmitting) return;
     final bool stepChanged = oldWidget.stepIndex != widget.stepIndex;
     final bool sessionChanged = oldWidget.sessionId != widget.sessionId;
     if (stepChanged || sessionChanged || oldWidget.step != widget.step) {
@@ -98,6 +62,8 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
   }
 
   void _initFromStep({bool forceReset = false}) {
+    if (_isSubmitting) return;
+
     if (forceReset) {
       _submitted = false;
       _selectedAnswers.clear();
@@ -106,6 +72,47 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
         controller.clear();
       }
       _quizResult = null;
+    }
+
+    final sessionId = _getSessionId();
+    final int stepIdx = (widget.step != null && widget.step.index is int)
+        ? widget.step.index as int
+        : (widget.step != null ? (int.tryParse(widget.step.index.toString()) ?? widget.stepIndex) : widget.stepIndex);
+
+    // 1. First priority: Restore from in-memory QuizSubmissionStore if already submitted
+    final bool hasStoreSubmission =
+        QuizSubmissionStore.hasSubmission(sessionId, widget.stepIndex) ||
+        QuizSubmissionStore.hasSubmission(sessionId, stepIdx);
+
+    if (hasStoreSubmission) {
+      final int activeIdx =
+          QuizSubmissionStore.hasSubmission(sessionId, widget.stepIndex)
+              ? widget.stepIndex
+              : stepIdx;
+      _submitted = true;
+      _quizResult = QuizSubmissionStore.getResult(sessionId, activeIdx);
+      final savedSelected =
+          QuizSubmissionStore.getSelectedAnswers(sessionId, activeIdx) ??
+          QuizDraftStore.getSelectedAnswers(sessionId, widget.stepIndex) ??
+          QuizDraftStore.getSelectedAnswers(sessionId, stepIdx);
+      if (savedSelected != null && savedSelected.isNotEmpty) {
+        _selectedAnswers.clear();
+        _selectedAnswers.addAll(savedSelected);
+      }
+      final savedText =
+          QuizSubmissionStore.getTextAnswers(sessionId, activeIdx) ??
+          QuizDraftStore.getTextAnswers(sessionId, widget.stepIndex) ??
+          QuizDraftStore.getTextAnswers(sessionId, stepIdx);
+      if (savedText != null && savedText.isNotEmpty) {
+        _textAnswers.clear();
+        _textAnswers.addAll(savedText);
+        for (final entry in savedText.entries) {
+          _getController(entry.key).text = entry.value;
+        }
+      }
+      if (_selectedAnswers.isNotEmpty || _textAnswers.isNotEmpty) {
+        return;
+      }
     }
 
     dynamic step = widget.step;
@@ -131,15 +138,13 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
 
     if (!hasScore && !hasUserAnswers && !hasUserFullAnswers) {
       if (_submitted) {
-        setState(() {
-          _submitted = false;
-          _selectedAnswers.clear();
-          _textAnswers.clear();
-          for (final controller in _controllers.values) {
-            controller.clear();
-          }
-          _quizResult = null;
-        });
+        _submitted = false;
+        _selectedAnswers.clear();
+        _textAnswers.clear();
+        for (final controller in _controllers.values) {
+          controller.clear();
+        }
+        _quizResult = null;
       }
       _restoreDraft();
       return;
@@ -147,9 +152,24 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
 
     _submitted = true;
 
-    // Clear stale answers before populating this step's answers.
-    _selectedAnswers.clear();
-    _textAnswers.clear();
+    // First attempt to recover user selections from draft store to avoid lossy reverse string matching
+    final draftSelected =
+        QuizDraftStore.getSelectedAnswers(sessionId, widget.stepIndex) ??
+        QuizDraftStore.getSelectedAnswers(sessionId, stepIdx);
+    if (draftSelected != null && draftSelected.isNotEmpty) {
+      _selectedAnswers.clear();
+      _selectedAnswers.addAll(draftSelected);
+    }
+    final draftText =
+        QuizDraftStore.getTextAnswers(sessionId, widget.stepIndex) ??
+        QuizDraftStore.getTextAnswers(sessionId, stepIdx);
+    if (draftText != null && draftText.isNotEmpty) {
+      _textAnswers.clear();
+      _textAnswers.addAll(draftText);
+      for (final entry in draftText.entries) {
+        _getController(entry.key).text = entry.value;
+      }
+    }
 
     final Map answers = hasUserFullAnswers
         ? (step.userFullAnswers as Map)
@@ -159,52 +179,84 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
         ? widget.quiz!
         : ((step.quiz is List) ? (step.quiz as List) : <dynamic>[]);
 
-    for (int i = 0; i < quizList.length; i++) {
-      final qData = quizList[i] is Map
-          ? (quizList[i] as Map<String, dynamic>)
-          : <String, dynamic>{};
-      // Support both integer keys and string keys (e.g. 0 and "0")
-      final rawAns = answers[i.toString()] ?? answers[i];
-      if (rawAns != null) {
-        final ansStr = rawAns.toString().trim();
-        if (_isFillInTheBlank(qData)) {
-          _textAnswers[i] = ansStr;
-          _getController(i).text = ansStr;
-        } else {
-          final options = (qData['options'] as List?)
-                  ?.map((e) => (e is Map ? (e['text'] ?? e['option'] ?? e.toString()) : e).toString())
-                  .toList() ??
-              [];
-          // Try exact full-string match first
-          int matchIndex = options.indexWhere((opt) => opt.trim() == ansStr);
-          // Fallback: match by option key letter (A, B, C, D) or containment
-          if (matchIndex == -1) {
-            matchIndex = options.indexWhere((opt) {
-              final key = opt
-                  .split(':')
-                  .first
-                  .split(')')
-                  .first
-                  .split('.')
-                  .first
-                  .trim()
-                  .toUpperCase();
-              return key == ansStr.toUpperCase() ||
-                  opt.toUpperCase().contains(ansStr.toUpperCase());
-            });
-          }
-          // Fallback: try matching by option index (e.g. answer stored as "0", "1")
-          if (matchIndex == -1) {
-            final parsedIndex = int.tryParse(ansStr);
-            if (parsedIndex != null && parsedIndex >= 0 && parsedIndex < options.length) {
-              matchIndex = parsedIndex;
+    if (_selectedAnswers.isEmpty && answers.isNotEmpty) {
+      for (int i = 0; i < quizList.length; i++) {
+        final qData = quizList[i] is Map
+            ? (quizList[i] as Map<String, dynamic>)
+            : <String, dynamic>{};
+        final rawAns = answers[i.toString()] ?? answers[i];
+        if (rawAns != null) {
+          final ansStr = rawAns.toString().trim();
+          if (_isFillInTheBlank(qData)) {
+            _textAnswers[i] = ansStr;
+            _getController(i).text = ansStr;
+          } else {
+            final options = (qData['options'] as List?)
+                    ?.map((e) => (e is Map ? (e['text'] ?? e['option'] ?? e.toString()) : e).toString())
+                    .toList() ??
+                [];
+            int matchIndex = options.indexWhere((opt) => opt.trim() == ansStr);
+            if (matchIndex == -1) {
+              matchIndex = options.indexWhere((opt) {
+                final key = opt
+                    .split(':')
+                    .first
+                    .split(')')
+                    .first
+                    .split('.')
+                    .first
+                    .trim()
+                    .toUpperCase();
+                return key == ansStr.toUpperCase() ||
+                    opt.toUpperCase().contains(ansStr.toUpperCase());
+              });
             }
-          }
-          if (matchIndex != -1) {
-            _selectedAnswers[i] = matchIndex;
+            if (matchIndex == -1) {
+              final parsedIndex = int.tryParse(ansStr);
+              if (parsedIndex != null && parsedIndex >= 0 && parsedIndex < options.length) {
+                matchIndex = parsedIndex;
+              }
+            }
+            if (matchIndex != -1) {
+              _selectedAnswers[i] = matchIndex;
+            }
           }
         }
       }
+    }
+
+    // Synthesize fallback QuizResult and cache in QuizSubmissionStore
+    if (_quizResult == null) {
+      final int quizLen = quizList.length;
+      final int correct = step.quizScore != null
+          ? (step.quizScore! * quizLen).round()
+          : 0;
+      final double score = step.quizScore ?? (quizLen > 0 ? (correct / quizLen) : 0.0);
+      final int xp = (score * quizLen * 20).round();
+      _quizResult = QuizResult(
+        stepIndex: widget.stepIndex,
+        totalQuestions: quizLen,
+        correctCount: correct,
+        score: score,
+        xpEarned: xp,
+        feedback: const [],
+      );
+    }
+    QuizSubmissionStore.saveSubmission(
+      sessionId: sessionId,
+      stepIndex: widget.stepIndex,
+      result: _quizResult!,
+      selectedAnswers: _selectedAnswers,
+      textAnswers: _textAnswers,
+    );
+    if (stepIdx != widget.stepIndex) {
+      QuizSubmissionStore.saveSubmission(
+        sessionId: sessionId,
+        stepIndex: stepIdx,
+        result: _quizResult!,
+        selectedAnswers: _selectedAnswers,
+        textAnswers: _textAnswers,
+      );
     }
   }
 
@@ -265,11 +317,6 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
         }
       }
     }
-  }
-
-  void _clearDraft() {
-    final sessionId = _getSessionId();
-    QuizDraftStore.clearDraft(sessionId, widget.stepIndex);
   }
 
   @override
@@ -419,26 +466,36 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
 
   Future<void> _handleSubmit(List<dynamic> quizList) async {
     if (!_isAllAnswered(quizList)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: const [
-              Icon(Icons.info_outline_rounded, color: Colors.white, size: 18),
-              SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  'Please answer all questions before submitting.',
-                  style: TextStyle(fontWeight: FontWeight.w600),
-                ),
-              ),
-            ],
-          ),
-          backgroundColor: AppColors.accentAmber,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        ),
+      CenterToast.showWarning(
+        context,
+        'Please answer all questions before submitting.',
       );
       return;
+    }
+
+    // Capture defensive snapshots of current answers BEFORE any async work
+    final snapshotSelected = Map<int, int>.from(_selectedAnswers);
+    final snapshotText = Map<int, String>.from(_textAnswers);
+
+    final sessionId = _getSessionId();
+    final int stepIdx = (widget.step != null && widget.step.index is int)
+        ? widget.step.index as int
+        : (widget.step != null ? (int.tryParse(widget.step.index.toString()) ?? widget.stepIndex) : widget.stepIndex);
+
+    // Pre-save to QuizDraftStore under both indices so drafts are never lost
+    QuizDraftStore.saveDraft(
+      sessionId: sessionId,
+      stepIndex: widget.stepIndex,
+      selectedAnswers: snapshotSelected,
+      textAnswers: snapshotText,
+    );
+    if (stepIdx != widget.stepIndex) {
+      QuizDraftStore.saveDraft(
+        sessionId: sessionId,
+        stepIndex: stepIdx,
+        selectedAnswers: snapshotSelected,
+        textAnswers: snapshotText,
+      );
     }
 
     setState(() {
@@ -451,13 +508,13 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
           ? (quizList[i] as Map<String, dynamic>)
           : <String, dynamic>{};
       if (_isFillInTheBlank(qData)) {
-        formattedAnswers[i] = _textAnswers[i] ?? '';
+        formattedAnswers[i] = snapshotText[i] ?? '';
       } else {
         final options = (qData['options'] as List?)
                 ?.map((e) => (e is Map ? (e['text'] ?? e['option'] ?? e.toString()) : e).toString())
                 .toList() ??
             [];
-        final selectedIndex = _selectedAnswers[i];
+        final selectedIndex = snapshotSelected[i];
         if (selectedIndex != null && selectedIndex < options.length) {
           formattedAnswers[i] = options[selectedIndex];
         }
@@ -468,12 +525,76 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
         .read(activeSessionProvider.notifier)
         .submitStepQuiz(widget.stepIndex, formattedAnswers);
 
+    // Prepare synthesized QuizResult in case result is null or failed
+    QuizResult finalResult;
+    if (result != null) {
+      finalResult = result;
+    } else if (_quizResult != null) {
+      finalResult = _quizResult!;
+    } else {
+      int localCorrect = 0;
+      for (int i = 0; i < quizList.length; i++) {
+        final qData = quizList[i] is Map
+            ? (quizList[i] as Map<String, dynamic>)
+            : <String, dynamic>{};
+        if (_isQuestionCorrect(i, qData)) {
+          localCorrect++;
+        }
+      }
+      final double score = quizList.isNotEmpty ? (localCorrect / quizList.length) : 0.0;
+      finalResult = QuizResult(
+        stepIndex: widget.stepIndex,
+        totalQuestions: quizList.length,
+        correctCount: localCorrect,
+        score: score,
+        xpEarned: (score * quizList.length * 20).round(),
+        feedback: const [],
+      );
+    }
+
+    // Persist to QuizSubmissionStore under BOTH indices
+    QuizSubmissionStore.saveSubmission(
+      sessionId: sessionId,
+      stepIndex: widget.stepIndex,
+      result: finalResult,
+      selectedAnswers: snapshotSelected,
+      textAnswers: snapshotText,
+    );
+    if (stepIdx != widget.stepIndex) {
+      QuizSubmissionStore.saveSubmission(
+        sessionId: sessionId,
+        stepIndex: stepIdx,
+        result: finalResult,
+        selectedAnswers: snapshotSelected,
+        textAnswers: snapshotText,
+      );
+    }
+
+    // Keep draft store intact under both indices as durable double-buffer
+    QuizDraftStore.saveDraft(
+      sessionId: sessionId,
+      stepIndex: widget.stepIndex,
+      selectedAnswers: snapshotSelected,
+      textAnswers: snapshotText,
+    );
+    if (stepIdx != widget.stepIndex) {
+      QuizDraftStore.saveDraft(
+        sessionId: sessionId,
+        stepIndex: stepIdx,
+        selectedAnswers: snapshotSelected,
+        textAnswers: snapshotText,
+      );
+    }
+
     if (mounted) {
-      _clearDraft();
       setState(() {
+        _selectedAnswers.clear();
+        _selectedAnswers.addAll(snapshotSelected);
+        _textAnswers.clear();
+        _textAnswers.addAll(snapshotText);
         _submitted = true;
         _isSubmitting = false;
-        _quizResult = result;
+        _quizResult = finalResult;
       });
       widget.onQuizSubmitted?.call();
     }
@@ -501,21 +622,27 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
       return const SizedBox.shrink();
     }
 
-    // Auto-sync submission status if step has quiz score or answers but _submitted is false
-    final bool stepHasQuiz = step != null &&
-        (step.quizScore != null ||
-            (step.userAnswers != null &&
-                step.userAnswers is Map &&
-                (step.userAnswers as Map).isNotEmpty) ||
-            (step.userFullAnswers != null &&
-                step.userFullAnswers is Map &&
-                (step.userFullAnswers as Map).isNotEmpty));
+    // Auto-sync submission status if step has quiz score, persisted submission, or answers
+    final String currentSessionId = _getSessionId();
+    final int stepIdx = (step != null && step.index is int)
+        ? step.index as int
+        : (step != null ? (int.tryParse(step.index.toString()) ?? widget.stepIndex) : widget.stepIndex);
+    final bool hasSubmission =
+        QuizSubmissionStore.hasSubmission(currentSessionId, widget.stepIndex) ||
+        QuizSubmissionStore.hasSubmission(currentSessionId, stepIdx);
+    final bool stepHasQuiz = hasSubmission ||
+        (step != null &&
+            (step.quizScore != null ||
+                (step.userAnswers != null &&
+                    step.userAnswers is Map &&
+                    (step.userAnswers as Map).isNotEmpty) ||
+                (step.userFullAnswers != null &&
+                    step.userFullAnswers is Map &&
+                    (step.userFullAnswers as Map).isNotEmpty)));
     if (!_submitted && stepHasQuiz) {
       _submitted = true;
       if (_selectedAnswers.isEmpty && _textAnswers.isEmpty) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) _initFromStep();
-        });
+        _initFromStep();
       }
     }
 
@@ -1269,142 +1396,57 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
             Align(
               alignment: Alignment.centerRight,
               child: isLastStep && isCurrentStepComplete
-                  ? MouseRegion(
-                      cursor: SystemMouseCursors.click,
-                      child: Tooltip(
-                        message: 'View Completed Journey Summary & Stats',
-                        child: GestureDetector(
-                          onTap: () {
-                            ref
-                                .read(activeSessionProvider.notifier)
-                                .showJourneySummary();
-                          },
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 200),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 18, vertical: 10),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  Colors.amber.shade600,
-                                  Colors.orange.shade800,
-                                ],
-                              ),
-                              borderRadius: BorderRadius.circular(10),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.amber.withValues(alpha: 0.35),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(
-                                  Icons.emoji_events_rounded,
-                                  color: Colors.white,
-                                  size: 16,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'Journey Completed 🎉',
-                                  style: AppTextStyles.badge.copyWith(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+                  ? Tooltip(
+                      message: 'View Completed Journey Summary & Stats',
+                      child: GradientButton(
+                        text: 'Journey Completed 🎉',
+                        icon: Icons.emoji_events_rounded,
+                        iconFirst: true,
+                        height: 42,
+                        borderRadius: BorderRadius.circular(12),
+                        gradient: const LinearGradient(
+                          colors: [
+                            Color(0xFFD97706),
+                            Color(0xFFB45309),
+                          ],
                         ),
+                        glowColor: const Color(0xFFF59E0B),
+                        onPressed: () {
+                          ref
+                              .read(activeSessionProvider.notifier)
+                              .showJourneySummary();
+                        },
                       ),
                     )
-                  : MouseRegion(
-                      cursor: SystemMouseCursors.click,
-                      child: GestureDetector(
-                        onTap: _isAdvancing
-                            ? null
-                            : () async {
-                                setState(() {
-                                  _isAdvancing = true;
-                                });
-                                await widget.onNextStep!();
-                                if (mounted) {
-                                  setState(() {
-                                    _isAdvancing = false;
-                                  });
-                                }
-                              },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 10),
-                          decoration: BoxDecoration(
-                            gradient: isLastStep
-                                ? LinearGradient(
-                                    colors: [
-                                      Colors.amber.shade600,
-                                      Colors.orange.shade800,
-                                    ],
-                                  )
-                                : (isPassed
-                                    ? const LinearGradient(
-                                        colors: [
-                                          AppColors.accentGreen,
-                                          AppColors.greenDeep,
-                                        ],
-                                      )
-                                    : AppColors.primaryGradient),
-                            borderRadius: BorderRadius.circular(10),
-                            boxShadow: [
-                              BoxShadow(
-                                color: (isLastStep
-                                        ? Colors.amber
-                                        : (isPassed
-                                            ? AppColors.accentGreen
-                                            : AppColors.primary))
-                                    .withValues(alpha: 0.35),
-                                blurRadius: 10,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: _isAdvancing
-                              ? const SizedBox(
-                                  width: 16,
-                                  height: 16,
-                                  child: CircularProgressIndicator(
-                                    color: Colors.white,
-                                    strokeWidth: 2,
-                                  ),
-                                )
-                              : Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      isLastStep
-                                          ? 'Complete Journey 🏆'
-                                          : 'Next Step',
-                                      style: AppTextStyles.badge.copyWith(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w700,
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 6),
-                                    Icon(
-                                      isLastStep
-                                          ? Icons.emoji_events_rounded
-                                          : Icons.arrow_forward_rounded,
-                                      size: 14,
-                                      color: Colors.white,
-                                    ),
-                                  ],
-                                ),
-                        ),
-                      ),
+                  : GradientButton(
+                      text: isLastStep ? 'Complete Journey 🏆' : 'Next Step',
+                      icon: isLastStep
+                          ? Icons.emoji_events_rounded
+                          : Icons.arrow_forward_rounded,
+                      iconFirst: false,
+                      height: 42,
+                      borderRadius: BorderRadius.circular(12),
+                      isLoading: _isAdvancing,
+                      gradient: isLastStep
+                          ? const LinearGradient(
+                              colors: [
+                                Color(0xFFD97706),
+                                Color(0xFFB45309),
+                              ],
+                            )
+                          : AppColors.primaryGradient,
+                      glowColor: isLastStep ? const Color(0xFFF59E0B) : null,
+                      onPressed: () async {
+                        setState(() {
+                          _isAdvancing = true;
+                        });
+                        await widget.onNextStep!();
+                        if (mounted) {
+                          setState(() {
+                            _isAdvancing = false;
+                          });
+                        }
+                      },
                     ),
             ),
           ],
@@ -1416,66 +1458,14 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
   Widget _buildSubmitActionRow(List<dynamic> quizList, bool isAllAnswered) {
     return Align(
       alignment: Alignment.centerRight,
-      child: MouseRegion(
-        cursor: SystemMouseCursors.click,
-        child: GestureDetector(
-          onTap: _isSubmitting ? null : () => _handleSubmit(quizList),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            padding:
-                const EdgeInsets.symmetric(horizontal: 22, vertical: 11),
-            decoration: BoxDecoration(
-              gradient: isAllAnswered
-                  ? AppColors.primaryGradient
-                  : LinearGradient(
-                      colors: [
-                        AppColors.primary.withValues(alpha: 0.6),
-                        AppColors.purpleDeep.withValues(alpha: 0.6),
-                      ],
-                    ),
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primary
-                      .withValues(alpha: isAllAnswered ? 0.35 : 0.15),
-                  blurRadius: 12,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (_isSubmitting) ...[
-                  const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(
-                      color: Colors.white,
-                      strokeWidth: 2,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                ] else ...[
-                  const Icon(
-                    Icons.send_rounded,
-                    size: 15,
-                    color: Colors.white,
-                  ),
-                  const SizedBox(width: 8),
-                ],
-                Text(
-                  _isSubmitting ? 'Evaluating...' : 'Submit Answers',
-                  style: AppTextStyles.label.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 13,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+      child: GradientButton(
+        text: _isSubmitting ? 'Evaluating...' : 'Submit Answers',
+        icon: Icons.send_rounded,
+        iconFirst: false,
+        height: 44,
+        borderRadius: BorderRadius.circular(12),
+        isLoading: _isSubmitting,
+        onPressed: () => _handleSubmit(quizList),
       ),
     );
   }

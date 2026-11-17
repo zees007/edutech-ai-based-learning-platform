@@ -106,26 +106,29 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
               ),
             ],
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildViewModeToggle(
-                isSelected: !_showStudioRender,
-                icon: Icons.touch_app_rounded,
-                label: 'Interactive Simulator',
-                onTap: () => setState(() => _showStudioRender = false),
-                isMobile: isMobile,
-              ),
-              const SizedBox(width: 4),
-              _buildViewModeToggle(
-                isSelected: _showStudioRender,
-                icon: Icons.photo_library_rounded,
-                label: '8K Hi-Fi Blueprint',
-                badge: '16:9',
-                onTap: () => setState(() => _showStudioRender = true),
-                isMobile: isMobile,
-              ),
-            ],
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildViewModeToggle(
+                  isSelected: !_showStudioRender,
+                  icon: Icons.touch_app_rounded,
+                  label: 'Interactive Simulator',
+                  onTap: () => setState(() => _showStudioRender = false),
+                  isMobile: isMobile,
+                ),
+                const SizedBox(width: 4),
+                _buildViewModeToggle(
+                  isSelected: _showStudioRender,
+                  icon: Icons.photo_library_rounded,
+                  label: '8K Hi-Fi Blueprint',
+                  badge: '16:9',
+                  onTap: () => setState(() => _showStudioRender = true),
+                  isMobile: isMobile,
+                ),
+              ],
+            ),
           ),
         ),
         const SizedBox(height: 32),
@@ -235,64 +238,69 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
     required VoidCallback onTap,
     required bool isMobile,
   }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: EdgeInsets.symmetric(
-          horizontal: isMobile ? 12 : 16,
-          vertical: isMobile ? 7 : 8,
-        ),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary : Colors.transparent,
-          borderRadius: BorderRadius.circular(9999),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.45),
-                    blurRadius: 14,
-                  ),
-                ]
-              : null,
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              size: isMobile ? 13 : 15,
-              color: isSelected ? Colors.white : const Color(0xFF94A3B8),
-            ),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: TextStyle(
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      opaque: true,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: EdgeInsets.symmetric(
+            horizontal: isMobile ? 12 : 16,
+            vertical: isMobile ? 7 : 8,
+          ),
+          decoration: BoxDecoration(
+            color: isSelected ? AppColors.primary : Colors.transparent,
+            borderRadius: BorderRadius.circular(9999),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.45),
+                      blurRadius: 14,
+                    ),
+                  ]
+                : null,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                size: isMobile ? 13 : 15,
                 color: isSelected ? Colors.white : const Color(0xFF94A3B8),
-                fontSize: isMobile ? 11 : 12.5,
-                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
               ),
-            ),
-            if (badge != null) ...[
               const SizedBox(width: 6),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? Colors.white.withValues(alpha: 0.25)
-                      : const Color(0xFF00F5D4).withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(4),
+              Text(
+                label,
+                style: TextStyle(
+                  color: isSelected ? Colors.white : const Color(0xFF94A3B8),
+                  fontSize: isMobile ? 11 : 12.5,
+                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
                 ),
-                child: Text(
-                  badge,
-                  style: TextStyle(
-                    color: isSelected ? Colors.white : const Color(0xFF00F5D4),
-                    fontSize: 8.5,
-                    fontWeight: FontWeight.w900,
+              ),
+              if (badge != null) ...[
+                const SizedBox(width: 6),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? Colors.white.withValues(alpha: 0.25)
+                        : const Color(0xFF00F5D4).withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    badge,
+                    style: TextStyle(
+                      color: isSelected ? Colors.white : const Color(0xFF00F5D4),
+                      fontSize: 8.5,
+                      fontWeight: FontWeight.w900,
+                    ),
                   ),
                 ),
-              ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
@@ -343,31 +351,34 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
                     width: 1.0,
                   ),
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 6,
-                      height: 6,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF00F5D4),
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(color: Color(0xFF00F5D4), blurRadius: 6),
-                        ],
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 6,
+                        height: 6,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF00F5D4),
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(color: Color(0xFF00F5D4), blurRadius: 6),
+                          ],
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'DUAL-PANEL COGNITIVE ARCHITECTURE',
-                      style: TextStyle(
-                        color: const Color(0xFFEEF0F6),
-                        fontSize: isMobile ? 9 : 11,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 1.2,
+                      const SizedBox(width: 8),
+                      Text(
+                        'DUAL-PANEL COGNITIVE ARCHITECTURE',
+                        style: TextStyle(
+                          color: const Color(0xFFEEF0F6),
+                          fontSize: isMobile ? 9 : 11,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 1.2,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -383,13 +394,16 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
                     color: Colors.white.withValues(alpha: 0.15),
                   ),
                 ),
-                child: Text(
-                  'SOCRATIC TUTOR (55%) • MULTI-MODAL CURATION (45%)',
-                  style: TextStyle(
-                    color: const Color(0xFF94A3B8),
-                    fontSize: isMobile ? 8 : 10,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 1.0,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    'SOCRATIC TUTOR (55%) • MULTI-MODAL CURATION (45%)',
+                    style: TextStyle(
+                      color: const Color(0xFF94A3B8),
+                      fontSize: isMobile ? 8 : 10,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1.0,
+                    ),
                   ),
                 ),
               ),
@@ -407,14 +421,18 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
     required String badge,
   }) {
     final bool isSelected = _activeContextTab == index;
-    return InkWell(
-      onTap: () {
-        setState(() {
-          _activeContextTab = index;
-        });
-      },
-      borderRadius: BorderRadius.circular(16),
-      child: AnimatedContainer(
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      opaque: true,
+      child: InkWell(
+        onTap: () {
+          setState(() {
+            _activeContextTab = index;
+          });
+        },
+        mouseCursor: SystemMouseCursors.click,
+        borderRadius: BorderRadius.circular(16),
+        child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
@@ -437,141 +455,208 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
                 ]
               : null,
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              size: 16,
-              color: isSelected ? Colors.white : AppColors.textSecondary,
-            ),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: TextStyle(
-                color: isSelected ? Colors.white : AppColors.textSecondary,
-                fontSize: 13,
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? AppColors.primary.withValues(alpha: 0.35)
-                    : AppColors.surfaceDark.withValues(alpha: 0.6),
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: Text(
-                badge,
-                style: TextStyle(
-                  color: isSelected ? Colors.white : AppColors.textMuted,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMockWorkspaceHeader(bool isMobile) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-      color: AppColors.surfaceDark.withValues(alpha: 0.8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          // Topic and Step Indicator
-          Expanded(
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: AppColors.accentPurple.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Text('⚛️', style: TextStyle(fontSize: 16)),
-                ),
-                const SizedBox(width: 12),
-                Flexible(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'Quantum Computing & Superposition',
-                        style: TextStyle(
-                          color: AppColors.textPrimary,
-                          fontSize: isMobile ? 13 : 15,
-                          fontWeight: FontWeight.w700,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      Text(
-                        'Step 2 of 5: The Superposition Principle & Bloch Sphere',
-                        style: TextStyle(
-                          color: AppColors.adaptiveLavender,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Gamification Badges
-          Row(
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: AppColors.accentAmber.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: AppColors.accentAmber.withValues(alpha: 0.4)),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.local_fire_department_rounded, size: 14, color: AppColors.accentAmber),
-                    const SizedBox(width: 4),
-                    Text('3 DAYS', style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: AppColors.accentAmber)),
-                  ],
+              Icon(
+                icon,
+                size: 16,
+                color: isSelected ? Colors.white : AppColors.textSecondary,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: TextStyle(
+                  color: isSelected ? Colors.white : AppColors.textSecondary,
+                  fontSize: 13,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                 ),
               ),
               const SizedBox(width: 8),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  gradient: AppColors.primaryGradient,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.3),
-                      blurRadius: 8,
-                    ),
-                  ],
+                  color: isSelected
+                      ? AppColors.primary.withValues(alpha: 0.35)
+                      : AppColors.surfaceDark.withValues(alpha: 0.6),
+                  borderRadius: BorderRadius.circular(6),
                 ),
-                child: Row(
-                  children: const [
-                    Icon(Icons.military_tech_rounded, size: 14, color: Colors.white),
-                    SizedBox(width: 4),
-                    Text(
-                      '720 XP',
-                      style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: Colors.white),
-                    ),
-                  ],
+                child: Text(
+                  badge,
+                  style: TextStyle(
+                    color: isSelected ? Colors.white : AppColors.textMuted,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+  Widget _buildMockWorkspaceHeader(bool isMobile) {
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: isMobile ? 12 : 20,
+        vertical: isMobile ? 10 : 14,
+      ),
+      color: AppColors.surfaceDark.withValues(alpha: 0.8),
+      child: isMobile
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(5),
+                      decoration: BoxDecoration(
+                        color: AppColors.accentPurple.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: const Text('⚛️', style: TextStyle(fontSize: 14)),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Quantum Computing & Superposition',
+                            style: TextStyle(
+                              color: AppColors.textPrimary,
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w700,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Text(
+                            'Step 2 of 5: The Superposition Principle',
+                            style: TextStyle(
+                              color: AppColors.adaptiveLavender,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    _buildStreakBadge(),
+                    const SizedBox(width: 8),
+                    _buildXpBadge(),
+                  ],
+                ),
+              ],
+            )
+          : Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: AppColors.accentPurple.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Text('⚛️', style: TextStyle(fontSize: 16)),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'Quantum Computing & Superposition',
+                              style: TextStyle(
+                                color: AppColors.textPrimary,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            Text(
+                              'Step 2 of 5: The Superposition Principle & Bloch Sphere',
+                              style: TextStyle(
+                                color: AppColors.adaptiveLavender,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildStreakBadge(),
+                    const SizedBox(width: 8),
+                    _buildXpBadge(),
+                  ],
+                ),
+              ],
+            ),
+    );
+  }
+
+  Widget _buildStreakBadge() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppColors.accentAmber.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.accentAmber.withValues(alpha: 0.4)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.local_fire_department_rounded, size: 14, color: AppColors.accentAmber),
+          const SizedBox(width: 4),
+          Text('3 DAYS', style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: AppColors.accentAmber)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildXpBadge() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        gradient: AppColors.primaryGradient,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.3),
+            blurRadius: 8,
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: const [
+          Icon(Icons.military_tech_rounded, size: 14, color: Colors.white),
+          SizedBox(width: 4),
+          Text(
+            '720 XP',
+            style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: Colors.white),
           ),
         ],
       ),
@@ -581,189 +666,204 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
   Widget _buildLeftTutorPanel(bool isMobile) {
     return Padding(
       padding: EdgeInsets.all(isMobile ? 16 : 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Agent Identity Header
-          Row(
-            children: [
-              Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  gradient: AppColors.primaryGradient,
-                  shape: BoxShape.circle,
-                ),
-                child: const Center(
-                  child: Icon(Icons.psychology_rounded, color: Colors.white, size: 18),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Socratic Tutor Agent',
-                    style: TextStyle(
-                      color: AppColors.textPrimary,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 13,
-                    ),
-                  ),
-                  Text(
-                    'Pedagogical Scaffolding • Level: Undergraduate',
-                    style: TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 10,
-                    ),
-                  ),
-                ],
-              ),
-              const Spacer(),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: AppColors.accentGreen.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.accentGreen.withValues(alpha: 0.4)),
-                ),
-                child: const Row(
-                  children: [
-                    CircleAvatar(radius: 3, backgroundColor: AppColors.accentGreen),
-                    SizedBox(width: 5),
-                    Text('Active Turn', style: TextStyle(color: AppColors.accentGreen, fontSize: 10, fontWeight: FontWeight.bold)),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 18),
-
-          // Socratic Text
-          Text(
-            'Imagine flipping a coin. While spinning through the air, before landing flat on the table, is it definitely Heads or definitely Tails?\n\nIn classical computing, a bit is strictly 0 or 1. But a quantum qubit exists in a linear combination of both states simultaneously, governed by probability amplitudes: |ψ⟩ = α|0⟩ + β|1⟩.',
-            style: AppTextStyles.body1.copyWith(
-              fontSize: 14,
-              height: 1.6,
-              color: AppColors.textPrimary,
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          // Mermaid Flowchart Mockup Card
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppColors.surfaceDark.withValues(alpha: 0.9),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      child: SingleChildScrollView(
+        physics: const NeverScrollableScrollPhysics(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Agent Identity Header
+            Row(
               children: [
-                Row(
-                  children: [
-                    Icon(Icons.account_tree_outlined, size: 14, color: AppColors.adaptiveLavender),
-                    const SizedBox(width: 6),
-                    Text(
-                      'CONCEPT FLOW DIAGRAM (MERMAID.JS)',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 1,
-                        color: AppColors.adaptiveLavender,
-                      ),
-                    ),
-                  ],
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    gradient: AppColors.primaryGradient,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Center(
+                    child: Icon(Icons.psychology_rounded, color: Colors.white, size: 18),
+                  ),
                 ),
-                const SizedBox(height: 14),
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildDiagramNode('Classical Bit', 'Deterministic [0 OR 1]', AppColors.accentBlue),
-                      _buildDiagramArrow('Superposition'),
-                      _buildDiagramNode('Quantum Qubit', '|ψ⟩ = α|0⟩ + β|1⟩', AppColors.accentPurple),
-                      _buildDiagramArrow('Measurement'),
-                      _buildDiagramNode('State Collapse', 'Eigenvalue |0⟩ or |1⟩', AppColors.accentGreen),
+                      Text(
+                        'Socratic Tutor Agent',
+                        style: TextStyle(
+                          color: AppColors.textPrimary,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      Text(
+                        'Pedagogical Scaffolding • Level: Undergraduate',
+                        style: TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 10,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: AppColors.accentGreen.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.accentGreen.withValues(alpha: 0.4)),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CircleAvatar(radius: 3, backgroundColor: AppColors.accentGreen),
+                      SizedBox(width: 5),
+                      Text('Active Turn', style: TextStyle(color: AppColors.accentGreen, fontSize: 10, fontWeight: FontWeight.bold)),
                     ],
                   ),
                 ),
               ],
             ),
-          ),
-          const SizedBox(height: 16),
+            const SizedBox(height: 14),
 
-          // Socratic Guiding Questions
-          Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: AppColors.accentPurple.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.accentPurple.withValues(alpha: 0.3)),
+            // Socratic Text
+            Text(
+              'Imagine flipping a coin. While spinning through the air, before landing flat on the table, is it definitely Heads or definitely Tails?\n\nIn classical computing, a bit is strictly 0 or 1. But a quantum qubit exists in a linear combination of both states simultaneously, governed by probability amplitudes: |ψ⟩ = α|0⟩ + β|1⟩.',
+              style: AppTextStyles.body1.copyWith(
+                fontSize: 14,
+                height: 1.5,
+                color: AppColors.textPrimary,
+              ),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: const [
-                    Icon(Icons.tips_and_updates_rounded, color: AppColors.accentAmber, size: 16),
-                    SizedBox(width: 8),
-                    Text(
-                      'Ponder This Before Advancing:',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 12,
+            const SizedBox(height: 14),
+
+            // Mermaid Flowchart Mockup Card
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceDark.withValues(alpha: 0.9),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.account_tree_outlined, size: 14, color: AppColors.adaptiveLavender),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          'CONCEPT FLOW DIAGRAM (MERMAID.JS)',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 1,
+                            color: AppColors.adaptiveLavender,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        _buildDiagramNode('Classical Bit', 'Deterministic [0 OR 1]', AppColors.accentBlue),
+                        _buildDiagramArrow('Superposition'),
+                        _buildDiagramNode('Quantum Qubit', '|ψ⟩ = α|0⟩ + β|1⟩', AppColors.accentPurple),
+                        _buildDiagramArrow('Measurement'),
+                        _buildDiagramNode('State Collapse', 'Eigenvalue |0⟩ or |1⟩', AppColors.accentGreen),
+                      ],
                     ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'What physical mechanism causes the probability wave function to collapse upon observation? Can a qubit perform computations while in superposition?',
-                  style: TextStyle(
-                    color: AppColors.textSlate,
-                    fontSize: 12,
-                    height: 1.4,
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: 16),
+            const SizedBox(height: 14),
 
-          // Follow-up Chat Input Bar Mockup
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            decoration: BoxDecoration(
-              color: AppColors.surfaceDark,
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: AppColors.border),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.chat_bubble_outline, size: 16, color: AppColors.textMuted),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    'Ask the Socratic Tutor a follow-up question...',
-                    style: TextStyle(color: AppColors.textMuted, fontSize: 12),
+            // Socratic Guiding Questions
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: AppColors.accentPurple.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.accentPurple.withValues(alpha: 0.3)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: const [
+                      Icon(Icons.tips_and_updates_rounded, color: AppColors.accentAmber, size: 16),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Ponder This Before Advancing:',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 12,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary,
-                    shape: BoxShape.circle,
+                  const SizedBox(height: 6),
+                  Text(
+                    'What physical mechanism causes the probability wave function to collapse upon observation? Can a qubit perform computations while in superposition?',
+                    style: TextStyle(
+                      color: AppColors.textSlate,
+                      fontSize: 12,
+                      height: 1.4,
+                    ),
                   ),
-                  child: const Icon(Icons.arrow_upward, size: 12, color: Colors.white),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+            const SizedBox(height: 14),
+
+            // Follow-up Chat Input Bar Mockup
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceDark,
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: AppColors.border),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.chat_bubble_outline, size: 16, color: AppColors.textMuted),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Ask the Socratic Tutor a follow-up question...',
+                      style: TextStyle(color: AppColors.textMuted, fontSize: 12),
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.arrow_upward, size: 12, color: Colors.white),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -808,9 +908,12 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
     return Container(
       padding: EdgeInsets.all(isMobile ? 16 : 24),
       color: AppColors.surfaceDark.withValues(alpha: 0.4),
-      child: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 300),
-        child: _buildSelectedTabContent(),
+      child: SingleChildScrollView(
+        physics: const NeverScrollableScrollPhysics(),
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          child: _buildSelectedTabContent(),
+        ),
       ),
     );
   }
@@ -836,15 +939,18 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
           children: [
             const Icon(Icons.play_circle_fill_rounded, color: AppColors.accentRose, size: 20),
             const SizedBox(width: 8),
-            Text(
-              'Curated YouTube Deep-Link',
-              style: TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
+            Expanded(
+              child: Text(
+                'Curated YouTube Deep-Link',
+                style: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                ),
+                overflow: TextOverflow.ellipsis,
               ),
             ),
-            const Spacer(),
+            const SizedBox(width: 8),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(
@@ -961,15 +1067,18 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
           children: [
             const Icon(Icons.menu_book_rounded, color: AppColors.accentGreen, size: 20),
             const SizedBox(width: 8),
-            Text(
-              'Curated Academic Literature',
-              style: TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
+            Expanded(
+              child: Text(
+                'Curated Academic Literature',
+                style: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                ),
+                overflow: TextOverflow.ellipsis,
               ),
             ),
-            const Spacer(),
+            const SizedBox(width: 8),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(
@@ -1029,7 +1138,9 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
                 ),
               ),
               const SizedBox(height: 12),
-              Row(
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
                 children: [
                   OutlinedButton.icon(
                     onPressed: () {},
@@ -1041,7 +1152,6 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     ),
                   ),
-                  const SizedBox(width: 8),
                   TextButton.icon(
                     onPressed: () {},
                     icon: const Icon(Icons.open_in_new, size: 14),
@@ -1076,15 +1186,18 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
           children: [
             const Icon(Icons.quiz_rounded, color: AppColors.accentAmber, size: 20),
             const SizedBox(width: 8),
-            Text(
-              'Formative Knowledge Check',
-              style: TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
+            Expanded(
+              child: Text(
+                'Formative Knowledge Check',
+                style: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                ),
+                overflow: TextOverflow.ellipsis,
               ),
             ),
-            const Spacer(),
+            const SizedBox(width: 8),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(
@@ -1178,16 +1291,20 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            if (_quizSubmitted)
-              const Text(
-                '✅ Correct! +20 XP awarded to profile.',
-                style: TextStyle(color: AppColors.accentGreen, fontSize: 11, fontWeight: FontWeight.bold),
-              )
-            else
-              const Text(
-                'Select an answer to verify mastery',
-                style: TextStyle(color: Colors.white54, fontSize: 10),
-              ),
+            Expanded(
+              child: _quizSubmitted
+                  ? const Text(
+                      '✅ Correct! +20 XP awarded to profile.',
+                      style: TextStyle(color: AppColors.accentGreen, fontSize: 11, fontWeight: FontWeight.bold),
+                      overflow: TextOverflow.ellipsis,
+                    )
+                  : const Text(
+                      'Select an answer to verify mastery',
+                      style: TextStyle(color: Colors.white54, fontSize: 10),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+            ),
+            const SizedBox(width: 8),
             ElevatedButton(
               onPressed: _selectedQuizAnswer == null
                   ? null

@@ -325,50 +325,55 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
     required Color badgeColor,
   }) {
     final isSelected = _selectedStatus == id;
-    return InkWell(
-      onTap: () => _onStatusFilterChanged(id),
-      borderRadius: BorderRadius.circular(20),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? badgeColor.withValues(alpha: 0.16)
-              : AppColors.surfaceDark.withValues(alpha: 0.4),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isSelected ? badgeColor : AppColors.glassBorder,
-            width: isSelected ? 1.4 : 1.0,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              label,
-              style: AppTextStyles.captionBold.copyWith(
-                color: isSelected ? badgeColor : AppColors.textMuted,
-              ),
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      opaque: true,
+      child: InkWell(
+        onTap: () => _onStatusFilterChanged(id),
+        mouseCursor: SystemMouseCursors.click,
+        borderRadius: BorderRadius.circular(20),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? badgeColor.withValues(alpha: 0.16)
+                : AppColors.surfaceDark.withValues(alpha: 0.4),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: isSelected ? badgeColor : AppColors.glassBorder,
+              width: isSelected ? 1.4 : 1.0,
             ),
-            if (count != null) ...[
-              const SizedBox(width: 6),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-                decoration: BoxDecoration(
-                  color: isSelected ? badgeColor : AppColors.slate700,
-                  borderRadius: BorderRadius.circular(10),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                label,
+                style: AppTextStyles.captionBold.copyWith(
+                  color: isSelected ? badgeColor : AppColors.textMuted,
                 ),
-                child: Text(
-                  '$count',
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                    color: isSelected ? Colors.black : Colors.white,
+              ),
+              if (count != null) ...[
+                const SizedBox(width: 6),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                  decoration: BoxDecoration(
+                    color: isSelected ? badgeColor : AppColors.slate700,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    '$count',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: isSelected ? Colors.black : Colors.white,
+                    ),
                   ),
                 ),
-              ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );

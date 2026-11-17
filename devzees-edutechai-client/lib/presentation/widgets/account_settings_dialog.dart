@@ -219,9 +219,49 @@ class _AccountSettingsDialogState extends ConsumerState<AccountSettingsDialog>
       return;
     }
 
-    if (newPassword.length < 6) {
+    if (newPassword.length < 8) {
       setState(() {
-        _passwordError = 'New password must be at least 6 characters.';
+        _passwordError = 'New password must be at least 8 characters.';
+        _passwordSuccess = null;
+      });
+      return;
+    }
+
+    if (newPassword.length > 72) {
+      setState(() {
+        _passwordError = 'New password cannot exceed 72 characters.';
+        _passwordSuccess = null;
+      });
+      return;
+    }
+
+    if (!newPassword.contains(RegExp(r'[A-Z]'))) {
+      setState(() {
+        _passwordError = 'New password must contain at least one uppercase letter.';
+        _passwordSuccess = null;
+      });
+      return;
+    }
+
+    if (!newPassword.contains(RegExp(r'[a-z]'))) {
+      setState(() {
+        _passwordError = 'New password must contain at least one lowercase letter.';
+        _passwordSuccess = null;
+      });
+      return;
+    }
+
+    if (!newPassword.contains(RegExp(r'[0-9]'))) {
+      setState(() {
+        _passwordError = 'New password must contain at least one digit.';
+        _passwordSuccess = null;
+      });
+      return;
+    }
+
+    if (!newPassword.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>\-_+=\[\]\\;`~]'))) {
+      setState(() {
+        _passwordError = 'New password must contain at least one special character.';
         _passwordSuccess = null;
       });
       return;
@@ -627,7 +667,7 @@ class _AccountSettingsDialogState extends ConsumerState<AccountSettingsDialog>
 
           // New Password
           _buildInputField(
-            label: 'NEW PASSWORD * (min 6 characters)',
+            label: 'NEW PASSWORD * (min 8 characters)',
             hint: '••••••••',
             controller: _newPasswordController,
             prefixIcon: Icons.lock_outline_rounded,
