@@ -11,6 +11,7 @@ import 'package:devzees_edutechai_client/presentation/pages/learning/learning_pa
 import 'package:devzees_edutechai_client/presentation/pages/admin/admin_page.dart';
 import 'package:devzees_edutechai_client/presentation/pages/onboarding/onboarding_page.dart';
 import 'package:devzees_edutechai_client/presentation/pages/subscription/subscription_page.dart';
+import 'package:devzees_edutechai_client/presentation/pages/dashboard/learning_dashboard_page.dart';
 
 /// Bridges Riverpod's AuthNotifier state into GoRouter's Listenable-based refresh mechanism.
 class AppRouterNotifier extends ChangeNotifier {
@@ -117,6 +118,18 @@ class AppRouterNotifier extends ChangeNotifier {
         }
       }
 
+      // 2c. Dashboard route privilege guard — redirect unauthorized users to /learning
+      final isDashboardRoute = location == '/dashboard';
+      if (isDashboardRoute) {
+        if (authState.user == null) {
+          return null;
+        }
+        final perms = _ref.read(permissionProvider);
+        if (!perms.canAccessDashboard) {
+          return '/learning';
+        }
+      }
+
       return null;
     }
 
@@ -206,6 +219,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               final autoClaim = state.uri.queryParameters['claim'] == 'true';
               return SubscriptionPage(autoClaim: autoClaim);
             },
+          ),
+          GoRoute(
+            path: '/dashboard',
+            name: 'dashboard',
+            builder: (context, state) => const LearningDashboardPage(),
           ),
         ],
       ),

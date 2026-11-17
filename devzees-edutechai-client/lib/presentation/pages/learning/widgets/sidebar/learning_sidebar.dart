@@ -1,11 +1,13 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../../presentation/widgets/gradient_button.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/text_styles.dart';
 import '../../../../../core/providers/learning_provider.dart';
 import '../../../../../core/providers/active_session_provider.dart';
+import '../../../../../core/providers/permission_provider.dart';
 import 'sidebar_header.dart';
 import 'sidebar_footer.dart';
 import 'learning_history_list.dart';
@@ -71,7 +73,9 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
           ),
           const SizedBox(height: 16),
           _buildNewJourneyButton(expanded: widget.expanded),
-          const SizedBox(height: 24),
+          const SizedBox(height: 8),
+          _buildDashboardButton(expanded: widget.expanded),
+          const SizedBox(height: 16),
           if (widget.expanded) ...[
             _buildHistoryHeader(),
             if (_isHistoryExpanded) ...[
@@ -85,11 +89,7 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
             if (!_isHistoryExpanded)
               const Spacer()
             else
-              Expanded(
-                child: LearningHistoryList(
-                  expanded: widget.expanded,
-                ),
-              )
+              Expanded(child: LearningHistoryList(expanded: widget.expanded))
           else
             Expanded(
               child: Column(
@@ -166,6 +166,121 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
     );
   }
 
+  Widget _buildDashboardButton({required bool expanded}) {
+    final perms = ref.watch(permissionProvider);
+    if (!perms.canAccessDashboard) return const SizedBox.shrink();
+
+    final isDark = AppColors.isDark;
+
+    void handleOpenDashboard() {
+      if (widget.isMobile) {
+        widget.onClose();
+      } else if (Scaffold.maybeOf(context)?.hasDrawer ?? false) {
+        Scaffold.of(context).closeDrawer();
+      }
+      context.push('/dashboard');
+    }
+
+    if (!expanded) {
+      return Tooltip(
+        message: 'Learning Dashboard',
+        child: InkWell(
+          onTap: handleOpenDashboard,
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.05)
+                  : AppColors.surfaceSubtle,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.08)
+                    : AppColors.border,
+                width: 1,
+              ),
+            ),
+            child: Icon(
+              Icons.insights_rounded,
+              size: 22,
+              color: isDark ? AppColors.accentCyan : AppColors.primary,
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: handleOpenDashboard,
+          borderRadius: BorderRadius.circular(12),
+          hoverColor: (isDark ? AppColors.accentCyan : AppColors.primary)
+              .withValues(alpha: 0.08),
+          splashColor: (isDark ? AppColors.accentCyan : AppColors.primary)
+              .withValues(alpha: 0.15),
+          child: Container(
+            height: 44,
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            decoration: BoxDecoration(
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.04)
+                  : Colors.black.withValues(alpha: 0.03),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.07)
+                    : AppColors.border,
+                width: 1,
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: (isDark ? AppColors.accentCyan : AppColors.primary)
+                        .withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    Icons.insights_rounded,
+                    size: 18,
+                    color: isDark ? AppColors.accentCyan : AppColors.primary,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Learning Dashboard',
+                    style: AppTextStyles.body2.copyWith(
+                      color: isDark ? Colors.white : AppColors.textPrimary,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: 12,
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.35)
+                      : AppColors.textSecondary.withValues(alpha: 0.5),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildHistoryHeader() {
     final total = ref.watch(sessionsProvider).total;
 
@@ -193,7 +308,9 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
               ),
               const Spacer(),
               Icon(
-                _isHistoryExpanded ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_right,
+                _isHistoryExpanded
+                    ? Icons.keyboard_arrow_down
+                    : Icons.keyboard_arrow_right,
                 color: AppColors.textSecondary,
                 size: 20,
               ),
@@ -222,24 +339,28 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
                 decoration: BoxDecoration(
                   color: (_isSearchFocused || _isSearchHovered)
                       ? (isDark
-                          ? Colors.white.withValues(alpha: 0.08)
-                          : AppColors.surface)
+                            ? Colors.white.withValues(alpha: 0.08)
+                            : AppColors.surface)
                       : (isDark
-                          ? Colors.white.withValues(alpha: 0.05)
-                          : AppColors.surfaceSubtle),
+                            ? Colors.white.withValues(alpha: 0.05)
+                            : AppColors.surfaceSubtle),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
                     color: (_isSearchFocused || _isSearchHovered)
-                        ? (isDark ? AppColors.primary.withValues(alpha: 0.6) : AppColors.primary)
+                        ? (isDark
+                              ? AppColors.primary.withValues(alpha: 0.6)
+                              : AppColors.primary)
                         : (isDark
-                            ? Colors.white.withValues(alpha: 0.08)
-                            : AppColors.border),
+                              ? Colors.white.withValues(alpha: 0.08)
+                              : AppColors.border),
                     width: 1,
                   ),
                   boxShadow: (_isSearchFocused || _isSearchHovered)
                       ? [
                           BoxShadow(
-                            color: AppColors.primary.withValues(alpha: isDark ? 0.15 : 0.08),
+                            color: AppColors.primary.withValues(
+                              alpha: isDark ? 0.15 : 0.08,
+                            ),
                             blurRadius: 6,
                             spreadRadius: 0,
                           ),
@@ -252,10 +373,7 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
                   onChanged: (value) {
                     ref.read(sessionsProvider.notifier).updateSearch(value);
                   },
-                  style: TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 13,
-                  ),
+                  style: TextStyle(color: AppColors.textPrimary, fontSize: 13),
                   cursorColor: AppColors.primary,
                   decoration: InputDecoration(
                     isDense: true,
@@ -269,8 +387,8 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
                       color: (_isSearchFocused || _isSearchHovered)
                           ? AppColors.primary
                           : (isDark
-                              ? Colors.white.withValues(alpha: 0.5)
-                              : AppColors.textSecondary),
+                                ? Colors.white.withValues(alpha: 0.5)
+                                : AppColors.textSecondary),
                       size: 18,
                     ),
                     prefixIconConstraints: const BoxConstraints(
@@ -306,24 +424,24 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
                 decoration: BoxDecoration(
                   color: (_isFilterHovered || statusFilter != 'all')
                       ? (isDark
-                          ? (statusFilter != 'all'
-                              ? AppColors.primary.withValues(alpha: 0.15)
-                              : Colors.white.withValues(alpha: 0.1))
-                          : (statusFilter != 'all'
-                              ? AppColors.primary.withValues(alpha: 0.12)
-                              : AppColors.primary.withValues(alpha: 0.08)))
+                            ? (statusFilter != 'all'
+                                  ? AppColors.primary.withValues(alpha: 0.15)
+                                  : Colors.white.withValues(alpha: 0.1))
+                            : (statusFilter != 'all'
+                                  ? AppColors.primary.withValues(alpha: 0.12)
+                                  : AppColors.primary.withValues(alpha: 0.08)))
                       : (isDark
-                          ? Colors.white.withValues(alpha: 0.05)
-                          : AppColors.surfaceSubtle),
+                            ? Colors.white.withValues(alpha: 0.05)
+                            : AppColors.surfaceSubtle),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
                     color: (_isFilterHovered || statusFilter != 'all')
                         ? (isDark
-                            ? AppColors.primary.withValues(alpha: 0.4)
-                            : AppColors.primary.withValues(alpha: 0.5))
+                              ? AppColors.primary.withValues(alpha: 0.4)
+                              : AppColors.primary.withValues(alpha: 0.5))
                         : (isDark
-                            ? Colors.white.withValues(alpha: 0.08)
-                            : AppColors.border),
+                              ? Colors.white.withValues(alpha: 0.08)
+                              : AppColors.border),
                     width: 1,
                   ),
                 ),
@@ -342,12 +460,14 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
                       child: Icon(
                         Icons.filter_list_rounded,
                         color: _isFilterHovered
-                            ? (isDark ? AppColors.textPrimary : AppColors.primary)
+                            ? (isDark
+                                  ? AppColors.textPrimary
+                                  : AppColors.primary)
                             : (statusFilter != 'all'
-                                ? AppColors.primary
-                                : (isDark
-                                    ? AppColors.textSecondary
-                                    : const Color(0xFF475569))),
+                                  ? AppColors.primary
+                                  : (isDark
+                                        ? AppColors.textSecondary
+                                        : const Color(0xFF475569))),
                         size: 18,
                       ),
                     ),
@@ -362,7 +482,8 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
   }
 
   void _showFilterDialog(BuildContext context, String currentFilter) {
-    final RenderBox renderBox = _filterIconKey.currentContext!.findRenderObject() as RenderBox;
+    final RenderBox renderBox =
+        _filterIconKey.currentContext!.findRenderObject() as RenderBox;
     final size = renderBox.size;
     final offset = renderBox.localToGlobal(Offset.zero);
     final bool isDark = AppColors.isDark;
@@ -390,58 +511,73 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(16),
               child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-              child: Container(
-                width: 150,
-                padding: const EdgeInsets.symmetric(vertical: 6),
-                decoration: BoxDecoration(
-                  color: AppColors.popoverBackground,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: AppColors.glassBorder,
-                    width: 1.0,
+                filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+                child: Container(
+                  width: 150,
+                  padding: const EdgeInsets.symmetric(vertical: 6),
+                  decoration: BoxDecoration(
+                    color: AppColors.popoverBackground,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: AppColors.glassBorder,
+                      width: 1.0,
+                    ),
+                    boxShadow: isDark
+                        ? [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.4),
+                              blurRadius: 20,
+                              offset: const Offset(0, 6),
+                            ),
+                          ]
+                        : const [
+                            BoxShadow(
+                              color: Color(0x18000000),
+                              blurRadius: 20,
+                              offset: Offset(0, 8),
+                              spreadRadius: 0,
+                            ),
+                            BoxShadow(
+                              color: Color(0x0A000000),
+                              blurRadius: 6,
+                              offset: Offset(0, 2),
+                              spreadRadius: 0,
+                            ),
+                          ],
                   ),
-                  boxShadow: isDark
-                      ? [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.4),
-                            blurRadius: 20,
-                            offset: const Offset(0, 6),
-                          ),
-                        ]
-                      : const [
-                          BoxShadow(
-                            color: Color(0x18000000),
-                            blurRadius: 20,
-                            offset: Offset(0, 8),
-                            spreadRadius: 0,
-                          ),
-                          BoxShadow(
-                            color: Color(0x0A000000),
-                            blurRadius: 6,
-                            offset: Offset(0, 2),
-                            spreadRadius: 0,
-                          ),
-                        ],
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _buildDialogItem(context, 'all', 'All', currentFilter),
-                    _buildDialogItem(context, 'in_progress', 'Active', currentFilter),
-                    _buildDialogItem(context, 'completed', 'Completed', currentFilter),
-                  ],
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _buildDialogItem(context, 'all', 'All', currentFilter),
+                      _buildDialogItem(
+                        context,
+                        'in_progress',
+                        'Active',
+                        currentFilter,
+                      ),
+                      _buildDialogItem(
+                        context,
+                        'completed',
+                        'Completed',
+                        currentFilter,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
         ),
-      ),
-    ],
+      ],
     );
   }
 
-  Widget _buildDialogItem(BuildContext context, String value, String label, String currentFilter) {
+  Widget _buildDialogItem(
+    BuildContext context,
+    String value,
+    String label,
+    String currentFilter,
+  ) {
     final isSelected = value == currentFilter;
     bool isHovered = false;
     final bool isDark = AppColors.isDark;
@@ -450,19 +586,21 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
       builder: (context, setItemState) {
         final Color bg = isSelected
             ? (isDark
-                ? AppColors.primary.withValues(alpha: 0.2)
-                : AppColors.primary.withValues(alpha: 0.12))
+                  ? AppColors.primary.withValues(alpha: 0.2)
+                  : AppColors.primary.withValues(alpha: 0.12))
             : (isHovered
-                ? (isDark
-                    ? Colors.white.withValues(alpha: 0.08)
-                    : AppColors.primary.withValues(alpha: 0.08))
-                : Colors.transparent);
+                  ? (isDark
+                        ? Colors.white.withValues(alpha: 0.08)
+                        : AppColors.primary.withValues(alpha: 0.08))
+                  : Colors.transparent);
 
         final Color targetTextColor = isSelected
             ? AppColors.primary
             : (isHovered
-                ? (isDark ? AppColors.textPrimary : AppColors.primary)
-                : (isDark ? const Color(0xFFCBD5E1) : const Color(0xFF334155)));
+                  ? (isDark ? AppColors.textPrimary : AppColors.primary)
+                  : (isDark
+                        ? const Color(0xFFCBD5E1)
+                        : const Color(0xFF334155)));
 
         return MouseRegion(
           onEnter: (_) => setItemState(() => isHovered = true),
@@ -490,7 +628,9 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
                       curve: Curves.easeOut,
                       style: AppTextStyles.label.copyWith(
                         color: targetTextColor,
-                        fontWeight: (isSelected || isHovered) ? FontWeight.w600 : FontWeight.w500,
+                        fontWeight: (isSelected || isHovered)
+                            ? FontWeight.w600
+                            : FontWeight.w500,
                       ),
                       child: Text(
                         label,
@@ -500,7 +640,11 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
                     ),
                   ),
                   if (isSelected)
-                    const Icon(Icons.check_rounded, color: AppColors.primary, size: 16),
+                    const Icon(
+                      Icons.check_rounded,
+                      color: AppColors.primary,
+                      size: 16,
+                    ),
                 ],
               ),
             ),

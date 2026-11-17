@@ -34,6 +34,8 @@ Adaptive AI-powered learning platform with multi-agent Socratic tutoring, YouTub
     *   `GET /api/v1/academic/search`
 *   **Quiz** (`learning_service.dart`):
     *   `POST /api/v1/quiz/submit`
+*   **Analytics & Performance Dashboard** (`dashboard_service.dart`):
+    *   `GET /api/v1/learning/analytics/dashboard`
 *   **Admin & Subscription Tiers** (`admin_service.dart`):
     *   `GET /api/v1/admin/metrics`
     *   `GET /api/v1/admin/tiers`
@@ -670,6 +672,147 @@ Get the quiz for a specific step (if generated).
 ```json
 "any"
 ```
+
+---
+
+## Get Learning Analytics Dashboard
+**Endpoint:** `GET /api/v1/learning/analytics/dashboard`
+
+Retrieve aggregated learner performance metrics, executive KPIs, chronological quiz accuracy trendline, weak concepts requiring reinforcement, learning mode distribution (Visual, Deep Dive, Bite-Sized), top topic breakdown, 90-day activity heatmap, XP / level progression, and milestone achievements.
+
+### Security & Privileges
+- **Authentication:** `access_token` (HTTP-only cookie or Bearer token) *(Required)*
+- **Required Privilege:** `ET_DASHBOARD` *(Assigned to Free, Pro, Ultra, and Admin roles)*
+
+### Request
+
+**Query Parameters:**
+- `time_range` (query, string, optional): Filter period for metrics. Allowed values: `7d`, `30d`, `90d`, `all`. Default: `30d`.
+
+### Response
+
+**200 Successful Response**
+
+**Body (application/json):**
+```json
+{
+  "summary": {
+    "total_sessions": 12,
+    "completed_sessions": 8,
+    "in_progress_sessions": 4,
+    "total_milestone_steps": 60,
+    "completed_steps": 48,
+    "total_learning_minutes": 285,
+    "total_xp": 1420,
+    "current_level": 4,
+    "level_title": "Apprentice",
+    "xp_progress_in_level": 0.45,
+    "current_streak_days": 5,
+    "overall_completion_rate": 0.80
+  },
+  "quiz_metrics": {
+    "total_quizzes_taken": 40,
+    "total_questions_answered": 120,
+    "total_questions_correct": 98,
+    "average_accuracy": 0.8167,
+    "perfect_quizzes_count": 22
+  },
+  "quiz_accuracy_trend": [
+    {
+      "date": "2026-11-10",
+      "session_id": "session-uuid-1",
+      "topic": "Quantum Computing Basics",
+      "step_index": 0,
+      "step_title": "Superposition Fundamentals",
+      "accuracy": 1.0,
+      "questions_correct": 3,
+      "total_questions": 3
+    },
+    {
+      "date": "2026-11-12",
+      "session_id": "session-uuid-1",
+      "topic": "Quantum Computing Basics",
+      "step_index": 1,
+      "step_title": "Quantum Entanglement",
+      "accuracy": 0.6667,
+      "questions_correct": 2,
+      "total_questions": 3
+    }
+  ],
+  "concepts_needing_reinforcement": [
+    {
+      "session_id": "session-uuid-1",
+      "topic": "Quantum Computing Basics",
+      "step_index": 2,
+      "step_title": "Shor's Algorithm Mechanics",
+      "quiz_score": 0.3333,
+      "questions_correct": 1,
+      "total_questions": 3,
+      "completed_at": "2026-11-13T10:15:00Z"
+    }
+  ],
+  "mode_distribution": {
+    "visual_mode_sessions": 6,
+    "deep_dive_sessions": 4,
+    "bite_sized_sessions": 2,
+    "visual_mode_percentage": 0.50,
+    "deep_dive_percentage": 0.3333,
+    "bite_sized_percentage": 0.1667
+  },
+  "topic_breakdown": [
+    {
+      "topic": "Quantum Computing Basics",
+      "completed_steps": 5,
+      "total_steps": 5,
+      "accuracy": 0.8667,
+      "last_studied_at": "2026-11-13T10:15:00Z"
+    }
+  ],
+  "activity_heatmap": [
+    {
+      "date": "2026-11-12",
+      "steps_completed": 3,
+      "xp_earned": 150
+    },
+    {
+      "date": "2026-11-13",
+      "steps_completed": 2,
+      "xp_earned": 100
+    }
+  ],
+  "achievements": [
+    {
+      "id": "first_step",
+      "title": "First Step Taken",
+      "description": "Completed your first learning milestone step.",
+      "unlocked": true,
+      "unlocked_at": "2026-11-10T09:00:00Z",
+      "icon_name": "flag"
+    },
+    {
+      "id": "quiz_ace",
+      "title": "Quiz Ace",
+      "description": "Scored 100% (3/3) on 5 or more milestone quizzes.",
+      "unlocked": true,
+      "unlocked_at": "2026-11-12T11:30:00Z",
+      "icon_name": "military_tech"
+    },
+    {
+      "id": "century_xp",
+      "title": "Century Scholar",
+      "description": "Accumulated over 1,000 XP in learning journeys.",
+      "unlocked": true,
+      "unlocked_at": "2026-11-13T10:15:00Z",
+      "icon_name": "auto_awesome"
+    }
+  ]
+}
+```
+
+### Error Responses
+
+- **401 Unauthorized:** Missing, expired, or invalid session token.
+- **403 Forbidden:** User role lacks `ET_DASHBOARD` privilege.
 
 ---
 

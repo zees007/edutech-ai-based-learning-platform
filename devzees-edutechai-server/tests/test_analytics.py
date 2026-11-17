@@ -1,0 +1,216 @@
+"""
+EduTechAI — Tests for AnalyticsService & Learner Performance Dashboard
+"""
+
+from datetime import datetime, timedelta, timezone
+from uuid import uuid4
+import pytest
+from sqlalchemy import select
+
+from models.db_models import GamificationRecord, SessionRecord, StepProgress
+from models.schemas import LearningMode, MilestoneStep, StepStatus
+from models.shared_memory import SharedMemory
+from models.user_schemas import UserCreateRequest
+from services.analytics_service import AnalyticsService
+from services.database import get_db_session, init_db
+from services.session_manager import SessionManager
+from services.user_service import UserService
+
+
+@pytest.mark.asyncio
+async def test_analytics_service_empty_user():
+    """Verify default clean metrics for a brand new user with no sessions."""
+    await init_db()
+    async with get_db_session() as db:
+        user_req = UserCreateRequest(
+            first_name="BrandNew",
+            last_name="Learner",
+            email=f"newbie_{uuid4().hex[:8]}@example.com",
+            password="SecurePassword123!",
+        )
+        user = await UserService.create_user(db, user_req)
+
+        dashboard = await AnalyticsService.get_user_dashboard(db, user_id=user.id, time_range="30d")
+
+        assert dashboard.summary.total_sessions == 0
+        assert dashboard.summary.completed_sessions == 0
+        assert dashboard.summary.completion_rate == 0.0
+        assert dashboard.summary.total_steps_mastered == 0
+        assert dashboard.summary.total_study_minutes == 0
+        assert dashboard.summary.total_xp == 0
+        assert dashboard.summary.current_level == 1
+        assert dashboard.summary.level_title == "Curious Explorer"
+        assert dashboard.quiz_metrics.total_quizzes_taken == 0
+        assert len(dashboard.quiz_metrics.accuracy_trend) == 0
+        assert len(dashboard.quiz_metrics.concepts_needing_reinforcement) == 0
+        assert dashboard.mode_distribution.visual == 0
+        assert dashboard.mode_distribution.deep_dive == 0
+        assert dashboard.mode_distribution.bite_sized == 0
+
+
+@pytest.mark.asyncio
+async def test_analytics_service_active_user_metrics():
+    """Verify precise calculation of sessions, steps, 3-question quizzes, clamping, and achievements."""
+    await init_db()
+    sm = SessionManager()
+    now = datetime.utcnow()
+
+    async with get_db_session() as db:
+        # 1. Create User
+        user_req = UserCreateRequest(
+            first_name="Active",
+            last_name="Scholar",
+            email=f"scholar_{uuid4().hex[:8]}@example.com",
+            password="SecurePassword123!",
+        )
+        user = await UserService.create_user(db, user_req)
+        user_id = user.id
+
+    # 2. Create Session 1 (Visual Mode, Completed, 3 steps)
+    mem1 = SharedMemory(
+        user_id=user_id,
+        topic="Python Concurrency",
+        learning_mode=LearningMode.VISUAL,
+        student_level="undergraduate",
+    )
+    mem1.steps = [
+        MilestoneStep(index=0, title="Event Loop", description="Core loop", status=StepStatus.COMPLETE),
+        MilestoneStep(index=1, title="Coroutines", description="Async/Await", status=StepStatus.COMPLETE),
+        MilestoneStep(index=2, title="Tasks & Futures", description="Task grouping", status=StepStatus.COMPLETE),
+    ]
+    mem1.current_step_index = 3
+    mem1.steps_completed = 3
+    mem1.xp_earned = 280
+    await sm.create_session(mem1, user_id=user_id)
+
+    # 3. Create Session 2 (Deep Dive Mode, In Progress, 2 steps)
+    mem2 = SharedMemory(
+        user_id=user_id,
+        topic="Quantum Computing",
+        learning_mode=LearningMode.DEEP_DIVE,
+        student_level="graduate",
+    )
+    mem2.steps = [
+        MilestoneStep(index=0, title="Qubit Superposition", description="Quantum states", status=StepStatus.COMPLETE),
+        MilestoneStep(index=1, title="Quantum Entanglement", description="Bell states", status=StepStatus.IN_PROGRESS),
+    ]
+    mem2.current_step_index = 1
+    mem2.steps_completed = 1
+    mem2.xp_earned = 140
+    await sm.create_session(mem2, user_id=user_id)
+
+    # 4. Populate quiz scores & completion dates into step_progress
+    async with get_db_session() as db:
+        # Session 1 steps
+        sp_res1 = await db.execute(
+            select(StepProgress).where(StepProgress.session_id == mem1.session_id).order_by(StepProgress.step_index)
+        )
+        steps1 = list(sp_res1.scalars().all())
+        steps1[0].status = "complete"
+        steps1[0].quiz_score = 1.0  # 3/3 correct
+        steps1[0].completed_at = now - timedelta(days=2, hours=2)
+
+        steps1[1].status = "complete"
+        steps1[1].quiz_score = 0.67  # 2/3 correct
+        steps1[1].completed_at = now - timedelta(days=2, hours=1, minutes=45)  # 15 min gap (normal)
+
+        steps1[2].status = "complete"
+        steps1[2].quiz_score = 0.33  # 1/3 correct -> WEAK CONCEPT!
+        steps1[2].completed_at = now - timedelta(days=2, hours=1)  # 45 min gap (clamped to 10 min)
+
+        # Mark session 1 complete
+        s_res1 = await db.execute(select(SessionRecord).where(SessionRecord.session_id == mem1.session_id))
+        s_rec1 = s_res1.scalar_one()
+        s_rec1.is_complete = True
+
+        # Session 2 steps
+        sp_res2 = await db.execute(
+            select(StepProgress).where(StepProgress.session_id == mem2.session_id).order_by(StepProgress.step_index)
+        )
+        steps2 = list(sp_res2.scalars().all())
+        steps2[0].status = "complete"
+        steps2[0].quiz_score = 1.0  # 3/3 correct
+        steps2[0].completed_at = now - timedelta(days=1)
+
+        await db.commit()
+
+    # 5. Fetch Dashboard
+    async with get_db_session() as db:
+        dashboard = await AnalyticsService.get_user_dashboard(db, user_id=user_id, time_range="30d")
+
+        # Verify Summary
+        assert dashboard.summary.total_sessions == 2
+        assert dashboard.summary.completed_sessions == 1
+        assert dashboard.summary.completion_rate == 50.0
+        assert dashboard.summary.total_steps_mastered == 4
+        assert dashboard.summary.total_study_minutes > 0
+        assert dashboard.summary.total_xp == 420  # 280 + 140
+        assert dashboard.summary.current_level >= 5  # 420 XP reaches Level 5 (Rising Scholar at 380 XP)
+        assert dashboard.summary.level_title == "Rising Scholar"
+
+        # Verify 3-Question Quiz Metrics
+        assert dashboard.quiz_metrics.total_quizzes_taken == 4
+        assert dashboard.quiz_metrics.total_questions_evaluated == 12  # 4 quizzes * 3
+        assert dashboard.quiz_metrics.perfect_quizzes_count == 2  # Two 100% quizzes
+        # Accuracy: (1.0 + 0.67 + 0.33 + 1.0) / 4 = 0.75 -> 75.0%
+        assert 74.0 <= dashboard.summary.average_quiz_score_overall <= 76.0
+
+        # Verify Weak Concepts
+        assert len(dashboard.quiz_metrics.concepts_needing_reinforcement) == 1
+        weak = dashboard.quiz_metrics.concepts_needing_reinforcement[0]
+        assert weak.session_id == mem1.session_id
+        assert weak.step_index == 2
+        assert weak.correct_count == 1
+        assert weak.total_questions == 3
+        assert weak.step_title == "Tasks & Futures"
+
+        # Verify Mode Distribution
+        assert dashboard.mode_distribution.visual == 1
+        assert dashboard.mode_distribution.deep_dive == 1
+        assert dashboard.mode_distribution.bite_sized == 0
+
+        # Verify Achievements
+        first_step_ach = next((a for a in dashboard.achievements if a.id == "first_step"), None)
+        assert first_step_ach is not None
+        assert first_step_ach.unlocked is True
+
+        first_journey_ach = next((a for a in dashboard.achievements if a.id == "first_journey"), None)
+        assert first_journey_ach is not None
+        assert first_journey_ach.unlocked is True
+
+
+@pytest.mark.asyncio
+async def test_get_dashboard_api_endpoint():
+    """Verify GET /api/v1/learning/analytics/dashboard returns 200 with ET_DASHBOARD privilege."""
+    from httpx import ASGITransport, AsyncClient
+    from app.main import create_app
+    from services.auth_service import AuthService
+
+    app = create_app()
+    await init_db()
+
+    async with get_db_session() as db:
+        user_req = UserCreateRequest(
+            first_name="Endpoint",
+            last_name="Tester",
+            email=f"endpoint_{uuid4().hex[:8]}@example.com",
+            password="SecurePassword123!",
+        )
+        user = await UserService.create_user(db, user_req)
+        # Create access token
+        access_token = AuthService.create_access_token({"sub": user.id})
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        headers = {"Authorization": f"Bearer {access_token}"}
+        resp = await ac.get("/api/v1/learning/analytics/dashboard?time_range=30d", headers=headers)
+
+        assert resp.status_code == 200
+        data = resp.json()
+        assert "summary" in data
+        assert "quiz_metrics" in data
+        assert "activity_heatmap" in data
+        assert "topic_breakdown" in data
+        assert "mode_distribution" in data
+        assert "achievements" in data
+        assert data["summary"]["current_level"] == 1
+        assert data["summary"]["level_title"] == "Curious Explorer"

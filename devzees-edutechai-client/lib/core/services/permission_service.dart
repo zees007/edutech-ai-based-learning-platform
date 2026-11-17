@@ -54,6 +54,7 @@ abstract class PrivilegeCodes {
   static const etStartLearningSession = 'ET_START_LEARNING_SESSION';
   static const etInteractLearningSession = 'ET_INTERACT_LEARNING_SESSION';
   static const etViewLearningHistory = 'ET_VIEW_LEARNING_HISTORY';
+  static const etDashboard = 'ET_DASHBOARD';
   static const etManageKnowledgeBase = 'ET_MANAGE_KNOWLEDGE_BASE';
   static const etAccessVisualMode = 'ET_ACCESS_VISUAL_MODE';
   static const etAccessDeepDiveMode = 'ET_ACCESS_DEEP_DIVE_MODE';
@@ -145,6 +146,7 @@ class PermissionChecker {
   bool get canAccessDeepDiveMode => has(PrivilegeCodes.etAccessDeepDiveMode);
 
   // ─── Learning Features ─────────────────────────────────────────
+  bool get canAccessDashboard => has(PrivilegeCodes.etDashboard);
   bool get canRegenerateStep => has(PrivilegeCodes.etRegenerateStep);
   bool get canAccessAcademicSearch => has(PrivilegeCodes.etAccessAcademicSearch);
   bool get canAccessFullTextResearch => has(PrivilegeCodes.etAccessFullTextResearch);

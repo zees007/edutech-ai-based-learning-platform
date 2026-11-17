@@ -22,6 +22,7 @@ An adaptive, interactive educational workspace powered by **autonomous AI agents
 - [Learning Modes](#learning-modes)
 - [Education Levels](#education-levels)
 - [Gamification & XP System](#gamification--xp-system)
+- [Learning Performance & Stats Dashboard](#learning-performance--stats-dashboard)
 - [Subscription Plans & RBAC](#subscription-plans--rbac)
 - [Session Export (Markdown & PDF)](#session-export-markdown--pdf)
 - [How a Learning Session Works (End-to-End)](#how-a-learning-session-works-end-to-end)
@@ -65,6 +66,7 @@ All content adapts dynamically based on the selected **Learning Mode** and **Edu
 | 📚 **Academic Research** | Searches OpenAlex, Semantic Scholar, and arXiv for open-access papers with AI-generated summaries |
 | 📝 **Dynamic Quizzes** | Generates 2–3 contextual comprehension questions per step with instant grading |
 | 🏆 **Gamification** | XP rewards, streak tracking, and a 10-level progression system |
+| 📊 **Performance Dashboard** | Consolidated learner stats, active study duration, 3-question quiz accuracy trends, weak concepts, and milestone badges |
 | 💎 **Tiered Subscriptions (RBAC)** | Free, Pro, and Ultra tiers with calibrated limits for videos, follow-ups, and advanced tools |
 | 📥 **Rich Session Exports** | Download complete learning journeys in Markdown (`.md`), HTML (`.html`), or professionally styled PDF (`.pdf`) |
 | 🎨 **Three Learning Modes** | Visual, Deep Dive, and Bite-Sized — each adapts all agent outputs |
@@ -411,9 +413,44 @@ The **Progress Header** in the UI displays:
 
 ---
 
+## 📊 Learning Performance & Stats Dashboard
+
+EduTechAI provides a centralized, executive analytics dashboard where learners can monitor their overall learning momentum, formative assessment scores, and topic mastery across all journeys.
+
+### Key Capabilities
+
+1. **Executive KPI Pulse Cards:**
+   - **Total Active Study Hours:** Accurately calculated via step-delta idle clamping (idle pauses > 30 minutes clamped to platform mode medians).
+   - **Completed & In-Progress Sessions:** Real-time completion rates across all topic journeys.
+   - **Milestone Steps Mastered:** Total concepts understood and checked off.
+   - **Overall Quiz Accuracy:** Weighted accuracy across all 3-question milestone quizzes.
+   - **Total Cumulative XP & Level:** Aggregate experience points across all sessions mapped to the 10-tier mastery scale (`Curious Explorer` through `Grand Sage`).
+   - **Daily Learning Streak:** Current consecutive days of active study.
+
+2. **Formative 3-Question Quiz Accuracy Trendline:**
+   - Built with interactive `fl_chart` LineChart visualization.
+   - Chronological plot of every milestone checkpoint with touch tooltips detailing the topic, milestone title, questions answered, and score.
+
+3. **Weak Concept Remediation (1-Click Review):**
+   - Automatically surfaces steps where quiz performance fell below passing ($\le 50\%$, i.e. 0/3 or 1/3 correct).
+   - Features a **1-click "Review" action** that instantly loads the exact session and brings the student directly to that milestone step in the active workspace.
+
+4. **Tri-Mode Learning Distribution & Topic Mastery:**
+   - Donut chart depicting student preferences across **Visual 🎬**, **Deep Dive 🔬**, and **Bite-Sized ⚡** modes.
+   - Topic progress breakdown showing percentage completion and last-studied timestamps.
+
+5. **Milestone Achievements & 90-Day Activity Log:**
+   - Gamified badges unlocking dynamically upon reaching milestones (`First Step Taken`, `Quiz Ace`, `Century Scholar`, `Grand Scholar`).
+   - Daily activity log showing steps completed and XP earned per day.
+
+6. **RBAC Protection:**
+   - Protected by the `ET_DASHBOARD` privilege, enabled by default across all tiers (`Free`, `Pro`, `Ultra`, `Admin`).
+
+---
+
 ## 💎 Subscription Plans & RBAC
 
-EduTechAI integrates a comprehensive **Role-Based Access Control (RBAC)** architecture governed by 33 granular system privileges. Each subscription plan unlocks tailored features, agent capacities, and specialized export tools.
+EduTechAI integrates a comprehensive **Role-Based Access Control (RBAC)** architecture governed by 34 granular system privileges. Each subscription plan unlocks tailored features, agent capacities, and specialized export tools.
 
 ### Subscription Tiers Matrix
 

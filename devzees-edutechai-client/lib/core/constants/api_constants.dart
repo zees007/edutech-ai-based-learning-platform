@@ -29,6 +29,7 @@ class ApiConstants {
   // Learning Endpoints
   static const String sessions = '/sessions';
   static const String sessionQuota = '/sessions/quota';
+  static const String learningDashboard = '/learning/analytics/dashboard';
   static const String learn = '/learn';
   static const String quizSubmit = '/quiz/submit';
   static const String academicSearch = '/academic/search';
