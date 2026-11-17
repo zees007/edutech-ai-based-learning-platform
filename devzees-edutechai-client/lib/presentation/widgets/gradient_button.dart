@@ -133,7 +133,8 @@ class _GradientButtonState extends State<GradientButton>
                     widget.text,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: widget.textStyle ??
+                    style:
+                        widget.textStyle ??
                         AppTextStyles.button.copyWith(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
@@ -163,9 +164,7 @@ class _GradientButtonState extends State<GradientButton>
       onHover: isDisabled ? null : _onHover,
       onExit: isDisabled ? null : _onExit,
       hitTestBehavior: HitTestBehavior.opaque,
-      cursor: isDisabled
-          ? SystemMouseCursors.basic
-          : SystemMouseCursors.click,
+      cursor: isDisabled ? SystemMouseCursors.basic : SystemMouseCursors.click,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
         curve: Curves.easeOutCubic,
@@ -220,7 +219,9 @@ class _GradientButtonState extends State<GradientButton>
                         height: widget.height,
                         child: Center(
                           widthFactor: widget.width == null ? 1.0 : null,
-                          child: buttonContent,
+                          child: SelectionContainer.disabled(
+                            child: buttonContent,
+                          ),
                         ),
                       ),
                     ),
@@ -236,10 +237,7 @@ class _GradientButtonState extends State<GradientButton>
                             final double value = _shimmerController.value;
                             return FractionallySizedBox(
                               widthFactor: 0.5,
-                              alignment: Alignment(
-                                -2.0 + (value * 4.0),
-                                0.0,
-                              ),
+                              alignment: Alignment(-2.0 + (value * 4.0), 0.0),
                               child: Container(
                                 decoration: BoxDecoration(
                                   gradient: LinearGradient(

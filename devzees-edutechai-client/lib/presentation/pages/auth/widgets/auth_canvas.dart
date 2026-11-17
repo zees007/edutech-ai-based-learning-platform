@@ -83,7 +83,9 @@ class _AuthCanvasState extends State<AuthCanvas>
         child: Stack(
           children: [
             // Ambient Dot Matrix Background
-            Positioned.fill(child: CustomPaint(painter: _DotGridPainter(isDark: isDark))),
+            Positioned.fill(
+              child: CustomPaint(painter: _DotGridPainter(isDark: isDark)),
+            ),
 
             // Flowchart Content (Centered horizontally and vertically)
             Padding(
@@ -112,7 +114,9 @@ class _AuthCanvasState extends State<AuthCanvas>
                           shadowColor: const Color(0x333B82F6),
                         ),
                         tag: 'STEP 01 • INTAKE',
-                        tagTextColor: isDark ? AppColors.accentBlue : const Color(0xFF2563EB),
+                        tagTextColor: isDark
+                            ? AppColors.accentBlue
+                            : const Color(0xFF2563EB),
                         tagBgColor: isDark
                             ? AppColors.accentBlue.withValues(alpha: 0.15)
                             : const Color(0xFFEFF6FF),
@@ -138,7 +142,9 @@ class _AuthCanvasState extends State<AuthCanvas>
                           shadowColor: const Color(0x339333EA),
                         ),
                         tag: 'STEP 02 • AI EVALUATION',
-                        tagTextColor: isDark ? AppColors.accentPurple : const Color(0xFF9333EA),
+                        tagTextColor: isDark
+                            ? AppColors.accentPurple
+                            : const Color(0xFF9333EA),
                         tagBgColor: isDark
                             ? AppColors.accentPurple.withValues(alpha: 0.15)
                             : const Color(0xFFFAF5FF),
@@ -164,7 +170,9 @@ class _AuthCanvasState extends State<AuthCanvas>
                           shadowColor: const Color(0x33EC4899),
                         ),
                         tag: 'STEP 03 • ROUTING GATEWAY',
-                        tagTextColor: isDark ? AppColors.accentPink : const Color(0xFFDB2777),
+                        tagTextColor: isDark
+                            ? AppColors.accentPink
+                            : const Color(0xFFDB2777),
                         tagBgColor: isDark
                             ? AppColors.accentPink.withValues(alpha: 0.15)
                             : const Color(0xFFFDF2F8),
@@ -202,7 +210,9 @@ class _AuthCanvasState extends State<AuthCanvas>
                           shadowColor: const Color(0x330284C7),
                         ),
                         tag: 'STEP 05 • DISPATCH & UNLOCK',
-                        tagTextColor: isDark ? AppColors.accentCyan : const Color(0xFF0284C7),
+                        tagTextColor: isDark
+                            ? AppColors.accentCyan
+                            : const Color(0xFF0284C7),
                         tagBgColor: isDark
                             ? AppColors.accentCyan.withValues(alpha: 0.15)
                             : const Color(0xFFF0F9FF),
@@ -256,19 +266,18 @@ class _AuthCanvasState extends State<AuthCanvas>
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(
-            Icons.bolt_rounded,
-            color: Color(0xFFF59E0B),
-            size: 16,
-          ),
+          const Icon(Icons.bolt_rounded, color: Color(0xFFF59E0B), size: 16),
           const SizedBox(width: 6),
-          Text(
-            'EduTech AI — Providing Access Flowchart',
-            style: AppTextStyles.labelSmall.copyWith(
-              color: isDark ? AppColors.lavender : const Color(0xFF4F46E5),
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.3,
+          Flexible(
+            child: Text(
+              'EduTech AI — Providing Access Flowchart',
+              style: AppTextStyles.labelSmall.copyWith(
+                color: isDark ? AppColors.lavender : const Color(0xFF4F46E5),
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.3,
+              ),
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],
@@ -345,19 +354,21 @@ class _AuthCanvasState extends State<AuthCanvas>
                 ),
               ],
       ),
-      child: Center(
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            iconWidget,
-            const SizedBox(width: 14),
-            Column(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          iconWidget,
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 7,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: isDark
                         ? tagTextColor.withValues(alpha: 0.15)
@@ -372,7 +383,9 @@ class _AuthCanvasState extends State<AuthCanvas>
                   child: Text(
                     tag,
                     style: TextStyle(
-                      color: isDark ? tagTextColor.withValues(alpha: 0.95) : tagTextColor,
+                      color: isDark
+                          ? tagTextColor.withValues(alpha: 0.95)
+                          : tagTextColor,
                       fontSize: 9.5,
                       fontWeight: FontWeight.w800,
                       letterSpacing: 0.5,
@@ -391,7 +404,9 @@ class _AuthCanvasState extends State<AuthCanvas>
                 Text(
                   subtitle,
                   style: AppTextStyles.caption.copyWith(
-                    color: isDark ? AppColors.textSecondary : const Color(0xFF64748B),
+                    color: isDark
+                        ? AppColors.textSecondary
+                        : const Color(0xFF64748B),
                     fontSize: 10.5,
                   ),
                   maxLines: 1,
@@ -399,8 +414,8 @@ class _AuthCanvasState extends State<AuthCanvas>
                 ),
               ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -441,7 +456,9 @@ class _AuthCanvasState extends State<AuthCanvas>
                 child: Text(
                   'YES • EXISTING USER (✓)',
                   style: TextStyle(
-                    color: isDark ? AppColors.accentGreen : const Color(0xFF059669),
+                    color: isDark
+                        ? AppColors.accentGreen
+                        : const Color(0xFF059669),
                     fontSize: 10,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 0.2,
@@ -454,7 +471,9 @@ class _AuthCanvasState extends State<AuthCanvas>
                 child: Text(
                   'NO • NEW STUDENT (✨)',
                   style: TextStyle(
-                    color: isDark ? AppColors.roseLight : const Color(0xFFD97706),
+                    color: isDark
+                        ? AppColors.roseLight
+                        : const Color(0xFFD97706),
                     fontSize: 10,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 0.2,
@@ -471,7 +490,9 @@ class _AuthCanvasState extends State<AuthCanvas>
               child: Center(
                 child: Icon(
                   Icons.arrow_drop_down,
-                  color: isDark ? AppColors.accentGreen : const Color(0xFF10B981),
+                  color: isDark
+                      ? AppColors.accentGreen
+                      : const Color(0xFF10B981),
                   size: 16,
                 ),
               ),
@@ -503,7 +524,9 @@ class _AuthCanvasState extends State<AuthCanvas>
             title: 'Sign In',
             subtitle: 'Existing Account Access',
             iconText: '🔐',
-            activeBorderColor: isDark ? AppColors.accentGreen : const Color(0xFF34D399),
+            activeBorderColor: isDark
+                ? AppColors.accentGreen
+                : const Color(0xFF34D399),
             activeBgGradient: isDark
                 ? null
                 : const LinearGradient(
@@ -512,8 +535,12 @@ class _AuthCanvasState extends State<AuthCanvas>
             activeShadowColor: isDark
                 ? AppColors.accentGreen.withValues(alpha: 0.35)
                 : const Color(0x3810B981),
-            tagTextColor: isDark ? AppColors.accentGreen : const Color(0xFF047857),
-            pulseDotColor: isDark ? AppColors.accentGreen : const Color(0xFF10B981),
+            tagTextColor: isDark
+                ? AppColors.accentGreen
+                : const Color(0xFF047857),
+            pulseDotColor: isDark
+                ? AppColors.accentGreen
+                : const Color(0xFF10B981),
             isDark: isDark,
             onTap: () => widget.onAuthModeChanged(true),
           ),
@@ -527,7 +554,9 @@ class _AuthCanvasState extends State<AuthCanvas>
             title: 'Create Account',
             subtitle: 'Instant Free Setup',
             iconText: '✨',
-            activeBorderColor: isDark ? AppColors.accentAmber : const Color(0xFFFBBF24),
+            activeBorderColor: isDark
+                ? AppColors.accentAmber
+                : const Color(0xFFFBBF24),
             activeBgGradient: isDark
                 ? null
                 : const LinearGradient(
@@ -536,8 +565,12 @@ class _AuthCanvasState extends State<AuthCanvas>
             activeShadowColor: isDark
                 ? AppColors.accentAmber.withValues(alpha: 0.35)
                 : const Color(0x38F59E0B),
-            tagTextColor: isDark ? AppColors.accentAmber : const Color(0xFFB45309),
-            pulseDotColor: isDark ? AppColors.accentAmber : const Color(0xFFF59E0B),
+            tagTextColor: isDark
+                ? AppColors.accentAmber
+                : const Color(0xFFB45309),
+            pulseDotColor: isDark
+                ? AppColors.accentAmber
+                : const Color(0xFFF59E0B),
             isDark: isDark,
             onTap: () => widget.onAuthModeChanged(false),
           ),
@@ -560,139 +593,147 @@ class _AuthCanvasState extends State<AuthCanvas>
     required bool isDark,
     required VoidCallback onTap,
   }) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: isActive
-                ? (isDark
-                    ? pulseDotColor.withValues(alpha: 0.15)
-                    : (activeBgGradient == null
-                        ? pulseDotColor.withValues(alpha: 0.15)
-                        : null))
-                : (isDark
-                    ? AppColors.surfaceMid.withValues(alpha: 0.8)
-                    : Colors.white),
-            gradient: isActive && !isDark ? activeBgGradient : null,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
+    return SelectionContainer.disabled(
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        opaque: true,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: onTap,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
               color: isActive
-                  ? activeBorderColor
+                  ? (isDark
+                        ? pulseDotColor.withValues(alpha: 0.15)
+                        : (activeBgGradient == null
+                              ? pulseDotColor.withValues(alpha: 0.15)
+                              : null))
                   : (isDark
-                      ? activeBorderColor.withValues(alpha: 0.3)
-                      : const Color(0xFFE2E8F0)),
-              width: isActive ? 1.5 : 1.0,
+                        ? AppColors.surfaceMid.withValues(alpha: 0.8)
+                        : Colors.white),
+              gradient: isActive && !isDark ? activeBgGradient : null,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: isActive
+                    ? activeBorderColor
+                    : (isDark
+                          ? activeBorderColor.withValues(alpha: 0.3)
+                          : const Color(0xFFE2E8F0)),
+                width: isActive ? 1.5 : 1.0,
+              ),
+              boxShadow: isActive
+                  ? [
+                      BoxShadow(
+                        color: activeShadowColor,
+                        blurRadius: isDark ? 25 : 18,
+                        offset: const Offset(0, 6),
+                      ),
+                    ]
+                  : [
+                      BoxShadow(
+                        color: isDark
+                            ? Colors.black.withValues(alpha: 0.2)
+                            : const Color(0x060F172A),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
             ),
-            boxShadow: isActive
-                ? [
-                    BoxShadow(
-                      color: activeShadowColor,
-                      blurRadius: isDark ? 25 : 18,
-                      offset: const Offset(0, 6),
+            child: Stack(
+              children: [
+                if (isActive)
+                  Positioned(
+                    top: 0,
+                    right: 0,
+                    child: AnimatedBuilder(
+                      animation: _pulseAnimation,
+                      builder: (context, _) {
+                        return Container(
+                          width: 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: pulseDotColor,
+                            boxShadow: [
+                              BoxShadow(
+                                color: pulseDotColor.withValues(
+                                  alpha: 0.4 + (0.5 * _pulseAnimation.value),
+                                ),
+                                blurRadius: 6 + (4 * _pulseAnimation.value),
+                                spreadRadius: 2 * _pulseAnimation.value,
+                              ),
+                            ],
+                          ),
+                        );
+                      },
                     ),
-                  ]
-                : [
-                    BoxShadow(
-                      color: isDark
-                          ? Colors.black.withValues(alpha: 0.2)
-                          : const Color(0x060F172A),
-                      blurRadius: 6,
-                      offset: const Offset(0, 2),
+                  ),
+                Row(
+                  children: [
+                    Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: pulseDotColor.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(9),
+                        border: Border.all(
+                          color: pulseDotColor.withValues(alpha: 0.35),
+                        ),
+                      ),
+                      child: Center(
+                        child: Text(
+                          iconText,
+                          style: const TextStyle(fontSize: 15),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            stepTag,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: tagTextColor,
+                              fontSize: 8.5,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.4,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTextStyles.subtitle2.copyWith(
+                              color: AppColors.textPrimary,
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          Text(
+                            subtitle,
+                            style: AppTextStyles.caption.copyWith(
+                              color: isDark
+                                  ? AppColors.textSecondary
+                                  : const Color(0xFF64748B),
+                              fontSize: 9,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
                     ),
                   ],
-          ),
-          child: Stack(
-            children: [
-              if (isActive)
-                Positioned(
-                  top: 0,
-                  right: 0,
-                  child: AnimatedBuilder(
-                    animation: _pulseAnimation,
-                    builder: (context, _) {
-                      return Container(
-                        width: 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: pulseDotColor,
-                          boxShadow: [
-                            BoxShadow(
-                              color: pulseDotColor.withValues(
-                                alpha: 0.4 + (0.5 * _pulseAnimation.value),
-                              ),
-                              blurRadius: 6 + (4 * _pulseAnimation.value),
-                              spreadRadius: 2 * _pulseAnimation.value,
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
                 ),
-              Row(
-                children: [
-                  Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color: pulseDotColor.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(9),
-                      border: Border.all(
-                        color: pulseDotColor.withValues(alpha: 0.35),
-                      ),
-                    ),
-                    child: Center(
-                      child: Text(
-                        iconText,
-                        style: const TextStyle(fontSize: 15),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          stepTag,
-                          style: TextStyle(
-                            color: tagTextColor,
-                            fontSize: 8.5,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 0.4,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          title,
-                          style: AppTextStyles.subtitle2.copyWith(
-                            color: AppColors.textPrimary,
-                            fontSize: 11.5,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        Text(
-                          subtitle,
-                          style: AppTextStyles.caption.copyWith(
-                            color: isDark
-                                ? AppColors.textSecondary
-                                : const Color(0xFF64748B),
-                            fontSize: 9,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -714,9 +755,7 @@ class _AuthCanvasState extends State<AuthCanvas>
           ),
           Icon(
             Icons.arrow_drop_down,
-            color: isDark
-                ? AppColors.accentCyan
-                : const Color(0xFF94A3B8),
+            color: isDark ? AppColors.accentCyan : const Color(0xFF94A3B8),
             size: 16,
           ),
         ],

@@ -553,10 +553,11 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
     required bool isDark,
     required VoidCallback onTap,
   }) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      opaque: true,
-      child: GestureDetector(
+    return SelectionContainer.disabled(
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        opaque: true,
+        child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: onTap,
         child: AnimatedContainer(
@@ -600,8 +601,9 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildSignInForm(bool isDark) {
     return Form(
@@ -634,20 +636,27 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
             autofillHints: const [AutofillHints.password],
             isDark: isDark,
             validator: _validateLoginPassword,
-          trailingHeader: MouseRegion(
-            cursor: SystemMouseCursors.click,
-            child: GestureDetector(
-              onTap: () => CenterToast.showInfo(
-                context,
-                'Password reset instructions sent to your email.',
-                title: 'Password Reset',
-              ),
-              child: Text(
-                'Forgot Password?',
-                style: TextStyle(
-                  fontSize: 11.5,
-                  fontWeight: FontWeight.w600,
-                  color: isDark ? Colors.white : AppColors.primary,
+          trailingHeader: SelectionContainer.disabled(
+            child: MouseRegion(
+              cursor: SystemMouseCursors.click,
+              opaque: true,
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => CenterToast.showInfo(
+                  context,
+                  'Password reset instructions sent to your email.',
+                  title: 'Password Reset',
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+                  child: Text(
+                    'Forgot Password?',
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? Colors.white : AppColors.primary,
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -1112,21 +1121,23 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
             ),
           ),
           const SizedBox(width: 6),
-          MouseRegion(
-            cursor: SystemMouseCursors.click,
-            opaque: true,
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: widget.onToggleMode,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
-                child: Text(
-                  widget.isLogin ? "Sign Up for Free" : "Sign In",
-                  style: TextStyle(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w700,
-                    color: isDark ? Colors.white : AppColors.primary,
-                    decoration: TextDecoration.underline,
+          SelectionContainer.disabled(
+            child: MouseRegion(
+              cursor: SystemMouseCursors.click,
+              opaque: true,
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: widget.onToggleMode,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+                  child: Text(
+                    widget.isLogin ? "Sign Up for Free" : "Sign In",
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w700,
+                      color: isDark ? Colors.white : AppColors.primary,
+                      decoration: TextDecoration.underline,
+                    ),
                   ),
                 ),
               ),

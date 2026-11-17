@@ -450,19 +450,20 @@ class _HeroPrimaryButtonState extends State<_HeroPrimaryButton>
 
   @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      onEnter: (_) {
-        setState(() => _isHovered = true);
-        _shimmerController.repeat();
-      },
-      onExit: (_) {
-        setState(() => _isHovered = false);
-        _shimmerController.stop();
-        _shimmerController.reset();
-      },
-      cursor: SystemMouseCursors.click,
-      opaque: true,
-      child: GestureDetector(
+    return SelectionContainer.disabled(
+      child: MouseRegion(
+        onEnter: (_) {
+          setState(() => _isHovered = true);
+          _shimmerController.repeat();
+        },
+        onExit: (_) {
+          setState(() => _isHovered = false);
+          _shimmerController.stop();
+          _shimmerController.reset();
+        },
+        cursor: SystemMouseCursors.click,
+        opaque: true,
+        child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: widget.onTap,
         child: AnimatedScale(
@@ -545,8 +546,9 @@ class _HeroPrimaryButtonState extends State<_HeroPrimaryButton>
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }
 
 /// Frosted glass secondary action button for demo trigger
@@ -571,12 +573,13 @@ class _HeroSecondaryDemoButtonState extends State<_HeroSecondaryDemoButton> {
 
   @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      cursor: SystemMouseCursors.click,
-      opaque: true,
-      child: GestureDetector(
+    return SelectionContainer.disabled(
+      child: MouseRegion(
+        onEnter: (_) => setState(() => _isHovered = true),
+        onExit: (_) => setState(() => _isHovered = false),
+        cursor: SystemMouseCursors.click,
+        opaque: true,
+        child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: widget.onTap,
         child: AnimatedScale(
@@ -635,6 +638,7 @@ class _HeroSecondaryDemoButtonState extends State<_HeroSecondaryDemoButton> {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }
