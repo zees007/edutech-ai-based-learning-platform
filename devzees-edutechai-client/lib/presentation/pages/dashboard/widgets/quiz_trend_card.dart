@@ -17,65 +17,77 @@ class QuizTrendCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = context.isDarkMode;
+    final isMobile = MediaQuery.of(context).size.width < 700;
     final trend = quizMetrics.accuracyTrend;
+
+    final titleColumn = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Quiz Comprehension & Accuracy Curve',
+          style: AppTextStyles.h4.copyWith(
+            fontWeight: FontWeight.w700,
+            fontSize: isMobile ? 16 : 18,
+            color: isDark ? AppColors.textPrimary : const Color(0xFF0F172A),
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          'Performance progression across 3-question milestone quizzes',
+          style: AppTextStyles.body2.copyWith(
+            color: isDark ? AppColors.textSecondary : const Color(0xFF64748B),
+            fontSize: isMobile ? 12 : 13,
+          ),
+        ),
+      ],
+    );
+
+    final badgesWrap = Wrap(
+      spacing: 8,
+      runSpacing: 6,
+      children: [
+        _buildStatBadge(
+          context,
+          label: 'Quizzes',
+          value: '${quizMetrics.totalQuizzesTaken}',
+          color: AppColors.accentPurple,
+        ),
+        _buildStatBadge(
+          context,
+          label: 'Questions',
+          value: '${quizMetrics.totalQuestionsEvaluated}',
+          color: AppColors.accentCyan,
+        ),
+        _buildStatBadge(
+          context,
+          label: 'Perfect (3/3)',
+          value: '${quizMetrics.perfectQuizzesCount}',
+          color: AppColors.accentGreen,
+        ),
+      ],
+    );
 
     return GlassCard(
       borderRadius: 20,
-      padding: const EdgeInsets.all(22),
+      padding: EdgeInsets.all(isMobile ? 16 : 22),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header & Quick Metric Capsules
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Quiz Comprehension & Accuracy Curve',
-                    style: AppTextStyles.h4.copyWith(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 18,
-                      color: isDark ? AppColors.textPrimary : const Color(0xFF0F172A),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Performance progression across 3-question milestone quizzes',
-                    style: AppTextStyles.body2.copyWith(
-                      color: isDark ? AppColors.textSecondary : const Color(0xFF64748B),
-                    ),
-                  ),
-                ],
-              ),
-              Wrap(
-                spacing: 8,
-                runSpacing: 6,
-                children: [
-                  _buildStatBadge(
-                    context,
-                    label: 'Quizzes',
-                    value: '${quizMetrics.totalQuizzesTaken}',
-                    color: AppColors.accentPurple,
-                  ),
-                  _buildStatBadge(
-                    context,
-                    label: 'Questions',
-                    value: '${quizMetrics.totalQuestionsEvaluated}',
-                    color: AppColors.accentCyan,
-                  ),
-                  _buildStatBadge(
-                    context,
-                    label: 'Perfect (3/3)',
-                    value: '${quizMetrics.perfectQuizzesCount}',
-                    color: AppColors.accentGreen,
-                  ),
-                ],
-              ),
-            ],
-          ),
+          if (isMobile) ...[
+            titleColumn,
+            const SizedBox(height: 12),
+            badgesWrap,
+          ] else
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(child: titleColumn),
+                const SizedBox(width: 16),
+                badgesWrap,
+              ],
+            ),
           const SizedBox(height: 28),
 
           // Chart Section

@@ -39,29 +39,36 @@ class DashboardHeader extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
+                  Wrap(
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    spacing: 10,
+                    runSpacing: 6,
                     children: [
                       GradientText(
                         'Learning Performance & Stats',
-                        style: (isMobile ? AppTextStyles.h4 : AppTextStyles.h3).copyWith(
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: -0.5,
-                        ),
+                        style: (isMobile ? AppTextStyles.h4 : AppTextStyles.h3)
+                            .copyWith(
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: -0.5,
+                            ),
                         gradient: isDark
                             ? AppColors.primaryGradient
                             : const LinearGradient(
                                 colors: [Color(0xFF4F46E5), Color(0xFF7C3AED)],
                               ),
                       ),
-                      const SizedBox(width: 10),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.accentGreen.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: AppColors.accentGreen.withValues(alpha: 0.35),
+                            color: AppColors.accentGreen.withValues(
+                              alpha: 0.35,
+                            ),
                           ),
                         ),
                         child: Row(
@@ -93,7 +100,9 @@ class DashboardHeader extends ConsumerWidget {
                   Text(
                     'Welcome back, $firstName! Here is your comprehensive learning growth and quiz accuracy breakdown.',
                     style: AppTextStyles.body2.copyWith(
-                      color: isDark ? AppColors.textSecondary : const Color(0xFF64748B),
+                      color: isDark
+                          ? AppColors.textSecondary
+                          : const Color(0xFF64748B),
                     ),
                   ),
                 ],
@@ -142,7 +151,9 @@ class DashboardHeader extends ConsumerWidget {
                   : Icon(
                       Icons.refresh_rounded,
                       size: 20,
-                      color: isDark ? AppColors.textSecondary : const Color(0xFF64748B),
+                      color: isDark
+                          ? AppColors.textSecondary
+                          : const Color(0xFF64748B),
                     ),
               tooltip: 'Refresh analytics',
               onPressed: isRefreshing ? null : onRefresh,
@@ -165,8 +176,8 @@ class DashboardHeader extends ConsumerWidget {
     final bg = isSelected
         ? (isDark ? AppColors.primary : AppColors.purple)
         : (isDark
-            ? Colors.white.withValues(alpha: 0.06)
-            : Colors.black.withValues(alpha: 0.05));
+              ? Colors.white.withValues(alpha: 0.06)
+              : Colors.black.withValues(alpha: 0.05));
 
     final textColor = isSelected
         ? Colors.white
@@ -187,8 +198,8 @@ class DashboardHeader extends ConsumerWidget {
             color: isSelected
                 ? (isDark ? AppColors.primary : AppColors.purple)
                 : (isDark
-                    ? Colors.white.withValues(alpha: 0.12)
-                    : Colors.black.withValues(alpha: 0.08)),
+                      ? Colors.white.withValues(alpha: 0.12)
+                      : Colors.black.withValues(alpha: 0.08)),
             width: 1,
           ),
           boxShadow: isSelected

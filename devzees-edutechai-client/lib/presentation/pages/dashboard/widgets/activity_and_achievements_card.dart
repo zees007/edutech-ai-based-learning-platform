@@ -42,37 +42,42 @@ class ActivityAndAchievementsCard extends StatelessWidget {
 
   Widget _buildAchievementsSection(BuildContext context) {
     final isDark = context.isDarkMode;
+    final isMobile = MediaQuery.of(context).size.width < 700;
     final unlockedCount = achievements.where((a) => a.unlocked).length;
 
     return GlassCard(
       borderRadius: 20,
-      padding: const EdgeInsets.all(22),
+      padding: EdgeInsets.all(isMobile ? 16 : 22),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Milestone Achievements & Trophy Case',
-                    style: AppTextStyles.h4.copyWith(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 18,
-                      color: isDark ? AppColors.textPrimary : const Color(0xFF0F172A),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Milestone Achievements & Trophy Case',
+                      style: AppTextStyles.h4.copyWith(
+                        fontWeight: FontWeight.w700,
+                        fontSize: isMobile ? 16 : 18,
+                        color: isDark ? AppColors.textPrimary : const Color(0xFF0F172A),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Milestones unlocked through continuous study and quiz mastery',
-                    style: AppTextStyles.body2.copyWith(
-                      color: isDark ? AppColors.textSecondary : const Color(0xFF64748B),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Milestones unlocked through continuous study and quiz mastery',
+                      style: AppTextStyles.body2.copyWith(
+                        color: isDark ? AppColors.textSecondary : const Color(0xFF64748B),
+                        fontSize: isMobile ? 12 : 13,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+              const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
@@ -87,6 +92,7 @@ class ActivityAndAchievementsCard extends StatelessWidget {
                   style: AppTextStyles.caption.copyWith(
                     color: AppColors.accentAmber,
                     fontWeight: FontWeight.w700,
+                    fontSize: isMobile ? 11 : 12,
                   ),
                 ),
               ),
@@ -97,11 +103,11 @@ class ActivityAndAchievementsCard extends StatelessWidget {
           GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-              maxCrossAxisExtent: 260,
+            gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent: isMobile ? 450 : 260,
               crossAxisSpacing: 12,
               mainAxisSpacing: 12,
-              mainAxisExtent: 110,
+              mainAxisExtent: isMobile ? 95 : 110,
             ),
             itemCount: achievements.length,
             itemBuilder: (context, index) {
@@ -216,10 +222,11 @@ class ActivityAndAchievementsCard extends StatelessWidget {
 
   Widget _buildActivityHeatmapSection(BuildContext context) {
     final isDark = context.isDarkMode;
+    final isMobile = MediaQuery.of(context).size.width < 700;
 
     return GlassCard(
       borderRadius: 20,
-      padding: const EdgeInsets.all(22),
+      padding: EdgeInsets.all(isMobile ? 16 : 22),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -227,7 +234,7 @@ class ActivityAndAchievementsCard extends StatelessWidget {
             'Daily Activity Log',
             style: AppTextStyles.h4.copyWith(
               fontWeight: FontWeight.w700,
-              fontSize: 18,
+              fontSize: isMobile ? 16 : 18,
               color: isDark ? AppColors.textPrimary : const Color(0xFF0F172A),
             ),
           ),

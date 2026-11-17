@@ -50,12 +50,13 @@ class _ModeAndTopicCardsState extends State<ModeAndTopicCards> {
 
   Widget _buildModeCard(BuildContext context) {
     final isDark = context.isDarkMode;
+    final isMobile = MediaQuery.of(context).size.width < 700;
     final modes = widget.modeDistribution;
     final total = modes.total;
 
     return GlassCard(
       borderRadius: 20,
-      padding: const EdgeInsets.all(22),
+      padding: EdgeInsets.all(isMobile ? 16 : 22),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -63,7 +64,7 @@ class _ModeAndTopicCardsState extends State<ModeAndTopicCards> {
             'Learning Mode Distribution',
             style: AppTextStyles.h4.copyWith(
               fontWeight: FontWeight.w700,
-              fontSize: 18,
+              fontSize: isMobile ? 16 : 18,
               color: isDark ? AppColors.textPrimary : const Color(0xFF0F172A),
             ),
           ),
@@ -72,6 +73,7 @@ class _ModeAndTopicCardsState extends State<ModeAndTopicCards> {
             'Usage ratio across Visual 🎬, Deep Dive 🔬, and Bite-Sized ⚡ modes',
             style: AppTextStyles.body2.copyWith(
               color: isDark ? AppColors.textSecondary : const Color(0xFF64748B),
+              fontSize: isMobile ? 12 : 13,
             ),
           ),
           const SizedBox(height: 20),
@@ -261,11 +263,12 @@ class _ModeAndTopicCardsState extends State<ModeAndTopicCards> {
 
   Widget _buildTopicCard(BuildContext context) {
     final isDark = context.isDarkMode;
+    final isMobile = MediaQuery.of(context).size.width < 700;
     final topics = widget.topicBreakdown;
 
     return GlassCard(
       borderRadius: 20,
-      padding: const EdgeInsets.all(22),
+      padding: EdgeInsets.all(isMobile ? 16 : 22),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -273,7 +276,7 @@ class _ModeAndTopicCardsState extends State<ModeAndTopicCards> {
             'Topic Mastery Breakdown',
             style: AppTextStyles.h4.copyWith(
               fontWeight: FontWeight.w700,
-              fontSize: 18,
+              fontSize: isMobile ? 16 : 18,
               color: isDark ? AppColors.textPrimary : const Color(0xFF0F172A),
             ),
           ),
@@ -282,6 +285,7 @@ class _ModeAndTopicCardsState extends State<ModeAndTopicCards> {
             'Most explored subjects across your learning roadmap',
             style: AppTextStyles.body2.copyWith(
               color: isDark ? AppColors.textSecondary : const Color(0xFF64748B),
+              fontSize: isMobile ? 12 : 13,
             ),
           ),
           const SizedBox(height: 16),

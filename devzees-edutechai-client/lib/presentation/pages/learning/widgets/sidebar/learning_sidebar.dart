@@ -132,6 +132,7 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
 
   void _handleStartNewJourney() {
     ref.read(activeSessionProvider.notifier).clearSession();
+    context.go('/learning');
     if (widget.isMobile) {
       widget.onClose();
     } else if (Scaffold.maybeOf(context)?.hasDrawer ?? false) {
@@ -171,6 +172,8 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
     if (!perms.canAccessDashboard) return const SizedBox.shrink();
 
     final isDark = AppColors.isDark;
+    final String location = GoRouterState.of(context).matchedLocation;
+    final bool isDashboardActive = location.startsWith('/learning/dashboard');
 
     void handleOpenDashboard() {
       if (widget.isMobile) {
@@ -178,7 +181,7 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
       } else if (Scaffold.maybeOf(context)?.hasDrawer ?? false) {
         Scaffold.of(context).closeDrawer();
       }
-      context.push('/dashboard');
+      context.go('/learning/dashboard');
     }
 
     if (!expanded) {
@@ -191,14 +194,22 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: isDark
-                  ? Colors.white.withValues(alpha: 0.05)
-                  : AppColors.surfaceSubtle,
+              color: isDashboardActive
+                  ? (isDark
+                      ? AppColors.accentCyan.withValues(alpha: 0.15)
+                      : AppColors.primary.withValues(alpha: 0.12))
+                  : (isDark
+                      ? Colors.white.withValues(alpha: 0.05)
+                      : AppColors.surfaceSubtle),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.08)
-                    : AppColors.border,
+                color: isDashboardActive
+                    ? (isDark
+                        ? AppColors.accentCyan.withValues(alpha: 0.45)
+                        : AppColors.primary.withValues(alpha: 0.40))
+                    : (isDark
+                        ? Colors.white.withValues(alpha: 0.08)
+                        : AppColors.border),
                 width: 1,
               ),
             ),
@@ -227,14 +238,22 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
             height: 44,
             padding: const EdgeInsets.symmetric(horizontal: 14),
             decoration: BoxDecoration(
-              color: isDark
-                  ? Colors.white.withValues(alpha: 0.04)
-                  : Colors.black.withValues(alpha: 0.03),
+              color: isDashboardActive
+                  ? (isDark
+                      ? AppColors.accentCyan.withValues(alpha: 0.10)
+                      : AppColors.primary.withValues(alpha: 0.08))
+                  : (isDark
+                      ? Colors.white.withValues(alpha: 0.04)
+                      : Colors.black.withValues(alpha: 0.03)),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.07)
-                    : AppColors.border,
+                color: isDashboardActive
+                    ? (isDark
+                        ? AppColors.accentCyan.withValues(alpha: 0.35)
+                        : AppColors.primary.withValues(alpha: 0.30))
+                    : (isDark
+                        ? Colors.white.withValues(alpha: 0.07)
+                        : AppColors.border),
                 width: 1,
               ),
             ),
@@ -258,8 +277,10 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
                   child: Text(
                     'Learning Dashboard',
                     style: AppTextStyles.body2.copyWith(
-                      color: isDark ? Colors.white : AppColors.textPrimary,
-                      fontWeight: FontWeight.w600,
+                      color: isDashboardActive
+                          ? (isDark ? AppColors.accentCyan : AppColors.primary)
+                          : (isDark ? Colors.white : AppColors.textPrimary),
+                      fontWeight: isDashboardActive ? FontWeight.w700 : FontWeight.w600,
                       fontSize: 13,
                     ),
                     maxLines: 1,
@@ -269,9 +290,11 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
                 Icon(
                   Icons.arrow_forward_ios_rounded,
                   size: 12,
-                  color: isDark
-                      ? Colors.white.withValues(alpha: 0.35)
-                      : AppColors.textSecondary.withValues(alpha: 0.5),
+                  color: isDashboardActive
+                      ? (isDark ? AppColors.accentCyan : AppColors.primary)
+                      : (isDark
+                          ? Colors.white.withValues(alpha: 0.35)
+                          : AppColors.textSecondary.withValues(alpha: 0.5)),
                 ),
               ],
             ),

@@ -19,54 +19,55 @@ class WeakConceptsCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = context.isDarkMode;
+    final isMobile = MediaQuery.of(context).size.width < 700;
 
     return GlassCard(
       borderRadius: 20,
-      padding: const EdgeInsets.all(22),
+      padding: EdgeInsets.all(isMobile ? 16 : 22),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF59E0B).withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: const Icon(
-                      Icons.lightbulb_outline_rounded,
-                      color: Color(0xFFF59E0B),
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Concepts Needing Reinforcement',
-                        style: AppTextStyles.h4.copyWith(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 18,
-                          color: isDark ? AppColors.textPrimary : const Color(0xFF0F172A),
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Milestone steps with quiz scores below 60% (0/3 or 1/3 correct)',
-                        style: AppTextStyles.body2.copyWith(
-                          color: isDark ? AppColors.textSecondary : const Color(0xFF64748B),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF59E0B).withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(
+                  Icons.lightbulb_outline_rounded,
+                  color: Color(0xFFF59E0B),
+                  size: 20,
+                ),
               ),
-              if (weakConcepts.isNotEmpty)
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Concepts Needing Reinforcement',
+                      style: AppTextStyles.h4.copyWith(
+                        fontWeight: FontWeight.w700,
+                        fontSize: isMobile ? 16 : 18,
+                        color: isDark ? AppColors.textPrimary : const Color(0xFF0F172A),
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Milestone steps with quiz scores below 60% (0/3 or 1/3 correct)',
+                      style: AppTextStyles.body2.copyWith(
+                        color: isDark ? AppColors.textSecondary : const Color(0xFF64748B),
+                        fontSize: isMobile ? 12 : 13,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (weakConcepts.isNotEmpty) ...[
+                const SizedBox(width: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
@@ -81,9 +82,11 @@ class WeakConceptsCard extends ConsumerWidget {
                     style: AppTextStyles.caption.copyWith(
                       color: const Color(0xFFEF4444),
                       fontWeight: FontWeight.w700,
+                      fontSize: isMobile ? 11 : 12,
                     ),
                   ),
                 ),
+              ],
             ],
           ),
           const SizedBox(height: 20),

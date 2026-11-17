@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:devzees_edutechai_client/data/models/learning/session_response.dart';
 import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
 import 'package:devzees_edutechai_client/core/theme/text_styles.dart';
+import 'package:devzees_edutechai_client/core/theme/theme_palette.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/gradient_text.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/theme_toggle_button.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/step_pill.dart';
@@ -22,73 +24,92 @@ class MobileLearningTopBar extends StatelessWidget implements PreferredSizeWidge
   });
 
   @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight + 1.0);
 
   @override
   Widget build(BuildContext context) {
     final hasSession = session != null;
+    final isDark = context.isDarkMode;
+    final String location = GoRouterState.of(context).matchedLocation;
+    final bool isDashboard = location.startsWith('/learning/dashboard');
 
-    return AppBar(
-      backgroundColor: AppColors.topBarBackground,
-      elevation: 0,
-      scrolledUnderElevation: 0,
-      automaticallyImplyLeading: false,
-      titleSpacing: 0,
-      title: SizedBox(
-        height: kToolbarHeight,
-        child: Row(
+    return Material(
+      color: AppColors.topBarBackground,
+      child: SafeArea(
+        bottom: false,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            // 1. Left: Hamburger Menu Icon + App Logo
-            Padding(
-              padding: const EdgeInsets.only(left: 6),
+            SizedBox(
+              height: kToolbarHeight,
               child: Row(
-                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Builder(
-                    builder: (ctx) => IconButton(
-                      icon: Icon(
-                        Icons.menu_rounded,
-                        color: AppColors.textSecondary,
-                        size: 21,
-                      ),
-                      onPressed: () => Scaffold.of(ctx).openDrawer(),
-                      tooltip: 'Open menu',
-                      constraints: const BoxConstraints(
-                        minWidth: 36,
-                        minHeight: 36,
-                      ),
-                      padding: const EdgeInsets.all(6),
+                  // 1. Left: Hamburger Menu Icon + App Logo
+                  Padding(
+                    padding: const EdgeInsets.only(left: 6),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Builder(
+                          builder: (ctx) => IconButton(
+                            icon: Icon(
+                              Icons.menu_rounded,
+                              color: AppColors.textSecondary,
+                              size: 21,
+                            ),
+                            onPressed: () => Scaffold.of(ctx).openDrawer(),
+                            tooltip: 'Open menu',
+                            constraints: const BoxConstraints(
+                              minWidth: 36,
+                              minHeight: 36,
+                            ),
+                            padding: const EdgeInsets.all(6),
+                          ),
+                        ),
+                        const SizedBox(width: 2),
+                        _buildAppLogo(isCompact: (hasSession && !isDashboard) || isDashboard),
+                      ],
                     ),
                   ),
-                  const SizedBox(width: 2),
-                  _buildAppLogo(isCompact: hasSession),
+
+                  // 2. Center: Dashboard title OR Unified Command Hub Capsule OR Spacer
+                  if (isDashboard)
+                    Expanded(
+                      child: Center(
+                        child: Text(
+                          'Learning Dashboard',
+                          style: AppTextStyles.label.copyWith(
+                            color: isDark ? AppColors.accentCyan : AppColors.primary,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 13,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    )
+                  else if (hasSession)
+                    Expanded(
+                      child: Center(
+                        child: _buildUnifiedCommandHubCapsule(context),
+                      ),
+                    )
+                  else
+                    const Spacer(),
+
+                  // 3. Right: Theme Toggle Button
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: const ThemeToggleButton(size: 30),
+                  ),
                 ],
               ),
             ),
-
-            // 2. Center: Unified Command Hub Capsule (Only when session is active)
-            if (hasSession)
-              Expanded(
-                child: Center(
-                  child: _buildUnifiedCommandHubCapsule(context),
-                ),
-              )
-            else
-              const Spacer(),
-
-            // 3. Right: Theme Toggle Button
-            Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: const ThemeToggleButton(size: 30),
+            Container(
+              color: AppColors.glassBorder,
+              height: 1.0,
             ),
           ],
-        ),
-      ),
-      bottom: PreferredSize(
-        preferredSize: const Size.fromHeight(1.0),
-        child: Container(
-          color: AppColors.glassBorder,
-          height: 1.0,
         ),
       ),
     );

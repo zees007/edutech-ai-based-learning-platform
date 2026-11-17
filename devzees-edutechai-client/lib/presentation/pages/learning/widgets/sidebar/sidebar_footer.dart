@@ -127,7 +127,7 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
                         Icons.insights_rounded,
                         isDark ? AppColors.accentCyan : AppColors.primary,
                         onTap: () {
-                          context.push('/dashboard');
+                          context.go('/learning/dashboard');
                         },
                       ),
                     _buildMenuItem(
