@@ -255,6 +255,130 @@ class AchievementItem {
   }
 }
 
+class LearnerStanding {
+  final int totalXp;
+  final int currentLevel;
+  final String levelTitle;
+  final int xpProgressInLevel;
+  final int xpNeededForNext;
+  final bool isMaxLevel;
+  final int currentStreak;
+  final int longestStreak;
+  final List<AchievementItem> achievements;
+
+  const LearnerStanding({
+    this.totalXp = 0,
+    this.currentLevel = 1,
+    this.levelTitle = 'Curious Explorer',
+    this.xpProgressInLevel = 0,
+    this.xpNeededForNext = 60,
+    this.isMaxLevel = false,
+    this.currentStreak = 0,
+    this.longestStreak = 0,
+    this.achievements = const [],
+  });
+
+  factory LearnerStanding.fromJson(Map<String, dynamic> json) {
+    return LearnerStanding(
+      totalXp: (json['total_xp'] as num?)?.toInt() ?? 0,
+      currentLevel: (json['current_level'] as num?)?.toInt() ?? 1,
+      levelTitle: json['level_title'] as String? ?? 'Curious Explorer',
+      xpProgressInLevel: (json['xp_progress_in_level'] as num?)?.toInt() ?? 0,
+      xpNeededForNext: (json['xp_needed_for_next'] as num?)?.toInt() ?? 60,
+      isMaxLevel: json['is_max_level'] as bool? ?? false,
+      currentStreak: (json['current_streak'] as num?)?.toInt() ?? 0,
+      longestStreak: (json['longest_streak'] as num?)?.toInt() ?? 0,
+      achievements: (json['achievements'] as List<dynamic>?)
+              ?.map((e) => AchievementItem.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const [],
+    );
+  }
+}
+
+class PeriodSummary {
+  final int totalSessions;
+  final int completedSessions;
+  final double completionRate;
+  final int totalStepsMastered;
+  final int totalStudyMinutes;
+  final int xpEarnedInPeriod;
+  final double averageQuizScoreOverall;
+
+  const PeriodSummary({
+    this.totalSessions = 0,
+    this.completedSessions = 0,
+    this.completionRate = 0.0,
+    this.totalStepsMastered = 0,
+    this.totalStudyMinutes = 0,
+    this.xpEarnedInPeriod = 0,
+    this.averageQuizScoreOverall = 0.0,
+  });
+
+  factory PeriodSummary.fromJson(Map<String, dynamic> json) {
+    return PeriodSummary(
+      totalSessions: (json['total_sessions'] as num?)?.toInt() ?? 0,
+      completedSessions: (json['completed_sessions'] as num?)?.toInt() ?? 0,
+      completionRate: (json['completion_rate'] as num?)?.toDouble() ?? 0.0,
+      totalStepsMastered: (json['total_steps_mastered'] as num?)?.toInt() ?? 0,
+      totalStudyMinutes: (json['total_study_minutes'] as num?)?.toInt() ?? 0,
+      xpEarnedInPeriod: (json['xp_earned_in_period'] as num?)?.toInt() ?? 0,
+      averageQuizScoreOverall: (json['average_quiz_score_overall'] as num?)?.toDouble() ?? 0.0,
+    );
+  }
+}
+
+class PeriodPerformance {
+  final String timeRange;
+  final DateTime? startDate;
+  final DateTime? endDate;
+  final PeriodSummary summary;
+  final QuizMetrics quizMetrics;
+  final List<HeatmapDayItem> activityHeatmap;
+  final List<TopicBreakdownItem> topicBreakdown;
+  final ModeDistribution modeDistribution;
+
+  const PeriodPerformance({
+    required this.timeRange,
+    this.startDate,
+    this.endDate,
+    required this.summary,
+    required this.quizMetrics,
+    this.activityHeatmap = const [],
+    this.topicBreakdown = const [],
+    required this.modeDistribution,
+  });
+
+  factory PeriodPerformance.fromJson(Map<String, dynamic> json) {
+    return PeriodPerformance(
+      timeRange: json['time_range'] as String? ?? '30d',
+      startDate: json['start_date'] != null
+          ? DateTime.tryParse(json['start_date'] as String)
+          : null,
+      endDate: json['end_date'] != null
+          ? DateTime.tryParse(json['end_date'] as String)
+          : null,
+      summary: json['summary'] != null
+          ? PeriodSummary.fromJson(json['summary'] as Map<String, dynamic>)
+          : const PeriodSummary(),
+      quizMetrics: json['quiz_metrics'] != null
+          ? QuizMetrics.fromJson(json['quiz_metrics'] as Map<String, dynamic>)
+          : const QuizMetrics(),
+      activityHeatmap: (json['activity_heatmap'] as List<dynamic>?)
+              ?.map((e) => HeatmapDayItem.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const [],
+      topicBreakdown: (json['topic_breakdown'] as List<dynamic>?)
+              ?.map((e) => TopicBreakdownItem.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const [],
+      modeDistribution: json['mode_distribution'] != null
+          ? ModeDistribution.fromJson(json['mode_distribution'] as Map<String, dynamic>)
+          : const ModeDistribution(),
+    );
+  }
+}
+
 class DashboardResponse {
   final DashboardSummary summary;
   final QuizMetrics quizMetrics;

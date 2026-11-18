@@ -35,7 +35,8 @@ Adaptive AI-powered learning platform with multi-agent Socratic tutoring, YouTub
 *   **Quiz** (`learning_service.dart`):
     *   `POST /api/v1/quiz/submit`
 *   **Analytics & Performance Dashboard** (`dashboard_service.dart`):
-    *   `GET /api/v1/learning/analytics/dashboard`
+    *   `GET /api/v1/learning/analytics/standing`
+    *   `GET /api/v1/learning/analytics/performance`
 *   **Admin & Subscription Tiers** (`admin_service.dart`):
     *   `GET /api/v1/admin/metrics`
     *   `GET /api/v1/admin/tiers`
@@ -675,19 +676,17 @@ Get the quiz for a specific step (if generated).
 
 ---
 
-## Get Learning Analytics Dashboard
-**Endpoint:** `GET /api/v1/learning/analytics/dashboard`
+## Get Learner Standing (HUD)
+**Endpoint:** `GET /api/v1/learning/analytics/standing`
 
-Retrieve aggregated learner performance metrics, executive KPIs, chronological quiz accuracy trendline, weak concepts requiring reinforcement, learning mode distribution (Visual, Deep Dive, Bite-Sized), top topic breakdown, 90-day activity heatmap, XP / level progression, and milestone achievements.
+Retrieve all-time cumulative learner progression, current rank level, XP progress, study streak continuity, and permanent trophy unlocks. This data is decoupled from date filters, remains stable across filter changes, and is cached for sub-5ms responses.
 
 ### Security & Privileges
 - **Authentication:** `access_token` (HTTP-only cookie or Bearer token) *(Required)*
 - **Required Privilege:** `ET_DASHBOARD` *(Assigned to Free, Pro, Ultra, and Admin roles)*
 
 ### Request
-
-**Query Parameters:**
-- `time_range` (query, string, optional): Filter period for metrics. Allowed values: `7d`, `30d`, `90d`, `all`. Default: `30d`.
+*No query parameters required.*
 
 ### Response
 
@@ -696,123 +695,166 @@ Retrieve aggregated learner performance metrics, executive KPIs, chronological q
 **Body (application/json):**
 ```json
 {
-  "summary": {
-    "total_sessions": 12,
-    "completed_sessions": 8,
-    "in_progress_sessions": 4,
-    "total_milestone_steps": 60,
-    "completed_steps": 48,
-    "total_learning_minutes": 285,
-    "total_xp": 1420,
-    "current_level": 4,
-    "level_title": "Apprentice",
-    "xp_progress_in_level": 0.45,
-    "current_streak_days": 5,
-    "overall_completion_rate": 0.80
-  },
-  "quiz_metrics": {
-    "total_quizzes_taken": 40,
-    "total_questions_answered": 120,
-    "total_questions_correct": 98,
-    "average_accuracy": 0.8167,
-    "perfect_quizzes_count": 22
-  },
-  "quiz_accuracy_trend": [
-    {
-      "date": "2026-11-10",
-      "session_id": "session-uuid-1",
-      "topic": "Quantum Computing Basics",
-      "step_index": 0,
-      "step_title": "Superposition Fundamentals",
-      "accuracy": 1.0,
-      "questions_correct": 3,
-      "total_questions": 3
-    },
-    {
-      "date": "2026-11-12",
-      "session_id": "session-uuid-1",
-      "topic": "Quantum Computing Basics",
-      "step_index": 1,
-      "step_title": "Quantum Entanglement",
-      "accuracy": 0.6667,
-      "questions_correct": 2,
-      "total_questions": 3
-    }
-  ],
-  "concepts_needing_reinforcement": [
-    {
-      "session_id": "session-uuid-1",
-      "topic": "Quantum Computing Basics",
-      "step_index": 2,
-      "step_title": "Shor's Algorithm Mechanics",
-      "quiz_score": 0.3333,
-      "questions_correct": 1,
-      "total_questions": 3,
-      "completed_at": "2026-11-13T10:15:00Z"
-    }
-  ],
-  "mode_distribution": {
-    "visual_mode_sessions": 6,
-    "deep_dive_sessions": 4,
-    "bite_sized_sessions": 2,
-    "visual_mode_percentage": 0.50,
-    "deep_dive_percentage": 0.3333,
-    "bite_sized_percentage": 0.1667
-  },
-  "topic_breakdown": [
-    {
-      "topic": "Quantum Computing Basics",
-      "completed_steps": 5,
-      "total_steps": 5,
-      "accuracy": 0.8667,
-      "last_studied_at": "2026-11-13T10:15:00Z"
-    }
-  ],
-  "activity_heatmap": [
-    {
-      "date": "2026-11-12",
-      "steps_completed": 3,
-      "xp_earned": 150
-    },
-    {
-      "date": "2026-11-13",
-      "steps_completed": 2,
-      "xp_earned": 100
-    }
-  ],
+  "total_xp": 3450,
+  "current_level": 5,
+  "level_title": "Rising Scholar",
+  "xp_progress_in_level": 250,
+  "xp_needed_for_next": 250,
+  "is_max_level": false,
+  "current_streak": 5,
+  "longest_streak": 12,
   "achievements": [
     {
       "id": "first_step",
-      "title": "First Step Taken",
-      "description": "Completed your first learning milestone step.",
+      "title": "First Step",
+      "description": "Mastered your first learning milestone step",
       "unlocked": true,
       "unlocked_at": "2026-11-10T09:00:00Z",
-      "icon_name": "flag"
+      "icon": "flag"
     },
     {
-      "id": "quiz_ace",
-      "title": "Quiz Ace",
-      "description": "Scored 100% (3/3) on 5 or more milestone quizzes.",
+      "id": "first_journey",
+      "title": "Journey Pioneer",
+      "description": "Completed an entire learning roadmap to 100%",
       "unlocked": true,
-      "unlocked_at": "2026-11-12T11:30:00Z",
-      "icon_name": "military_tech"
+      "unlocked_at": "2026-11-12T14:30:00Z",
+      "icon": "trophy"
     },
     {
-      "id": "century_xp",
-      "title": "Century Scholar",
-      "description": "Accumulated over 1,000 XP in learning journeys.",
+      "id": "sharp_mind",
+      "title": "Sharp Mind",
+      "description": "Scored 100% (3/3) on 5 different milestone quizzes",
       "unlocked": true,
-      "unlocked_at": "2026-11-13T10:15:00Z",
-      "icon_name": "auto_awesome"
+      "unlocked_at": "2026-11-15T11:20:00Z",
+      "icon": "bullseye"
     }
   ]
 }
 ```
 
 ### Error Responses
-
 - **401 Unauthorized:** Missing, expired, or invalid session token.
 - **403 Forbidden:** User role lacks `ET_DASHBOARD` privilege.
+
+---
+
+## Get Period Performance Analytics
+**Endpoint:** `GET /api/v1/learning/analytics/performance`
+
+Retrieve interval-scoped learner performance metrics, milestone step completions, active study hours with idle break clamping, chronological quiz accuracy trendline, weak concepts requiring review, learning mode distribution (Visual, Deep Dive, Bite-Sized), and daily activity heatmap.
+
+### Security & Privileges
+- **Authentication:** `access_token` (HTTP-only cookie or Bearer token) *(Required)*
+- **Required Privilege:** `ET_DASHBOARD` *(Assigned to Free, Pro, Ultra, and Admin roles)*
+
+### Request
+
+**Query Parameters:**
+- `time_range` (query, string, required): Filter interval window. Allowed values: `7d`, `30d`, `90d`, `1y`, `all`, `custom`. Default: `30d`.
+- `start_date` (query, date, optional): Filter period start date (`YYYY-MM-DD`). Required when `time_range=custom`.
+- `end_date` (query, date, optional): Filter period end date (`YYYY-MM-DD`). Required when `time_range=custom`.
+- `tz_offset_minutes` (query, integer, optional): Client UTC offset in minutes (e.g. `180` for UTC+3, `-300` for UTC-5). Ensures local day midnight boundaries match database UTC timestamps without drift. Default: `0`.
+
+### Response
+
+**200 Successful Response**
+
+**Body (application/json):**
+```json
+{
+  "time_range": "30d",
+  "start_date": "2026-10-19T07:00:00Z",
+  "end_date": "2026-11-18T07:00:00Z",
+  "summary": {
+    "total_sessions": 6,
+    "completed_sessions": 4,
+    "completion_rate": 66.7,
+    "total_steps_mastered": 18,
+    "total_study_minutes": 210,
+    "xp_earned_in_period": 980,
+    "average_quiz_score_overall": 83.3
+  },
+  "quiz_metrics": {
+    "total_quizzes_taken": 18,
+    "total_questions_evaluated": 54,
+    "questions_correct": 45,
+    "perfect_quizzes_count": 8,
+    "accuracy_trend": [
+      {
+        "date": "2026-11-10",
+        "session_id": "session-uuid-1",
+        "topic": "Python Concurrency",
+        "step_index": 0,
+        "step_title": "Event Loop Architecture",
+        "step_score": 100.0,
+        "session_avg_score": 100.0
+      },
+      {
+        "date": "2026-11-12",
+        "session_id": "session-uuid-1",
+        "topic": "Python Concurrency",
+        "step_index": 1,
+        "step_title": "Async/Await Mechanics",
+        "step_score": 66.7,
+        "session_avg_score": 83.3
+      }
+    ],
+    "concepts_needing_reinforcement": [
+      {
+        "session_id": "session-uuid-1",
+        "topic": "Python Concurrency",
+        "step_index": 2,
+        "step_title": "Tasks & Futures Deadlocks",
+        "quiz_score": 33.3,
+        "correct_count": 1,
+        "total_questions": 3,
+        "completed_at": "2026-11-13T10:15:00Z"
+      }
+    ]
+  },
+  "activity_heatmap": [
+    {
+      "date": "2026-11-10",
+      "steps_count": 3,
+      "xp_earned": 150,
+      "active_minutes": 45
+    },
+    {
+      "date": "2026-11-12",
+      "steps_count": 2,
+      "xp_earned": 120,
+      "active_minutes": 30
+    }
+  ],
+  "topic_breakdown": [
+    {
+      "topic": "Python Concurrency",
+      "session_count": 3,
+      "percentage": 50.0
+    },
+    {
+      "topic": "Quantum Computing",
+      "session_count": 2,
+      "percentage": 33.3
+    }
+  ],
+  "mode_distribution": {
+    "visual": 4,
+    "deep_dive": 2,
+    "bite_sized": 0
+  }
+}
+```
+
+### Error Responses
+- **400 Bad Request:**
+  - `start_date` is chronologically after `end_date`.
+  - Invalid `time_range` value.
+- **401 Unauthorized:** Missing, expired, or invalid session token.
+- **403 Forbidden:** User role lacks `ET_DASHBOARD` privilege.
+- **422 Unprocessable Entity:**
+  - `time_range=custom` but missing `start_date` or `end_date`.
+  - Selected date range exceeds 730 days (2-year safety ceiling): `"The selected date range cannot exceed 730 days (2 years). Please choose a shorter window."`
 
 ---
 

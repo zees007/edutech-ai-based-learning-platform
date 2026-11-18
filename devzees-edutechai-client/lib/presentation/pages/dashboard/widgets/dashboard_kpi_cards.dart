@@ -20,9 +20,9 @@ class DashboardKpiCards extends StatelessWidget {
         if (totalWidth <= 0) return const SizedBox.shrink();
 
         final int crossAxisCount;
-        if (totalWidth >= 850) {
-          crossAxisCount = 3;
-        } else if (totalWidth >= 520) {
+        if (totalWidth >= 960) {
+          crossAxisCount = 4;
+        } else if (totalWidth >= 500) {
           crossAxisCount = 2;
         } else {
           crossAxisCount = 1;
@@ -39,7 +39,7 @@ class DashboardKpiCards extends StatelessWidget {
               width: cardWidth,
               title: 'Active Study Time',
               value: formattedStudyTime,
-              subtitle: 'Active time across sessions',
+              subtitle: 'Active time in period',
               icon: Icons.timer_outlined,
               iconColor: AppColors.accentCyan,
               accentGradient: const [Color(0xFF06B6D4), Color(0xFF0284C7)],
@@ -68,32 +68,9 @@ class DashboardKpiCards extends StatelessWidget {
             _buildCard(
               context: context,
               width: cardWidth,
-              title: 'All-Time Learner Level',
-              value: 'Level ${summary.currentLevel}',
-              subtitle: '${summary.levelTitle} (+${summary.totalXp} XP)',
-              icon: Icons.military_tech_rounded,
-              iconColor: AppColors.accentAmber,
-              accentGradient: const [Color(0xFFF59E0B), Color(0xFFD97706)],
-              extraBadge: summary.isMaxLevel
-                  ? 'MAX'
-                  : '+${summary.xpNeededForNext} XP to next',
-            ),
-            _buildCard(
-              context: context,
-              width: cardWidth,
-              title: 'Active Study Streak',
-              value: '${summary.currentStreak} Days',
-              subtitle: 'Personal Best: ${summary.longestStreak} days',
-              icon: Icons.local_fire_department_rounded,
-              iconColor: const Color(0xFFEF4444),
-              accentGradient: const [Color(0xFFEF4444), Color(0xFFDC2626)],
-            ),
-            _buildCard(
-              context: context,
-              width: cardWidth,
-              title: 'Overall Quiz Accuracy',
+              title: 'Period Quiz Accuracy',
               value: '${summary.averageQuizScoreOverall.toStringAsFixed(1)}%',
-              subtitle: 'Across all 3-question quizzes',
+              subtitle: 'Across milestone quizzes in period',
               icon: Icons.track_changes_rounded,
               iconColor: AppColors.accentBlue,
               accentGradient: const [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
@@ -105,22 +82,9 @@ class DashboardKpiCards extends StatelessWidget {
   }
 
   double _calculateCardWidth(double totalWidth, int count) {
-    if (count <= 1 || totalWidth <= 0) return totalWidth;
-    final spacingTotal = (count - 1) * 16.0;
-    final width = (totalWidth - spacingTotal) / count;
-    return width > 0 ? width : totalWidth;
-  }
-
-  String _formatStudyTime(int minutes) {
-    if (minutes < 60) {
-      return '$minutes mins';
-    }
-    final hours = minutes ~/ 60;
-    final remainingMins = minutes % 60;
-    if (remainingMins == 0) {
-      return '$hours hrs';
-    }
-    return '${hours}h ${remainingMins}m';
+    if (count <= 1) return totalWidth;
+    final totalSpacing = (count - 1) * 16.0;
+    return (totalWidth - totalSpacing) / count;
   }
 
   Widget _buildCard({
@@ -136,98 +100,114 @@ class DashboardKpiCards extends StatelessWidget {
   }) {
     final isDark = context.isDarkMode;
 
-    return GlassCard(
+    return SizedBox(
       width: width,
-      borderRadius: 18,
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      accentGradient.first.withValues(alpha: 0.18),
-                      accentGradient.last.withValues(alpha: 0.08),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: accentGradient.first.withValues(alpha: 0.3),
-                    width: 1,
+      child: GlassCard(
+        borderRadius: 20,
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    title,
+                    style: AppTextStyles.label.copyWith(
+                      color: isDark
+                          ? AppColors.textSecondary
+                          : const Color(0xFF64748B),
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                child: Icon(icon, color: iconColor, size: 22),
-              ),
-              if (extraBadge != null)
+                Container(
+                  padding: const EdgeInsets.all(7),
+                  decoration: BoxDecoration(
+                    color: iconColor.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: iconColor.withValues(alpha: 0.25),
+                    ),
+                  ),
+                  child: Icon(icon, color: iconColor, size: 18),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.alphabetic,
+              children: [
                 Flexible(
-                  child: Container(
+                  child: Text(
+                    value,
+                    style: AppTextStyles.h3.copyWith(
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.5,
+                      fontSize: 22,
+                      color: isDark
+                          ? AppColors.textPrimary
+                          : const Color(0xFF0F172A),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                if (extraBadge != null) ...[
+                  const SizedBox(width: 8),
+                  Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 3,
+                      horizontal: 7,
+                      vertical: 2,
                     ),
                     decoration: BoxDecoration(
-                      color: accentGradient.first.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                        color: accentGradient.first.withValues(alpha: 0.35),
-                      ),
+                      gradient: LinearGradient(colors: accentGradient),
+                      borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
                       extraBadge,
-                      style: AppTextStyles.caption.copyWith(
-                        color: accentGradient.first,
-                        fontWeight: FontWeight.w700,
+                      style: const TextStyle(
+                        color: Colors.white,
                         fontSize: 10,
+                        fontWeight: FontWeight.w700,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Text(
-            value,
-            style: AppTextStyles.h3.copyWith(
-              fontWeight: FontWeight.w800,
-              fontSize: 24,
-              letterSpacing: -0.5,
-              color: isDark ? AppColors.textPrimary : const Color(0xFF0F172A),
+                ],
+              ],
             ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            title,
-            style: AppTextStyles.label.copyWith(
-              color: isDark ? AppColors.textSecondary : const Color(0xFF475569),
-              fontWeight: FontWeight.w600,
-              fontSize: 13,
+            const SizedBox(height: 6),
+            Text(
+              subtitle,
+              style: AppTextStyles.caption.copyWith(
+                color: isDark ? AppColors.textMuted : const Color(0xFF94A3B8),
+                fontSize: 12,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            subtitle,
-            style: AppTextStyles.caption.copyWith(
-              color: isDark ? AppColors.textMuted : const Color(0xFF94A3B8),
-              fontSize: 12,
-            ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
+          ],
+        ),
       ),
     );
+  }
+
+  String _formatStudyTime(int minutes) {
+    if (minutes <= 0) return '0 min';
+    final hours = minutes ~/ 60;
+    final mins = minutes % 60;
+    if (hours > 0 && mins > 0) {
+      return '${hours}h ${mins}m';
+    } else if (hours > 0) {
+      return '${hours}h';
+    } else {
+      return '${mins}m';
+    }
   }
 }

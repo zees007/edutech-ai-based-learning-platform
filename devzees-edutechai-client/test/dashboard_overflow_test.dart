@@ -128,6 +128,7 @@ void main() {
     return ProviderScope(
       overrides: [
         dashboardProvider.overrideWith(() => _MockDashboardNotifier(dummyDashboardData)),
+        learnerStandingProvider.overrideWith(() => _MockLearnerStandingNotifier(dummyDashboardData.achievements)),
         authProvider.overrideWith(() => _MockAuthNotifier()),
       ],
       child: MaterialApp(
@@ -153,7 +154,7 @@ void main() {
     await tester.pumpWidget(createDashboardWidget(width: 1000, height: 800));
     await tester.pumpAndSettle();
 
-    expect(find.text('Learning Performance & Stats'), findsOneWidget);
+    expect(find.text('Growth & Mastery Analytics'), findsOneWidget);
     expect(find.text('Active Study Time'), findsOneWidget);
     expect(find.text('Quiz Comprehension & Accuracy Curve'), findsOneWidget);
     expect(tester.takeException(), isNull);
@@ -171,7 +172,7 @@ void main() {
     await tester.pumpWidget(createDashboardWidget(width: 620, height: 700));
     await tester.pumpAndSettle();
 
-    expect(find.text('Learning Performance & Stats'), findsOneWidget);
+    expect(find.text('Growth & Mastery Analytics'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -186,7 +187,7 @@ void main() {
     await tester.pumpWidget(createDashboardWidget(width: 375, height: 812));
     await tester.pumpAndSettle();
 
-    expect(find.text('Learning Performance & Stats'), findsOneWidget);
+    expect(find.text('Growth & Mastery Analytics'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -201,7 +202,7 @@ void main() {
     await tester.pumpWidget(createDashboardWidget(width: 320, height: 568));
     await tester.pumpAndSettle();
 
-    expect(find.text('Learning Performance & Stats'), findsOneWidget);
+    expect(find.text('Growth & Mastery Analytics'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }
@@ -220,10 +221,41 @@ class _MockDashboardNotifier extends DashboardNotifier {
   }
 
   @override
-  Future<void> loadDashboard({String? timeRange}) async {}
+  Future<void> loadDashboard({
+    String? timeRange,
+    DateTime? startDate,
+    DateTime? endDate,
+  }) async {}
+
+  @override
+  Future<void> setCustomDateRange(DateTime start, DateTime end) async {}
+
+  @override
+  Future<void> setTimeRange(String newRange) async {}
 
   @override
   Future<void> refresh() async {}
+}
+
+class _MockLearnerStandingNotifier extends LearnerStandingNotifier {
+  final List<AchievementItem> achievements;
+
+  _MockLearnerStandingNotifier([this.achievements = const []]);
+
+  @override
+  Future<LearnerStanding> build() async {
+    return LearnerStanding(
+      totalXp: 1250,
+      currentLevel: 4,
+      levelTitle: 'Knowledge Adept',
+      xpProgressInLevel: 250,
+      xpNeededForNext: 500,
+      isMaxLevel: false,
+      currentStreak: 5,
+      longestStreak: 12,
+      achievements: achievements,
+    );
+  }
 }
 
 class _MockAuthNotifier extends AuthNotifier {

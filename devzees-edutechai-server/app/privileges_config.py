@@ -167,6 +167,8 @@ ENDPOINT_PRIVILEGE_MAP = {
     "POST /api/v1/sessions/{session_id}/mode": ET_INTERACT_LEARNING_SESSION,
     "GET /api/v1/sessions": ET_VIEW_LEARNING_HISTORY,
     "GET /api/v1/sessions/quota": ET_VIEW_QUOTA,
+    "GET /api/v1/learning/analytics/standing": ET_DASHBOARD,
+    "GET /api/v1/learning/analytics/performance": ET_DASHBOARD,
     "GET /api/v1/learning/analytics/dashboard": ET_DASHBOARD,
     # Quiz Endpoints
     "GET /api/v1/quiz/{session_id}/{step_index}": ET_GENERATE_QUIZ,

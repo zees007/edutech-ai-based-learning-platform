@@ -415,35 +415,44 @@ The **Progress Header** in the UI displays:
 
 ## 📊 Learning Performance & Stats Dashboard
 
-EduTechAI provides a centralized, executive analytics dashboard where learners can monitor their overall learning momentum, formative assessment scores, and topic mastery across all journeys.
+EduTechAI provides a centralized, executive analytics dashboard powered by a **Two-Tier Decoupled Architecture** (`/analytics/standing` and `/analytics/performance`) where learners can monitor their overall learning momentum, formative assessment scores, and topic mastery across custom date intervals without distorting permanent gamification records.
 
 ### Key Capabilities
 
-1. **Executive KPI Pulse Cards:**
-   - **Total Active Study Hours:** Accurately calculated via step-delta idle clamping (idle pauses > 30 minutes clamped to platform mode medians).
-   - **Completed & In-Progress Sessions:** Real-time completion rates across all topic journeys.
-   - **Milestone Steps Mastered:** Total concepts understood and checked off.
-   - **Overall Quiz Accuracy:** Weighted accuracy across all 3-question milestone quizzes.
-   - **Total Cumulative XP & Level:** Aggregate experience points across all sessions mapped to the 10-tier mastery scale (`Curious Explorer` through `Grand Sage`).
-   - **Daily Learning Streak:** Current consecutive days of active study.
+1. **Persistent Learner Standing HUD (`/analytics/standing`):**
+   - **All-Time Level & Title:** Aggregate experience points mapped to the 10-tier mastery scale (`Curious Explorer` through `Grand Sage`).
+   - **XP Progress Bar:** Live progress towards next level threshold with remaining XP needed.
+   - **Daily Learning Streak:** Current consecutive days of active study alongside personal best record.
+   - **Permanent Trophy Case:** Achievements evaluated all-time (`First Step`, `Journey Pioneer`, `Sharp Mind`, `Polymath`), ensuring trophies never re-lock when viewing filtered date windows.
+   - **In-Memory Caching:** Sub-5ms response cached in server memory and client Riverpod state, evicted instantly on milestone completion.
 
-2. **Formative 3-Question Quiz Accuracy Trendline:**
-   - Built with interactive `fl_chart` LineChart visualization.
-   - Chronological plot of every milestone checkpoint with touch tooltips detailing the topic, milestone title, questions answered, and score.
+2. **Period Performance Analytics (`/analytics/performance`):**
+   - **Adaptive Date Filtering:** Quick presets (`7d`, `30d`, `90d`, `1y`, `all`) and **Custom Date Range** picker.
+   - **Client Timezone Alignment:** Accepts `tz_offset_minutes` to align calendar midnight boundaries with user local time without UTC drift.
+   - **Safety Ceiling:** Validates custom ranges with a 730-day (2-year) ceiling, presenting clean inline guidance if exceeded.
+   - **Session Boundary Consistency:** Attributes completed journeys by last completion timestamp rather than creation date, preventing boundary discrepancies.
+   - **Total Active Study Hours:** Calculated via step-delta idle clamping (idle pauses > 30 minutes clamped to platform mode medians).
+   - **Milestones Mastered & Completion Rate:** Focused interval metrics reflecting true productivity during the chosen period.
 
-3. **Weak Concept Remediation (1-Click Review):**
+3. **Formative 3-Question Quiz Accuracy Trendline:**
+   - Interactive `fl_chart` LineChart on a **horizontally scrollable canvas** (48px fixed point spacing) that prevents point overcrowding on long ranges.
+   - Auto-scrolls to the latest checkpoint on load with smooth leftward history exploration.
+   - Rich hover/touch tooltips detailing `Topic`, `Step X: [Title]`, `Date`, and score breakdown (`X/3 correct`).
+   - **Fullscreen Modal Expansion:** 1-click expand dialog for inspecting the full timeline across wide viewports.
+   - **Dual View Mode:** Segmented toggle between individual milestone checkpoint dots and rolling weekly macro averages.
+
+4. **Weak Concept Remediation (1-Click Review):**
    - Automatically surfaces steps where quiz performance fell below passing ($\le 50\%$, i.e. 0/3 or 1/3 correct).
    - Features a **1-click "Review" action** that instantly loads the exact session and brings the student directly to that milestone step in the active workspace.
 
-4. **Tri-Mode Learning Distribution & Topic Mastery:**
+5. **Tri-Mode Learning Distribution & Topic Mastery:**
    - Donut chart depicting student preferences across **Visual 🎬**, **Deep Dive 🔬**, and **Bite-Sized ⚡** modes.
-   - Topic progress breakdown showing percentage completion and last-studied timestamps.
+   - Topic progress breakdown showing percentage completion and session counts.
 
-5. **Milestone Achievements & 90-Day Activity Log:**
-   - Gamified badges unlocking dynamically upon reaching milestones (`First Step Taken`, `Quiz Ace`, `Century Scholar`, `Grand Scholar`).
-   - Daily activity log showing steps completed and XP earned per day.
+6. **Activity Heatmap Stream:**
+   - Daily activity log showing steps completed, active study minutes, and XP earned per day.
 
-6. **RBAC Protection:**
+7. **RBAC Protection:**
    - Protected by the `ET_DASHBOARD` privilege, enabled by default across all tiers (`Free`, `Pro`, `Ultra`, `Admin`).
 
 ---

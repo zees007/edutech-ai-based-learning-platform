@@ -95,6 +95,45 @@ class AchievementDTO(BaseModel):
     icon: str
 
 
+class LearnerStandingResponse(BaseModel):
+    """All-time cumulative standing and permanent achievements (HUD)."""
+
+    total_xp: int = Field(default=0, description="Total cumulative XP earned across all sessions")
+    current_level: int = Field(default=1, description="Calculated user all-time level (1 to 10)")
+    level_title: str = Field(default="Curious Explorer", description="Title for the user level")
+    xp_progress_in_level: int = Field(default=0, description="XP earned towards current level threshold")
+    xp_needed_for_next: int = Field(default=60, description="Remaining XP needed for next level")
+    is_max_level: bool = Field(default=False, description="True if max level 10 reached")
+    current_streak: int = Field(default=0, description="Current consecutive active days")
+    longest_streak: int = Field(default=0, description="Personal record consecutive active days")
+    achievements: list[AchievementDTO] = Field(default_factory=list, description="All-time permanent milestone achievements")
+
+
+class PeriodSummaryDTO(BaseModel):
+    """Performance summary metrics scoped to the selected time window."""
+
+    total_sessions: int = Field(default=0, description="Total sessions active or completed in window")
+    completed_sessions: int = Field(default=0, description="Total completed sessions in window")
+    completion_rate: float = Field(default=0.0, description="Completion percentage in window (0.0 to 100.0)")
+    total_steps_mastered: int = Field(default=0, description="Count of milestone steps completed in window")
+    total_study_minutes: int = Field(default=0, description="Estimated active study minutes with idle clamping in window")
+    xp_earned_in_period: int = Field(default=0, description="XP earned strictly within the selected window")
+    average_quiz_score_overall: float = Field(default=0.0, description="Average quiz accuracy % across steps in window")
+
+
+class PeriodPerformanceResponse(BaseModel):
+    """Interval-scoped performance analytics payload."""
+
+    time_range: str = Field(description="Selected time range: 7d, 30d, 90d, 1y, all, or custom")
+    start_date: datetime | None = Field(default=None, description="Start timestamp of the period in UTC")
+    end_date: datetime | None = Field(default=None, description="End timestamp of the period in UTC")
+    summary: PeriodSummaryDTO = Field(description="Performance summary metrics for the period")
+    quiz_metrics: QuizMetricsDTO = Field(description="Quiz metrics and accuracy trendline in period")
+    activity_heatmap: list[HeatmapDayDTO] = Field(default_factory=list, description="Daily activity for the period")
+    topic_breakdown: list[TopicBreakdownDTO] = Field(default_factory=list, description="Topics studied in period")
+    mode_distribution: ModeDistributionDTO = Field(description="Learning modes used in period")
+
+
 class LearningDashboardResponse(BaseModel):
     """Consolidated learner dashboard response payload."""
 

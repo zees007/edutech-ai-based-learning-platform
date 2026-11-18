@@ -7,19 +7,23 @@ habits, topic mastery, and gamified achievement stats for the learner dashboard.
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 import logging
 from typing import Any
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.exceptions import BadRequestException, UnprocessableEntityException
 from models.dashboard_schemas import (
     AchievementDTO,
     DashboardSummaryDTO,
     HeatmapDayDTO,
+    LearnerStandingResponse,
     LearningDashboardResponse,
     ModeDistributionDTO,
+    PeriodPerformanceResponse,
+    PeriodSummaryDTO,
     QuizAccuracyTrendItemDTO,
     QuizMetricsDTO,
     TopicBreakdownDTO,
@@ -29,6 +33,10 @@ from models.db_models import GamificationRecord, SessionRecord, StepProgress
 from services.gamification import calculate_level
 
 logger = logging.getLogger(__name__)
+
+# In-memory TTL cache for all-time LearnerStandingResponse
+_standing_cache: dict[str, tuple[datetime, LearnerStandingResponse]] = {}
+CACHE_TTL_SECONDS = 300  # 5 minutes
 
 # Mode median durations in minutes (for idle break clamping)
 MODE_MEDIAN_MINUTES: dict[str, int] = {
@@ -53,61 +61,31 @@ class AnalyticsService:
     """Service for computing user-level learning statistics and performance data."""
 
     @staticmethod
-    async def get_user_dashboard(
+    def invalidate_standing_cache(user_id: str | None = None) -> None:
+        """Invalidate in-memory standing cache for a user or all users."""
+        if user_id:
+            _standing_cache.pop(user_id, None)
+        else:
+            _standing_cache.clear()
+
+    @staticmethod
+    async def get_user_standing(
         db: AsyncSession,
         user_id: str,
-        time_range: str = "30d",
-    ) -> LearningDashboardResponse:
+    ) -> LearnerStandingResponse:
         """
-        Aggregate learning statistics for the specified user and time window.
+        Retrieve all-time cumulative standing: Level, XP, Streaks, and permanent achievements.
+        Results are cached in memory for sub-5ms responses and evicted on progression events.
+        """
+        cached = _standing_cache.get(user_id)
+        if cached:
+            cached_at, standing = cached
+            if (datetime.utcnow() - cached_at).total_seconds() < CACHE_TTL_SECONDS:
+                return standing
 
-        Args:
-            db: Async SQLAlchemy database session.
-            user_id: The UUID of the authenticated learner.
-            time_range: '7d', '30d', or 'all'.
-        """
         now = datetime.utcnow()
-        start_date: datetime | None = None
-        if time_range == "7d":
-            start_date = now - timedelta(days=7)
-        elif time_range == "30d":
-            start_date = now - timedelta(days=30)
-        elif time_range == "90d":
-            start_date = now - timedelta(days=90)
-        # 'all' leaves start_date as None
 
-        # ── 1. Fetch All User Sessions ─────────────────────────────────
-        sessions_query = (
-            select(SessionRecord)
-            .where(SessionRecord.user_id == user_id)
-            .order_by(SessionRecord.created_at.desc())
-        )
-        sessions_res = await db.execute(sessions_query)
-        all_user_sessions = list(sessions_res.scalars().all())
-
-        # Filter sessions for the active time window if requested
-        if start_date:
-            filtered_sessions = [
-                s for s in all_user_sessions
-                if s.created_at and _to_naive_utc(s.created_at) >= start_date
-            ]
-        else:
-            filtered_sessions = all_user_sessions
-
-        session_lookup: dict[str, SessionRecord] = {s.session_id: s for s in all_user_sessions}
-        filtered_session_ids: set[str] = {s.session_id: s for s in filtered_sessions}
-
-        # ── 2. Fetch All StepProgress Records ──────────────────────────
-        sp_query = (
-            select(StepProgress)
-            .join(SessionRecord, StepProgress.session_id == SessionRecord.session_id)
-            .where(SessionRecord.user_id == user_id)
-            .order_by(StepProgress.completed_at.asc().nulls_last())
-        )
-        sp_res = await db.execute(sp_query)
-        all_step_records = list(sp_res.scalars().all())
-
-        # ── 3. Calculate All-Time Cumulative XP & Overall Level ────────
+        # 1. Total All-Time XP & Level Progression
         xp_query = (
             select(func.coalesce(func.sum(GamificationRecord.xp_earned), 0))
             .join(SessionRecord, GamificationRecord.session_id == SessionRecord.session_id)
@@ -117,22 +95,158 @@ class AnalyticsService:
         total_all_time_xp = int(xp_res.scalar_one() or 0)
         level_info = calculate_level(total_all_time_xp)
 
-        # ── 4. Calculate Streak Information ────────────────────────────
-        completed_dates_set: set[str] = set()
-        for sp in all_step_records:
-            if sp.status == "complete" and sp.completed_at:
-                completed_dates_set.add(sp.completed_at.strftime("%Y-%m-%d"))
+        # 2. All-Time User Sessions
+        sessions_query = (
+            select(SessionRecord)
+            .where(SessionRecord.user_id == user_id)
+        )
+        sessions_res = await db.execute(sessions_query)
+        all_user_sessions = list(sessions_res.scalars().all())
 
-        current_streak, longest_streak = AnalyticsService._calculate_streaks(completed_dates_set, now)
+        # 3. All-Time Completed Steps & Unique Dates
+        sp_query = (
+            select(StepProgress)
+            .join(SessionRecord, StepProgress.session_id == SessionRecord.session_id)
+            .where(
+                SessionRecord.user_id == user_id,
+                StepProgress.status == "complete",
+            )
+        )
+        sp_res = await db.execute(sp_query)
+        completed_step_records = list(sp_res.scalars().all())
 
-        # ── 5. Process Steps for Active Time & Clamped Duration ────────
-        # Group steps by session to compute clamped step-delta duration
+        active_dates_set = {
+            sp.completed_at.strftime("%Y-%m-%d")
+            for sp in completed_step_records
+            if sp.completed_at
+        }
+        current_streak, longest_streak = AnalyticsService._calculate_streaks(active_dates_set, now)
+
+        # 4. Trophy Counts (All-Time)
+        total_steps = len(completed_step_records)
+        completed_sessions = sum(1 for s in all_user_sessions if s.is_complete)
+        perfect_quizzes = sum(
+            1 for sp in completed_step_records
+            if sp.quiz_score is not None and sp.quiz_score >= 1.0
+        )
+        deep_dive_count = sum(
+            1 for s in all_user_sessions
+            if (s.learning_mode or "").lower() == "deep_dive" and s.is_complete
+        )
+        distinct_topics = len(
+            {s.topic.strip().lower() for s in all_user_sessions if s.topic and s.topic.strip()}
+        )
+
+        achievements = AnalyticsService._evaluate_achievements(
+            total_steps=total_steps,
+            completed_sessions=completed_sessions,
+            perfect_quizzes=perfect_quizzes,
+            longest_streak=longest_streak,
+            deep_dive_count=deep_dive_count,
+            distinct_topics=distinct_topics,
+            total_xp=total_all_time_xp,
+        )
+
+        response = LearnerStandingResponse(
+            total_xp=total_all_time_xp,
+            current_level=level_info["level"],
+            level_title=level_info["title"],
+            xp_progress_in_level=level_info["xp_in_level"],
+            xp_needed_for_next=level_info["xp_needed_for_next"],
+            is_max_level=level_info.get("is_max_level", False),
+            current_streak=current_streak,
+            longest_streak=longest_streak,
+            achievements=achievements,
+        )
+
+        _standing_cache[user_id] = (datetime.utcnow(), response)
+        return response
+
+    @staticmethod
+    async def get_user_performance(
+        db: AsyncSession,
+        user_id: str,
+        time_range: str = "30d",
+        start_date: date | None = None,
+        end_date: date | None = None,
+        tz_offset_minutes: int = 0,
+    ) -> PeriodPerformanceResponse:
+        """
+        Compute interval-scoped performance analytics for the selected window.
+        Supports 7d, 30d, 90d, 1y, all, and custom date range with client timezone alignment.
+        """
+        valid_ranges = {"7d", "30d", "90d", "1y", "all", "custom"}
+        if time_range not in valid_ranges:
+            raise BadRequestException(
+                "INVALID_TIME_RANGE",
+                f"Invalid time_range '{time_range}'. Must be one of: {', '.join(sorted(valid_ranges))}.",
+            )
+
+        now = datetime.utcnow()
+        window_start: datetime | None = None
+        window_end: datetime = now
+
+        if time_range == "7d":
+            window_start = now - timedelta(days=7)
+        elif time_range == "30d":
+            window_start = now - timedelta(days=30)
+        elif time_range == "90d":
+            window_start = now - timedelta(days=90)
+        elif time_range == "1y":
+            window_start = now - timedelta(days=365)
+        elif time_range == "all":
+            window_start = None
+        elif time_range == "custom":
+            if not start_date or not end_date:
+                raise UnprocessableEntityException(
+                    "MISSING_DATE_RANGE",
+                    "Both start_date and end_date are required for custom time range.",
+                )
+            if start_date > end_date:
+                raise BadRequestException(
+                    "INVALID_DATE_RANGE",
+                    "start_date cannot be after end_date.",
+                )
+            if (end_date - start_date).days > 730:
+                raise UnprocessableEntityException(
+                    "DATE_RANGE_EXCEEDED",
+                    "The selected date range cannot exceed 730 days (2 years). Please choose a shorter window.",
+                )
+            tz_delta = timedelta(minutes=tz_offset_minutes)
+            window_start = datetime.combine(start_date, datetime.min.time()) - tz_delta
+            window_end = datetime.combine(end_date, datetime.max.time()) - tz_delta
+
+        # 1. Fetch All User Sessions
+        sessions_query = (
+            select(SessionRecord)
+            .where(SessionRecord.user_id == user_id)
+            .order_by(SessionRecord.created_at.desc())
+        )
+        sessions_res = await db.execute(sessions_query)
+        all_user_sessions = list(sessions_res.scalars().all())
+        session_lookup: dict[str, SessionRecord] = {s.session_id: s for s in all_user_sessions}
+
+        # 2. Fetch All StepProgress Records
+        sp_query = (
+            select(StepProgress)
+            .join(SessionRecord, StepProgress.session_id == SessionRecord.session_id)
+            .where(SessionRecord.user_id == user_id)
+            .order_by(StepProgress.completed_at.asc().nulls_last())
+        )
+        sp_res = await db.execute(sp_query)
+        all_step_records = list(sp_res.scalars().all())
+
+        # 3. Process Steps, Duration Clamping & Heatmap
         steps_by_session: dict[str, list[StepProgress]] = {}
         for sp in all_step_records:
             steps_by_session.setdefault(sp.session_id, []).append(sp)
 
         total_study_minutes = 0
         heatmap_data: dict[str, dict[str, int]] = {}
+        mastered_steps_count = 0
+        xp_earned_in_period = 0
+        active_session_ids: set[str] = set()
+        completed_session_ids: set[str] = set()
 
         for session_id, steps in steps_by_session.items():
             session = session_lookup.get(session_id)
@@ -145,54 +259,71 @@ class AnalyticsService:
             completed_steps.sort(key=lambda x: _to_naive_utc(x.completed_at) or datetime.min)
 
             last_timestamp = _to_naive_utc(session.created_at) or datetime.utcnow()
-            for idx, sp in enumerate(completed_steps):
+            for sp in completed_steps:
                 sp_completed = _to_naive_utc(sp.completed_at)
                 if not sp_completed:
                     continue
 
-                # Compute delta from last step (or session creation)
                 delta_minutes = (sp_completed - last_timestamp).total_seconds() / 60.0
                 if 0 < delta_minutes <= MAX_STEP_ACTIVE_WINDOW_MINUTES:
                     effective_minutes = int(round(delta_minutes))
                 else:
-                    # Idle break or gap -> clamp to standard median
                     effective_minutes = mode_median
 
                 last_timestamp = sp_completed
 
-                # Filter for dashboard summary time window
                 is_in_window = True
-                if start_date:
-                    is_in_window = sp_completed >= start_date
+                if window_start:
+                    is_in_window = (sp_completed >= window_start and sp_completed <= window_end)
 
                 if is_in_window:
                     total_study_minutes += effective_minutes
+                    mastered_steps_count += 1
+                    active_session_ids.add(session_id)
 
-                # Record activity on heatmap (last 90 days)
-                day_key = sp_completed.strftime("%Y-%m-%d")
-                if day_key not in heatmap_data:
-                    heatmap_data[day_key] = {"steps_count": 0, "xp_earned": 0, "active_minutes": 0}
-                heatmap_data[day_key]["steps_count"] += 1
-                heatmap_data[day_key]["active_minutes"] += effective_minutes
-                # Award ~50 XP per completed step + quiz estimate
-                step_xp = 50 + (round(sp.quiz_score * 60) if sp.quiz_score is not None else 0)
-                heatmap_data[day_key]["xp_earned"] += step_xp
+                    step_xp = 50 + (round(sp.quiz_score * 60) if sp.quiz_score is not None else 0)
+                    xp_earned_in_period += step_xp
 
-        # ── 6. Process 3-Question Quiz Metrics & Accuracy Trendline ───
+                    day_key = sp_completed.strftime("%Y-%m-%d")
+                    if day_key not in heatmap_data:
+                        heatmap_data[day_key] = {"steps_count": 0, "xp_earned": 0, "active_minutes": 0}
+                    heatmap_data[day_key]["steps_count"] += 1
+                    heatmap_data[day_key]["active_minutes"] += effective_minutes
+                    heatmap_data[day_key]["xp_earned"] += step_xp
+
+            # Completion consistency: evaluate if session finished in window
+            if session.is_complete:
+                completion_ts = None
+                if completed_steps:
+                    completion_ts = _to_naive_utc(completed_steps[-1].completed_at)
+                if not completion_ts and session.updated_at:
+                    completion_ts = _to_naive_utc(session.updated_at)
+
+                if completion_ts:
+                    if not window_start or (completion_ts >= window_start and completion_ts <= window_end):
+                        completed_session_ids.add(session_id)
+                        active_session_ids.add(session_id)
+
+        # Also count sessions initiated in the window
+        for s in all_user_sessions:
+            s_created = _to_naive_utc(s.created_at)
+            if s_created:
+                if not window_start or (s_created >= window_start and s_created <= window_end):
+                    active_session_ids.add(s.session_id)
+                    if s.is_complete and s.session_id not in completed_session_ids:
+                        s_updated = _to_naive_utc(s.updated_at)
+                        if not window_start or (s_updated and s_updated >= window_start and s_updated <= window_end):
+                            completed_session_ids.add(s.session_id)
+
+        # 4. Quizzes & Accuracy Trendline
         weak_concepts: list[WeakConceptDTO] = []
         accuracy_trend: list[QuizAccuracyTrendItemDTO] = []
-
         total_quiz_count = 0
         sum_quiz_scores = 0.0
         perfect_count = 0
 
-        # Sort all steps chronologically for trendline
-        sorted_steps_with_quiz = [
-            sp for sp in all_step_records
-            if sp.quiz_score is not None
-        ]
+        sorted_steps_with_quiz = [sp for sp in all_step_records if sp.quiz_score is not None]
         sorted_steps_with_quiz.sort(key=lambda x: _to_naive_utc(x.completed_at) or datetime.min)
-
         session_scores_accumulator: dict[str, list[float]] = {}
 
         for sp in sorted_steps_with_quiz:
@@ -201,8 +332,7 @@ class AnalyticsService:
                 continue
 
             sp_completed = _to_naive_utc(sp.completed_at)
-            # Respect time window for quiz metrics if filtered
-            if start_date and sp_completed and sp_completed < start_date:
+            if window_start and sp_completed and (sp_completed < window_start or sp_completed > window_end):
                 continue
 
             score = float(sp.quiz_score)
@@ -211,10 +341,7 @@ class AnalyticsService:
             if score >= 1.0:
                 perfect_count += 1
 
-            # Extract step title from session.state_json if available
             step_title = AnalyticsService._extract_step_title(session, sp.step_index)
-
-            # Track session running average
             session_scores_accumulator.setdefault(sp.session_id, []).append(score)
             running_avg = sum(session_scores_accumulator[sp.session_id]) / len(session_scores_accumulator[sp.session_id])
 
@@ -231,7 +358,6 @@ class AnalyticsService:
                 )
             )
 
-            # Check for weak concepts (score <= 50%, i.e. 0/3 or 1/3 correct needing reinforcement)
             if score <= 0.50:
                 correct_ans = int(round(score * 3))
                 weak_concepts.append(
@@ -254,55 +380,45 @@ class AnalyticsService:
         total_questions_evaluated = total_quiz_count * 3
         questions_correct = int(round(sum_quiz_scores * 3))
 
-        # ── 7. Calculate Topics & Modes ───────────────────────────────
+        # 5. Topic Mastery & Learning Mode Distribution
         topic_counts: dict[str, int] = {}
         mode_counts = {"visual": 0, "deep_dive": 0, "bite_sized": 0}
-
-        for s in filtered_sessions:
+        for sid in active_session_ids:
+            s = session_lookup.get(sid)
+            if not s:
+                continue
             clean_topic = s.topic.strip().title() if s.topic else "General Study"
             topic_counts[clean_topic] = topic_counts.get(clean_topic, 0) + 1
-
             mode_key = (s.learning_mode or "visual").lower()
             if mode_key in mode_counts:
                 mode_counts[mode_key] += 1
             else:
                 mode_counts["visual"] += 1
 
-        total_filtered_sessions = len(filtered_sessions)
+        total_active_sessions = len(active_session_ids)
         topic_breakdown: list[TopicBreakdownDTO] = []
         for top_name, count in sorted(topic_counts.items(), key=lambda x: x[1], reverse=True)[:6]:
-            pct = round((count / total_filtered_sessions) * 100.0, 1) if total_filtered_sessions > 0 else 0.0
+            pct = round((count / total_active_sessions) * 100.0, 1) if total_active_sessions > 0 else 0.0
             topic_breakdown.append(TopicBreakdownDTO(topic=top_name, session_count=count, percentage=pct))
 
-        # ── 8. Summary DTO ────────────────────────────────────────────
-        completed_sessions_count = sum(1 for s in filtered_sessions if s.is_complete)
+        # 6. Period Summary & Completion Rates
+        completed_sessions_count = len(completed_session_ids)
         completion_rate = (
-            round((completed_sessions_count / total_filtered_sessions) * 100.0, 1)
-            if total_filtered_sessions > 0 else 0.0
-        )
-        mastered_steps_count = sum(
-            1 for sp in all_step_records
-            if sp.status == "complete" and (not start_date or (_to_naive_utc(sp.completed_at) and _to_naive_utc(sp.completed_at) >= start_date))
+            round((completed_sessions_count / total_active_sessions) * 100.0, 1)
+            if total_active_sessions > 0 else 0.0
         )
 
-        summary_dto = DashboardSummaryDTO(
-            total_sessions=total_filtered_sessions,
+        period_summary = PeriodSummaryDTO(
+            total_sessions=total_active_sessions,
             completed_sessions=completed_sessions_count,
             completion_rate=completion_rate,
             total_steps_mastered=mastered_steps_count,
             total_study_minutes=total_study_minutes,
+            xp_earned_in_period=xp_earned_in_period,
             average_quiz_score_overall=avg_quiz_score_overall,
-            total_xp=total_all_time_xp,
-            current_level=level_info["level"],
-            level_title=level_info["title"],
-            xp_progress_in_level=level_info["xp_in_level"],
-            xp_needed_for_next=level_info["xp_needed_for_next"],
-            is_max_level=level_info.get("is_max_level", False),
-            current_streak=current_streak,
-            longest_streak=longest_streak,
         )
 
-        # ── 9. Activity Heatmap List (Last 90 Days) ───────────────────
+        # 7. Activity Heatmap List
         heatmap_days: list[HeatmapDayDTO] = []
         for d_str, data in sorted(heatmap_data.items()):
             heatmap_days.append(
@@ -314,26 +430,18 @@ class AnalyticsService:
                 )
             )
 
-        # ── 10. Dynamic Milestone Achievements ────────────────────────
-        achievements = AnalyticsService._evaluate_achievements(
-            total_steps=mastered_steps_count,
-            completed_sessions=completed_sessions_count,
-            perfect_quizzes=perfect_count,
-            longest_streak=longest_streak,
-            deep_dive_count=mode_counts["deep_dive"],
-            distinct_topics=len(topic_counts),
-            total_xp=total_all_time_xp,
-        )
-
-        return LearningDashboardResponse(
-            summary=summary_dto,
+        return PeriodPerformanceResponse(
+            time_range=time_range,
+            start_date=window_start,
+            end_date=window_end,
+            summary=period_summary,
             quiz_metrics=QuizMetricsDTO(
                 total_quizzes_taken=total_quiz_count,
                 total_questions_evaluated=total_questions_evaluated,
                 questions_correct=questions_correct,
                 perfect_quizzes_count=perfect_count,
-                accuracy_trend=accuracy_trend[-20:],  # Last 20 quiz points for clean charting
-                concepts_needing_reinforcement=weak_concepts[:8],  # Top 8 weak concepts needing review
+                accuracy_trend=accuracy_trend,  # All trend points for smooth scrollable charting
+                concepts_needing_reinforcement=weak_concepts[:8],
             ),
             activity_heatmap=heatmap_days,
             topic_breakdown=topic_breakdown,
@@ -342,7 +450,48 @@ class AnalyticsService:
                 deep_dive=mode_counts["deep_dive"],
                 bite_sized=mode_counts["bite_sized"],
             ),
-            achievements=achievements,
+        )
+
+    @staticmethod
+    async def get_user_dashboard(
+        db: AsyncSession,
+        user_id: str,
+        time_range: str = "30d",
+    ) -> LearningDashboardResponse:
+        """
+        Legacy consolidated dashboard method combining standing and performance.
+        Preserved for test compatibility.
+        """
+        standing = await AnalyticsService.get_user_standing(db, user_id=user_id)
+        performance = await AnalyticsService.get_user_performance(db, user_id=user_id, time_range=time_range)
+
+        summary_dto = DashboardSummaryDTO(
+            total_sessions=performance.summary.total_sessions,
+            completed_sessions=performance.summary.completed_sessions,
+            completion_rate=performance.summary.completion_rate,
+            total_steps_mastered=performance.summary.total_steps_mastered,
+            total_study_minutes=performance.summary.total_study_minutes,
+            average_quiz_score_overall=performance.summary.average_quiz_score_overall,
+            total_xp=standing.total_xp,
+            current_level=standing.current_level,
+            level_title=standing.level_title,
+            xp_progress_in_level=standing.xp_progress_in_level,
+            xp_needed_for_next=standing.xp_needed_for_next,
+            is_max_level=standing.is_max_level,
+            current_streak=standing.current_streak,
+            longest_streak=standing.longest_streak,
+        )
+
+        quiz_metrics = performance.quiz_metrics
+        quiz_metrics.accuracy_trend = quiz_metrics.accuracy_trend[-20:]
+
+        return LearningDashboardResponse(
+            summary=summary_dto,
+            quiz_metrics=quiz_metrics,
+            activity_heatmap=performance.activity_heatmap,
+            topic_breakdown=performance.topic_breakdown,
+            mode_distribution=performance.mode_distribution,
+            achievements=standing.achievements,
         )
 
     @staticmethod

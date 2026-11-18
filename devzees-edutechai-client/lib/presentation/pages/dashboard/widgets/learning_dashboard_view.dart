@@ -8,6 +8,7 @@ import '../../../widgets/shimmer_loading.dart';
 import 'activity_and_achievements_card.dart';
 import 'dashboard_header.dart';
 import 'dashboard_kpi_cards.dart';
+import 'learner_standing_hud.dart';
 import 'mode_and_topic_cards.dart';
 import 'quiz_trend_card.dart';
 import 'weak_concepts_card.dart';
@@ -61,8 +62,16 @@ class _LearningDashboardViewState extends ConsumerState<LearningDashboardView> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // All-Time Gamification Standing HUD
+                      LearnerStandingHud(
+                        fallbackSummary: state.data?.summary,
+                        fallbackAchievements: state.data?.achievements,
+                      ),
+                      const SizedBox(height: 20),
+
                       DashboardHeader(
                         onRefresh: () {
+                          ref.read(learnerStandingProvider.notifier).refresh();
                           ref.read(dashboardProvider.notifier).refresh();
                         },
                         isRefreshing: state.isLoading && state.data != null,

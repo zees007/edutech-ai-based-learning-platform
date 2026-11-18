@@ -76,3 +76,14 @@ class ForbiddenException(AppException):
 
     def __init__(self, error_code: str = "FORBIDDEN", errors: list[str] | str = "Access forbidden. Insufficient permissions.") -> None:
         super().__init__(status_code=403, error_code=error_code, errors=errors)
+
+
+class UnprocessableEntityException(AppException):
+    """HTTP 422 Unprocessable Entity / Semantic Validation Error."""
+
+    def __init__(
+        self,
+        error_code: str = "UNPROCESSABLE_ENTITY",
+        errors: list[str] | str = "The request was well-formed but was unable to be followed due to semantic errors.",
+    ) -> None:
+        super().__init__(status_code=422, error_code=error_code, errors=errors)

@@ -14,6 +14,7 @@ REST API for managing learning sessions:
 from __future__ import annotations
 
 import asyncio
+from datetime import date
 import logging
 
 from fastapi import APIRouter, Depends, Query, Request
@@ -33,7 +34,11 @@ from app.privileges_config import (
     ET_ACCESS_ACADEMIC_SEARCH,
     ET_DASHBOARD,
 )
-from models.dashboard_schemas import LearningDashboardResponse
+from models.dashboard_schemas import (
+    LearnerStandingResponse,
+    LearningDashboardResponse,
+    PeriodPerformanceResponse,
+)
 from services.analytics_service import AnalyticsService
 from services.database import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -381,6 +386,7 @@ async def complete_step(
             step_index=step_index,
             status="complete",
         )
+        AnalyticsService.invalidate_standing_cache(current_user.id)
     except Exception as e:
         logger.warning(f"Failed to persist step progress to DB: {e}")
 
@@ -591,23 +597,48 @@ async def list_user_sessions(
 
 
 @router.get(
-    "/learning/analytics/dashboard",
-    response_model=LearningDashboardResponse,
+    "/learning/analytics/standing",
+    response_model=LearnerStandingResponse,
     dependencies=[Depends(require_privilege(ET_DASHBOARD))],
 )
-async def get_learning_dashboard(
-    time_range: str = Query("30d", pattern="^(7d|30d|90d|all)$", description="Analytics time window"),
+async def get_learner_standing(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Retrieve consolidated learning performance, 3-question quiz accuracy trends,
-    topic & mode distribution, and dynamic milestone achievements for the authenticated user.
+    Retrieve all-time cumulative gamification standing: level title, XP progression,
+    active and personal best study streaks, and permanently unlocked trophies.
     """
-    return await AnalyticsService.get_user_dashboard(
+    return await AnalyticsService.get_user_standing(
+        db=db,
+        user_id=current_user.id,
+    )
+
+
+@router.get(
+    "/learning/analytics/performance",
+    response_model=PeriodPerformanceResponse,
+    dependencies=[Depends(require_privilege(ET_DASHBOARD))],
+)
+async def get_learner_performance(
+    time_range: str = Query("30d", pattern="^(7d|30d|90d|1y|all|custom)$", description="Performance interval window"),
+    start_date: date | None = Query(None, description="Start date YYYY-MM-DD for custom range"),
+    end_date: date | None = Query(None, description="End date YYYY-MM-DD for custom range"),
+    tz_offset_minutes: int = Query(0, ge=-840, le=840, description="Client timezone offset in minutes"),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Retrieve interval-scoped learner performance metrics, quiz accuracy curves,
+    weak concept identification, mode usage, and heatmap density for the specified time window.
+    """
+    return await AnalyticsService.get_user_performance(
         db=db,
         user_id=current_user.id,
         time_range=time_range,
+        start_date=start_date,
+        end_date=end_date,
+        tz_offset_minutes=tz_offset_minutes,
     )
 
 
