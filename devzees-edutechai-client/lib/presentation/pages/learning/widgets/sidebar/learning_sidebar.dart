@@ -64,6 +64,14 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
 
   @override
   Widget build(BuildContext context) {
+    String location = '';
+    try {
+      location = GoRouterState.of(context).matchedLocation;
+    } catch (_) {}
+    final bool isDashboardActive = location.startsWith('/learning/dashboard');
+    final bool hasActiveSession =
+        ref.watch(activeSessionProvider).session != null && !isDashboardActive;
+
     return SafeArea(
       child: Column(
         children: [
@@ -96,7 +104,10 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
             Expanded(
               child: Column(
                 children: [
-                  _CollapsedHistoryButton(onTap: widget.onToggle),
+                  _CollapsedHistoryButton(
+                    onTap: widget.onToggle,
+                    isSelected: hasActiveSession,
+                  ),
                   const Spacer(),
                 ],
               ),
@@ -764,11 +775,15 @@ class _SidebarNavTabState extends State<_SidebarNavTab> {
 }
 
 /// Standalone collapsed Learning History button matching the 48x48 tile dimensions,
-/// size 20 icon, and identical hover micro-interactions as the Learning Dashboard tab.
+/// size 20 icon, and identical active/hover micro-interactions as the Learning Dashboard tab.
 class _CollapsedHistoryButton extends StatefulWidget {
   final VoidCallback onTap;
+  final bool isSelected;
 
-  const _CollapsedHistoryButton({required this.onTap});
+  const _CollapsedHistoryButton({
+    required this.onTap,
+    this.isSelected = false,
+  });
 
   @override
   State<_CollapsedHistoryButton> createState() => _CollapsedHistoryButtonState();
@@ -804,28 +819,43 @@ class _CollapsedHistoryButtonState extends State<_CollapsedHistoryButton> {
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
-                color: _isHovered
-                    ? AppColors.primary.withValues(alpha: 0.05)
-                    : (isDark
-                        ? Colors.white.withValues(alpha: 0.05)
-                        : AppColors.surfaceSubtle),
+                color: widget.isSelected
+                    ? AppColors.primary.withValues(alpha: 0.14)
+                    : (_isHovered
+                        ? AppColors.primary.withValues(alpha: 0.05)
+                        : (isDark
+                            ? Colors.white.withValues(alpha: 0.05)
+                            : AppColors.surfaceSubtle)),
                 border: Border.all(
-                  color: _isHovered
-                      ? AppColors.primary.withValues(alpha: 0.10)
-                      : (isDark
-                          ? Colors.white.withValues(alpha: 0.08)
-                          : AppColors.border),
+                  color: widget.isSelected
+                      ? AppColors.primary.withValues(alpha: 0.38)
+                      : (_isHovered
+                          ? AppColors.primary.withValues(alpha: 0.10)
+                          : (isDark
+                              ? Colors.white.withValues(alpha: 0.08)
+                              : AppColors.border)),
                   width: 1,
                 ),
+                boxShadow: widget.isSelected
+                    ? [
+                        BoxShadow(
+                          color: AppColors.primary.withValues(alpha: 0.15),
+                          blurRadius: 10,
+                          offset: const Offset(0, 2),
+                        ),
+                      ]
+                    : null,
               ),
               child: Icon(
                 Icons.history,
                 size: 20,
-                color: _isHovered
-                    ? AppColors.primary.withValues(alpha: 0.8)
-                    : (isDark
-                        ? Colors.white.withValues(alpha: 0.7)
-                        : AppColors.textSecondary),
+                color: widget.isSelected
+                    ? AppColors.primary
+                    : (_isHovered
+                        ? AppColors.primary.withValues(alpha: 0.8)
+                        : (isDark
+                            ? Colors.white.withValues(alpha: 0.7)
+                            : AppColors.textSecondary)),
               ),
             ),
           ),
