@@ -59,7 +59,10 @@ class _QuizTrendCardState extends State<QuizTrendCard> {
   Widget build(BuildContext context) {
     final isDark = context.isDarkMode;
     final rawTrend = widget.quizMetrics.accuracyTrend;
-    final trend = _showWeeklyTrend ? _calculateWeeklyTrend(rawTrend) : rawTrend;
+    final weeklyPoints = _groupQuizzesByWeek(rawTrend);
+    final trend = _showWeeklyTrend
+        ? weeklyPoints.map((p) => p.toTrendItem()).toList()
+        : rawTrend;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -112,18 +115,23 @@ class _QuizTrendCardState extends State<QuizTrendCard> {
               value: '${widget.quizMetrics.perfectQuizzesCount}',
               color: AppColors.accentGreen,
             ),
-            if (rawTrend.length > 8)
-              _buildViewModeToggle(context, isDark),
+            if (rawTrend.length >= 3) _buildViewModeToggle(context, isDark),
             IconButton(
               icon: Icon(
                 Icons.fullscreen_rounded,
                 size: 20,
-                color: isDark ? AppColors.textSecondary : const Color(0xFF64748B),
+                color: isDark
+                    ? AppColors.textSecondary
+                    : const Color(0xFF64748B),
               ),
               tooltip: 'Expand chart',
               onPressed: rawTrend.isEmpty
                   ? null
-                  : () => _showFullscreenChart(context, trend),
+                  : () => _showFullscreenChart(
+                      context,
+                      trend,
+                      weeklyPoints: _showWeeklyTrend ? weeklyPoints : null,
+                    ),
             ),
           ],
         );
@@ -187,7 +195,12 @@ class _QuizTrendCardState extends State<QuizTrendCard> {
                   ),
                 )
               else
-                _buildScrollableChart(context, trend, constraints.maxWidth),
+                _buildScrollableChart(
+                  context,
+                  trend,
+                  constraints.maxWidth,
+                  weeklyPoints: _showWeeklyTrend ? weeklyPoints : null,
+                ),
             ],
           ),
         );
@@ -198,15 +211,20 @@ class _QuizTrendCardState extends State<QuizTrendCard> {
   Widget _buildScrollableChart(
     BuildContext context,
     List<QuizAccuracyTrendItem> trend,
-    double availableWidth,
-  ) {
+    double availableWidth, {
+    List<WeeklyTrendPoint>? weeklyPoints,
+  }) {
     final needsScroll = trend.length > 10;
-    final chartWidth = needsScroll ? max(availableWidth, trend.length * 48.0) : availableWidth;
+    final chartWidth = needsScroll
+        ? max(availableWidth, trend.length * 48.0)
+        : availableWidth;
 
     Widget chartWidget = SizedBox(
       width: chartWidth,
-      height: 240,
-      child: LineChart(_buildLineChartData(context, trend)),
+      height: 260,
+      child: LineChart(
+        _buildLineChartData(context, trend, weeklyPoints: weeklyPoints),
+      ),
     );
 
     if (needsScroll) {
@@ -228,7 +246,9 @@ class _QuizTrendCardState extends State<QuizTrendCard> {
   Widget _buildViewModeToggle(BuildContext context, bool isDark) {
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? Colors.white.withValues(alpha: 0.06) : Colors.black.withValues(alpha: 0.05),
+        color: isDark
+            ? Colors.white.withValues(alpha: 0.06)
+            : Colors.black.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Row(
@@ -321,8 +341,9 @@ class _QuizTrendCardState extends State<QuizTrendCard> {
 
   LineChartData _buildLineChartData(
     BuildContext context,
-    List<QuizAccuracyTrendItem> trend,
-  ) {
+    List<QuizAccuracyTrendItem> trend, {
+    List<WeeklyTrendPoint>? weeklyPoints,
+  }) {
     final isDark = context.isDarkMode;
 
     final spots = <FlSpot>[];
@@ -394,10 +415,11 @@ class _QuizTrendCardState extends State<QuizTrendCard> {
                 return const SizedBox.shrink();
               }
 
+              final prefix = _showWeeklyTrend ? 'W' : 'Q';
               return Padding(
                 padding: const EdgeInsets.only(top: 8.0),
                 child: Text(
-                  'Q${index + 1}',
+                  '$prefix${index + 1}',
                   style: AppTextStyles.caption.copyWith(
                     color: isDark
                         ? AppColors.textSecondary
@@ -416,47 +438,150 @@ class _QuizTrendCardState extends State<QuizTrendCard> {
         handleBuiltInTouches: true,
         touchTooltipData: LineTouchTooltipData(
           getTooltipColor: (_) =>
-              isDark ? const Color(0xFF1E293B) : Colors.white,
+              isDark ? const Color(0xFF151628) : Colors.white,
+          tooltipBorder: BorderSide.none,
+          tooltipRoundedRadius: 14,
+          tooltipPadding: const EdgeInsets.symmetric(
+            horizontal: 14,
+            vertical: 12,
+          ),
+          tooltipMargin: 12,
+          maxContentWidth: 350,
+          fitInsideHorizontally: true,
+          fitInsideVertically: true,
           getTooltipItems: (touchedSpots) {
             return touchedSpots.map((spot) {
               final idx = spot.x.toInt();
               if (idx < 0 || idx >= trend.length) return null;
-              final item = trend[idx];
               final scoreStr = spot.y.toStringAsFixed(1);
-              final correctCount = (spot.y / 100 * 3).round();
 
-              final stepLabel = item.stepTitle.startsWith('Step ')
+              // ─── WEEKLY VIEW TOOLTIP ────────────────────────────────
+              if (_showWeeklyTrend &&
+                  weeklyPoints != null &&
+                  idx < weeklyPoints.length) {
+                final point = weeklyPoints[idx];
+                final Color statusColor;
+                final String statusText;
+                if (point.averageScore >= 85.0) {
+                  statusColor = AppColors.accentGreen;
+                  statusText = 'Strong Mastery';
+                } else if (point.averageScore >= 65.0) {
+                  statusColor = AppColors.accentCyan;
+                  statusText = 'Solid Progress';
+                } else {
+                  statusColor = const Color(0xFFEF4444);
+                  statusText = 'Difficulty Dip';
+                }
+
+                final truncatedTopics = _truncate(point.topicSummary, 50);
+
+                return LineTooltipItem(
+                  'Week ${point.weekNumber} • ${point.dateRangeLabel}\n',
+                  AppTextStyles.label.copyWith(
+                    color: isDark ? Colors.white : const Color(0xFF0F172A),
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12,
+                    letterSpacing: 0.15,
+                  ),
+                  textAlign: TextAlign.left,
+                  children: [
+                    TextSpan(
+                      text: '$truncatedTopics\n',
+                      style: AppTextStyles.caption.copyWith(
+                        color: isDark
+                            ? const Color(0xFFCBD5E1)
+                            : const Color(0xFF334155),
+                        fontWeight: FontWeight.w600,
+                        fontSize: 11,
+                      ),
+                    ),
+                    TextSpan(
+                      text:
+                          'Quizzes Evaluated: ${point.quizCount} ${point.quizCount == 1 ? 'quiz' : 'quizzes'} (${point.totalQuestions} questions evaluated)\n',
+                      style: AppTextStyles.caption.copyWith(
+                        color: isDark
+                            ? const Color(0xFF94A3B8)
+                            : const Color(0xFF64748B),
+                        fontWeight: FontWeight.w500,
+                        fontSize: 10.5,
+                      ),
+                    ),
+                    TextSpan(
+                      text:
+                          'Weekly Accuracy: $scoreStr% (${point.correctQuestions}/${point.totalQuestions} correct) • $statusText',
+                      style: AppTextStyles.caption.copyWith(
+                        color: statusColor,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 11.5,
+                      ),
+                    ),
+                  ],
+                );
+              }
+
+              // ─── ALL DOTS VIEW TOOLTIP ──────────────────────────────
+              final item = trend[idx];
+              final correctCount = (spot.y / 100 * 3).round().clamp(0, 3);
+              final rawStepTitle = item.stepTitle.startsWith('Step ')
                   ? item.stepTitle
-                  : 'Step ${item.stepIndex + 1}: ${item.stepTitle}';
-              final dateLabel = item.date.isNotEmpty ? ' • ${item.date}' : '';
+                  : 'Step ${item.stepIndex + 1}: ${item.stepTitle.isNotEmpty ? item.stepTitle : 'Milestone Evaluation'}';
+              final truncatedTopic = _truncate(
+                item.topic.isNotEmpty ? item.topic : 'Learning Milestone',
+                50,
+              );
+              final truncatedStep = _truncate(rawStepTitle, 30);
+              final formattedDate = _formatSingleDate(item.date);
+
+              final Color statusColor;
+              final String statusText;
+              if (spot.y >= 99.0) {
+                statusColor = AppColors.accentGreen;
+                statusText = 'Mastered';
+              } else if (spot.y >= 60.0) {
+                statusColor = AppColors.accentCyan;
+                statusText = 'Passed';
+              } else {
+                statusColor = const Color(0xFFEF4444);
+                statusText = 'Needs Review';
+              }
 
               return LineTooltipItem(
-                '${item.topic}\n',
+                '$truncatedTopic\n',
                 AppTextStyles.label.copyWith(
                   color: isDark ? Colors.white : const Color(0xFF0F172A),
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w700,
                   fontSize: 12,
+                  letterSpacing: 0.15,
                 ),
+                textAlign: TextAlign.left,
                 children: [
                   TextSpan(
-                    text: '$stepLabel$dateLabel\n',
+                    text: '$truncatedStep\n',
                     style: AppTextStyles.caption.copyWith(
                       color: isDark
-                          ? AppColors.textSecondary
-                          : const Color(0xFF64748B),
+                          ? const Color(0xFFCBD5E1)
+                          : const Color(0xFF334155),
+                      fontWeight: FontWeight.w600,
                       fontSize: 11,
                     ),
                   ),
                   TextSpan(
-                    text: '$scoreStr% ($correctCount/3 correct)',
+                    text: '$formattedDate\n',
                     style: AppTextStyles.caption.copyWith(
-                      color: spot.y >= 90
-                          ? AppColors.accentGreen
-                          : (spot.y >= 60
-                                ? AppColors.accentCyan
-                                : const Color(0xFFEF4444)),
-                      fontWeight: FontWeight.w700,
-                      fontSize: 11,
+                      color: isDark
+                          ? const Color(0xFF94A3B8)
+                          : const Color(0xFF64748B),
+                      fontWeight: FontWeight.w500,
+                      fontSize: 10.5,
+                    ),
+                  ),
+                  TextSpan(
+                    text:
+                        'Score: $scoreStr% ($correctCount/3 correct) • $statusText',
+                    style: AppTextStyles.caption.copyWith(
+                      color: statusColor,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 11.5,
                     ),
                   ),
                 ],
@@ -502,35 +627,129 @@ class _QuizTrendCardState extends State<QuizTrendCard> {
     );
   }
 
-  List<QuizAccuracyTrendItem> _calculateWeeklyTrend(
-    List<QuizAccuracyTrendItem> raw,
-  ) {
-    if (raw.length <= 5) return raw;
+  static const _months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
 
-    final result = <QuizAccuracyTrendItem>[];
-    const chunkSize = 4;
-    for (int i = 0; i < raw.length; i += chunkSize) {
-      final chunk = raw.sublist(i, min(i + chunkSize, raw.length));
-      final avgScore = chunk.map((e) => e.stepScore).reduce((a, b) => a + b) / chunk.length;
+  static String _formatSingleDate(String dateStr) {
+    if (dateStr.isEmpty) return 'Recorded';
+    final dt = DateTime.tryParse(dateStr);
+    if (dt == null) return dateStr;
+    return '${_months[dt.month - 1]} ${dt.day}, ${dt.year}';
+  }
+
+  static String _formatDateRange(DateTime start, DateTime end) {
+    if (start.year == end.year) {
+      if (start.month == end.month) {
+        return '${_months[start.month - 1]} ${start.day} – ${end.day}, ${start.year}';
+      }
+      return '${_months[start.month - 1]} ${start.day} – ${_months[end.month - 1]} ${end.day}, ${start.year}';
+    }
+    return '${_months[start.month - 1]} ${start.day}, ${start.year} – ${_months[end.month - 1]} ${end.day}, ${end.year}';
+  }
+
+  static String _truncate(String text, int maxLength) {
+    final clean = text.trim();
+    if (clean.length <= maxLength) return clean;
+    return '${clean.substring(0, maxLength - 3)}...';
+  }
+
+  List<WeeklyTrendPoint> _groupQuizzesByWeek(List<QuizAccuracyTrendItem> raw) {
+    if (raw.isEmpty) return [];
+
+    final Map<String, List<QuizAccuracyTrendItem>> weekBuckets = {};
+    final Map<String, ({DateTime monday, DateTime sunday})> weekDateBounds = {};
+
+    for (final item in raw) {
+      final parsed = DateTime.tryParse(item.date);
+      final dt = parsed ?? DateTime.now();
+      final monday = DateTime(
+        dt.year,
+        dt.month,
+        dt.day,
+      ).subtract(Duration(days: dt.weekday - 1));
+      final sunday = monday.add(const Duration(days: 6));
+      final key =
+          '${monday.year}-${monday.month.toString().padLeft(2, '0')}-${monday.day.toString().padLeft(2, '0')}';
+
+      weekBuckets.putIfAbsent(key, () => []).add(item);
+      weekDateBounds[key] = (monday: monday, sunday: sunday);
+    }
+
+    final sortedKeys = weekBuckets.keys.toList()..sort();
+    final result = <WeeklyTrendPoint>[];
+
+    for (int i = 0; i < sortedKeys.length; i++) {
+      final key = sortedKeys[i];
+      final items = weekBuckets[key]!;
+      final bounds = weekDateBounds[key]!;
+
+      final distinctTopics = items
+          .map((e) => e.topic.trim())
+          .where((t) => t.isNotEmpty)
+          .toSet()
+          .toList();
+
+      final String topicSummary;
+      if (distinctTopics.isEmpty) {
+        topicSummary = 'Curriculum Milestones';
+      } else if (distinctTopics.length == 1) {
+        topicSummary = distinctTopics.first;
+      } else if (distinctTopics.length == 2) {
+        topicSummary = '${distinctTopics[0]}, ${distinctTopics[1]}';
+      } else {
+        topicSummary =
+            '${distinctTopics[0]}, ${distinctTopics[1]} (+${distinctTopics.length - 2} more)';
+      }
+
+      final quizCount = items.length;
+      final totalQuestions = quizCount * 3;
+      final totalCorrect = items
+          .map((e) => (e.stepScore / 100 * 3).round().clamp(0, 3))
+          .fold<int>(0, (sum, val) => sum + val);
+
+      final avgScore =
+          items
+              .map((e) => e.stepScore)
+              .fold<double>(0.0, (sum, val) => sum + val) /
+          quizCount;
+
+      final dateRangeLabel = _formatDateRange(bounds.monday, bounds.sunday);
+
       result.add(
-        QuizAccuracyTrendItem(
-          date: chunk.first.date,
-          sessionId: chunk.first.sessionId,
-          topic: '${chunk.first.topic} (avg)',
-          stepIndex: i ~/ chunkSize,
-          stepTitle: 'Period Block ${(i ~/ chunkSize) + 1}',
-          stepScore: avgScore,
-          sessionAvgScore: avgScore,
+        WeeklyTrendPoint(
+          weekNumber: i + 1,
+          weekStart: bounds.monday,
+          weekEnd: bounds.sunday,
+          dateRangeLabel: dateRangeLabel,
+          topicSummary: topicSummary,
+          quizCount: quizCount,
+          totalQuestions: totalQuestions,
+          correctQuestions: totalCorrect,
+          averageScore: double.parse(avgScore.toStringAsFixed(1)),
         ),
       );
     }
+
     return result;
   }
 
   void _showFullscreenChart(
     BuildContext context,
-    List<QuizAccuracyTrendItem> trend,
-  ) {
+    List<QuizAccuracyTrendItem> trend, {
+    List<WeeklyTrendPoint>? weeklyPoints,
+  }) {
     final isDark = context.isDarkMode;
 
     showDialog(
@@ -538,8 +757,13 @@ class _QuizTrendCardState extends State<QuizTrendCard> {
       builder: (context) {
         return Dialog(
           backgroundColor: isDark ? const Color(0xFF0F172A) : Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-          insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 24,
+            vertical: 32,
+          ),
           child: Container(
             padding: const EdgeInsets.all(24),
             constraints: const BoxConstraints(maxWidth: 960, maxHeight: 600),
@@ -568,7 +792,13 @@ class _QuizTrendCardState extends State<QuizTrendCard> {
                     scrollDirection: Axis.horizontal,
                     child: SizedBox(
                       width: max(800.0, trend.length * 52.0),
-                      child: LineChart(_buildLineChartData(context, trend)),
+                      child: LineChart(
+                        _buildLineChartData(
+                          context,
+                          trend,
+                          weeklyPoints: weeklyPoints,
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -577,6 +807,42 @@ class _QuizTrendCardState extends State<QuizTrendCard> {
           ),
         );
       },
+    );
+  }
+}
+
+class WeeklyTrendPoint {
+  final int weekNumber;
+  final DateTime weekStart;
+  final DateTime weekEnd;
+  final String dateRangeLabel;
+  final String topicSummary;
+  final int quizCount;
+  final int totalQuestions;
+  final int correctQuestions;
+  final double averageScore;
+
+  WeeklyTrendPoint({
+    required this.weekNumber,
+    required this.weekStart,
+    required this.weekEnd,
+    required this.dateRangeLabel,
+    required this.topicSummary,
+    required this.quizCount,
+    required this.totalQuestions,
+    required this.correctQuestions,
+    required this.averageScore,
+  });
+
+  QuizAccuracyTrendItem toTrendItem() {
+    return QuizAccuracyTrendItem(
+      date: dateRangeLabel,
+      sessionId: '',
+      topic: topicSummary,
+      stepIndex: weekNumber - 1,
+      stepTitle: '$quizCount ${quizCount == 1 ? "quiz" : "quizzes"} evaluated',
+      stepScore: averageScore,
+      sessionAvgScore: averageScore,
     );
   }
 }
