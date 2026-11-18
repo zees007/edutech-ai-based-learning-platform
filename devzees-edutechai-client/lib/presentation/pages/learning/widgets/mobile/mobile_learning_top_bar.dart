@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:devzees_edutechai_client/core/providers/dashboard_provider.dart';
 import 'package:devzees_edutechai_client/data/models/learning/session_response.dart';
 import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
 import 'package:devzees_edutechai_client/core/theme/text_styles.dart';
@@ -11,27 +13,38 @@ import 'package:devzees_edutechai_client/presentation/widgets/step_pill.dart';
 /// A high-density, ultra-sleek Mobile Top Bar.
 /// Features the official EduTechAI logo immediately following the hamburger icon
 /// on the left side, with the active learning HUD and gamification badges on the right.
-class MobileLearningTopBar extends StatelessWidget implements PreferredSizeWidget {
+class MobileLearningTopBar extends ConsumerWidget
+    implements PreferredSizeWidget {
   final SessionResponse? session;
   final int activeStepIndex;
   final VoidCallback? onOpenCommandHub;
+  final bool? isDashboardOverride;
 
   const MobileLearningTopBar({
     super.key,
     required this.session,
     this.activeStepIndex = 0,
     this.onOpenCommandHub,
+    this.isDashboardOverride,
   });
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight + 1.0);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final hasSession = session != null;
     final isDark = context.isDarkMode;
-    final String location = GoRouterState.of(context).matchedLocation;
-    final bool isDashboard = location.startsWith('/learning/dashboard');
+    String location = '';
+    try {
+      location = GoRouterState.of(context).matchedLocation;
+    } catch (_) {
+      // In isolated tests without GoRouter state
+    }
+    final bool isDashboard =
+        isDashboardOverride ??
+        (location.startsWith('/learning/dashboard') ||
+            location.startsWith('/dashboard'));
 
     return Material(
       color: AppColors.topBarBackground,
@@ -44,75 +57,285 @@ class MobileLearningTopBar extends StatelessWidget implements PreferredSizeWidge
               height: kToolbarHeight,
               child: Row(
                 children: [
-                  // 1. Left: Hamburger Menu Icon + App Logo
+                  // 1. Left: Hamburger Menu Icon
                   Padding(
                     padding: const EdgeInsets.only(left: 6),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Builder(
-                          builder: (ctx) => IconButton(
-                            icon: Icon(
-                              Icons.menu_rounded,
-                              color: AppColors.textSecondary,
-                              size: 21,
-                            ),
-                            onPressed: () => Scaffold.of(ctx).openDrawer(),
-                            tooltip: 'Open menu',
-                            constraints: const BoxConstraints(
-                              minWidth: 36,
-                              minHeight: 36,
-                            ),
-                            padding: const EdgeInsets.all(6),
-                          ),
+                    child: Builder(
+                      builder: (ctx) => IconButton(
+                        icon: Icon(
+                          Icons.menu_rounded,
+                          color: AppColors.textSecondary,
+                          size: 21,
                         ),
-                        const SizedBox(width: 2),
-                        _buildAppLogo(isCompact: (hasSession && !isDashboard) || isDashboard),
-                      ],
+                        onPressed: () => Scaffold.of(ctx).openDrawer(),
+                        tooltip: 'Open menu',
+                        constraints: const BoxConstraints(
+                          minWidth: 36,
+                          minHeight: 36,
+                        ),
+                        padding: const EdgeInsets.all(6),
+                      ),
                     ),
                   ),
+                  const SizedBox(width: 4),
 
-                  // 2. Center: Dashboard title OR Unified Command Hub Capsule OR Spacer
+                  // 2. Center / Left Content:
+                  // On Dashboard: Show "Growth & Mastery Analytics" gradient text (No logo, No "Learning Dashboard" text)
+                  // In Learning Session: Show EduTech AI logo + Centered Learning Capsule
+                  // Otherwise: Show EduTech AI logo + Spacer
                   if (isDashboard)
                     Expanded(
-                      child: Center(
-                        child: Text(
-                          'Learning Dashboard',
-                          style: AppTextStyles.label.copyWith(
-                            color: isDark ? AppColors.accentCyan : AppColors.primary,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 13,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                      child: GradientText(
+                        'Growth & Mastery Analytics',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 16.0,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -0.3,
                         ),
+                        gradient: isDark
+                            ? AppColors.primaryGradient
+                            : const LinearGradient(
+                                colors: [Color(0xFF4F46E5), Color(0xFF7C3AED)],
+                              ),
                       ),
                     )
-                  else if (hasSession)
-                    Expanded(
-                      child: Center(
-                        child: _buildUnifiedCommandHubCapsule(context),
-                      ),
-                    )
-                  else
-                    const Spacer(),
+                  else ...[
+                    _buildAppLogo(isCompact: hasSession),
+                    if (hasSession)
+                      Expanded(
+                        child: Center(
+                          child: _buildUnifiedCommandHubCapsule(context),
+                        ),
+                      )
+                    else
+                      const Spacer(),
+                  ],
 
-                  // 3. Right: Theme Toggle Button
-                  Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: const ThemeToggleButton(size: 30),
-                  ),
+                  // 3. Right Actions:
+                  // On Dashboard: Date Filter Icon + Refresh Icon + Theme Toggle
+                  // Otherwise: Theme Toggle Button
+                  if (isDashboard) ...[
+                    _buildDateFilterIcon(context, ref, isDark),
+                    _buildRefreshIcon(context, ref, isDark),
+                    const SizedBox(width: 2),
+                    const Padding(
+                      padding: EdgeInsets.only(right: 8),
+                      child: ThemeToggleButton(size: 30),
+                    ),
+                  ] else
+                    const Padding(
+                      padding: EdgeInsets.only(right: 8),
+                      child: ThemeToggleButton(size: 30),
+                    ),
                 ],
               ),
             ),
-            Container(
-              color: AppColors.glassBorder,
-              height: 1.0,
-            ),
+            Container(color: AppColors.glassBorder, height: 1.0),
           ],
         ),
       ),
     );
+  }
+
+  // ─── DASHBOARD DATE FILTER ICON ───────────────────────────────────────────
+  Widget _buildDateFilterIcon(
+    BuildContext context,
+    WidgetRef ref,
+    bool isDark,
+  ) {
+    final dashboardState = ref.watch(dashboardProvider);
+    final activeRange = dashboardState.timeRange;
+    final isCustom = activeRange == 'custom';
+
+    return PopupMenuButton<String>(
+      tooltip: 'Time range filter',
+      padding: EdgeInsets.zero,
+      constraints: const BoxConstraints(minWidth: 34, minHeight: 34),
+      icon: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Icon(
+            Icons.date_range_rounded,
+            size: 20,
+            color: isCustom
+                ? (isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7))
+                : (isDark ? const Color(0xFFCBD5E1) : const Color(0xFF475569)),
+          ),
+          if (isCustom)
+            Positioned(
+              right: -1,
+              top: -1,
+              child: Container(
+                width: 6,
+                height: 6,
+                decoration: const BoxDecoration(
+                  color: Color(0xFF38BDF8),
+                  shape: BoxShape.circle,
+                ),
+              ),
+            ),
+        ],
+      ),
+      color: isDark ? const Color(0xFF1E293B) : Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.1)
+              : Colors.black.withValues(alpha: 0.08),
+        ),
+      ),
+      onSelected: (value) async {
+        if (value == 'custom') {
+          await _selectCustomDateRange(context, ref);
+        } else {
+          ref.read(dashboardProvider.notifier).setTimeRange(value);
+        }
+      },
+      itemBuilder: (context) => [
+        _buildPopupItem('7d', 'Last 7 Days', activeRange, isDark),
+        _buildPopupItem('30d', 'Last 30 Days', activeRange, isDark),
+        _buildPopupItem('90d', 'Last 90 Days', activeRange, isDark),
+        _buildPopupItem('1y', 'Last 1 Year', activeRange, isDark),
+        _buildPopupItem('all', 'All Time', activeRange, isDark),
+        const PopupMenuDivider(),
+        _buildPopupItem('custom', 'Custom Range...', activeRange, isDark),
+      ],
+    );
+  }
+
+  // ─── DASHBOARD REFRESH ICON ───────────────────────────────────────────────
+  Widget _buildRefreshIcon(BuildContext context, WidgetRef ref, bool isDark) {
+    final dashboardState = ref.watch(dashboardProvider);
+    final isRefreshing =
+        dashboardState.isLoading && dashboardState.data != null;
+
+    return IconButton(
+      tooltip: 'Refresh analytics',
+      padding: const EdgeInsets.all(6),
+      constraints: const BoxConstraints(minWidth: 34, minHeight: 34),
+      icon: isRefreshing
+          ? SizedBox(
+              width: 15,
+              height: 15,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: isDark
+                    ? const Color(0xFF60A5FA)
+                    : const Color(0xFF1D4ED8),
+              ),
+            )
+          : Icon(
+              Icons.refresh_rounded,
+              size: 20,
+              color: isDark ? const Color(0xFFCBD5E1) : const Color(0xFF475569),
+            ),
+      onPressed: isRefreshing
+          ? null
+          : () {
+              ref.read(learnerStandingProvider.notifier).refresh();
+              ref.read(dashboardProvider.notifier).refresh();
+            },
+    );
+  }
+
+  PopupMenuItem<String> _buildPopupItem(
+    String value,
+    String label,
+    String activeRange,
+    bool isDark,
+  ) {
+    final isSelected = activeRange == value;
+    return PopupMenuItem<String>(
+      value: value,
+      height: 38,
+      child: Row(
+        children: [
+          if (isSelected)
+            Icon(
+              Icons.check_rounded,
+              size: 16,
+              color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7),
+            )
+          else
+            const SizedBox(width: 16),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+              color: isSelected
+                  ? (isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7))
+                  : (isDark ? Colors.white : const Color(0xFF0F172A)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _selectCustomDateRange(
+    BuildContext context,
+    WidgetRef ref,
+  ) async {
+    final now = DateTime.now();
+    final twoYearsAgo = now.subtract(const Duration(days: 730));
+
+    final picked = await showDateRangePicker(
+      context: context,
+      firstDate: twoYearsAgo,
+      lastDate: now,
+      initialDateRange: DateTimeRange(
+        start: now.subtract(const Duration(days: 30)),
+        end: now,
+      ),
+      helpText: 'Select Learning Analytics Range (Max 2 Years)',
+      builder: (context, child) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: isDark
+                ? ColorScheme.dark(
+                    primary: AppColors.primary,
+                    onPrimary: Colors.white,
+                    surface: const Color(0xFF1E293B),
+                    onSurface: Colors.white,
+                  )
+                : ColorScheme.light(
+                    primary: AppColors.primary,
+                    onPrimary: Colors.white,
+                    surface: Colors.white,
+                    onSurface: const Color(0xFF0F172A),
+                  ),
+          ),
+          child: child ?? const SizedBox.shrink(),
+        );
+      },
+    );
+
+    if (picked != null) {
+      final daysDiff = picked.end.difference(picked.start).inDays;
+      if (daysDiff > 730) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Date range cannot exceed 2 years (730 days). Please select a narrower period.',
+              ),
+              backgroundColor: Color(0xFFEF4444),
+            ),
+          );
+        }
+        return;
+      }
+
+      await ref
+          .read(dashboardProvider.notifier)
+          .setCustomDateRange(picked.start, picked.end);
+    }
   }
 
   // ─── OFFICIAL APP LOGO (⚡ EduTech [AI]) ────────────────────────────────────
@@ -143,9 +366,7 @@ class MobileLearningTopBar extends StatelessWidget implements PreferredSizeWidge
           ),
           decoration: BoxDecoration(
             color: AppColors.primary.withValues(alpha: 0.2),
-            border: Border.all(
-              color: AppColors.primary.withValues(alpha: 0.4),
-            ),
+            border: Border.all(color: AppColors.primary.withValues(alpha: 0.4)),
             borderRadius: BorderRadius.circular(isCompact ? 4.5 : 6),
           ),
           child: Text(
@@ -176,10 +397,7 @@ class MobileLearningTopBar extends StatelessWidget implements PreferredSizeWidge
           decoration: BoxDecoration(
             color: AppColors.sidebarBackground,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: AppColors.glassBorder,
-              width: 1.0,
-            ),
+            border: Border.all(color: AppColors.glassBorder, width: 1.0),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.08),

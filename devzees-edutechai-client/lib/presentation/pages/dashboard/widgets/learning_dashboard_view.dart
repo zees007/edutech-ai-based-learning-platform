@@ -45,72 +45,80 @@ class _LearningDashboardViewState extends ConsumerState<LearningDashboardView> {
 
         return Container(
           color: isDark ? AppColors.canvasBackground : const Color(0xFFF8FAFC),
-          child: RefreshIndicator(
-            color: AppColors.primary,
-            onRefresh: () async {
-              await ref.read(dashboardProvider.notifier).refresh();
-            },
-            child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: EdgeInsets.symmetric(
-                horizontal: isMobile ? 16 : 32,
-                vertical: isMobile ? 16 : 24,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // ─── TIER 1: Pinned Analytics Command Hub (Web, Desktop & Mobile) ───
+              DashboardHeader(
+                onRefresh: () {
+                  ref.read(learnerStandingProvider.notifier).refresh();
+                  ref.read(dashboardProvider.notifier).refresh();
+                },
+                isRefreshing: state.isLoading && state.data != null,
               ),
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 1180),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // All-Time Gamification Standing HUD
-                      LearnerStandingHud(
-                        fallbackSummary: state.data?.summary,
-                        fallbackAchievements: state.data?.achievements,
-                      ),
-                      const SizedBox(height: 20),
 
-                      DashboardHeader(
-                        onRefresh: () {
-                          ref.read(learnerStandingProvider.notifier).refresh();
-                          ref.read(dashboardProvider.notifier).refresh();
-                        },
-                        isRefreshing: state.isLoading && state.data != null,
-                      ),
-                      const SizedBox(height: 24),
+              // ─── TIER 2: Scrollable Analytics Body Content ───
+              Expanded(
+                child: RefreshIndicator(
+                  color: AppColors.primary,
+                  onRefresh: () async {
+                    await ref.read(dashboardProvider.notifier).refresh();
+                  },
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isMobile ? 16 : 32,
+                      vertical: isMobile ? 16 : 24,
+                    ),
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 1180),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // All-Time Gamification Standing HUD
+                            LearnerStandingHud(
+                              fallbackSummary: state.data?.summary,
+                              fallbackAchievements: state.data?.achievements,
+                            ),
+                            const SizedBox(height: 24),
 
-                      // Loading State
-                      if (state.isLoading && state.data == null)
-                        _buildLoadingSkeleton(context, isMobile)
-                      // Error State
-                      else if (state.error != null && state.data == null)
-                        _buildErrorView(context, state.error!)
-                      // Loaded Content
-                      else if (state.data != null) ...[
-                        DashboardKpiCards(summary: state.data!.summary),
-                        const SizedBox(height: 24),
-                        QuizTrendCard(quizMetrics: state.data!.quizMetrics),
-                        const SizedBox(height: 24),
-                        WeakConceptsCard(
-                          weakConcepts:
-                              state.data!.quizMetrics.conceptsNeedingReinforcement,
+                            // Loading State
+                            if (state.isLoading && state.data == null)
+                              _buildLoadingSkeleton(context, isMobile)
+                            // Error State
+                            else if (state.error != null && state.data == null)
+                              _buildErrorView(context, state.error!)
+                            // Loaded Content
+                            else if (state.data != null) ...[
+                              DashboardKpiCards(summary: state.data!.summary),
+                              const SizedBox(height: 24),
+                              QuizTrendCard(quizMetrics: state.data!.quizMetrics),
+                              const SizedBox(height: 24),
+                              WeakConceptsCard(
+                                weakConcepts:
+                                    state.data!.quizMetrics.conceptsNeedingReinforcement,
+                              ),
+                              const SizedBox(height: 24),
+                              ModeAndTopicCards(
+                                modeDistribution: state.data!.modeDistribution,
+                                topicBreakdown: state.data!.topicBreakdown,
+                              ),
+                              const SizedBox(height: 24),
+                              ActivityAndAchievementsCard(
+                                activityHeatmap: state.data!.activityHeatmap,
+                                achievements: state.data!.achievements,
+                              ),
+                              const SizedBox(height: 48),
+                            ],
+                          ],
                         ),
-                        const SizedBox(height: 24),
-                        ModeAndTopicCards(
-                          modeDistribution: state.data!.modeDistribution,
-                          topicBreakdown: state.data!.topicBreakdown,
-                        ),
-                        const SizedBox(height: 24),
-                        ActivityAndAchievementsCard(
-                          activityHeatmap: state.data!.activityHeatmap,
-                          achievements: state.data!.achievements,
-                        ),
-                        const SizedBox(height: 48),
-                      ],
-                    ],
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ),
+            ],
           ),
         );
       },

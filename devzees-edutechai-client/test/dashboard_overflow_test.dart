@@ -7,6 +7,7 @@ import 'package:devzees_edutechai_client/core/providers/auth_provider.dart';
 import 'package:devzees_edutechai_client/data/models/auth/user_current_profile_response.dart';
 import 'package:devzees_edutechai_client/data/models/dashboard/dashboard_response.dart';
 import 'package:devzees_edutechai_client/presentation/pages/dashboard/widgets/learning_dashboard_view.dart';
+import 'package:devzees_edutechai_client/presentation/widgets/theme_toggle_button.dart';
 
 void main() {
   setUpAll(() {
@@ -124,11 +125,18 @@ void main() {
     ],
   );
 
-  Widget createDashboardWidget({required double width, required double height}) {
+  Widget createDashboardWidget({
+    required double width,
+    required double height,
+  }) {
     return ProviderScope(
       overrides: [
-        dashboardProvider.overrideWith(() => _MockDashboardNotifier(dummyDashboardData)),
-        learnerStandingProvider.overrideWith(() => _MockLearnerStandingNotifier(dummyDashboardData.achievements)),
+        dashboardProvider.overrideWith(
+          () => _MockDashboardNotifier(dummyDashboardData),
+        ),
+        learnerStandingProvider.overrideWith(
+          () => _MockLearnerStandingNotifier(dummyDashboardData.achievements),
+        ),
         authProvider.overrideWith(() => _MockAuthNotifier()),
       ],
       child: MaterialApp(
@@ -143,40 +151,48 @@ void main() {
     );
   }
 
-  testWidgets('renders cleanly on standard desktop (1280x800) without overflow', (tester) async {
-    tester.view.physicalSize = const Size(1280, 800);
-    tester.view.devicePixelRatio = 1.0;
-    addTearDown(() {
-      tester.view.resetPhysicalSize();
-      tester.view.resetDevicePixelRatio();
-    });
+  testWidgets(
+    'renders cleanly on standard desktop (1280x800) without overflow',
+    (tester) async {
+      tester.view.physicalSize = const Size(1280, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
 
-    await tester.pumpWidget(createDashboardWidget(width: 1000, height: 800));
-    await tester.pumpAndSettle();
+      await tester.pumpWidget(createDashboardWidget(width: 1000, height: 800));
+      await tester.pumpAndSettle();
 
-    expect(find.text('Growth & Mastery Analytics'), findsOneWidget);
-    expect(find.text('Active Study Time'), findsOneWidget);
-    expect(find.text('Quiz Comprehension & Accuracy Curve'), findsOneWidget);
-    expect(tester.takeException(), isNull);
-  });
+      expect(find.text('Growth & Mastery Analytics'), findsOneWidget);
+      expect(find.text('Active Study Time'), findsOneWidget);
+      expect(find.text('Quiz Comprehension & Accuracy Curve'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
 
-  testWidgets('renders cleanly on intermediate screen (900x700 with sidebar) without overflow', (tester) async {
-    tester.view.physicalSize = const Size(900, 700);
-    tester.view.devicePixelRatio = 1.0;
-    addTearDown(() {
-      tester.view.resetPhysicalSize();
-      tester.view.resetDevicePixelRatio();
-    });
+  testWidgets(
+    'renders cleanly on intermediate screen (900x700 with sidebar) without overflow',
+    (tester) async {
+      tester.view.physicalSize = const Size(900, 700);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
 
-    // Simulated content width after 280px sidebar = 620px
-    await tester.pumpWidget(createDashboardWidget(width: 620, height: 700));
-    await tester.pumpAndSettle();
+      // Simulated content width after 280px sidebar = 620px
+      await tester.pumpWidget(createDashboardWidget(width: 620, height: 700));
+      await tester.pumpAndSettle();
 
-    expect(find.text('Growth & Mastery Analytics'), findsOneWidget);
-    expect(tester.takeException(), isNull);
-  });
+      expect(find.text('Growth & Mastery Analytics'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
 
-  testWidgets('renders cleanly on mobile viewport (375x812) without overflow', (tester) async {
+  testWidgets('renders cleanly on mobile viewport (375x812) without overflow', (
+    tester,
+  ) async {
     tester.view.physicalSize = const Size(375, 812);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(() {
@@ -191,7 +207,9 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('renders cleanly on narrow mobile (320x568) without overflow', (tester) async {
+  testWidgets('renders cleanly on narrow mobile (320x568) without overflow', (
+    tester,
+  ) async {
     tester.view.physicalSize = const Size(320, 568);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(() {
@@ -205,6 +223,27 @@ void main() {
     expect(find.text('Growth & Mastery Analytics'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets(
+    'renders command hub header with gradient title and theme toggle',
+    (tester) async {
+      tester.view.physicalSize = const Size(1280, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      await tester.pumpWidget(createDashboardWidget(width: 1280, height: 800));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Growth & Mastery Analytics'), findsOneWidget);
+      expect(find.byType(ThemeToggleButton), findsOneWidget);
+      expect(find.text('ANALYTICS HUB'), findsNothing);
+      expect(find.text('LIVE SYNC'), findsNothing);
+      expect(tester.takeException(), isNull);
+    },
+  );
 }
 
 class _MockDashboardNotifier extends DashboardNotifier {
@@ -213,11 +252,7 @@ class _MockDashboardNotifier extends DashboardNotifier {
 
   @override
   DashboardState build() {
-    return DashboardState(
-      isLoading: false,
-      data: _mockData,
-      timeRange: '30d',
-    );
+    return DashboardState(isLoading: false, data: _mockData, timeRange: '30d');
   }
 
   @override
