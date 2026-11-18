@@ -24,7 +24,7 @@ class SidebarHeader extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 16),
         child: IconButton(
           onPressed: onToggle,
-          icon: Icon(Icons.menu, color: AppColors.textSecondary),
+          icon: Icon(Icons.menu, color: AppColors.textSecondary, size: 20),
         ),
       );
     }
