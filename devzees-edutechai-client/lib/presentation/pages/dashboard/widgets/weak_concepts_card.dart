@@ -19,96 +19,31 @@ class WeakConceptsCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = context.isDarkMode;
-    final isMobile = MediaQuery.of(context).size.width < 700;
 
-    return GlassCard(
-      borderRadius: 20,
-      padding: EdgeInsets.all(isMobile ? 16 : 22),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isMobile = constraints.maxWidth < 600;
+
+        return GlassCard(
+          borderRadius: 20,
+          padding: EdgeInsets.all(isMobile ? 16 : 22),
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF59E0B).withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Icon(
-                  Icons.lightbulb_outline_rounded,
-                  color: Color(0xFFF59E0B),
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Concepts Needing Reinforcement',
-                      style: AppTextStyles.h4.copyWith(
-                        fontWeight: FontWeight.w700,
-                        fontSize: isMobile ? 16 : 18,
-                        color: isDark ? AppColors.textPrimary : const Color(0xFF0F172A),
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'Milestone steps with quiz scores below 60% (0/3 or 1/3 correct)',
-                      style: AppTextStyles.body2.copyWith(
-                        color: isDark ? AppColors.textSecondary : const Color(0xFF64748B),
-                        fontSize: isMobile ? 12 : 13,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              if (weakConcepts.isNotEmpty) ...[
-                const SizedBox(width: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFEF4444).withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: const Color(0xFFEF4444).withValues(alpha: 0.3),
-                    ),
-                  ),
-                  child: Text(
-                    '${weakConcepts.length} to review',
-                    style: AppTextStyles.caption.copyWith(
-                      color: const Color(0xFFEF4444),
-                      fontWeight: FontWeight.w700,
-                      fontSize: isMobile ? 11 : 12,
-                    ),
-                  ),
-                ),
-              ],
-            ],
-          ),
-          const SizedBox(height: 20),
-
-          if (weakConcepts.isEmpty)
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: AppColors.accentGreen.withValues(alpha: isDark ? 0.06 : 0.08),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                  color: AppColors.accentGreen.withValues(alpha: 0.25),
-                ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(
-                    Icons.check_circle_rounded,
-                    color: AppColors.accentGreen,
-                    size: 24,
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF59E0B).withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(
+                      Icons.lightbulb_outline_rounded,
+                      color: Color(0xFFF59E0B),
+                      size: 20,
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -116,39 +51,113 @@ class WeakConceptsCard extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Outstanding Comprehension!',
-                          style: AppTextStyles.label.copyWith(
-                            color: isDark ? Colors.white : const Color(0xFF0F172A),
+                          'Concepts Needing Reinforcement',
+                          style: AppTextStyles.h4.copyWith(
                             fontWeight: FontWeight.w700,
-                            fontSize: 14,
+                            fontSize: isMobile ? 16 : 18,
+                            color: isDark ? AppColors.textPrimary : const Color(0xFF0F172A),
                           ),
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          'All attempted milestone quizzes have passed with 67% (2/3) or 100% (3/3) accuracy. Keep up the high retention!',
-                          style: AppTextStyles.caption.copyWith(
-                            color: isDark ? AppColors.textSecondary : const Color(0xFF475569),
+                          'Milestone steps with quiz scores below 60% (0/3 or 1/3 correct)',
+                          style: AppTextStyles.body2.copyWith(
+                            color: isDark ? AppColors.textSecondary : const Color(0xFF64748B),
+                            fontSize: isMobile ? 12 : 13,
                           ),
                         ),
                       ],
                     ),
                   ),
+                  if (weakConcepts.isNotEmpty) ...[
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFEF4444).withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: const Color(0xFFEF4444).withValues(alpha: 0.3),
+                          ),
+                        ),
+                        child: Text(
+                          '${weakConcepts.length} to review',
+                          style: AppTextStyles.caption.copyWith(
+                            color: const Color(0xFFEF4444),
+                            fontWeight: FontWeight.w700,
+                            fontSize: isMobile ? 11 : 12,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
-            )
-          else
-            ListView.separated(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: weakConcepts.length,
-              separatorBuilder: (_, _) => const SizedBox(height: 10),
-              itemBuilder: (context, index) {
-                final item = weakConcepts[index];
-                return _buildWeakConceptItem(context, ref, item);
-              },
-            ),
-        ],
-      ),
+              const SizedBox(height: 20),
+
+              if (weakConcepts.isEmpty)
+                Container(
+                  padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: AppColors.accentGreen.withValues(alpha: isDark ? 0.06 : 0.08),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: AppColors.accentGreen.withValues(alpha: 0.25),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(
+                        Icons.check_circle_rounded,
+                        color: AppColors.accentGreen,
+                        size: 24,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Outstanding Comprehension!',
+                              style: AppTextStyles.label.copyWith(
+                                color: isDark ? Colors.white : const Color(0xFF0F172A),
+                                fontWeight: FontWeight.w700,
+                                fontSize: 14,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'All attempted milestone quizzes have passed with 67% (2/3) or 100% (3/3) accuracy. Keep up the high retention!',
+                              style: AppTextStyles.caption.copyWith(
+                                color: isDark ? AppColors.textSecondary : const Color(0xFF475569),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              else
+                ListView.separated(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: weakConcepts.length,
+                  separatorBuilder: (_, _) => const SizedBox(height: 10),
+                  itemBuilder: (context, index) {
+                    final item = weakConcepts[index];
+                    return _buildWeakConceptItem(context, ref, item, isMobile);
+                  },
+                ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -156,11 +165,15 @@ class WeakConceptsCard extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref,
     WeakConceptItem item,
+    bool isMobile,
   ) {
     final isDark = context.isDarkMode;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      padding: EdgeInsets.symmetric(
+        horizontal: isMobile ? 12 : 16,
+        vertical: isMobile ? 10 : 14,
+      ),
       decoration: BoxDecoration(
         color: isDark
             ? Colors.white.withValues(alpha: 0.04)
@@ -206,7 +219,7 @@ class WeakConceptsCard extends ConsumerWidget {
               ],
             ),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 12),
 
           // Topic & Step Title
           Expanded(
@@ -245,27 +258,32 @@ class WeakConceptsCard extends ConsumerWidget {
               ],
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 10),
 
           // Review Button
           OutlinedButton(
-            onPressed: () async {
-              // Load session into workspace and navigate to the exact step
-              await ref
-                  .read(activeSessionProvider.notifier)
-                  .loadSession(item.sessionId);
-              if (context.mounted) {
-                ref
-                    .read(activeSessionProvider.notifier)
-                    .setActiveStep(item.stepIndex);
-                context.go('/learning');
-              }
-            },
+            onPressed: item.sessionId.isEmpty
+                ? null
+                : () async {
+                    // Load session into workspace and navigate to the exact step
+                    await ref
+                        .read(activeSessionProvider.notifier)
+                        .loadSession(item.sessionId);
+                    if (context.mounted) {
+                      ref
+                          .read(activeSessionProvider.notifier)
+                          .setActiveStep(item.stepIndex);
+                      context.go('/learning');
+                    }
+                  },
             style: OutlinedButton.styleFrom(
               side: BorderSide(
                 color: (isDark ? AppColors.primary : AppColors.purple).withValues(alpha: 0.5),
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              padding: EdgeInsets.symmetric(
+                horizontal: isMobile ? 10 : 14,
+                vertical: isMobile ? 6 : 8,
+              ),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
@@ -278,7 +296,7 @@ class WeakConceptsCard extends ConsumerWidget {
                   size: 16,
                   color: isDark ? AppColors.primary : AppColors.purple,
                 ),
-                const SizedBox(width: 6),
+                const SizedBox(width: 4),
                 Text(
                   'Review',
                   style: AppTextStyles.label.copyWith(

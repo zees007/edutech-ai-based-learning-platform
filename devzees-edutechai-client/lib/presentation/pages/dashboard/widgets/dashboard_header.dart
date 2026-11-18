@@ -22,145 +22,149 @@ class DashboardHeader extends ConsumerWidget {
     final authState = ref.watch(authProvider);
     final user = authState.user;
     final isDark = context.isDarkMode;
-    final isMobile = MediaQuery.of(context).size.width < 700;
     final dashboardState = ref.watch(dashboardProvider);
     final activeRange = dashboardState.timeRange;
 
     final firstName = user?.firstName ?? 'Learner';
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Title Row with Back button & Refresh
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isMobile = constraints.maxWidth < 600;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Wrap(
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    spacing: 10,
-                    runSpacing: 6,
+            // Title Row
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      GradientText(
-                        'Learning Performance & Stats',
-                        style: (isMobile ? AppTextStyles.h4 : AppTextStyles.h3)
-                            .copyWith(
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: -0.5,
+                      Wrap(
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: 10,
+                        runSpacing: 6,
+                        children: [
+                          GradientText(
+                            'Learning Performance & Stats',
+                            style: (isMobile ? AppTextStyles.h4 : AppTextStyles.h3)
+                                .copyWith(
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: -0.5,
+                                ),
+                            gradient: isDark
+                                ? AppColors.primaryGradient
+                                : const LinearGradient(
+                                    colors: [Color(0xFF4F46E5), Color(0xFF7C3AED)],
+                                  ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
                             ),
-                        gradient: isDark
-                            ? AppColors.primaryGradient
-                            : const LinearGradient(
-                                colors: [Color(0xFF4F46E5), Color(0xFF7C3AED)],
+                            decoration: BoxDecoration(
+                              color: AppColors.accentGreen.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: AppColors.accentGreen.withValues(
+                                  alpha: 0.35,
+                                ),
                               ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 3,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.accentGreen.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: AppColors.accentGreen.withValues(
-                              alpha: 0.35,
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  width: 6,
+                                  height: 6,
+                                  decoration: const BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: AppColors.accentGreen,
+                                  ),
+                                ),
+                                const SizedBox(width: 5),
+                                Text(
+                                  'Live HUD',
+                                  style: AppTextStyles.caption.copyWith(
+                                    color: AppColors.accentGreen,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              width: 6,
-                              height: 6,
-                              decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: AppColors.accentGreen,
-                              ),
-                            ),
-                            const SizedBox(width: 5),
-                            Text(
-                              'Live HUD',
-                              style: AppTextStyles.caption.copyWith(
-                                color: AppColors.accentGreen,
-                                fontWeight: FontWeight.w700,
-                                fontSize: 11,
-                              ),
-                            ),
-                          ],
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Welcome back, $firstName! Here is your comprehensive learning growth and quiz accuracy breakdown.',
+                        style: AppTextStyles.body2.copyWith(
+                          color: isDark
+                              ? AppColors.textSecondary
+                              : const Color(0xFF64748B),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'Welcome back, $firstName! Here is your comprehensive learning growth and quiz accuracy breakdown.',
-                    style: AppTextStyles.body2.copyWith(
-                      color: isDark
-                          ? AppColors.textSecondary
-                          : const Color(0xFF64748B),
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
-        const SizedBox(height: 18),
+            const SizedBox(height: 18),
 
-        // Time Range Filter Segment
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: [
-            _buildTimeFilterPill(
-              context: context,
-              ref: ref,
-              label: 'Last 7 Days',
-              rangeKey: '7d',
-              isSelected: activeRange == '7d',
-            ),
-            _buildTimeFilterPill(
-              context: context,
-              ref: ref,
-              label: 'Last 30 Days',
-              rangeKey: '30d',
-              isSelected: activeRange == '30d',
-            ),
-            _buildTimeFilterPill(
-              context: context,
-              ref: ref,
-              label: 'All Time',
-              rangeKey: 'all',
-              isSelected: activeRange == 'all',
-            ),
-            const SizedBox(width: 8),
-            // Reload icon
-            IconButton(
-              icon: isRefreshing
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : Icon(
-                      Icons.refresh_rounded,
-                      size: 20,
-                      color: isDark
-                          ? AppColors.textSecondary
-                          : const Color(0xFF64748B),
-                    ),
-              tooltip: 'Refresh analytics',
-              onPressed: isRefreshing ? null : onRefresh,
+            // Time Range Filter Segment
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                _buildTimeFilterPill(
+                  context: context,
+                  ref: ref,
+                  label: 'Last 7 Days',
+                  rangeKey: '7d',
+                  isSelected: activeRange == '7d',
+                ),
+                _buildTimeFilterPill(
+                  context: context,
+                  ref: ref,
+                  label: 'Last 30 Days',
+                  rangeKey: '30d',
+                  isSelected: activeRange == '30d',
+                ),
+                _buildTimeFilterPill(
+                  context: context,
+                  ref: ref,
+                  label: 'All Time',
+                  rangeKey: 'all',
+                  isSelected: activeRange == 'all',
+                ),
+                // Reload icon
+                IconButton(
+                  icon: isRefreshing
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : Icon(
+                          Icons.refresh_rounded,
+                          size: 20,
+                          color: isDark
+                              ? AppColors.textSecondary
+                              : const Color(0xFF64748B),
+                        ),
+                  tooltip: 'Refresh analytics',
+                  onPressed: isRefreshing ? null : onRefresh,
+                ),
+              ],
             ),
           ],
-        ),
-      ],
+        );
+      },
     );
   }
 

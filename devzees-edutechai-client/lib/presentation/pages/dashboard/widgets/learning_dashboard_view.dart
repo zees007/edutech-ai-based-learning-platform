@@ -37,76 +37,78 @@ class _LearningDashboardViewState extends ConsumerState<LearningDashboardView> {
   Widget build(BuildContext context) {
     final state = ref.watch(dashboardProvider);
     final isDark = context.isDarkMode;
-    final isMobile = MediaQuery.of(context).size.width < 700;
 
-    // Preserve the exact same background color as the original standalone page
-    return Container(
-      color: isDark ? AppColors.canvasBackground : const Color(0xFFF8FAFC),
-      child: RefreshIndicator(
-        color: AppColors.primary,
-        onRefresh: () async {
-          await ref.read(dashboardProvider.notifier).refresh();
-        },
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: EdgeInsets.symmetric(
-            horizontal: isMobile ? 16 : 32,
-            vertical: isMobile ? 16 : 24,
-          ),
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 1180),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  DashboardHeader(
-                    onRefresh: () {
-                      ref.read(dashboardProvider.notifier).refresh();
-                    },
-                    isRefreshing: state.isLoading && state.data != null,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isMobile = constraints.maxWidth < 700;
+
+        return Container(
+          color: isDark ? AppColors.canvasBackground : const Color(0xFFF8FAFC),
+          child: RefreshIndicator(
+            color: AppColors.primary,
+            onRefresh: () async {
+              await ref.read(dashboardProvider.notifier).refresh();
+            },
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: EdgeInsets.symmetric(
+                horizontal: isMobile ? 16 : 32,
+                vertical: isMobile ? 16 : 24,
+              ),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 1180),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      DashboardHeader(
+                        onRefresh: () {
+                          ref.read(dashboardProvider.notifier).refresh();
+                        },
+                        isRefreshing: state.isLoading && state.data != null,
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Loading State
+                      if (state.isLoading && state.data == null)
+                        _buildLoadingSkeleton(context, isMobile)
+                      // Error State
+                      else if (state.error != null && state.data == null)
+                        _buildErrorView(context, state.error!)
+                      // Loaded Content
+                      else if (state.data != null) ...[
+                        DashboardKpiCards(summary: state.data!.summary),
+                        const SizedBox(height: 24),
+                        QuizTrendCard(quizMetrics: state.data!.quizMetrics),
+                        const SizedBox(height: 24),
+                        WeakConceptsCard(
+                          weakConcepts:
+                              state.data!.quizMetrics.conceptsNeedingReinforcement,
+                        ),
+                        const SizedBox(height: 24),
+                        ModeAndTopicCards(
+                          modeDistribution: state.data!.modeDistribution,
+                          topicBreakdown: state.data!.topicBreakdown,
+                        ),
+                        const SizedBox(height: 24),
+                        ActivityAndAchievementsCard(
+                          activityHeatmap: state.data!.activityHeatmap,
+                          achievements: state.data!.achievements,
+                        ),
+                        const SizedBox(height: 48),
+                      ],
+                    ],
                   ),
-                  const SizedBox(height: 24),
-
-                  // Loading State
-                  if (state.isLoading && state.data == null)
-                    _buildLoadingSkeleton(context)
-                  // Error State
-                  else if (state.error != null && state.data == null)
-                    _buildErrorView(context, state.error!)
-                  // Loaded Content
-                  else if (state.data != null) ...[
-                    DashboardKpiCards(summary: state.data!.summary),
-                    const SizedBox(height: 24),
-                    QuizTrendCard(quizMetrics: state.data!.quizMetrics),
-                    const SizedBox(height: 24),
-                    WeakConceptsCard(
-                      weakConcepts:
-                          state.data!.quizMetrics.conceptsNeedingReinforcement,
-                    ),
-                    const SizedBox(height: 24),
-                    ModeAndTopicCards(
-                      modeDistribution: state.data!.modeDistribution,
-                      topicBreakdown: state.data!.topicBreakdown,
-                    ),
-                    const SizedBox(height: 24),
-                    ActivityAndAchievementsCard(
-                      activityHeatmap: state.data!.activityHeatmap,
-                      achievements: state.data!.achievements,
-                    ),
-                    const SizedBox(height: 48),
-                  ],
-                ],
+                ),
               ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
-  Widget _buildLoadingSkeleton(BuildContext context) {
-    final isMobile = MediaQuery.of(context).size.width < 700;
-
+  Widget _buildLoadingSkeleton(BuildContext context, bool isMobile) {
     return ShimmerLoading(
       child: Column(
         children: [

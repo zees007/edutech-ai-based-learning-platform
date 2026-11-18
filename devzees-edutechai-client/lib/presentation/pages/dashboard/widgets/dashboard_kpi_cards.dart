@@ -8,34 +8,35 @@ import '../../../widgets/glass_card.dart';
 class DashboardKpiCards extends StatelessWidget {
   final DashboardSummary summary;
 
-  const DashboardKpiCards({
-    super.key,
-    required this.summary,
-  });
+  const DashboardKpiCards({super.key, required this.summary});
 
   @override
   Widget build(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
-    final int crossAxisCount;
-    if (width > 1150) {
-      crossAxisCount = 3;
-    } else if (width > 680) {
-      crossAxisCount = 2;
-    } else {
-      crossAxisCount = 1;
-    }
-
     final formattedStudyTime = _formatStudyTime(summary.totalStudyMinutes);
 
     return LayoutBuilder(
       builder: (context, constraints) {
+        final totalWidth = constraints.maxWidth;
+        if (totalWidth <= 0) return const SizedBox.shrink();
+
+        final int crossAxisCount;
+        if (totalWidth >= 850) {
+          crossAxisCount = 3;
+        } else if (totalWidth >= 520) {
+          crossAxisCount = 2;
+        } else {
+          crossAxisCount = 1;
+        }
+
+        final cardWidth = _calculateCardWidth(totalWidth, crossAxisCount);
+
         return Wrap(
           spacing: 16,
           runSpacing: 16,
           children: [
             _buildCard(
               context: context,
-              width: _calculateCardWidth(constraints.maxWidth, crossAxisCount),
+              width: cardWidth,
               title: 'Active Study Time',
               value: formattedStudyTime,
               subtitle: 'Active time across sessions',
@@ -45,17 +46,18 @@ class DashboardKpiCards extends StatelessWidget {
             ),
             _buildCard(
               context: context,
-              width: _calculateCardWidth(constraints.maxWidth, crossAxisCount),
+              width: cardWidth,
               title: 'Journeys Completed',
               value: '${summary.completedSessions} / ${summary.totalSessions}',
-              subtitle: '${summary.completionRate.toStringAsFixed(1)}% completion rate',
+              subtitle:
+                  '${summary.completionRate.toStringAsFixed(1)}% completion rate',
               icon: Icons.flag_rounded,
               iconColor: AppColors.accentPurple,
               accentGradient: const [Color(0xFF8B5CF6), Color(0xFF6D28D9)],
             ),
             _buildCard(
               context: context,
-              width: _calculateCardWidth(constraints.maxWidth, crossAxisCount),
+              width: cardWidth,
               title: 'Milestones Mastered',
               value: '${summary.totalStepsMastered} Steps',
               subtitle: 'Roadmap checkpoints completed',
@@ -65,18 +67,20 @@ class DashboardKpiCards extends StatelessWidget {
             ),
             _buildCard(
               context: context,
-              width: _calculateCardWidth(constraints.maxWidth, crossAxisCount),
+              width: cardWidth,
               title: 'All-Time Learner Level',
               value: 'Level ${summary.currentLevel}',
               subtitle: '${summary.levelTitle} (+${summary.totalXp} XP)',
               icon: Icons.military_tech_rounded,
               iconColor: AppColors.accentAmber,
               accentGradient: const [Color(0xFFF59E0B), Color(0xFFD97706)],
-              extraBadge: summary.isMaxLevel ? 'MAX' : '+${summary.xpNeededForNext} XP to next',
+              extraBadge: summary.isMaxLevel
+                  ? 'MAX'
+                  : '+${summary.xpNeededForNext} XP to next',
             ),
             _buildCard(
               context: context,
-              width: _calculateCardWidth(constraints.maxWidth, crossAxisCount),
+              width: cardWidth,
               title: 'Active Study Streak',
               value: '${summary.currentStreak} Days',
               subtitle: 'Personal Best: ${summary.longestStreak} days',
@@ -86,7 +90,7 @@ class DashboardKpiCards extends StatelessWidget {
             ),
             _buildCard(
               context: context,
-              width: _calculateCardWidth(constraints.maxWidth, crossAxisCount),
+              width: cardWidth,
               title: 'Overall Quiz Accuracy',
               value: '${summary.averageQuizScoreOverall.toStringAsFixed(1)}%',
               subtitle: 'Across all 3-question quizzes',
@@ -101,9 +105,10 @@ class DashboardKpiCards extends StatelessWidget {
   }
 
   double _calculateCardWidth(double totalWidth, int count) {
-    if (count <= 1) return totalWidth;
+    if (count <= 1 || totalWidth <= 0) return totalWidth;
     final spacingTotal = (count - 1) * 16.0;
-    return (totalWidth - spacingTotal) / count;
+    final width = (totalWidth - spacingTotal) / count;
+    return width > 0 ? width : totalWidth;
   }
 
   String _formatStudyTime(int minutes) {
@@ -158,28 +163,31 @@ class DashboardKpiCards extends StatelessWidget {
                     width: 1,
                   ),
                 ),
-                child: Icon(
-                  icon,
-                  color: iconColor,
-                  size: 22,
-                ),
+                child: Icon(icon, color: iconColor, size: 22),
               ),
               if (extraBadge != null)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: accentGradient.first.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                      color: accentGradient.first.withValues(alpha: 0.35),
+                Flexible(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
                     ),
-                  ),
-                  child: Text(
-                    extraBadge,
-                    style: AppTextStyles.caption.copyWith(
-                      color: accentGradient.first,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 10,
+                    decoration: BoxDecoration(
+                      color: accentGradient.first.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: accentGradient.first.withValues(alpha: 0.35),
+                      ),
+                    ),
+                    child: Text(
+                      extraBadge,
+                      style: AppTextStyles.caption.copyWith(
+                        color: accentGradient.first,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 10,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ),
@@ -194,6 +202,8 @@ class DashboardKpiCards extends StatelessWidget {
               letterSpacing: -0.5,
               color: isDark ? AppColors.textPrimary : const Color(0xFF0F172A),
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 4),
           Text(
@@ -203,16 +213,18 @@ class DashboardKpiCards extends StatelessWidget {
               fontWeight: FontWeight.w600,
               fontSize: 13,
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 4),
           Text(
             subtitle,
             style: AppTextStyles.caption.copyWith(
-              color: isDark
-                  ? AppColors.textMuted
-                  : const Color(0xFF94A3B8),
+              color: isDark ? AppColors.textMuted : const Color(0xFF94A3B8),
               fontSize: 12,
             ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
