@@ -258,11 +258,6 @@ class DashboardHeader extends ConsumerWidget {
     bool isMobile = false,
   }) {
     final isDark = context.isDarkMode;
-    final gradient = isDark
-        ? AppColors.primaryGradient
-        : const LinearGradient(
-            colors: [Color(0xFF4F46E5), Color(0xFF7C3AED)],
-          );
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -285,12 +280,14 @@ class DashboardHeader extends ConsumerWidget {
             'Growth & Mastery Analytics',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontSize: isMobile ? 16 : 19.5,
-              fontWeight: FontWeight.w800,
-              letterSpacing: -0.4,
-            ),
-            gradient: gradient,
+            style: (isMobile
+                    ? AppTextStyles.subtitle2
+                    : AppTextStyles.h4)
+                .copyWith(
+                  fontSize: isMobile ? 16.0 : 20.0,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.5,
+                ),
           ),
         ),
       ],
