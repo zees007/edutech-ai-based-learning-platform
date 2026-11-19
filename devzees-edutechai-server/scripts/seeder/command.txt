@@ -29,3 +29,25 @@ ChromaDB YouTube Transcripts Management:
 
 # Delete transcripts for a specific YouTube video only:
 .\.venv\Scripts\python.exe scripts\clear_transcripts.py --video-id <VIDEO_ID>
+
+Dynamic Prestige Trophy Seeder (Supports Upgrading & Downgrading):
+# Seed/Upgrade/Downgrade trophies for ultra@gmail.com:
+.\.venv\Scripts\python.exe scripts\seeder\06_seed_trophies.py 1       # Unlock Bronze only (1 session, 5 steps, 3 quizzes)
+.\.venv\Scripts\python.exe scripts\seeder\06_seed_trophies.py 2       # Unlock Bronze & Silver (5 sessions, 25 steps, 8 quizzes, 2-day streak)
+.\.venv\Scripts\python.exe scripts\seeder\06_seed_trophies.py 3       # Unlock up to Gold (10 sessions, 60 steps, 15 quizzes, 3-day streak, Level 10 1000 XP)
+.\.venv\Scripts\python.exe scripts\seeder\06_seed_trophies.py 4       # Unlock up to Platinum (25 sessions, 150 steps, 25 quizzes, 7-day streak)
+.\.venv\Scripts\python.exe scripts\seeder\06_seed_trophies.py 5       # Unlock up to Sapphire (50 sessions, 250 steps, 40 quizzes, 14-day streak)
+.\.venv\Scripts\python.exe scripts\seeder\06_seed_trophies.py 6       # Unlock all 6 trophies including Diamond (100 sessions, 500 steps, 75 quizzes, 30-day streak)
+.\.venv\Scripts\python.exe scripts\seeder\06_seed_trophies.py 0       # Reset all trophies (0 unlocked)
+
+# Named aliases also accepted:
+.\.venv\Scripts\python.exe scripts\seeder\06_seed_trophies.py bronze
+.\.venv\Scripts\python.exe scripts\seeder\06_seed_trophies.py silver
+.\.venv\Scripts\python.exe scripts\seeder\06_seed_trophies.py gold
+.\.venv\Scripts\python.exe scripts\seeder\06_seed_trophies.py platinum
+.\.venv\Scripts\python.exe scripts\seeder\06_seed_trophies.py sapphire
+.\.venv\Scripts\python.exe scripts\seeder\06_seed_trophies.py diamond
+.\.venv\Scripts\python.exe scripts\seeder\06_seed_trophies.py reset
+
+# Optional custom user:
+.\.venv\Scripts\python.exe scripts\seeder\06_seed_trophies.py 3 --user pro@gmail.com
