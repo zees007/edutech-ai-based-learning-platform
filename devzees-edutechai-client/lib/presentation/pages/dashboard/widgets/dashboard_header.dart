@@ -275,7 +275,7 @@ class DashboardHeader extends ConsumerWidget {
           ),
         ),
         const SizedBox(width: 12),
-        Expanded(
+        Flexible(
           child: GradientText(
             'Growth & Mastery Analytics',
             gradient: isDark

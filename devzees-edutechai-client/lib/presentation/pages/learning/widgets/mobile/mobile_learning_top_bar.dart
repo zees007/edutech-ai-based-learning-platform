@@ -109,7 +109,7 @@ class MobileLearningTopBar extends ConsumerWidget
                       ),
                     ),
                     const SizedBox(width: 8),
-                    Expanded(
+                    Flexible(
                       child: GradientText(
                         'Growth & Mastery Analytics',
                         maxLines: 1,
