@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/constants/responsive.dart';
 import '../../../../core/providers/dashboard_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/text_styles.dart';
@@ -48,14 +49,15 @@ class _LearningDashboardViewState extends ConsumerState<LearningDashboardView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // ─── TIER 1: Pinned Analytics Command Hub (Web, Desktop & Mobile) ───
-              DashboardHeader(
-                onRefresh: () {
-                  ref.read(learnerStandingProvider.notifier).refresh();
-                  ref.read(dashboardProvider.notifier).refresh();
-                },
-                isRefreshing: state.isLoading && state.data != null,
-              ),
+              // ─── TIER 1: Pinned Analytics Command Hub (Web & Desktop only; Mobile uses MobileLearningTopBar) ───
+              if (!Responsive.isMobile(context))
+                DashboardHeader(
+                  onRefresh: () {
+                    ref.read(learnerStandingProvider.notifier).refresh();
+                    ref.read(dashboardProvider.notifier).refresh();
+                  },
+                  isRefreshing: state.isLoading && state.data != null,
+                ),
 
               // ─── TIER 2: Scrollable Analytics Body Content ───
               Expanded(

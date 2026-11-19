@@ -278,6 +278,11 @@ class DashboardHeader extends ConsumerWidget {
         Expanded(
           child: GradientText(
             'Growth & Mastery Analytics',
+            gradient: isDark
+                ? AppColors.primaryGradient
+                : const LinearGradient(
+                    colors: [Color(0xFF4F46E5), Color(0xFF7C3AED)],
+                  ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: (isMobile

@@ -6,7 +6,10 @@ import 'package:devzees_edutechai_client/core/providers/dashboard_provider.dart'
 import 'package:devzees_edutechai_client/core/providers/auth_provider.dart';
 import 'package:devzees_edutechai_client/data/models/auth/user_current_profile_response.dart';
 import 'package:devzees_edutechai_client/data/models/dashboard/dashboard_response.dart';
+import 'package:devzees_edutechai_client/core/constants/responsive.dart';
+import 'package:devzees_edutechai_client/presentation/pages/dashboard/widgets/dashboard_header.dart';
 import 'package:devzees_edutechai_client/presentation/pages/dashboard/widgets/learning_dashboard_view.dart';
+import 'package:devzees_edutechai_client/presentation/pages/learning/widgets/mobile/mobile_learning_top_bar.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/theme_toggle_button.dart';
 
 void main() {
@@ -140,12 +143,23 @@ void main() {
         authProvider.overrideWith(() => _MockAuthNotifier()),
       ],
       child: MaterialApp(
-        home: Scaffold(
-          body: SizedBox(
-            width: width,
-            height: height,
-            child: const LearningDashboardView(),
-          ),
+        home: Builder(
+          builder: (context) {
+            final isMobile = Responsive.isMobile(context);
+            return Scaffold(
+              appBar: isMobile
+                  ? const MobileLearningTopBar(
+                      session: null,
+                      isDashboardOverride: true,
+                    )
+                  : null,
+              body: SizedBox(
+                width: width,
+                height: height,
+                child: const LearningDashboardView(),
+              ),
+            );
+          },
         ),
       ),
     );

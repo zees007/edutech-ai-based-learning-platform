@@ -80,10 +80,35 @@ class MobileLearningTopBar extends ConsumerWidget
                   const SizedBox(width: 4),
 
                   // 2. Center / Left Content:
-                  // On Dashboard: Show "Growth & Mastery Analytics" gradient text (No logo, No "Learning Dashboard" text)
+                  // On Dashboard: Show Web-matching Accent Icon Box + "Growth & Mastery Analytics" gradient text
                   // In Learning Session: Show EduTech AI logo + Centered Learning Capsule
                   // Otherwise: Show EduTech AI logo + Spacer
-                  if (isDashboard)
+                  if (isDashboard) ...[
+                    Container(
+                      width: 32,
+                      height: 32,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? const Color(0xFF191B2B)
+                            : const Color(0xFFF1F5F9),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: isDark
+                              ? const Color(0x1FFFFFFF)
+                              : const Color(0xFFE2E8F0),
+                          width: 1.0,
+                        ),
+                      ),
+                      child: Icon(
+                        Icons.auto_graph_rounded,
+                        color: isDark
+                            ? const Color(0xFF60A5FA)
+                            : const Color(0xFF1D4ED8),
+                        size: 17,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
                     Expanded(
                       child: GradientText(
                         'Growth & Mastery Analytics',
@@ -100,7 +125,8 @@ class MobileLearningTopBar extends ConsumerWidget
                                 colors: [Color(0xFF4F46E5), Color(0xFF7C3AED)],
                               ),
                       ),
-                    )
+                    ),
+                  ]
                   else ...[
                     _buildAppLogo(isCompact: hasSession),
                     if (hasSession)
@@ -149,60 +175,65 @@ class MobileLearningTopBar extends ConsumerWidget
     final activeRange = dashboardState.timeRange;
     final isCustom = activeRange == 'custom';
 
-    return PopupMenuButton<String>(
-      tooltip: 'Time range filter',
-      padding: EdgeInsets.zero,
-      constraints: const BoxConstraints(minWidth: 34, minHeight: 34),
-      icon: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          Icon(
-            Icons.date_range_rounded,
-            size: 20,
-            color: isCustom
-                ? (isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7))
-                : (isDark ? const Color(0xFFCBD5E1) : const Color(0xFF475569)),
-          ),
-          if (isCustom)
-            Positioned(
-              right: -1,
-              top: -1,
-              child: Container(
-                width: 6,
-                height: 6,
-                decoration: const BoxDecoration(
-                  color: Color(0xFF38BDF8),
-                  shape: BoxShape.circle,
+    return Theme(
+      data: Theme.of(context).copyWith(
+        hoverColor: AppColors.primary.withValues(alpha: 0.12),
+        focusColor: AppColors.primary.withValues(alpha: 0.15),
+        splashColor: AppColors.primary.withValues(alpha: 0.10),
+        highlightColor: AppColors.primary.withValues(alpha: 0.10),
+      ),
+      child: PopupMenuButton<String>(
+        tooltip: 'Time range filter',
+        padding: EdgeInsets.zero,
+        constraints: const BoxConstraints(minWidth: 34, minHeight: 34),
+        icon: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Icon(
+              Icons.date_range_rounded,
+              size: 20,
+              color: isCustom
+                  ? (isDark ? AppColors.primary : AppColors.purple)
+                  : (isDark ? const Color(0xFFCBD5E1) : const Color(0xFF475569)),
+            ),
+            if (isCustom)
+              Positioned(
+                right: -1,
+                top: -1,
+                child: Container(
+                  width: 6,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    color: isDark ? AppColors.primary : AppColors.purple,
+                    shape: BoxShape.circle,
+                  ),
                 ),
               ),
-            ),
+          ],
+        ),
+        color: AppColors.cardBackground,
+        elevation: 8,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide.none,
+        ),
+        onSelected: (value) async {
+          if (value == 'custom') {
+            await _selectCustomDateRange(context, ref);
+          } else {
+            ref.read(dashboardProvider.notifier).setTimeRange(value);
+          }
+        },
+        itemBuilder: (context) => [
+          _buildPopupItem('7d', 'Last 7 Days', activeRange, isDark),
+          _buildPopupItem('30d', 'Last 30 Days', activeRange, isDark),
+          _buildPopupItem('90d', 'Last 90 Days', activeRange, isDark),
+          _buildPopupItem('1y', 'Last 1 Year', activeRange, isDark),
+          _buildPopupItem('all', 'All Time', activeRange, isDark),
+          const PopupMenuDivider(),
+          _buildPopupItem('custom', 'Custom Range...', activeRange, isDark),
         ],
       ),
-      color: isDark ? const Color(0xFF1E293B) : Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(
-          color: isDark
-              ? Colors.white.withValues(alpha: 0.1)
-              : Colors.black.withValues(alpha: 0.08),
-        ),
-      ),
-      onSelected: (value) async {
-        if (value == 'custom') {
-          await _selectCustomDateRange(context, ref);
-        } else {
-          ref.read(dashboardProvider.notifier).setTimeRange(value);
-        }
-      },
-      itemBuilder: (context) => [
-        _buildPopupItem('7d', 'Last 7 Days', activeRange, isDark),
-        _buildPopupItem('30d', 'Last 30 Days', activeRange, isDark),
-        _buildPopupItem('90d', 'Last 90 Days', activeRange, isDark),
-        _buildPopupItem('1y', 'Last 1 Year', activeRange, isDark),
-        _buildPopupItem('all', 'All Time', activeRange, isDark),
-        const PopupMenuDivider(),
-        _buildPopupItem('custom', 'Custom Range...', activeRange, isDark),
-      ],
     );
   }
 
@@ -257,7 +288,7 @@ class MobileLearningTopBar extends ConsumerWidget
             Icon(
               Icons.check_rounded,
               size: 16,
-              color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7),
+              color: isDark ? AppColors.primary : AppColors.purple,
             )
           else
             const SizedBox(width: 16),
@@ -268,8 +299,8 @@ class MobileLearningTopBar extends ConsumerWidget
               fontSize: 13,
               fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
               color: isSelected
-                  ? (isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7))
-                  : (isDark ? Colors.white : const Color(0xFF0F172A)),
+                  ? (isDark ? AppColors.primary : AppColors.purple)
+                  : AppColors.textPrimary,
             ),
           ),
         ],

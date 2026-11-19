@@ -244,9 +244,17 @@ class _LearningHistoryItemState extends ConsumerState<LearningHistoryItem> {
 
   @override
   Widget build(BuildContext context) {
+    String location = '';
+    try {
+      location = GoRouterState.of(context).matchedLocation;
+    } catch (_) {}
+    final bool isDashboardActive = location.startsWith('/learning/dashboard');
+
     final activeSessionId = ref.watch(activeSessionProvider).session?.sessionId;
     final bool isActive =
-        activeSessionId != null && activeSessionId == widget.session.sessionId;
+        !isDashboardActive &&
+        activeSessionId != null &&
+        activeSessionId == widget.session.sessionId;
 
     if (!widget.expanded) {
       return Padding(
