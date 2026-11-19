@@ -963,52 +963,65 @@ alembic revision --autogenerate -m "Add refresh tokens"
 
 ## 14. Unified Learner Performance & Analytics Dashboard Engine
 
-The Learner Performance & Analytics Dashboard consolidates distributed pedagogical interactions across all sessions, milestone steps, quizzes, and learning modes into an executive, glassmorphic analytics center.
+The Learner Performance & Analytics Dashboard is built on a **Two-Tier Decoupled Architecture** that strictly separates persistent all-time gamification standing from interval-scoped learning metrics:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                       Flutter Client Dashboard UI                           │
 ├─────────────────────────────────────────────────────────────────────────────┤
-│  [Time Range Filter: 7d | 30d | 90d | All]         [Active Level HUD Badge]  │
+│  [Learner Standing HUD: Level 5, 3450 XP, 🔥 5-Day Streak, 6/7 Trophies]    │
+│  [Period Filter Dropdown: 7d | 30d | 90d | 1y | All | Custom Date Range]    │
 │                                                                             │
 │  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐ ┌────────────────────┐  │
-│  │ Total Hours  │ │ Quizzes Done │ │ Avg Accuracy │ │ Mastered Concepts  │  │
+│  │ Study Time   │ │ Journeys Done│ │ Steps Done   │ │ Period Accuracy    │  │
 │  └──────────────┘ └──────────────┘ └──────────────┘ └────────────────────┘  │
 │                                                                             │
 │  ┌───────────────────────────────┐ ┌──────────────────────────────────────┐ │
-│  │ Formative Accuracy Trendline  │ │ Weak Concepts (1-Click Remediation)  │ │
-│  │ (fl_chart 3-Question Trend)   │ │ (Concepts scoring <= 50%)            │ │
+│  │ Quiz Checkpoint Accuracy Curve│ │ Weak Concepts (1-Click Remediation)  │ │
+│  │ (Horizontally Scrollable)     │ │ (Concepts scoring <= 50%)            │ │
 │  └───────────────────────────────┘ └──────────────────────────────────────┘ │
 │                                                                             │
 │  ┌───────────────────────────────┐ ┌──────────────────────────────────────┐ │
 │  │ Tri-Mode Distribution (Donut) │ │ Topic Mastery & Progress Breakdown   │ │
-│  │ Visual | Deep Dive | Bite-Size│ │ Percentages & Last Studied Timestamps│ │
+│  │ Visual | Deep Dive | Bite-Size│ │ Percentages & Session Counts         │ │
 │  └───────────────────────────────┘ └──────────────────────────────────────┘ │
 │                                                                             │
 │  ┌────────────────────────────────────────────────────────────────────────┐ │
-│  │ Milestone Achievement Badges & 90-Day Study Activity Stream            │ │
+│  │ Permanent Achievement Badges & Activity Heatmap Density                │ │
 │  └────────────────────────────────────────────────────────────────────────┘ │
-└──────────────────────────────────────▲──────────────────────────────────────┘
-                                       │ HTTP GET /learning/analytics/dashboard
-                                       │ Protected by require_privilege(ET_DASHBOARD)
-┌──────────────────────────────────────▼──────────────────────────────────────┐
+└───────────────────────▲───────────────────────────────▲─────────────────────┘
+                        │ GET /analytics/standing       │ GET /analytics/performance
+                        │ (Cached All-Time Rank HUD)    │ (Interval-Scoped Filters)
+┌───────────────────────▼───────────────────────────────▼─────────────────────┐
 │                    FastAPI Backend (AnalyticsService)                       │
 ├─────────────────────────────────────────────────────────────────────────────┤
-│  1. Step-Delta Idle Clamping Algorithm (Clamps inactive breaks > 30m)       │
-│  2. 3-Question Quiz Assessment Accuracy & Chronological Trendline           │
-│  3. Weak Concept Detection Engine (Quiz score <= 50% threshold)             │
-│  4. Tri-Mode Aggregation (Visual 🎬, Deep Dive 🔬, Bite-Sized ⚡)           │
-│  5. All-Time User Level Derivation via calculate_level(total_xp)            │
-│  6. Dynamic Milestone Achievements Calculation                              │
+│  1. In-Memory Standing TTL Cache (<5ms response, evicted on quiz submit)    │
+│  2. Timezone-Aware Midnight Conversion (via tz_offset_minutes parameter)    │
+│  3. 730-Day (2-Year) Date Window Safety Ceiling (HTTP 422 on exceed)        │
+│  4. Session Completion Boundary Alignment (filtered by last activity)      │
+│  5. Step-Delta Idle Clamping Algorithm (Clamps inactive breaks > 30m)       │
+│  6. 3-Question Quiz Assessment Accuracy & Full Horizontal Timeline Curve    │
+│  7. Weak Concept Detection Engine (Quiz score <= 50% threshold)             │
+│  8. Dynamic Milestone Trophy Engine (evaluated all-time, never re-locks)    │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### 14.1 Architecture & Design Rationale
-- **Decoupled Analytics Layer:** Learner stats are dynamically computed by `AnalyticsService` (`services/analytics_service.py`) querying existing production tables (`learning_sessions`, `step_progress`, and `gamification_records`). No heavy OLAP database or external ETL pipeline is required for sub-second responses.
-- **Strict Role-Based Access Control:** Gated behind `ET_DASHBOARD` privilege. Seeded for all standard roles (`Free`, `Pro`, `Ultra`, `Admin`), giving every learner visibility into their progression while allowing fine-grained administrative restriction if desired.
-- **Client Route & Menu Placement:** Integrated via GoRouter at `/dashboard`, accessible via the Learning Sidebar top action button and the User Profile popover menu (`Icons.insights_rounded`).
+### 14.1 Architecture & Two-Tier Decoupling
+- **Decoupled Standing vs. Period Performance:**
+  - `GET /api/v1/learning/analytics/standing`: Serves learner identity, level title, all-time cumulative XP, daily streak, and permanent milestone achievements. It never re-filters when the user changes date ranges, preventing trophy re-locking and artificial level demotions.
+  - `GET /api/v1/learning/analytics/performance`: Accepts `time_range` (`7d`, `30d`, `90d`, `1y`, `all`, `custom`), `start_date`, `end_date`, and `tz_offset_minutes`. Serves interval-scoped metrics (study hours, journeys completed, milestones mastered, quiz accuracy).
+- **In-Memory TTL Caching:** Standing queries are cached per `user_id` for 5 minutes (`cachetools.TTLCache`) and evicted automatically when `POST /quiz/submit` or step completion occurs.
+- **Strict Role-Based Access Control:** Gated behind `ET_DASHBOARD` privilege, mapped in `privileges_config.py`.
 
-### 14.2 AnalyticsService Calculation Pipeline & Active Duration Clamping
+### 14.2 Timezone Alignment & Boundary Consistency
+- **Timezone Offset Algorithm:** Database stores timestamps in UTC. The Flutter client passes `tz_offset_minutes = DateTime.now().timeZoneOffset.inMinutes`. FastAPI shifts local midnight boundaries to UTC before querying:
+  $$\text{start\_utc} = (\text{start\_date} \times 00:00:00) - \Delta t_{\text{offset}}$$
+  $$\text{end\_utc} = (\text{end\_date} \times 23:59:59.999999) - \Delta t_{\text{offset}}$$
+  This eliminates timezone drift where late-evening quizzes shift into the wrong calendar day.
+- **2-Year Window Safety Check:** If `(end_date - start_date).days > 730`, the API rejects with HTTP 422 (`"The selected date range cannot exceed 730 days (2 years). Please choose a shorter window."`), and Flutter displays a warning banner.
+- **Session vs. Step Boundary Consistency:** Sessions are evaluated by their **completion date / last activity timestamp** rather than solely `created_at`. A roadmap started on Jan 30 and finished on Feb 2 correctly attributes completed steps and journeys to February without discrepancies.
+
+### 14.3 AnalyticsService Calculation Pipeline & Active Duration Clamping
 To prevent skewed time statistics when users leave browser tabs or apps open overnight, `AnalyticsService` implements a **step-delta idle clamping algorithm**:
 1. Within each session, steps completed by the user are sorted chronologically by `completed_at`.
 2. The duration of step 0 is estimated from the session start time to step 0 completion.
@@ -1016,10 +1029,10 @@ To prevent skewed time statistics when users leave browser tabs or apps open ove
 4. If $\Delta t \le 30\text{ minutes}$, the exact duration is added.
 5. If $\Delta t > 30\text{ minutes}$ (idle break or multi-day gap), the duration is clamped to the platform median for that learning mode:
    - **Bite-Sized Mode:** 5 minutes
-   - **Visual Mode:** 12 minutes
-   - **Deep Dive Mode:** 20 minutes
+   - **Visual Mode:** 10 minutes
+   - **Deep Dive Mode:** 18 minutes
 
-### 14.3 Formative 3-Question Quiz Metrics & Weak Concept Identification
+### 14.4 Formative 3-Question Quiz Metrics & Weak Concept Identification
 Milestone quizzes are evaluated at the step level:
 - Each step quiz consists of exactly 3 formative multiple-choice questions.
 - **Accuracy Calculation:**
@@ -1027,28 +1040,17 @@ Milestone quizzes are evaluated at the step level:
 - **Weak Concept Identification:** Steps where the user scored $\le 50\%$ (0/3 or 1/3 correct) are flagged as requiring reinforcement. Checkpoints where the user scored 2/3 (66.7%) or 3/3 (100%) are considered passing milestones.
 - **1-Click Remediation (Client):** Tapping "Review" on any weak concept loads the exact historical session via `activeSessionProvider.loadSession(sessionId)` and jumps immediately to that milestone step (`setActiveStep(stepIndex)`).
 
-### 14.4 Tri-Mode Learning Distribution & Milestone Achievements
-- **Tri-Mode Breakdown:** Tracks user preference across all 3 learning modes:
-  - `visual`: High visual immersion with curated YouTube time-anchored clips.
-  - `deep_dive`: Scholarly rigor, in-depth academic preprints, and deep proofs.
-  - `bite_sized`: Rapid high-yield concepts designed for micro-learning sessions.
-- **Milestone Achievements:** Computes dynamic learner achievements including:
-  - `first_step`: First milestone completed.
-  - `journey_master`: 3+ full journeys finished.
-  - `quiz_ace`: 5+ perfect quizzes (3/3 score).
-  - `scholar`: 50+ total milestone steps mastered.
-  - `century_xp`: 1,000+ total cumulative XP.
-
 ### 14.5 Privilege Enforcement & Database Seeder Integration
-- `privileges_config.py`: `ET_DASHBOARD = "ET_DASHBOARD"` registered in `ALL_PRIVILEGE_CODES` and mapped to `GET /api/v1/learning/analytics/dashboard`.
+- `privileges_config.py`: `ET_DASHBOARD = "ET_DASHBOARD"` registered in `ALL_PRIVILEGE_CODES` and mapped to `GET /api/v1/learning/analytics/standing` and `GET /api/v1/learning/analytics/performance`.
 - `02_seed_privileges_and_roles.py`: `ET_DASHBOARD` added to the privilege hierarchy under `Learning Features` and assigned to `Free`, `Pro`, `Ultra`, and `Admin`.
 - `permission_service.dart`: `canAccessDashboard` checks for `PrivilegeCodes.etDashboard`.
 
-### 14.6 Flutter Client Architecture, Data Visualization & Glassmorphism
+### 14.6 Flutter Client Architecture & UI Components
 The frontend dashboard is built with Riverpod, GoRouter, and `fl_chart`:
-- **Header (`DashboardHeader`):** Glassmorphic header featuring time-range filter pills (`7d`, `30d`, `90d`, `all`), level badge with animated progress bar, and instant refresh trigger.
-- **KPI Summary Grid (`DashboardKpiCards`):** 6 responsive pulse cards showing Total Active Study Hours, Sessions Completed, Milestone Steps Mastered, Overall Quiz Accuracy, Total XP, and Current Daily Streak.
-- **Chronological Trendline (`QuizTrendCard`):** Interactive `fl_chart` LineChart plotting quiz performance across milestone checkpoints with custom touch tooltips detailing topic, step, and question breakdowns.
-- **Weak Concepts Remediation (`WeakConceptsCard`):** Highlights flagged concepts scoring $\le 50\%$ with contextual scores and a 1-click "Review" button that restores the session into the active workspace.
-- **Mode & Topic Mastery (`ModeAndTopicCards`):** Modern donut chart (`fl_chart` PieChart) showing mode preference alongside progress bars for top studied topics.
-- **Milestones & Activity Stream (`ActivityAndAchievementsCard`):** Visual badge showcase indicating unlocked/locked badges alongside a recent daily activity log.
+- **Learner Standing HUD (`LearnerStandingHud`):** Glassmorphic header card featuring user level badge, animated XP threshold progress bar, current daily streak with personal best, and trophy case counter.
+- **Header & Dropdown Toolbar (`DashboardHeader`):** Features dropdown filter supporting `7d`, `30d`, `90d`, `1y`, `all`, and `custom` with dark glass date picker and instant refresh trigger.
+- **KPI Summary Grid (`DashboardKpiCards`):** 4 responsive cards showing Active Study Hours, Journeys Completed, Milestone Steps Mastered, and Period Quiz Accuracy %.
+- **Horizontally Scrollable Trendline (`QuizTrendCard`):** Interactive `fl_chart` LineChart with 48px fixed point spacing, auto-scrolling to the latest quiz on load, fullscreen modal expansion, and rich hover tooltips displaying `Topic`, `Step X: [Title]`, `Date`, and score.
+- **Weak Concepts Remediation (`WeakConceptsCard`):** Highlights flagged concepts scoring $\le 50\%$ with contextual scores and 1-click "Review" button.
+- **Mode & Topic Mastery (`ModeAndTopicCards`):** Donut chart (`fl_chart` PieChart) showing mode preference alongside top studied topics.
+- **Achievements & Heatmap (`ActivityAndAchievementsCard`):** Dynamic trophy showcase alongside calendar activity heatmap.

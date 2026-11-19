@@ -116,6 +116,8 @@ async def submit_quiz(
             status="complete",
             quiz_score=score,
         )
+        from services.analytics_service import AnalyticsService
+        AnalyticsService.invalidate_standing_cache(current_user.id)
     except Exception as e:
         logger.warning(f"Failed to persist quiz result to DB: {e}")
 

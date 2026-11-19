@@ -8,6 +8,8 @@ import 'package:devzees_edutechai_client/presentation/pages/learning/widgets/mai
 import 'package:devzees_edutechai_client/presentation/pages/learning/widgets/workspace/milestone_roadmap_stepper.dart';
 import 'package:devzees_edutechai_client/presentation/pages/learning/widgets/mobile/mobile_learning_top_bar.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/animated_tutor_icon.dart';
+import 'package:devzees_edutechai_client/presentation/widgets/theme_toggle_button.dart';
+import 'package:go_router/go_router.dart';
 
 void main() {
   group('Mobile Step Header Logic & UI tests', () {
@@ -443,6 +445,40 @@ void main() {
       // Tap unified capsule to open Command Hub
       await tester.tap(find.text('Machine Learning Basics'));
       expect(hubOpened, isTrue);
+    });
+
+    testWidgets('MobileLearningTopBar displays Growth & Mastery Analytics instead of EduTech AI logo when on dashboard', (tester) async {
+      final router = GoRouter(
+        initialLocation: '/learning/dashboard',
+        routes: [
+          GoRoute(
+            path: '/learning/dashboard',
+            builder: (context, state) => const Scaffold(
+              appBar: MobileLearningTopBar(session: null),
+              body: SizedBox.shrink(),
+            ),
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp.router(
+            routerConfig: router,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Displays gradient title on mobile header
+      expect(find.text('Growth & Mastery Analytics'), findsOneWidget);
+      // EduTech AI logo is NOT displayed
+      expect(find.text('EduTech'), findsNothing);
+      expect(find.text('AI'), findsNothing);
+      // Redundant Learning Dashboard text is NOT displayed
+      expect(find.text('Learning Dashboard'), findsNothing);
+      // Theme toggle is present
+      expect(find.byType(ThemeToggleButton), findsOneWidget);
     });
   });
 }

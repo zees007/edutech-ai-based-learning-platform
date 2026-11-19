@@ -9,7 +9,6 @@ import 'package:devzees_edutechai_client/core/providers/auth_provider.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/shimmer_app_shell.dart';
 
 import 'widgets/sidebar/learning_sidebar.dart';
-import 'widgets/main_content/learning_main_content.dart';
 import 'widgets/gamification/level_up_celebration.dart';
 import 'widgets/gamification/journey_complete_celebration.dart';
 import 'widgets/gamification/session_feedback_dialog.dart';
@@ -19,7 +18,8 @@ import 'widgets/mobile/mobile_learning_top_bar.dart';
 import 'widgets/mobile/mobile_command_hub_sheet.dart';
 
 class LearningPage extends ConsumerStatefulWidget {
-  const LearningPage({super.key});
+  final Widget child;
+  const LearningPage({super.key, required this.child});
 
   @override
   ConsumerState<LearningPage> createState() => _LearningPageState();
@@ -59,7 +59,7 @@ class _LearningPageState extends ConsumerState<LearningPage> {
 
   void _showLevelUpCelebration(GamificationEvent event) {
     if (_levelUpOverlay != null) return;
-    
+
     _levelUpOverlay = OverlayEntry(
       builder: (context) => LevelUpCelebration(
         level: event.level,
@@ -98,9 +98,7 @@ class _LearningPageState extends ConsumerState<LearningPage> {
             Navigator.of(dialogContext).pop();
             _isFeedbackDialogOpen = false;
             ref.read(feedbackPromptProvider.notifier).dismiss();
-            ref
-                .read(activeSessionProvider.notifier)
-                .skipFeedbackAndCelebrate();
+            ref.read(activeSessionProvider.notifier).skipFeedbackAndCelebrate();
           },
         );
       },
@@ -156,7 +154,7 @@ class _LearningPageState extends ConsumerState<LearningPage> {
       if (next != null) {
         // Ensure this runs after the current frame
         WidgetsBinding.instance.addPostFrameCallback((_) {
-           _showLevelUpCelebration(next);
+          _showLevelUpCelebration(next);
         });
       }
     });
@@ -169,7 +167,10 @@ class _LearningPageState extends ConsumerState<LearningPage> {
       }
     });
 
-    ref.listen<JourneyCompleteEvent?>(journeyCompleteProvider, (previous, next) {
+    ref.listen<JourneyCompleteEvent?>(journeyCompleteProvider, (
+      previous,
+      next,
+    ) {
       if (next != null) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           _showJourneyCompleteCelebration(next);
@@ -199,9 +200,12 @@ class _LearningPageState extends ConsumerState<LearningPage> {
       final session = activeState.session;
       final int maxUnlockedIndex = session != null
           ? (session.currentStepIndex > session.stepsCompleted
-                  ? session.currentStepIndex
-                  : session.stepsCompleted)
-              .clamp(0, session.steps.isNotEmpty ? session.steps.length - 1 : 0)
+                    ? session.currentStepIndex
+                    : session.stepsCompleted)
+                .clamp(
+                  0,
+                  session.steps.isNotEmpty ? session.steps.length - 1 : 0,
+                )
           : 0;
 
       return Scaffold(
@@ -217,7 +221,9 @@ class _LearningPageState extends ConsumerState<LearningPage> {
                     activeIndex: activeState.activeStepIndex,
                     maxUnlockedIndex: maxUnlockedIndex,
                     onStepTapped: (index) {
-                      ref.read(activeSessionProvider.notifier).setActiveStep(index);
+                      ref
+                          .read(activeSessionProvider.notifier)
+                          .setActiveStep(index);
                     },
                   );
                 }
@@ -232,7 +238,7 @@ class _LearningPageState extends ConsumerState<LearningPage> {
             onClose: _closeDrawer,
           ),
         ),
-        body: GlowBackground(child: LearningMainContent(isMobile: isMobile)),
+        body: GlowBackground(child: widget.child),
       );
     }
 
@@ -250,10 +256,7 @@ class _LearningPageState extends ConsumerState<LearningPage> {
               decoration: BoxDecoration(
                 color: colors.sidebarBackground,
                 border: Border(
-                  right: BorderSide(
-                    color: colors.border,
-                    width: 1,
-                  ),
+                  right: BorderSide(color: colors.border, width: 1),
                 ),
               ),
               child: LearningSidebar(
@@ -265,7 +268,7 @@ class _LearningPageState extends ConsumerState<LearningPage> {
             ),
 
             // Main Content
-            Expanded(child: LearningMainContent(isMobile: isMobile)),
+            Expanded(child: widget.child),
           ],
         ),
       ),

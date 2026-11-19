@@ -14,7 +14,9 @@ class MockAuthNotifier extends AuthNotifier {
   @override
   AuthState build() {
     return AuthState(
-      status: initialUser != null ? AuthStatus.authenticated : AuthStatus.unauthenticated,
+      status: initialUser != null
+          ? AuthStatus.authenticated
+          : AuthStatus.unauthenticated,
       user: initialUser,
     );
   }
@@ -59,11 +61,15 @@ void main() {
       privilegeCodes: ['ET_CHANGE_PASSWORD'],
     );
 
-    testWidgets('Renders Profile tab with user details pre-populated', (tester) async {
+    testWidgets('Renders Profile tab with user details pre-populated', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            authProvider.overrideWith(() => MockAuthNotifier(initialUser: mockUser)),
+            authProvider.overrideWith(
+              () => MockAuthNotifier(initialUser: mockUser),
+            ),
           ],
           child: MaterialApp(
             home: Scaffold(
@@ -96,11 +102,15 @@ void main() {
       expect(find.text('Save Changes'), findsOneWidget);
     });
 
-    testWidgets('Opens directly to Security tab when initialTab is 1', (tester) async {
+    testWidgets('Opens directly to Security tab when initialTab is 1', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            authProvider.overrideWith(() => MockAuthNotifier(initialUser: mockUser)),
+            authProvider.overrideWith(
+              () => MockAuthNotifier(initialUser: mockUser),
+            ),
           ],
           child: MaterialApp(
             home: Scaffold(
@@ -122,7 +132,7 @@ void main() {
 
       // Verify Security fields are visible
       expect(find.text('CURRENT PASSWORD *'), findsOneWidget);
-      expect(find.text('NEW PASSWORD * (min 6 characters)'), findsOneWidget);
+      expect(find.text('NEW PASSWORD * (min 8 characters)'), findsOneWidget);
       expect(find.text('CONFIRM NEW PASSWORD *'), findsOneWidget);
       expect(find.text('Update Password'), findsOneWidget);
       expect(find.text('Active Sessions'), findsOneWidget);

@@ -120,16 +120,6 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
                       ),
                     ),
                     ?upgradeButton,
-                    if (perms.canAccessDashboard)
-                      _buildMenuItem(
-                        context,
-                        'Learning Dashboard',
-                        Icons.insights_rounded,
-                        isDark ? AppColors.accentCyan : AppColors.primary,
-                        onTap: () {
-                          context.push('/dashboard');
-                        },
-                      ),
                     _buildMenuItem(
                       context,
                       'Manage Subscription',

@@ -180,8 +180,8 @@ async def test_analytics_service_active_user_metrics():
 
 
 @pytest.mark.asyncio
-async def test_get_dashboard_api_endpoint():
-    """Verify GET /api/v1/learning/analytics/dashboard returns 200 with ET_DASHBOARD privilege."""
+async def test_get_standing_and_performance_api_endpoints():
+    """Verify GET /api/v1/learning/analytics/standing and /performance return 200 with ET_DASHBOARD."""
     from httpx import ASGITransport, AsyncClient
     from app.main import create_app
     from services.auth_service import AuthService
@@ -197,20 +197,69 @@ async def test_get_dashboard_api_endpoint():
             password="SecurePassword123!",
         )
         user = await UserService.create_user(db, user_req)
-        # Create access token
         access_token = AuthService.create_access_token({"sub": user.id})
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         headers = {"Authorization": f"Bearer {access_token}"}
-        resp = await ac.get("/api/v1/learning/analytics/dashboard?time_range=30d", headers=headers)
 
-        assert resp.status_code == 200
-        data = resp.json()
-        assert "summary" in data
-        assert "quiz_metrics" in data
-        assert "activity_heatmap" in data
-        assert "topic_breakdown" in data
-        assert "mode_distribution" in data
-        assert "achievements" in data
-        assert data["summary"]["current_level"] == 1
-        assert data["summary"]["level_title"] == "Curious Explorer"
+        # 1. Test Standing Endpoint
+        resp_standing = await ac.get("/api/v1/learning/analytics/standing", headers=headers)
+        assert resp_standing.status_code == 200
+        standing_data = resp_standing.json()
+        assert "total_xp" in standing_data
+        assert "current_level" in standing_data
+        assert "level_title" in standing_data
+        assert "current_streak" in standing_data
+        assert "longest_streak" in standing_data
+        assert "achievements" in standing_data
+        assert standing_data["current_level"] == 1
+        assert standing_data["level_title"] == "Curious Explorer"
+        assert len(standing_data["achievements"]) >= 7
+
+        # 2. Test Performance Endpoint (Preset 30d)
+        resp_perf = await ac.get("/api/v1/learning/analytics/performance?time_range=30d", headers=headers)
+        assert resp_perf.status_code == 200
+        perf_data = resp_perf.json()
+        assert perf_data["time_range"] == "30d"
+        assert "summary" in perf_data
+        assert "quiz_metrics" in perf_data
+        assert "activity_heatmap" in perf_data
+        assert "topic_breakdown" in perf_data
+        assert "mode_distribution" in perf_data
+
+        # 3. Test Custom Date Range with Timezone Offset
+        today_str = datetime.utcnow().strftime("%Y-%m-%d")
+        week_ago_str = (datetime.utcnow() - timedelta(days=7)).strftime("%Y-%m-%d")
+        resp_custom = await ac.get(
+            f"/api/v1/learning/analytics/performance?time_range=custom&start_date={week_ago_str}&end_date={today_str}&tz_offset_minutes=180",
+            headers=headers,
+        )
+        assert resp_custom.status_code == 200
+        custom_data = resp_custom.json()
+        assert custom_data["time_range"] == "custom"
+        assert custom_data["start_date"] is not None
+        assert custom_data["end_date"] is not None
+
+        # 4. Test 2-Year Date Range Exceeded Validation (HTTP 422)
+        resp_too_long = await ac.get(
+            "/api/v1/learning/analytics/performance?time_range=custom&start_date=2020-01-01&end_date=2024-01-01",
+            headers=headers,
+        )
+        assert resp_too_long.status_code == 422
+        assert "cannot exceed 730 days" in resp_too_long.text
+
+        # 5. Test Inverted Dates (HTTP 400)
+        resp_inverted = await ac.get(
+            f"/api/v1/learning/analytics/performance?time_range=custom&start_date={today_str}&end_date={week_ago_str}",
+            headers=headers,
+        )
+        assert resp_inverted.status_code == 400
+        assert "cannot be after end_date" in resp_inverted.text
+
+        # 6. Test Missing Custom Dates (HTTP 422)
+        resp_missing = await ac.get(
+            "/api/v1/learning/analytics/performance?time_range=custom",
+            headers=headers,
+        )
+        assert resp_missing.status_code == 422
+        assert "required for custom time range" in resp_missing.text

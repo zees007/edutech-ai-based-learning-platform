@@ -8,10 +8,12 @@ import 'package:devzees_edutechai_client/core/providers/onboarding_provider.dart
 import 'package:devzees_edutechai_client/presentation/pages/home/home_page.dart';
 import 'package:devzees_edutechai_client/presentation/pages/auth/auth_page.dart';
 import 'package:devzees_edutechai_client/presentation/pages/learning/learning_page.dart';
+import 'package:devzees_edutechai_client/presentation/pages/learning/widgets/main_content/learning_main_content.dart';
+import 'package:devzees_edutechai_client/presentation/pages/dashboard/widgets/learning_dashboard_view.dart';
+import 'package:devzees_edutechai_client/core/constants/responsive.dart';
 import 'package:devzees_edutechai_client/presentation/pages/admin/admin_page.dart';
 import 'package:devzees_edutechai_client/presentation/pages/onboarding/onboarding_page.dart';
 import 'package:devzees_edutechai_client/presentation/pages/subscription/subscription_page.dart';
-import 'package:devzees_edutechai_client/presentation/pages/dashboard/learning_dashboard_page.dart';
 
 /// Bridges Riverpod's AuthNotifier state into GoRouter's Listenable-based refresh mechanism.
 class AppRouterNotifier extends ChangeNotifier {
@@ -119,7 +121,7 @@ class AppRouterNotifier extends ChangeNotifier {
       }
 
       // 2c. Dashboard route privilege guard — redirect unauthorized users to /learning
-      final isDashboardRoute = location == '/dashboard';
+      final isDashboardRoute = location == '/dashboard' || location == '/learning/dashboard';
       if (isDashboardRoute) {
         if (authState.user == null) {
           return null;
@@ -202,10 +204,23 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             name: 'auth',
             builder: (context, state) => const AuthPage(),
           ),
-          GoRoute(
-            path: '/learning',
-            name: 'learning',
-            builder: (context, state) => const LearningPage(),
+          ShellRoute(
+            builder: (context, state, child) {
+              return LearningPage(child: child);
+            },
+            routes: [
+              GoRoute(
+                path: '/learning',
+                name: 'learning',
+                builder: (context, state) =>
+                    LearningMainContent(isMobile: Responsive.isMobile(context)),
+              ),
+              GoRoute(
+                path: '/learning/dashboard',
+                name: 'learning-dashboard',
+                builder: (context, state) => const LearningDashboardView(),
+              ),
+            ],
           ),
           GoRoute(
             path: '/admin',
@@ -222,8 +237,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: '/dashboard',
-            name: 'dashboard',
-            builder: (context, state) => const LearningDashboardPage(),
+            redirect: (context, state) => '/learning/dashboard',
           ),
         ],
       ),

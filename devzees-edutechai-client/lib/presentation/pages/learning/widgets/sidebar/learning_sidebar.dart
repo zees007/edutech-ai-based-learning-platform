@@ -2,9 +2,11 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../../../presentation/widgets/gradient_button.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/text_styles.dart';
+import '../../../../../core/theme/theme_palette.dart';
 import '../../../../../core/providers/learning_provider.dart';
 import '../../../../../core/providers/active_session_provider.dart';
 import '../../../../../core/providers/permission_provider.dart';
@@ -62,6 +64,14 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
 
   @override
   Widget build(BuildContext context) {
+    String location = '';
+    try {
+      location = GoRouterState.of(context).matchedLocation;
+    } catch (_) {}
+    final bool isDashboardActive = location.startsWith('/learning/dashboard');
+    final bool hasActiveSession =
+        ref.watch(activeSessionProvider).session != null && !isDashboardActive;
+
     return SafeArea(
       child: Column(
         children: [
@@ -73,9 +83,9 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
           ),
           const SizedBox(height: 16),
           _buildNewJourneyButton(expanded: widget.expanded),
-          const SizedBox(height: 8),
-          _buildDashboardButton(expanded: widget.expanded),
-          const SizedBox(height: 16),
+          const SizedBox(height: 10),
+          _buildNavTabs(expanded: widget.expanded),
+          const SizedBox(height: 14),
           if (widget.expanded) ...[
             _buildHistoryHeader(),
             if (_isHistoryExpanded) ...[
@@ -94,31 +104,9 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
             Expanded(
               child: Column(
                 children: [
-                  InkWell(
+                  _CollapsedHistoryButton(
                     onTap: widget.onToggle,
-                    borderRadius: BorderRadius.circular(12),
-                    child: Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        color: AppColors.isDark
-                            ? Colors.white.withValues(alpha: 0.05)
-                            : AppColors.surfaceSubtle,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: AppColors.isDark
-                              ? Colors.white.withValues(alpha: 0.08)
-                              : AppColors.border,
-                          width: 1,
-                        ),
-                      ),
-                      child: Icon(
-                        Icons.history,
-                        color: AppColors.isDark
-                            ? Colors.white.withValues(alpha: 0.7)
-                            : AppColors.textSecondary,
-                      ),
-                    ),
+                    isSelected: hasActiveSession,
                   ),
                   const Spacer(),
                 ],
@@ -132,6 +120,7 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
 
   void _handleStartNewJourney() {
     ref.read(activeSessionProvider.notifier).clearSession();
+    context.go('/learning');
     if (widget.isMobile) {
       widget.onClose();
     } else if (Scaffold.maybeOf(context)?.hasDrawer ?? false) {
@@ -150,27 +139,46 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
               onPressed: _handleStartNewJourney,
               height: 48,
             )
-          : InkWell(
-              onTap: _handleStartNewJourney,
-              borderRadius: BorderRadius.circular(12),
-              child: Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  gradient: AppColors.primaryGradient,
-                  borderRadius: BorderRadius.circular(12),
+          : Tooltip(
+              message: 'Start New Journey',
+              waitDuration: const Duration(milliseconds: 300),
+              child: InkWell(
+                onTap: _handleStartNewJourney,
+                borderRadius: BorderRadius.circular(12),
+                hoverColor: Colors.transparent,
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+                mouseCursor: SystemMouseCursors.click,
+                child: Container(
+                  width: 48,
+                  height: 48,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    gradient: AppColors.primaryGradient,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.edit_square,
+                    color: Colors.white,
+                    size: 20,
+                  ),
                 ),
-                child: const Icon(Icons.edit_square, color: Colors.white),
               ),
             ),
     );
   }
 
-  Widget _buildDashboardButton({required bool expanded}) {
+  Widget _buildNavTabs({required bool expanded}) {
     final perms = ref.watch(permissionProvider);
     if (!perms.canAccessDashboard) return const SizedBox.shrink();
 
-    final isDark = AppColors.isDark;
+    String location = '';
+    try {
+      location = GoRouterState.of(context).matchedLocation;
+    } catch (_) {
+      // In isolated tests without GoRouter state
+    }
+    final bool isDashboardActive = location.startsWith('/learning/dashboard');
 
     void handleOpenDashboard() {
       if (widget.isMobile) {
@@ -178,107 +186,25 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
       } else if (Scaffold.maybeOf(context)?.hasDrawer ?? false) {
         Scaffold.of(context).closeDrawer();
       }
-      context.push('/dashboard');
+      context.go('/learning/dashboard');
     }
 
-    if (!expanded) {
-      return Tooltip(
-        message: 'Learning Dashboard',
-        child: InkWell(
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _SidebarNavTab(
+          icon: Icons.insights_rounded,
+          label: 'Learning Dashboard',
+          isSelected: isDashboardActive,
+          expanded: expanded,
           onTap: handleOpenDashboard,
-          borderRadius: BorderRadius.circular(12),
-          child: Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: isDark
-                  ? Colors.white.withValues(alpha: 0.05)
-                  : AppColors.surfaceSubtle,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.08)
-                    : AppColors.border,
-                width: 1,
-              ),
-            ),
-            child: Icon(
-              Icons.insights_rounded,
-              size: 22,
-              color: isDark ? AppColors.accentCyan : AppColors.primary,
-            ),
-          ),
         ),
-      );
-    }
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: handleOpenDashboard,
-          borderRadius: BorderRadius.circular(12),
-          hoverColor: (isDark ? AppColors.accentCyan : AppColors.primary)
-              .withValues(alpha: 0.08),
-          splashColor: (isDark ? AppColors.accentCyan : AppColors.primary)
-              .withValues(alpha: 0.15),
-          child: Container(
-            height: 44,
-            padding: const EdgeInsets.symmetric(horizontal: 14),
-            decoration: BoxDecoration(
-              color: isDark
-                  ? Colors.white.withValues(alpha: 0.04)
-                  : Colors.black.withValues(alpha: 0.03),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.07)
-                    : AppColors.border,
-                width: 1,
-              ),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: (isDark ? AppColors.accentCyan : AppColors.primary)
-                        .withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(
-                    Icons.insights_rounded,
-                    size: 18,
-                    color: isDark ? AppColors.accentCyan : AppColors.primary,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    'Learning Dashboard',
-                    style: AppTextStyles.body2.copyWith(
-                      color: isDark ? Colors.white : AppColors.textPrimary,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 13,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  size: 12,
-                  color: isDark
-                      ? Colors.white.withValues(alpha: 0.35)
-                      : AppColors.textSecondary.withValues(alpha: 0.5),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
+      ],
     );
+  }
+
+  Widget _buildDashboardButton({required bool expanded}) {
+    return _buildNavTabs(expanded: expanded);
   }
 
   Widget _buildHistoryHeader() {
@@ -651,6 +577,290 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
           ),
         );
       },
+    );
+  }
+}
+
+/// Ultra-premium, theme-adaptive Sidebar Navigation Tab.
+/// Effortlessly extensible for any new sidebar tab with hover micro-animations,
+/// signature brand gradient highlights, active vertical indicator, and responsive collapsed tooltips.
+class _SidebarNavTab extends StatefulWidget {
+  final IconData icon;
+  final String label;
+  final bool isSelected;
+  final bool expanded;
+  final VoidCallback onTap;
+  final String? badgeText;
+
+  const _SidebarNavTab({
+    required this.icon,
+    required this.label,
+    required this.isSelected,
+    required this.expanded,
+    required this.onTap,
+    this.badgeText,
+  });
+
+  @override
+  State<_SidebarNavTab> createState() => _SidebarNavTabState();
+}
+
+class _SidebarNavTabState extends State<_SidebarNavTab> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!widget.expanded) {
+      final isDark = context.isDarkMode;
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Tooltip(
+          message: widget.label,
+          waitDuration: const Duration(milliseconds: 300),
+          child: MouseRegion(
+            cursor: SystemMouseCursors.click,
+            onEnter: (_) => setState(() => _isHovered = true),
+            onExit: (_) => setState(() => _isHovered = false),
+            child: InkWell(
+              onTap: widget.onTap,
+              borderRadius: BorderRadius.circular(12),
+              hoverColor: Colors.transparent,
+              splashColor: Colors.transparent,
+              highlightColor: Colors.transparent,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 150),
+                curve: Curves.easeOut,
+                width: 48,
+                height: 48,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  color: widget.isSelected
+                      ? AppColors.primary.withValues(alpha: 0.14)
+                      : (_isHovered
+                          ? AppColors.primary.withValues(alpha: 0.05)
+                          : (isDark
+                              ? Colors.white.withValues(alpha: 0.05)
+                              : AppColors.surfaceSubtle)),
+                  border: Border.all(
+                    color: widget.isSelected
+                        ? AppColors.primary.withValues(alpha: 0.38)
+                        : (_isHovered
+                            ? AppColors.primary.withValues(alpha: 0.10)
+                            : (isDark
+                                ? Colors.white.withValues(alpha: 0.08)
+                                : AppColors.border)),
+                    width: 1,
+                  ),
+                  boxShadow: widget.isSelected
+                      ? [
+                          BoxShadow(
+                            color: AppColors.primary.withValues(alpha: 0.15),
+                            blurRadius: 10,
+                            offset: const Offset(0, 2),
+                          ),
+                        ]
+                      : null,
+                ),
+                child: Icon(
+                  widget.icon,
+                  size: 20,
+                  color: widget.isSelected
+                      ? AppColors.primary
+                      : (_isHovered
+                          ? AppColors.primary.withValues(alpha: 0.8)
+                          : (isDark
+                              ? Colors.white.withValues(alpha: 0.7)
+                              : AppColors.textSecondary)),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3.0),
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        onEnter: (_) => setState(() => _isHovered = true),
+        onExit: (_) => setState(() => _isHovered = false),
+        child: InkWell(
+          onTap: widget.onTap,
+          borderRadius: BorderRadius.circular(8),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
+            curve: Curves.easeOut,
+            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              color: widget.isSelected
+                  ? AppColors.primary.withValues(alpha: 0.14)
+                  : (_isHovered
+                      ? AppColors.primary.withValues(alpha: 0.05)
+                      : Colors.transparent),
+              border: Border.all(
+                color: widget.isSelected
+                    ? AppColors.primary.withValues(alpha: 0.38)
+                    : (_isHovered
+                        ? AppColors.primary.withValues(alpha: 0.10)
+                        : Colors.transparent),
+              ),
+              boxShadow: widget.isSelected
+                  ? [
+                      BoxShadow(
+                        color: AppColors.primary.withValues(alpha: 0.15),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
+                      ),
+                    ]
+                  : null,
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Icon(
+                  widget.icon,
+                  color: widget.isSelected
+                      ? AppColors.primary
+                      : (_isHovered
+                          ? AppColors.primary.withValues(alpha: 0.8)
+                          : AppColors.textMuted.withValues(alpha: 0.6)),
+                  size: 18,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    widget.label,
+                    style: AppTextStyles.label.copyWith(
+                      color: (widget.isSelected || _isHovered)
+                          ? AppColors.textPrimary
+                          : AppColors.textSecondary,
+                      fontWeight: (widget.isSelected || _isHovered)
+                          ? FontWeight.w600
+                          : FontWeight.w500,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                if (widget.badgeText != null) ...[
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(
+                        color: AppColors.primary.withValues(alpha: 0.35),
+                      ),
+                    ),
+                    child: Text(
+                      widget.badgeText!,
+                      style: GoogleFonts.inter(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Standalone collapsed Learning History button matching the 48x48 tile dimensions,
+/// size 20 icon, and identical active/hover micro-interactions as the Learning Dashboard tab.
+class _CollapsedHistoryButton extends StatefulWidget {
+  final VoidCallback onTap;
+  final bool isSelected;
+
+  const _CollapsedHistoryButton({
+    required this.onTap,
+    this.isSelected = false,
+  });
+
+  @override
+  State<_CollapsedHistoryButton> createState() => _CollapsedHistoryButtonState();
+}
+
+class _CollapsedHistoryButtonState extends State<_CollapsedHistoryButton> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = context.isDarkMode;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Tooltip(
+        message: 'Learning History',
+        waitDuration: const Duration(milliseconds: 300),
+        child: MouseRegion(
+          cursor: SystemMouseCursors.click,
+          onEnter: (_) => setState(() => _isHovered = true),
+          onExit: (_) => setState(() => _isHovered = false),
+          child: InkWell(
+            onTap: widget.onTap,
+            borderRadius: BorderRadius.circular(12),
+            hoverColor: Colors.transparent,
+            splashColor: Colors.transparent,
+            highlightColor: Colors.transparent,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              curve: Curves.easeOut,
+              width: 48,
+              height: 48,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                color: widget.isSelected
+                    ? AppColors.primary.withValues(alpha: 0.14)
+                    : (_isHovered
+                        ? AppColors.primary.withValues(alpha: 0.05)
+                        : (isDark
+                            ? Colors.white.withValues(alpha: 0.05)
+                            : AppColors.surfaceSubtle)),
+                border: Border.all(
+                  color: widget.isSelected
+                      ? AppColors.primary.withValues(alpha: 0.38)
+                      : (_isHovered
+                          ? AppColors.primary.withValues(alpha: 0.10)
+                          : (isDark
+                              ? Colors.white.withValues(alpha: 0.08)
+                              : AppColors.border)),
+                  width: 1,
+                ),
+                boxShadow: widget.isSelected
+                    ? [
+                        BoxShadow(
+                          color: AppColors.primary.withValues(alpha: 0.15),
+                          blurRadius: 10,
+                          offset: const Offset(0, 2),
+                        ),
+                      ]
+                    : null,
+              ),
+              child: Icon(
+                Icons.history,
+                size: 20,
+                color: widget.isSelected
+                    ? AppColors.primary
+                    : (_isHovered
+                        ? AppColors.primary.withValues(alpha: 0.8)
+                        : (isDark
+                            ? Colors.white.withValues(alpha: 0.7)
+                            : AppColors.textSecondary)),
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
