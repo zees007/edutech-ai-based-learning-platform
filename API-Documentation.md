@@ -705,28 +705,52 @@ Retrieve all-time cumulative learner progression, current rank level, XP progres
   "longest_streak": 12,
   "achievements": [
     {
-      "id": "first_step",
-      "title": "First Step",
-      "description": "Mastered your first learning milestone step",
+      "id": "bronze",
+      "title": "Bronze Trophy",
+      "description": "Mastered your first learning steps (1 session, 5 steps, 3 perfect quizzes)",
       "unlocked": true,
       "unlocked_at": "2026-11-10T09:00:00Z",
-      "icon": "flag"
+      "icon": "bronze"
     },
     {
-      "id": "first_journey",
-      "title": "Journey Pioneer",
-      "description": "Completed an entire learning roadmap to 100%",
+      "id": "silver",
+      "title": "Silver Trophy",
+      "description": "Established active learning consistency (5 sessions, 25 steps, 8 perfect quizzes, 2-day streak)",
       "unlocked": true,
       "unlocked_at": "2026-11-12T14:30:00Z",
-      "icon": "trophy"
+      "icon": "silver"
     },
     {
-      "id": "sharp_mind",
-      "title": "Sharp Mind",
-      "description": "Scored 100% (3/3) on 5 different milestone quizzes",
+      "id": "gold",
+      "title": "Gold Trophy",
+      "description": "True Grand Sage dedication (10 sessions, 60 steps, 15 perfect quizzes, 3-day streak, Level 10 Grand Sage)",
       "unlocked": true,
       "unlocked_at": "2026-11-15T11:20:00Z",
-      "icon": "bullseye"
+      "icon": "gold"
+    },
+    {
+      "id": "platinum",
+      "title": "Platinum Trophy",
+      "description": "Knowledge marathoner (25 sessions, 150 steps, 25 perfect quizzes, 7-day streak)",
+      "unlocked": false,
+      "unlocked_at": null,
+      "icon": "platinum"
+    },
+    {
+      "id": "sapphire",
+      "title": "Sapphire Trophy",
+      "description": "Dedicated intellectual scholar (50 sessions, 250 steps, 40 perfect quizzes, 14-day streak)",
+      "unlocked": false,
+      "unlocked_at": null,
+      "icon": "sapphire"
+    },
+    {
+      "id": "diamond",
+      "title": "Diamond Trophy",
+      "description": "The Apex Century master (100 sessions, 500 steps, 75 perfect quizzes, 30-day streak)",
+      "unlocked": false,
+      "unlocked_at": null,
+      "icon": "diamond"
     }
   ]
 }

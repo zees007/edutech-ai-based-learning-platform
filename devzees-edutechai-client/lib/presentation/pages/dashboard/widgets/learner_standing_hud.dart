@@ -51,7 +51,7 @@ class LearnerStandingHud extends ConsumerWidget {
             currentStreak: fallbackSummary!.currentStreak,
             longestStreak: fallbackSummary!.longestStreak,
             unlockedTrophies: achievements.where((a) => a.unlocked).length,
-            totalTrophies: achievements.isNotEmpty ? achievements.length : 7,
+            totalTrophies: achievements.isNotEmpty ? achievements.length : 6,
             isDark: isDark,
           );
         }
@@ -71,7 +71,7 @@ class LearnerStandingHud extends ConsumerWidget {
             currentStreak: fallbackSummary!.currentStreak,
             longestStreak: fallbackSummary!.longestStreak,
             unlockedTrophies: achievements.where((a) => a.unlocked).length,
-            totalTrophies: achievements.isNotEmpty ? achievements.length : 7,
+            totalTrophies: achievements.isNotEmpty ? achievements.length : 6,
             isDark: isDark,
           );
         }

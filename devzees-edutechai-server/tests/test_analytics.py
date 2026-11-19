@@ -169,14 +169,15 @@ async def test_analytics_service_active_user_metrics():
         assert dashboard.mode_distribution.deep_dive == 1
         assert dashboard.mode_distribution.bite_sized == 0
 
-        # Verify Achievements
-        first_step_ach = next((a for a in dashboard.achievements if a.id == "first_step"), None)
-        assert first_step_ach is not None
-        assert first_step_ach.unlocked is True
-
-        first_journey_ach = next((a for a in dashboard.achievements if a.id == "first_journey"), None)
-        assert first_journey_ach is not None
-        assert first_journey_ach.unlocked is True
+        # Verify 6-Tier Prestige Achievements
+        assert len(dashboard.achievements) == 6
+        expected_ids = {"bronze", "silver", "gold", "platinum", "sapphire", "diamond"}
+        assert {a.id for a in dashboard.achievements} == expected_ids
+        bronze_ach = next((a for a in dashboard.achievements if a.id == "bronze"), None)
+        assert bronze_ach is not None
+        assert bronze_ach.title == "Bronze Trophy"
+        # In this test setup, user has completed 1 session, 4 steps, 2 perfect quizzes (Bronze requires 5 steps, 3 quizzes)
+        assert bronze_ach.unlocked is False
 
 
 @pytest.mark.asyncio
@@ -214,7 +215,9 @@ async def test_get_standing_and_performance_api_endpoints():
         assert "achievements" in standing_data
         assert standing_data["current_level"] == 1
         assert standing_data["level_title"] == "Curious Explorer"
-        assert len(standing_data["achievements"]) >= 7
+        assert len(standing_data["achievements"]) == 6
+        expected_ids = ["bronze", "silver", "gold", "platinum", "sapphire", "diamond"]
+        assert [a["id"] for a in standing_data["achievements"]] == expected_ids
 
         # 2. Test Performance Endpoint (Preset 30d)
         resp_perf = await ac.get("/api/v1/learning/analytics/performance?time_range=30d", headers=headers)
@@ -263,3 +266,121 @@ async def test_get_standing_and_performance_api_endpoints():
         )
         assert resp_missing.status_code == 422
         assert "required for custom time range" in resp_missing.text
+
+        # 7. Test Admin User Inspection RBAC
+        # Create second user
+        async with get_db_session() as db:
+            other_user_req = UserCreateRequest(
+                first_name="Other",
+                last_name="Student",
+                email=f"other_{uuid4().hex[:8]}@example.com",
+                password="SecurePassword123!",
+            )
+            other_user = await UserService.create_user(db, other_user_req)
+            other_user_id = other_user.id
+
+        # Regular user without ET_VIEW_USER / ET_ALL trying to view other user's standing -> 403 Forbidden
+        resp_forbidden = await ac.get(
+            f"/api/v1/learning/analytics/standing?user_id={other_user_id}",
+            headers=headers,
+        )
+        assert resp_forbidden.status_code == 403
+        assert "Permission required" in resp_forbidden.text
+
+        # Create Admin user with Admin role (possesses ET_ALL)
+        async with get_db_session() as db:
+            from models.db_models import Role
+            admin_user_req = UserCreateRequest(
+                first_name="Super",
+                last_name="Admin",
+                email=f"admin_{uuid4().hex[:8]}@example.com",
+                password="SecurePassword123!",
+            )
+            admin_user = await UserService.create_user(db, admin_user_req)
+            role_res = await db.execute(select(Role).where(Role.name == "Admin"))
+            admin_role = role_res.scalar_one_or_none()
+            if admin_role:
+                admin_user.roles = [admin_role]
+                await db.commit()
+            admin_token = AuthService.create_access_token({"sub": admin_user.id})
+
+        admin_headers = {"Authorization": f"Bearer {admin_token}"}
+        # Admin inspecting other user's standing -> 200 OK
+        resp_admin_standing = await ac.get(
+            f"/api/v1/learning/analytics/standing?user_id={other_user_id}",
+            headers=admin_headers,
+        )
+        assert resp_admin_standing.status_code == 200
+        assert resp_admin_standing.json()["current_level"] == 1
+
+        # Admin inspecting nonexistent user -> 404 Not Found
+        resp_not_found = await ac.get(
+            f"/api/v1/learning/analytics/standing?user_id={uuid4()}",
+            headers=admin_headers,
+        )
+        assert resp_not_found.status_code == 404
+
+
+def test_prestige_trophy_ladder_evaluation():
+    """Verify dynamic evaluation logic for all 6 prestige trophies."""
+    from services.analytics_service import AnalyticsService
+
+    # 1. Base / New user: 0 everything -> all locked
+    achievements = AnalyticsService._evaluate_achievements(
+        total_steps=0,
+        completed_sessions=0,
+        perfect_quizzes=0,
+        longest_streak=0,
+        total_xp=0,
+    )
+    assert len(achievements) == 6
+    assert all(a.unlocked is False for a in achievements)
+
+    # 2. Bronze unlocked: 1 session, 5 steps, 3 perfect quizzes
+    ach_bronze = AnalyticsService._evaluate_achievements(
+        total_steps=5,
+        completed_sessions=1,
+        perfect_quizzes=3,
+        longest_streak=1,
+        total_xp=300,
+    )
+    by_id = {a.id: a for a in ach_bronze}
+    assert by_id["bronze"].unlocked is True
+    assert by_id["silver"].unlocked is False
+
+    # 3. Gold boundary test: 10 sessions, 60 steps, 15 perfect quizzes, 2-day streak (needs 3-day) -> Gold locked
+    ach_almost_gold = AnalyticsService._evaluate_achievements(
+        total_steps=65,
+        completed_sessions=10,
+        perfect_quizzes=16,
+        longest_streak=2,  # Short of 3
+        total_xp=1200,
+    )
+    by_id = {a.id: a for a in ach_almost_gold}
+    assert by_id["silver"].unlocked is True
+    assert by_id["gold"].unlocked is False
+
+    # 4. Gold unlocked: Meets 3-day streak + 1,000 XP
+    ach_gold = AnalyticsService._evaluate_achievements(
+        total_steps=60,
+        completed_sessions=10,
+        perfect_quizzes=15,
+        longest_streak=3,
+        total_xp=1000,
+    )
+    by_id = {a.id: a for a in ach_gold}
+    assert by_id["bronze"].unlocked is True
+    assert by_id["silver"].unlocked is True
+    assert by_id["gold"].unlocked is True
+    assert by_id["platinum"].unlocked is False
+
+    # 5. Diamond unlocked: 100 sessions, 500 steps, 75 perfect quizzes, 30-day streak
+    ach_diamond = AnalyticsService._evaluate_achievements(
+        total_steps=500,
+        completed_sessions=100,
+        perfect_quizzes=75,
+        longest_streak=30,
+        total_xp=15000,
+    )
+    assert all(a.unlocked is True for a in ach_diamond)
+

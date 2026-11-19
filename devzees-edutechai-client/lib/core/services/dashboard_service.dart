@@ -9,9 +9,17 @@ class DashboardService {
   DashboardService({Dio? dio}) : _dio = dio ?? ApiClient.instance.dio;
 
   /// Fetch all-time learner standing HUD (Level, XP, Streaks, Trophies).
-  Future<LearnerStanding> fetchStanding() async {
+  Future<LearnerStanding> fetchStanding({String? userId}) async {
     try {
-      final response = await _dio.get(ApiConstants.learnerStanding);
+      final queryParams = <String, dynamic>{};
+      if (userId != null && userId.trim().isNotEmpty) {
+        queryParams['user_id'] = userId.trim();
+      }
+
+      final response = await _dio.get(
+        ApiConstants.learnerStanding,
+        queryParameters: queryParams.isNotEmpty ? queryParams : null,
+      );
       if (response.data is Map<String, dynamic>) {
         return LearnerStanding.fromJson(response.data as Map<String, dynamic>);
       }
@@ -26,6 +34,7 @@ class DashboardService {
 
   /// Fetch interval-scoped performance metrics.
   Future<PeriodPerformance> fetchPerformance({
+    String? userId,
     String timeRange = '30d',
     DateTime? startDate,
     DateTime? endDate,
@@ -37,6 +46,10 @@ class DashboardService {
         'time_range': timeRange,
         'tz_offset_minutes': offset,
       };
+
+      if (userId != null && userId.trim().isNotEmpty) {
+        queryParams['user_id'] = userId.trim();
+      }
 
       if (timeRange == 'custom' && startDate != null && endDate != null) {
         String formatYmd(DateTime d) =>
@@ -64,14 +77,15 @@ class DashboardService {
 
   /// Fetch consolidated learner dashboard metrics combining standing and performance.
   Future<DashboardResponse> fetchDashboard({
+    String? userId,
     String timeRange = '30d',
     DateTime? startDate,
     DateTime? endDate,
   }) async {
     try {
       final results = await Future.wait([
-        fetchStanding(),
-        fetchPerformance(timeRange: timeRange, startDate: startDate, endDate: endDate),
+        fetchStanding(userId: userId),
+        fetchPerformance(userId: userId, timeRange: timeRange, startDate: startDate, endDate: endDate),
       ]);
 
       final standing = results[0] as LearnerStanding;

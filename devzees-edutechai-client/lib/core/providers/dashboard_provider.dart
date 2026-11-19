@@ -188,3 +188,37 @@ class DashboardNotifier extends Notifier<DashboardState> {
 final dashboardProvider = NotifierProvider<DashboardNotifier, DashboardState>(() {
   return DashboardNotifier();
 });
+
+// ── 4. Admin User Dashboard Provider (For inspecting any user) ────────
+class UserDashboardParams {
+  final String userId;
+  final String timeRange;
+
+  const UserDashboardParams({
+    required this.userId,
+    this.timeRange = '30d',
+  });
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is UserDashboardParams &&
+          runtimeType == other.runtimeType &&
+          userId == other.userId &&
+          timeRange == other.timeRange;
+
+  @override
+  int get hashCode => userId.hashCode ^ timeRange.hashCode;
+}
+
+final userDashboardFutureProvider =
+    FutureProvider.family<DashboardResponse, UserDashboardParams>((ref, params) async {
+  final service = ref.watch(dashboardServiceProvider);
+  return service.fetchDashboard(userId: params.userId, timeRange: params.timeRange);
+});
+
+final userStandingFutureProvider =
+    FutureProvider.family<LearnerStanding, String>((ref, userId) async {
+  final service = ref.watch(dashboardServiceProvider);
+  return service.fetchStanding(userId: userId);
+});

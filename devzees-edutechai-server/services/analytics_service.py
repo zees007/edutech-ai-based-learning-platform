@@ -557,59 +557,85 @@ class AnalyticsService:
         completed_sessions: int,
         perfect_quizzes: int,
         longest_streak: int,
-        deep_dive_count: int,
-        distinct_topics: int,
-        total_xp: int,
+        deep_dive_count: int = 0,
+        distinct_topics: int = 0,
+        total_xp: int = 0,
     ) -> list[AchievementDTO]:
-        """Dynamically evaluate milestone achievements from aggregate performance."""
+        """
+        Dynamically evaluate the 6-tier prestige trophy ladder from aggregate performance:
+        Bronze -> Silver -> Gold -> Platinum -> Sapphire -> Diamond.
+        """
         return [
             AchievementDTO(
-                id="first_step",
-                title="First Step",
-                description="Mastered your first learning milestone step",
-                unlocked=total_steps >= 1,
-                icon="flag",
+                id="bronze",
+                title="Bronze Trophy",
+                description="Mastered your first learning steps (1 session, 5 steps, 3 perfect quizzes)",
+                unlocked=(
+                    completed_sessions >= 1
+                    and total_steps >= 5
+                    and perfect_quizzes >= 3
+                ),
+                icon="bronze",
             ),
             AchievementDTO(
-                id="first_journey",
-                title="Journey Pioneer",
-                description="Completed an entire learning roadmap to 100%",
-                unlocked=completed_sessions >= 1,
-                icon="trophy",
+                id="silver",
+                title="Silver Trophy",
+                description="Established active learning consistency (5 sessions, 25 steps, 8 perfect quizzes, 2-day streak)",
+                unlocked=(
+                    completed_sessions >= 5
+                    and total_steps >= 25
+                    and perfect_quizzes >= 8
+                    and longest_streak >= 2
+                ),
+                icon="silver",
             ),
             AchievementDTO(
-                id="sharp_mind",
-                title="Sharp Mind",
-                description="Scored 100% (3/3) on 5 different milestone quizzes",
-                unlocked=perfect_quizzes >= 5,
-                icon="bullseye",
+                id="gold",
+                title="Gold Trophy",
+                description="True Grand Sage dedication (10 sessions, 60 steps, 15 perfect quizzes, 3-day streak, Level 10 Grand Sage)",
+                unlocked=(
+                    completed_sessions >= 10
+                    and total_steps >= 60
+                    and perfect_quizzes >= 15
+                    and longest_streak >= 3
+                    and total_xp >= 1000
+                ),
+                icon="gold",
             ),
             AchievementDTO(
-                id="habit_builder",
-                title="Habit Builder",
-                description="Maintained an active study streak of 3+ consecutive days",
-                unlocked=longest_streak >= 3,
-                icon="flame",
+                id="platinum",
+                title="Platinum Trophy",
+                description="Knowledge marathoner (25 sessions, 150 steps, 25 perfect quizzes, 7-day streak)",
+                unlocked=(
+                    completed_sessions >= 25
+                    and total_steps >= 150
+                    and perfect_quizzes >= 25
+                    and longest_streak >= 7
+                ),
+                icon="platinum",
             ),
             AchievementDTO(
-                id="deep_diver",
-                title="Deep Diver",
-                description="Completed 2+ sessions in rigorous Deep Dive research mode",
-                unlocked=deep_dive_count >= 2,
-                icon="compass",
+                id="sapphire",
+                title="Sapphire Trophy",
+                description="Dedicated intellectual scholar (50 sessions, 250 steps, 40 perfect quizzes, 14-day streak)",
+                unlocked=(
+                    completed_sessions >= 50
+                    and total_steps >= 250
+                    and perfect_quizzes >= 40
+                    and longest_streak >= 14
+                ),
+                icon="sapphire",
             ),
             AchievementDTO(
-                id="polymath",
-                title="Polymath",
-                description="Explored concepts across 3 or more distinct topics",
-                unlocked=distinct_topics >= 3,
-                icon="books",
-            ),
-            AchievementDTO(
-                id="grand_sage",
-                title="Grand Sage",
-                description="Reached Level 10 by amassing over 1,000 all-time XP",
-                unlocked=total_xp >= 1000,
-                icon="crown",
+                id="diamond",
+                title="Diamond Trophy",
+                description="The Apex Century master (100 sessions, 500 steps, 75 perfect quizzes, 30-day streak)",
+                unlocked=(
+                    completed_sessions >= 100
+                    and total_steps >= 500
+                    and perfect_quizzes >= 75
+                    and longest_streak >= 30
+                ),
+                icon="diamond",
             ),
         ]

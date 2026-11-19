@@ -158,7 +158,28 @@ class ActivityAndAchievementsCard extends StatelessWidget {
     IconData iconData = Icons.emoji_events_rounded;
     Color iconColor = AppColors.accentAmber;
 
-    if (ach.icon == 'flag') {
+    // 6-Tier Prestige Trophies
+    if (ach.icon == 'bronze' || ach.id == 'bronze') {
+      iconData = Icons.military_tech_rounded;
+      iconColor = const Color(0xFFCD7F32);
+    } else if (ach.icon == 'silver' || ach.id == 'silver') {
+      iconData = Icons.verified_rounded;
+      iconColor = const Color(0xFFCBD5E1);
+    } else if (ach.icon == 'gold' || ach.id == 'gold') {
+      iconData = Icons.emoji_events_rounded;
+      iconColor = const Color(0xFFF59E0B);
+    } else if (ach.icon == 'platinum' || ach.id == 'platinum') {
+      iconData = Icons.auto_awesome_rounded;
+      iconColor = const Color(0xFFA78BFA);
+    } else if (ach.icon == 'sapphire' || ach.id == 'sapphire') {
+      iconData = Icons.token_rounded;
+      iconColor = const Color(0xFF2563EB);
+    } else if (ach.icon == 'diamond' || ach.id == 'diamond') {
+      iconData = Icons.diamond_rounded;
+      iconColor = const Color(0xFF22D3EE);
+    }
+    // Backward compatibility for legacy identifiers
+    else if (ach.icon == 'flag') {
       iconData = Icons.flag_rounded;
       iconColor = AppColors.accentCyan;
     } else if (ach.icon == 'bullseye') {
@@ -192,12 +213,21 @@ class ActivityAndAchievementsCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: isUnlocked
-              ? iconColor.withValues(alpha: 0.3)
+              ? iconColor.withValues(alpha: 0.35)
               : (isDark
                   ? Colors.white.withValues(alpha: 0.06)
                   : Colors.black.withValues(alpha: 0.05)),
           width: 1,
         ),
+        boxShadow: isUnlocked
+            ? [
+                BoxShadow(
+                  color: iconColor.withValues(alpha: isDark ? 0.20 : 0.12),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
+                ),
+              ]
+            : null,
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -205,10 +235,24 @@ class ActivityAndAchievementsCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: isUnlocked
-                  ? iconColor.withValues(alpha: 0.15)
-                  : Colors.grey.withValues(alpha: 0.1),
+              gradient: isUnlocked
+                  ? LinearGradient(
+                      colors: [
+                        iconColor.withValues(alpha: 0.28),
+                        iconColor.withValues(alpha: 0.10),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    )
+                  : null,
+              color: isUnlocked ? null : Colors.grey.withValues(alpha: 0.1),
               shape: BoxShape.circle,
+              border: isUnlocked
+                  ? Border.all(
+                      color: iconColor.withValues(alpha: 0.45),
+                      width: 1.0,
+                    )
+                  : null,
             ),
             child: Icon(
               isUnlocked ? iconData : Icons.lock_outline_rounded,
@@ -222,17 +266,44 @@ class ActivityAndAchievementsCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  ach.title,
-                  style: AppTextStyles.label.copyWith(
-                    color: isUnlocked
-                        ? (isDark ? Colors.white : const Color(0xFF0F172A))
-                        : (isDark ? Colors.grey : const Color(0xFF94A3B8)),
-                    fontWeight: FontWeight.w700,
-                    fontSize: 13,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        ach.title,
+                        style: AppTextStyles.label.copyWith(
+                          color: isUnlocked
+                              ? (isDark ? Colors.white : const Color(0xFF0F172A))
+                              : (isDark ? Colors.grey : const Color(0xFF94A3B8)),
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    if (isUnlocked)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: iconColor.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(
+                            color: iconColor.withValues(alpha: 0.35),
+                            width: 0.8,
+                          ),
+                        ),
+                        child: Text(
+                          'UNLOCKED',
+                          style: TextStyle(
+                            color: iconColor,
+                            fontSize: 8.5,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
                 const SizedBox(height: 3),
                 Text(

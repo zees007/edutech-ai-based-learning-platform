@@ -969,7 +969,7 @@ The Learner Performance & Analytics Dashboard is built on a **Two-Tier Decoupled
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                       Flutter Client Dashboard UI                           │
 ├─────────────────────────────────────────────────────────────────────────────┤
-│  [Learner Standing HUD: Level 5, 3450 XP, 🔥 5-Day Streak, 6/7 Trophies]    │
+│  [Learner Standing HUD: Level 5, 3450 XP, 🔥 5-Day Streak, 3/6 Trophies]    │
 │  [Period Filter Dropdown: 7d | 30d | 90d | 1y | All | Custom Date Range]    │
 │                                                                             │
 │  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐ ┌────────────────────┐  │
@@ -1054,3 +1054,29 @@ The frontend dashboard is built with Riverpod, GoRouter, and `fl_chart`:
 - **Weak Concepts Remediation (`WeakConceptsCard`):** Highlights flagged concepts scoring $\le 50\%$ with contextual scores and 1-click "Review" button.
 - **Mode & Topic Mastery (`ModeAndTopicCards`):** Donut chart (`fl_chart` PieChart) showing mode preference alongside top studied topics.
 - **Achievements & Heatmap (`ActivityAndAchievementsCard`):** Dynamic trophy showcase alongside calendar activity heatmap.
+
+### 14.7 The 6-Tier Prestige Trophy Ladder & Unlock Logic Matrix
+
+Permanent achievements evaluated by `AnalyticsService._evaluate_achievements` follow an ascending 6-tier prestige ladder. Unlike interval performance stats, trophies are computed across all-time records and never re-lock when users filter by 7-day, 30-day, or custom dates:
+
+| Tier | Trophy Title | Icon Key | Flutter Material Icon | Accent Color | Required Roadmaps | Required Steps | Perfect Quizzes (3/3) | Streak Momentum | Special Criteria & Pacing |
+| :---: | :--- | :---: | :--- | :---: | :---: | :---: | :---: | :---: | :--- |
+| **1** | **Bronze Trophy** | `bronze` | `Icons.military_tech_rounded` | `#CD7F32` | $\ge 1$ Session | $\ge 5$ Steps | $\ge 3$ Quizzes | — | Onboarding milestone (Day 1, ~20–30m) |
+| **2** | **Silver Trophy** | `silver` | `Icons.verified_rounded` | `#CBD5E1` | $\ge 5$ Sessions | $\ge 25$ Steps | $\ge 8$ Quizzes | $\ge 2$ Days | Study consistency habit (Week 1, ~2h) |
+| **3** | **Gold Trophy** | `gold` | `Icons.emoji_events_rounded` | `#F59E0B` | $\ge 10$ Sessions | $\ge 60$ Steps | $\ge 15$ Quizzes | $\ge 3$ Days | **Level 10 Grand Sage ($\ge 1,000$ XP)** (~2 weeks) |
+| **4** | **Platinum Trophy** | `platinum` | `Icons.auto_awesome_rounded` | `#A78BFA` | $\ge 25$ Sessions | $\ge 150$ Steps | $\ge 25$ Quizzes | $\ge 7$ Days | Knowledge marathoner (~1 month) |
+| **5** | **Sapphire Trophy** | `sapphire` | `Icons.token_rounded` | `#2563EB` | $\ge 50$ Sessions | $\ge 250$ Steps | $\ge 40$ Quizzes | $\ge 14$ Days | Intellectual scholar (~2 months) |
+| **6** | **Diamond Trophy** | `diamond` | `Icons.diamond_rounded` | `#22D3EE` | $\ge 100$ Sessions | $\ge 500$ Steps | $\ge 75$ Quizzes | $\ge 30$ Days | **The Apex Century master (Top 1%)** (~3–4 months) |
+
+#### Visual Rendering & State Architecture:
+- **Material Vector Glyphs:** Replaces flat emojis with executive Material symbols.
+- **Ambient Radial Glows:** Unlocked trophies radiate customized radial glows (violet for Platinum, deep cobalt for Sapphire, and dual-layer ice cyan for Diamond).
+- **Progress Tracking:** Locked trophies render contextual milestone metrics indicating progress towards unlock thresholds.
+
+### 14.8 Admin Learner Dashboard Inspection Architecture
+To enable administrators to monitor individual learner progress, both dashboard endpoints accept an optional `user_id` query parameter:
+- `GET /api/v1/learning/analytics/standing?user_id=<user_id>`
+- `GET /api/v1/learning/analytics/performance?user_id=<user_id>`
+
+- **RBAC Enforcement:** If `user_id` is supplied and does not match `current_user.id`, the backend verifies that the caller possesses `ET_ALL` (SuperAdmin), `ET_VIEW_USER`, `ET_FULL_ACCESS_USER`, or `ET_VIEW_ANALYTICS`. Unauthorized requests are rejected with `HTTP 403 Forbidden`. If the target user does not exist, `HTTP 404 Not Found` is returned.
+- **Frontend Inspection Dialog (`UserAnalyticsDialog`):** Integrated into the Admin Panel **User Directory Tab** via a 📊 `Icons.insights_rounded` action button in the users table, allowing immediate full-dashboard inspection in an adaptive glassmorphic modal.
