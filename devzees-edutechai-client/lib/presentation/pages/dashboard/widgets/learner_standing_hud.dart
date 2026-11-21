@@ -4,6 +4,7 @@ import '../../../../core/providers/dashboard_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../core/theme/theme_palette.dart';
+import '../../../../core/utils/trophy_utils.dart';
 import '../../../../data/models/dashboard/dashboard_response.dart';
 import '../../../widgets/glass_card.dart';
 
@@ -25,68 +26,75 @@ class LearnerStandingHud extends ConsumerWidget {
     return standingAsync.when(
       data: (standing) => _buildHudContent(
         context,
-        level: standing.currentLevel,
-        levelTitle: standing.levelTitle,
-        xpProgress: standing.xpProgressInLevel,
-        xpNeeded: standing.xpNeededForNext,
-        isMaxLevel: standing.isMaxLevel,
+        highestTrophyId: standing.highestTrophyId,
+        highestTrophyTitle: standing.highestTrophyTitle,
+        nextTrophyId: standing.nextTrophyId,
+        nextTrophyTitle: standing.nextTrophyTitle,
+        trophyProgressFraction: standing.trophyProgressFraction,
         totalXp: standing.totalXp,
         currentStreak: standing.currentStreak,
         longestStreak: standing.longestStreak,
         unlockedTrophies: standing.achievements.where((a) => a.unlocked).length,
-        totalTrophies: standing.achievements.length,
+        totalTrophies: standing.achievements.isNotEmpty ? standing.achievements.length : 6,
         isDark: isDark,
       ),
-      loading: () {
-        if (fallbackSummary != null) {
-          final achievements = fallbackAchievements ?? const [];
-          return _buildHudContent(
-            context,
-            level: fallbackSummary!.currentLevel,
-            levelTitle: fallbackSummary!.levelTitle,
-            xpProgress: fallbackSummary!.xpProgressInLevel,
-            xpNeeded: fallbackSummary!.xpNeededForNext,
-            isMaxLevel: fallbackSummary!.isMaxLevel,
-            totalXp: fallbackSummary!.totalXp,
-            currentStreak: fallbackSummary!.currentStreak,
-            longestStreak: fallbackSummary!.longestStreak,
-            unlockedTrophies: achievements.where((a) => a.unlocked).length,
-            totalTrophies: achievements.isNotEmpty ? achievements.length : 6,
-            isDark: isDark,
-          );
-        }
-        return const SizedBox.shrink();
-      },
-      error: (_, _) {
-        if (fallbackSummary != null) {
-          final achievements = fallbackAchievements ?? const [];
-          return _buildHudContent(
-            context,
-            level: fallbackSummary!.currentLevel,
-            levelTitle: fallbackSummary!.levelTitle,
-            xpProgress: fallbackSummary!.xpProgressInLevel,
-            xpNeeded: fallbackSummary!.xpNeededForNext,
-            isMaxLevel: fallbackSummary!.isMaxLevel,
-            totalXp: fallbackSummary!.totalXp,
-            currentStreak: fallbackSummary!.currentStreak,
-            longestStreak: fallbackSummary!.longestStreak,
-            unlockedTrophies: achievements.where((a) => a.unlocked).length,
-            totalTrophies: achievements.isNotEmpty ? achievements.length : 6,
-            isDark: isDark,
-          );
-        }
-        return const SizedBox.shrink();
-      },
+      loading: () => _buildFallback(context, isDark),
+      error: (_, _) => _buildFallback(context, isDark),
     );
+  }
+
+  Widget _buildFallback(BuildContext context, bool isDark) {
+    if (fallbackSummary != null) {
+      final achievements = fallbackAchievements ?? const [];
+      final unlockedList = achievements.where((a) => a.unlocked).toList();
+
+      String? highestId;
+      String highestTitle = 'Unranked';
+      String? nextTitle = 'Bronze Trophy';
+      double fraction = 0.0;
+
+      const order = ['diamond', 'sapphire', 'platinum', 'gold', 'silver', 'bronze'];
+      for (final id in order) {
+        final match = unlockedList.where((a) => a.id == id).firstOrNull;
+        if (match != null) {
+          highestId = id;
+          highestTitle = match.title;
+          final idx = order.indexOf(id);
+          if (idx > 0) {
+            nextTitle = achievements.where((a) => a.id == order[idx - 1]).firstOrNull?.title;
+          } else {
+            nextTitle = null;
+            fraction = 1.0;
+          }
+          break;
+        }
+      }
+
+      return _buildHudContent(
+        context,
+        highestTrophyId: highestId,
+        highestTrophyTitle: highestTitle,
+        nextTrophyId: null,
+        nextTrophyTitle: nextTitle,
+        trophyProgressFraction: fraction,
+        totalXp: fallbackSummary!.totalXp,
+        currentStreak: fallbackSummary!.currentStreak,
+        longestStreak: fallbackSummary!.longestStreak,
+        unlockedTrophies: unlockedList.length,
+        totalTrophies: achievements.isNotEmpty ? achievements.length : 6,
+        isDark: isDark,
+      );
+    }
+    return const SizedBox.shrink();
   }
 
   Widget _buildHudContent(
     BuildContext context, {
-    required int level,
-    required String levelTitle,
-    required int xpProgress,
-    required int xpNeeded,
-    required bool isMaxLevel,
+    required String? highestTrophyId,
+    required String highestTrophyTitle,
+    required String? nextTrophyId,
+    required String? nextTrophyTitle,
+    required double trophyProgressFraction,
     required int totalXp,
     required int currentStreak,
     required int longestStreak,
@@ -94,8 +102,9 @@ class LearnerStandingHud extends ConsumerWidget {
     required int totalTrophies,
     required bool isDark,
   }) {
-    final denominator = (xpProgress + xpNeeded).clamp(1, 999999);
-    final progressFraction = isMaxLevel ? 1.0 : (xpProgress / denominator).clamp(0.0, 1.0);
+    final clampedFraction = trophyProgressFraction.clamp(0.0, 1.0);
+    final trophyStyle = getTrophyStyle(highestTrophyId);
+    final nextStyle = getTrophyStyle(nextTrophyId);
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -115,7 +124,7 @@ class LearnerStandingHud extends ConsumerWidget {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    _buildLevelBadge(level, isDark),
+                    _buildTrophyBadge(trophyStyle, isDark),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
@@ -125,7 +134,7 @@ class LearnerStandingHud extends ConsumerWidget {
                             children: [
                               Flexible(
                                 child: Text(
-                                  levelTitle,
+                                  highestTrophyTitle,
                                   style: AppTextStyles.h4.copyWith(
                                     fontWeight: FontWeight.w700,
                                     fontSize: 16,
@@ -136,13 +145,13 @@ class LearnerStandingHud extends ConsumerWidget {
                               ),
                               const SizedBox(width: 6),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                                 decoration: BoxDecoration(
                                   color: AppColors.accentAmber.withValues(alpha: 0.15),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Text(
-                                  '$totalXp XP',
+                                  '$totalXp Total XP',
                                   style: AppTextStyles.caption.copyWith(
                                     color: AppColors.accentAmber,
                                     fontWeight: FontWeight.w700,
@@ -154,10 +163,13 @@ class LearnerStandingHud extends ConsumerWidget {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            isMaxLevel ? 'Mastery Cap Reached' : '$xpProgress / ${xpProgress + xpNeeded} XP to Level ${level + 1}',
+                            nextTrophyTitle != null
+                                ? 'Next: $nextTrophyTitle • ${(clampedFraction * 100).toInt()}%'
+                                : '💎 Diamond Achieved (Max Prestige)',
                             style: AppTextStyles.caption.copyWith(
                               color: isDark ? AppColors.textSecondary : const Color(0xFF64748B),
                               fontSize: 11,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ],
@@ -166,7 +178,7 @@ class LearnerStandingHud extends ConsumerWidget {
                   ],
                 ),
                 const SizedBox(height: 12),
-                _buildProgressBar(progressFraction, isDark),
+                _buildProgressBar(clampedFraction, nextStyle.color, isDark),
                 const SizedBox(height: 12),
                 Wrap(
                   spacing: 10,
@@ -181,7 +193,7 @@ class LearnerStandingHud extends ConsumerWidget {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    _buildLevelBadge(level, isDark),
+                    _buildTrophyBadge(trophyStyle, isDark),
                     const SizedBox(width: 14),
                     Expanded(
                       child: Column(
@@ -191,7 +203,7 @@ class LearnerStandingHud extends ConsumerWidget {
                             children: [
                               Flexible(
                                 child: Text(
-                                  levelTitle,
+                                  highestTrophyTitle,
                                   style: AppTextStyles.h4.copyWith(
                                     fontWeight: FontWeight.w700,
                                     fontSize: 17,
@@ -211,7 +223,7 @@ class LearnerStandingHud extends ConsumerWidget {
                                   ),
                                 ),
                                 child: Text(
-                                  'Level $level • $totalXp Total XP',
+                                  '$totalXp Total XP',
                                   style: AppTextStyles.caption.copyWith(
                                     color: AppColors.accentAmber,
                                     fontWeight: FontWeight.w700,
@@ -224,10 +236,14 @@ class LearnerStandingHud extends ConsumerWidget {
                           const SizedBox(height: 6),
                           Row(
                             children: [
-                              Expanded(child: _buildProgressBar(progressFraction, isDark)),
+                              Expanded(
+                                child: _buildProgressBar(clampedFraction, nextStyle.color, isDark),
+                              ),
                               const SizedBox(width: 12),
                               Text(
-                                isMaxLevel ? 'MAX' : '$xpProgress / ${xpProgress + xpNeeded} XP',
+                                nextTrophyTitle != null
+                                    ? 'Next: $nextTrophyTitle • ${(clampedFraction * 100).toInt()}%'
+                                    : '💎 Diamond Achieved',
                                 style: AppTextStyles.caption.copyWith(
                                   color: isDark ? AppColors.textSecondary : const Color(0xFF64748B),
                                   fontWeight: FontWeight.w600,
@@ -253,40 +269,39 @@ class LearnerStandingHud extends ConsumerWidget {
     );
   }
 
-  Widget _buildLevelBadge(int level, bool isDark) {
+  Widget _buildTrophyBadge(TrophyStyle style, bool isDark) {
     return Container(
       width: 44,
       height: 44,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        gradient: const LinearGradient(
-          colors: [Color(0xFF8B5CF6), Color(0xFF38BDF8)],
+        gradient: LinearGradient(
+          colors: [
+            style.color,
+            style.color.withValues(alpha: 0.65),
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF8B5CF6).withValues(alpha: 0.35),
+            color: style.color.withValues(alpha: 0.35),
             blurRadius: 10,
             offset: const Offset(0, 3),
           ),
         ],
       ),
       child: Center(
-        child: Text(
-          '$level',
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w900,
-            fontSize: 20,
-            letterSpacing: -0.5,
-          ),
+        child: Icon(
+          style.icon,
+          color: Colors.white,
+          size: 22,
         ),
       ),
     );
   }
 
-  Widget _buildProgressBar(double fraction, bool isDark) {
+  Widget _buildProgressBar(double fraction, Color accentColor, bool isDark) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(6),
       child: Container(
@@ -299,9 +314,9 @@ class LearnerStandingHud extends ConsumerWidget {
           child: FractionallySizedBox(
             widthFactor: fraction,
             child: Container(
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Color(0xFF8B5CF6), Color(0xFF38BDF8)],
+                  colors: [accentColor, accentColor.withValues(alpha: 0.8)],
                 ),
               ),
             ),

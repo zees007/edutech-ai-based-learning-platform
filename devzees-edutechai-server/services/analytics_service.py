@@ -11,7 +11,7 @@ from datetime import date, datetime, timedelta, timezone
 import logging
 from typing import Any
 
-from sqlalchemy import func, select
+from sqlalchemy import case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.exceptions import BadRequestException, UnprocessableEntityException
@@ -27,9 +27,10 @@ from models.dashboard_schemas import (
     QuizAccuracyTrendItemDTO,
     QuizMetricsDTO,
     TopicBreakdownDTO,
+    TrophyRequirementDTO,
     WeakConceptDTO,
 )
-from models.db_models import GamificationRecord, SessionRecord, StepProgress
+from models.db_models import GamificationRecord, SessionRecord, StepProgress, UserTrophy
 from services.gamification import calculate_level
 
 logger = logging.getLogger(__name__)
@@ -46,6 +47,27 @@ MODE_MEDIAN_MINUTES: dict[str, int] = {
 }
 DEFAULT_STEP_MINUTES = 10
 MAX_STEP_ACTIVE_WINDOW_MINUTES = 30
+
+# ─── Prestige Trophy Definitions ──────────────────────────────────
+TROPHY_ORDER: list[str] = ["bronze", "silver", "gold", "platinum", "sapphire", "diamond"]
+
+TROPHY_THRESHOLDS: dict[str, dict[str, int]] = {
+    "bronze": {"sessions": 1, "steps": 5, "quizzes": 3, "streak": 0, "xp": 0},
+    "silver": {"sessions": 5, "steps": 25, "quizzes": 8, "streak": 2, "xp": 0},
+    "gold": {"sessions": 10, "steps": 60, "quizzes": 15, "streak": 3, "xp": 1000},
+    "platinum": {"sessions": 25, "steps": 150, "quizzes": 25, "streak": 7, "xp": 0},
+    "sapphire": {"sessions": 50, "steps": 250, "quizzes": 40, "streak": 14, "xp": 0},
+    "diamond": {"sessions": 100, "steps": 500, "quizzes": 75, "streak": 30, "xp": 0},
+}
+
+TROPHY_DISPLAY_NAMES: dict[str, str] = {
+    "bronze": "Bronze Trophy",
+    "silver": "Silver Trophy",
+    "gold": "Gold Trophy",
+    "platinum": "Platinum Trophy",
+    "sapphire": "Sapphire Trophy",
+    "diamond": "Diamond Trophy",
+}
 
 
 def _to_naive_utc(dt: datetime | None) -> datetime | None:
@@ -77,15 +99,14 @@ class AnalyticsService:
         Retrieve all-time cumulative standing: Level, XP, Streaks, and permanent achievements.
         Results are cached in memory for sub-5ms responses and evicted on progression events.
         """
+        now = datetime.now(timezone.utc).replace(tzinfo=None)
         cached = _standing_cache.get(user_id)
         if cached:
             cached_at, standing = cached
-            if (datetime.utcnow() - cached_at).total_seconds() < CACHE_TTL_SECONDS:
+            if (now - cached_at).total_seconds() < CACHE_TTL_SECONDS:
                 return standing
 
-        now = datetime.utcnow()
-
-        # 1. Total All-Time XP & Level Progression
+        # 1. Total All-Time XP
         xp_query = (
             select(func.coalesce(func.sum(GamificationRecord.xp_earned), 0))
             .join(SessionRecord, GamificationRecord.session_id == SessionRecord.session_id)
@@ -93,51 +114,68 @@ class AnalyticsService:
         )
         xp_res = await db.execute(xp_query)
         total_all_time_xp = int(xp_res.scalar_one() or 0)
-        level_info = calculate_level(total_all_time_xp)
 
-        # 2. All-Time User Sessions
-        sessions_query = (
-            select(SessionRecord)
+        # 2. Session aggregates (SQL-level, skips loading state_json ORM objects)
+        session_stats_query = (
+            select(
+                func.count(case((SessionRecord.is_complete == True, 1))).label("completed_sessions"),
+                func.count(case(((func.lower(SessionRecord.learning_mode) == "deep_dive") & (SessionRecord.is_complete == True), 1))).label("deep_dive_count"),
+                func.count(func.distinct(func.lower(func.trim(SessionRecord.topic)))).label("distinct_topics"),
+            )
             .where(SessionRecord.user_id == user_id)
         )
-        sessions_res = await db.execute(sessions_query)
-        all_user_sessions = list(sessions_res.scalars().all())
+        session_stats_res = await db.execute(session_stats_query)
+        session_stats = session_stats_res.one()
+        completed_sessions = int(session_stats.completed_sessions or 0)
+        deep_dive_count = int(session_stats.deep_dive_count or 0)
+        distinct_topics = int(session_stats.distinct_topics or 0)
 
-        # 3. All-Time Completed Steps & Unique Dates
-        sp_query = (
-            select(StepProgress)
+        # 3. Step aggregates & active dates (Projected columns only)
+        step_stats_query = (
+            select(
+                func.count(StepProgress.id).label("total_steps"),
+                func.count(case((StepProgress.quiz_score >= 1.0, 1))).label("perfect_quizzes"),
+            )
             .join(SessionRecord, StepProgress.session_id == SessionRecord.session_id)
             .where(
                 SessionRecord.user_id == user_id,
                 StepProgress.status == "complete",
             )
         )
-        sp_res = await db.execute(sp_query)
-        completed_step_records = list(sp_res.scalars().all())
+        step_stats_res = await db.execute(step_stats_query)
+        step_stats = step_stats_res.one()
+        total_steps = int(step_stats.total_steps or 0)
+        perfect_quizzes = int(step_stats.perfect_quizzes or 0)
 
+        # Query only completed_at dates for streak calculation
+        sp_dates_query = (
+            select(StepProgress.completed_at)
+            .join(SessionRecord, StepProgress.session_id == SessionRecord.session_id)
+            .where(
+                SessionRecord.user_id == user_id,
+                StepProgress.status == "complete",
+                StepProgress.completed_at.isnot(None),
+            )
+        )
+        sp_dates_res = await db.execute(sp_dates_query)
         active_dates_set = {
-            sp.completed_at.strftime("%Y-%m-%d")
-            for sp in completed_step_records
-            if sp.completed_at
+            dt.strftime("%Y-%m-%d")
+            for (dt,) in sp_dates_res.all()
+            if dt
         }
         current_streak, longest_streak = AnalyticsService._calculate_streaks(active_dates_set, now)
 
-        # 4. Trophy Counts (All-Time)
-        total_steps = len(completed_step_records)
-        completed_sessions = sum(1 for s in all_user_sessions if s.is_complete)
-        perfect_quizzes = sum(
-            1 for sp in completed_step_records
-            if sp.quiz_score is not None and sp.quiz_score >= 1.0
+        # 4. Trophy Persistence & Evaluation (All-Time)
+        persisted_query = (
+            select(UserTrophy.trophy_id, UserTrophy.unlocked_at)
+            .where(UserTrophy.user_id == user_id)
         )
-        deep_dive_count = sum(
-            1 for s in all_user_sessions
-            if (s.learning_mode or "").lower() == "deep_dive" and s.is_complete
-        )
-        distinct_topics = len(
-            {s.topic.strip().lower() for s in all_user_sessions if s.topic and s.topic.strip()}
-        )
+        persisted_res = await db.execute(persisted_query)
+        persisted_trophies: dict[str, datetime] = {
+            row.trophy_id: row.unlocked_at for row in persisted_res.all()
+        }
 
-        achievements = AnalyticsService._evaluate_achievements(
+        evaluated = AnalyticsService._evaluate_achievements(
             total_steps=total_steps,
             completed_sessions=completed_sessions,
             perfect_quizzes=perfect_quizzes,
@@ -147,20 +185,144 @@ class AnalyticsService:
             total_xp=total_all_time_xp,
         )
 
-        response = LearnerStandingResponse(
-            total_xp=total_all_time_xp,
-            current_level=level_info["level"],
-            level_title=level_info["title"],
-            xp_progress_in_level=level_info["xp_in_level"],
-            xp_needed_for_next=level_info["xp_needed_for_next"],
-            is_max_level=level_info.get("is_max_level", False),
-            current_streak=current_streak,
+        now_utc = datetime.now(timezone.utc).replace(tzinfo=None)
+        final_achievements: list[AchievementDTO] = []
+        newly_unlocked: list[UserTrophy] = []
+
+        for ach in evaluated:
+            if ach.id in persisted_trophies:
+                ach.unlocked = True
+                ach.unlocked_at = persisted_trophies[ach.id]
+            elif ach.unlocked:
+                ach.unlocked_at = now_utc
+                newly_unlocked.append(
+                    UserTrophy(
+                        user_id=user_id,
+                        trophy_id=ach.id,
+                        unlocked_at=now_utc,
+                    )
+                )
+            final_achievements.append(ach)
+
+        if newly_unlocked:
+            db.add_all(newly_unlocked)
+            await db.flush()
+
+        trophy_identity = AnalyticsService._compute_trophy_identity(
+            achievements=final_achievements,
+            completed_sessions=completed_sessions,
+            total_steps=total_steps,
+            perfect_quizzes=perfect_quizzes,
             longest_streak=longest_streak,
-            achievements=achievements,
+            total_xp=total_all_time_xp,
         )
 
-        _standing_cache[user_id] = (datetime.utcnow(), response)
+        response = LearnerStandingResponse(
+            total_xp=total_all_time_xp,
+            highest_trophy_id=trophy_identity["highest_trophy_id"],
+            highest_trophy_title=trophy_identity["highest_trophy_title"],
+            next_trophy_id=trophy_identity["next_trophy_id"],
+            next_trophy_title=trophy_identity["next_trophy_title"],
+            next_trophy_requirements=trophy_identity["next_trophy_requirements"],
+            trophy_progress_fraction=trophy_identity["trophy_progress_fraction"],
+            current_streak=current_streak,
+            longest_streak=longest_streak,
+            achievements=final_achievements,
+        )
+
+        _standing_cache[user_id] = (now, response)
         return response
+
+    @staticmethod
+    def _compute_trophy_identity(
+        achievements: list[AchievementDTO],
+        completed_sessions: int,
+        total_steps: int,
+        perfect_quizzes: int,
+        longest_streak: int,
+        total_xp: int = 0,
+    ) -> dict[str, Any]:
+        """Compute highest unlocked trophy, next trophy, requirements, and progress fraction."""
+        unlocked_ids = {a.id for a in achievements if a.unlocked}
+
+        highest_trophy_id: str | None = None
+        highest_trophy_title: str = "Unranked"
+        for tid in reversed(TROPHY_ORDER):
+            if tid in unlocked_ids:
+                highest_trophy_id = tid
+                highest_trophy_title = TROPHY_DISPLAY_NAMES[tid]
+                break
+
+        if highest_trophy_id == "diamond":
+            return {
+                "highest_trophy_id": "diamond",
+                "highest_trophy_title": TROPHY_DISPLAY_NAMES["diamond"],
+                "next_trophy_id": None,
+                "next_trophy_title": None,
+                "next_trophy_requirements": None,
+                "trophy_progress_fraction": 1.0,
+            }
+
+        if highest_trophy_id is None:
+            next_idx = 0
+        else:
+            next_idx = TROPHY_ORDER.index(highest_trophy_id) + 1
+
+        next_trophy_id: str | None = None
+        next_trophy_title: str | None = None
+        next_requirements: list[TrophyRequirementDTO] | None = None
+        progress_fraction = 0.0
+
+        if next_idx < len(TROPHY_ORDER):
+            next_trophy_id = TROPHY_ORDER[next_idx]
+            next_trophy_title = TROPHY_DISPLAY_NAMES[next_trophy_id]
+            thresholds = TROPHY_THRESHOLDS[next_trophy_id]
+
+            current_vals = {
+                "sessions": completed_sessions,
+                "steps": total_steps,
+                "quizzes": perfect_quizzes,
+                "streak": longest_streak,
+                "xp": total_xp,
+            }
+
+            label_map = {
+                "sessions": "Sessions",
+                "steps": "Steps",
+                "quizzes": "Perfect Quizzes",
+                "streak": "Day Streak",
+                "xp": "Total XP",
+            }
+
+            reqs: list[TrophyRequirementDTO] = []
+            ratios: list[float] = []
+            for key, required in thresholds.items():
+                if required <= 0:
+                    continue
+                current = current_vals[key]
+                is_met = current >= required
+                ratio = min(1.0, current / required) if required > 0 else 1.0
+                ratios.append(ratio)
+                reqs.append(
+                    TrophyRequirementDTO(
+                        label=label_map[key],
+                        current=current,
+                        required=required,
+                        met=is_met,
+                    )
+                )
+
+            next_requirements = reqs
+            progress_fraction = (sum(ratios) / len(ratios)) if ratios else 0.0
+
+        return {
+            "highest_trophy_id": highest_trophy_id,
+            "highest_trophy_title": highest_trophy_title,
+            "next_trophy_id": next_trophy_id,
+            "next_trophy_title": next_trophy_title,
+            "next_trophy_requirements": next_requirements,
+            "trophy_progress_fraction": round(progress_fraction, 3),
+        }
 
     @staticmethod
     async def get_user_performance(
@@ -182,7 +344,7 @@ class AnalyticsService:
                 f"Invalid time_range '{time_range}'. Must be one of: {', '.join(sorted(valid_ranges))}.",
             )
 
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc).replace(tzinfo=None)
         window_start: datetime | None = None
         window_end: datetime = now
 
@@ -258,7 +420,7 @@ class AnalyticsService:
             completed_steps = [sp for sp in steps if sp.status == "complete" and sp.completed_at]
             completed_steps.sort(key=lambda x: _to_naive_utc(x.completed_at) or datetime.min)
 
-            last_timestamp = _to_naive_utc(session.created_at) or datetime.utcnow()
+            last_timestamp = _to_naive_utc(session.created_at) or datetime.now(timezone.utc).replace(tzinfo=None)
             for sp in completed_steps:
                 sp_completed = _to_naive_utc(sp.completed_at)
                 if not sp_completed:
@@ -464,6 +626,7 @@ class AnalyticsService:
         """
         standing = await AnalyticsService.get_user_standing(db, user_id=user_id)
         performance = await AnalyticsService.get_user_performance(db, user_id=user_id, time_range=time_range)
+        level_info = calculate_level(standing.total_xp)
 
         summary_dto = DashboardSummaryDTO(
             total_sessions=performance.summary.total_sessions,
@@ -473,11 +636,11 @@ class AnalyticsService:
             total_study_minutes=performance.summary.total_study_minutes,
             average_quiz_score_overall=performance.summary.average_quiz_score_overall,
             total_xp=standing.total_xp,
-            current_level=standing.current_level,
-            level_title=standing.level_title,
-            xp_progress_in_level=standing.xp_progress_in_level,
-            xp_needed_for_next=standing.xp_needed_for_next,
-            is_max_level=standing.is_max_level,
+            current_level=level_info["level"],
+            level_title=level_info["title"],
+            xp_progress_in_level=level_info["xp_in_level"],
+            xp_needed_for_next=level_info["xp_needed_for_next"],
+            is_max_level=level_info.get("is_max_level", False),
             current_streak=standing.current_streak,
             longest_streak=standing.longest_streak,
         )

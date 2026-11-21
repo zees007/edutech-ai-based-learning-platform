@@ -99,11 +99,6 @@ class DashboardService {
         totalStudyMinutes: performance.summary.totalStudyMinutes,
         averageQuizScoreOverall: performance.summary.averageQuizScoreOverall,
         totalXp: standing.totalXp,
-        currentLevel: standing.currentLevel,
-        levelTitle: standing.levelTitle,
-        xpProgressInLevel: standing.xpProgressInLevel,
-        xpNeededForNext: standing.xpNeededForNext,
-        isMaxLevel: standing.isMaxLevel,
         currentStreak: standing.currentStreak,
         longestStreak: standing.longestStreak,
       );

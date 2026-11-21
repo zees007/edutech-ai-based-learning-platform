@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../../../data/models/dashboard/dashboard_response.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../core/theme/theme_palette.dart';
+import '../../../../core/utils/trophy_utils.dart';
+import '../../../../data/models/dashboard/dashboard_response.dart';
 import '../../../widgets/glass_card.dart';
 
 class ActivityAndAchievementsCard extends StatelessWidget {
@@ -155,49 +156,9 @@ class ActivityAndAchievementsCard extends StatelessWidget {
     final isDark = context.isDarkMode;
     final isUnlocked = ach.unlocked;
 
-    IconData iconData = Icons.emoji_events_rounded;
-    Color iconColor = AppColors.accentAmber;
-
-    // 6-Tier Prestige Trophies
-    if (ach.icon == 'bronze' || ach.id == 'bronze') {
-      iconData = Icons.military_tech_rounded;
-      iconColor = const Color(0xFFCD7F32);
-    } else if (ach.icon == 'silver' || ach.id == 'silver') {
-      iconData = Icons.verified_rounded;
-      iconColor = const Color(0xFFCBD5E1);
-    } else if (ach.icon == 'gold' || ach.id == 'gold') {
-      iconData = Icons.emoji_events_rounded;
-      iconColor = const Color(0xFFF59E0B);
-    } else if (ach.icon == 'platinum' || ach.id == 'platinum') {
-      iconData = Icons.auto_awesome_rounded;
-      iconColor = const Color(0xFFA78BFA);
-    } else if (ach.icon == 'sapphire' || ach.id == 'sapphire') {
-      iconData = Icons.token_rounded;
-      iconColor = const Color(0xFF2563EB);
-    } else if (ach.icon == 'diamond' || ach.id == 'diamond') {
-      iconData = Icons.diamond_rounded;
-      iconColor = const Color(0xFF22D3EE);
-    }
-    // Backward compatibility for legacy identifiers
-    else if (ach.icon == 'flag') {
-      iconData = Icons.flag_rounded;
-      iconColor = AppColors.accentCyan;
-    } else if (ach.icon == 'bullseye') {
-      iconData = Icons.track_changes_rounded;
-      iconColor = AppColors.accentGreen;
-    } else if (ach.icon == 'flame') {
-      iconData = Icons.local_fire_department_rounded;
-      iconColor = const Color(0xFFEF4444);
-    } else if (ach.icon == 'compass') {
-      iconData = Icons.explore_rounded;
-      iconColor = AppColors.accentPurple;
-    } else if (ach.icon == 'books') {
-      iconData = Icons.menu_book_rounded;
-      iconColor = const Color(0xFF38BDF8);
-    } else if (ach.icon == 'crown') {
-      iconData = Icons.workspace_premium_rounded;
-      iconColor = AppColors.accentAmber;
-    }
+    final style = getTrophyStyle(ach.icon.isNotEmpty ? ach.icon : ach.id);
+    final iconData = style.icon;
+    final iconColor = style.color;
 
     return Container(
       constraints: const BoxConstraints(minHeight: 84),

@@ -23,6 +23,7 @@ from sqlalchemy import (
     DateTime,
     Float,
     ForeignKey,
+    Index,
     Integer,
     String,
     Table,
@@ -338,6 +339,10 @@ class StepProgress(Base):
     quiz_score: Mapped[float | None] = mapped_column(Float, nullable=True)
     completed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
+    __table_args__ = (
+        Index("ix_step_progress_session_status", "session_id", "status"),
+    )
+
     def __repr__(self) -> str:
         return f"<StepProgress session={self.session_id} step={self.step_index} status={self.status}>"
 
@@ -362,6 +367,29 @@ class GamificationRecord(Base):
 
     def __repr__(self) -> str:
         return f"<Gamification session={self.session_id} xp={self.xp_earned} level={self.level}>"
+
+
+class UserTrophy(Base):
+    """
+    Persisted trophy unlock records. Once a trophy is unlocked, it stays
+    permanently — the row is never deleted or updated to unlocked=False.
+    """
+
+    __tablename__ = "user_trophies"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    user_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    trophy_id: Mapped[str] = mapped_column(String(20), nullable=False)
+    unlocked_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+
+    __table_args__ = (
+        UniqueConstraint("user_id", "trophy_id", name="uq_user_trophy"),
+    )
+
+    def __repr__(self) -> str:
+        return f"<UserTrophy user={self.user_id} trophy={self.trophy_id}>"
 
 
 class RefreshToken(Base):

@@ -255,24 +255,49 @@ class AchievementItem {
   }
 }
 
+class TrophyRequirement {
+  final String label;
+  final int current;
+  final int required;
+  final bool met;
+
+  const TrophyRequirement({
+    required this.label,
+    this.current = 0,
+    this.required = 0,
+    this.met = false,
+  });
+
+  factory TrophyRequirement.fromJson(Map<String, dynamic> json) {
+    return TrophyRequirement(
+      label: json['label'] as String? ?? '',
+      current: (json['current'] as num?)?.toInt() ?? 0,
+      required: (json['required'] as num?)?.toInt() ?? 0,
+      met: json['met'] as bool? ?? false,
+    );
+  }
+}
+
 class LearnerStanding {
   final int totalXp;
-  final int currentLevel;
-  final String levelTitle;
-  final int xpProgressInLevel;
-  final int xpNeededForNext;
-  final bool isMaxLevel;
+  final String? highestTrophyId;
+  final String highestTrophyTitle;
+  final String? nextTrophyId;
+  final String? nextTrophyTitle;
+  final List<TrophyRequirement>? nextTrophyRequirements;
+  final double trophyProgressFraction;
   final int currentStreak;
   final int longestStreak;
   final List<AchievementItem> achievements;
 
   const LearnerStanding({
     this.totalXp = 0,
-    this.currentLevel = 1,
-    this.levelTitle = 'Curious Explorer',
-    this.xpProgressInLevel = 0,
-    this.xpNeededForNext = 60,
-    this.isMaxLevel = false,
+    this.highestTrophyId,
+    this.highestTrophyTitle = 'Unranked',
+    this.nextTrophyId,
+    this.nextTrophyTitle,
+    this.nextTrophyRequirements,
+    this.trophyProgressFraction = 0.0,
     this.currentStreak = 0,
     this.longestStreak = 0,
     this.achievements = const [],
@@ -281,11 +306,15 @@ class LearnerStanding {
   factory LearnerStanding.fromJson(Map<String, dynamic> json) {
     return LearnerStanding(
       totalXp: (json['total_xp'] as num?)?.toInt() ?? 0,
-      currentLevel: (json['current_level'] as num?)?.toInt() ?? 1,
-      levelTitle: json['level_title'] as String? ?? 'Curious Explorer',
-      xpProgressInLevel: (json['xp_progress_in_level'] as num?)?.toInt() ?? 0,
-      xpNeededForNext: (json['xp_needed_for_next'] as num?)?.toInt() ?? 60,
-      isMaxLevel: json['is_max_level'] as bool? ?? false,
+      highestTrophyId: json['highest_trophy_id'] as String?,
+      highestTrophyTitle: json['highest_trophy_title'] as String? ?? 'Unranked',
+      nextTrophyId: json['next_trophy_id'] as String?,
+      nextTrophyTitle: json['next_trophy_title'] as String?,
+      nextTrophyRequirements: (json['next_trophy_requirements'] as List<dynamic>?)
+              ?.map((e) => TrophyRequirement.fromJson(e as Map<String, dynamic>))
+              .toList(),
+      trophyProgressFraction:
+          (json['trophy_progress_fraction'] as num?)?.toDouble() ?? 0.0,
       currentStreak: (json['current_streak'] as num?)?.toInt() ?? 0,
       longestStreak: (json['longest_streak'] as num?)?.toInt() ?? 0,
       achievements: (json['achievements'] as List<dynamic>?)

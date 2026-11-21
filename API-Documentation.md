@@ -696,11 +696,37 @@ Retrieve all-time cumulative learner progression, current rank level, XP progres
 ```json
 {
   "total_xp": 3450,
-  "current_level": 5,
-  "level_title": "Rising Scholar",
-  "xp_progress_in_level": 250,
-  "xp_needed_for_next": 250,
-  "is_max_level": false,
+  "highest_trophy_id": "gold",
+  "highest_trophy_title": "Gold Trophy",
+  "next_trophy_id": "platinum",
+  "next_trophy_title": "Platinum Trophy",
+  "next_trophy_requirements": [
+    {
+      "label": "Sessions",
+      "current": 10,
+      "required": 25,
+      "met": false
+    },
+    {
+      "label": "Steps",
+      "current": 60,
+      "required": 150,
+      "met": false
+    },
+    {
+      "label": "Perfect Quizzes",
+      "current": 15,
+      "required": 25,
+      "met": false
+    },
+    {
+      "label": "Day Streak",
+      "current": 3,
+      "required": 7,
+      "met": false
+    }
+  ],
+  "trophy_progress_fraction": 0.457,
   "current_streak": 5,
   "longest_streak": 12,
   "achievements": [
