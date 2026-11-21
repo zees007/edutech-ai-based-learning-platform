@@ -9,6 +9,7 @@ import 'package:devzees_edutechai_client/data/models/dashboard/dashboard_respons
 import 'package:devzees_edutechai_client/core/constants/responsive.dart';
 import 'package:devzees_edutechai_client/presentation/pages/dashboard/widgets/dashboard_header.dart';
 import 'package:devzees_edutechai_client/presentation/pages/dashboard/widgets/learning_dashboard_view.dart';
+import 'package:devzees_edutechai_client/presentation/pages/dashboard/widgets/mobile_dashboard_top_bar.dart';
 import 'package:devzees_edutechai_client/presentation/pages/learning/widgets/mobile/mobile_learning_top_bar.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/theme_toggle_button.dart';
 
@@ -148,10 +149,7 @@ void main() {
             final isMobile = Responsive.isMobile(context);
             return Scaffold(
               appBar: isMobile
-                  ? const MobileLearningTopBar(
-                      session: null,
-                      isDashboardOverride: true,
-                    )
+                  ? const MobileDashboardTopBar()
                   : null,
               body: SizedBox(
                 width: width,

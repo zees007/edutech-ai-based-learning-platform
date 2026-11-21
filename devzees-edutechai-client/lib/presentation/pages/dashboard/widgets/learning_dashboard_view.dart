@@ -80,16 +80,6 @@ class _LearningDashboardViewState extends ConsumerState<LearningDashboardView> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // On mobile, render the LearnerStandingHud card in scrollable view
-                            if (Responsive.isMobile(context)) ...[
-                              LearnerStandingHud(
-                                fallbackSummary: state.data?.summary,
-                                fallbackAchievements: state.data?.achievements,
-                                isTopBar: false,
-                              ),
-                              const SizedBox(height: 20),
-                            ],
-
                             // Loading State
                             if (state.isLoading && state.data == null)
                               _buildLoadingSkeleton(context, isMobile)

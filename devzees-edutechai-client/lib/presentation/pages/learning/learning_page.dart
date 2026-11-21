@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/glow_background.dart';
 import 'package:devzees_edutechai_client/core/constants/responsive.dart';
 import 'package:devzees_edutechai_client/core/theme/theme_palette.dart';
@@ -16,6 +17,7 @@ import 'package:devzees_edutechai_client/core/providers/feedback_provider.dart';
 import 'package:devzees_edutechai_client/core/providers/active_session_provider.dart';
 import 'widgets/mobile/mobile_learning_top_bar.dart';
 import 'widgets/mobile/mobile_command_hub_sheet.dart';
+import '../dashboard/widgets/mobile_dashboard_top_bar.dart';
 
 class LearningPage extends ConsumerStatefulWidget {
   final Widget child;
@@ -196,6 +198,16 @@ class _LearningPageState extends ConsumerState<LearningPage> {
     final bool isMobile = Responsive.isMobile(context);
 
     if (isMobile) {
+      String location = '';
+      try {
+        location = GoRouterState.of(context).matchedLocation;
+      } catch (_) {
+        // Fallback in tests
+      }
+      final bool isDashboard =
+          location.startsWith('/learning/dashboard') ||
+          location.startsWith('/dashboard');
+
       final activeState = ref.watch(activeSessionProvider);
       final session = activeState.session;
       final int maxUnlockedIndex = session != null
@@ -210,25 +222,27 @@ class _LearningPageState extends ConsumerState<LearningPage> {
 
       return Scaffold(
         backgroundColor: colors.scaffoldBackground,
-        appBar: MobileLearningTopBar(
-          session: session,
-          activeStepIndex: activeState.activeStepIndex,
-          onOpenCommandHub: session != null
-              ? () {
-                  MobileCommandHubSheet.show(
-                    context,
-                    session: session,
-                    activeIndex: activeState.activeStepIndex,
-                    maxUnlockedIndex: maxUnlockedIndex,
-                    onStepTapped: (index) {
-                      ref
-                          .read(activeSessionProvider.notifier)
-                          .setActiveStep(index);
-                    },
-                  );
-                }
-              : null,
-        ),
+        appBar: isDashboard
+            ? const MobileDashboardTopBar()
+            : MobileLearningTopBar(
+                session: session,
+                activeStepIndex: activeState.activeStepIndex,
+                onOpenCommandHub: session != null
+                    ? () {
+                        MobileCommandHubSheet.show(
+                          context,
+                          session: session,
+                          activeIndex: activeState.activeStepIndex,
+                          maxUnlockedIndex: maxUnlockedIndex,
+                          onStepTapped: (index) {
+                            ref
+                                .read(activeSessionProvider.notifier)
+                                .setActiveStep(index);
+                          },
+                        );
+                      }
+                    : null,
+              ),
         drawer: Drawer(
           backgroundColor: colors.sidebarBackground,
           child: LearningSidebar(

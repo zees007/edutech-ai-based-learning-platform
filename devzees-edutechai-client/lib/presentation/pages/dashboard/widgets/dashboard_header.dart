@@ -296,23 +296,26 @@ class DashboardHeader extends ConsumerWidget {
         ),
         const SizedBox(width: 10),
         Flexible(
-          child: GradientText(
-            'Growth & Mastery Analytics',
-            gradient: isDark
-                ? AppColors.primaryGradient
-                : const LinearGradient(
-                    colors: [Color(0xFF4F46E5), Color(0xFF7C3AED)],
+          child: Tooltip(
+            message: 'Growth & Mastery Analytics\nPerformance metrics, concept mastery, and quiz comprehension',
+            child: GradientText(
+              'Growth & Mastery Analytics',
+              gradient: isDark
+                  ? AppColors.primaryGradient
+                  : const LinearGradient(
+                      colors: [Color(0xFF4F46E5), Color(0xFF7C3AED)],
+                    ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: (isMobile
+                      ? AppTextStyles.subtitle2
+                      : AppTextStyles.h4)
+                  .copyWith(
+                    fontSize: isMobile ? 15.0 : 18.0,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.4,
                   ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: (isMobile
-                    ? AppTextStyles.subtitle2
-                    : AppTextStyles.h4)
-                .copyWith(
-                  fontSize: isMobile ? 15.0 : 18.0,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -0.4,
-                ),
+            ),
           ),
         ),
       ],
@@ -735,74 +738,79 @@ class _DashboardRefreshButtonState extends State<_DashboardRefreshButton>
   Widget build(BuildContext context) {
     final isDark = context.isDarkMode;
 
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      cursor: widget.isRefreshing
-          ? SystemMouseCursors.basic
-          : SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: widget.isRefreshing ? null : widget.onRefresh,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeOutCubic,
-          height: 38,
-          padding: EdgeInsets.symmetric(
-            horizontal: widget.isCompact ? 10 : 12,
-          ),
-          decoration: BoxDecoration(
-            color: isDark
-                ? (_isHovered
-                    ? const Color(0xFF262842)
-                    : const Color(0xFF1A1B2C))
-                : (_isHovered ? Colors.white : const Color(0xFFF1F5F9)),
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(
+    return Tooltip(
+      message: widget.isRefreshing
+          ? 'Syncing learning analytics with latest progress...'
+          : 'Live Sync: refresh metrics and study records',
+      child: MouseRegion(
+        onEnter: (_) => setState(() => _isHovered = true),
+        onExit: (_) => setState(() => _isHovered = false),
+        cursor: widget.isRefreshing
+            ? SystemMouseCursors.basic
+            : SystemMouseCursors.click,
+        child: GestureDetector(
+          onTap: widget.isRefreshing ? null : widget.onRefresh,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOutCubic,
+            height: 38,
+            padding: EdgeInsets.symmetric(
+              horizontal: widget.isCompact ? 10 : 12,
+            ),
+            decoration: BoxDecoration(
               color: isDark
                   ? (_isHovered
-                      ? const Color(0xFF4A4E69)
-                      : const Color(0x1FFFFFFF))
-                  : (_isHovered
-                      ? const Color(0xFFCBD5E1)
-                      : const Color(0xFFE2E8F0)),
-              width: 1.0,
-            ),
-            boxShadow: [
-              if (_isHovered)
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.08),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-            ],
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              RotationTransition(
-                turns: _animController,
-                child: Icon(
-                  Icons.sync_rounded,
-                  size: 16,
-                  color: widget.isRefreshing
-                      ? AppColors.primary
-                      : (isDark
-                          ? const Color(0xFF94A3B8)
-                          : const Color(0xFF64748B)),
-                ),
+                      ? const Color(0xFF262842)
+                      : const Color(0xFF1A1B2C))
+                  : (_isHovered ? Colors.white : const Color(0xFFF1F5F9)),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: isDark
+                    ? (_isHovered
+                        ? const Color(0xFF4A4E69)
+                        : const Color(0x1FFFFFFF))
+                    : (_isHovered
+                        ? const Color(0xFFCBD5E1)
+                        : const Color(0xFFE2E8F0)),
+                width: 1.0,
               ),
-              if (!widget.isCompact) ...[
-                const SizedBox(width: 6),
-                Text(
-                  widget.isRefreshing ? 'Syncing...' : 'Sync',
-                  style: AppTextStyles.button.copyWith(
-                    color: isDark ? Colors.white : const Color(0xFF0F172A),
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w700,
+              boxShadow: [
+                if (_isHovered)
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.08),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                RotationTransition(
+                  turns: _animController,
+                  child: Icon(
+                    Icons.sync_rounded,
+                    size: 16,
+                    color: widget.isRefreshing
+                        ? AppColors.primary
+                        : (isDark
+                            ? const Color(0xFF94A3B8)
+                            : const Color(0xFF64748B)),
                   ),
                 ),
+                if (!widget.isCompact) ...[
+                  const SizedBox(width: 6),
+                  Text(
+                    widget.isRefreshing ? 'Syncing...' : 'Sync',
+                    style: AppTextStyles.button.copyWith(
+                      color: isDark ? Colors.white : const Color(0xFF0F172A),
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),
