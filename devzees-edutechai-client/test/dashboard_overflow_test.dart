@@ -295,11 +295,11 @@ class _MockLearnerStandingNotifier extends LearnerStandingNotifier {
   Future<LearnerStanding> build() async {
     return LearnerStanding(
       totalXp: 1250,
-      currentLevel: 4,
-      levelTitle: 'Knowledge Adept',
-      xpProgressInLevel: 250,
-      xpNeededForNext: 500,
-      isMaxLevel: false,
+      highestTrophyId: 'bronze',
+      highestTrophyTitle: 'Bronze Trophy',
+      nextTrophyId: 'silver',
+      nextTrophyTitle: 'Silver Trophy',
+      trophyProgressFraction: 0.65,
       currentStreak: 5,
       longestStreak: 12,
       achievements: achievements,

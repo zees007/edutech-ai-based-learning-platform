@@ -4,20 +4,31 @@ import '../../../../core/providers/dashboard_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../core/theme/theme_palette.dart';
+import '../../../../data/models/dashboard/dashboard_response.dart';
 import '../../../widgets/gradient_text.dart';
 import '../../../widgets/theme_toggle_button.dart';
+import 'learner_standing_hud.dart';
 
 /// Consolidated, ultra-premium Analytics Command Hub Header.
-/// Features a prominent gradient title, unified theme date dropdown matching
-/// [_CompactThemeDropdown] from journey_prompt_card, and smooth hover micro-animations.
+///
+/// Features a two-tier persistent architecture:
+/// - TIER 1: All-Time Learner Standing HUD Top Bar with prestige trophy title,
+///   total XP badge, next milestone progress, streaks, and the Theme Toggle Button
+///   pinned at the top right.
+/// - TIER 2: Analytics Filter Sub-Bar placed directly below Tier 1, featuring
+///   the "Growth & Mastery Analytics" title, period date range dropdown, and sync button.
 class DashboardHeader extends ConsumerWidget {
   final VoidCallback onRefresh;
   final bool isRefreshing;
+  final DashboardSummary? fallbackSummary;
+  final List<AchievementItem>? fallbackAchievements;
 
   const DashboardHeader({
     super.key,
     required this.onRefresh,
     this.isRefreshing = false,
+    this.fallbackSummary,
+    this.fallbackAchievements,
   });
 
   BoxDecoration _buildPillDecoration(BuildContext context) {
@@ -77,50 +88,68 @@ class DashboardHeader extends ConsumerWidget {
           }
         }
 
-        return AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOutCubic,
-          width: double.infinity,
-          padding: EdgeInsets.symmetric(
-            horizontal: isMobile ? 16 : 24,
-            vertical: isMobile ? 10 : 12,
-          ),
-          decoration: BoxDecoration(
-            color: context.appColors.topBarBackground,
-            border: Border(
-              bottom: BorderSide(color: context.appColors.border, width: 1.0),
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // ─── TIER 1: Pinned Learner Standing Top Bar (With Theme Toggle at right) ───
+            LearnerStandingHud(
+              isTopBar: true,
+              fallbackSummary: fallbackSummary,
+              fallbackAchievements: fallbackAchievements,
+              trailing: const ThemeToggleButton(size: 30),
             ),
-          ),
-          child: isDesktop
-              ? _buildDesktopView(
-                  context: context,
-                  ref: ref,
-                  activeRange: activeRange,
-                  displayLabel: displayLabel,
-                  isDark: isDark,
-                )
-              : isMobile
-              ? _buildMobileView(
-                  context: context,
-                  ref: ref,
-                  activeRange: activeRange,
-                  displayLabel: displayLabel,
-                  isDark: isDark,
-                )
-              : _buildTabletView(
-                  context: context,
-                  ref: ref,
-                  activeRange: activeRange,
-                  displayLabel: displayLabel,
-                  isDark: isDark,
+
+            // ─── TIER 2: Analytics Filter Sub-Bar (Directly below Tier 1) ───
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOutCubic,
+              width: double.infinity,
+              padding: EdgeInsets.symmetric(
+                horizontal: isMobile ? 16 : 24,
+                vertical: isMobile ? 8 : 9,
+              ),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF131525) : const Color(0xFFF8FAFC),
+                border: Border(
+                  bottom: BorderSide(
+                    color: context.appColors.border.withValues(alpha: 0.7),
+                    width: 1.0,
+                  ),
                 ),
+              ),
+              child: isDesktop
+                  ? _buildDesktopSubBar(
+                      context: context,
+                      ref: ref,
+                      activeRange: activeRange,
+                      displayLabel: displayLabel,
+                      isDark: isDark,
+                    )
+                  : isMobile
+                  ? _buildMobileSubBar(
+                      context: context,
+                      ref: ref,
+                      activeRange: activeRange,
+                      displayLabel: displayLabel,
+                      isDark: isDark,
+                    )
+                  : _buildTabletSubBar(
+                      context: context,
+                      ref: ref,
+                      activeRange: activeRange,
+                      displayLabel: displayLabel,
+                      isDark: isDark,
+                    ),
+            ),
+          ],
         );
       },
     );
   }
 
-  // ─── DESKTOP VIEW ──────────────────────────────────────────────────────────
-  Widget _buildDesktopView({
+  // ─── DESKTOP SUB-BAR ────────────────────────────────────────────────────────
+  Widget _buildDesktopSubBar({
     required BuildContext context,
     required WidgetRef ref,
     required String activeRange,
@@ -130,10 +159,12 @@ class DashboardHeader extends ConsumerWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
+        // Left: Context Block (Growth & Mastery Analytics) wrapped in Expanded
         Expanded(
           child: _buildContextBlock(context: context, isMobile: false),
         ),
         const SizedBox(width: 16),
+        // Right: Date Dropdown + Refresh Button (Theme toggle is pinned above in Tier 1)
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -154,16 +185,14 @@ class DashboardHeader extends ConsumerWidget {
               isRefreshing: isRefreshing,
               onRefresh: onRefresh,
             ),
-            const SizedBox(width: 8),
-            const ThemeToggleButton(size: 30),
           ],
         ),
       ],
     );
   }
 
-  // ─── TABLET VIEW ───────────────────────────────────────────────────────────
-  Widget _buildTabletView({
+  // ─── TABLET SUB-BAR ─────────────────────────────────────────────────────────
+  Widget _buildTabletSubBar({
     required BuildContext context,
     required WidgetRef ref,
     required String activeRange,
@@ -173,16 +202,8 @@ class DashboardHeader extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Row(
-          children: [
-            Expanded(
-              child: _buildContextBlock(context: context, isMobile: false),
-            ),
-            const SizedBox(width: 8),
-            const ThemeToggleButton(size: 30),
-          ],
-        ),
-        const SizedBox(height: 10),
+        _buildContextBlock(context: context, isMobile: false),
+        const SizedBox(height: 8),
         Row(
           children: [
             _DashboardDateDropdown(
@@ -208,8 +229,8 @@ class DashboardHeader extends ConsumerWidget {
     );
   }
 
-  // ─── MOBILE VIEW ───────────────────────────────────────────────────────────
-  Widget _buildMobileView({
+  // ─── MOBILE SUB-BAR ─────────────────────────────────────────────────────────
+  Widget _buildMobileSubBar({
     required BuildContext context,
     required WidgetRef ref,
     required String activeRange,
@@ -230,8 +251,6 @@ class DashboardHeader extends ConsumerWidget {
               onRefresh: onRefresh,
               isCompact: true,
             ),
-            const SizedBox(width: 6),
-            const ThemeToggleButton(size: 30),
           ],
         ),
         const SizedBox(height: 8),
@@ -260,21 +279,22 @@ class DashboardHeader extends ConsumerWidget {
     final isDark = context.isDarkMode;
 
     return Row(
+      mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         // Accent Icon Box
         Container(
-          width: isMobile ? 34 : 38,
-          height: isMobile ? 34 : 38,
+          width: isMobile ? 32 : 36,
+          height: isMobile ? 32 : 36,
           alignment: Alignment.center,
           decoration: _buildPillDecoration(context),
           child: Icon(
             Icons.auto_graph_rounded,
             color: isDark ? const Color(0xFF60A5FA) : const Color(0xFF1D4ED8),
-            size: isMobile ? 18 : 20,
+            size: isMobile ? 17 : 19,
           ),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: 10),
         Flexible(
           child: GradientText(
             'Growth & Mastery Analytics',
@@ -289,9 +309,9 @@ class DashboardHeader extends ConsumerWidget {
                     ? AppTextStyles.subtitle2
                     : AppTextStyles.h4)
                 .copyWith(
-                  fontSize: isMobile ? 16.0 : 20.0,
+                  fontSize: isMobile ? 15.0 : 18.0,
                   fontWeight: FontWeight.w800,
-                  letterSpacing: -0.5,
+                  letterSpacing: -0.4,
                 ),
           ),
         ),
@@ -454,193 +474,213 @@ class _DashboardDateDropdownState extends State<_DashboardDateDropdown> {
         child: Theme(
           data: Theme.of(context).copyWith(
             hoverColor: AppColors.primary.withValues(alpha: 0.12),
-            focusColor: AppColors.primary.withValues(alpha: 0.15),
-            splashColor: AppColors.primary.withValues(alpha: 0.10),
-            highlightColor: AppColors.primary.withValues(alpha: 0.10),
+            splashColor: AppColors.primary.withValues(alpha: 0.20),
+            highlightColor: Colors.transparent,
           ),
-          child: Row(
-            mainAxisSize:
-                widget.fullWidth ? MainAxisSize.max : MainAxisSize.min,
-            mainAxisAlignment: widget.fullWidth
-                ? MainAxisAlignment.spaceBetween
-                : MainAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.date_range_rounded,
-                    size: 15,
-                    color: isDark ? AppColors.primary : AppColors.purple,
-                  ),
-                  const SizedBox(width: 8),
-                  DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
-                      value: widget.activeRange == 'custom'
-                          ? 'custom'
-                          : widget.activeRange,
-                      borderRadius: BorderRadius.circular(14),
-                      dropdownColor:
-                          isDark ? const Color(0xFF1E2034) : Colors.white,
-                      elevation: 8,
-                      icon: Padding(
-                        padding: const EdgeInsets.only(left: 6),
-                        child: Icon(
-                          Icons.keyboard_arrow_down_rounded,
-                          size: 16,
-                          color: isDark ? AppColors.primary : AppColors.purple,
-                        ),
-                      ),
-                      style: AppTextStyles.body2.copyWith(
-                        color: AppColors.textPrimary,
-                        fontWeight: FontWeight.w600,
-                        fontSize: widget.isMobile ? 12 : 13,
-                      ),
-                      selectedItemBuilder: (context) {
-                        return [
-                          _buildSelectedItem(
-                            'Last 7 Days',
-                            isDark,
-                            widget.isMobile,
-                          ),
-                          _buildSelectedItem(
-                            'Last 30 Days',
-                            isDark,
-                            widget.isMobile,
-                          ),
-                          _buildSelectedItem(
-                            'Last 90 Days',
-                            isDark,
-                            widget.isMobile,
-                          ),
-                          _buildSelectedItem(
-                            'Last 1 Year',
-                            isDark,
-                            widget.isMobile,
-                          ),
-                          _buildSelectedItem(
-                            'All Time',
-                            isDark,
-                            widget.isMobile,
-                          ),
-                          _buildSelectedItem(
-                            widget.displayLabel,
-                            isDark,
-                            widget.isMobile,
-                          ),
-                        ];
-                      },
-                      items: [
-                        _buildDropdownItem(
-                          'Last 7 Days',
-                          '7d',
-                          isDark,
-                          widget.isMobile,
-                        ),
-                        _buildDropdownItem(
-                          'Last 30 Days',
-                          '30d',
-                          isDark,
-                          widget.isMobile,
-                        ),
-                        _buildDropdownItem(
-                          'Last 90 Days',
-                          '90d',
-                          isDark,
-                          widget.isMobile,
-                        ),
-                        _buildDropdownItem(
-                          'Last 1 Year',
-                          '1y',
-                          isDark,
-                          widget.isMobile,
-                        ),
-                        _buildDropdownItem(
-                          'All Time',
-                          'all',
-                          isDark,
-                          widget.isMobile,
-                        ),
-                        _buildDropdownItem(
-                          widget.activeRange == 'custom'
-                              ? widget.displayLabel
-                              : 'Custom Date Range...',
-                          'custom',
-                          isDark,
-                          widget.isMobile,
-                        ),
-                      ],
-                      onChanged: (value) async {
-                        if (value == null) return;
-                        if (value == 'custom') {
-                          await widget.onSelectCustomRange();
-                        } else {
-                          widget.onRangeChanged(value);
-                        }
-                      },
-                    ),
-                  ),
-                ],
+          child: PopupMenuButton<String>(
+            tooltip: 'Select date filter',
+            offset: const Offset(0, 46),
+            position: PopupMenuPosition.under,
+            elevation: 12,
+            shadowColor: Colors.black.withValues(alpha: 0.35),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+              side: BorderSide(
+                color: AppColors.primary.withValues(alpha: isDark ? 0.45 : 0.30),
+                width: 1.2,
               ),
-              if (widget.activeRange == 'custom') ...[
+            ),
+            color: isDark ? const Color(0xFF1E2138) : Colors.white,
+            onSelected: (value) {
+              if (value == 'custom') {
+                widget.onSelectCustomRange();
+              } else {
+                widget.onRangeChanged(value);
+              }
+            },
+            itemBuilder: (context) => [
+              _buildMenuItem(
+                context: context,
+                value: '7d',
+                icon: Icons.calendar_view_week_rounded,
+                label: 'Last 7 Days',
+                subLabel: 'Recent momentum',
+                isSelected: widget.activeRange == '7d',
+                isDark: isDark,
+              ),
+              _buildMenuItem(
+                context: context,
+                value: '30d',
+                icon: Icons.calendar_month_rounded,
+                label: 'Last 30 Days',
+                subLabel: 'Standard monthly view',
+                isSelected: widget.activeRange == '30d',
+                isDark: isDark,
+              ),
+              _buildMenuItem(
+                context: context,
+                value: '90d',
+                icon: Icons.date_range_rounded,
+                label: 'Last 90 Days',
+                subLabel: 'Quarterly progress',
+                isSelected: widget.activeRange == '90d',
+                isDark: isDark,
+              ),
+              _buildMenuItem(
+                context: context,
+                value: '1y',
+                icon: Icons.history_rounded,
+                label: 'Last 1 Year',
+                subLabel: 'Annual retrospective',
+                isSelected: widget.activeRange == '1y',
+                isDark: isDark,
+              ),
+              _buildMenuItem(
+                context: context,
+                value: 'all',
+                icon: Icons.all_inclusive_rounded,
+                label: 'All Time',
+                subLabel: 'Complete learning history',
+                isSelected: widget.activeRange == 'all',
+                isDark: isDark,
+              ),
+              const PopupMenuDivider(height: 1),
+              _buildMenuItem(
+                context: context,
+                value: 'custom',
+                icon: Icons.tune_rounded,
+                label: 'Custom Range...',
+                subLabel: widget.activeRange == 'custom'
+                    ? widget.displayLabel
+                    : 'Choose start & end dates',
+                isSelected: widget.activeRange == 'custom',
+                isDark: isDark,
+                trailing: widget.activeRange == 'custom'
+                    ? IconButton(
+                        icon: const Icon(
+                          Icons.close_rounded,
+                          size: 16,
+                          color: AppColors.accentRose,
+                        ),
+                        tooltip: 'Reset to 30 days',
+                        onPressed: () {
+                          Navigator.pop(context);
+                          widget.onResetCustomRange();
+                        },
+                      )
+                    : null,
+              ),
+            ],
+            child: Row(
+              mainAxisSize:
+                  widget.fullWidth ? MainAxisSize.max : MainAxisSize.min,
+              mainAxisAlignment: widget.fullWidth
+                  ? MainAxisAlignment.spaceBetween
+                  : MainAxisAlignment.start,
+              children: [
+                Icon(
+                  Icons.calendar_today_rounded,
+                  size: 15,
+                  color: AppColors.primary,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  widget.displayLabel,
+                  style: AppTextStyles.button.copyWith(
+                    color: isDark ? Colors.white : const Color(0xFF0F172A),
+                    fontSize: widget.isMobile ? 12.0 : 13.0,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.2,
+                  ),
+                ),
                 const SizedBox(width: 6),
-                InkWell(
-                  onTap: widget.onResetCustomRange,
-                  borderRadius: BorderRadius.circular(8),
-                  child: Padding(
-                    padding: const EdgeInsets.all(3.0),
-                    child: Icon(
-                      Icons.close_rounded,
-                      size: 14,
-                      color: isDark
-                          ? AppColors.textMuted
-                          : const Color(0xFF94A3B8),
-                    ),
+                Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  size: 16,
+                  color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  PopupMenuItem<String> _buildMenuItem({
+    required BuildContext context,
+    required String value,
+    required IconData icon,
+    required String label,
+    required String subLabel,
+    required bool isSelected,
+    required bool isDark,
+    Widget? trailing,
+  }) {
+    return PopupMenuItem<String>(
+      value: value,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      height: 48,
+      child: Row(
+        children: [
+          Container(
+            width: 28,
+            height: 28,
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? AppColors.primary.withValues(alpha: isDark ? 0.25 : 0.15)
+                  : (isDark ? const Color(0xFF262842) : const Color(0xFFF1F5F9)),
+              borderRadius: BorderRadius.circular(7),
+            ),
+            child: Icon(
+              icon,
+              size: 15,
+              color: isSelected
+                  ? AppColors.primary
+                  : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  label,
+                  style: AppTextStyles.body2.copyWith(
+                    color: isSelected
+                        ? AppColors.primary
+                        : (isDark ? Colors.white : const Color(0xFF0F172A)),
+                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                    fontSize: 13,
+                  ),
+                ),
+                Text(
+                  subLabel,
+                  style: AppTextStyles.caption.copyWith(
+                    color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+                    fontSize: 10.5,
                   ),
                 ),
               ],
-            ],
+            ),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSelectedItem(String label, bool isDark, bool isMobile) {
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Text(
-        label,
-        style: AppTextStyles.body2.copyWith(
-          color: AppColors.textPrimary,
-          fontWeight: FontWeight.w600,
-          fontSize: isMobile ? 12 : 13,
-        ),
-      ),
-    );
-  }
-
-  DropdownMenuItem<String> _buildDropdownItem(
-    String label,
-    String value,
-    bool isDark,
-    bool isMobile,
-  ) {
-    return DropdownMenuItem<String>(
-      value: value,
-      child: Text(
-        label,
-        style: AppTextStyles.body2.copyWith(
-          color: AppColors.textPrimary,
-          fontWeight: FontWeight.w600,
-          fontSize: isMobile ? 12 : 13,
-        ),
+          if (trailing != null)
+            trailing
+          else if (isSelected)
+            const Icon(
+              Icons.check_rounded,
+              color: AppColors.primary,
+              size: 16,
+            ),
+        ],
       ),
     );
   }
 }
 
-/// Unified Theme Refresh Button matching the compact dropdown aesthetic.
+/// Dynamic Live Sync / Refresh button with micro-animation and state feedback.
 class _DashboardRefreshButton extends StatefulWidget {
   final bool isRefreshing;
   final VoidCallback onRefresh;
@@ -657,8 +697,39 @@ class _DashboardRefreshButton extends StatefulWidget {
       _DashboardRefreshButtonState();
 }
 
-class _DashboardRefreshButtonState extends State<_DashboardRefreshButton> {
+class _DashboardRefreshButtonState extends State<_DashboardRefreshButton>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animController;
   bool _isHovered = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    );
+    if (widget.isRefreshing) {
+      _animController.repeat();
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant _DashboardRefreshButton oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isRefreshing && !_animController.isAnimating) {
+      _animController.repeat();
+    } else if (!widget.isRefreshing && _animController.isAnimating) {
+      _animController.stop();
+      _animController.reset();
+    }
+  }
+
+  @override
+  void dispose() {
+    _animController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -667,85 +738,71 @@ class _DashboardRefreshButtonState extends State<_DashboardRefreshButton> {
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
-      cursor: SystemMouseCursors.click,
-      child: Tooltip(
-        message: 'Refresh analytics',
+      cursor: widget.isRefreshing
+          ? SystemMouseCursors.basic
+          : SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: widget.isRefreshing ? null : widget.onRefresh,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           curve: Curves.easeOutCubic,
           height: 38,
+          padding: EdgeInsets.symmetric(
+            horizontal: widget.isCompact ? 10 : 12,
+          ),
           decoration: BoxDecoration(
             color: isDark
                 ? (_isHovered
-                      ? const Color(0xFF262842)
-                      : const Color(0xFF1A1B2C))
+                    ? const Color(0xFF262842)
+                    : const Color(0xFF1A1B2C))
                 : (_isHovered ? Colors.white : const Color(0xFFF1F5F9)),
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
-              color: AppColors.primary.withValues(
-                alpha: isDark
-                    ? (_isHovered ? 0.70 : 0.40)
-                    : (_isHovered ? 0.60 : 0.35),
-              ),
-              width: 1.2,
+              color: isDark
+                  ? (_isHovered
+                      ? const Color(0xFF4A4E69)
+                      : const Color(0x1FFFFFFF))
+                  : (_isHovered
+                      ? const Color(0xFFCBD5E1)
+                      : const Color(0xFFE2E8F0)),
+              width: 1.0,
             ),
             boxShadow: [
               if (_isHovered)
                 BoxShadow(
-                  color: AppColors.primary.withValues(
-                    alpha: isDark ? 0.28 : 0.16,
-                  ),
-                  blurRadius: 12,
-                  spreadRadius: 1,
-                  offset: Offset.zero,
+                  color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.08),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
                 ),
             ],
           ),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: widget.isRefreshing ? null : widget.onRefresh,
-              borderRadius: BorderRadius.circular(10),
-              child: Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: widget.isCompact ? 10 : 12,
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    widget.isRefreshing
-                        ? SizedBox(
-                            width: 14,
-                            height: 14,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: isDark
-                                  ? AppColors.primary
-                                  : AppColors.purple,
-                            ),
-                          )
-                        : Icon(
-                            Icons.refresh_rounded,
-                            size: 16,
-                            color: isDark
-                                ? AppColors.primary
-                                : AppColors.purple,
-                          ),
-                    if (!widget.isCompact) ...[
-                      const SizedBox(width: 6),
-                      Text(
-                        'Sync',
-                        style: AppTextStyles.body2.copyWith(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                    ],
-                  ],
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              RotationTransition(
+                turns: _animController,
+                child: Icon(
+                  Icons.sync_rounded,
+                  size: 16,
+                  color: widget.isRefreshing
+                      ? AppColors.primary
+                      : (isDark
+                          ? const Color(0xFF94A3B8)
+                          : const Color(0xFF64748B)),
                 ),
               ),
-            ),
+              if (!widget.isCompact) ...[
+                const SizedBox(width: 6),
+                Text(
+                  widget.isRefreshing ? 'Syncing...' : 'Sync',
+                  style: AppTextStyles.button.copyWith(
+                    color: isDark ? Colors.white : const Color(0xFF0F172A),
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ],
           ),
         ),
       ),

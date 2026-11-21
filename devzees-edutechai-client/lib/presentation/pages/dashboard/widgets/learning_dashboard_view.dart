@@ -49,7 +49,7 @@ class _LearningDashboardViewState extends ConsumerState<LearningDashboardView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // ─── TIER 1: Pinned Analytics Command Hub (Web & Desktop only; Mobile uses MobileLearningTopBar) ───
+              // ─── TIER 1 & 2: Pinned Learner Standing & Analytics Command Hub ───
               if (!Responsive.isMobile(context))
                 DashboardHeader(
                   onRefresh: () {
@@ -57,9 +57,11 @@ class _LearningDashboardViewState extends ConsumerState<LearningDashboardView> {
                     ref.read(dashboardProvider.notifier).refresh();
                   },
                   isRefreshing: state.isLoading && state.data != null,
+                  fallbackSummary: state.data?.summary,
+                  fallbackAchievements: state.data?.achievements,
                 ),
 
-              // ─── TIER 2: Scrollable Analytics Body Content ───
+              // ─── TIER 3: Scrollable Analytics Body Content ───
               Expanded(
                 child: RefreshIndicator(
                   color: AppColors.primary,
@@ -78,12 +80,15 @@ class _LearningDashboardViewState extends ConsumerState<LearningDashboardView> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // All-Time Gamification Standing HUD
-                            LearnerStandingHud(
-                              fallbackSummary: state.data?.summary,
-                              fallbackAchievements: state.data?.achievements,
-                            ),
-                            const SizedBox(height: 24),
+                            // On mobile, render the LearnerStandingHud card in scrollable view
+                            if (Responsive.isMobile(context)) ...[
+                              LearnerStandingHud(
+                                fallbackSummary: state.data?.summary,
+                                fallbackAchievements: state.data?.achievements,
+                                isTopBar: false,
+                              ),
+                              const SizedBox(height: 20),
+                            ],
 
                             // Loading State
                             if (state.isLoading && state.data == null)
