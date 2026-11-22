@@ -7,10 +7,8 @@ import 'package:devzees_edutechai_client/core/providers/auth_provider.dart';
 import 'package:devzees_edutechai_client/data/models/auth/user_current_profile_response.dart';
 import 'package:devzees_edutechai_client/data/models/dashboard/dashboard_response.dart';
 import 'package:devzees_edutechai_client/core/constants/responsive.dart';
-import 'package:devzees_edutechai_client/presentation/pages/dashboard/widgets/dashboard_header.dart';
 import 'package:devzees_edutechai_client/presentation/pages/dashboard/widgets/learning_dashboard_view.dart';
 import 'package:devzees_edutechai_client/presentation/pages/dashboard/widgets/mobile_dashboard_top_bar.dart';
-import 'package:devzees_edutechai_client/presentation/pages/learning/widgets/mobile/mobile_learning_top_bar.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/theme_toggle_button.dart';
 
 void main() {

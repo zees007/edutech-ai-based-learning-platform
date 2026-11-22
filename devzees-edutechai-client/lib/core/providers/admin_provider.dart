@@ -11,6 +11,7 @@ import '../../data/models/admin/setting_update_request.dart';
 import '../../data/models/admin/subscription_tier_model.dart';
 import '../services/admin_service.dart';
 import '../services/subscription_service.dart';
+import 'auth_provider.dart';
 
 // ─── Service Provider ─────────────────────────────────────────────
 final adminServiceProvider = Provider<AdminService>((ref) {
@@ -65,6 +66,9 @@ class AdminUsersNotifier extends Notifier<AdminUsersState> {
   @override
   AdminUsersState build() {
     ref.onDispose(() => _debounce?.cancel());
+    ref.listen(currentUserIdProvider, (previous, next) {
+      if (previous != next) state = AdminUsersState();
+    });
     return AdminUsersState();
   }
 
@@ -176,6 +180,9 @@ class AdminRolesNotifier extends Notifier<AdminRolesState> {
   @override
   AdminRolesState build() {
     ref.onDispose(() => _debounce?.cancel());
+    ref.listen(currentUserIdProvider, (previous, next) {
+      if (previous != next) state = AdminRolesState();
+    });
     return AdminRolesState();
   }
 
@@ -312,6 +319,7 @@ class AdminMetrics {
 }
 
 final adminMetricsProvider = FutureProvider<AdminMetrics>((ref) async {
+  ref.watch(currentUserIdProvider);
   final service = ref.read(adminServiceProvider);
   final data = await service.getAdminMetrics();
   return AdminMetrics.fromJson(data);
@@ -382,6 +390,9 @@ class AdminSettingsState {
 class AdminSettingsNotifier extends Notifier<AdminSettingsState> {
   @override
   AdminSettingsState build() {
+    ref.listen(currentUserIdProvider, (previous, next) {
+      if (previous != next) state = AdminSettingsState();
+    });
     return AdminSettingsState();
   }
 
@@ -512,6 +523,9 @@ class AdminTiersState {
 class AdminTiersNotifier extends Notifier<AdminTiersState> {
   @override
   AdminTiersState build() {
+    ref.listen(currentUserIdProvider, (previous, next) {
+      if (previous != next) state = AdminTiersState();
+    });
     return AdminTiersState();
   }
 

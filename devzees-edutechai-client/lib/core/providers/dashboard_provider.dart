@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/dashboard/dashboard_response.dart';
 import '../services/dashboard_service.dart';
+import 'auth_provider.dart';
 
 final dashboardServiceProvider = Provider<DashboardService>((ref) {
   return DashboardService();
@@ -10,6 +11,11 @@ final dashboardServiceProvider = Provider<DashboardService>((ref) {
 class LearnerStandingNotifier extends AsyncNotifier<LearnerStanding> {
   @override
   Future<LearnerStanding> build() async {
+    // Automatically re-evaluates when authenticated user changes
+    final userId = ref.watch(currentUserIdProvider);
+    if (userId == null) {
+      return const LearnerStanding();
+    }
     final service = ref.watch(dashboardServiceProvider);
     return service.fetchStanding();
   }
@@ -56,6 +62,11 @@ class PerformanceFilterState {
 class PerformanceFilterNotifier extends Notifier<PerformanceFilterState> {
   @override
   PerformanceFilterState build() {
+    ref.listen<String?>(currentUserIdProvider, (prev, next) {
+      if (prev != next) {
+        state = const PerformanceFilterState(rangeKey: '30d');
+      }
+    });
     return const PerformanceFilterState(rangeKey: '30d');
   }
 
@@ -78,6 +89,8 @@ final performanceFilterProvider =
 });
 
 final performanceAnalyticsProvider = FutureProvider<PeriodPerformance>((ref) async {
+  // Re-fetch when user identity changes
+  ref.watch(currentUserIdProvider);
   final filter = ref.watch(performanceFilterProvider);
   final service = ref.watch(dashboardServiceProvider);
   return service.fetchPerformance(
@@ -131,6 +144,15 @@ class DashboardNotifier extends Notifier<DashboardState> {
   @override
   DashboardState build() {
     _service = ref.watch(dashboardServiceProvider);
+    // Reset cached dashboard data when the active user changes or logs out
+    ref.listen<String?>(
+      currentUserIdProvider,
+      (prev, next) {
+        if (prev != next) {
+          state = const DashboardState(isLoading: true);
+        }
+      },
+    );
     return const DashboardState(isLoading: true);
   }
 

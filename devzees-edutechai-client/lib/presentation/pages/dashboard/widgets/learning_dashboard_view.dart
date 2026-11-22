@@ -9,7 +9,6 @@ import '../../../widgets/shimmer_loading.dart';
 import 'activity_and_achievements_card.dart';
 import 'dashboard_header.dart';
 import 'dashboard_kpi_cards.dart';
-import 'learner_standing_hud.dart';
 import 'mode_and_topic_cards.dart';
 import 'quiz_trend_card.dart';
 import 'weak_concepts_card.dart';
@@ -90,11 +89,15 @@ class _LearningDashboardViewState extends ConsumerState<LearningDashboardView> {
                             else if (state.data != null) ...[
                               DashboardKpiCards(summary: state.data!.summary),
                               const SizedBox(height: 24),
-                              QuizTrendCard(quizMetrics: state.data!.quizMetrics),
+                              QuizTrendCard(
+                                quizMetrics: state.data!.quizMetrics,
+                              ),
                               const SizedBox(height: 24),
                               WeakConceptsCard(
-                                weakConcepts:
-                                    state.data!.quizMetrics.conceptsNeedingReinforcement,
+                                weakConcepts: state
+                                    .data!
+                                    .quizMetrics
+                                    .conceptsNeedingReinforcement,
                               ),
                               const SizedBox(height: 24),
                               ModeAndTopicCards(
@@ -196,16 +199,15 @@ class _LearningDashboardViewState extends ConsumerState<LearningDashboardView> {
             const SizedBox(height: 16),
             Text(
               'Failed to load dashboard metrics',
-              style: AppTextStyles.h4.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: AppTextStyles.h4.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Text(
               error,
               style: AppTextStyles.body2.copyWith(
-                color:
-                    isDark ? AppColors.textSecondary : const Color(0xFF64748B),
+                color: isDark
+                    ? AppColors.textSecondary
+                    : const Color(0xFF64748B),
               ),
               textAlign: TextAlign.center,
             ),
@@ -219,8 +221,10 @@ class _LearningDashboardViewState extends ConsumerState<LearningDashboardView> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),

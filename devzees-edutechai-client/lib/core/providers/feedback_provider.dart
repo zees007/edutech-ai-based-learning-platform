@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/feedback/feedback_model.dart';
 import '../services/feedback_service.dart';
+import 'auth_provider.dart';
 
 /// Provider for fetching homepage featured testimonials.
 final publicTestimonialsProvider =
@@ -32,7 +33,12 @@ class FeedbackPromptEvent {
 
 class FeedbackPromptNotifier extends Notifier<FeedbackPromptEvent?> {
   @override
-  FeedbackPromptEvent? build() => null;
+  FeedbackPromptEvent? build() {
+    ref.listen(currentUserIdProvider, (previous, next) {
+      if (previous != next) dismiss();
+    });
+    return null;
+  }
 
   void triggerEvent({
     required String sessionId,
@@ -122,6 +128,9 @@ class AdminFeedbackState {
 class AdminFeedbackNotifier extends Notifier<AdminFeedbackState> {
   @override
   AdminFeedbackState build() {
+    ref.listen(currentUserIdProvider, (previous, next) {
+      if (previous != next) state = const AdminFeedbackState();
+    });
     return const AdminFeedbackState();
   }
 

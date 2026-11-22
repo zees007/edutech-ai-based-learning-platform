@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'auth_provider.dart';
 
 /// Centralized gamification levels and helpers matching backend gamification.py
 class GamificationUtils {
@@ -97,6 +98,9 @@ class GamificationEventNotifier extends Notifier<GamificationEvent?> {
 
   @override
   GamificationEvent? build() {
+    ref.listen(currentUserIdProvider, (previous, next) {
+      if (previous != next) dismiss();
+    });
     return null;
   }
 
@@ -172,7 +176,12 @@ class JourneyCompleteEvent {
 
 class JourneyCompleteNotifier extends Notifier<JourneyCompleteEvent?> {
   @override
-  JourneyCompleteEvent? build() => null;
+  JourneyCompleteEvent? build() {
+    ref.listen(currentUserIdProvider, (previous, next) {
+      if (previous != next) dismiss();
+    });
+    return null;
+  }
 
   void triggerEvent({
     required String sessionId,

@@ -72,10 +72,10 @@ class LearnerStandingHud extends ConsumerWidget {
       final unlockedList = achievements.where((a) => a.unlocked).toList();
 
       String? highestId;
-      String highestTitle = 'Diamond Trophy';
-      String? nextId = 'diamond';
-      String? nextTitle = 'Diamond Trophy';
-      double fraction = 0.5;
+      String highestTitle = 'Unranked';
+      String? nextId = 'bronze';
+      String? nextTitle = 'Bronze Trophy';
+      double fraction = 0.0;
 
       const order = [
         'diamond',
@@ -107,7 +107,7 @@ class LearnerStandingHud extends ConsumerWidget {
 
       return _buildHudContent(
         context,
-        highestTrophyId: highestId ?? 'diamond',
+        highestTrophyId: highestId,
         highestTrophyTitle: highestTitle,
         nextTrophyId: nextId,
         nextTrophyTitle: nextTitle,
@@ -116,7 +116,7 @@ class LearnerStandingHud extends ConsumerWidget {
         totalXp: fallbackSummary!.totalXp,
         currentStreak: fallbackSummary!.currentStreak,
         longestStreak: fallbackSummary!.longestStreak,
-        unlockedTrophies: unlockedList.isNotEmpty ? unlockedList.length : 3,
+        unlockedTrophies: unlockedList.length,
         totalTrophies: achievements.isNotEmpty ? achievements.length : 6,
         achievements: achievements,
         isDark: isDark,
@@ -1277,27 +1277,29 @@ class _HoverableTrophyCrestState extends State<_HoverableTrophyCrest> {
             scale: _isHovered ? 1.25 : 1.0,
             duration: const Duration(milliseconds: 250),
             curve: Curves.easeOutBack,
-            child: widget.trophyStyle.assetPath != null
-                ? Image.asset(
-                    widget.trophyStyle.assetPath!,
-                    width: isCompact ? 32 : 40,
-                    height: isCompact ? 32 : 40,
-                    fit: BoxFit.contain,
-                    errorBuilder: (_, _, _) => Icon(
+            child: ClipOval(
+              child: widget.trophyStyle.assetPath != null
+                  ? Image.asset(
+                      widget.trophyStyle.assetPath!,
+                      width: isCompact ? 32 : 40,
+                      height: isCompact ? 32 : 40,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, _, _) => Icon(
+                        widget.isDiamond
+                            ? Icons.diamond_rounded
+                            : widget.trophyStyle.icon,
+                        color: isDark ? Colors.white : glowColor,
+                        size: isCompact ? 19 : 24,
+                      ),
+                    )
+                  : Icon(
                       widget.isDiamond
                           ? Icons.diamond_rounded
                           : widget.trophyStyle.icon,
                       color: isDark ? Colors.white : glowColor,
                       size: isCompact ? 19 : 24,
                     ),
-                  )
-                : Icon(
-                    widget.isDiamond
-                        ? Icons.diamond_rounded
-                        : widget.trophyStyle.icon,
-                    color: isDark ? Colors.white : glowColor,
-                    size: isCompact ? 19 : 24,
-                  ),
+            ),
           ),
         ),
       ),

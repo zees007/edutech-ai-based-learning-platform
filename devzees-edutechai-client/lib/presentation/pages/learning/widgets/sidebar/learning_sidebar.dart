@@ -2,7 +2,6 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../../../presentation/widgets/gradient_button.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/text_styles.dart';
@@ -201,10 +200,6 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
         ),
       ],
     );
-  }
-
-  Widget _buildDashboardButton({required bool expanded}) {
-    return _buildNavTabs(expanded: expanded);
   }
 
   Widget _buildHistoryHeader() {
@@ -590,7 +585,6 @@ class _SidebarNavTab extends StatefulWidget {
   final bool isSelected;
   final bool expanded;
   final VoidCallback onTap;
-  final String? badgeText;
 
   const _SidebarNavTab({
     required this.icon,
@@ -598,7 +592,6 @@ class _SidebarNavTab extends StatefulWidget {
     required this.isSelected,
     required this.expanded,
     required this.onTap,
-    this.badgeText,
   });
 
   @override
@@ -745,26 +738,6 @@ class _SidebarNavTabState extends State<_SidebarNavTab> {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                if (widget.badgeText != null) ...[
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(
-                        color: AppColors.primary.withValues(alpha: 0.35),
-                      ),
-                    ),
-                    child: Text(
-                      widget.badgeText!,
-                      style: GoogleFonts.inter(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                  ),
-                ],
               ],
             ),
           ),
