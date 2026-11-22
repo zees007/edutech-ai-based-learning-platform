@@ -89,30 +89,22 @@ class MobileLearningTopBar extends ConsumerWidget
                       height: 28,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF1F6CFA).withValues(
-                          alpha: isDark ? 0.22 : 0.12,
-                        ),
+                        color: const Color(0xFF1F6CFA).withValues(alpha: 0.22),
                         borderRadius: BorderRadius.circular(7),
                         border: Border.all(
-                          color: isDark
-                              ? const Color(0xFF60A5FA).withValues(alpha: 0.55)
-                              : const Color(0xFF2563EB).withValues(alpha: 0.35),
+                          color: const Color(0xFF60A5FA).withValues(alpha: 0.55),
                           width: 1.0,
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF1F6CFA).withValues(
-                              alpha: isDark ? 0.35 : 0.15,
-                            ),
+                            color: const Color(0xFF1F6CFA).withValues(alpha: 0.35),
                             blurRadius: 5,
                           ),
                         ],
                       ),
-                      child: Icon(
+                      child: const Icon(
                         Icons.auto_graph_rounded,
-                        color: isDark
-                            ? const Color(0xFF38BDF8)
-                            : const Color(0xFF1D4ED8),
+                        color: Color(0xFF38BDF8),
                         size: 14,
                       ),
                     ),
@@ -120,14 +112,7 @@ class MobileLearningTopBar extends ConsumerWidget
                     Flexible(
                       child: GradientText(
                         'Growth & Mastery Analytics',
-                        gradient: isDark
-                            ? AppColors.primaryGradient
-                            : const LinearGradient(
-                                colors: [
-                                  Color(0xFF4F46E5),
-                                  Color(0xFF7C3AED),
-                                ],
-                              ),
+                        gradient: AppColors.primaryGradient,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: AppTextStyles.h4.copyWith(

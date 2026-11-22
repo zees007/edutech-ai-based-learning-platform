@@ -873,34 +873,37 @@ class LearnerStandingHud extends ConsumerWidget {
           mainAxisSize: isMobile ? MainAxisSize.max : MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Glowing Golden Trophy Cup
+            // Glowing Golden Trophy Cup Squircle Badge (Matching Total XP & Streak)
             Container(
-              width: isCompact ? 26 : 32,
-              height: isCompact ? 26 : 32,
+              width: isCompact ? 26 : 30,
+              height: isCompact ? 26 : 30,
               decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: isDark ? null : const Color(0xFFFEF3C7),
-                gradient: isDark
-                    ? RadialGradient(
-                        colors: [
-                          const Color(0xFFF59E0B).withValues(alpha: 0.30),
-                          const Color(0xFFF59E0B).withValues(alpha: 0.10),
-                          Colors.transparent,
-                        ],
-                      )
-                    : null,
-                border: isDark
-                    ? null
-                    : Border.all(
-                        color: const Color(0xFFF59E0B).withValues(alpha: 0.40),
-                        width: 1.0,
-                      ),
+                color: isDark
+                    ? const Color(0xFFF59E0B).withValues(alpha: 0.18)
+                    : const Color(0xFFD97706).withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: isDark
+                      ? const Color(0xFFF59E0B).withValues(alpha: 0.55)
+                      : const Color(0xFFD97706).withValues(alpha: 0.40),
+                  width: 1.0,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: isDark
+                        ? const Color(0xFFF59E0B).withValues(alpha: 0.35)
+                        : const Color(0xFFD97706).withValues(alpha: 0.18),
+                    blurRadius: 6,
+                  ),
+                ],
               ),
               child: Center(
                 child: Icon(
                   Icons.emoji_events_rounded,
-                  color: isDark ? const Color(0xFFF59E0B) : const Color(0xFFD97706),
-                  size: isCompact ? 17 : 21,
+                  color: isDark
+                      ? const Color(0xFFF59E0B)
+                      : const Color(0xFFD97706),
+                  size: isCompact ? 14 : 16,
                 ),
               ),
             ),

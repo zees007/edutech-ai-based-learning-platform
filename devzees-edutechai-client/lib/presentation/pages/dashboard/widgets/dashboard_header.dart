@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/dashboard_provider.dart';
@@ -291,26 +292,20 @@ class DashboardHeader extends ConsumerWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // Glowing Squircle Accent Badge
+        // Glowing Squircle Accent Badge (Identical in Dark and Light Theme)
         Container(
           width: isMobile ? 30 : (isCompact ? 32 : 36),
           height: isMobile ? 30 : (isCompact ? 32 : 36),
           decoration: BoxDecoration(
-            color: const Color(0xFF1F6CFA).withValues(
-              alpha: isDark ? 0.22 : 0.12,
-            ),
+            color: const Color(0xFF1F6CFA).withValues(alpha: 0.22),
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: isDark
-                  ? const Color(0xFF60A5FA).withValues(alpha: 0.55)
-                  : const Color(0xFF2563EB).withValues(alpha: 0.35),
+              color: const Color(0xFF60A5FA).withValues(alpha: 0.55),
               width: 1.0,
             ),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF1F6CFA).withValues(
-                  alpha: isDark ? 0.35 : 0.15,
-                ),
+                color: const Color(0xFF1F6CFA).withValues(alpha: 0.35),
                 blurRadius: 6,
               ),
             ],
@@ -318,7 +313,7 @@ class DashboardHeader extends ConsumerWidget {
           child: Center(
             child: Icon(
               Icons.auto_graph_rounded,
-              color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF1D4ED8),
+              color: const Color(0xFF38BDF8),
               size: isMobile ? 15 : (isCompact ? 16 : 18),
             ),
           ),
@@ -331,11 +326,7 @@ class DashboardHeader extends ConsumerWidget {
                 'Growth & Mastery Analytics\nPerformance metrics, concept mastery, and quiz comprehension',
             child: GradientText(
               'Growth & Mastery Analytics',
-              gradient: isDark
-                  ? AppColors.primaryGradient
-                  : const LinearGradient(
-                      colors: [Color(0xFF4F46E5), Color(0xFF7C3AED)],
-                    ),
+              gradient: AppColors.primaryGradient,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: AppTextStyles.h4.copyWith(
@@ -462,7 +453,200 @@ class _DashboardDateDropdown extends StatefulWidget {
 }
 
 class _DashboardDateDropdownState extends State<_DashboardDateDropdown> {
+  final GlobalKey _dropdownKey = GlobalKey();
   bool _isHovered = false;
+
+  void _showFilterDialog(BuildContext context, bool isDark) {
+    final RenderBox? renderBox =
+        _dropdownKey.currentContext?.findRenderObject() as RenderBox?;
+    if (renderBox == null) return;
+
+    final size = renderBox.size;
+    final offset = renderBox.localToGlobal(Offset.zero);
+
+    showMenu<String>(
+      context: context,
+      color: Colors.transparent,
+      elevation: 0,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(16)),
+        side: BorderSide.none,
+      ),
+      position: RelativeRect.fromLTRB(
+        offset.dx,
+        offset.dy + size.height + 4,
+        MediaQuery.of(context).size.width - offset.dx - size.width,
+        0,
+      ),
+      items: [
+        PopupMenuItem<String>(
+          enabled: false,
+          padding: EdgeInsets.zero,
+          child: IconTheme(
+            data: const IconThemeData(opacity: 1.0),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+                child: Container(
+                  width: 175,
+                  padding: const EdgeInsets.symmetric(vertical: 6),
+                  decoration: BoxDecoration(
+                    color: AppColors.popoverBackground,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: AppColors.glassBorder,
+                      width: 1.0,
+                    ),
+                    boxShadow: isDark
+                        ? [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.4),
+                              blurRadius: 20,
+                              offset: const Offset(0, 6),
+                            ),
+                          ]
+                        : const [
+                            BoxShadow(
+                              color: Color(0x18000000),
+                              blurRadius: 20,
+                              offset: Offset(0, 8),
+                              spreadRadius: 0,
+                            ),
+                            BoxShadow(
+                              color: Color(0x0A000000),
+                              blurRadius: 6,
+                              offset: Offset(0, 2),
+                              spreadRadius: 0,
+                            ),
+                          ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _buildDialogItem(context, '7d', 'Last 7 Days', isDark),
+                      _buildDialogItem(context, '30d', 'Last 30 Days', isDark),
+                      _buildDialogItem(context, '90d', 'Last 90 Days', isDark),
+                      _buildDialogItem(context, '1y', 'Last 1 Year', isDark),
+                      _buildDialogItem(context, 'all', 'All Time', isDark),
+                      _buildDialogItem(
+                        context,
+                        'custom',
+                        'Custom Range...',
+                        isDark,
+                        onTapOverride: () {
+                          widget.onSelectCustomRange();
+                        },
+                      ),
+                      if (widget.activeRange == 'custom')
+                        _buildDialogItem(
+                          context,
+                          'reset',
+                          'Reset to 30 Days',
+                          isDark,
+                          onTapOverride: () {
+                            widget.onResetCustomRange();
+                          },
+                          isDestructive: true,
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDialogItem(
+    BuildContext context,
+    String value,
+    String label,
+    bool isDark, {
+    VoidCallback? onTapOverride,
+    bool isDestructive = false,
+  }) {
+    final isSelected = value == widget.activeRange;
+    bool isItemHovered = false;
+    final primaryAccent = isDark ? AppColors.primary : AppColors.purple;
+
+    return StatefulBuilder(
+      builder: (context, setItemState) {
+        final Color bg = isSelected
+            ? primaryAccent.withValues(alpha: isDark ? 0.20 : 0.12)
+            : (isItemHovered
+                ? (isDark
+                    ? Colors.white.withValues(alpha: 0.08)
+                    : primaryAccent.withValues(alpha: 0.08))
+                : Colors.transparent);
+
+        final Color targetTextColor = isDestructive
+            ? const Color(0xFFEF4444)
+            : (isSelected
+                ? primaryAccent
+                : (isItemHovered
+                    ? (isDark ? AppColors.textPrimary : primaryAccent)
+                    : (isDark
+                        ? const Color(0xFFCBD5E1)
+                        : const Color(0xFF334155))));
+
+        return MouseRegion(
+          onEnter: (_) => setItemState(() => isItemHovered = true),
+          onExit: (_) => setItemState(() => isItemHovered = false),
+          child: InkWell(
+            onTap: () {
+              Navigator.of(context).pop();
+              if (onTapOverride != null) {
+                onTapOverride();
+              } else {
+                widget.onRangeChanged(value);
+              }
+            },
+            borderRadius: BorderRadius.circular(8),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              curve: Curves.easeOut,
+              margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+              decoration: BoxDecoration(
+                color: bg,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: AnimatedDefaultTextStyle(
+                      duration: const Duration(milliseconds: 150),
+                      curve: Curves.easeOut,
+                      style: AppTextStyles.label.copyWith(
+                        color: targetTextColor,
+                        fontWeight: (isSelected || isItemHovered)
+                            ? FontWeight.w600
+                            : FontWeight.w500,
+                      ),
+                      child: Text(
+                        label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ),
+                  if (isSelected)
+                    Icon(
+                      Icons.check_rounded,
+                      color: primaryAccent,
+                      size: 16,
+                    ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -484,272 +668,84 @@ class _DashboardDateDropdownState extends State<_DashboardDateDropdown> {
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
       cursor: SystemMouseCursors.click,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeOutCubic,
-        height: 32,
-        padding: const EdgeInsets.symmetric(horizontal: 10),
-        decoration: BoxDecoration(
-          color: isDark
-              ? (_isHovered
-                  ? primaryBlue.withValues(alpha: 0.16)
-                  : primaryBlue.withValues(alpha: 0.08))
-              : (_isHovered
-                  ? purple.withValues(alpha: 0.10)
-                  : purple.withValues(alpha: 0.05)),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: borderColor,
-            width: 1.0,
-          ),
-          boxShadow: [
-            if (_isHovered)
-              BoxShadow(
-                color: (isDark ? primaryBlue : purple).withValues(
-                  alpha: isDark ? 0.30 : 0.18,
-                ),
-                blurRadius: 8,
-                spreadRadius: 0.5,
-                offset: const Offset(0, 1),
-              ),
-          ],
-        ),
-        child: Theme(
-          data: Theme.of(context).copyWith(
-            hoverColor: (isDark ? primaryBlue : purple).withValues(alpha: 0.12),
-            splashColor: (isDark ? primaryBlue : purple).withValues(alpha: 0.20),
-            highlightColor: Colors.transparent,
-          ),
-          child: PopupMenuButton<String>(
-            tooltip: 'Select date filter',
-            offset: const Offset(0, 38),
-            position: PopupMenuPosition.under,
-            elevation: 12,
-            shadowColor: Colors.black.withValues(alpha: 0.40),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-              side: BorderSide(
-                color: borderColor,
-                width: 1.0,
-              ),
+      child: GestureDetector(
+        key: _dropdownKey,
+        onTap: () => _showFilterDialog(context, isDark),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOutCubic,
+          height: 32,
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          decoration: BoxDecoration(
+            color: isDark
+                ? (_isHovered
+                    ? primaryBlue.withValues(alpha: 0.16)
+                    : primaryBlue.withValues(alpha: 0.08))
+                : (_isHovered
+                    ? purple.withValues(alpha: 0.10)
+                    : purple.withValues(alpha: 0.05)),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: borderColor,
+              width: 1.0,
             ),
-            color: isDark ? const Color(0xFF0C0D1A) : Colors.white,
-            onSelected: (value) {
-              if (value == 'custom') {
-                widget.onSelectCustomRange();
-              } else {
-                widget.onRangeChanged(value);
-              }
-            },
-            itemBuilder: (context) => [
-              _buildMenuItem(
-                context: context,
-                value: '7d',
-                icon: Icons.calendar_view_week_rounded,
-                label: 'Last 7 Days',
-                subLabel: 'Recent momentum',
-                isSelected: widget.activeRange == '7d',
-                isDark: isDark,
+            boxShadow: [
+              if (_isHovered)
+                BoxShadow(
+                  color: (isDark ? primaryBlue : purple).withValues(
+                    alpha: isDark ? 0.30 : 0.18,
+                  ),
+                  blurRadius: 8,
+                  spreadRadius: 0.5,
+                  offset: const Offset(0, 1),
+                ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize:
+                widget.fullWidth ? MainAxisSize.max : MainAxisSize.min,
+            mainAxisAlignment: widget.fullWidth
+                ? MainAxisAlignment.spaceBetween
+                : MainAxisAlignment.start,
+            children: [
+              Container(
+                width: 18,
+                height: 18,
+                decoration: BoxDecoration(
+                  color: (isDark ? primaryBlue : purple).withValues(
+                    alpha: isDark ? 0.22 : 0.14,
+                  ),
+                  borderRadius: BorderRadius.circular(5),
+                ),
+                child: Center(
+                  child: Icon(
+                    Icons.calendar_today_rounded,
+                    size: 10.5,
+                    color: iconColor,
+                  ),
+                ),
               ),
-              _buildMenuItem(
-                context: context,
-                value: '30d',
-                icon: Icons.calendar_month_rounded,
-                label: 'Last 30 Days',
-                subLabel: 'Standard monthly view',
-                isSelected: widget.activeRange == '30d',
-                isDark: isDark,
+              const SizedBox(width: 6),
+              Text(
+                widget.displayLabel,
+                style: AppTextStyles.subtitle2.copyWith(
+                  color: isDark ? Colors.white : const Color(0xFF0F172A),
+                  fontSize: widget.isMobile ? 11.0 : 12.0,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.2,
+                ),
               ),
-              _buildMenuItem(
-                context: context,
-                value: '90d',
-                icon: Icons.date_range_rounded,
-                label: 'Last 90 Days',
-                subLabel: 'Quarterly progress',
-                isSelected: widget.activeRange == '90d',
-                isDark: isDark,
-              ),
-              _buildMenuItem(
-                context: context,
-                value: '1y',
-                icon: Icons.history_rounded,
-                label: 'Last 1 Year',
-                subLabel: 'Annual retrospective',
-                isSelected: widget.activeRange == '1y',
-                isDark: isDark,
-              ),
-              _buildMenuItem(
-                context: context,
-                value: 'all',
-                icon: Icons.all_inclusive_rounded,
-                label: 'All Time',
-                subLabel: 'Complete learning history',
-                isSelected: widget.activeRange == 'all',
-                isDark: isDark,
-              ),
-              const PopupMenuDivider(height: 1),
-              _buildMenuItem(
-                context: context,
-                value: 'custom',
-                icon: Icons.tune_rounded,
-                label: 'Custom Range...',
-                subLabel: widget.activeRange == 'custom'
-                    ? widget.displayLabel
-                    : 'Choose start & end dates',
-                isSelected: widget.activeRange == 'custom',
-                isDark: isDark,
-                trailing: widget.activeRange == 'custom'
-                    ? IconButton(
-                        icon: const Icon(
-                          Icons.close_rounded,
-                          size: 15,
-                          color: AppColors.accentRose,
-                        ),
-                        tooltip: 'Reset to 30 days',
-                        onPressed: () {
-                          Navigator.pop(context);
-                          widget.onResetCustomRange();
-                        },
-                      )
-                    : null,
+              const SizedBox(width: 4),
+              Icon(
+                Icons.keyboard_arrow_down_rounded,
+                size: 14,
+                color: isDark
+                    ? const Color(0xFF94A3B8)
+                    : const Color(0xFF64748B),
               ),
             ],
-            child: Row(
-              mainAxisSize:
-                  widget.fullWidth ? MainAxisSize.max : MainAxisSize.min,
-              mainAxisAlignment: widget.fullWidth
-                  ? MainAxisAlignment.spaceBetween
-                  : MainAxisAlignment.start,
-              children: [
-                Container(
-                  width: 18,
-                  height: 18,
-                  decoration: BoxDecoration(
-                    color: (isDark ? primaryBlue : purple).withValues(
-                      alpha: isDark ? 0.22 : 0.14,
-                    ),
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                  child: Center(
-                    child: Icon(
-                      Icons.calendar_today_rounded,
-                      size: 10.5,
-                      color: iconColor,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  widget.displayLabel,
-                  style: AppTextStyles.subtitle2.copyWith(
-                    color: isDark ? Colors.white : const Color(0xFF0F172A),
-                    fontSize: widget.isMobile ? 11.0 : 12.0,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: -0.2,
-                  ),
-                ),
-                const SizedBox(width: 4),
-                Icon(
-                  Icons.keyboard_arrow_down_rounded,
-                  size: 14,
-                  color: isDark
-                      ? const Color(0xFF94A3B8)
-                      : const Color(0xFF64748B),
-                ),
-              ],
-            ),
           ),
         ),
-      ),
-    );
-  }
-
-  PopupMenuItem<String> _buildMenuItem({
-    required BuildContext context,
-    required String value,
-    required IconData icon,
-    required String label,
-    required String subLabel,
-    required bool isSelected,
-    required bool isDark,
-    Widget? trailing,
-  }) {
-    final primaryBlue = AppColors.primary;
-    final purple = AppColors.purple;
-    final activeColor = isDark ? primaryBlue : purple;
-
-    return PopupMenuItem<String>(
-      value: value,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      height: 44,
-      child: Row(
-        children: [
-          Container(
-            width: 26,
-            height: 26,
-            decoration: BoxDecoration(
-              color: isSelected
-                  ? activeColor.withValues(alpha: isDark ? 0.35 : 0.20)
-                  : (isDark
-                      ? const Color(0xFF141529)
-                      : const Color(0xFFF1F5F9)),
-              borderRadius: BorderRadius.circular(6),
-              border: Border.all(
-                color: isSelected
-                    ? activeColor.withValues(alpha: 0.60)
-                    : Colors.transparent,
-                width: 1.0,
-              ),
-            ),
-            child: Center(
-              child: Icon(
-                icon,
-                size: 13,
-                color: isSelected
-                    ? activeColor
-                    : (isDark
-                        ? const Color(0xFF94A3B8)
-                        : const Color(0xFF64748B)),
-              ),
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  label,
-                  style: AppTextStyles.body2.copyWith(
-                    color: isSelected
-                        ? activeColor
-                        : (isDark ? Colors.white : const Color(0xFF0F172A)),
-                    fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                    fontSize: 12.5,
-                  ),
-                ),
-                Text(
-                  subLabel,
-                  style: AppTextStyles.caption.copyWith(
-                    color: isDark
-                        ? const Color(0xFF64748B)
-                        : const Color(0xFF94A3B8),
-                    fontSize: 10.0,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          if (trailing != null)
-            trailing
-          else if (isSelected)
-            Icon(
-              Icons.check_rounded,
-              color: activeColor,
-              size: 15,
-            ),
-        ],
       ),
     );
   }
