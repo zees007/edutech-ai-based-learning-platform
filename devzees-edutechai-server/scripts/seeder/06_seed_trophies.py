@@ -248,20 +248,23 @@ async def seed_user_trophies(target_level: int, email: str = "ultra@gmail.com") 
             # Build steps, step progress, and quiz results
             steps_obj: list[MilestoneStep] = []
             session_quiz_scores: dict[int, float] = {}
+            step_base_xp = session_xp // steps_per_sess
+            step_rem_xp = session_xp % steps_per_sess
 
             for st in range(steps_per_sess):
                 step_time = session_timestamp - timedelta(minutes=5 * (steps_per_sess - st))
+                this_step_xp = step_base_xp + (step_rem_xp if st == 0 else 0)
 
                 # Allocate perfect quiz (1.0) until needed quota is met, else passing 0.67
                 if perfect_quizzes_assigned < needed_perfect_quizzes:
                     q_score = 1.0
                     correct_cnt = 3
-                    step_xp = 90
+                    step_quiz_xp = 90
                     perfect_quizzes_assigned += 1
                 else:
                     q_score = 0.67
                     correct_cnt = 2
-                    step_xp = 40
+                    step_quiz_xp = 40
 
                 session_quiz_scores[st] = q_score
 
@@ -272,6 +275,7 @@ async def seed_user_trophies(target_level: int, email: str = "ultra@gmail.com") 
                     status="complete",
                     quiz_score=q_score,
                     completed_at=step_time,
+                    xp_earned=this_step_xp,
                 )
                 db.add(step_prog)
 
@@ -284,12 +288,13 @@ async def seed_user_trophies(target_level: int, email: str = "ultra@gmail.com") 
                         status=StepStatus.COMPLETE,
                         estimated_minutes=5,
                         tutor_explanation=f"A structured conceptual overview and exploration of {topic}.",
+                        xp_earned=this_step_xp,
                         quiz_result=QuizResult(
                             step_index=st,
                             total_questions=3,
                             correct_count=correct_cnt,
                             score=q_score,
-                            xp_earned=step_xp,
+                            xp_earned=step_quiz_xp,
                             feedback=[],
                         ),
                     )

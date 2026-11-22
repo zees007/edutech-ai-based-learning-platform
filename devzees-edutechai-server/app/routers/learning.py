@@ -384,12 +384,20 @@ async def complete_step(
 
     memory.xp_earned += awarded_xp
 
+    # Attribute step completion XP to milestone step
+    step_total_xp = awarded_xp
+    if 0 <= step_index < len(memory.steps):
+        step_obj = memory.steps[step_index]
+        step_obj.xp_earned = getattr(step_obj, "xp_earned", 0) + awarded_xp
+        step_total_xp = step_obj.xp_earned
+
     try:
         await session_manager.update_session(memory)
         await session_manager.save_step_progress(
             session_id=session_id,
             step_index=step_index,
             status="complete",
+            xp_earned=step_total_xp,
         )
         AnalyticsService.invalidate_standing_cache(current_user.id)
     except Exception as e:

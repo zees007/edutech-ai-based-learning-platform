@@ -153,6 +153,10 @@ class MilestoneStep(BaseModel):
         default=0,
         description="Number of follow-up questions asked for this step.",
     )
+    xp_earned: int = Field(
+        default=0,
+        description="Total XP earned for this step (completion + quiz).",
+    )
 
 
 # ═══════════════════════════════════════════════════════════════════

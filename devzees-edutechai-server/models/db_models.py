@@ -338,6 +338,7 @@ class StepProgress(Base):
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="pending")
     quiz_score: Mapped[float | None] = mapped_column(Float, nullable=True)
     completed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    xp_earned: Mapped[int] = mapped_column(Integer, default=0, server_default="0", nullable=False)
 
     __table_args__ = (
         Index("ix_step_progress_session_status", "session_id", "status"),

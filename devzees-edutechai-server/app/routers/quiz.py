@@ -101,11 +101,14 @@ async def submit_quiz(
     # Persist quiz score & user answers directly onto the MilestoneStep so that
     # when the session is re-serialized to state_json (and later re-fetched by
     # the client), the step carries its quiz results and the user's selections.
+    step_total_xp = xp_earned
     if 0 <= submission.step_index < len(memory.steps):
         step_obj = memory.steps[submission.step_index]
         step_obj.quiz_score = score
         step_obj.user_answers = submission.answers
         step_obj.user_full_answers = submission.answers
+        step_obj.xp_earned = getattr(step_obj, "xp_earned", 0) + xp_earned
+        step_total_xp = step_obj.xp_earned
 
     # Persist session & step progress to Supabase DB
     try:
@@ -115,6 +118,7 @@ async def submit_quiz(
             step_index=submission.step_index,
             status="complete",
             quiz_score=score,
+            xp_earned=step_total_xp,
         )
         from services.analytics_service import AnalyticsService
         AnalyticsService.invalidate_standing_cache(current_user.id)

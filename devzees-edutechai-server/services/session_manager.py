@@ -93,6 +93,7 @@ class SessionManager:
                     status="in_progress" if i == 0 else "pending",
                     completed_at=None,
                     quiz_score=None,
+                    xp_earned=0,
                 )
                 db.add(sp)
 
@@ -249,6 +250,8 @@ class SessionManager:
                     sp_record.status = status_val
                     if score is not None:
                         sp_record.quiz_score = score
+                    if hasattr(step, "xp_earned") and step.xp_earned:
+                        sp_record.xp_earned = step.xp_earned
                     if status_val == "complete" and not sp_record.completed_at:
                         sp_record.completed_at = datetime.utcnow()
                 else:
@@ -257,6 +260,7 @@ class SessionManager:
                         step_index=i,
                         status=status_val,
                         quiz_score=score,
+                        xp_earned=getattr(step, "xp_earned", 0) or 0,
                         completed_at=datetime.utcnow() if status_val == "complete" else None,
                     )
                     db.add(sp_record)
@@ -392,6 +396,7 @@ class SessionManager:
         step_index: int,
         status: str,
         quiz_score: float | None = None,
+        xp_earned: int | None = None,
     ) -> None:
         """Record progress for a specific step."""
         async with get_db_session() as db:
@@ -407,6 +412,8 @@ class SessionManager:
                 record.status = status
                 if quiz_score is not None:
                     record.quiz_score = quiz_score
+                if xp_earned is not None:
+                    record.xp_earned = xp_earned
                 if status == "complete" and not record.completed_at:
                     record.completed_at = datetime.utcnow()
             else:
@@ -415,6 +422,7 @@ class SessionManager:
                     step_index=step_index,
                     status=status,
                     quiz_score=quiz_score,
+                    xp_earned=xp_earned or 0,
                     completed_at=datetime.utcnow() if status == "complete" else None,
                 )
                 db.add(record)
