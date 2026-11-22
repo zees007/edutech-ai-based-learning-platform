@@ -64,26 +64,29 @@ class MobileDashboardTopBar extends ConsumerWidget
               // ─── TIER 1: Redesigned Learner Standing HUD (Option 1 Sleek) ───
               LearnerStandingHud(
                 isTopBar: true,
+                showBottomBorder: false,
                 showHamburgerOnMobile: true,
                 fallbackSummary: fallbackSummary,
                 fallbackAchievements: fallbackAchievements,
                 trailing: const ThemeToggleButton(size: 28),
               ),
 
-              // ─── TIER 2: Analytics Context & Date Filter Row (Height: 46px) ───
+              // ─── TIER 2: Analytics Context & Date Filter Row (Height: 44px) ───
               Container(
-                height: 46,
+                height: 44,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 10,
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
                   color: isDark
-                      ? const Color(0xFF141624).withValues(alpha: 0.70)
-                      : const Color(0xFFF1F5F9).withValues(alpha: 0.70),
+                      ? const Color(0xFF0C0D1A)
+                      : context.appColors.topBarBackground,
                   border: Border(
-                    top: BorderSide(
-                      color: context.appColors.border.withValues(alpha: 0.40),
+                    bottom: BorderSide(
+                      color: isDark
+                          ? context.appColors.scaffoldBackground
+                          : const Color(0xFFF1F5F9),
                       width: 1.0,
                     ),
                   ),
@@ -91,29 +94,38 @@ class MobileDashboardTopBar extends ConsumerWidget
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // Icon Box + Gradient Title
+                    // Glowing Squircle Accent Badge
                     Container(
                       width: 28,
                       height: 28,
-                      alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: isDark
-                            ? const Color(0xFF191B2B)
-                            : const Color(0xFFF1F5F9),
-                        borderRadius: BorderRadius.circular(6),
+                        color: const Color(0xFF1F6CFA).withValues(
+                          alpha: isDark ? 0.22 : 0.12,
+                        ),
+                        borderRadius: BorderRadius.circular(7),
                         border: Border.all(
                           color: isDark
-                              ? const Color(0x1FFFFFFF)
-                              : const Color(0xFFE2E8F0),
+                              ? const Color(0xFF60A5FA).withValues(alpha: 0.55)
+                              : const Color(0xFF2563EB).withValues(alpha: 0.35),
                           width: 1.0,
                         ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF1F6CFA).withValues(
+                              alpha: isDark ? 0.35 : 0.15,
+                            ),
+                            blurRadius: 5,
+                          ),
+                        ],
                       ),
-                      child: Icon(
-                        Icons.auto_graph_rounded,
-                        color: isDark
-                            ? const Color(0xFF60A5FA)
-                            : const Color(0xFF1D4ED8),
-                        size: 15,
+                      child: Center(
+                        child: Icon(
+                          Icons.auto_graph_rounded,
+                          color: isDark
+                              ? const Color(0xFF38BDF8)
+                              : const Color(0xFF1D4ED8),
+                          size: 14.5,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -123,13 +135,6 @@ class MobileDashboardTopBar extends ConsumerWidget
                             'Growth & Mastery Analytics\nTrack study velocity, quiz comprehension, and skill mastery',
                         child: GradientText(
                           'Growth & Mastery Analytics',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 13.5,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: -0.3,
-                          ),
                           gradient: isDark
                               ? AppColors.primaryGradient
                               : const LinearGradient(
@@ -138,6 +143,13 @@ class MobileDashboardTopBar extends ConsumerWidget
                                     Color(0xFF7C3AED),
                                   ],
                                 ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTextStyles.h4.copyWith(
+                            fontSize: 14.5,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.3,
+                          ),
                         ),
                       ),
                     ),
@@ -145,31 +157,16 @@ class MobileDashboardTopBar extends ConsumerWidget
 
                     // Date Filter Chip
                     _buildDateFilterChip(context, ref, activeRange, isDark),
-                    const SizedBox(width: 4),
+                    const SizedBox(width: 5),
 
-                    // Live Sync Refresh Button
+                    // Live Sync All Refresh Button
                     Tooltip(
                       message: isRefreshing
                           ? 'Syncing learning analytics...'
-                          : 'Sync & refresh analytics',
-                      child: IconButton(
-                        icon: isRefreshing
-                            ? const SizedBox(
-                                width: 14,
-                                height: 14,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: AppColors.primary,
-                                ),
-                              )
-                            : Icon(
-                                Icons.refresh_rounded,
-                                size: 18,
-                                color: isDark
-                                    ? const Color(0xFF94A3B8)
-                                    : const Color(0xFF64748B),
-                              ),
-                        onPressed: isRefreshing
+                          : 'Sync All: refresh learning analytics',
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(7),
+                        onTap: isRefreshing
                             ? null
                             : () {
                                 ref
@@ -177,11 +174,44 @@ class MobileDashboardTopBar extends ConsumerWidget
                                     .refresh();
                                 ref.read(dashboardProvider.notifier).refresh();
                               },
-                        constraints: const BoxConstraints(
-                          minWidth: 30,
-                          minHeight: 30,
+                        child: Container(
+                          height: 28,
+                          padding: const EdgeInsets.symmetric(horizontal: 7),
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? AppColors.primary.withValues(alpha: 0.12)
+                                : AppColors.purple.withValues(alpha: 0.08),
+                            borderRadius: BorderRadius.circular(7),
+                            border: Border.all(
+                              color: isDark
+                                  ? AppColors.primary.withValues(alpha: 0.60)
+                                  : AppColors.purple.withValues(alpha: 0.55),
+                              width: 1.0,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (isRefreshing)
+                                const SizedBox(
+                                  width: 12,
+                                  height: 12,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Color(0xFF22D3EE),
+                                  ),
+                                )
+                              else
+                                Icon(
+                                  Icons.sync_rounded,
+                                  size: 13,
+                                  color: isDark
+                                      ? AppColors.primary
+                                      : AppColors.purple,
+                                ),
+                            ],
+                          ),
                         ),
-                        padding: EdgeInsets.zero,
                       ),
                     ),
                   ],
@@ -261,7 +291,7 @@ class MobileDashboardTopBar extends ConsumerWidget
     return Theme(
       data: Theme.of(
         context,
-      ).copyWith(hoverColor: AppColors.primary.withValues(alpha: 0.12)),
+      ).copyWith(hoverColor: const Color(0xFF6B47EB).withValues(alpha: 0.12)),
       child: PopupMenuButton<String>(
         tooltip: 'Select date filter period (controls metrics below)',
         offset: const Offset(0, 36),
@@ -269,11 +299,13 @@ class MobileDashboardTopBar extends ConsumerWidget
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
           side: BorderSide(
-            color: isDark ? const Color(0x28FFFFFF) : const Color(0xFFE2E8F0),
+            color: isDark
+                ? const Color(0xFF6B47EB).withValues(alpha: 0.35)
+                : const Color(0xFFE2E8F0),
             width: 1.0,
           ),
         ),
-        color: isDark ? const Color(0xFF1E2138) : Colors.white,
+        color: isDark ? const Color(0xFF0C0D1A) : Colors.white,
         onSelected: (val) {
           if (val == 'custom') {
             _selectCustomDateRange(context, ref);
@@ -289,23 +321,29 @@ class MobileDashboardTopBar extends ConsumerWidget
           _buildPopupItem('all', 'All Time', activeRange, isDark),
         ],
         child: Container(
-          height: 27,
+          height: 28,
           padding: const EdgeInsets.symmetric(horizontal: 7),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1E2138) : Colors.white,
+            color: isDark
+                ? AppColors.primary.withValues(alpha: 0.12)
+                : AppColors.purple.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(7),
             border: Border.all(
-              color: AppColors.primary.withValues(alpha: 0.40),
+              color: isDark
+                  ? AppColors.primary.withValues(alpha: 0.60)
+                  : AppColors.purple.withValues(alpha: 0.55),
               width: 1.0,
             ),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
+              Icon(
                 Icons.calendar_today_rounded,
-                size: 11.0,
-                color: AppColors.primary,
+                size: 10.5,
+                color: isDark
+                    ? AppColors.primary
+                    : AppColors.purple,
               ),
               const SizedBox(width: 4.0),
               Text(

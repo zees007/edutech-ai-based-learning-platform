@@ -26,6 +26,7 @@ class LearnerStandingHud extends ConsumerWidget {
   final Widget? leading;
   final Widget? trailing;
   final bool showHamburgerOnMobile;
+  final bool showBottomBorder;
 
   const LearnerStandingHud({
     super.key,
@@ -35,6 +36,7 @@ class LearnerStandingHud extends ConsumerWidget {
     this.leading,
     this.trailing,
     this.showHamburgerOnMobile = true,
+    this.showBottomBorder = true,
   });
 
   @override
@@ -231,23 +233,27 @@ class LearnerStandingHud extends ConsumerWidget {
             color: isDark
                 ? const Color(0xFF0C0D1A)
                 : context.appColors.topBarBackground,
-            border: Border(
-              bottom: BorderSide(
-                color: isDark
-                    ? const Color(0xFF6B47EB).withValues(alpha: 0.28)
-                    : context.appColors.border.withValues(alpha: 0.65),
-                width: 1.0,
-              ),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: isDark
-                    ? const Color(0xFF6B47EB).withValues(alpha: 0.08)
-                    : Colors.black.withValues(alpha: 0.03),
-                blurRadius: 12,
-                offset: const Offset(0, 2),
-              ),
-            ],
+            border: showBottomBorder
+                ? Border(
+                    bottom: BorderSide(
+                      color: isDark
+                          ? const Color(0xFF6B47EB).withValues(alpha: 0.28)
+                          : context.appColors.border.withValues(alpha: 0.65),
+                      width: 1.0,
+                    ),
+                  )
+                : null,
+            boxShadow: showBottomBorder
+                ? [
+                    BoxShadow(
+                      color: isDark
+                          ? const Color(0xFF6B47EB).withValues(alpha: 0.08)
+                          : Colors.black.withValues(alpha: 0.03),
+                      blurRadius: 12,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : null,
           ),
           child: isDesktop
               ? _buildDesktopSingleRow(

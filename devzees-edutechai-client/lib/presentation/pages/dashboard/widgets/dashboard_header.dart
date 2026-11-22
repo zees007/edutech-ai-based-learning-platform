@@ -31,17 +31,6 @@ class DashboardHeader extends ConsumerWidget {
     this.fallbackAchievements,
   });
 
-  BoxDecoration _buildPillDecoration(BuildContext context) {
-    final isDark = context.isDarkMode;
-    return BoxDecoration(
-      color: isDark ? const Color(0xFF191B2B) : const Color(0xFFF1F5F9),
-      borderRadius: BorderRadius.circular(8),
-      border: Border.all(
-        color: isDark ? const Color(0x1FFFFFFF) : const Color(0xFFE2E8F0),
-        width: 1.0,
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -95,6 +84,7 @@ class DashboardHeader extends ConsumerWidget {
             // ─── TIER 1: Pinned Learner Standing Top Bar (With Theme Toggle at right) ───
             LearnerStandingHud(
               isTopBar: true,
+              showBottomBorder: false,
               fallbackSummary: fallbackSummary,
               fallbackAchievements: fallbackAchievements,
               trailing: const ThemeToggleButton(size: 30),
@@ -102,18 +92,22 @@ class DashboardHeader extends ConsumerWidget {
 
             // ─── TIER 2: Analytics Filter Sub-Bar (Directly below Tier 1) ───
             AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOutCubic,
+              duration: const Duration(milliseconds: 250),
+              curve: Curves.easeOutCubic,
               width: double.infinity,
               padding: EdgeInsets.symmetric(
-                horizontal: isMobile ? 16 : 24,
-                vertical: isMobile ? 8 : 9,
+                horizontal: isDesktop ? 16 : (isMobile ? 10 : 14),
+                vertical: isDesktop ? 8 : (isMobile ? 6 : 7),
               ),
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF131525) : const Color(0xFFF8FAFC),
+                color: isDark
+                    ? const Color(0xFF0C0D1A)
+                    : context.appColors.topBarBackground,
                 border: Border(
                   bottom: BorderSide(
-                    color: context.appColors.border.withValues(alpha: 0.7),
+                    color: isDark
+                        ? context.appColors.scaffoldBackground
+                        : const Color(0xFFF1F5F9),
                     width: 1.0,
                   ),
                 ),
@@ -125,6 +119,7 @@ class DashboardHeader extends ConsumerWidget {
                       activeRange: activeRange,
                       displayLabel: displayLabel,
                       isDark: isDark,
+                      isCompact: constraints.maxWidth < 1100,
                     )
                   : isMobile
                   ? _buildMobileSubBar(
@@ -155,16 +150,21 @@ class DashboardHeader extends ConsumerWidget {
     required String activeRange,
     required String displayLabel,
     required bool isDark,
+    bool isCompact = false,
   }) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         // Left: Context Block (Growth & Mastery Analytics) wrapped in Expanded
         Expanded(
-          child: _buildContextBlock(context: context, isMobile: false),
+          child: _buildContextBlock(
+            context: context,
+            isMobile: false,
+            isCompact: isCompact,
+          ),
         ),
-        const SizedBox(width: 16),
-        // Right: Date Dropdown + Refresh Button (Theme toggle is pinned above in Tier 1)
+        SizedBox(width: isCompact ? 8 : 12),
+        // Right: Date Dropdown + Sync All Button
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -184,6 +184,7 @@ class DashboardHeader extends ConsumerWidget {
             _DashboardRefreshButton(
               isRefreshing: isRefreshing,
               onRefresh: onRefresh,
+              isCompact: isCompact,
             ),
           ],
         ),
@@ -199,31 +200,34 @@ class DashboardHeader extends ConsumerWidget {
     required String displayLabel,
     required bool isDark,
   }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        _buildContextBlock(context: context, isMobile: false),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            _DashboardDateDropdown(
-              activeRange: activeRange,
-              displayLabel: displayLabel,
-              isMobile: false,
-              onRangeChanged: (val) {
-                ref.read(dashboardProvider.notifier).setTimeRange(val);
-              },
-              onSelectCustomRange: () => _selectCustomDateRange(context, ref),
-              onResetCustomRange: () {
-                ref.read(dashboardProvider.notifier).setTimeRange('30d');
-              },
-            ),
-            const SizedBox(width: 8),
-            _DashboardRefreshButton(
-              isRefreshing: isRefreshing,
-              onRefresh: onRefresh,
-            ),
-          ],
+        Expanded(
+          child: _buildContextBlock(
+            context: context,
+            isMobile: false,
+            isCompact: true,
+          ),
+        ),
+        const SizedBox(width: 8),
+        _DashboardDateDropdown(
+          activeRange: activeRange,
+          displayLabel: displayLabel,
+          isMobile: true,
+          onRangeChanged: (val) {
+            ref.read(dashboardProvider.notifier).setTimeRange(val);
+          },
+          onSelectCustomRange: () => _selectCustomDateRange(context, ref),
+          onResetCustomRange: () {
+            ref.read(dashboardProvider.notifier).setTimeRange('30d');
+          },
+        ),
+        const SizedBox(width: 6),
+        _DashboardRefreshButton(
+          isRefreshing: isRefreshing,
+          onRefresh: onRefresh,
+          isCompact: true,
         ),
       ],
     );
@@ -243,7 +247,11 @@ class DashboardHeader extends ConsumerWidget {
         Row(
           children: [
             Expanded(
-              child: _buildContextBlock(context: context, isMobile: true),
+              child: _buildContextBlock(
+                context: context,
+                isMobile: true,
+                isCompact: true,
+              ),
             ),
             const SizedBox(width: 6),
             _DashboardRefreshButton(
@@ -253,7 +261,7 @@ class DashboardHeader extends ConsumerWidget {
             ),
           ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         _DashboardDateDropdown(
           activeRange: activeRange,
           displayLabel: displayLabel,
@@ -275,6 +283,7 @@ class DashboardHeader extends ConsumerWidget {
   Widget _buildContextBlock({
     required BuildContext context,
     bool isMobile = false,
+    bool isCompact = false,
   }) {
     final isDark = context.isDarkMode;
 
@@ -282,22 +291,44 @@ class DashboardHeader extends ConsumerWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // Accent Icon Box
+        // Glowing Squircle Accent Badge
         Container(
-          width: isMobile ? 32 : 36,
-          height: isMobile ? 32 : 36,
-          alignment: Alignment.center,
-          decoration: _buildPillDecoration(context),
-          child: Icon(
-            Icons.auto_graph_rounded,
-            color: isDark ? const Color(0xFF60A5FA) : const Color(0xFF1D4ED8),
-            size: isMobile ? 17 : 19,
+          width: isMobile ? 30 : (isCompact ? 32 : 36),
+          height: isMobile ? 30 : (isCompact ? 32 : 36),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1F6CFA).withValues(
+              alpha: isDark ? 0.22 : 0.12,
+            ),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: isDark
+                  ? const Color(0xFF60A5FA).withValues(alpha: 0.55)
+                  : const Color(0xFF2563EB).withValues(alpha: 0.35),
+              width: 1.0,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF1F6CFA).withValues(
+                  alpha: isDark ? 0.35 : 0.15,
+                ),
+                blurRadius: 6,
+              ),
+            ],
+          ),
+          child: Center(
+            child: Icon(
+              Icons.auto_graph_rounded,
+              color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF1D4ED8),
+              size: isMobile ? 15 : (isCompact ? 16 : 18),
+            ),
           ),
         ),
-        const SizedBox(width: 10),
+        SizedBox(width: isCompact ? 8 : 10),
         Flexible(
           child: Tooltip(
-            message: 'Growth & Mastery Analytics\nPerformance metrics, concept mastery, and quiz comprehension',
+            triggerMode: TooltipTriggerMode.tap,
+            message:
+                'Growth & Mastery Analytics\nPerformance metrics, concept mastery, and quiz comprehension',
             child: GradientText(
               'Growth & Mastery Analytics',
               gradient: isDark
@@ -307,14 +338,11 @@ class DashboardHeader extends ConsumerWidget {
                     ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: (isMobile
-                      ? AppTextStyles.subtitle2
-                      : AppTextStyles.h4)
-                  .copyWith(
-                    fontSize: isMobile ? 15.0 : 18.0,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -0.4,
-                  ),
+              style: AppTextStyles.h4.copyWith(
+                fontSize: isMobile ? 15.0 : (isCompact ? 17.0 : 19.0),
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.4,
+              ),
             ),
           ),
         ),
@@ -439,6 +467,18 @@ class _DashboardDateDropdownState extends State<_DashboardDateDropdown> {
   @override
   Widget build(BuildContext context) {
     final isDark = context.isDarkMode;
+    final primaryBlue = AppColors.primary;
+    final purple = AppColors.purple;
+
+    final Color borderColor = isDark
+        ? (_isHovered
+            ? primaryBlue
+            : primaryBlue.withValues(alpha: 0.60))
+        : (_isHovered
+            ? purple
+            : purple.withValues(alpha: 0.55));
+
+    final Color iconColor = isDark ? primaryBlue : purple;
 
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
@@ -447,53 +487,53 @@ class _DashboardDateDropdownState extends State<_DashboardDateDropdown> {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeOutCubic,
-        height: 38,
-        padding: const EdgeInsets.symmetric(horizontal: 12),
+        height: 32,
+        padding: const EdgeInsets.symmetric(horizontal: 10),
         decoration: BoxDecoration(
           color: isDark
-              ? (_isHovered ? const Color(0xFF262842) : const Color(0xFF1A1B2C))
-              : (_isHovered ? Colors.white : const Color(0xFFF1F5F9)),
-          borderRadius: BorderRadius.circular(10),
+              ? (_isHovered
+                  ? primaryBlue.withValues(alpha: 0.16)
+                  : primaryBlue.withValues(alpha: 0.08))
+              : (_isHovered
+                  ? purple.withValues(alpha: 0.10)
+                  : purple.withValues(alpha: 0.05)),
+          borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: AppColors.primary.withValues(
-              alpha: isDark
-                  ? (_isHovered ? 0.70 : 0.40)
-                  : (_isHovered ? 0.60 : 0.35),
-            ),
-            width: 1.2,
+            color: borderColor,
+            width: 1.0,
           ),
           boxShadow: [
             if (_isHovered)
               BoxShadow(
-                color: AppColors.primary.withValues(
-                  alpha: isDark ? 0.28 : 0.16,
+                color: (isDark ? primaryBlue : purple).withValues(
+                  alpha: isDark ? 0.30 : 0.18,
                 ),
-                blurRadius: 12,
-                spreadRadius: 1,
-                offset: Offset.zero,
+                blurRadius: 8,
+                spreadRadius: 0.5,
+                offset: const Offset(0, 1),
               ),
           ],
         ),
         child: Theme(
           data: Theme.of(context).copyWith(
-            hoverColor: AppColors.primary.withValues(alpha: 0.12),
-            splashColor: AppColors.primary.withValues(alpha: 0.20),
+            hoverColor: (isDark ? primaryBlue : purple).withValues(alpha: 0.12),
+            splashColor: (isDark ? primaryBlue : purple).withValues(alpha: 0.20),
             highlightColor: Colors.transparent,
           ),
           child: PopupMenuButton<String>(
             tooltip: 'Select date filter',
-            offset: const Offset(0, 46),
+            offset: const Offset(0, 38),
             position: PopupMenuPosition.under,
             elevation: 12,
-            shadowColor: Colors.black.withValues(alpha: 0.35),
+            shadowColor: Colors.black.withValues(alpha: 0.40),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(12),
               side: BorderSide(
-                color: AppColors.primary.withValues(alpha: isDark ? 0.45 : 0.30),
-                width: 1.2,
+                color: borderColor,
+                width: 1.0,
               ),
             ),
-            color: isDark ? const Color(0xFF1E2138) : Colors.white,
+            color: isDark ? const Color(0xFF0C0D1A) : Colors.white,
             onSelected: (value) {
               if (value == 'custom') {
                 widget.onSelectCustomRange();
@@ -562,7 +602,7 @@ class _DashboardDateDropdownState extends State<_DashboardDateDropdown> {
                     ? IconButton(
                         icon: const Icon(
                           Icons.close_rounded,
-                          size: 16,
+                          size: 15,
                           color: AppColors.accentRose,
                         ),
                         tooltip: 'Reset to 30 days',
@@ -581,26 +621,40 @@ class _DashboardDateDropdownState extends State<_DashboardDateDropdown> {
                   ? MainAxisAlignment.spaceBetween
                   : MainAxisAlignment.start,
               children: [
-                Icon(
-                  Icons.calendar_today_rounded,
-                  size: 15,
-                  color: AppColors.primary,
+                Container(
+                  width: 18,
+                  height: 18,
+                  decoration: BoxDecoration(
+                    color: (isDark ? primaryBlue : purple).withValues(
+                      alpha: isDark ? 0.22 : 0.14,
+                    ),
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  child: Center(
+                    child: Icon(
+                      Icons.calendar_today_rounded,
+                      size: 10.5,
+                      color: iconColor,
+                    ),
+                  ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 6),
                 Text(
                   widget.displayLabel,
-                  style: AppTextStyles.button.copyWith(
+                  style: AppTextStyles.subtitle2.copyWith(
                     color: isDark ? Colors.white : const Color(0xFF0F172A),
-                    fontSize: widget.isMobile ? 12.0 : 13.0,
+                    fontSize: widget.isMobile ? 11.0 : 12.0,
                     fontWeight: FontWeight.w700,
                     letterSpacing: -0.2,
                   ),
                 ),
-                const SizedBox(width: 6),
+                const SizedBox(width: 4),
                 Icon(
                   Icons.keyboard_arrow_down_rounded,
-                  size: 16,
-                  color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                  size: 14,
+                  color: isDark
+                      ? const Color(0xFF94A3B8)
+                      : const Color(0xFF64748B),
                 ),
               ],
             ),
@@ -620,27 +674,43 @@ class _DashboardDateDropdownState extends State<_DashboardDateDropdown> {
     required bool isDark,
     Widget? trailing,
   }) {
+    final primaryBlue = AppColors.primary;
+    final purple = AppColors.purple;
+    final activeColor = isDark ? primaryBlue : purple;
+
     return PopupMenuItem<String>(
       value: value,
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      height: 48,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      height: 44,
       child: Row(
         children: [
           Container(
-            width: 28,
-            height: 28,
+            width: 26,
+            height: 26,
             decoration: BoxDecoration(
               color: isSelected
-                  ? AppColors.primary.withValues(alpha: isDark ? 0.25 : 0.15)
-                  : (isDark ? const Color(0xFF262842) : const Color(0xFFF1F5F9)),
-              borderRadius: BorderRadius.circular(7),
+                  ? activeColor.withValues(alpha: isDark ? 0.35 : 0.20)
+                  : (isDark
+                      ? const Color(0xFF141529)
+                      : const Color(0xFFF1F5F9)),
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(
+                color: isSelected
+                    ? activeColor.withValues(alpha: 0.60)
+                    : Colors.transparent,
+                width: 1.0,
+              ),
             ),
-            child: Icon(
-              icon,
-              size: 15,
-              color: isSelected
-                  ? AppColors.primary
-                  : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
+            child: Center(
+              child: Icon(
+                icon,
+                size: 13,
+                color: isSelected
+                    ? activeColor
+                    : (isDark
+                        ? const Color(0xFF94A3B8)
+                        : const Color(0xFF64748B)),
+              ),
             ),
           ),
           const SizedBox(width: 10),
@@ -653,17 +723,19 @@ class _DashboardDateDropdownState extends State<_DashboardDateDropdown> {
                   label,
                   style: AppTextStyles.body2.copyWith(
                     color: isSelected
-                        ? AppColors.primary
+                        ? activeColor
                         : (isDark ? Colors.white : const Color(0xFF0F172A)),
-                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-                    fontSize: 13,
+                    fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                    fontSize: 12.5,
                   ),
                 ),
                 Text(
                   subLabel,
                   style: AppTextStyles.caption.copyWith(
-                    color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
-                    fontSize: 10.5,
+                    color: isDark
+                        ? const Color(0xFF64748B)
+                        : const Color(0xFF94A3B8),
+                    fontSize: 10.0,
                   ),
                 ),
               ],
@@ -672,10 +744,10 @@ class _DashboardDateDropdownState extends State<_DashboardDateDropdown> {
           if (trailing != null)
             trailing
           else if (isSelected)
-            const Icon(
+            Icon(
               Icons.check_rounded,
-              color: AppColors.primary,
-              size: 16,
+              color: activeColor,
+              size: 15,
             ),
         ],
       ),
@@ -737,11 +809,26 @@ class _DashboardRefreshButtonState extends State<_DashboardRefreshButton>
   @override
   Widget build(BuildContext context) {
     final isDark = context.isDarkMode;
+    final primaryBlue = AppColors.primary;
+    final purple = AppColors.purple;
+
+    final Color borderColor = isDark
+        ? (_isHovered
+            ? primaryBlue
+            : primaryBlue.withValues(alpha: 0.60))
+        : (_isHovered
+            ? purple
+            : purple.withValues(alpha: 0.55));
+
+    final Color iconColor = widget.isRefreshing
+        ? const Color(0xFF22D3EE)
+        : (isDark ? primaryBlue : purple);
 
     return Tooltip(
+      triggerMode: TooltipTriggerMode.tap,
       message: widget.isRefreshing
           ? 'Syncing learning analytics with latest progress...'
-          : 'Live Sync: refresh metrics and study records',
+          : 'Sync All: refresh metrics and study records',
       child: MouseRegion(
         onEnter: (_) => setState(() => _isHovered = true),
         onExit: (_) => setState(() => _isHovered = false),
@@ -753,59 +840,69 @@ class _DashboardRefreshButtonState extends State<_DashboardRefreshButton>
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
             curve: Curves.easeOutCubic,
-            height: 38,
+            height: 32,
             padding: EdgeInsets.symmetric(
-              horizontal: widget.isCompact ? 10 : 12,
+              horizontal: widget.isCompact ? 8 : 10,
             ),
             decoration: BoxDecoration(
               color: isDark
                   ? (_isHovered
-                      ? const Color(0xFF262842)
-                      : const Color(0xFF1A1B2C))
-                  : (_isHovered ? Colors.white : const Color(0xFFF1F5F9)),
-              borderRadius: BorderRadius.circular(10),
+                      ? primaryBlue.withValues(alpha: 0.16)
+                      : primaryBlue.withValues(alpha: 0.08))
+                  : (_isHovered
+                      ? purple.withValues(alpha: 0.10)
+                      : purple.withValues(alpha: 0.05)),
+              borderRadius: BorderRadius.circular(8),
               border: Border.all(
-                color: isDark
-                    ? (_isHovered
-                        ? const Color(0xFF4A4E69)
-                        : const Color(0x1FFFFFFF))
-                    : (_isHovered
-                        ? const Color(0xFFCBD5E1)
-                        : const Color(0xFFE2E8F0)),
+                color: borderColor,
                 width: 1.0,
               ),
               boxShadow: [
                 if (_isHovered)
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.08),
+                    color: (isDark ? primaryBlue : purple).withValues(
+                      alpha: isDark ? 0.30 : 0.18,
+                    ),
                     blurRadius: 8,
-                    offset: const Offset(0, 2),
+                    spreadRadius: 0.5,
+                    offset: const Offset(0, 1),
                   ),
               ],
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                RotationTransition(
-                  turns: _animController,
-                  child: Icon(
-                    Icons.sync_rounded,
-                    size: 16,
-                    color: widget.isRefreshing
-                        ? AppColors.primary
-                        : (isDark
-                            ? const Color(0xFF94A3B8)
-                            : const Color(0xFF64748B)),
+                Container(
+                  width: 18,
+                  height: 18,
+                  decoration: BoxDecoration(
+                    color: (isDark ? primaryBlue : purple).withValues(
+                      alpha: widget.isRefreshing
+                          ? 0.30
+                          : (isDark ? 0.22 : 0.14),
+                    ),
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  child: Center(
+                    child: RotationTransition(
+                      turns: _animController,
+                      child: Icon(
+                        Icons.sync_rounded,
+                        size: 11.5,
+                        color: iconColor,
+                      ),
+                    ),
                   ),
                 ),
                 if (!widget.isCompact) ...[
                   const SizedBox(width: 6),
                   Text(
-                    widget.isRefreshing ? 'Syncing...' : 'Sync',
-                    style: AppTextStyles.button.copyWith(
+                    widget.isRefreshing ? 'Syncing...' : 'Sync All',
+                    style: AppTextStyles.subtitle2.copyWith(
                       color: isDark ? Colors.white : const Color(0xFF0F172A),
-                      fontSize: 12.5,
+                      fontSize: 12.0,
                       fontWeight: FontWeight.w700,
+                      letterSpacing: -0.2,
                     ),
                   ),
                 ],
