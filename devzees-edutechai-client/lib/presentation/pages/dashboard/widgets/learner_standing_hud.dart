@@ -306,7 +306,7 @@ class LearnerStandingHud extends ConsumerWidget {
     return IconButton(
       icon: Icon(
         Icons.menu_rounded,
-        color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+        color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF334155),
         size: 20,
       ),
       visualDensity: VisualDensity.compact,
@@ -879,18 +879,27 @@ class LearnerStandingHud extends ConsumerWidget {
               height: isCompact ? 26 : 32,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    const Color(0xFFF59E0B).withValues(alpha: 0.30),
-                    const Color(0xFFF59E0B).withValues(alpha: 0.10),
-                    Colors.transparent,
-                  ],
-                ),
+                color: isDark ? null : const Color(0xFFFEF3C7),
+                gradient: isDark
+                    ? RadialGradient(
+                        colors: [
+                          const Color(0xFFF59E0B).withValues(alpha: 0.30),
+                          const Color(0xFFF59E0B).withValues(alpha: 0.10),
+                          Colors.transparent,
+                        ],
+                      )
+                    : null,
+                border: isDark
+                    ? null
+                    : Border.all(
+                        color: const Color(0xFFF59E0B).withValues(alpha: 0.40),
+                        width: 1.0,
+                      ),
               ),
               child: Center(
                 child: Icon(
                   Icons.emoji_events_rounded,
-                  color: const Color(0xFFF59E0B),
+                  color: isDark ? const Color(0xFFF59E0B) : const Color(0xFFD97706),
                   size: isCompact ? 17 : 21,
                 ),
               ),
@@ -944,12 +953,14 @@ class LearnerStandingHud extends ConsumerWidget {
                           Icons.emoji_events_rounded,
                           size: isCompact ? 11 : 12.5,
                           color: isUnlocked
-                              ? const Color(0xFFF59E0B)
+                              ? (isDark
+                                    ? const Color(0xFFF59E0B)
+                                    : const Color(0xFFD97706))
                               : (isDark
                                     ? const Color(
                                         0xFF6B47EB,
                                       ).withValues(alpha: 0.35)
-                                    : const Color(0xFFCBD5E1)),
+                                    : const Color(0xFF94A3B8)),
                         ),
                       );
                     },
@@ -1050,7 +1061,7 @@ class LearnerStandingHud extends ConsumerWidget {
               style: AppTextStyles.caption.copyWith(
                 fontWeight: FontWeight.w900,
                 fontSize: isCompact ? 9.5 : 10.5,
-                color: const Color(0xFFA855F7),
+                color: isDark ? const Color(0xFFA855F7) : const Color(0xFF7C3AED),
               ),
             ),
           ],
@@ -1075,15 +1086,21 @@ class LearnerStandingHud extends ConsumerWidget {
               width: isCompact ? 26 : 30,
               height: isCompact ? 26 : 30,
               decoration: BoxDecoration(
-                color: const Color(0xFF6B47EB).withValues(alpha: 0.22),
+                color: isDark
+                    ? const Color(0xFF6B47EB).withValues(alpha: 0.22)
+                    : const Color(0xFF7C3AED).withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
-                  color: const Color(0xFF8B5CF6).withValues(alpha: 0.55),
+                  color: isDark
+                      ? const Color(0xFF8B5CF6).withValues(alpha: 0.55)
+                      : const Color(0xFF7C3AED).withValues(alpha: 0.40),
                   width: 1.0,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF6B47EB).withValues(alpha: 0.35),
+                    color: isDark
+                        ? const Color(0xFF6B47EB).withValues(alpha: 0.35)
+                        : const Color(0xFF7C3AED).withValues(alpha: 0.18),
                     blurRadius: 6,
                   ),
                 ],
@@ -1091,7 +1108,9 @@ class LearnerStandingHud extends ConsumerWidget {
               child: Center(
                 child: Icon(
                   Icons.star_rounded,
-                  color: const Color(0xFFC084FC),
+                  color: isDark
+                      ? const Color(0xFFC084FC)
+                      : const Color(0xFF7C3AED),
                   size: isCompact ? 14 : 16,
                 ),
               ),
@@ -1161,15 +1180,21 @@ class LearnerStandingHud extends ConsumerWidget {
               width: isCompact ? 26 : 30,
               height: isCompact ? 26 : 30,
               decoration: BoxDecoration(
-                color: const Color(0xFFEF4444).withValues(alpha: 0.18),
+                color: isDark
+                    ? const Color(0xFFEF4444).withValues(alpha: 0.18)
+                    : const Color(0xFFEA580C).withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
-                  color: const Color(0xFFF97316).withValues(alpha: 0.55),
+                  color: isDark
+                      ? const Color(0xFFF97316).withValues(alpha: 0.55)
+                      : const Color(0xFFEA580C).withValues(alpha: 0.40),
                   width: 1.0,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFFF97316).withValues(alpha: 0.35),
+                    color: isDark
+                        ? const Color(0xFFF97316).withValues(alpha: 0.35)
+                        : const Color(0xFFEA580C).withValues(alpha: 0.18),
                     blurRadius: 6,
                   ),
                 ],
@@ -1177,7 +1202,9 @@ class LearnerStandingHud extends ConsumerWidget {
               child: Center(
                 child: Icon(
                   Icons.local_fire_department_rounded,
-                  color: const Color(0xFFFB923C),
+                  color: isDark
+                      ? const Color(0xFFFB923C)
+                      : const Color(0xFFEA580C),
                   size: isCompact ? 14 : 16,
                 ),
               ),
@@ -1244,6 +1271,7 @@ class _HoverableTrophyCrestState extends State<_HoverableTrophyCrest> {
     final isCompact = widget.isCompact;
     final glowColor = widget.glowColor;
     final isDark = widget.isDark;
+    final hasAsset = widget.trophyStyle.assetPath != null;
 
     return MouseRegion(
       cursor: SystemMouseCursors.click,
@@ -1257,24 +1285,45 @@ class _HoverableTrophyCrestState extends State<_HoverableTrophyCrest> {
         height: isCompact ? 36 : 46,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          gradient: RadialGradient(
-            colors: [
-              glowColor.withValues(alpha: _isHovered ? 0.48 : 0.35),
-              glowColor.withValues(alpha: _isHovered ? 0.22 : 0.15),
-              Colors.transparent,
-            ],
-            center: Alignment.center,
-            radius: 0.85,
-          ),
+          gradient: (isDark || hasAsset)
+              ? RadialGradient(
+                  colors: [
+                    glowColor.withValues(
+                      alpha: isDark
+                          ? (_isHovered ? 0.48 : 0.35)
+                          : (_isHovered ? 0.28 : 0.18),
+                    ),
+                    glowColor.withValues(
+                      alpha: isDark
+                          ? (_isHovered ? 0.22 : 0.15)
+                          : (_isHovered ? 0.12 : 0.06),
+                    ),
+                    Colors.transparent,
+                  ],
+                  center: Alignment.center,
+                  radius: 0.85,
+                )
+              : LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    glowColor,
+                    Color.lerp(glowColor, const Color(0xFF6B47EB), 0.6) ??
+                        glowColor,
+                  ],
+                ),
           boxShadow: [
             BoxShadow(
               color: glowColor.withValues(
                 alpha: isDark
                     ? (_isHovered ? 0.55 : 0.40)
-                    : (_isHovered ? 0.38 : 0.25),
+                    : (_isHovered ? 0.40 : 0.28),
               ),
               blurRadius: _isHovered ? 12 : 8,
               spreadRadius: _isHovered ? 1.0 : 0.5,
+              offset: (isDark || hasAsset)
+                  ? Offset.zero
+                  : const Offset(0, 1.5),
             ),
           ],
         ),
@@ -1294,7 +1343,7 @@ class _HoverableTrophyCrestState extends State<_HoverableTrophyCrest> {
                         widget.isDiamond
                             ? Icons.diamond_rounded
                             : widget.trophyStyle.icon,
-                        color: isDark ? Colors.white : glowColor,
+                        color: Colors.white,
                         size: isCompact ? 19 : 24,
                       ),
                     )
@@ -1302,7 +1351,7 @@ class _HoverableTrophyCrestState extends State<_HoverableTrophyCrest> {
                       widget.isDiamond
                           ? Icons.diamond_rounded
                           : widget.trophyStyle.icon,
-                      color: isDark ? Colors.white : glowColor,
+                      color: Colors.white,
                       size: isCompact ? 19 : 24,
                     ),
             ),
