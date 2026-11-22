@@ -5,9 +5,9 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../core/theme/theme_palette.dart';
 import '../../../../core/utils/trophy_utils.dart';
-import '../../../../data/models/dashboard/dashboard_response.dart';
 import '../../../widgets/gradient_text.dart';
 import '../../../widgets/theme_toggle_button.dart';
+import 'learner_standing_hud.dart';
 
 /// Dedicated, ultra-premium Mobile Top Bar for the Learning Dashboard.
 ///
@@ -23,7 +23,7 @@ class MobileDashboardTopBar extends ConsumerWidget
   const MobileDashboardTopBar({super.key});
 
   @override
-  Size get preferredSize => const Size.fromHeight(98.0);
+  Size get preferredSize => const Size.fromHeight(104.0);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -31,24 +31,16 @@ class MobileDashboardTopBar extends ConsumerWidget
     final standingAsync = ref.watch(learnerStandingProvider);
     final dashboardState = ref.watch(dashboardProvider);
     final activeRange = dashboardState.timeRange;
-    final isRefreshing = dashboardState.isLoading && dashboardState.data != null;
+    final isRefreshing =
+        dashboardState.isLoading && dashboardState.data != null;
 
     final standing = standingAsync.asData?.value;
     final fallbackSummary = dashboardState.data?.summary;
     final fallbackAchievements = dashboardState.data?.achievements;
 
-    final highestTrophyId = standing?.highestTrophyId ??
-        _resolveFallbackHighestTrophyId(fallbackAchievements);
-    final highestTrophyTitle = standing?.highestTrophyTitle ??
-        _resolveFallbackHighestTrophyTitle(fallbackAchievements);
     final nextTrophyId = standing?.nextTrophyId;
-    final nextTrophyTitle = standing?.nextTrophyTitle ?? 'Bronze Trophy';
+    final nextTrophyTitle = standing?.nextTrophyTitle;
     final trophyProgressFraction = standing?.trophyProgressFraction ?? 0.0;
-    final totalXp = standing?.totalXp ?? (fallbackSummary?.totalXp ?? 0);
-    final currentStreak = standing?.currentStreak ?? (fallbackSummary?.currentStreak ?? 0);
-    final longestStreak = standing?.longestStreak ?? (fallbackSummary?.longestStreak ?? 0);
-
-    final trophyStyle = getTrophyStyle(highestTrophyId);
     final nextStyle = getTrophyStyle(nextTrophyId);
     final clampedFraction = trophyProgressFraction.clamp(0.0, 1.0);
 
@@ -69,181 +61,22 @@ class MobileDashboardTopBar extends ConsumerWidget
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // ─── TIER 1: Learner Standing & Identity Row (Height: 46px) ───
-              SizedBox(
-                height: 46,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      // Hamburger Drawer Button
-                      IconButton(
-                        icon: Icon(
-                          Icons.menu_rounded,
-                          color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
-                          size: 21,
-                        ),
-                        onPressed: () => Scaffold.of(context).openDrawer(),
-                        tooltip: 'Open navigation menu',
-                        constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-                        padding: EdgeInsets.zero,
-                      ),
-                      const SizedBox(width: 4),
-
-                      // Radiant Prestige Trophy Crest
-                      Tooltip(
-                        message: 'Current Prestige: $highestTrophyTitle\nAll-time highest unlocked milestone achievement tier',
-                        child: Container(
-                          width: 28,
-                          height: 28,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: RadialGradient(
-                              colors: [
-                                trophyStyle.color,
-                                trophyStyle.color.withValues(alpha: 0.75),
-                                trophyStyle.color.withValues(alpha: 0.55),
-                              ],
-                              center: const Alignment(-0.25, -0.30),
-                              radius: 0.90,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: trophyStyle.color.withValues(alpha: 0.40),
-                                blurRadius: 6,
-                                offset: const Offset(0, 1.5),
-                              ),
-                            ],
-                            border: Border.all(
-                              color: Colors.white.withValues(alpha: isDark ? 0.25 : 0.45),
-                              width: 1.0,
-                            ),
-                          ),
-                          child: Center(
-                            child: Icon(
-                              trophyStyle.icon,
-                              color: Colors.white,
-                              size: 14.5,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-
-                      // Trophy Title (Flexible with ellipsis truncation)
-                      Flexible(
-                        child: Tooltip(
-                          message: 'Current Standing: $highestTrophyTitle\nLifetime Achievement Prestige Rank',
-                          child: Text(
-                            highestTrophyTitle,
-                            style: AppTextStyles.subtitle2.copyWith(
-                              fontWeight: FontWeight.w800,
-                              fontSize: 13.0,
-                              color: isDark ? AppColors.textPrimary : const Color(0xFF0F172A),
-                              letterSpacing: -0.3,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-
-                      // XP Gem Capsule
-                      Tooltip(
-                        message: 'Total XP: $totalXp XP\nEarned across all completed journeys, milestones, and quizzes',
-                        child: Container(
-                          height: 24,
-                          padding: const EdgeInsets.symmetric(horizontal: 6.0),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                AppColors.accentAmber.withValues(alpha: 0.16),
-                                AppColors.accentAmber.withValues(alpha: 0.08),
-                              ],
-                            ),
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(
-                              color: AppColors.accentAmber.withValues(alpha: 0.38),
-                              width: 1.0,
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(
-                                Icons.star_rounded,
-                                color: AppColors.accentAmber,
-                                size: 12,
-                              ),
-                              const SizedBox(width: 3),
-                              Text(
-                                '$totalXp XP',
-                                style: AppTextStyles.caption.copyWith(
-                                  color: AppColors.accentAmber,
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 10.5,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const Spacer(),
-
-                      // Streak Flame Chip
-                      Tooltip(
-                        message: 'Active Study Streak: $currentStreak days\nPersonal Best Record: $longestStreak days consecutive learning',
-                        child: Container(
-                          height: 25,
-                          padding: const EdgeInsets.symmetric(horizontal: 7),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                const Color(0xFFEF4444).withValues(alpha: 0.15),
-                                const Color(0xFFF97316).withValues(alpha: 0.08),
-                              ],
-                            ),
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(
-                              color: const Color(0xFFEF4444).withValues(alpha: 0.30),
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(
-                                Icons.local_fire_department_rounded,
-                                color: Color(0xFFEF4444),
-                                size: 14,
-                              ),
-                              const SizedBox(width: 3),
-                              Text(
-                                '${currentStreak}d',
-                                style: AppTextStyles.caption.copyWith(
-                                  color: const Color(0xFFEF4444),
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 11.0,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-
-                      // Theme Toggle Button
-                      const ThemeToggleButton(size: 28),
-                    ],
-                  ),
-                ),
+              // ─── TIER 1: Redesigned Learner Standing HUD (Option 1 Sleek) ───
+              LearnerStandingHud(
+                isTopBar: true,
+                showHamburgerOnMobile: true,
+                fallbackSummary: fallbackSummary,
+                fallbackAchievements: fallbackAchievements,
+                trailing: const ThemeToggleButton(size: 28),
               ),
 
               // ─── TIER 2: Analytics Context & Date Filter Row (Height: 46px) ───
               Container(
                 height: 46,
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: isDark
                       ? const Color(0xFF141624).withValues(alpha: 0.70)
@@ -264,23 +97,30 @@ class MobileDashboardTopBar extends ConsumerWidget
                       height: 28,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF191B2B) : const Color(0xFFF1F5F9),
+                        color: isDark
+                            ? const Color(0xFF191B2B)
+                            : const Color(0xFFF1F5F9),
                         borderRadius: BorderRadius.circular(6),
                         border: Border.all(
-                          color: isDark ? const Color(0x1FFFFFFF) : const Color(0xFFE2E8F0),
+                          color: isDark
+                              ? const Color(0x1FFFFFFF)
+                              : const Color(0xFFE2E8F0),
                           width: 1.0,
                         ),
                       ),
                       child: Icon(
                         Icons.auto_graph_rounded,
-                        color: isDark ? const Color(0xFF60A5FA) : const Color(0xFF1D4ED8),
+                        color: isDark
+                            ? const Color(0xFF60A5FA)
+                            : const Color(0xFF1D4ED8),
                         size: 15,
                       ),
                     ),
                     const SizedBox(width: 8),
                     Flexible(
                       child: Tooltip(
-                        message: 'Growth & Mastery Analytics\nTrack study velocity, quiz comprehension, and skill mastery',
+                        message:
+                            'Growth & Mastery Analytics\nTrack study velocity, quiz comprehension, and skill mastery',
                         child: GradientText(
                           'Growth & Mastery Analytics',
                           maxLines: 1,
@@ -293,7 +133,10 @@ class MobileDashboardTopBar extends ConsumerWidget
                           gradient: isDark
                               ? AppColors.primaryGradient
                               : const LinearGradient(
-                                  colors: [Color(0xFF4F46E5), Color(0xFF7C3AED)],
+                                  colors: [
+                                    Color(0xFF4F46E5),
+                                    Color(0xFF7C3AED),
+                                  ],
                                 ),
                         ),
                       ),
@@ -306,26 +149,38 @@ class MobileDashboardTopBar extends ConsumerWidget
 
                     // Live Sync Refresh Button
                     Tooltip(
-                      message: isRefreshing ? 'Syncing learning analytics...' : 'Sync & refresh analytics',
+                      message: isRefreshing
+                          ? 'Syncing learning analytics...'
+                          : 'Sync & refresh analytics',
                       child: IconButton(
                         icon: isRefreshing
                             ? const SizedBox(
                                 width: 14,
                                 height: 14,
-                                child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: AppColors.primary,
+                                ),
                               )
                             : Icon(
                                 Icons.refresh_rounded,
                                 size: 18,
-                                color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                                color: isDark
+                                    ? const Color(0xFF94A3B8)
+                                    : const Color(0xFF64748B),
                               ),
                         onPressed: isRefreshing
                             ? null
                             : () {
-                                ref.read(learnerStandingProvider.notifier).refresh();
+                                ref
+                                    .read(learnerStandingProvider.notifier)
+                                    .refresh();
                                 ref.read(dashboardProvider.notifier).refresh();
                               },
-                        constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
+                        constraints: const BoxConstraints(
+                          minWidth: 30,
+                          minHeight: 30,
+                        ),
                         padding: EdgeInsets.zero,
                       ),
                     ),
@@ -341,7 +196,9 @@ class MobileDashboardTopBar extends ConsumerWidget
                 child: Container(
                   height: 4.5,
                   width: double.infinity,
-                  color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.04),
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.05)
+                      : Colors.black.withValues(alpha: 0.04),
                   alignment: Alignment.centerLeft,
                   child: FractionallySizedBox(
                     widthFactor: clampedFraction,
@@ -402,9 +259,9 @@ class MobileDashboardTopBar extends ConsumerWidget
     }
 
     return Theme(
-      data: Theme.of(context).copyWith(
-        hoverColor: AppColors.primary.withValues(alpha: 0.12),
-      ),
+      data: Theme.of(
+        context,
+      ).copyWith(hoverColor: AppColors.primary.withValues(alpha: 0.12)),
       child: PopupMenuButton<String>(
         tooltip: 'Select date filter period (controls metrics below)',
         offset: const Offset(0, 36),
@@ -463,7 +320,9 @@ class MobileDashboardTopBar extends ConsumerWidget
               Icon(
                 Icons.keyboard_arrow_down_rounded,
                 size: 13,
-                color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                color: isDark
+                    ? const Color(0xFF94A3B8)
+                    : const Color(0xFF64748B),
               ),
             ],
           ),
@@ -504,7 +363,10 @@ class MobileDashboardTopBar extends ConsumerWidget
     );
   }
 
-  Future<void> _selectCustomDateRange(BuildContext context, WidgetRef ref) async {
+  Future<void> _selectCustomDateRange(
+    BuildContext context,
+    WidgetRef ref,
+  ) async {
     final now = DateTime.now();
     final picked = await showDateRangePicker(
       context: context,
@@ -516,28 +378,9 @@ class MobileDashboardTopBar extends ConsumerWidget
       ),
     );
     if (picked != null) {
-      await ref.read(dashboardProvider.notifier).setCustomDateRange(picked.start, picked.end);
+      await ref
+          .read(dashboardProvider.notifier)
+          .setCustomDateRange(picked.start, picked.end);
     }
-  }
-
-  String? _resolveFallbackHighestTrophyId(List<AchievementItem>? achievements) {
-    if (achievements == null) return null;
-    const order = ['diamond', 'sapphire', 'platinum', 'gold', 'silver', 'bronze'];
-    for (final id in order) {
-      if (achievements.any((a) => a.id == id && a.unlocked)) {
-        return id;
-      }
-    }
-    return null;
-  }
-
-  String _resolveFallbackHighestTrophyTitle(List<AchievementItem>? achievements) {
-    if (achievements == null) return 'Unranked';
-    const order = ['diamond', 'sapphire', 'platinum', 'gold', 'silver', 'bronze'];
-    for (final id in order) {
-      final match = achievements.where((a) => a.id == id && a.unlocked).firstOrNull;
-      if (match != null) return match.title;
-    }
-    return 'Unranked';
   }
 }

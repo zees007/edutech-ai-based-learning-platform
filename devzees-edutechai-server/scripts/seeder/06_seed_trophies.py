@@ -43,7 +43,7 @@ if SERVER_ROOT not in sys.path:
 from sqlalchemy import delete, select
 from sqlalchemy.orm import selectinload
 
-from models.db_models import GamificationRecord, SessionRecord, StepProgress, User
+from models.db_models import GamificationRecord, SessionRecord, StepProgress, User, UserTrophy
 from models.schemas import LearningMode, MilestoneStep, QuizResult, StepStatus
 from models.shared_memory import SharedMemory
 from services.analytics_service import AnalyticsService
@@ -180,7 +180,12 @@ async def seed_user_trophies(target_level: int, email: str = "ultra@gmail.com") 
             await db.execute(
                 delete(SessionRecord).where(SessionRecord.user_id == user_id)
             )
-            await db.flush()
+
+        # Clear existing trophy records so calibration matches target tier precisely
+        await db.execute(
+            delete(UserTrophy).where(UserTrophy.user_id == user_id)
+        )
+        await db.flush()
 
         # Invalidate in-memory standing cache
         AnalyticsService.invalidate_standing_cache(user_id)
@@ -345,11 +350,20 @@ async def _print_user_standing(db, user_id: str, cfg: dict) -> None:
     AnalyticsService.invalidate_standing_cache(user_id)
     standing = await AnalyticsService.get_user_standing(db, user_id)
 
+    lvl_info = calculate_level(standing.total_xp)
+    level = lvl_info["level"]
+    level_title = lvl_info["title"]
+
     print("\n" + "─" * 70)
     print("🏆 CURRENT VERIFIED USER STANDING:")
-    print(f"  • Level:        {standing.current_level} ({standing.level_title})")
+    print(f"  • Level:        {level} ({level_title})")
     print(f"  • Total XP:     {standing.total_xp:,} XP")
     print(f"  • Current Streak: {standing.current_streak} days (Longest: {standing.longest_streak} days)")
+    print(f"  • Highest Trophy: {standing.highest_trophy_title} (ID: {standing.highest_trophy_id})")
+    if standing.next_trophy_title:
+        print(f"  • Next Goal:    {standing.next_trophy_title} ({int(standing.trophy_progress_fraction * 100)}% progress)")
+    else:
+        print("  • Next Goal:    All trophies unlocked!")
 
     trophy_icons = {
         "bronze": "🥉",
