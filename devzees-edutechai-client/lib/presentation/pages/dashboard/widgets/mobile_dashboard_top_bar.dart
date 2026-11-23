@@ -95,28 +95,36 @@ class MobileDashboardTopBar extends ConsumerWidget
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // Glowing Squircle Accent Badge (Identical in Dark and Light Theme)
+                    // Squircle Accent Badge (Theme-adaptive: Vibrant in Light & Dark Mode)
                     Container(
                       width: 28,
                       height: 28,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF1F6CFA).withValues(alpha: 0.22),
+                        color: isDark
+                            ? const Color(0xFF1F6CFA).withValues(alpha: 0.22)
+                            : AppColors.purple.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(7),
                         border: Border.all(
-                          color: const Color(0xFF60A5FA).withValues(alpha: 0.55),
+                          color: isDark
+                              ? const Color(0xFF60A5FA).withValues(alpha: 0.55)
+                              : AppColors.purple.withValues(alpha: 0.35),
                           width: 1.0,
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF1F6CFA).withValues(alpha: 0.35),
+                            color: isDark
+                                ? const Color(0xFF1F6CFA).withValues(alpha: 0.35)
+                                : AppColors.purple.withValues(alpha: 0.15),
                             blurRadius: 5,
                           ),
                         ],
                       ),
-                      child: const Center(
+                      child: Center(
                         child: Icon(
                           Icons.auto_graph_rounded,
-                          color: Color(0xFF38BDF8),
+                          color: isDark
+                              ? const Color(0xFF38BDF8)
+                              : AppColors.purple,
                           size: 14.5,
                         ),
                       ),
@@ -179,12 +187,14 @@ class MobileDashboardTopBar extends ConsumerWidget
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               if (isRefreshing)
-                                const SizedBox(
+                                SizedBox(
                                   width: 12,
                                   height: 12,
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2,
-                                    color: Color(0xFF22D3EE),
+                                    color: isDark
+                                        ? const Color(0xFF22D3EE)
+                                        : AppColors.purple,
                                   ),
                                 )
                               else

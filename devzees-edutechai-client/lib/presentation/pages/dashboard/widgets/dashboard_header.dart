@@ -286,24 +286,31 @@ class DashboardHeader extends ConsumerWidget {
     bool isMobile = false,
     bool isCompact = false,
   }) {
+    final isDark = context.isDarkMode;
     return Row(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // Glowing Squircle Accent Badge (Identical in Dark and Light Theme)
+        // Squircle Accent Badge (Theme-adaptive: Vibrant in Light & Dark Mode)
         Container(
           width: isMobile ? 30 : (isCompact ? 32 : 36),
           height: isMobile ? 30 : (isCompact ? 32 : 36),
           decoration: BoxDecoration(
-            color: const Color(0xFF1F6CFA).withValues(alpha: 0.22),
+            color: isDark
+                ? const Color(0xFF1F6CFA).withValues(alpha: 0.22)
+                : AppColors.purple.withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: const Color(0xFF60A5FA).withValues(alpha: 0.55),
+              color: isDark
+                  ? const Color(0xFF60A5FA).withValues(alpha: 0.55)
+                  : AppColors.purple.withValues(alpha: 0.35),
               width: 1.0,
             ),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF1F6CFA).withValues(alpha: 0.35),
+                color: isDark
+                    ? const Color(0xFF1F6CFA).withValues(alpha: 0.35)
+                    : AppColors.purple.withValues(alpha: 0.15),
                 blurRadius: 6,
               ),
             ],
@@ -311,7 +318,7 @@ class DashboardHeader extends ConsumerWidget {
           child: Center(
             child: Icon(
               Icons.auto_graph_rounded,
-              color: const Color(0xFF38BDF8),
+              color: isDark ? const Color(0xFF38BDF8) : AppColors.purple,
               size: isMobile ? 15 : (isCompact ? 16 : 18),
             ),
           ),
@@ -815,7 +822,7 @@ class _DashboardRefreshButtonState extends State<_DashboardRefreshButton>
             : purple.withValues(alpha: 0.55));
 
     final Color iconColor = widget.isRefreshing
-        ? const Color(0xFF22D3EE)
+        ? (isDark ? const Color(0xFF22D3EE) : purple)
         : (isDark ? primaryBlue : purple);
 
     return Tooltip(

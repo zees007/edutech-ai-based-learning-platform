@@ -89,22 +89,30 @@ class MobileLearningTopBar extends ConsumerWidget
                       height: 28,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF1F6CFA).withValues(alpha: 0.22),
+                        color: isDark
+                            ? const Color(0xFF1F6CFA).withValues(alpha: 0.22)
+                            : AppColors.purple.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(7),
                         border: Border.all(
-                          color: const Color(0xFF60A5FA).withValues(alpha: 0.55),
+                          color: isDark
+                              ? const Color(0xFF60A5FA).withValues(alpha: 0.55)
+                              : AppColors.purple.withValues(alpha: 0.35),
                           width: 1.0,
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF1F6CFA).withValues(alpha: 0.35),
+                            color: isDark
+                                ? const Color(0xFF1F6CFA).withValues(alpha: 0.35)
+                                : AppColors.purple.withValues(alpha: 0.15),
                             blurRadius: 5,
                           ),
                         ],
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.auto_graph_rounded,
-                        color: Color(0xFF38BDF8),
+                        color: isDark
+                            ? const Color(0xFF38BDF8)
+                            : AppColors.purple,
                         size: 14,
                       ),
                     ),
@@ -251,7 +259,7 @@ class MobileLearningTopBar extends ConsumerWidget
                 strokeWidth: 2,
                 color: isDark
                     ? const Color(0xFF60A5FA)
-                    : const Color(0xFF1D4ED8),
+                    : AppColors.purple,
               ),
             )
           : Icon(
