@@ -295,6 +295,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
               totalXp: totalXp,
               level: newLevel,
               levelTitle: levelTitle,
+              source: 'step',
             );
       }
       return;
@@ -566,6 +567,10 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
               totalXp: totalXp,
               level: newLevel,
               levelTitle: levelTitle,
+              source: 'quiz',
+              quizScore: result.score,
+              quizCorrectCount: result.correctCount,
+              quizTotalQuestions: result.totalQuestions,
             );
       }
 
@@ -634,6 +639,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
 
       if (leveledUp) {
         final levelTitle = GamificationUtils.getLevelTitle(newLevel);
+        final streakBonus = (awardedXp > 10) ? (awardedXp - 10) : 0;
         ref
             .read(gamificationEventProvider.notifier)
             .triggerEvent(
@@ -641,6 +647,9 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
               totalXp: totalXp,
               level: newLevel,
               levelTitle: levelTitle,
+              source: 'step',
+              streakCount: data['streak_count'] as int? ?? 0,
+              streakBonusXp: streakBonus,
             );
       }
 
@@ -718,7 +727,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
             topic: updatedSession.topic,
             totalSteps: updatedSession.steps.length,
             totalXp: updatedSession.xpEarned,
-            bonusXp: 100,
+            bonusXp: 50,
             averageQuizScore: avgScore,
           );
 
@@ -767,7 +776,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
           topic: session.topic,
           totalSteps: session.steps.length,
           totalXp: updatedXp,
-          bonusXp: 100 + bonusXp,
+          bonusXp: 50 + bonusXp,
           averageQuizScore: avgScore,
         );
   }
@@ -794,7 +803,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
           topic: session.topic,
           totalSteps: session.steps.length,
           totalXp: session.xpEarned,
-          bonusXp: 100,
+          bonusXp: 50,
           averageQuizScore: avgScore,
         );
   }

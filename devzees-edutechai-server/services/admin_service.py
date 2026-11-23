@@ -126,6 +126,7 @@ class AdminService:
                 monthly_session_limit=t.monthly_session_limit,
                 follow_up_limit_per_step=t.follow_up_limit_per_step,
                 youtube_limit_per_step=t.youtube_limit_per_step,
+                streak_multiplier=t.streak_multiplier,
                 is_public=t.is_public,
                 order_index=t.order_index,
                 retired=t.retired,
@@ -180,6 +181,7 @@ class AdminService:
             monthly_session_limit=dto.monthly_session_limit,
             follow_up_limit_per_step=dto.follow_up_limit_per_step,
             youtube_limit_per_step=dto.youtube_limit_per_step,
+            streak_multiplier=dto.streak_multiplier,
             is_public=dto.is_public,
             order_index=dto.order_index,
         )
@@ -200,6 +202,7 @@ class AdminService:
             monthly_session_limit=tier.monthly_session_limit,
             follow_up_limit_per_step=tier.follow_up_limit_per_step,
             youtube_limit_per_step=tier.youtube_limit_per_step,
+            streak_multiplier=tier.streak_multiplier,
             is_public=tier.is_public,
             order_index=tier.order_index,
             retired=tier.retired,
@@ -238,6 +241,8 @@ class AdminService:
             tier.follow_up_limit_per_step = dto.follow_up_limit_per_step
         if dto.youtube_limit_per_step is not None or "youtube_limit_per_step" in dto.model_fields_set:
             tier.youtube_limit_per_step = dto.youtube_limit_per_step
+        if dto.streak_multiplier is not None:
+            tier.streak_multiplier = dto.streak_multiplier
         if dto.is_public is not None:
             tier.is_public = dto.is_public
         if dto.order_index is not None:
@@ -265,6 +270,7 @@ class AdminService:
             monthly_session_limit=tier.monthly_session_limit,
             follow_up_limit_per_step=tier.follow_up_limit_per_step,
             youtube_limit_per_step=tier.youtube_limit_per_step,
+            streak_multiplier=tier.streak_multiplier,
             is_public=tier.is_public,
             order_index=tier.order_index,
             retired=tier.retired,

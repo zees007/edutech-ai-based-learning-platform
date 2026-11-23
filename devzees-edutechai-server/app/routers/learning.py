@@ -360,27 +360,24 @@ async def complete_step(
 
     # Award XP
     from services.gamification import calculate_step_xp, update_streak, XP_SESSION_COMPLETE
+    from services.subscription_service import SubscriptionService
+    from services.database import get_db_session
 
     memory.streak_count = update_streak(
         memory.created_at,
         getattr(memory, "streak_count", 0),
     )
-    base_xp = calculate_step_xp(streak_count=memory.streak_count)
-    
-    # Apply XP Multiplier (Ultra=2.0x, Pro=1.5x, Free=1.0x)
-    user_roles = [r.name for r in current_user.roles if not r.retired] if hasattr(current_user, "roles") else []
-    multiplier = 1.0
-    if "Ultra" in user_roles or "Admin" in user_roles:
-        multiplier = 2.0
-    elif "Pro" in user_roles:
-        multiplier = 1.5
-        
-    awarded_xp = int(base_xp * multiplier)
 
-    # Award +100 XP session completion bonus if all milestone steps are now complete
+    # Resolve dynamic streak multiplier based on active SubscriptionTier
+    async with get_db_session() as db:
+        multiplier = await SubscriptionService.get_user_streak_multiplier(db, current_user)
+
+    # Base step XP (10 XP flat) + Tier-scaled Streak Bonus
+    awarded_xp = calculate_step_xp(streak_count=memory.streak_count, multiplier=multiplier)
+
+    # Award +50 XP flat session completion bonus if all milestone steps are now complete
     if memory.is_complete:
-        session_bonus = int(XP_SESSION_COMPLETE * multiplier)
-        awarded_xp += session_bonus
+        awarded_xp += XP_SESSION_COMPLETE
 
     memory.xp_earned += awarded_xp
 

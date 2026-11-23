@@ -193,6 +193,7 @@ class SubscriptionTierResponse(BaseModel):
     monthly_session_limit: int | None = None
     follow_up_limit_per_step: int | None = None
     youtube_limit_per_step: int | None = None
+    streak_multiplier: float = 1.0
     is_public: bool = True
     order_index: int = 0
     retired: bool = False
@@ -215,6 +216,7 @@ class SubscriptionTierCreateRequest(BaseModel):
     monthly_session_limit: int | None = Field(default=None, description="Monthly AI session limit (null = unlimited)")
     follow_up_limit_per_step: int | None = Field(default=None, description="Max follow-up chat turns per step (null = unlimited)")
     youtube_limit_per_step: int | None = Field(default=None, description="Max curated videos per step (null = unlimited)")
+    streak_multiplier: float = Field(default=1.0, ge=1.0, le=5.0, description="Streak XP multiplier (e.g. 1.0, 1.5, 2.0)")
     is_public: bool = Field(default=True, description="Whether visible on landing/pricing catalog")
     order_index: int = Field(default=0, description="Display order sequence")
 
@@ -231,5 +233,6 @@ class SubscriptionTierUpdateRequest(BaseModel):
     monthly_session_limit: int | None = None
     follow_up_limit_per_step: int | None = None
     youtube_limit_per_step: int | None = None
+    streak_multiplier: float | None = Field(default=None, ge=1.0, le=5.0)
     is_public: bool | None = None
     order_index: int | None = None

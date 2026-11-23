@@ -446,7 +446,7 @@ class AnalyticsService:
                     if hasattr(sp, "xp_earned") and sp.xp_earned is not None and sp.xp_earned > 0:
                         step_xp = sp.xp_earned
                     else:
-                        step_xp = 50 + (round(sp.quiz_score * 60) if sp.quiz_score is not None else 0)
+                        step_xp = 10 + (round(sp.quiz_score * 70) if sp.quiz_score is not None else 0)
                     xp_earned_in_period += step_xp
 
                     day_key = sp_completed.strftime("%Y-%m-%d")

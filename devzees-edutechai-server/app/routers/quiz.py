@@ -75,19 +75,11 @@ async def submit_quiz(
     total = len(quiz_questions)
     score = correct_count / total if total > 0 else 0.0
 
-    # Calculate role multiplier (Ultra=2.0x, Pro=1.5x, Free=1.0x)
-    user_roles = [r.name for r in current_user.roles if not r.retired] if current_user and hasattr(current_user, "roles") else []
-    multiplier = 1.0
-    if "Ultra" in user_roles or "Admin" in user_roles:
-        multiplier = 2.0
-    elif "Pro" in user_roles:
-        multiplier = 1.5
-
-    # Calculate XP according to specification (20 XP per correct question, +30 XP strictly for 100% accuracy)
+    # Calculate XP according to specification (20 XP per correct question, +10 XP strictly for 100% accuracy, 1.0x flat)
     xp_earned = calculate_quiz_xp(
         correct_count=correct_count,
         total_questions=total,
-        multiplier=multiplier,
+        multiplier=1.0,
     )
 
     # Update memory XP, quiz scores, and streak

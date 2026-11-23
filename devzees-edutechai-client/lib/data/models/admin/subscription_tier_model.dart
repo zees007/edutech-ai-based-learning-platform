@@ -11,6 +11,7 @@ class SubscriptionTierModel {
   final int? monthlySessionLimit;
   final int? followUpLimitPerStep;
   final int? youtubeLimitPerStep;
+  final double streakMultiplier;
   final bool isPublic;
   final int orderIndex;
   final bool retired;
@@ -30,6 +31,7 @@ class SubscriptionTierModel {
     this.monthlySessionLimit,
     this.followUpLimitPerStep,
     this.youtubeLimitPerStep,
+    this.streakMultiplier = 1.0,
     this.isPublic = true,
     this.orderIndex = 0,
     this.retired = false,
@@ -55,6 +57,7 @@ class SubscriptionTierModel {
       monthlySessionLimit: (json['monthly_session_limit'] as num?)?.toInt(),
       followUpLimitPerStep: (json['follow_up_limit_per_step'] as num?)?.toInt(),
       youtubeLimitPerStep: (json['youtube_limit_per_step'] as num?)?.toInt(),
+      streakMultiplier: (json['streak_multiplier'] as num?)?.toDouble() ?? 1.0,
       isPublic: json['is_public'] as bool? ?? true,
       orderIndex: (json['order_index'] as num?)?.toInt() ?? 0,
       retired: json['retired'] as bool? ?? false,
@@ -79,6 +82,7 @@ class SubscriptionTierModel {
       'monthly_session_limit': monthlySessionLimit,
       'follow_up_limit_per_step': followUpLimitPerStep,
       'youtube_limit_per_step': youtubeLimitPerStep,
+      'streak_multiplier': streakMultiplier,
       'is_public': isPublic,
       'order_index': orderIndex,
       'retired': retired,
@@ -100,6 +104,7 @@ class SubscriptionTierModel {
     int? monthlySessionLimit,
     int? followUpLimitPerStep,
     int? youtubeLimitPerStep,
+    double? streakMultiplier,
     bool? isPublic,
     int? orderIndex,
     bool? retired,
@@ -119,6 +124,7 @@ class SubscriptionTierModel {
       monthlySessionLimit: monthlySessionLimit ?? this.monthlySessionLimit,
       followUpLimitPerStep: followUpLimitPerStep ?? this.followUpLimitPerStep,
       youtubeLimitPerStep: youtubeLimitPerStep ?? this.youtubeLimitPerStep,
+      streakMultiplier: streakMultiplier ?? this.streakMultiplier,
       isPublic: isPublic ?? this.isPublic,
       orderIndex: orderIndex ?? this.orderIndex,
       retired: retired ?? this.retired,

@@ -286,8 +286,6 @@ class DashboardHeader extends ConsumerWidget {
     bool isMobile = false,
     bool isCompact = false,
   }) {
-    final isDark = context.isDarkMode;
-
     return Row(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center,

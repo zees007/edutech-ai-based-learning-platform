@@ -717,7 +717,7 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
                 _buildAgentCard(
                   name: '📝 Quiz Agent',
                   desc:
-                      'Structuring adaptive comprehension questions & XP reward multipliers.',
+                      'Structuring adaptive comprehension questions & milestone XP rewards.',
                   status: 'active',
                   width: cardWidth,
                   isMobile: false,

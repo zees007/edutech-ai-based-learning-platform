@@ -259,12 +259,12 @@ async def seed_user_trophies(target_level: int, email: str = "ultra@gmail.com") 
                 if perfect_quizzes_assigned < needed_perfect_quizzes:
                     q_score = 1.0
                     correct_cnt = 3
-                    step_quiz_xp = 90
+                    step_quiz_xp = 70  # 3 * 20 XP + 10 XP perfect score bonus
                     perfect_quizzes_assigned += 1
                 else:
                     q_score = 0.67
                     correct_cnt = 2
-                    step_quiz_xp = 40
+                    step_quiz_xp = 40  # 2 * 20 XP
 
                 session_quiz_scores[st] = q_score
 

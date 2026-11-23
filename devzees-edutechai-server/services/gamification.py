@@ -28,10 +28,10 @@ LEVELS = [
 
 
 # ─── XP Rewards ──────────────────────────────────────────────────
-XP_STEP_COMPLETE = 50            # Completing a milestone step
+XP_STEP_COMPLETE = 10            # Completing a milestone step (10 XP flat)
 XP_QUIZ_PER_QUESTION = 20       # Per correct quiz answer
-XP_QUIZ_ACCURACY_BONUS = 30     # Bonus for 100% quiz accuracy
-XP_SESSION_COMPLETE = 100        # Bonus for finishing all steps
+XP_QUIZ_ACCURACY_BONUS = 10     # Bonus for 100% quiz accuracy (+10 XP extra)
+XP_SESSION_COMPLETE = 50        # Bonus for finishing all steps (50 XP flat)
 XP_FEEDBACK_BONUS = 30           # Bonus for submitting session feedback/testimonial
 XP_STREAK_MULTIPLIER = 0.1      # +10% per streak day
 
@@ -83,8 +83,8 @@ def calculate_quiz_xp(
     """
     Calculate XP earned from a quiz according to specification:
     - 20 XP per correct question
-    - +30 XP bonus strictly for 100% accuracy
-    - Scaled by user role multiplier (Free 1.0x, Pro 1.5x, Ultra 2.0x)
+    - +10 XP bonus strictly for 100% accuracy
+    - Uniform (1.0x) for all user tiers (merit-based mastery).
     """
     if isinstance(correct_count, float) and correct_count <= 1.0 and total_questions == 1:
         accuracy = correct_count
@@ -95,7 +95,7 @@ def calculate_quiz_xp(
         accuracy = c_count / total_questions if total_questions > 0 else 0.0
 
     base_xp = c_count * XP_QUIZ_PER_QUESTION
-    # Accuracy bonus (+30 XP) strictly awarded for 100% accuracy
+    # Accuracy bonus (+10 XP) strictly awarded for 100% accuracy
     accuracy_bonus = XP_QUIZ_ACCURACY_BONUS if (total_questions > 0 and c_count >= total_questions) else 0
 
     return int((base_xp + accuracy_bonus) * multiplier)
@@ -106,15 +106,16 @@ def calculate_feedback_xp() -> int:
     return XP_FEEDBACK_BONUS
 
 
-def calculate_step_xp(streak_count: int = 0) -> int:
+def calculate_step_xp(streak_count: int = 0, multiplier: float = 1.0) -> int:
     """
-    Calculate XP for completing a milestone step.
-
-    Streak multiplier gives bonus XP for consecutive sessions (+10% per day, max 10 days).
+    Calculate XP for completing a milestone step:
+    - Base step XP: 10 XP flat (identical for all users).
+    - Streak bonus: +10% per consecutive day (capped at 10 days), scaled by tier multiplier.
     """
-    base_xp = XP_STEP_COMPLETE
-    streak_bonus = int(base_xp * XP_STREAK_MULTIPLIER * min(streak_count, 10))
-    return base_xp + streak_bonus
+    base_xp = XP_STEP_COMPLETE  # 10
+    raw_streak_bonus = int(base_xp * XP_STREAK_MULTIPLIER * min(streak_count, 10))
+    tier_streak_bonus = int(raw_streak_bonus * multiplier)
+    return base_xp + tier_streak_bonus
 
 
 def update_streak(last_activity: datetime | None, current_streak: int) -> int:
