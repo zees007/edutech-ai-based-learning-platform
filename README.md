@@ -423,7 +423,7 @@ EduTechAI provides a centralized, executive analytics dashboard powered by a **T
    - **All-Time Level & Title:** Aggregate experience points mapped to the 10-tier mastery scale (`Curious Explorer` through `Grand Sage`).
    - **XP Progress Bar:** Live progress towards next level threshold with remaining XP needed.
    - **Daily Learning Streak:** Current consecutive days of active study alongside personal best record.
-   - **Permanent Trophy Case:** Achievements evaluated all-time (`First Step`, `Journey Pioneer`, `Sharp Mind`, `Polymath`), ensuring trophies never re-lock when viewing filtered date windows.
+   - **Permanent Trophy Case:** Ascending 6-tier prestige ladder (`Bronze 🥉`, `Silver 🥈`, `Gold 🥇`, `Platinum 💿`, `Sapphire 🔷`, `Diamond 💎`) evaluated all-time, ensuring trophies never re-lock when viewing filtered date windows.
    - **In-Memory Caching:** Sub-5ms response cached in server memory and client Riverpod state, evicted instantly on milestone completion.
 
 2. **Period Performance Analytics (`/analytics/performance`):**
@@ -452,8 +452,22 @@ EduTechAI provides a centralized, executive analytics dashboard powered by a **T
 6. **Activity Heatmap Stream:**
    - Daily activity log showing steps completed, active study minutes, and XP earned per day.
 
-7. **RBAC Protection:**
-   - Protected by the `ET_DASHBOARD` privilege, enabled by default across all tiers (`Free`, `Pro`, `Ultra`, `Admin`).
+7. **RBAC Protection & Admin Inspection:**
+   - Protected by the `ET_DASHBOARD` privilege, enabled by default across all subscription tiers (`Free`, `Pro`, `Ultra`, `Admin`).
+   - Admins holding `ET_ALL`, `ET_VIEW_USER`, `ET_FULL_ACCESS_USER`, or `ET_VIEW_ANALYTICS` can inspect any learner's dashboard directly from the User Directory table via `?user_id=`.
+
+### 🏆 The 6-Tier Prestige Trophy Unlock Matrix
+
+Permanent achievements evaluated against all-time milestone records follow an ascending 6-tier prestige ladder. Trophies remain permanently unlocked in the HUD and never reset when toggling date filters:
+
+| Tier | Trophy Title | Flutter Material Icon | Accent Color | Required Roadmaps | Required Steps | Perfect Quizzes (3/3) | Learning Streak | Special Criteria |
+| :---: | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :--- |
+| **1** | **Bronze Trophy** | `Icons.military_tech_rounded` | Bronze (`#CD7F32`) | **1 Session** | **5 Steps** | **3 Quizzes** | — | Introductory onboarding complete |
+| **2** | **Silver Trophy** | `Icons.verified_rounded` | Silver (`#CBD5E1`) | **5 Sessions** | **25 Steps** | **8 Quizzes** | **2-Day Streak** | Daily learning habit established |
+| **3** | **Gold Trophy** | `Icons.emoji_events_rounded` | Gold (`#F59E0B`) | **10 Sessions** | **60 Steps** | **15 Quizzes** | **3-Day Streak** | **Level 10 Grand Sage (1,000 XP)** |
+| **4** | **Platinum Trophy** | `Icons.auto_awesome_rounded` | Violet (`#A78BFA`) | **25 Sessions** | **150 Steps** | **25 Quizzes** | **7-Day Streak** | Deep knowledge marathoner |
+| **5** | **Sapphire Trophy** | `Icons.token_rounded` | Sapphire (`#2563EB`) | **50 Sessions** | **250 Steps** | **40 Quizzes** | **14-Day Streak** | Dedicated intellectual scholar |
+| **6** | **Diamond Trophy** | `Icons.diamond_rounded` | Cyan Ice (`#22D3EE`) | **100 Sessions** | **500 Steps** | **75 Quizzes** | **30-Day Streak** | The Apex Century master (Top 1%) |
 
 ---
 

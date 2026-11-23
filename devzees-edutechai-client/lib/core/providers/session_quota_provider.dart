@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/learning/session_quota.dart';
+import 'auth_provider.dart';
 import 'learning_provider.dart';
 
 class SessionQuotaState {
@@ -38,6 +39,13 @@ class SessionQuotaState {
 class SessionQuotaNotifier extends Notifier<SessionQuotaState> {
   @override
   SessionQuotaState build() {
+    ref.listen(currentUserIdProvider, (previous, next) {
+      if (next == null) {
+        state = const SessionQuotaState();
+      } else if (previous != next) {
+        fetchQuota();
+      }
+    });
     return const SessionQuotaState();
   }
 

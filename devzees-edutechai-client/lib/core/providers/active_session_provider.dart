@@ -13,6 +13,7 @@ import '../services/quiz_store.dart';
 import 'gamification_provider.dart';
 import 'feedback_provider.dart';
 import 'session_quota_provider.dart';
+import 'auth_provider.dart';
 
 final learningWebSocketServiceProvider = Provider<LearningWebSocketService>((
   ref,
@@ -91,6 +92,16 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
 
     // Listen to websocket events
     _wsService.events.listen(_onWebSocketEvent);
+
+    // Automatically disconnect and reset active session when user changes or logs out
+    ref.listen(currentUserIdProvider, (previous, next) {
+      if (previous != next) {
+        _wsService.disconnect();
+        _startJourneyCancelToken?.cancel();
+        _isStepGenerationActive = false;
+        state = ActiveSessionState();
+      }
+    });
 
     return ActiveSessionState();
   }

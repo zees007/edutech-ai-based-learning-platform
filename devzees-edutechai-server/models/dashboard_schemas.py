@@ -95,15 +95,27 @@ class AchievementDTO(BaseModel):
     icon: str
 
 
+class TrophyRequirementDTO(BaseModel):
+    """Progress toward a specific trophy requirement."""
+
+    label: str = Field(description="Requirement label (e.g. Sessions, Steps, Perfect Quizzes, Day Streak)")
+    current: int = Field(default=0, description="Current progress value")
+    required: int = Field(default=0, description="Required target value")
+    met: bool = Field(default=False, description="Whether requirement is met")
+
+
 class LearnerStandingResponse(BaseModel):
     """All-time cumulative standing and permanent achievements (HUD)."""
 
     total_xp: int = Field(default=0, description="Total cumulative XP earned across all sessions")
-    current_level: int = Field(default=1, description="Calculated user all-time level (1 to 10)")
-    level_title: str = Field(default="Curious Explorer", description="Title for the user level")
-    xp_progress_in_level: int = Field(default=0, description="XP earned towards current level threshold")
-    xp_needed_for_next: int = Field(default=60, description="Remaining XP needed for next level")
-    is_max_level: bool = Field(default=False, description="True if max level 10 reached")
+
+    highest_trophy_id: str | None = Field(default=None, description="ID of highest unlocked trophy (e.g. 'gold'), None if unranked")
+    highest_trophy_title: str = Field(default="Unranked", description="Display title of highest unlocked trophy")
+    next_trophy_id: str | None = Field(default=None, description="ID of next trophy to unlock, None if Diamond achieved")
+    next_trophy_title: str | None = Field(default=None, description="Display title of next trophy")
+    next_trophy_requirements: list[TrophyRequirementDTO] | None = Field(default=None, description="Detailed progress toward each requirement of next trophy")
+    trophy_progress_fraction: float = Field(default=0.0, description="0.0 to 1.0 overall progress toward next trophy")
+
     current_streak: int = Field(default=0, description="Current consecutive active days")
     longest_streak: int = Field(default=0, description="Personal record consecutive active days")
     achievements: list[AchievementDTO] = Field(default_factory=list, description="All-time permanent milestone achievements")

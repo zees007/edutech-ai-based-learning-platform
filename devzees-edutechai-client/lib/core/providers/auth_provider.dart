@@ -4,13 +4,16 @@ import '../../data/models/auth/user_create_request.dart';
 import '../../data/models/auth/user_current_profile_response.dart';
 import '../services/auth_service.dart';
 import '../services/api_client.dart';
-import 'active_session_provider.dart';
-import 'learning_provider.dart';
-import 'gamification_provider.dart';
-import 'session_quota_provider.dart';
+import '../services/quiz_store.dart';
 
 final authServiceProvider = Provider<AuthService>((ref) {
   return AuthService();
+});
+
+/// Reactive provider emitting the currently authenticated user's ID, or `null` when logged out.
+/// Feature providers observe this to automatically bind their lifecycle to the active user.
+final currentUserIdProvider = Provider<String?>((ref) {
+  return ref.watch(authProvider.select((s) => s.user?.id));
 });
 
 /// Represents the high-level lifecycle state of the user's authentication session.
@@ -86,15 +89,12 @@ class AuthNotifier extends Notifier<AuthState> {
 
   void forceLogout() {
     final wasAuthenticated = state.status == AuthStatus.authenticated || state.user != null;
+    QuizDraftStore.clearAll();
+    QuizSubmissionStore.clearAll();
     state = AuthState(
       status: AuthStatus.unauthenticated, 
       error: wasAuthenticated ? "Session expired. Please log in again." : null,
     );
-    ref.invalidate(activeSessionProvider);
-    ref.invalidate(sessionsProvider);
-    ref.invalidate(gamificationEventProvider);
-    ref.invalidate(journeyCompleteProvider);
-    ref.invalidate(sessionQuotaProvider);
   }
 
   /// Restores session on cold boot or browser refresh (F5) by verifying the HTTP-only
@@ -109,19 +109,13 @@ class AuthNotifier extends Notifier<AuthState> {
           isLoading: false,
           clearError: true,
         );
-        ref.read(sessionQuotaProvider.notifier).fetchQuota();
         return true;
       }
     } catch (_) {
       // 401 or network drop — treat as unauthenticated session
     }
 
-    state = state.copyWith(
-      status: AuthStatus.unauthenticated,
-      clearUser: true,
-      isLoading: false,
-      clearError: true,
-    );
+    forceLogout();
     return false;
   }
 
@@ -132,6 +126,9 @@ class AuthNotifier extends Notifier<AuthState> {
       clearError: true,
     );
     try {
+      QuizDraftStore.clearAll();
+      QuizSubmissionStore.clearAll();
+
       final request = LoginRequest(email: email, password: password);
       final success = await _authService.login(request);
       if (success) {
@@ -149,7 +146,6 @@ class AuthNotifier extends Notifier<AuthState> {
           isLoading: false,
           clearError: true,
         );
-        ref.read(sessionQuotaProvider.notifier).fetchQuota();
 
         return true;
       }
@@ -209,14 +205,20 @@ class AuthNotifier extends Notifier<AuthState> {
 
   Future<void> logout() async {
     state = state.copyWith(isLoading: true, loadingMessage: 'Signing out...');
-    await _authService.logout();
+    try {
+      await _authService.logout();
+    } catch (_) {}
+    await ApiClient.instance.clearCookies();
     forceLogout();
     state = AuthState(status: AuthStatus.unauthenticated); // Reset error
   }
 
   Future<void> logoutAll() async {
     state = state.copyWith(isLoading: true, loadingMessage: 'Signing out of all devices...');
-    await _authService.logoutAll();
+    try {
+      await _authService.logoutAll();
+    } catch (_) {}
+    await ApiClient.instance.clearCookies();
     forceLogout();
     state = AuthState(status: AuthStatus.unauthenticated);
   }
@@ -226,7 +228,7 @@ class AuthNotifier extends Notifier<AuthState> {
   }
 
   void setUser(UserCurrentProfileResponse user) {
-    state = state.copyWith(user: user);
+    state = state.copyWith(user: user, status: AuthStatus.authenticated);
   }
 
   Future<void> refreshProfile() async {

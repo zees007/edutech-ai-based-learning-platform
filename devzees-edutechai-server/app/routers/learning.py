@@ -25,6 +25,10 @@ from agents.socratic_tutor import SocraticTutorAgent
 from app.dependencies import get_current_user, require_privilege, has_privilege
 from app.exceptions import BadRequestException, NotFoundException, ForbiddenException
 from app.privileges_config import (
+    ET_ALL,
+    ET_VIEW_USER,
+    ET_FULL_ACCESS_USER,
+    ET_VIEW_ANALYTICS,
     ET_INTERACT_LEARNING_SESSION,
     ET_START_LEARNING_SESSION,
     ET_VIEW_LEARNING_HISTORY,
@@ -41,6 +45,7 @@ from models.dashboard_schemas import (
 )
 from services.analytics_service import AnalyticsService
 from services.database import get_db
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from models.db_models import User
 from models.schemas import (
@@ -379,12 +384,20 @@ async def complete_step(
 
     memory.xp_earned += awarded_xp
 
+    # Attribute step completion XP to milestone step
+    step_total_xp = awarded_xp
+    if 0 <= step_index < len(memory.steps):
+        step_obj = memory.steps[step_index]
+        step_obj.xp_earned = getattr(step_obj, "xp_earned", 0) + awarded_xp
+        step_total_xp = step_obj.xp_earned
+
     try:
         await session_manager.update_session(memory)
         await session_manager.save_step_progress(
             session_id=session_id,
             step_index=step_index,
             status="complete",
+            xp_earned=step_total_xp,
         )
         AnalyticsService.invalidate_standing_cache(current_user.id)
     except Exception as e:
@@ -596,12 +609,45 @@ async def list_user_sessions(
     }
 
 
+async def _resolve_analytics_target_user(
+    current_user: User,
+    user_id: str | None,
+    db: AsyncSession,
+) -> str:
+    """
+    Resolve and validate the target user ID for analytics endpoints.
+    Regular users can only view their own analytics. Users with ET_ALL (SuperAdmin),
+    ET_VIEW_USER, ET_FULL_ACCESS_USER, or ET_VIEW_ANALYTICS can inspect another user.
+    """
+    cleaned_id = user_id.strip() if user_id and user_id.strip() else None
+    target_id = cleaned_id or current_user.id
+
+    if target_id != current_user.id:
+        can_inspect = (
+            has_privilege(current_user, ET_ALL)
+            or has_privilege(current_user, ET_VIEW_USER)
+            or has_privilege(current_user, ET_FULL_ACCESS_USER)
+            or has_privilege(current_user, ET_VIEW_ANALYTICS)
+        )
+        if not can_inspect:
+            raise ForbiddenException("Permission required to view another user's learning dashboard.")
+
+        stmt = select(User).where(User.id == target_id)
+        res = await db.execute(stmt)
+        target_user = res.scalar_one_or_none()
+        if not target_user:
+            raise NotFoundException(f"User with ID '{target_id}' was not found.")
+
+    return target_id
+
+
 @router.get(
     "/learning/analytics/standing",
     response_model=LearnerStandingResponse,
     dependencies=[Depends(require_privilege(ET_DASHBOARD))],
 )
 async def get_learner_standing(
+    user_id: str | None = Query(None, description="Optional target user ID (admin privilege required if not self)"),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -609,9 +655,10 @@ async def get_learner_standing(
     Retrieve all-time cumulative gamification standing: level title, XP progression,
     active and personal best study streaks, and permanently unlocked trophies.
     """
+    target_id = await _resolve_analytics_target_user(current_user, user_id, db)
     return await AnalyticsService.get_user_standing(
         db=db,
-        user_id=current_user.id,
+        user_id=target_id,
     )
 
 
@@ -621,6 +668,7 @@ async def get_learner_standing(
     dependencies=[Depends(require_privilege(ET_DASHBOARD))],
 )
 async def get_learner_performance(
+    user_id: str | None = Query(None, description="Optional target user ID (admin privilege required if not self)"),
     time_range: str = Query("30d", pattern="^(7d|30d|90d|1y|all|custom)$", description="Performance interval window"),
     start_date: date | None = Query(None, description="Start date YYYY-MM-DD for custom range"),
     end_date: date | None = Query(None, description="End date YYYY-MM-DD for custom range"),
@@ -632,9 +680,10 @@ async def get_learner_performance(
     Retrieve interval-scoped learner performance metrics, quiz accuracy curves,
     weak concept identification, mode usage, and heatmap density for the specified time window.
     """
+    target_id = await _resolve_analytics_target_user(current_user, user_id, db)
     return await AnalyticsService.get_user_performance(
         db=db,
-        user_id=current_user.id,
+        user_id=target_id,
         time_range=time_range,
         start_date=start_date,
         end_date=end_date,

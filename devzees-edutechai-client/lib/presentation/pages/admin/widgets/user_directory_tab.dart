@@ -11,6 +11,7 @@ import '../../../widgets/shimmer_loading.dart';
 import 'admin_data_table.dart';
 import 'searchable_user_dropdown.dart';
 import 'tier_badge.dart';
+import 'user_analytics_dialog.dart';
 
 /// User Directory & Role Assignment tab.
 /// Displays Manage User Role section first with a searchable user dropdown,
@@ -51,8 +52,10 @@ class _UserDirectoryTabState extends ConsumerState<UserDirectoryTab> {
       _selectedUser = user;
       _selectedUserId = user?.id;
       if (user != null) {
-        _selectedRoleIds =
-            user.roles.where((r) => !r.retired).map((r) => r.id).toList();
+        _selectedRoleIds = user.roles
+            .where((r) => !r.retired)
+            .map((r) => r.id)
+            .toList();
       } else {
         _selectedRoleIds = [];
       }
@@ -142,18 +145,25 @@ class _UserDirectoryTabState extends ConsumerState<UserDirectoryTab> {
                 children: [
                   Text(
                     'User Directory',
-                    style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
+                    style: AppTextStyles.h4.copyWith(
+                      color: AppColors.textPrimary,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     'Browse, filter, and inspect registered users across the platform',
-                    style: AppTextStyles.body2.copyWith(color: AppColors.textMuted),
+                    style: AppTextStyles.body2.copyWith(
+                      color: AppColors.textMuted,
+                    ),
                   ),
                 ],
               ),
               if (usersState.data != null)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.surfaceDeep.withValues(alpha: 0.6),
                     borderRadius: BorderRadius.circular(10),
@@ -161,7 +171,9 @@ class _UserDirectoryTabState extends ConsumerState<UserDirectoryTab> {
                   ),
                   child: Text(
                     'Showing ${usersState.data!.items.length} of ${usersState.data!.total} users',
-                    style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+                    style: AppTextStyles.caption.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                 ),
             ],
@@ -231,7 +243,9 @@ class _UserDirectoryTabState extends ConsumerState<UserDirectoryTab> {
                     ),
                     Text(
                       'Select a user to review and update their assigned roles',
-                      style: AppTextStyles.caption.copyWith(color: AppColors.textMuted),
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.textMuted,
+                      ),
                     ),
                   ],
                 ),
@@ -282,12 +296,17 @@ class _UserDirectoryTabState extends ConsumerState<UserDirectoryTab> {
                   children: [
                     Text(
                       'Assigned System Roles:',
-                      style: AppTextStyles.label.copyWith(color: AppColors.textSecondary),
+                      style: AppTextStyles.label.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
                     ),
                     if (_hasUnsavedRoleChanges) ...[
                       const SizedBox(width: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.purple.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(6),
@@ -307,10 +326,7 @@ class _UserDirectoryTabState extends ConsumerState<UserDirectoryTab> {
                     ],
                   ],
                 ),
-                SizedBox(
-                  width: 220,
-                  child: _buildRoleSearchBar(),
-                ),
+                SizedBox(width: 220, child: _buildRoleSearchBar()),
               ],
             ),
             const SizedBox(height: 12),
@@ -401,13 +417,18 @@ class _UserDirectoryTabState extends ConsumerState<UserDirectoryTab> {
                     Flexible(
                       child: Text(
                         '${user.firstName} ${user.lastName}',
-                        style: AppTextStyles.subtitle2.copyWith(color: AppColors.textPrimary),
+                        style: AppTextStyles.subtitle2.copyWith(
+                          color: AppColors.textPrimary,
+                        ),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     const SizedBox(width: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 7,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: user.retired
                             ? AppColors.rose.withValues(alpha: 0.15)
@@ -417,7 +438,9 @@ class _UserDirectoryTabState extends ConsumerState<UserDirectoryTab> {
                       child: Text(
                         user.retired ? 'Retired' : 'Active',
                         style: AppTextStyles.badge.copyWith(
-                          color: user.retired ? AppColors.rose : AppColors.accentGreen,
+                          color: user.retired
+                              ? AppColors.rose
+                              : AppColors.accentGreen,
                           fontSize: 10,
                         ),
                       ),
@@ -431,17 +454,23 @@ class _UserDirectoryTabState extends ConsumerState<UserDirectoryTab> {
                   children: [
                     Text(
                       user.email,
-                      style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
                     ),
                     if (user.mobile != null && user.mobile!.isNotEmpty)
                       Text(
                         '• ${user.mobile}',
-                        style: AppTextStyles.caption.copyWith(color: AppColors.textMuted),
+                        style: AppTextStyles.caption.copyWith(
+                          color: AppColors.textMuted,
+                        ),
                       ),
                     if (user.country != null && user.country!.isNotEmpty)
                       Text(
                         '• ${user.country}',
-                        style: AppTextStyles.caption.copyWith(color: AppColors.textMuted),
+                        style: AppTextStyles.caption.copyWith(
+                          color: AppColors.textMuted,
+                        ),
                       ),
                   ],
                 ),
@@ -462,9 +491,7 @@ class _UserDirectoryTabState extends ConsumerState<UserDirectoryTab> {
       decoration: BoxDecoration(
         color: AppColors.surfaceDeep.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: AppColors.glassBorder.withValues(alpha: 0.4),
-        ),
+        border: Border.all(color: AppColors.glassBorder.withValues(alpha: 0.4)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -477,7 +504,9 @@ class _UserDirectoryTabState extends ConsumerState<UserDirectoryTab> {
           const SizedBox(height: 10),
           Text(
             'No User Selected',
-            style: AppTextStyles.subtitle2.copyWith(color: AppColors.textSecondary),
+            style: AppTextStyles.subtitle2.copyWith(
+              color: AppColors.textSecondary,
+            ),
           ),
           const SizedBox(height: 4),
           ConstrainedBox(
@@ -606,7 +635,10 @@ class _UserDirectoryTabState extends ConsumerState<UserDirectoryTab> {
           border: InputBorder.none,
           enabledBorder: InputBorder.none,
           focusedBorder: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+          contentPadding: const EdgeInsets.symmetric(
+            vertical: 10,
+            horizontal: 8,
+          ),
         ),
       ),
     );
@@ -615,8 +647,17 @@ class _UserDirectoryTabState extends ConsumerState<UserDirectoryTab> {
   Widget _buildUsersTable(AdminUsersState state) {
     final users = state.data!.items;
     return AdminDataTable(
-      columns: const ['Name', 'Email', 'Country', 'Tier', 'Roles', 'Status', 'Created', 'Actions'],
-      columnWidths: const [1.4, 1.8, 0.9, 0.8, 1.8, 0.8, 1.1, 1.0],
+      columns: const [
+        'Name',
+        'Email',
+        'Country',
+        'Tier',
+        'Roles',
+        'Status',
+        'Created',
+        'Actions',
+      ],
+      columnWidths: const [1.3, 1.6, 0.8, 0.8, 1.5, 0.8, 1.0, 1.8],
       sortBy: state.sortBy,
       isDesc: state.isDesc,
       onSort: (colName) {
@@ -631,7 +672,10 @@ class _UserDirectoryTabState extends ConsumerState<UserDirectoryTab> {
         ref.read(adminUsersProvider.notifier).setPage(newPage);
       },
       rows: users.map<List<Widget>>((u) {
-        final rolesStr = u.roles.where((r) => !r.retired).map((r) => r.name).join(', ');
+        final rolesStr = u.roles
+            .where((r) => !r.retired)
+            .map((r) => r.name)
+            .join(', ');
         final tier = u.subscription?.tier ?? 'free';
         final isSelected = _selectedUserId == u.id;
 
@@ -646,7 +690,9 @@ class _UserDirectoryTabState extends ConsumerState<UserDirectoryTab> {
           ),
           Text(
             u.email,
-            style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+            style: AppTextStyles.caption.copyWith(
+              color: AppColors.textSecondary,
+            ),
             overflow: TextOverflow.ellipsis,
           ),
           Text(
@@ -656,7 +702,9 @@ class _UserDirectoryTabState extends ConsumerState<UserDirectoryTab> {
           TierBadge(tier: tier),
           Text(
             rolesStr.isEmpty ? 'None' : rolesStr,
-            style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+            style: AppTextStyles.caption.copyWith(
+              color: AppColors.textSecondary,
+            ),
             overflow: TextOverflow.ellipsis,
           ),
           Container(
@@ -678,40 +726,82 @@ class _UserDirectoryTabState extends ConsumerState<UserDirectoryTab> {
             _formatDate(u.createdAt),
             style: AppTextStyles.caption.copyWith(color: AppColors.textMuted),
           ),
-          // Actions: Manage Roles button
-          MouseRegion(
-            cursor: SystemMouseCursors.click,
-            child: OutlinedButton.icon(
-              icon: Icon(
-                isSelected ? Icons.check : Icons.shield_outlined,
-                size: 14,
-                color: isSelected ? AppColors.accentGreen : AppColors.purple,
-              ),
-              label: Text(
-                isSelected ? 'Selected' : 'Manage',
-                style: AppTextStyles.caption.copyWith(
-                  color: isSelected ? AppColors.accentGreen : AppColors.purple,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 11,
+          // Actions: Analytics Icon Button + Manage Roles button
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // 📊 View Learner Dashboard Button
+              Tooltip(
+                message: 'View ${u.firstName}\'s Dashboard & Analytics',
+                child: MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(8),
+                    onTap: () => UserAnalyticsDialog.show(context, u),
+                    child: Container(
+                      padding: const EdgeInsets.all(5),
+                      decoration: BoxDecoration(
+                        color: AppColors.purple.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: AppColors.purple.withValues(alpha: 0.3),
+                          width: 1,
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.insights_rounded,
+                        size: 15,
+                        color: AppColors.purple,
+                      ),
+                    ),
+                  ),
                 ),
               ),
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                minimumSize: const Size(0, 30),
-                side: BorderSide(
-                  color: isSelected
-                      ? AppColors.accentGreen.withValues(alpha: 0.6)
-                      : AppColors.purple.withValues(alpha: 0.4),
-                ),
-                backgroundColor: isSelected
-                    ? AppColors.accentGreen.withValues(alpha: 0.1)
-                    : Colors.transparent,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+              const SizedBox(width: 6),
+
+              // Manage Roles Button
+              MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: OutlinedButton.icon(
+                  icon: Icon(
+                    isSelected ? Icons.check : Icons.shield_outlined,
+                    size: 14,
+                    color: isSelected
+                        ? AppColors.accentGreen
+                        : AppColors.purple,
+                  ),
+                  label: Text(
+                    isSelected ? 'Selected' : 'Manage',
+                    style: AppTextStyles.caption.copyWith(
+                      color: isSelected
+                          ? AppColors.accentGreen
+                          : AppColors.purple,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 11,
+                    ),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    minimumSize: const Size(0, 30),
+                    side: BorderSide(
+                      color: isSelected
+                          ? AppColors.accentGreen.withValues(alpha: 0.6)
+                          : AppColors.purple.withValues(alpha: 0.4),
+                    ),
+                    backgroundColor: isSelected
+                        ? AppColors.accentGreen.withValues(alpha: 0.1)
+                        : Colors.transparent,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  onPressed: () => _selectUserFromTable(u),
                 ),
               ),
-              onPressed: () => _selectUserFromTable(u),
-            ),
+            ],
           ),
         ];
       }).toList(),
@@ -778,7 +868,10 @@ class _UserDirectoryTabState extends ConsumerState<UserDirectoryTab> {
           ),
           TextButton(
             onPressed: () => ref.read(adminUsersProvider.notifier).loadUsers(),
-            child: Text('Retry', style: AppTextStyles.button.copyWith(color: AppColors.rose)),
+            child: Text(
+              'Retry',
+              style: AppTextStyles.button.copyWith(color: AppColors.rose),
+            ),
           ),
         ],
       ),

@@ -85,45 +85,41 @@ class MobileLearningTopBar extends ConsumerWidget
                   // Otherwise: Show EduTech AI logo + Spacer
                   if (isDashboard) ...[
                     Container(
-                      width: 32,
-                      height: 32,
+                      width: 28,
+                      height: 28,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: isDark
-                            ? const Color(0xFF191B2B)
-                            : const Color(0xFFF1F5F9),
-                        borderRadius: BorderRadius.circular(8),
+                        color: const Color(0xFF1F6CFA).withValues(alpha: 0.22),
+                        borderRadius: BorderRadius.circular(7),
                         border: Border.all(
-                          color: isDark
-                              ? const Color(0x1FFFFFFF)
-                              : const Color(0xFFE2E8F0),
+                          color: const Color(0xFF60A5FA).withValues(alpha: 0.55),
                           width: 1.0,
                         ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF1F6CFA).withValues(alpha: 0.35),
+                            blurRadius: 5,
+                          ),
+                        ],
                       ),
-                      child: Icon(
+                      child: const Icon(
                         Icons.auto_graph_rounded,
-                        color: isDark
-                            ? const Color(0xFF60A5FA)
-                            : const Color(0xFF1D4ED8),
-                        size: 17,
+                        color: Color(0xFF38BDF8),
+                        size: 14,
                       ),
                     ),
                     const SizedBox(width: 8),
                     Flexible(
                       child: GradientText(
                         'Growth & Mastery Analytics',
+                        gradient: AppColors.primaryGradient,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 16.0,
+                        style: AppTextStyles.h4.copyWith(
+                          fontSize: 14.5,
                           fontWeight: FontWeight.w800,
                           letterSpacing: -0.3,
                         ),
-                        gradient: isDark
-                            ? AppColors.primaryGradient
-                            : const LinearGradient(
-                                colors: [Color(0xFF4F46E5), Color(0xFF7C3AED)],
-                              ),
                       ),
                     ),
                   ]

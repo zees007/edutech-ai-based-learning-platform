@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../../../data/models/dashboard/dashboard_response.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../core/theme/theme_palette.dart';
+import '../../../../core/utils/trophy_utils.dart';
+import '../../../../data/models/dashboard/dashboard_response.dart';
 import '../../../widgets/glass_card.dart';
 
 class ActivityAndAchievementsCard extends StatelessWidget {
@@ -155,28 +156,9 @@ class ActivityAndAchievementsCard extends StatelessWidget {
     final isDark = context.isDarkMode;
     final isUnlocked = ach.unlocked;
 
-    IconData iconData = Icons.emoji_events_rounded;
-    Color iconColor = AppColors.accentAmber;
-
-    if (ach.icon == 'flag') {
-      iconData = Icons.flag_rounded;
-      iconColor = AppColors.accentCyan;
-    } else if (ach.icon == 'bullseye') {
-      iconData = Icons.track_changes_rounded;
-      iconColor = AppColors.accentGreen;
-    } else if (ach.icon == 'flame') {
-      iconData = Icons.local_fire_department_rounded;
-      iconColor = const Color(0xFFEF4444);
-    } else if (ach.icon == 'compass') {
-      iconData = Icons.explore_rounded;
-      iconColor = AppColors.accentPurple;
-    } else if (ach.icon == 'books') {
-      iconData = Icons.menu_book_rounded;
-      iconColor = const Color(0xFF38BDF8);
-    } else if (ach.icon == 'crown') {
-      iconData = Icons.workspace_premium_rounded;
-      iconColor = AppColors.accentAmber;
-    }
+    final style = getTrophyStyle(ach.icon.isNotEmpty ? ach.icon : ach.id);
+    final iconData = style.icon;
+    final iconColor = style.color;
 
     return Container(
       constraints: const BoxConstraints(minHeight: 84),
@@ -192,12 +174,21 @@ class ActivityAndAchievementsCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: isUnlocked
-              ? iconColor.withValues(alpha: 0.3)
+              ? iconColor.withValues(alpha: 0.35)
               : (isDark
                   ? Colors.white.withValues(alpha: 0.06)
                   : Colors.black.withValues(alpha: 0.05)),
           width: 1,
         ),
+        boxShadow: isUnlocked
+            ? [
+                BoxShadow(
+                  color: iconColor.withValues(alpha: isDark ? 0.20 : 0.12),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
+                ),
+              ]
+            : null,
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -205,10 +196,24 @@ class ActivityAndAchievementsCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: isUnlocked
-                  ? iconColor.withValues(alpha: 0.15)
-                  : Colors.grey.withValues(alpha: 0.1),
+              gradient: isUnlocked
+                  ? LinearGradient(
+                      colors: [
+                        iconColor.withValues(alpha: 0.28),
+                        iconColor.withValues(alpha: 0.10),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    )
+                  : null,
+              color: isUnlocked ? null : Colors.grey.withValues(alpha: 0.1),
               shape: BoxShape.circle,
+              border: isUnlocked
+                  ? Border.all(
+                      color: iconColor.withValues(alpha: 0.45),
+                      width: 1.0,
+                    )
+                  : null,
             ),
             child: Icon(
               isUnlocked ? iconData : Icons.lock_outline_rounded,
@@ -222,17 +227,44 @@ class ActivityAndAchievementsCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  ach.title,
-                  style: AppTextStyles.label.copyWith(
-                    color: isUnlocked
-                        ? (isDark ? Colors.white : const Color(0xFF0F172A))
-                        : (isDark ? Colors.grey : const Color(0xFF94A3B8)),
-                    fontWeight: FontWeight.w700,
-                    fontSize: 13,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        ach.title,
+                        style: AppTextStyles.label.copyWith(
+                          color: isUnlocked
+                              ? (isDark ? Colors.white : const Color(0xFF0F172A))
+                              : (isDark ? Colors.grey : const Color(0xFF94A3B8)),
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    if (isUnlocked)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: iconColor.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(
+                            color: iconColor.withValues(alpha: 0.35),
+                            width: 0.8,
+                          ),
+                        ),
+                        child: Text(
+                          'UNLOCKED',
+                          style: TextStyle(
+                            color: iconColor,
+                            fontSize: 8.5,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
                 const SizedBox(height: 3),
                 Text(

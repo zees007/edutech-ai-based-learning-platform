@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/learning/session_model.dart';
 import '../services/learning_service.dart';
 import '../services/quiz_store.dart';
+import 'auth_provider.dart';
 
 final learningServiceProvider = Provider<LearningService>((ref) {
   return LearningService();
@@ -68,6 +69,11 @@ class SessionsNotifier extends Notifier<SessionsState> {
   @override
   SessionsState build() {
     _service = ref.watch(learningServiceProvider);
+    ref.listen(currentUserIdProvider, (previous, next) {
+      if (previous != next) {
+        state = SessionsState();
+      }
+    });
     return SessionsState();
   }
 

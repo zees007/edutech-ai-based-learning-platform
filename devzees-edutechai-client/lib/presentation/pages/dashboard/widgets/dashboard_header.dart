@@ -1,36 +1,37 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/dashboard_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../core/theme/theme_palette.dart';
+import '../../../../data/models/dashboard/dashboard_response.dart';
 import '../../../widgets/gradient_text.dart';
 import '../../../widgets/theme_toggle_button.dart';
+import 'learner_standing_hud.dart';
 
 /// Consolidated, ultra-premium Analytics Command Hub Header.
-/// Features a prominent gradient title, unified theme date dropdown matching
-/// [_CompactThemeDropdown] from journey_prompt_card, and smooth hover micro-animations.
+///
+/// Features a two-tier persistent architecture:
+/// - TIER 1: All-Time Learner Standing HUD Top Bar with prestige trophy title,
+///   total XP badge, next milestone progress, streaks, and the Theme Toggle Button
+///   pinned at the top right.
+/// - TIER 2: Analytics Filter Sub-Bar placed directly below Tier 1, featuring
+///   the "Growth & Mastery Analytics" title, period date range dropdown, and sync button.
 class DashboardHeader extends ConsumerWidget {
   final VoidCallback onRefresh;
   final bool isRefreshing;
+  final DashboardSummary? fallbackSummary;
+  final List<AchievementItem>? fallbackAchievements;
 
   const DashboardHeader({
     super.key,
     required this.onRefresh,
     this.isRefreshing = false,
+    this.fallbackSummary,
+    this.fallbackAchievements,
   });
 
-  BoxDecoration _buildPillDecoration(BuildContext context) {
-    final isDark = context.isDarkMode;
-    return BoxDecoration(
-      color: isDark ? const Color(0xFF191B2B) : const Color(0xFFF1F5F9),
-      borderRadius: BorderRadius.circular(8),
-      border: Border.all(
-        color: isDark ? const Color(0x1FFFFFFF) : const Color(0xFFE2E8F0),
-        width: 1.0,
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -77,63 +78,94 @@ class DashboardHeader extends ConsumerWidget {
           }
         }
 
-        return AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOutCubic,
-          width: double.infinity,
-          padding: EdgeInsets.symmetric(
-            horizontal: isMobile ? 16 : 24,
-            vertical: isMobile ? 10 : 12,
-          ),
-          decoration: BoxDecoration(
-            color: context.appColors.topBarBackground,
-            border: Border(
-              bottom: BorderSide(color: context.appColors.border, width: 1.0),
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // ─── TIER 1: Pinned Learner Standing Top Bar (With Theme Toggle at right) ───
+            LearnerStandingHud(
+              isTopBar: true,
+              showBottomBorder: false,
+              fallbackSummary: fallbackSummary,
+              fallbackAchievements: fallbackAchievements,
+              trailing: const ThemeToggleButton(size: 30),
             ),
-          ),
-          child: isDesktop
-              ? _buildDesktopView(
-                  context: context,
-                  ref: ref,
-                  activeRange: activeRange,
-                  displayLabel: displayLabel,
-                  isDark: isDark,
-                )
-              : isMobile
-              ? _buildMobileView(
-                  context: context,
-                  ref: ref,
-                  activeRange: activeRange,
-                  displayLabel: displayLabel,
-                  isDark: isDark,
-                )
-              : _buildTabletView(
-                  context: context,
-                  ref: ref,
-                  activeRange: activeRange,
-                  displayLabel: displayLabel,
-                  isDark: isDark,
+
+            // ─── TIER 2: Analytics Filter Sub-Bar (Directly below Tier 1) ───
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 250),
+              curve: Curves.easeOutCubic,
+              width: double.infinity,
+              padding: EdgeInsets.symmetric(
+                horizontal: isDesktop ? 16 : (isMobile ? 10 : 14),
+                vertical: isDesktop ? 8 : (isMobile ? 6 : 7),
+              ),
+              decoration: BoxDecoration(
+                color: isDark
+                    ? const Color(0xFF0C0D1A)
+                    : context.appColors.topBarBackground,
+                border: Border(
+                  bottom: BorderSide(
+                    color: isDark
+                        ? context.appColors.scaffoldBackground
+                        : const Color(0xFFF1F5F9),
+                    width: 1.0,
+                  ),
                 ),
+              ),
+              child: isDesktop
+                  ? _buildDesktopSubBar(
+                      context: context,
+                      ref: ref,
+                      activeRange: activeRange,
+                      displayLabel: displayLabel,
+                      isDark: isDark,
+                      isCompact: constraints.maxWidth < 1100,
+                    )
+                  : isMobile
+                  ? _buildMobileSubBar(
+                      context: context,
+                      ref: ref,
+                      activeRange: activeRange,
+                      displayLabel: displayLabel,
+                      isDark: isDark,
+                    )
+                  : _buildTabletSubBar(
+                      context: context,
+                      ref: ref,
+                      activeRange: activeRange,
+                      displayLabel: displayLabel,
+                      isDark: isDark,
+                    ),
+            ),
+          ],
         );
       },
     );
   }
 
-  // ─── DESKTOP VIEW ──────────────────────────────────────────────────────────
-  Widget _buildDesktopView({
+  // ─── DESKTOP SUB-BAR ────────────────────────────────────────────────────────
+  Widget _buildDesktopSubBar({
     required BuildContext context,
     required WidgetRef ref,
     required String activeRange,
     required String displayLabel,
     required bool isDark,
+    bool isCompact = false,
   }) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
+        // Left: Context Block (Growth & Mastery Analytics) wrapped in Expanded
         Expanded(
-          child: _buildContextBlock(context: context, isMobile: false),
+          child: _buildContextBlock(
+            context: context,
+            isMobile: false,
+            isCompact: isCompact,
+          ),
         ),
-        const SizedBox(width: 16),
+        SizedBox(width: isCompact ? 8 : 12),
+        // Right: Date Dropdown + Sync All Button
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -153,17 +185,57 @@ class DashboardHeader extends ConsumerWidget {
             _DashboardRefreshButton(
               isRefreshing: isRefreshing,
               onRefresh: onRefresh,
+              isCompact: isCompact,
             ),
-            const SizedBox(width: 8),
-            const ThemeToggleButton(size: 30),
           ],
         ),
       ],
     );
   }
 
-  // ─── TABLET VIEW ───────────────────────────────────────────────────────────
-  Widget _buildTabletView({
+  // ─── TABLET SUB-BAR ─────────────────────────────────────────────────────────
+  Widget _buildTabletSubBar({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String activeRange,
+    required String displayLabel,
+    required bool isDark,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Expanded(
+          child: _buildContextBlock(
+            context: context,
+            isMobile: false,
+            isCompact: true,
+          ),
+        ),
+        const SizedBox(width: 8),
+        _DashboardDateDropdown(
+          activeRange: activeRange,
+          displayLabel: displayLabel,
+          isMobile: true,
+          onRangeChanged: (val) {
+            ref.read(dashboardProvider.notifier).setTimeRange(val);
+          },
+          onSelectCustomRange: () => _selectCustomDateRange(context, ref),
+          onResetCustomRange: () {
+            ref.read(dashboardProvider.notifier).setTimeRange('30d');
+          },
+        ),
+        const SizedBox(width: 6),
+        _DashboardRefreshButton(
+          isRefreshing: isRefreshing,
+          onRefresh: onRefresh,
+          isCompact: true,
+        ),
+      ],
+    );
+  }
+
+  // ─── MOBILE SUB-BAR ─────────────────────────────────────────────────────────
+  Widget _buildMobileSubBar({
     required BuildContext context,
     required WidgetRef ref,
     required String activeRange,
@@ -176,53 +248,11 @@ class DashboardHeader extends ConsumerWidget {
         Row(
           children: [
             Expanded(
-              child: _buildContextBlock(context: context, isMobile: false),
-            ),
-            const SizedBox(width: 8),
-            const ThemeToggleButton(size: 30),
-          ],
-        ),
-        const SizedBox(height: 10),
-        Row(
-          children: [
-            _DashboardDateDropdown(
-              activeRange: activeRange,
-              displayLabel: displayLabel,
-              isMobile: false,
-              onRangeChanged: (val) {
-                ref.read(dashboardProvider.notifier).setTimeRange(val);
-              },
-              onSelectCustomRange: () => _selectCustomDateRange(context, ref),
-              onResetCustomRange: () {
-                ref.read(dashboardProvider.notifier).setTimeRange('30d');
-              },
-            ),
-            const SizedBox(width: 8),
-            _DashboardRefreshButton(
-              isRefreshing: isRefreshing,
-              onRefresh: onRefresh,
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  // ─── MOBILE VIEW ───────────────────────────────────────────────────────────
-  Widget _buildMobileView({
-    required BuildContext context,
-    required WidgetRef ref,
-    required String activeRange,
-    required String displayLabel,
-    required bool isDark,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: _buildContextBlock(context: context, isMobile: true),
+              child: _buildContextBlock(
+                context: context,
+                isMobile: true,
+                isCompact: true,
+              ),
             ),
             const SizedBox(width: 6),
             _DashboardRefreshButton(
@@ -230,11 +260,9 @@ class DashboardHeader extends ConsumerWidget {
               onRefresh: onRefresh,
               isCompact: true,
             ),
-            const SizedBox(width: 6),
-            const ThemeToggleButton(size: 30),
           ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         _DashboardDateDropdown(
           activeRange: activeRange,
           displayLabel: displayLabel,
@@ -256,43 +284,57 @@ class DashboardHeader extends ConsumerWidget {
   Widget _buildContextBlock({
     required BuildContext context,
     bool isMobile = false,
+    bool isCompact = false,
   }) {
     final isDark = context.isDarkMode;
 
     return Row(
+      mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // Accent Icon Box
+        // Glowing Squircle Accent Badge (Identical in Dark and Light Theme)
         Container(
-          width: isMobile ? 34 : 38,
-          height: isMobile ? 34 : 38,
-          alignment: Alignment.center,
-          decoration: _buildPillDecoration(context),
-          child: Icon(
-            Icons.auto_graph_rounded,
-            color: isDark ? const Color(0xFF60A5FA) : const Color(0xFF1D4ED8),
-            size: isMobile ? 18 : 20,
+          width: isMobile ? 30 : (isCompact ? 32 : 36),
+          height: isMobile ? 30 : (isCompact ? 32 : 36),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1F6CFA).withValues(alpha: 0.22),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: const Color(0xFF60A5FA).withValues(alpha: 0.55),
+              width: 1.0,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF1F6CFA).withValues(alpha: 0.35),
+                blurRadius: 6,
+              ),
+            ],
+          ),
+          child: Center(
+            child: Icon(
+              Icons.auto_graph_rounded,
+              color: const Color(0xFF38BDF8),
+              size: isMobile ? 15 : (isCompact ? 16 : 18),
+            ),
           ),
         ),
-        const SizedBox(width: 12),
+        SizedBox(width: isCompact ? 8 : 10),
         Flexible(
-          child: GradientText(
-            'Growth & Mastery Analytics',
-            gradient: isDark
-                ? AppColors.primaryGradient
-                : const LinearGradient(
-                    colors: [Color(0xFF4F46E5), Color(0xFF7C3AED)],
-                  ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: (isMobile
-                    ? AppTextStyles.subtitle2
-                    : AppTextStyles.h4)
-                .copyWith(
-                  fontSize: isMobile ? 16.0 : 20.0,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -0.5,
-                ),
+          child: Tooltip(
+            triggerMode: TooltipTriggerMode.tap,
+            message:
+                'Growth & Mastery Analytics\nPerformance metrics, concept mastery, and quiz comprehension',
+            child: GradientText(
+              'Growth & Mastery Analytics',
+              gradient: AppColors.primaryGradient,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppTextStyles.h4.copyWith(
+                fontSize: isMobile ? 15.0 : (isCompact ? 17.0 : 19.0),
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.4,
+              ),
+            ),
           ),
         ),
       ],
@@ -411,52 +453,253 @@ class _DashboardDateDropdown extends StatefulWidget {
 }
 
 class _DashboardDateDropdownState extends State<_DashboardDateDropdown> {
+  final GlobalKey _dropdownKey = GlobalKey();
   bool _isHovered = false;
+
+  void _showFilterDialog(BuildContext context, bool isDark) {
+    final RenderBox? renderBox =
+        _dropdownKey.currentContext?.findRenderObject() as RenderBox?;
+    if (renderBox == null) return;
+
+    final size = renderBox.size;
+    final offset = renderBox.localToGlobal(Offset.zero);
+
+    showMenu<String>(
+      context: context,
+      color: Colors.transparent,
+      elevation: 0,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(16)),
+        side: BorderSide.none,
+      ),
+      position: RelativeRect.fromLTRB(
+        offset.dx,
+        offset.dy + size.height + 4,
+        MediaQuery.of(context).size.width - offset.dx - size.width,
+        0,
+      ),
+      items: [
+        PopupMenuItem<String>(
+          enabled: false,
+          padding: EdgeInsets.zero,
+          child: IconTheme(
+            data: const IconThemeData(opacity: 1.0),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+                child: Container(
+                  width: 175,
+                  padding: const EdgeInsets.symmetric(vertical: 6),
+                  decoration: BoxDecoration(
+                    color: AppColors.popoverBackground,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: AppColors.glassBorder,
+                      width: 1.0,
+                    ),
+                    boxShadow: isDark
+                        ? [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.4),
+                              blurRadius: 20,
+                              offset: const Offset(0, 6),
+                            ),
+                          ]
+                        : const [
+                            BoxShadow(
+                              color: Color(0x18000000),
+                              blurRadius: 20,
+                              offset: Offset(0, 8),
+                              spreadRadius: 0,
+                            ),
+                            BoxShadow(
+                              color: Color(0x0A000000),
+                              blurRadius: 6,
+                              offset: Offset(0, 2),
+                              spreadRadius: 0,
+                            ),
+                          ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _buildDialogItem(context, '7d', 'Last 7 Days', isDark),
+                      _buildDialogItem(context, '30d', 'Last 30 Days', isDark),
+                      _buildDialogItem(context, '90d', 'Last 90 Days', isDark),
+                      _buildDialogItem(context, '1y', 'Last 1 Year', isDark),
+                      _buildDialogItem(context, 'all', 'All Time', isDark),
+                      _buildDialogItem(
+                        context,
+                        'custom',
+                        'Custom Range...',
+                        isDark,
+                        onTapOverride: () {
+                          widget.onSelectCustomRange();
+                        },
+                      ),
+                      if (widget.activeRange == 'custom')
+                        _buildDialogItem(
+                          context,
+                          'reset',
+                          'Reset to 30 Days',
+                          isDark,
+                          onTapOverride: () {
+                            widget.onResetCustomRange();
+                          },
+                          isDestructive: true,
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDialogItem(
+    BuildContext context,
+    String value,
+    String label,
+    bool isDark, {
+    VoidCallback? onTapOverride,
+    bool isDestructive = false,
+  }) {
+    final isSelected = value == widget.activeRange;
+    bool isItemHovered = false;
+    final primaryAccent = isDark ? AppColors.primary : AppColors.purple;
+
+    return StatefulBuilder(
+      builder: (context, setItemState) {
+        final Color bg = isSelected
+            ? primaryAccent.withValues(alpha: isDark ? 0.20 : 0.12)
+            : (isItemHovered
+                ? (isDark
+                    ? Colors.white.withValues(alpha: 0.08)
+                    : primaryAccent.withValues(alpha: 0.08))
+                : Colors.transparent);
+
+        final Color targetTextColor = isDestructive
+            ? const Color(0xFFEF4444)
+            : (isSelected
+                ? primaryAccent
+                : (isItemHovered
+                    ? (isDark ? AppColors.textPrimary : primaryAccent)
+                    : (isDark
+                        ? const Color(0xFFCBD5E1)
+                        : const Color(0xFF334155))));
+
+        return MouseRegion(
+          onEnter: (_) => setItemState(() => isItemHovered = true),
+          onExit: (_) => setItemState(() => isItemHovered = false),
+          child: InkWell(
+            onTap: () {
+              Navigator.of(context).pop();
+              if (onTapOverride != null) {
+                onTapOverride();
+              } else {
+                widget.onRangeChanged(value);
+              }
+            },
+            borderRadius: BorderRadius.circular(8),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              curve: Curves.easeOut,
+              margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+              decoration: BoxDecoration(
+                color: bg,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: AnimatedDefaultTextStyle(
+                      duration: const Duration(milliseconds: 150),
+                      curve: Curves.easeOut,
+                      style: AppTextStyles.label.copyWith(
+                        color: targetTextColor,
+                        fontWeight: (isSelected || isItemHovered)
+                            ? FontWeight.w600
+                            : FontWeight.w500,
+                      ),
+                      child: Text(
+                        label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ),
+                  if (isSelected)
+                    Icon(
+                      Icons.check_rounded,
+                      color: primaryAccent,
+                      size: 16,
+                    ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final isDark = context.isDarkMode;
+    final primaryBlue = AppColors.primary;
+    final purple = AppColors.purple;
+
+    final Color borderColor = isDark
+        ? (_isHovered
+            ? primaryBlue
+            : primaryBlue.withValues(alpha: 0.60))
+        : (_isHovered
+            ? purple
+            : purple.withValues(alpha: 0.55));
+
+    final Color iconColor = isDark ? primaryBlue : purple;
 
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
       cursor: SystemMouseCursors.click,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeOutCubic,
-        height: 38,
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        decoration: BoxDecoration(
-          color: isDark
-              ? (_isHovered ? const Color(0xFF262842) : const Color(0xFF1A1B2C))
-              : (_isHovered ? Colors.white : const Color(0xFFF1F5F9)),
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: AppColors.primary.withValues(
-              alpha: isDark
-                  ? (_isHovered ? 0.70 : 0.40)
-                  : (_isHovered ? 0.60 : 0.35),
+      child: GestureDetector(
+        key: _dropdownKey,
+        onTap: () => _showFilterDialog(context, isDark),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOutCubic,
+          height: 32,
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          decoration: BoxDecoration(
+            color: isDark
+                ? (_isHovered
+                    ? primaryBlue.withValues(alpha: 0.16)
+                    : primaryBlue.withValues(alpha: 0.08))
+                : (_isHovered
+                    ? purple.withValues(alpha: 0.10)
+                    : purple.withValues(alpha: 0.05)),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: borderColor,
+              width: 1.0,
             ),
-            width: 1.2,
-          ),
-          boxShadow: [
-            if (_isHovered)
-              BoxShadow(
-                color: AppColors.primary.withValues(
-                  alpha: isDark ? 0.28 : 0.16,
+            boxShadow: [
+              if (_isHovered)
+                BoxShadow(
+                  color: (isDark ? primaryBlue : purple).withValues(
+                    alpha: isDark ? 0.30 : 0.18,
+                  ),
+                  blurRadius: 8,
+                  spreadRadius: 0.5,
+                  offset: const Offset(0, 1),
                 ),
-                blurRadius: 12,
-                spreadRadius: 1,
-                offset: Offset.zero,
-              ),
-          ],
-        ),
-        child: Theme(
-          data: Theme.of(context).copyWith(
-            hoverColor: AppColors.primary.withValues(alpha: 0.12),
-            focusColor: AppColors.primary.withValues(alpha: 0.15),
-            splashColor: AppColors.primary.withValues(alpha: 0.10),
-            highlightColor: AppColors.primary.withValues(alpha: 0.10),
+            ],
           ),
           child: Row(
             mainAxisSize:
@@ -465,182 +708,50 @@ class _DashboardDateDropdownState extends State<_DashboardDateDropdown> {
                 ? MainAxisAlignment.spaceBetween
                 : MainAxisAlignment.start,
             children: [
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.date_range_rounded,
-                    size: 15,
-                    color: isDark ? AppColors.primary : AppColors.purple,
+              Container(
+                width: 18,
+                height: 18,
+                decoration: BoxDecoration(
+                  color: (isDark ? primaryBlue : purple).withValues(
+                    alpha: isDark ? 0.22 : 0.14,
                   ),
-                  const SizedBox(width: 8),
-                  DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
-                      value: widget.activeRange == 'custom'
-                          ? 'custom'
-                          : widget.activeRange,
-                      borderRadius: BorderRadius.circular(14),
-                      dropdownColor:
-                          isDark ? const Color(0xFF1E2034) : Colors.white,
-                      elevation: 8,
-                      icon: Padding(
-                        padding: const EdgeInsets.only(left: 6),
-                        child: Icon(
-                          Icons.keyboard_arrow_down_rounded,
-                          size: 16,
-                          color: isDark ? AppColors.primary : AppColors.purple,
-                        ),
-                      ),
-                      style: AppTextStyles.body2.copyWith(
-                        color: AppColors.textPrimary,
-                        fontWeight: FontWeight.w600,
-                        fontSize: widget.isMobile ? 12 : 13,
-                      ),
-                      selectedItemBuilder: (context) {
-                        return [
-                          _buildSelectedItem(
-                            'Last 7 Days',
-                            isDark,
-                            widget.isMobile,
-                          ),
-                          _buildSelectedItem(
-                            'Last 30 Days',
-                            isDark,
-                            widget.isMobile,
-                          ),
-                          _buildSelectedItem(
-                            'Last 90 Days',
-                            isDark,
-                            widget.isMobile,
-                          ),
-                          _buildSelectedItem(
-                            'Last 1 Year',
-                            isDark,
-                            widget.isMobile,
-                          ),
-                          _buildSelectedItem(
-                            'All Time',
-                            isDark,
-                            widget.isMobile,
-                          ),
-                          _buildSelectedItem(
-                            widget.displayLabel,
-                            isDark,
-                            widget.isMobile,
-                          ),
-                        ];
-                      },
-                      items: [
-                        _buildDropdownItem(
-                          'Last 7 Days',
-                          '7d',
-                          isDark,
-                          widget.isMobile,
-                        ),
-                        _buildDropdownItem(
-                          'Last 30 Days',
-                          '30d',
-                          isDark,
-                          widget.isMobile,
-                        ),
-                        _buildDropdownItem(
-                          'Last 90 Days',
-                          '90d',
-                          isDark,
-                          widget.isMobile,
-                        ),
-                        _buildDropdownItem(
-                          'Last 1 Year',
-                          '1y',
-                          isDark,
-                          widget.isMobile,
-                        ),
-                        _buildDropdownItem(
-                          'All Time',
-                          'all',
-                          isDark,
-                          widget.isMobile,
-                        ),
-                        _buildDropdownItem(
-                          widget.activeRange == 'custom'
-                              ? widget.displayLabel
-                              : 'Custom Date Range...',
-                          'custom',
-                          isDark,
-                          widget.isMobile,
-                        ),
-                      ],
-                      onChanged: (value) async {
-                        if (value == null) return;
-                        if (value == 'custom') {
-                          await widget.onSelectCustomRange();
-                        } else {
-                          widget.onRangeChanged(value);
-                        }
-                      },
-                    ),
-                  ),
-                ],
-              ),
-              if (widget.activeRange == 'custom') ...[
-                const SizedBox(width: 6),
-                InkWell(
-                  onTap: widget.onResetCustomRange,
-                  borderRadius: BorderRadius.circular(8),
-                  child: Padding(
-                    padding: const EdgeInsets.all(3.0),
-                    child: Icon(
-                      Icons.close_rounded,
-                      size: 14,
-                      color: isDark
-                          ? AppColors.textMuted
-                          : const Color(0xFF94A3B8),
-                    ),
+                  borderRadius: BorderRadius.circular(5),
+                ),
+                child: Center(
+                  child: Icon(
+                    Icons.calendar_today_rounded,
+                    size: 10.5,
+                    color: iconColor,
                   ),
                 ),
-              ],
+              ),
+              const SizedBox(width: 6),
+              Text(
+                widget.displayLabel,
+                style: AppTextStyles.subtitle2.copyWith(
+                  color: isDark ? Colors.white : const Color(0xFF0F172A),
+                  fontSize: widget.isMobile ? 11.0 : 12.0,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.2,
+                ),
+              ),
+              const SizedBox(width: 4),
+              Icon(
+                Icons.keyboard_arrow_down_rounded,
+                size: 14,
+                color: isDark
+                    ? const Color(0xFF94A3B8)
+                    : const Color(0xFF64748B),
+              ),
             ],
           ),
         ),
       ),
     );
   }
-
-  Widget _buildSelectedItem(String label, bool isDark, bool isMobile) {
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Text(
-        label,
-        style: AppTextStyles.body2.copyWith(
-          color: AppColors.textPrimary,
-          fontWeight: FontWeight.w600,
-          fontSize: isMobile ? 12 : 13,
-        ),
-      ),
-    );
-  }
-
-  DropdownMenuItem<String> _buildDropdownItem(
-    String label,
-    String value,
-    bool isDark,
-    bool isMobile,
-  ) {
-    return DropdownMenuItem<String>(
-      value: value,
-      child: Text(
-        label,
-        style: AppTextStyles.body2.copyWith(
-          color: AppColors.textPrimary,
-          fontWeight: FontWeight.w600,
-          fontSize: isMobile ? 12 : 13,
-        ),
-      ),
-    );
-  }
 }
 
-/// Unified Theme Refresh Button matching the compact dropdown aesthetic.
+/// Dynamic Live Sync / Refresh button with micro-animation and state feedback.
 class _DashboardRefreshButton extends StatefulWidget {
   final bool isRefreshing;
   final VoidCallback onRefresh;
@@ -657,94 +768,141 @@ class _DashboardRefreshButton extends StatefulWidget {
       _DashboardRefreshButtonState();
 }
 
-class _DashboardRefreshButtonState extends State<_DashboardRefreshButton> {
+class _DashboardRefreshButtonState extends State<_DashboardRefreshButton>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animController;
   bool _isHovered = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    );
+    if (widget.isRefreshing) {
+      _animController.repeat();
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant _DashboardRefreshButton oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isRefreshing && !_animController.isAnimating) {
+      _animController.repeat();
+    } else if (!widget.isRefreshing && _animController.isAnimating) {
+      _animController.stop();
+      _animController.reset();
+    }
+  }
+
+  @override
+  void dispose() {
+    _animController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final isDark = context.isDarkMode;
+    final primaryBlue = AppColors.primary;
+    final purple = AppColors.purple;
 
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      cursor: SystemMouseCursors.click,
-      child: Tooltip(
-        message: 'Refresh analytics',
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeOutCubic,
-          height: 38,
-          decoration: BoxDecoration(
-            color: isDark
-                ? (_isHovered
-                      ? const Color(0xFF262842)
-                      : const Color(0xFF1A1B2C))
-                : (_isHovered ? Colors.white : const Color(0xFFF1F5F9)),
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(
-              color: AppColors.primary.withValues(
-                alpha: isDark
-                    ? (_isHovered ? 0.70 : 0.40)
-                    : (_isHovered ? 0.60 : 0.35),
-              ),
-              width: 1.2,
+    final Color borderColor = isDark
+        ? (_isHovered
+            ? primaryBlue
+            : primaryBlue.withValues(alpha: 0.60))
+        : (_isHovered
+            ? purple
+            : purple.withValues(alpha: 0.55));
+
+    final Color iconColor = widget.isRefreshing
+        ? const Color(0xFF22D3EE)
+        : (isDark ? primaryBlue : purple);
+
+    return Tooltip(
+      triggerMode: TooltipTriggerMode.tap,
+      message: widget.isRefreshing
+          ? 'Syncing learning analytics with latest progress...'
+          : 'Sync All: refresh metrics and study records',
+      child: MouseRegion(
+        onEnter: (_) => setState(() => _isHovered = true),
+        onExit: (_) => setState(() => _isHovered = false),
+        cursor: widget.isRefreshing
+            ? SystemMouseCursors.basic
+            : SystemMouseCursors.click,
+        child: GestureDetector(
+          onTap: widget.isRefreshing ? null : widget.onRefresh,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOutCubic,
+            height: 32,
+            padding: EdgeInsets.symmetric(
+              horizontal: widget.isCompact ? 8 : 10,
             ),
-            boxShadow: [
-              if (_isHovered)
-                BoxShadow(
-                  color: AppColors.primary.withValues(
-                    alpha: isDark ? 0.28 : 0.16,
-                  ),
-                  blurRadius: 12,
-                  spreadRadius: 1,
-                  offset: Offset.zero,
-                ),
-            ],
-          ),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: widget.isRefreshing ? null : widget.onRefresh,
-              borderRadius: BorderRadius.circular(10),
-              child: Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: widget.isCompact ? 10 : 12,
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    widget.isRefreshing
-                        ? SizedBox(
-                            width: 14,
-                            height: 14,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: isDark
-                                  ? AppColors.primary
-                                  : AppColors.purple,
-                            ),
-                          )
-                        : Icon(
-                            Icons.refresh_rounded,
-                            size: 16,
-                            color: isDark
-                                ? AppColors.primary
-                                : AppColors.purple,
-                          ),
-                    if (!widget.isCompact) ...[
-                      const SizedBox(width: 6),
-                      Text(
-                        'Sync',
-                        style: AppTextStyles.body2.copyWith(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
+            decoration: BoxDecoration(
+              color: isDark
+                  ? (_isHovered
+                      ? primaryBlue.withValues(alpha: 0.16)
+                      : primaryBlue.withValues(alpha: 0.08))
+                  : (_isHovered
+                      ? purple.withValues(alpha: 0.10)
+                      : purple.withValues(alpha: 0.05)),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: borderColor,
+                width: 1.0,
               ),
+              boxShadow: [
+                if (_isHovered)
+                  BoxShadow(
+                    color: (isDark ? primaryBlue : purple).withValues(
+                      alpha: isDark ? 0.30 : 0.18,
+                    ),
+                    blurRadius: 8,
+                    spreadRadius: 0.5,
+                    offset: const Offset(0, 1),
+                  ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 18,
+                  height: 18,
+                  decoration: BoxDecoration(
+                    color: (isDark ? primaryBlue : purple).withValues(
+                      alpha: widget.isRefreshing
+                          ? 0.30
+                          : (isDark ? 0.22 : 0.14),
+                    ),
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  child: Center(
+                    child: RotationTransition(
+                      turns: _animController,
+                      child: Icon(
+                        Icons.sync_rounded,
+                        size: 11.5,
+                        color: iconColor,
+                      ),
+                    ),
+                  ),
+                ),
+                if (!widget.isCompact) ...[
+                  const SizedBox(width: 6),
+                  Text(
+                    widget.isRefreshing ? 'Syncing...' : 'Sync All',
+                    style: AppTextStyles.subtitle2.copyWith(
+                      color: isDark ? Colors.white : const Color(0xFF0F172A),
+                      fontSize: 12.0,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.2,
+                    ),
+                  ),
+                ],
+              ],
             ),
           ),
         ),

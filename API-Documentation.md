@@ -696,37 +696,87 @@ Retrieve all-time cumulative learner progression, current rank level, XP progres
 ```json
 {
   "total_xp": 3450,
-  "current_level": 5,
-  "level_title": "Rising Scholar",
-  "xp_progress_in_level": 250,
-  "xp_needed_for_next": 250,
-  "is_max_level": false,
+  "highest_trophy_id": "gold",
+  "highest_trophy_title": "Gold Trophy",
+  "next_trophy_id": "platinum",
+  "next_trophy_title": "Platinum Trophy",
+  "next_trophy_requirements": [
+    {
+      "label": "Sessions",
+      "current": 10,
+      "required": 25,
+      "met": false
+    },
+    {
+      "label": "Steps",
+      "current": 60,
+      "required": 150,
+      "met": false
+    },
+    {
+      "label": "Perfect Quizzes",
+      "current": 15,
+      "required": 25,
+      "met": false
+    },
+    {
+      "label": "Day Streak",
+      "current": 3,
+      "required": 7,
+      "met": false
+    }
+  ],
+  "trophy_progress_fraction": 0.457,
   "current_streak": 5,
   "longest_streak": 12,
   "achievements": [
     {
-      "id": "first_step",
-      "title": "First Step",
-      "description": "Mastered your first learning milestone step",
+      "id": "bronze",
+      "title": "Bronze Trophy",
+      "description": "Mastered your first learning steps (1 session, 5 steps, 3 perfect quizzes)",
       "unlocked": true,
       "unlocked_at": "2026-11-10T09:00:00Z",
-      "icon": "flag"
+      "icon": "bronze"
     },
     {
-      "id": "first_journey",
-      "title": "Journey Pioneer",
-      "description": "Completed an entire learning roadmap to 100%",
+      "id": "silver",
+      "title": "Silver Trophy",
+      "description": "Established active learning consistency (5 sessions, 25 steps, 8 perfect quizzes, 2-day streak)",
       "unlocked": true,
       "unlocked_at": "2026-11-12T14:30:00Z",
-      "icon": "trophy"
+      "icon": "silver"
     },
     {
-      "id": "sharp_mind",
-      "title": "Sharp Mind",
-      "description": "Scored 100% (3/3) on 5 different milestone quizzes",
+      "id": "gold",
+      "title": "Gold Trophy",
+      "description": "True Grand Sage dedication (10 sessions, 60 steps, 15 perfect quizzes, 3-day streak, Level 10 Grand Sage)",
       "unlocked": true,
       "unlocked_at": "2026-11-15T11:20:00Z",
-      "icon": "bullseye"
+      "icon": "gold"
+    },
+    {
+      "id": "platinum",
+      "title": "Platinum Trophy",
+      "description": "Knowledge marathoner (25 sessions, 150 steps, 25 perfect quizzes, 7-day streak)",
+      "unlocked": false,
+      "unlocked_at": null,
+      "icon": "platinum"
+    },
+    {
+      "id": "sapphire",
+      "title": "Sapphire Trophy",
+      "description": "Dedicated intellectual scholar (50 sessions, 250 steps, 40 perfect quizzes, 14-day streak)",
+      "unlocked": false,
+      "unlocked_at": null,
+      "icon": "sapphire"
+    },
+    {
+      "id": "diamond",
+      "title": "Diamond Trophy",
+      "description": "The Apex Century master (100 sessions, 500 steps, 75 perfect quizzes, 30-day streak)",
+      "unlocked": false,
+      "unlocked_at": null,
+      "icon": "diamond"
     }
   ]
 }

@@ -7,9 +7,8 @@ import 'package:devzees_edutechai_client/core/providers/auth_provider.dart';
 import 'package:devzees_edutechai_client/data/models/auth/user_current_profile_response.dart';
 import 'package:devzees_edutechai_client/data/models/dashboard/dashboard_response.dart';
 import 'package:devzees_edutechai_client/core/constants/responsive.dart';
-import 'package:devzees_edutechai_client/presentation/pages/dashboard/widgets/dashboard_header.dart';
 import 'package:devzees_edutechai_client/presentation/pages/dashboard/widgets/learning_dashboard_view.dart';
-import 'package:devzees_edutechai_client/presentation/pages/learning/widgets/mobile/mobile_learning_top_bar.dart';
+import 'package:devzees_edutechai_client/presentation/pages/dashboard/widgets/mobile_dashboard_top_bar.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/theme_toggle_button.dart';
 
 void main() {
@@ -148,10 +147,7 @@ void main() {
             final isMobile = Responsive.isMobile(context);
             return Scaffold(
               appBar: isMobile
-                  ? const MobileLearningTopBar(
-                      session: null,
-                      isDashboardOverride: true,
-                    )
+                  ? const MobileDashboardTopBar()
                   : null,
               body: SizedBox(
                 width: width,
@@ -295,11 +291,11 @@ class _MockLearnerStandingNotifier extends LearnerStandingNotifier {
   Future<LearnerStanding> build() async {
     return LearnerStanding(
       totalXp: 1250,
-      currentLevel: 4,
-      levelTitle: 'Knowledge Adept',
-      xpProgressInLevel: 250,
-      xpNeededForNext: 500,
-      isMaxLevel: false,
+      highestTrophyId: 'bronze',
+      highestTrophyTitle: 'Bronze Trophy',
+      nextTrophyId: 'silver',
+      nextTrophyTitle: 'Silver Trophy',
+      trophyProgressFraction: 0.65,
       currentStreak: 5,
       longestStreak: 12,
       achievements: achievements,

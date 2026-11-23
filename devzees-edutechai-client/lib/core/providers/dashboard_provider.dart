@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/dashboard/dashboard_response.dart';
 import '../services/dashboard_service.dart';
+import 'auth_provider.dart';
 
 final dashboardServiceProvider = Provider<DashboardService>((ref) {
   return DashboardService();
@@ -10,6 +11,11 @@ final dashboardServiceProvider = Provider<DashboardService>((ref) {
 class LearnerStandingNotifier extends AsyncNotifier<LearnerStanding> {
   @override
   Future<LearnerStanding> build() async {
+    // Automatically re-evaluates when authenticated user changes
+    final userId = ref.watch(currentUserIdProvider);
+    if (userId == null) {
+      return const LearnerStanding();
+    }
     final service = ref.watch(dashboardServiceProvider);
     return service.fetchStanding();
   }
@@ -56,6 +62,11 @@ class PerformanceFilterState {
 class PerformanceFilterNotifier extends Notifier<PerformanceFilterState> {
   @override
   PerformanceFilterState build() {
+    ref.listen<String?>(currentUserIdProvider, (prev, next) {
+      if (prev != next) {
+        state = const PerformanceFilterState(rangeKey: '30d');
+      }
+    });
     return const PerformanceFilterState(rangeKey: '30d');
   }
 
@@ -78,6 +89,8 @@ final performanceFilterProvider =
 });
 
 final performanceAnalyticsProvider = FutureProvider<PeriodPerformance>((ref) async {
+  // Re-fetch when user identity changes
+  ref.watch(currentUserIdProvider);
   final filter = ref.watch(performanceFilterProvider);
   final service = ref.watch(dashboardServiceProvider);
   return service.fetchPerformance(
@@ -131,6 +144,15 @@ class DashboardNotifier extends Notifier<DashboardState> {
   @override
   DashboardState build() {
     _service = ref.watch(dashboardServiceProvider);
+    // Reset cached dashboard data when the active user changes or logs out
+    ref.listen<String?>(
+      currentUserIdProvider,
+      (prev, next) {
+        if (prev != next) {
+          state = const DashboardState(isLoading: true);
+        }
+      },
+    );
     return const DashboardState(isLoading: true);
   }
 
@@ -187,4 +209,38 @@ class DashboardNotifier extends Notifier<DashboardState> {
 
 final dashboardProvider = NotifierProvider<DashboardNotifier, DashboardState>(() {
   return DashboardNotifier();
+});
+
+// ── 4. Admin User Dashboard Provider (For inspecting any user) ────────
+class UserDashboardParams {
+  final String userId;
+  final String timeRange;
+
+  const UserDashboardParams({
+    required this.userId,
+    this.timeRange = '30d',
+  });
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is UserDashboardParams &&
+          runtimeType == other.runtimeType &&
+          userId == other.userId &&
+          timeRange == other.timeRange;
+
+  @override
+  int get hashCode => userId.hashCode ^ timeRange.hashCode;
+}
+
+final userDashboardFutureProvider =
+    FutureProvider.family<DashboardResponse, UserDashboardParams>((ref, params) async {
+  final service = ref.watch(dashboardServiceProvider);
+  return service.fetchDashboard(userId: params.userId, timeRange: params.timeRange);
+});
+
+final userStandingFutureProvider =
+    FutureProvider.family<LearnerStanding, String>((ref, userId) async {
+  final service = ref.watch(dashboardServiceProvider);
+  return service.fetchStanding(userId: userId);
 });

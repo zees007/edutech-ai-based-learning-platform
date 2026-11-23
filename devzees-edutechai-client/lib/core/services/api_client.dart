@@ -117,4 +117,11 @@ class ApiClient {
       _dio.options.extra['withCredentials'] = true;
     }
   }
+
+  /// Purges all session and authentication cookies from disk and memory.
+  Future<void> clearCookies() async {
+    try {
+      await cookieJar?.deleteAll();
+    } catch (_) {}
+  }
 }
