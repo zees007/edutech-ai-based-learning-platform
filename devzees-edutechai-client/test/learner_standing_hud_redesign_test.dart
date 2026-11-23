@@ -323,6 +323,142 @@ void main() {
     );
   });
 
+  testWidgets('displays Bronze Trophy with Locked badge and encouraging tooltip when unranked', (tester) async {
+    tester.view.physicalSize = const Size(1280, 800);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    const unrankedStanding = LearnerStanding(
+      totalXp: 120,
+      highestTrophyId: null,
+      highestTrophyTitle: 'Unranked',
+      nextTrophyId: 'bronze',
+      nextTrophyTitle: 'Bronze Trophy',
+      trophyProgressFraction: 0.15,
+      currentStreak: 1,
+      longestStreak: 1,
+      achievements: [
+        AchievementItem(id: 'bronze', title: 'Bronze Trophy', description: '', icon: 'bronze', unlocked: false),
+        AchievementItem(id: 'silver', title: 'Silver Trophy', description: '', icon: 'silver', unlocked: false),
+        AchievementItem(id: 'gold', title: 'Gold Trophy', description: '', icon: 'gold', unlocked: false),
+        AchievementItem(id: 'platinum', title: 'Platinum Trophy', description: '', icon: 'platinum', unlocked: false),
+        AchievementItem(id: 'sapphire', title: 'Sapphire Trophy', description: '', icon: 'sapphire', unlocked: false),
+        AchievementItem(id: 'diamond', title: 'Diamond Trophy', description: '', icon: 'diamond', unlocked: false),
+      ],
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          learnerStandingProvider.overrideWith(
+            () => _MockStandingNotifier(unrankedStanding),
+          ),
+        ],
+        child: const MaterialApp(
+          home: Scaffold(
+            body: SizedBox(
+              width: 1280,
+              height: 800,
+              child: LearnerStandingHud(isTopBar: true),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // 1. Should display "Bronze Trophy" as aspirational target, NOT "Unranked"
+    expect(find.text('Bronze Trophy'), findsOneWidget);
+    expect(find.text('Unranked'), findsNothing);
+
+    // 2. Should display amber "Locked" badge, NOT "Current"
+    expect(find.text('Locked'), findsOneWidget);
+    expect(find.text('Current'), findsNothing);
+    expect(find.byIcon(Icons.lock_rounded), findsWidgets);
+
+    // 3. Tooltip should contain the encouraging prompt
+    final tooltips = tester.widgetList<Tooltip>(find.byType(Tooltip)).toList();
+    final messages = tooltips.map((t) => t.message).toList();
+    expect(
+      messages.any((m) => m?.contains('Continue learning to unlock your first Bronze Trophy! 🏆') == true),
+      isTrue,
+    );
+
+    // 4. A grayscale ColorFiltered layer must be applied to the locked trophy asset
+    expect(find.byType(ColorFiltered), findsOneWidget);
+
+    // 5. When locked, hovering should NOT scale up the trophy (it stays locked at 1.0)
+    final animatedScaleFinder = find.byType(AnimatedScale);
+    final initialScale = tester.widget<AnimatedScale>(animatedScaleFinder.first);
+    expect(initialScale.scale, equals(1.0));
+
+    final gesture = await tester.createGesture(kind: PointerDeviceKind.mouse);
+    await gesture.addPointer(location: Offset.zero);
+    addTearDown(gesture.removePointer);
+
+    await gesture.moveTo(tester.getCenter(find.text('Bronze Trophy')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 250));
+
+    final hoveredScale = tester.widget<AnimatedScale>(animatedScaleFinder.first);
+    expect(hoveredScale.scale, equals(1.0)); // Stays 1.0, nothing happens on hover when locked
+  });
+
+  testWidgets('verifies grayscale locked state and no hover scale in dark theme when locked', (tester) async {
+    tester.view.physicalSize = const Size(1280, 800);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    const unrankedStanding = LearnerStanding(
+      totalXp: 120,
+      highestTrophyId: null,
+      highestTrophyTitle: 'Unranked',
+      nextTrophyId: 'bronze',
+      nextTrophyTitle: 'Bronze Trophy',
+      trophyProgressFraction: 0.15,
+      currentStreak: 1,
+      longestStreak: 1,
+      achievements: [
+        AchievementItem(id: 'bronze', title: 'Bronze Trophy', description: '', icon: 'bronze', unlocked: false),
+      ],
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          learnerStandingProvider.overrideWith(
+            () => _MockStandingNotifier(unrankedStanding),
+          ),
+        ],
+        child: MaterialApp(
+          theme: ThemeData.dark(),
+          home: const Scaffold(
+            body: SizedBox(
+              width: 1280,
+              height: 800,
+              child: LearnerStandingHud(isTopBar: true),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Bronze Trophy'), findsOneWidget);
+    expect(find.text('Locked'), findsOneWidget);
+    expect(find.byType(ColorFiltered), findsOneWidget);
+
+    final animatedScaleFinder = find.byType(AnimatedScale);
+    final scaleWidget = tester.widget<AnimatedScale>(animatedScaleFinder.first);
+    expect(scaleWidget.scale, equals(1.0));
+  });
+
   testWidgets('trophy image scales up on mouse hover and resets on exit', (tester) async {
     tester.view.physicalSize = const Size(1280, 800);
     tester.view.devicePixelRatio = 1.0;

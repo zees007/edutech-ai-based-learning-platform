@@ -732,112 +732,14 @@ class LearnerStandingHud extends ConsumerWidget {
     required bool isCompact,
     bool isFlexible = false,
   }) {
-    final isDiamond = highestTrophyId?.toLowerCase() == 'diamond';
-    final glowColor = isDiamond ? const Color(0xFF22D3EE) : trophyStyle.color;
-
-    final String trophyTooltipMsg;
-    if (highestTrophyId == null ||
-        highestTrophyTitle.toLowerCase().contains('unranked')) {
-      trophyTooltipMsg =
-          'Current Trophy: In Progress\nNext to Achieve: ${nextTrophyTitle ?? 'Bronze Trophy'}';
-    } else if (nextTrophyTitle != null &&
-        nextTrophyTitle.isNotEmpty &&
-        nextTrophyTitle.toLowerCase() != highestTrophyTitle.toLowerCase()) {
-      trophyTooltipMsg =
-          'Current Trophy: $highestTrophyTitle\nNext to Achieve: $nextTrophyTitle';
-    } else {
-      trophyTooltipMsg =
-          'Current Trophy: $highestTrophyTitle\nMaximum trophy milestone achieved! 💎';
-    }
-
-    final textColumn = Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          highestTrophyTitle,
-          style: AppTextStyles.subtitle2.copyWith(
-            fontWeight: FontWeight.w800,
-            fontSize: isCompact ? 12.0 : 13.5,
-            color: isDark ? Colors.white : const Color(0xFF0F172A),
-            letterSpacing: -0.2,
-          ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        const SizedBox(height: 2),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Color(0xFF1F6CFA), // App Royal Blue
-                Color(0xFF8B5CF6), // App Violet
-                Color(0xFFC839F6), // App Electric Magenta
-              ],
-            ),
-            borderRadius: BorderRadius.circular(5),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF8B5CF6).withValues(alpha: 0.45),
-                blurRadius: 5,
-                offset: const Offset(0, 1),
-              ),
-            ],
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.check_rounded, color: Colors.white, size: 9.5),
-              const SizedBox(width: 2.5),
-              Text(
-                'Current',
-                style: AppTextStyles.caption.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w800,
-                  fontSize: 9.0,
-                  letterSpacing: 0.2,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-
-    final tooltipWrappedText = Tooltip(
-      triggerMode: TooltipTriggerMode.tap,
-      preferBelow: true,
-      verticalOffset: 14,
-      message: trophyTooltipMsg,
-      child: textColumn,
-    );
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
-      child: Row(
-        mainAxisSize: isFlexible ? MainAxisSize.max : MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // Radiant 3D-effect Trophy Crest with hover scale animation (NO tooltip on hover)
-          _HoverableTrophyCrest(
-            trophyStyle: trophyStyle,
-            glowColor: glowColor,
-            isDark: isDark,
-            isCompact: isCompact,
-            isDiamond: isDiamond,
-          ),
-          const SizedBox(width: 7),
-
-          // Informative tooltip attached to trophy title and badge
-          if (isFlexible)
-            Expanded(child: tooltipWrappedText)
-          else
-            tooltipWrappedText,
-        ],
-      ),
+    return _CurrentTrophyBadge(
+      highestTrophyId: highestTrophyId,
+      highestTrophyTitle: highestTrophyTitle,
+      nextTrophyTitle: nextTrophyTitle,
+      trophyStyle: trophyStyle,
+      isDark: isDark,
+      isCompact: isCompact,
+      isFlexible: isFlexible,
     );
   }
 
@@ -1243,6 +1145,208 @@ class LearnerStandingHud extends ConsumerWidget {
   }
 }
 
+class _CurrentTrophyBadge extends StatefulWidget {
+  final String? highestTrophyId;
+  final String highestTrophyTitle;
+  final String? nextTrophyTitle;
+  final TrophyStyle trophyStyle;
+  final bool isDark;
+  final bool isCompact;
+  final bool isFlexible;
+
+  const _CurrentTrophyBadge({
+    required this.highestTrophyId,
+    required this.highestTrophyTitle,
+    required this.nextTrophyTitle,
+    required this.trophyStyle,
+    required this.isDark,
+    required this.isCompact,
+    this.isFlexible = false,
+  });
+
+  @override
+  State<_CurrentTrophyBadge> createState() => _CurrentTrophyBadgeState();
+}
+
+class _CurrentTrophyBadgeState extends State<_CurrentTrophyBadge> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final isUnranked = widget.highestTrophyId == null ||
+        widget.highestTrophyTitle.toLowerCase().contains('unranked');
+    final displayTitle = isUnranked
+        ? (widget.nextTrophyTitle ?? 'Bronze Trophy')
+        : widget.highestTrophyTitle;
+    final effectiveStyle =
+        isUnranked ? getTrophyStyle('bronze') : widget.trophyStyle;
+    final isDiamond =
+        !isUnranked && widget.highestTrophyId?.toLowerCase() == 'diamond';
+    final glowColor = isDiamond
+        ? const Color(0xFF22D3EE)
+        : (isUnranked ? const Color(0xFF64748B) : effectiveStyle.color);
+
+    final String trophyTooltipMsg = isUnranked
+        ? 'Continue learning to unlock your first Bronze Trophy! 🏆'
+        : (widget.nextTrophyTitle != null &&
+                widget.nextTrophyTitle!.isNotEmpty &&
+                widget.nextTrophyTitle!.toLowerCase() !=
+                    widget.highestTrophyTitle.toLowerCase())
+            ? 'Current Trophy: ${widget.highestTrophyTitle}\nNext to Achieve: ${widget.nextTrophyTitle}'
+            : 'Current Trophy: ${widget.highestTrophyTitle}\nMaximum trophy milestone achieved! 💎';
+
+    final textColumn = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          displayTitle,
+          style: AppTextStyles.subtitle2.copyWith(
+            fontWeight: FontWeight.w800,
+            fontSize: widget.isCompact ? 12.0 : 13.5,
+            color: isUnranked
+                ? (widget.isDark
+                    ? const Color(0xFF94A3B8)
+                    : const Color(0xFF64748B))
+                : (widget.isDark
+                    ? Colors.white
+                    : const Color(0xFF0F172A)),
+            letterSpacing: -0.2,
+          ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        const SizedBox(height: 2),
+        isUnranked
+            ? Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 6,
+                  vertical: 1.5,
+                ),
+                decoration: BoxDecoration(
+                  color: widget.isDark
+                      ? const Color(0xFF1E293B).withValues(alpha: 0.65)
+                      : const Color(0xFFF1F5F9),
+                  borderRadius: BorderRadius.circular(5),
+                  border: Border.all(
+                    color: widget.isDark
+                        ? const Color(0xFF334155)
+                        : const Color(0xFFCBD5E1),
+                    width: 0.9,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.lock_rounded,
+                      color: widget.isDark
+                          ? const Color(0xFF94A3B8)
+                          : const Color(0xFF64748B),
+                      size: 9.0,
+                    ),
+                    const SizedBox(width: 2.5),
+                    Text(
+                      'Locked',
+                      style: AppTextStyles.caption.copyWith(
+                        color: widget.isDark
+                            ? const Color(0xFF94A3B8)
+                            : const Color(0xFF64748B),
+                        fontWeight: FontWeight.w700,
+                        fontSize: 9.0,
+                        letterSpacing: 0.2,
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            : Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 6,
+                  vertical: 1.5,
+                ),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Color(0xFF1F6CFA), // App Royal Blue
+                      Color(0xFF8B5CF6), // App Violet
+                      Color(0xFFC839F6), // App Electric Magenta
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(5),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF8B5CF6).withValues(alpha: 0.45),
+                      blurRadius: 5,
+                      offset: const Offset(0, 1),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.check_rounded,
+                      color: Colors.white,
+                      size: 9.5,
+                    ),
+                    const SizedBox(width: 2.5),
+                    Text(
+                      'Current',
+                      style: AppTextStyles.caption.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 9.0,
+                        letterSpacing: 0.2,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+      ],
+    );
+
+    final content = Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+      child: Row(
+        mainAxisSize: widget.isFlexible ? MainAxisSize.max : MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          _HoverableTrophyCrest(
+            trophyStyle: effectiveStyle,
+            glowColor: glowColor,
+            isDark: widget.isDark,
+            isCompact: widget.isCompact,
+            isDiamond: isDiamond,
+            isLocked: isUnranked,
+            isHovered: isUnranked ? false : _isHovered,
+          ),
+          const SizedBox(width: 7),
+          if (widget.isFlexible)
+            Expanded(child: textColumn)
+          else
+            textColumn,
+        ],
+      ),
+    );
+
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: isUnranked ? null : (_) => setState(() => _isHovered = true),
+      onExit: isUnranked ? null : (_) => setState(() => _isHovered = false),
+      child: Tooltip(
+        triggerMode: TooltipTriggerMode.tap,
+        preferBelow: true,
+        verticalOffset: 14,
+        message: trophyTooltipMsg,
+        child: content,
+      ),
+    );
+  }
+}
+
 /// Interactive 3D Trophy Crest with springy hover scale animation.
 ///
 /// On desktop/web hover, scales up specifically the 3D trophy image with an
@@ -1253,6 +1357,8 @@ class _HoverableTrophyCrest extends StatefulWidget {
   final bool isDark;
   final bool isCompact;
   final bool isDiamond;
+  final bool isLocked;
+  final bool? isHovered;
 
   const _HoverableTrophyCrest({
     required this.trophyStyle,
@@ -1260,6 +1366,8 @@ class _HoverableTrophyCrest extends StatefulWidget {
     required this.isDark,
     required this.isCompact,
     required this.isDiamond,
+    this.isLocked = false,
+    this.isHovered,
   });
 
   @override
@@ -1267,100 +1375,199 @@ class _HoverableTrophyCrest extends StatefulWidget {
 }
 
 class _HoverableTrophyCrestState extends State<_HoverableTrophyCrest> {
-  bool _isHovered = false;
+  static const ColorFilter _grayscaleFilter = ColorFilter.matrix(<double>[
+    0.2126, 0.7152, 0.0722, 0, 0,
+    0.2126, 0.7152, 0.0722, 0, 0,
+    0.2126, 0.7152, 0.0722, 0, 0,
+    0,      0,      0,      1, 0,
+  ]);
+
+  bool _internalHovered = false;
 
   @override
   Widget build(BuildContext context) {
     final isCompact = widget.isCompact;
     final glowColor = widget.glowColor;
     final isDark = widget.isDark;
+    final isLocked = widget.isLocked;
+    final isHovered = isLocked ? false : (widget.isHovered ?? _internalHovered);
     final hasAsset = widget.trophyStyle.assetPath != null;
+    final crestSize = isCompact ? 36.0 : 46.0;
+    final imageSize = isCompact ? 32.0 : 40.0;
+
+    final Widget rawImageOrIcon = widget.trophyStyle.assetPath != null
+        ? Image.asset(
+            widget.trophyStyle.assetPath!,
+            width: imageSize,
+            height: imageSize,
+            fit: BoxFit.contain,
+            errorBuilder: (_, _, _) => Icon(
+              widget.isDiamond
+                  ? Icons.diamond_rounded
+                  : widget.trophyStyle.icon,
+              color: isLocked
+                  ? (isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B))
+                  : Colors.white,
+              size: isCompact ? 19 : 24,
+            ),
+          )
+        : Icon(
+            widget.isDiamond
+                ? Icons.diamond_rounded
+                : widget.trophyStyle.icon,
+            color: isLocked
+                ? (isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B))
+                : Colors.white,
+            size: isCompact ? 19 : 24,
+          );
+
+    final Widget trophyVisual = isLocked
+        ? ColorFiltered(
+            colorFilter: _grayscaleFilter,
+            child: Opacity(
+              opacity: isDark ? 0.68 : 0.60,
+              child: rawImageOrIcon,
+            ),
+          )
+        : rawImageOrIcon;
+
+    final crestContent = SizedBox(
+      width: crestSize,
+      height: crestSize,
+      child: Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.center,
+        children: [
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 220),
+            curve: Curves.easeOutCubic,
+            clipBehavior: Clip.antiAlias,
+            width: crestSize,
+            height: crestSize,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: isLocked
+                  ? (isDark
+                      ? const Color(0xFF1A1C2E)
+                      : const Color(0xFFE2E8F0))
+                  : null,
+              border: isLocked
+                  ? Border.all(
+                      color: isDark
+                          ? const Color(0xFF333854)
+                          : const Color(0xFFCBD5E1),
+                      width: 1.0,
+                    )
+                  : null,
+              gradient: isLocked
+                  ? null
+                  : ((isDark || hasAsset)
+                      ? RadialGradient(
+                          colors: [
+                            glowColor.withValues(
+                              alpha: isDark
+                                  ? (isHovered ? 0.48 : 0.35)
+                                  : (isHovered ? 0.28 : 0.18),
+                            ),
+                            glowColor.withValues(
+                              alpha: isDark
+                                  ? (isHovered ? 0.22 : 0.15)
+                                  : (isHovered ? 0.12 : 0.06),
+                            ),
+                            Colors.transparent,
+                          ],
+                          center: Alignment.center,
+                          radius: 0.85,
+                        )
+                      : LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            glowColor,
+                            Color.lerp(
+                                  glowColor,
+                                  const Color(0xFF6B47EB),
+                                  0.6,
+                                ) ??
+                                glowColor,
+                          ],
+                        )),
+              boxShadow: isLocked
+                  ? null
+                  : [
+                      BoxShadow(
+                        color: glowColor.withValues(
+                          alpha: isDark
+                              ? (isHovered ? 0.55 : 0.40)
+                              : (isHovered ? 0.40 : 0.28),
+                        ),
+                        blurRadius: isHovered ? 12 : 8,
+                        spreadRadius: isHovered ? 1.0 : 0.5,
+                        offset: (isDark || hasAsset)
+                            ? Offset.zero
+                            : const Offset(0, 1.5),
+                      ),
+                    ],
+            ),
+            child: Center(
+              child: AnimatedScale(
+                scale: isHovered ? 1.25 : 1.0,
+                duration: const Duration(milliseconds: 250),
+                curve: Curves.easeOutBack,
+                child: ClipOval(child: trophyVisual),
+              ),
+            ),
+          ),
+          if (isLocked)
+            Positioned(
+              right: -1,
+              bottom: -1,
+              child: Container(
+                width: isCompact ? 14 : 16,
+                height: isCompact ? 14 : 16,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: isDark
+                      ? const Color(0xFF0F172A)
+                      : const Color(0xFFFFFFFF),
+                  border: Border.all(
+                    color: isDark
+                        ? const Color(0xFF475569)
+                        : const Color(0xFF94A3B8),
+                    width: 1.1,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.20),
+                      blurRadius: 3,
+                      offset: const Offset(0, 1),
+                    ),
+                  ],
+                ),
+                child: Center(
+                  child: Icon(
+                    Icons.lock_rounded,
+                    size: isCompact ? 8.5 : 10.0,
+                    color: isDark
+                        ? const Color(0xFF94A3B8)
+                        : const Color(0xFF64748B),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+
+    if (isLocked || widget.isHovered != null) {
+      return crestContent;
+    }
 
     return MouseRegion(
       cursor: SystemMouseCursors.click,
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 220),
-        curve: Curves.easeOutCubic,
-        clipBehavior: Clip.antiAlias,
-        width: isCompact ? 36 : 46,
-        height: isCompact ? 36 : 46,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: (isDark || hasAsset)
-              ? RadialGradient(
-                  colors: [
-                    glowColor.withValues(
-                      alpha: isDark
-                          ? (_isHovered ? 0.48 : 0.35)
-                          : (_isHovered ? 0.28 : 0.18),
-                    ),
-                    glowColor.withValues(
-                      alpha: isDark
-                          ? (_isHovered ? 0.22 : 0.15)
-                          : (_isHovered ? 0.12 : 0.06),
-                    ),
-                    Colors.transparent,
-                  ],
-                  center: Alignment.center,
-                  radius: 0.85,
-                )
-              : LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    glowColor,
-                    Color.lerp(glowColor, const Color(0xFF6B47EB), 0.6) ??
-                        glowColor,
-                  ],
-                ),
-          boxShadow: [
-            BoxShadow(
-              color: glowColor.withValues(
-                alpha: isDark
-                    ? (_isHovered ? 0.55 : 0.40)
-                    : (_isHovered ? 0.40 : 0.28),
-              ),
-              blurRadius: _isHovered ? 12 : 8,
-              spreadRadius: _isHovered ? 1.0 : 0.5,
-              offset: (isDark || hasAsset)
-                  ? Offset.zero
-                  : const Offset(0, 1.5),
-            ),
-          ],
-        ),
-        child: Center(
-          child: AnimatedScale(
-            scale: _isHovered ? 1.25 : 1.0,
-            duration: const Duration(milliseconds: 250),
-            curve: Curves.easeOutBack,
-            child: ClipOval(
-              child: widget.trophyStyle.assetPath != null
-                  ? Image.asset(
-                      widget.trophyStyle.assetPath!,
-                      width: isCompact ? 32 : 40,
-                      height: isCompact ? 32 : 40,
-                      fit: BoxFit.contain,
-                      errorBuilder: (_, _, _) => Icon(
-                        widget.isDiamond
-                            ? Icons.diamond_rounded
-                            : widget.trophyStyle.icon,
-                        color: Colors.white,
-                        size: isCompact ? 19 : 24,
-                      ),
-                    )
-                  : Icon(
-                      widget.isDiamond
-                          ? Icons.diamond_rounded
-                          : widget.trophyStyle.icon,
-                      color: Colors.white,
-                      size: isCompact ? 19 : 24,
-                    ),
-            ),
-          ),
-        ),
-      ),
+      onEnter: (_) => setState(() => _internalHovered = true),
+      onExit: (_) => setState(() => _internalHovered = false),
+      child: crestContent,
     );
   }
 }
