@@ -3,8 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
 import 'package:devzees_edutechai_client/presentation/pages/dashboard/widgets/dashboard_header.dart';
-import 'package:devzees_edutechai_client/core/providers/dashboard_provider.dart';
-import 'package:devzees_edutechai_client/core/providers/learner_standing_provider.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -30,13 +28,14 @@ void main() {
         ),
       ),
     );
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 200));
 
-    // Verify Growth & Mastery Analytics icon is present and has purple color (not faded sky blue)
+    // Verify Growth & Mastery Analytics icon is present with consistent brand primary color
     final autoGraphIconFinder = find.byIcon(Icons.auto_graph_rounded);
     expect(autoGraphIconFinder, findsOneWidget);
     final autoGraphIcon = tester.widget<Icon>(autoGraphIconFinder);
-    expect(autoGraphIcon.color, AppColors.purple);
+    expect(autoGraphIcon.color, AppColors.primary);
 
     // Verify Sync All refresh icon is purple in light theme when refreshing
     final syncIconFinder = find.byIcon(Icons.sync_rounded);
@@ -66,13 +65,14 @@ void main() {
         ),
       ),
     );
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 200));
 
-    // Verify Growth & Mastery Analytics icon in dark theme is cyan/sky blue
+    // Verify Growth & Mastery Analytics icon in dark theme is also brand primary color
     final autoGraphIconFinder = find.byIcon(Icons.auto_graph_rounded);
     expect(autoGraphIconFinder, findsOneWidget);
     final autoGraphIcon = tester.widget<Icon>(autoGraphIconFinder);
-    expect(autoGraphIcon.color, const Color(0xFF38BDF8));
+    expect(autoGraphIcon.color, AppColors.primary);
 
     // Verify Sync All refresh icon in dark theme is cyan
     final syncIconFinder = find.byIcon(Icons.sync_rounded);

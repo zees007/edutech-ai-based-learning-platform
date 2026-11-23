@@ -89,30 +89,22 @@ class MobileLearningTopBar extends ConsumerWidget
                       height: 28,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: isDark
-                            ? const Color(0xFF1F6CFA).withValues(alpha: 0.22)
-                            : AppColors.purple.withValues(alpha: 0.12),
+                        color: AppColors.primary.withValues(alpha: 0.22),
                         borderRadius: BorderRadius.circular(7),
                         border: Border.all(
-                          color: isDark
-                              ? const Color(0xFF60A5FA).withValues(alpha: 0.55)
-                              : AppColors.purple.withValues(alpha: 0.35),
+                          color: AppColors.primary.withValues(alpha: 0.55),
                           width: 1.0,
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: isDark
-                                ? const Color(0xFF1F6CFA).withValues(alpha: 0.35)
-                                : AppColors.purple.withValues(alpha: 0.15),
+                            color: AppColors.primary.withValues(alpha: 0.35),
                             blurRadius: 5,
                           ),
                         ],
                       ),
-                      child: Icon(
+                      child: const Icon(
                         Icons.auto_graph_rounded,
-                        color: isDark
-                            ? const Color(0xFF38BDF8)
-                            : AppColors.purple,
+                        color: AppColors.primary,
                         size: 14,
                       ),
                     ),
