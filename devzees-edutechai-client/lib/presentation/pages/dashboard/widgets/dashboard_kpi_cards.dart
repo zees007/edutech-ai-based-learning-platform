@@ -15,8 +15,13 @@ import '../../../../core/theme/theme_palette.dart';
 /// - Ring 4 (Electric Blue): Period Quiz Accuracy
 ///
 /// Features smooth sweep animations, interactive cross-hover/tap focus,
-/// full theme adaptation, and seamless responsive scaling across desktop,
-/// tablet (all 4 cards visible), and mobile (compact 2x2 grid).
+/// full theme adaptation, and seamless responsive scaling:
+/// - Large Desktop (≥1300px): Panoramic 1x4 layout (Donut Hub on left, single row of all 4 KPI cards on right).
+/// - Desktop (920px - 1299px): Panoramic side-by-side layout (Donut Hub on left, 2x2 KPI card grid on right).
+/// - Tablet (680px - 919px): Side-by-side layout showing all 4 cards simultaneously with the donut hub.
+/// - Compact Tablet (520px - 679px): Centered donut on top with all 4 cards in a 2x2 grid below.
+/// - Mobile (<520px): Compact concentric donut (~180px) + 2x2 compact grid below.
+/// - Ultra-narrow fallback (<340px): Adapts to a 1-column list to guarantee zero horizontal overflow.
 class DashboardKpiCards extends StatefulWidget {
   final DashboardSummary summary;
 
@@ -80,7 +85,8 @@ class _DashboardKpiCardsState extends State<DashboardKpiCards>
         final totalWidth = constraints.maxWidth;
         if (totalWidth <= 0) return const SizedBox.shrink();
 
-        final isDesktop = totalWidth >= 920;
+        final isLargeDesktop = totalWidth >= 1300;
+        final isDesktop = totalWidth >= 920 && !isLargeDesktop;
         final isTabletSideBySide = totalWidth >= 680 && totalWidth < 920;
         final isCompactTablet = totalWidth >= 520 && totalWidth < 680;
 
@@ -91,11 +97,20 @@ class _DashboardKpiCardsState extends State<DashboardKpiCards>
                 : Colors.white.withValues(alpha: 0.65),
             borderRadius: BorderRadius.circular(24),
           ),
-          padding: EdgeInsets.all(isDesktop ? 22 : (totalWidth < 360 ? 12 : 16)),
+          padding: EdgeInsets.all(
+              isLargeDesktop || isDesktop ? 22 : (totalWidth < 360 ? 12 : 16)),
           child: AnimatedBuilder(
             animation: _curvedAnimation,
             builder: (context, _) {
-              if (isDesktop || isTabletSideBySide) {
+              if (isLargeDesktop) {
+                return _buildLargeDesktopLayout(
+                  context: context,
+                  totalWidth: totalWidth,
+                  metrics: metrics,
+                  compositeScore: compositeScore,
+                  isDark: isDark,
+                );
+              } else if (isDesktop || isTabletSideBySide) {
                 return _buildSideBySideLayout(
                   context: context,
                   totalWidth: totalWidth,
@@ -129,6 +144,76 @@ class _DashboardKpiCardsState extends State<DashboardKpiCards>
   }
 
   // ─── LAYOUT BUILDERS ────────────────────────────────────────────────────────
+
+  /// Large Desktop (>= 1300px): Panoramic Donut Hub on left, single row of all 4 KPI cards on right.
+  Widget _buildLargeDesktopLayout({
+    required BuildContext context,
+    required double totalWidth,
+    required List<_KpiMetricData> metrics,
+    required int compositeScore,
+    required bool isDark,
+  }) {
+    const donutSize = 250.0;
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        // Concentric Donut Hub
+        SizedBox(
+          width: donutSize,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildDonutHub(
+                size: donutSize,
+                metrics: metrics,
+                compositeScore: compositeScore,
+                isDark: isDark,
+              ),
+              const SizedBox(height: 10),
+              _buildDonutFooterBadge(
+                isDark: isDark,
+                isCompact: false,
+                metrics: metrics,
+                focusedIndex: _focusedIndex,
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 20),
+
+        // Vertical Divider
+        Container(
+          width: 1,
+          height: donutSize * 0.9,
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.08)
+              : const Color(0xFFE2E8F0),
+        ),
+        const SizedBox(width: 20),
+
+        // 1x4 Horizontal Row of all 4 KPI Cards
+        Expanded(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              for (int i = 0; i < metrics.length; i++) ...[
+                Expanded(
+                  child: _buildMetricTile(
+                    context: context,
+                    index: i,
+                    metric: metrics[i],
+                    isDark: isDark,
+                  ),
+                ),
+                if (i < metrics.length - 1) const SizedBox(width: 14),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
 
   /// Desktop / Tablet Wide: Side-by-side Donut on left, 2x2 KPI card grid on right.
   Widget _buildSideBySideLayout({
@@ -330,6 +415,7 @@ class _DashboardKpiCardsState extends State<DashboardKpiCards>
           metrics: metrics,
           compositeScore: compositeScore,
           isDark: isDark,
+          isMobile: true,
         ),
         const SizedBox(height: 6),
         _buildDonutFooterBadge(
@@ -413,6 +499,7 @@ class _DashboardKpiCardsState extends State<DashboardKpiCards>
     required List<_KpiMetricData> metrics,
     required int compositeScore,
     required bool isDark,
+    bool isMobile = false,
   }) {
     return Center(
       child: SizedBox(
@@ -456,6 +543,7 @@ class _DashboardKpiCardsState extends State<DashboardKpiCards>
               metrics: metrics,
               compositeScore: compositeScore,
               isDark: isDark,
+              isMobile: isMobile || size < 200,
             ),
           ],
         ),
@@ -468,6 +556,7 @@ class _DashboardKpiCardsState extends State<DashboardKpiCards>
     required List<_KpiMetricData> metrics,
     required int compositeScore,
     required bool isDark,
+    bool isMobile = false,
   }) {
     final activeMetric = _focusedIndex != null ? metrics[_focusedIndex!] : null;
 
@@ -487,11 +576,13 @@ class _DashboardKpiCardsState extends State<DashboardKpiCards>
               ? _buildDefaultMasteryCenter(
                   compositeScore: compositeScore,
                   isDark: isDark,
+                  isMobile: isMobile,
                   key: const ValueKey('default_composite'),
                 )
               : _buildFocusedMetricCenter(
                   metric: activeMetric,
                   isDark: isDark,
+                  isMobile: isMobile,
                   key: ValueKey('focused_$_focusedIndex'),
                 ),
         ),
@@ -510,6 +601,7 @@ class _DashboardKpiCardsState extends State<DashboardKpiCards>
     required int compositeScore,
     required bool isDark,
     required Key key,
+    bool isMobile = false,
   }) {
     final animatedScore = (_curvedAnimation.value * compositeScore).round();
     final progressColor = _getProgressColor(animatedScore);
@@ -528,25 +620,27 @@ class _DashboardKpiCardsState extends State<DashboardKpiCards>
             '$animatedScore%',
             style: AppTextStyles.h3.copyWith(
               fontWeight: FontWeight.w900,
-              fontSize: 24,
+              fontSize: isMobile ? 20 : 24,
               letterSpacing: -0.8,
               color: isDark ? AppColors.textPrimary : const Color(0xFF0F172A),
             ),
           ),
-          const SizedBox(height: 2),
+          SizedBox(height: isMobile ? 1 : 2),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4),
             child: FittedBox(
               fit: BoxFit.scaleDown,
               child: Text(
-                'OVERALL PROGRESS',
+                isMobile ? 'OVERALL\nPROGRESS' : 'OVERALL PROGRESS',
+                textAlign: TextAlign.center,
                 style: AppTextStyles.caption.copyWith(
                   fontWeight: FontWeight.w700,
-                  fontSize: 8.5,
-                  letterSpacing: 0.4,
+                  fontSize: isMobile ? 8.0 : 8.5,
+                  height: 1.15,
+                  letterSpacing: isMobile ? 0.2 : 0.4,
                   color: progressColor,
                 ),
-                maxLines: 1,
+                maxLines: isMobile ? 2 : 1,
               ),
             ),
           ),
@@ -559,6 +653,7 @@ class _DashboardKpiCardsState extends State<DashboardKpiCards>
     required _KpiMetricData metric,
     required bool isDark,
     required Key key,
+    bool isMobile = false,
   }) {
     return Column(
       key: key,
@@ -567,7 +662,7 @@ class _DashboardKpiCardsState extends State<DashboardKpiCards>
       children: [
         Icon(
           metric.icon,
-          size: 15,
+          size: isMobile ? 13 : 15,
           color: metric.startColor,
         ),
         const SizedBox(height: 2),
@@ -575,7 +670,7 @@ class _DashboardKpiCardsState extends State<DashboardKpiCards>
           metric.value,
           style: AppTextStyles.h4.copyWith(
             fontWeight: FontWeight.w900,
-            fontSize: 18,
+            fontSize: isMobile ? 15 : 18,
             letterSpacing: -0.5,
             color: isDark ? AppColors.textPrimary : const Color(0xFF0F172A),
           ),
@@ -583,16 +678,22 @@ class _DashboardKpiCardsState extends State<DashboardKpiCards>
           overflow: TextOverflow.ellipsis,
         ),
         const SizedBox(height: 2),
-        Text(
-          metric.shortTitle.toUpperCase(),
-          style: AppTextStyles.caption.copyWith(
-            fontWeight: FontWeight.w700,
-            fontSize: 9.0,
-            letterSpacing: 0.5,
-            color: metric.startColor,
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              metric.shortTitle.toUpperCase(),
+              style: AppTextStyles.caption.copyWith(
+                fontWeight: FontWeight.w700,
+                fontSize: isMobile ? 8.0 : 9.0,
+                letterSpacing: 0.5,
+                color: metric.startColor,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
         ),
       ],
     );

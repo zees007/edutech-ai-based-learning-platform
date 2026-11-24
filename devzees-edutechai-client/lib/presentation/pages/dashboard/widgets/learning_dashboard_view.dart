@@ -70,12 +70,18 @@ class _LearningDashboardViewState extends ConsumerState<LearningDashboardView> {
                   child: SingleChildScrollView(
                     physics: const AlwaysScrollableScrollPhysics(),
                     padding: EdgeInsets.symmetric(
-                      horizontal: isMobile ? 16 : 32,
+                      horizontal: isMobile
+                          ? 16
+                          : (constraints.maxWidth >= 1500 ? 24 : 32),
                       vertical: isMobile ? 16 : 24,
                     ),
                     child: Center(
                       child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 1180),
+                        constraints: BoxConstraints(
+                          maxWidth: constraints.maxWidth >= 1500
+                              ? 1560
+                              : (constraints.maxWidth >= 1280 ? 1380 : 1180),
+                        ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [

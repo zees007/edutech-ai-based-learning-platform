@@ -254,6 +254,28 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
+
+  testWidgets(
+    'renders cleanly on widescreen desktop viewport (1920x1080) without overflow',
+    (tester) async {
+      tester.view.physicalSize = const Size(1920, 1080);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      await tester.pumpWidget(createDashboardWidget(width: 1920, height: 1080));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Growth & Mastery Analytics'), findsOneWidget);
+      expect(find.text('Active Study Time'), findsOneWidget);
+      expect(find.text('Journeys Completed'), findsOneWidget);
+      expect(find.text('Milestones Mastered'), findsOneWidget);
+      expect(find.text('Period Quiz Accuracy'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
 }
 
 class _MockDashboardNotifier extends DashboardNotifier {
