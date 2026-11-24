@@ -41,9 +41,7 @@ class MobileDashboardTopBar extends ConsumerWidget
       child: SafeArea(
         bottom: false,
         child: Container(
-          decoration: BoxDecoration(
-            color: context.appColors.topBarBackground,
-          ),
+          decoration: BoxDecoration(color: context.appColors.topBarBackground),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -83,12 +81,6 @@ class MobileDashboardTopBar extends ConsumerWidget
                           color: AppColors.primary.withValues(alpha: 0.55),
                           width: 1.0,
                         ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.primary.withValues(alpha: 0.35),
-                            blurRadius: 5,
-                          ),
-                        ],
                       ),
                       child: const Center(
                         child: Icon(
@@ -277,11 +269,46 @@ class MobileDashboardTopBar extends ConsumerWidget
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      _buildPopupItem(context, ref, '7d', 'Last 7 Days', activeRange, isDark),
-                      _buildPopupItem(context, ref, '30d', 'Last 30 Days', activeRange, isDark),
-                      _buildPopupItem(context, ref, '90d', 'Last 90 Days', activeRange, isDark),
-                      _buildPopupItem(context, ref, '1y', 'Last 1 Year', activeRange, isDark),
-                      _buildPopupItem(context, ref, 'all', 'All Time', activeRange, isDark),
+                      _buildPopupItem(
+                        context,
+                        ref,
+                        '7d',
+                        'Last 7 Days',
+                        activeRange,
+                        isDark,
+                      ),
+                      _buildPopupItem(
+                        context,
+                        ref,
+                        '30d',
+                        'Last 30 Days',
+                        activeRange,
+                        isDark,
+                      ),
+                      _buildPopupItem(
+                        context,
+                        ref,
+                        '90d',
+                        'Last 90 Days',
+                        activeRange,
+                        isDark,
+                      ),
+                      _buildPopupItem(
+                        context,
+                        ref,
+                        '1y',
+                        'Last 1 Year',
+                        activeRange,
+                        isDark,
+                      ),
+                      _buildPopupItem(
+                        context,
+                        ref,
+                        'all',
+                        'All Time',
+                        activeRange,
+                        isDark,
+                      ),
                     ],
                   ),
                 ),
@@ -311,9 +338,7 @@ class MobileDashboardTopBar extends ConsumerWidget
             Icon(
               Icons.calendar_today_rounded,
               size: 10.5,
-              color: isDark
-                  ? AppColors.primary
-                  : AppColors.purple,
+              color: isDark ? AppColors.primary : AppColors.purple,
             ),
             const SizedBox(width: 4.0),
             Text(
@@ -328,9 +353,7 @@ class MobileDashboardTopBar extends ConsumerWidget
             Icon(
               Icons.keyboard_arrow_down_rounded,
               size: 13,
-              color: isDark
-                  ? const Color(0xFF94A3B8)
-                  : const Color(0xFF64748B),
+              color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
             ),
           ],
         ),
@@ -373,8 +396,8 @@ class MobileDashboardTopBar extends ConsumerWidget
                   color: isSelected
                       ? primaryAccent
                       : (isDark
-                          ? const Color(0xFFCBD5E1)
-                          : const Color(0xFF334155)),
+                            ? const Color(0xFFCBD5E1)
+                            : const Color(0xFF334155)),
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                   fontSize: 12,
                 ),
@@ -383,11 +406,7 @@ class MobileDashboardTopBar extends ConsumerWidget
               ),
             ),
             if (isSelected)
-              Icon(
-                Icons.check_rounded,
-                color: primaryAccent,
-                size: 15,
-              ),
+              Icon(Icons.check_rounded, color: primaryAccent, size: 15),
           ],
         ),
       ),

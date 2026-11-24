@@ -7,5 +7,6 @@
   "git.ignoredRepositories": [
     "C:\\Users\\mhmdz\\Documents\\Softwares\\flutter",
     "C:/Users/mhmdz/Documents/Softwares/flutter"
-  ]
+  ],
+  "java.configuration.updateBuildConfiguration": "interactive"
 }

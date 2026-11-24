@@ -65,7 +65,7 @@ void main() {
       expect(find.text('88.5%'), findsOneWidget);
 
       // Check center composite score label
-      expect(find.text('MASTERY INDEX'), findsOneWidget);
+      expect(find.text('OVERALL PROGRESS'), findsOneWidget);
       expect(find.text('Active Rings'), findsOneWidget);
 
       expect(tester.takeException(), isNull);
@@ -118,7 +118,7 @@ void main() {
       await tester.pumpWidget(createWidget(width: 1000, height: 400));
       await tester.pumpAndSettle();
 
-      expect(find.text('MASTERY INDEX'), findsOneWidget);
+      expect(find.text('OVERALL PROGRESS'), findsOneWidget);
       expect(find.text('Active Rings'), findsOneWidget);
 
       // Tap on 'Active Study Time' card
@@ -132,7 +132,7 @@ void main() {
       await tester.tap(find.text('Active Study Time'));
       await tester.pumpAndSettle();
 
-      expect(find.text('MASTERY INDEX'), findsOneWidget);
+      expect(find.text('OVERALL PROGRESS'), findsOneWidget);
       expect(find.text('Active Rings'), findsOneWidget);
     });
 
@@ -148,7 +148,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Active Study Time'), findsOneWidget);
-      expect(find.text('MASTERY INDEX'), findsOneWidget);
+      expect(find.text('OVERALL PROGRESS'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   });

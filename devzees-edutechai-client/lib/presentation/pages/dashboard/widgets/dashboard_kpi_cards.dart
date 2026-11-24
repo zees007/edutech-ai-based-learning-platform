@@ -508,13 +508,27 @@ class _DashboardKpiCardsState extends State<DashboardKpiCards>
           ),
         ),
         const SizedBox(height: 2),
-        Text(
-          'MASTERY INDEX',
-          style: AppTextStyles.caption.copyWith(
-            fontWeight: FontWeight.w700,
-            fontSize: 9.5,
-            letterSpacing: 0.6,
-            color: isDark ? AppColors.textSecondary : const Color(0xFF64748B),
+        Tooltip(
+          triggerMode: TooltipTriggerMode.tap,
+          message:
+              'Combined progress across your quiz scores, completed journeys, study time, and milestone steps.',
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                'OVERALL PROGRESS',
+                style: AppTextStyles.caption.copyWith(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 8.5,
+                  letterSpacing: 0.4,
+                  color: isDark
+                      ? AppColors.textSecondary
+                      : const Color(0xFF64748B),
+                ),
+                maxLines: 1,
+              ),
+            ),
           ),
         ),
       ],
