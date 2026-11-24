@@ -562,3 +562,86 @@ async def test_standing_query_does_not_load_state_json():
             assert "state_json" not in sql.lower(), f"Detected state_json queried in SQL: {sql}"
 
 
+@pytest.mark.asyncio
+async def test_topic_breakdown_journey_ranking():
+    """Verify that topic_breakdown ranks journeys by completion % and contains status/steps metadata."""
+    await init_db()
+    sm = SessionManager()
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
+
+    async with get_db_session() as db:
+        user_req = UserCreateRequest(
+            first_name="Journey",
+            last_name="Ranker",
+            email=f"journey_{uuid4().hex[:8]}@example.com",
+            password="SecurePassword123!",
+        )
+        user = await UserService.create_user(db, user_req)
+        user_id = user.id
+
+        # Journey 1: 4 steps, completed (100%)
+        mem1 = SharedMemory(
+            user_id=user_id,
+            topic="Journey Alpha Complete",
+            learning_mode=LearningMode.VISUAL,
+        )
+        mem1.steps = [
+            MilestoneStep(index=i, title=f"Step {i}", description="", status=StepStatus.COMPLETE)
+            for i in range(4)
+        ]
+        mem1.steps_completed = 4
+        await sm.create_session(mem1, user_id=user_id)
+
+        s_res1 = await db.execute(select(SessionRecord).where(SessionRecord.session_id == mem1.session_id))
+        s_rec1 = s_res1.scalar_one()
+        s_rec1.is_complete = True
+        s_rec1.total_steps = 4
+
+        sp_res1 = await db.execute(select(StepProgress).where(StepProgress.session_id == mem1.session_id))
+        for sp in sp_res1.scalars().all():
+            sp.status = "complete"
+            sp.completed_at = now
+
+        # Journey 2: 4 steps, 2 completed (50%)
+        mem2 = SharedMemory(
+            user_id=user_id,
+            topic="Journey Beta InProgress",
+            learning_mode=LearningMode.DEEP_DIVE,
+        )
+        mem2.steps = [
+            MilestoneStep(index=i, title=f"Step {i}", description="", status=StepStatus.COMPLETE if i < 2 else StepStatus.PENDING)
+            for i in range(4)
+        ]
+        mem2.steps_completed = 2
+        await sm.create_session(mem2, user_id=user_id)
+
+        sp_res2 = await db.execute(select(StepProgress).where(StepProgress.session_id == mem2.session_id))
+        for sp in sp_res2.scalars().all():
+            if sp.step_index < 2:
+                sp.status = "complete"
+                sp.completed_at = now
+
+        await db.commit()
+
+    async with get_db_session() as db:
+        perf = await AnalyticsService.get_user_performance(db, user_id=user_id, time_range="30d")
+        assert len(perf.topic_breakdown) == 2
+        top1 = perf.topic_breakdown[0]
+        top2 = perf.topic_breakdown[1]
+
+        assert top1.topic == "Journey Alpha Complete"
+        assert top1.percentage == 100.0
+        assert top1.is_complete is True
+        assert top1.completed_steps == 4
+        assert top1.total_steps == 4
+        assert top1.learning_mode == "visual"
+
+        assert top2.topic == "Journey Beta InProgress"
+        assert top2.percentage == 50.0
+        assert top2.is_complete is False
+        assert top2.completed_steps == 2
+        assert top2.total_steps == 4
+        assert top2.learning_mode == "deep_dive"
+
+
+

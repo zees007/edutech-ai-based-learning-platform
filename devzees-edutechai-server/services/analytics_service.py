@@ -545,26 +545,62 @@ class AnalyticsService:
         total_questions_evaluated = total_quiz_count * 3
         questions_correct = int(round(sum_quiz_scores * 3))
 
-        # 5. Topic Mastery & Learning Mode Distribution
-        topic_counts: dict[str, int] = {}
+        # 5. Learning Journey Mastery Breakdown & Mode Distribution
+        total_active_sessions = len(active_session_ids)
+        journeys: list[TopicBreakdownDTO] = []
         mode_counts = {"visual": 0, "deep_dive": 0, "bite_sized": 0}
         for sid in active_session_ids:
             s = session_lookup.get(sid)
             if not s:
                 continue
-            clean_topic = s.topic.strip().title() if s.topic else "General Study"
-            topic_counts[clean_topic] = topic_counts.get(clean_topic, 0) + 1
+
             mode_key = (s.learning_mode or "visual").lower()
             if mode_key in mode_counts:
                 mode_counts[mode_key] += 1
             else:
                 mode_counts["visual"] += 1
 
-        total_active_sessions = len(active_session_ids)
-        topic_breakdown: list[TopicBreakdownDTO] = []
-        for top_name, count in sorted(topic_counts.items(), key=lambda x: x[1], reverse=True)[:6]:
-            pct = round((count / total_active_sessions) * 100.0, 1) if total_active_sessions > 0 else 0.0
-            topic_breakdown.append(TopicBreakdownDTO(topic=top_name, session_count=count, percentage=pct))
+            steps = steps_by_session.get(sid, [])
+            completed_steps_in_sess = [sp for sp in steps if sp.status == "complete"]
+            completed_count = len(completed_steps_in_sess)
+            total = s.total_steps if s.total_steps and s.total_steps > 0 else len(steps)
+
+            if s.is_complete:
+                pct = 100.0
+                if total == 0:
+                    total = max(completed_count, 1)
+                completed_count = total
+            else:
+                pct = round((completed_count / total) * 100.0, 1) if total > 0 else 0.0
+                if pct >= 100.0:
+                    pct = 99.0
+
+            clean_topic = s.topic.strip() if s.topic else "General Study"
+
+            journeys.append(
+                TopicBreakdownDTO(
+                    topic=clean_topic,
+                    session_count=1,
+                    percentage=pct,
+                    session_id=s.session_id,
+                    is_complete=s.is_complete,
+                    completed_steps=completed_count,
+                    total_steps=total,
+                    learning_mode=mode_key,
+                )
+            )
+
+        # Sort journeys by completion percentage descending, then by most recently updated
+        journeys.sort(
+            key=lambda j: (
+                j.percentage,
+                _to_naive_utc(session_lookup[j.session_id].updated_at)
+                or _to_naive_utc(session_lookup[j.session_id].created_at)
+                or datetime.min,
+            ),
+            reverse=True,
+        )
+        topic_breakdown: list[TopicBreakdownDTO] = journeys[:10]
 
         # 6. Period Summary & Completion Rates
         completed_sessions_count = len(completed_session_ids)

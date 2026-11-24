@@ -72,8 +72,13 @@ class TopicBreakdownDTO(BaseModel):
     """Subject and topic mastery distribution."""
 
     topic: str
-    session_count: int
+    session_count: int = 1
     percentage: float
+    session_id: str | None = None
+    is_complete: bool = False
+    completed_steps: int = 0
+    total_steps: int = 0
+    learning_mode: str | None = None
 
 
 class ModeDistributionDTO(BaseModel):
