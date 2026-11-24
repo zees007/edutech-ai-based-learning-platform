@@ -354,68 +354,73 @@ class _AuthCanvasState extends State<AuthCanvas>
                 ),
               ],
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          iconWidget,
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 7,
-                    vertical: 2,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? tagTextColor.withValues(alpha: 0.15)
-                        : tagBgColor,
-                    borderRadius: BorderRadius.circular(4),
-                    border: Border.all(
-                      color: isDark
-                          ? tagTextColor.withValues(alpha: 0.35)
-                          : tagBorderColor,
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 270),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              iconWidget,
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 7,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? tagTextColor.withValues(alpha: 0.15)
+                            : tagBgColor,
+                        borderRadius: BorderRadius.circular(4),
+                        border: Border.all(
+                          color: isDark
+                              ? tagTextColor.withValues(alpha: 0.35)
+                              : tagBorderColor,
+                        ),
+                      ),
+                      child: Text(
+                        tag,
+                        style: TextStyle(
+                          color: isDark
+                              ? tagTextColor.withValues(alpha: 0.95)
+                              : tagTextColor,
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
                     ),
-                  ),
-                  child: Text(
-                    tag,
-                    style: TextStyle(
-                      color: isDark
-                          ? tagTextColor.withValues(alpha: 0.95)
-                          : tagTextColor,
-                      fontSize: 9.5,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.5,
+                    const SizedBox(height: 3),
+                    Text(
+                      title,
+                      style: AppTextStyles.subtitle2.copyWith(
+                        color: AppColors.textPrimary,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
-                  ),
+                    Text(
+                      subtitle,
+                      style: AppTextStyles.caption.copyWith(
+                        color: isDark
+                            ? AppColors.textSecondary
+                            : const Color(0xFF64748B),
+                        fontSize: 10.5,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 3),
-                Text(
-                  title,
-                  style: AppTextStyles.subtitle2.copyWith(
-                    color: AppColors.textPrimary,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                Text(
-                  subtitle,
-                  style: AppTextStyles.caption.copyWith(
-                    color: isDark
-                        ? AppColors.textSecondary
-                        : const Color(0xFF64748B),
-                    fontSize: 10.5,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -670,67 +675,72 @@ class _AuthCanvasState extends State<AuthCanvas>
                       },
                     ),
                   ),
-                Row(
-                  children: [
-                    Container(
-                      width: 32,
-                      height: 32,
-                      decoration: BoxDecoration(
-                        color: pulseDotColor.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(9),
-                        border: Border.all(
-                          color: pulseDotColor.withValues(alpha: 0.35),
+                Center(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: 32,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          color: pulseDotColor.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(9),
+                          border: Border.all(
+                            color: pulseDotColor.withValues(alpha: 0.35),
+                          ),
+                        ),
+                        child: Center(
+                          child: Text(
+                            iconText,
+                            style: const TextStyle(fontSize: 15),
+                          ),
                         ),
                       ),
-                      child: Center(
-                        child: Text(
-                          iconText,
-                          style: const TextStyle(fontSize: 15),
+                      const SizedBox(width: 8),
+                      Flexible(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              stepTag,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: tagTextColor,
+                                fontSize: 8.5,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 0.4,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTextStyles.subtitle2.copyWith(
+                                color: AppColors.textPrimary,
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            Text(
+                              subtitle,
+                              style: AppTextStyles.caption.copyWith(
+                                color: isDark
+                                    ? AppColors.textSecondary
+                                    : const Color(0xFF64748B),
+                                fontSize: 9,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            stepTag,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: tagTextColor,
-                              fontSize: 8.5,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 0.4,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            title,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: AppTextStyles.subtitle2.copyWith(
-                              color: AppColors.textPrimary,
-                              fontSize: 11.5,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          Text(
-                            subtitle,
-                            style: AppTextStyles.caption.copyWith(
-                              color: isDark
-                                  ? AppColors.textSecondary
-                                  : const Color(0xFF64748B),
-                              fontSize: 9,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ],
             ),

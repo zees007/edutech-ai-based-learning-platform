@@ -200,6 +200,7 @@ async def seed_privileges_and_roles():
                 "role_name": "Free",
                 "price_monthly": 0.0,
                 "price_annual": 0.0,
+                "streak_multiplier": 1.0,
                 "monthly_session_limit": 10,
                 "follow_up_limit_per_step": 1,
                 "youtube_limit_per_step": 1,
@@ -213,6 +214,7 @@ async def seed_privileges_and_roles():
                 "role_name": "Pro",
                 "price_monthly": 19.0,
                 "price_annual": 180.0,
+                "streak_multiplier": 1.5,
                 "monthly_session_limit": None,
                 "follow_up_limit_per_step": 5,
                 "youtube_limit_per_step": 3,
@@ -226,6 +228,7 @@ async def seed_privileges_and_roles():
                 "role_name": "Ultra",
                 "price_monthly": 49.0,
                 "price_annual": 470.0,
+                "streak_multiplier": 2.0,
                 "monthly_session_limit": None,
                 "follow_up_limit_per_step": None,
                 "youtube_limit_per_step": 5,
@@ -258,6 +261,7 @@ async def seed_privileges_and_roles():
                     role_id=bound_role.id,
                     price_monthly=t_data["price_monthly"],
                     price_annual=t_data["price_annual"],
+                    streak_multiplier=t_data.get("streak_multiplier", 1.0),
                     monthly_session_limit=t_data["monthly_session_limit"],
                     follow_up_limit_per_step=t_data["follow_up_limit_per_step"],
                     youtube_limit_per_step=t_data["youtube_limit_per_step"],
@@ -271,6 +275,7 @@ async def seed_privileges_and_roles():
                 tier_obj.role_id = bound_role.id
                 tier_obj.price_monthly = t_data["price_monthly"]
                 tier_obj.price_annual = t_data["price_annual"]
+                tier_obj.streak_multiplier = t_data.get("streak_multiplier", 1.0)
                 tier_obj.monthly_session_limit = t_data["monthly_session_limit"]
                 tier_obj.follow_up_limit_per_step = t_data["follow_up_limit_per_step"]
                 tier_obj.youtube_limit_per_step = t_data["youtube_limit_per_step"]

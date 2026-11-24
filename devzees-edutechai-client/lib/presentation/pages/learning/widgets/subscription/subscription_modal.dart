@@ -54,11 +54,16 @@ class _SubscriptionModalState extends ConsumerState<SubscriptionModal>
     }
   }
 
-  Future<void> _showCancelConfirmation(String userId, String? expiryDate) async {
+  Future<void> _showCancelConfirmation(
+    String userId,
+    String? expiryDate,
+  ) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.isDark ? const Color(0xFF16182B) : Colors.white,
+        backgroundColor: AppColors.isDark
+            ? const Color(0xFF16182B)
+            : Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text('Cancel Auto-Renewal?', style: AppTextStyles.h4),
         content: Text(
@@ -68,13 +73,18 @@ class _SubscriptionModalState extends ConsumerState<SubscriptionModal>
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text('Keep Plan', style: TextStyle(color: AppColors.textSecondary)),
+            child: Text(
+              'Keep Plan',
+              style: TextStyle(color: AppColors.textSecondary),
+            ),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.rose,
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
             ),
             onPressed: () => Navigator.of(ctx).pop(true),
             child: const Text('Confirm Cancel'),
@@ -86,21 +96,25 @@ class _SubscriptionModalState extends ConsumerState<SubscriptionModal>
     if (confirmed == true) {
       setState(() => _isCanceling = true);
       try {
-        await ref.read(subscriptionServiceProvider).cancelSubscription(
+        await ref
+            .read(subscriptionServiceProvider)
+            .cancelSubscription(
               userId,
               reason: 'User disabled auto-renewal in settings',
             );
         ref.invalidate(userProvider);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Auto-renewal cancelled successfully.')),
+            const SnackBar(
+              content: Text('Auto-renewal cancelled successfully.'),
+            ),
           );
         }
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to cancel: $e')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Failed to cancel: $e')));
         }
       } finally {
         if (mounted) {
@@ -119,14 +133,16 @@ class _SubscriptionModalState extends ConsumerState<SubscriptionModal>
     final price = user?.subscription?.priceAmount?.toInt() ?? 0;
     final end = user?.subscription?.currentPeriodEnd;
     final autoRenew = user?.subscription?.autoRenew ?? true;
-    final gatewayProvider = user?.subscription?.gatewayProvider?.toUpperCase() ?? 'RAZORPAY';
+    final gatewayProvider =
+        user?.subscription?.gatewayProvider?.toUpperCase() ?? 'RAZORPAY';
 
     final String formattedDate = end != null
         ? '${end.year}-${end.month.toString().padLeft(2, '0')}-${end.day.toString().padLeft(2, '0')}'
         : 'N/A';
 
     final bool isMobile =
-        Responsive.isMobile(context) || MediaQuery.of(context).size.width < 1100;
+        Responsive.isMobile(context) ||
+        MediaQuery.of(context).size.width < 1100;
     final bool isDark = AppColors.isDark;
 
     return BackdropFilter(
@@ -174,7 +190,9 @@ class _SubscriptionModalState extends ConsumerState<SubscriptionModal>
                           children: [
                             Text(
                               'Subscription & Billing',
-                              style: isMobile ? AppTextStyles.h3 : AppTextStyles.h2,
+                              style: isMobile
+                                  ? AppTextStyles.h3
+                                  : AppTextStyles.h2,
                             ),
                             const SizedBox(width: 14),
                             _buildTierBadge(currentTier),
@@ -185,7 +203,9 @@ class _SubscriptionModalState extends ConsumerState<SubscriptionModal>
                           currentTier == 'free'
                               ? 'Curious learner on the Free plan'
                               : 'Renews on $formattedDate (\$$price/mo via $gatewayProvider)',
-                          style: AppTextStyles.body2.copyWith(color: AppColors.textSecondary),
+                          style: AppTextStyles.body2.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
                         ),
                       ],
                     ),
@@ -215,7 +235,9 @@ class _SubscriptionModalState extends ConsumerState<SubscriptionModal>
               // Tab Bar
               Container(
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF16182B) : const Color(0xFFF1F5F9),
+                  color: isDark
+                      ? const Color(0xFF16182B)
+                      : const Color(0xFFF1F5F9),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: AppColors.glassBorder),
                 ),
@@ -229,7 +251,10 @@ class _SubscriptionModalState extends ConsumerState<SubscriptionModal>
                   labelColor: Colors.white,
                   unselectedLabelColor: AppColors.textSecondary,
                   dividerColor: Colors.transparent,
-                  labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                  labelStyle: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
                   tabs: const [
                     Tab(
                       icon: Icon(Icons.auto_awesome_rounded, size: 16),
@@ -254,7 +279,13 @@ class _SubscriptionModalState extends ConsumerState<SubscriptionModal>
                   controller: _tabController,
                   children: [
                     _buildPlansTab(context, currentTier, isMobile),
-                    _buildBillingSettingsTab(user, currentTier, formattedDate, autoRenew, gatewayProvider),
+                    _buildBillingSettingsTab(
+                      user,
+                      currentTier,
+                      formattedDate,
+                      autoRenew,
+                      gatewayProvider,
+                    ),
                     _buildInvoicesTab(user?.id ?? ''),
                   ],
                 ),
@@ -272,7 +303,8 @@ class _SubscriptionModalState extends ConsumerState<SubscriptionModal>
       'pro': (Color(0xFF2563EB), Color(0xFF7C3AED)),
       'ultra': (Color(0xFF9333EA), Color(0xFFEC4899)),
     };
-    final (color1, color2) = gradients[tier.toLowerCase()] ??
+    final (color1, color2) =
+        gradients[tier.toLowerCase()] ??
         (AppColors.primary, AppColors.primaryViolet);
 
     return Container(
@@ -293,7 +325,11 @@ class _SubscriptionModalState extends ConsumerState<SubscriptionModal>
     );
   }
 
-  Widget _buildPlansTab(BuildContext context, String currentTier, bool isMobile) {
+  Widget _buildPlansTab(
+    BuildContext context,
+    String currentTier,
+    bool isMobile,
+  ) {
     final catalogAsync = ref.watch(pricingCatalogProvider);
     final catalog = catalogAsync.value ?? PricingCatalogModel.defaultCatalog;
 
@@ -324,7 +360,9 @@ class _SubscriptionModalState extends ConsumerState<SubscriptionModal>
           'Academic Paper Search',
           'Session History & Recovery',
         ],
-        buttonText: currentTier == 'free' ? 'Current Plan' : 'Downgrade to Free',
+        buttonText: currentTier == 'free'
+            ? 'Current Plan'
+            : 'Downgrade to Free',
         isCurrentPlan: currentTier == 'free',
         onButtonTap: null,
         useSpacer: !isMobile,
@@ -342,7 +380,7 @@ class _SubscriptionModalState extends ConsumerState<SubscriptionModal>
           'Unlock Deep Dive Mode',
           'Step Content Regeneration',
           'Markdown & HTML Export',
-          '1.5x XP Multiplier',
+          '1.5x Daily Streak XP Multiplier',
         ],
         buttonText: currentTier == 'pro' ? 'Current Plan' : 'Upgrade to Pro ⚡',
         isCurrentPlan: currentTier == 'pro',
@@ -360,7 +398,8 @@ class _SubscriptionModalState extends ConsumerState<SubscriptionModal>
         title: 'Ultra',
         price: ultraPrice,
         billingCycle: isAnnual ? 'yr' : 'mo',
-        description: 'Unrestricted multi-agent squad, research, PDF export & 2x XP.',
+        description:
+            'Unrestricted multi-agent squad, research, PDF export & 2x Streak XP.',
         features: const [
           'Everything in Pro +',
           'Unlimited Follow-Up Chat',
@@ -368,7 +407,7 @@ class _SubscriptionModalState extends ConsumerState<SubscriptionModal>
           'Full-Text Academic Research',
           'PDF (.pdf) Export',
           'Priority Multi-Agent Exec',
-          '2x XP Boost & Fast Leveling',
+          '2x Daily Streak XP Multiplier',
         ],
         buttonText: currentTier == 'ultra' ? 'Current Plan' : 'Select Ultra ✨',
         isCurrentPlan: currentTier == 'ultra',
@@ -393,7 +432,10 @@ class _SubscriptionModalState extends ConsumerState<SubscriptionModal>
               borderRadius: BorderRadius.circular(20),
               onTap: () => setState(() => _billingCycle = 'monthly'),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: !isAnnual ? AppColors.primary : Colors.transparent,
                   borderRadius: BorderRadius.circular(20),
@@ -413,7 +455,10 @@ class _SubscriptionModalState extends ConsumerState<SubscriptionModal>
               borderRadius: BorderRadius.circular(20),
               onTap: () => setState(() => _billingCycle = 'annual'),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: isAnnual ? AppColors.primary : Colors.transparent,
                   borderRadius: BorderRadius.circular(20),
@@ -423,21 +468,30 @@ class _SubscriptionModalState extends ConsumerState<SubscriptionModal>
                     Text(
                       'Annual Billing',
                       style: TextStyle(
-                        color: isAnnual ? Colors.white : AppColors.textSecondary,
+                        color: isAnnual
+                            ? Colors.white
+                            : AppColors.textSecondary,
                         fontWeight: FontWeight.bold,
                         fontSize: 13,
                       ),
                     ),
                     const SizedBox(width: 6),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.accentAmber,
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
                         catalog.getGlobalAnnualSavingsLabel(),
-                        style: const TextStyle(color: Colors.black, fontSize: 9, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ],
@@ -470,7 +524,8 @@ class _SubscriptionModalState extends ConsumerState<SubscriptionModal>
                         children: allCards.asMap().entries.expand((e) {
                           return [
                             e.value,
-                            if (e.key != allCards.length - 1) const SizedBox(width: 20),
+                            if (e.key != allCards.length - 1)
+                              const SizedBox(width: 20),
                           ];
                         }).toList(),
                       ),
@@ -491,7 +546,8 @@ class _SubscriptionModalState extends ConsumerState<SubscriptionModal>
   ) {
     final bool isDark = AppColors.isDark;
 
-    final hasActivePaidSub = user?.subscription != null &&
+    final hasActivePaidSub =
+        user?.subscription != null &&
         (user.subscription.status?.toLowerCase() ?? '') == 'active' &&
         (user.subscription.priceAmount ?? 0) > 0;
     if (!hasActivePaidSub) {
@@ -499,14 +555,20 @@ class _SubscriptionModalState extends ConsumerState<SubscriptionModal>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.workspace_premium_outlined, size: 54, color: AppColors.textMuted),
+            Icon(
+              Icons.workspace_premium_outlined,
+              size: 54,
+              color: AppColors.textMuted,
+            ),
             const SizedBox(height: 16),
             Text('No Active Paid Subscription', style: AppTextStyles.h4),
             const SizedBox(height: 8),
             Text(
               'Upgrade your plan in the Plans tab to unlock higher limits and manage recurring billing.',
               textAlign: TextAlign.center,
-              style: AppTextStyles.body2.copyWith(color: AppColors.textSecondary),
+              style: AppTextStyles.body2.copyWith(
+                color: AppColors.textSecondary,
+              ),
             ),
           ],
         ),
@@ -532,18 +594,36 @@ class _SubscriptionModalState extends ConsumerState<SubscriptionModal>
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Current Active Tier', style: AppTextStyles.caption.copyWith(color: AppColors.textMuted)),
+                    Text(
+                      'Current Active Tier',
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.textMuted,
+                      ),
+                    ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.emerald.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.circle, color: AppColors.emerald, size: 8),
+                          const Icon(
+                            Icons.circle,
+                            color: AppColors.emerald,
+                            size: 8,
+                          ),
                           const SizedBox(width: 6),
-                          Text('ACTIVE', style: AppTextStyles.caption.copyWith(color: AppColors.emerald, fontWeight: FontWeight.bold)),
+                          Text(
+                            'ACTIVE',
+                            style: AppTextStyles.caption.copyWith(
+                              color: AppColors.emerald,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -552,12 +632,16 @@ class _SubscriptionModalState extends ConsumerState<SubscriptionModal>
                 const SizedBox(height: 10),
                 Text(
                   '${currentTier.toUpperCase()} Member',
-                  style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary),
+                  style: AppTextStyles.h3.copyWith(
+                    color: AppColors.textPrimary,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Processed through $gatewayProvider. Renews automatically on $formattedDate.',
-                  style: AppTextStyles.body2.copyWith(color: AppColors.textSecondary),
+                  style: AppTextStyles.body2.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
                 ),
               ],
             ),
@@ -580,11 +664,20 @@ class _SubscriptionModalState extends ConsumerState<SubscriptionModal>
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Auto-Renewal', style: AppTextStyles.subtitle1.copyWith(fontWeight: FontWeight.bold)),
+                        Text(
+                          'Auto-Renewal',
+                          style: AppTextStyles.subtitle1.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                         const SizedBox(height: 2),
                         Text(
-                          autoRenew ? 'Automatic renewal is active.' : 'Subscription will terminate at end of cycle.',
-                          style: AppTextStyles.caption.copyWith(color: AppColors.textMuted),
+                          autoRenew
+                              ? 'Automatic renewal is active.'
+                              : 'Subscription will terminate at end of cycle.',
+                          style: AppTextStyles.caption.copyWith(
+                            color: AppColors.textMuted,
+                          ),
                         ),
                       ],
                     ),
@@ -608,20 +701,42 @@ class _SubscriptionModalState extends ConsumerState<SubscriptionModal>
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Cancel Subscription', style: AppTextStyles.subtitle1.copyWith(color: AppColors.rose)),
+                        Text(
+                          'Cancel Subscription',
+                          style: AppTextStyles.subtitle1.copyWith(
+                            color: AppColors.rose,
+                          ),
+                        ),
                         const SizedBox(height: 2),
-                        Text('Downgrade account at the end of billing period', style: AppTextStyles.caption.copyWith(color: AppColors.textMuted)),
+                        Text(
+                          'Downgrade account at the end of billing period',
+                          style: AppTextStyles.caption.copyWith(
+                            color: AppColors.textMuted,
+                          ),
+                        ),
                       ],
                     ),
                     OutlinedButton(
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: AppColors.rose),
                         foregroundColor: AppColors.rose,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
-                      onPressed: _isCanceling ? null : () => _showCancelConfirmation(user.id, formattedDate),
+                      onPressed: _isCanceling
+                          ? null
+                          : () =>
+                                _showCancelConfirmation(user.id, formattedDate),
                       child: _isCanceling
-                          ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.rose))
+                          ? const SizedBox(
+                              width: 14,
+                              height: 14,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: AppColors.rose,
+                              ),
+                            )
                           : const Text('Cancel Plan'),
                     ),
                   ],
@@ -662,13 +777,19 @@ class _SubscriptionModalState extends ConsumerState<SubscriptionModal>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.receipt_long_outlined, size: 54, color: AppColors.textMuted),
+                Icon(
+                  Icons.receipt_long_outlined,
+                  size: 54,
+                  color: AppColors.textMuted,
+                ),
                 const SizedBox(height: 16),
                 Text('No Invoice Records Yet', style: AppTextStyles.h4),
                 const SizedBox(height: 8),
                 Text(
                   'Once you complete subscription upgrades via Razorpay, receipts will appear here.',
-                  style: AppTextStyles.body2.copyWith(color: AppColors.textSecondary),
+                  style: AppTextStyles.body2.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
                 ),
               ],
             ),
@@ -687,7 +808,9 @@ class _SubscriptionModalState extends ConsumerState<SubscriptionModal>
             return Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.isDark ? const Color(0xFF16182B) : const Color(0xFFF8FAFC),
+                color: AppColors.isDark
+                    ? const Color(0xFF16182B)
+                    : const Color(0xFFF8FAFC),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: AppColors.glassBorder),
               ),
@@ -699,7 +822,11 @@ class _SubscriptionModalState extends ConsumerState<SubscriptionModal>
                       color: AppColors.primary.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(Icons.receipt_outlined, color: AppColors.primary, size: 20),
+                    child: const Icon(
+                      Icons.receipt_outlined,
+                      color: AppColors.primary,
+                      size: 20,
+                    ),
                   ),
                   const SizedBox(width: 14),
                   Expanded(
@@ -708,12 +835,16 @@ class _SubscriptionModalState extends ConsumerState<SubscriptionModal>
                       children: [
                         Text(
                           '${t.tier.toUpperCase()} Plan (${t.billingCycle})',
-                          style: AppTextStyles.subtitle2.copyWith(fontWeight: FontWeight.bold),
+                          style: AppTextStyles.subtitle2.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         const SizedBox(height: 2),
                         Text(
                           'Txn: ${t.transactionId} • $dateStr',
-                          style: AppTextStyles.caption.copyWith(color: AppColors.textMuted),
+                          style: AppTextStyles.caption.copyWith(
+                            color: AppColors.textMuted,
+                          ),
                         ),
                       ],
                     ),
@@ -723,11 +854,16 @@ class _SubscriptionModalState extends ConsumerState<SubscriptionModal>
                     children: [
                       Text(
                         '\$${t.amount.toStringAsFixed(2)}',
-                        style: AppTextStyles.subtitle1.copyWith(fontWeight: FontWeight.bold),
+                        style: AppTextStyles.subtitle1.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       const SizedBox(height: 2),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.emerald.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(6),

@@ -65,7 +65,7 @@ class _GamifiedMasterySectionState extends State<GamifiedMasterySection> {
       imagePath: 'assets/images/gamification/tile2.png',
       icon: Icons.bolt_rounded,
       accentColor: Color(0xFF3B82F6),
-      title: 'Instant Quiz Feedback (+30 XP Bonus)',
+      title: 'Instant Quiz Feedback (+10 XP Accuracy Bonus)',
       description:
           'Test your comprehension at each milestone with dynamic quizzes, immediate rationales, and bonus XP for 100% accuracy.',
     ),

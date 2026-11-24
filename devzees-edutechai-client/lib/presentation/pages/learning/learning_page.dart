@@ -66,7 +66,15 @@ class _LearningPageState extends ConsumerState<LearningPage> {
       builder: (context) => LevelUpCelebration(
         level: event.level,
         levelTitle: event.levelTitle,
+        levelDescription: event.levelDescription,
         xpEarned: event.xpEarned,
+        totalXp: event.totalXp,
+        source: event.source,
+        quizScore: event.quizScore,
+        quizCorrectCount: event.quizCorrectCount,
+        quizTotalQuestions: event.quizTotalQuestions,
+        streakCount: event.streakCount,
+        streakBonusXp: event.streakBonusXp,
         onComplete: () {
           _levelUpOverlay?.remove();
           _levelUpOverlay = null;

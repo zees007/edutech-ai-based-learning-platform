@@ -32,7 +32,6 @@ class DashboardHeader extends ConsumerWidget {
     this.fallbackAchievements,
   });
 
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = context.isDarkMode;
@@ -286,34 +285,26 @@ class DashboardHeader extends ConsumerWidget {
     bool isMobile = false,
     bool isCompact = false,
   }) {
-    final isDark = context.isDarkMode;
-
     return Row(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // Glowing Squircle Accent Badge (Identical in Dark and Light Theme)
+        // Glowing Squircle Accent Badge (Same in Light and Dark Mode)
         Container(
           width: isMobile ? 30 : (isCompact ? 32 : 36),
           height: isMobile ? 30 : (isCompact ? 32 : 36),
           decoration: BoxDecoration(
-            color: const Color(0xFF1F6CFA).withValues(alpha: 0.22),
+            color: AppColors.primary.withValues(alpha: 0.22),
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: const Color(0xFF60A5FA).withValues(alpha: 0.55),
+              color: AppColors.primary.withValues(alpha: 0.55),
               width: 1.0,
             ),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF1F6CFA).withValues(alpha: 0.35),
-                blurRadius: 6,
-              ),
-            ],
           ),
           child: Center(
             child: Icon(
               Icons.auto_graph_rounded,
-              color: const Color(0xFF38BDF8),
+              color: AppColors.primary,
               size: isMobile ? 15 : (isCompact ? 16 : 18),
             ),
           ),
@@ -577,20 +568,20 @@ class _DashboardDateDropdownState extends State<_DashboardDateDropdown> {
         final Color bg = isSelected
             ? primaryAccent.withValues(alpha: isDark ? 0.20 : 0.12)
             : (isItemHovered
-                ? (isDark
-                    ? Colors.white.withValues(alpha: 0.08)
-                    : primaryAccent.withValues(alpha: 0.08))
-                : Colors.transparent);
+                  ? (isDark
+                        ? Colors.white.withValues(alpha: 0.08)
+                        : primaryAccent.withValues(alpha: 0.08))
+                  : Colors.transparent);
 
         final Color targetTextColor = isDestructive
             ? const Color(0xFFEF4444)
             : (isSelected
-                ? primaryAccent
-                : (isItemHovered
-                    ? (isDark ? AppColors.textPrimary : primaryAccent)
-                    : (isDark
-                        ? const Color(0xFFCBD5E1)
-                        : const Color(0xFF334155))));
+                  ? primaryAccent
+                  : (isItemHovered
+                        ? (isDark ? AppColors.textPrimary : primaryAccent)
+                        : (isDark
+                              ? const Color(0xFFCBD5E1)
+                              : const Color(0xFF334155))));
 
         return MouseRegion(
           onEnter: (_) => setItemState(() => isItemHovered = true),
@@ -634,11 +625,7 @@ class _DashboardDateDropdownState extends State<_DashboardDateDropdown> {
                     ),
                   ),
                   if (isSelected)
-                    Icon(
-                      Icons.check_rounded,
-                      color: primaryAccent,
-                      size: 16,
-                    ),
+                    Icon(Icons.check_rounded, color: primaryAccent, size: 16),
                 ],
               ),
             ),
@@ -655,12 +642,8 @@ class _DashboardDateDropdownState extends State<_DashboardDateDropdown> {
     final purple = AppColors.purple;
 
     final Color borderColor = isDark
-        ? (_isHovered
-            ? primaryBlue
-            : primaryBlue.withValues(alpha: 0.60))
-        : (_isHovered
-            ? purple
-            : purple.withValues(alpha: 0.55));
+        ? (_isHovered ? primaryBlue : primaryBlue.withValues(alpha: 0.60))
+        : (_isHovered ? purple : purple.withValues(alpha: 0.55));
 
     final Color iconColor = isDark ? primaryBlue : purple;
 
@@ -679,16 +662,13 @@ class _DashboardDateDropdownState extends State<_DashboardDateDropdown> {
           decoration: BoxDecoration(
             color: isDark
                 ? (_isHovered
-                    ? primaryBlue.withValues(alpha: 0.16)
-                    : primaryBlue.withValues(alpha: 0.08))
+                      ? primaryBlue.withValues(alpha: 0.16)
+                      : primaryBlue.withValues(alpha: 0.08))
                 : (_isHovered
-                    ? purple.withValues(alpha: 0.10)
-                    : purple.withValues(alpha: 0.05)),
+                      ? purple.withValues(alpha: 0.10)
+                      : purple.withValues(alpha: 0.05)),
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: borderColor,
-              width: 1.0,
-            ),
+            border: Border.all(color: borderColor, width: 1.0),
             boxShadow: [
               if (_isHovered)
                 BoxShadow(
@@ -702,8 +682,9 @@ class _DashboardDateDropdownState extends State<_DashboardDateDropdown> {
             ],
           ),
           child: Row(
-            mainAxisSize:
-                widget.fullWidth ? MainAxisSize.max : MainAxisSize.min,
+            mainAxisSize: widget.fullWidth
+                ? MainAxisSize.max
+                : MainAxisSize.min,
             mainAxisAlignment: widget.fullWidth
                 ? MainAxisAlignment.spaceBetween
                 : MainAxisAlignment.start,
@@ -809,15 +790,11 @@ class _DashboardRefreshButtonState extends State<_DashboardRefreshButton>
     final purple = AppColors.purple;
 
     final Color borderColor = isDark
-        ? (_isHovered
-            ? primaryBlue
-            : primaryBlue.withValues(alpha: 0.60))
-        : (_isHovered
-            ? purple
-            : purple.withValues(alpha: 0.55));
+        ? (_isHovered ? primaryBlue : primaryBlue.withValues(alpha: 0.60))
+        : (_isHovered ? purple : purple.withValues(alpha: 0.55));
 
     final Color iconColor = widget.isRefreshing
-        ? const Color(0xFF22D3EE)
+        ? (isDark ? const Color(0xFF22D3EE) : purple)
         : (isDark ? primaryBlue : purple);
 
     return Tooltip(
@@ -843,16 +820,13 @@ class _DashboardRefreshButtonState extends State<_DashboardRefreshButton>
             decoration: BoxDecoration(
               color: isDark
                   ? (_isHovered
-                      ? primaryBlue.withValues(alpha: 0.16)
-                      : primaryBlue.withValues(alpha: 0.08))
+                        ? primaryBlue.withValues(alpha: 0.16)
+                        : primaryBlue.withValues(alpha: 0.08))
                   : (_isHovered
-                      ? purple.withValues(alpha: 0.10)
-                      : purple.withValues(alpha: 0.05)),
+                        ? purple.withValues(alpha: 0.10)
+                        : purple.withValues(alpha: 0.05)),
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: borderColor,
-                width: 1.0,
-              ),
+              border: Border.all(color: borderColor, width: 1.0),
               boxShadow: [
                 if (_isHovered)
                   BoxShadow(

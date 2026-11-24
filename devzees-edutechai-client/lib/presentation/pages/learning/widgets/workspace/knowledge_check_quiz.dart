@@ -1245,9 +1245,9 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
       List<dynamic> quizList, int correctCount, int scorePct) {
     // According to Gamification specification:
     // - 20 XP per correct question
-    // - +30 XP bonus strictly for 100% accuracy
+    // - +10 XP bonus strictly for 100% accuracy
     final int baseQuizXp = correctCount * 20;
-    final int bonusXp = (correctCount == quizList.length && quizList.isNotEmpty) ? 30 : 0;
+    final int bonusXp = (correctCount == quizList.length && quizList.isNotEmpty) ? 10 : 0;
     final int fallbackXp = baseQuizXp + bonusXp;
     final int xpEarned = _quizResult?.xpEarned ?? fallbackXp;
     final activeState = ref.watch(activeSessionProvider);

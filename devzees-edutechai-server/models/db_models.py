@@ -203,6 +203,7 @@ class SubscriptionTier(LoggedEntity, Base):
     monthly_session_limit: Mapped[int | None] = mapped_column(Integer, nullable=True)
     follow_up_limit_per_step: Mapped[int | None] = mapped_column(Integer, nullable=True)
     youtube_limit_per_step: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    streak_multiplier: Mapped[float] = mapped_column(Float, nullable=False, default=1.0, server_default="1.0")
 
     subscriptions: Mapped[list[Subscription]] = relationship(
         "Subscription", back_populates="tier_ref"

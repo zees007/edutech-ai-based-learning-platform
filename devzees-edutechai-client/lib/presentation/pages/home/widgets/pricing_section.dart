@@ -155,7 +155,7 @@ class _PricingSectionState extends ConsumerState<PricingSection>
           'Academic Preprints & AI TL;DR',
           'Step Content Regeneration',
           'Markdown (.md) Export (Mermaid)',
-          '1.5x XP Multiplier Boost',
+          '1.5x Daily Streak XP Multiplier',
         ],
         buttonText: 'Get Started with Pro',
         isPopular: true,
@@ -169,7 +169,7 @@ class _PricingSectionState extends ConsumerState<PricingSection>
             _isAnnual ? '/mo (\$$ultraAnnual billed annually)' : '/month',
         originalPrice: _isAnnual ? '\$$ultraMonthly/mo' : null,
         description:
-            'Unrestricted multi-agent power, full-text research, styled PDF & 2x XP.',
+            'Unrestricted multi-agent power, full-text research, styled PDF & 2x Streak XP.',
         features: const [
           'Everything in Pro +',
           'Unlimited Follow-Up Chat Turns',
@@ -177,7 +177,7 @@ class _PricingSectionState extends ConsumerState<PricingSection>
           'Full-Text Academic Research (PDF)',
           'Executive Styled PDF (.pdf) Export',
           'Priority Model Routing & Low Latency',
-          '2x XP Boost & Accelerated Levels',
+          '2x Daily Streak XP Multiplier',
           '24/7 Priority Support',
         ],
         buttonText: 'Upgrade to Ultra',

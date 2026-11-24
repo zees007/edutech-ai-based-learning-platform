@@ -351,14 +351,14 @@ EduTechAI includes a full gamification layer to keep students motivated and enga
 
 ### XP Rewards
 
-| Action | XP Earned |
-|--------|-----------|
-| Completing a milestone step | **50 XP** base (+ streak bonus) |
-| Each correct quiz answer | **20 XP** per question |
-| 100% quiz accuracy bonus | **+30 XP** extra |
-| Completing an entire session | **+100 XP** bonus |
-| Submitting session feedback/testimonial | **+30 XP** bonus |
-| Streak multiplier | **+10%** per consecutive day (capped at 10 days) |
+| Action | XP Earned | Multiplier Eligibility |
+|--------|-----------|------------------------|
+| Completing a milestone step | **10 XP** base (+ streak bonus) | Dynamic Streak Multiplier applies to streak portion |
+| Each correct quiz answer | **20 XP** per question | **1.0x Flat** (Identical for all tiers) |
+| 100% quiz accuracy bonus | **+10 XP** extra | **1.0x Flat** (Identical for all tiers) |
+| Completing an entire session | **+50 XP** bonus | **1.0x Flat** (Identical for all tiers) |
+| Submitting session feedback/testimonial | **+30 XP** bonus | **1.0x Flat** (Identical for all tiers) |
+| Daily Streak Multiplier | **+10% to +50%** per day | Scaled dynamically by tier (Free = 1.0x, Pro = 1.5x, Ultra = 2.0x, capped at 10 days) |
 
 ### Leveling System
 
@@ -381,7 +381,8 @@ The system has **10 levels** with escalating XP thresholds:
 
 Currently, the Gamification architecture tracks XP and Streaks **per session** (i.e., per topic journey). This means each topic you start acts as an isolated "save file" with its own XP and level progression.
 
-* **Streak Calculation:** If you complete at least one step or quiz in a session during a 24-hour window, your streak for that specific session increases by 1 the next day. A broken streak resets to 0. Every consecutive day yields a +10% multiplier on base Step Completion XP (capped at 100%).
+* **Streak Calculation:** If you complete at least one step or quiz in a session during a 24-hour window, your streak for that specific session increases by 1 the next day. A broken streak resets to 0. Every consecutive day yields a +10% base step boost, scaled dynamically by the user's subscription tier multiplier (capped at 10 consecutive days):
+  $$\text{Bonus XP} = \text{int}(10 \times 0.1 \times \min(\text{streak}, 10) \times \text{tier\_multiplier})$$
 
 #### 🌟 Example Scenario: Alice's Journey
 
@@ -389,18 +390,31 @@ Currently, the Gamification architecture tracks XP and Streaks **per session** (
 
 **Scenario A: Rushing in 1 Day**
 If Alice completes everything on day 1 (0-day streak bonus):
-- **Steps:** 6 steps × 50 Base XP = 300 XP
-- **Quizzes:** 6 quizzes × 90 XP (assuming 100% accuracy: 60 Base + 30 Bonus) = 540 XP
-- **Session Complete Bonus:** 100 XP
-- **Total:** **940 XP** (She reaches **Level 9: Enlightened Mind**, just 60 XP away from Grand Sage!)
+- **Steps:** 6 steps × 10 Base XP = 60 XP
+- **Quizzes:** 6 quizzes × 70 XP (assuming 100% accuracy: 3 × 20 Base + 10 Accuracy Bonus) = 420 XP
+- **Session Complete Bonus:** 50 XP
+- **Total:** **530 XP** (She reaches **Level 6: Concept Master** [520 XP threshold] on her very first day!)
 
 **Scenario B: Pacing over 3 Days**
 If Alice completes 2 steps per day consecutively:
-- **Day 1 (0% bonus):** 2 steps = 100 XP
-- **Day 2 (10% bonus):** 2 steps = 110 XP
-- **Day 3 (20% bonus):** 2 steps = 120 XP
-- **Total Step XP:** 330 XP *(30 Extra XP earned just from the streak!)*
-- **Total (with quizzes & bonus):** **970 XP** (She reaches **Level 9: Enlightened Mind**, just 30 XP away from Grand Sage — and if she had 7 steps, she would unlock **Level 10: Grand Sage**!)
+- **Free Tier (1.0x Streak Multiplier):**
+  - Day 1 (streak 0): 2 steps × (10 + 0) = 20 XP
+  - Day 2 (streak 1, +10%): 2 steps × (10 + 1) = 22 XP
+  - Day 3 (streak 2, +20%): 2 steps × (10 + 2) = 24 XP
+  - Total Step XP: 66 XP *(6 Extra XP earned from the daily streak!)*
+  - Quizzes: 6 × 70 XP = 420 XP
+  - Session Complete Bonus: 50 XP
+  - **Total (Free):** **536 XP** (Level 6: Concept Master)
+- **Pro Tier (1.5x Streak Multiplier):**
+  - Day 2 streak bonus: $\text{int}(10 \times 0.1 \times 1 \times 1.5) = 1$ XP
+  - Day 3 streak bonus: $\text{int}(10 \times 0.1 \times 2 \times 1.5) = 3$ XP
+  - Total Step XP: $20 + 22 + 26 = 68$ XP
+  - **Total (Pro):** **538 XP**
+- **Ultra Tier (2.0x Streak Multiplier):**
+  - Day 2 streak bonus: $\text{int}(10 \times 0.1 \times 1 \times 2.0) = 2$ XP
+  - Day 3 streak bonus: $\text{int}(10 \times 0.1 \times 2 \times 2.0) = 4$ XP
+  - Total Step XP: $20 + 24 + 28 = 72$ XP
+  - **Total (Ultra):** **542 XP**
 
 *Note: If Alice creates 3 separate sessions and works on them concurrently, she will level them up independently. A future roadmap enhancement will migrate these isolated session records into a unified global User Profile.*
 

@@ -35,6 +35,33 @@ class GamificationUtils {
     return 'Level $level';
   }
 
+  static String getLevelDescription(int level) {
+    switch (level) {
+      case 1:
+        return 'Initiated the journey of active inquiry and discovery.';
+      case 2:
+        return 'Actively questioning assumptions and broadening core horizons.';
+      case 3:
+        return 'Absorbing insights rapidly through active practice.';
+      case 4:
+        return 'Deconstructing complex paradigms with structured analysis.';
+      case 5:
+        return 'Synthesizing multifaceted ideas across diverse domains.';
+      case 6:
+        return 'Demonstrating high-retention mastery and conceptual fluency.';
+      case 7:
+        return 'Connecting disparate principles into unified mental models.';
+      case 8:
+        return 'Structuring foundational concepts with architectural clarity.';
+      case 9:
+        return 'Standing on the precipice of transcendent cognitive mastery.';
+      case 10:
+        return 'Apex scholarly achievement — absolute mastery across the learning spectrum.';
+      default:
+        return 'Advancing along the path of lifelong learning.';
+    }
+  }
+
   static Map<String, dynamic> calculateLevelData(int totalXp) {
     var current = levels[0];
     Map<String, Object>? nextLevel = levels.length > 1 ? levels[1] : null;
@@ -82,6 +109,13 @@ class GamificationEvent {
   final int totalXp;
   final int level;
   final String levelTitle;
+  final String? levelDescription;
+  final String? source; // 'quiz' or 'step'
+  final double? quizScore;
+  final int? quizCorrectCount;
+  final int? quizTotalQuestions;
+  final int? streakCount;
+  final int? streakBonusXp;
   final DateTime timestamp;
 
   GamificationEvent({
@@ -89,6 +123,13 @@ class GamificationEvent {
     required this.totalXp,
     required this.level,
     required this.levelTitle,
+    this.levelDescription,
+    this.source,
+    this.quizScore,
+    this.quizCorrectCount,
+    this.quizTotalQuestions,
+    this.streakCount,
+    this.streakBonusXp,
     required this.timestamp,
   });
 }
@@ -109,13 +150,13 @@ class GamificationEventNotifier extends Notifier<GamificationEvent?> {
       state != null && _dismissCompleter != null && !_dismissCompleter!.isCompleted;
 
   /// Awaits until the user dismisses the celebration or the auto-dismiss timer completes.
-  /// Includes a 5s safety timeout to prevent stalling workflow.
+  /// Includes an 8s safety timeout to prevent stalling workflow.
   Future<void> get onDismissed {
     if (_dismissCompleter == null || _dismissCompleter!.isCompleted) {
       return Future.value();
     }
     return _dismissCompleter!.future.timeout(
-      const Duration(seconds: 5),
+      const Duration(seconds: 8),
       onTimeout: () {
         dismiss();
       },
@@ -127,6 +168,13 @@ class GamificationEventNotifier extends Notifier<GamificationEvent?> {
     required int totalXp,
     required int level,
     required String levelTitle,
+    String? levelDescription,
+    String? source,
+    double? quizScore,
+    int? quizCorrectCount,
+    int? quizTotalQuestions,
+    int? streakCount,
+    int? streakBonusXp,
   }) {
     if (_dismissCompleter != null && !_dismissCompleter!.isCompleted) {
       _dismissCompleter!.complete();
@@ -137,6 +185,13 @@ class GamificationEventNotifier extends Notifier<GamificationEvent?> {
       totalXp: totalXp,
       level: level,
       levelTitle: levelTitle,
+      levelDescription: levelDescription ?? GamificationUtils.getLevelDescription(level),
+      source: source,
+      quizScore: quizScore,
+      quizCorrectCount: quizCorrectCount,
+      quizTotalQuestions: quizTotalQuestions,
+      streakCount: streakCount,
+      streakBonusXp: streakBonusXp,
       timestamp: DateTime.now(),
     );
   }

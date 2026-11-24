@@ -729,10 +729,11 @@ class _SubscriptionManagerTabState
         'Sessions Quota',
         'Follow-ups',
         'YouTube',
+        'Streak XP',
         'Subscribers',
         'Actions',
       ],
-      columnWidths: const [1.8, 1.0, 1.4, 1.3, 1.2, 1.1, 1.0, 1.0, 1.3],
+      columnWidths: const [1.8, 1.0, 1.4, 1.3, 1.2, 1.1, 1.0, 1.0, 1.0, 1.3],
       rows: tiers.map<List<Widget>>((t) {
         return [
           Column(
@@ -784,6 +785,18 @@ class _SubscriptionManagerTabState
           _buildLimitChip(
             isUnlimited: t.isUnlimitedYoutube,
             limitText: '${t.youtubeLimitPerStep ?? 0}/step',
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+            decoration: BoxDecoration(
+              color: AppColors.accentAmber.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: AppColors.accentAmber.withValues(alpha: 0.3)),
+            ),
+            child: Text(
+              '${t.streakMultiplier}x',
+              style: AppTextStyles.caption.copyWith(color: AppColors.accentAmber, fontWeight: FontWeight.bold),
+            ),
           ),
           Text(
             '${t.activeSubscribersCount} users',
@@ -895,6 +908,10 @@ class _SubscriptionManagerTabState
     bool unlimitedYoutube = existingTier?.isUnlimitedYoutube ?? false;
     final youtubeCtrl = TextEditingController(
       text: existingTier?.youtubeLimitPerStep?.toString() ?? '3',
+    );
+
+    final streakMultiplierCtrl = TextEditingController(
+      text: existingTier?.streakMultiplier.toString() ?? '1.0',
     );
 
     bool isPublic = existingTier?.isPublic ?? true;
@@ -1046,6 +1063,15 @@ class _SubscriptionManagerTabState
                     ),
                     const SizedBox(height: 14),
 
+                    // Daily Streak Multiplier
+                    _buildDialogTextField(
+                      label: 'Daily Streak XP Multiplier (e.g. 1.0, 1.5, 2.0)',
+                      controller: streakMultiplierCtrl,
+                      hint: '1.0',
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    ),
+                    const SizedBox(height: 14),
+
                     // Public Catalog Switch
                     Row(
                       children: [
@@ -1094,6 +1120,7 @@ class _SubscriptionManagerTabState
                               'monthly_session_limit': unlimitedSessions ? null : int.tryParse(sessionsCtrl.text.trim()),
                               'follow_up_limit_per_step': unlimitedFollowups ? null : int.tryParse(followupsCtrl.text.trim()),
                               'youtube_limit_per_step': unlimitedYoutube ? null : int.tryParse(youtubeCtrl.text.trim()),
+                              'streak_multiplier': double.tryParse(streakMultiplierCtrl.text.trim()) ?? 1.0,
                               'is_public': isPublic,
                             };
 

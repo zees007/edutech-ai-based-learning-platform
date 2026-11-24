@@ -440,3 +440,55 @@ class SubscriptionService:
         else:
             user.roles = non_tier_roles
             logger.warning(f"Target role for tier '{target_tier}' not found in DB during role sync.")
+
+    @staticmethod
+    async def get_user_streak_multiplier(db: AsyncSession, user: User | None) -> float:
+        """
+        Dynamically resolve the daily streak XP multiplier for a user:
+        1. Check active Subscription -> SubscriptionTier.streak_multiplier.
+        2. Check user's assigned Roles bound to SubscriptionTier.
+        3. Fallback to standard role names (Admin/Ultra: 2.0x, Pro: 1.5x, Free: 1.0x).
+        """
+        if not user:
+            return 1.0
+
+        try:
+            # 1. Check active subscription tier
+            sub_stmt = select(Subscription).where(
+                Subscription.user_id == user.id,
+                Subscription.status == "active"
+            )
+            sub_res = await db.execute(sub_stmt)
+            sub = sub_res.scalar_one_or_none()
+
+            if sub and sub.tier:
+                tier_stmt = select(SubscriptionTier).where(
+                    SubscriptionTier.slug == sub.tier.lower().strip(),
+                    SubscriptionTier.retired == False
+                )
+                tier_obj = (await db.execute(tier_stmt)).scalar_one_or_none()
+                if tier_obj and hasattr(tier_obj, "streak_multiplier") and tier_obj.streak_multiplier:
+                    return float(tier_obj.streak_multiplier)
+
+            # 2. Check roles bound to dynamic SubscriptionTiers
+            user_roles = [r for r in user.roles if not r.retired] if hasattr(user, "roles") and user.roles else []
+            role_ids = [r.id for r in user_roles]
+            if role_ids:
+                tier_by_role_stmt = select(SubscriptionTier).where(
+                    SubscriptionTier.role_id.in_(role_ids),
+                    SubscriptionTier.retired == False
+                ).order_by(SubscriptionTier.streak_multiplier.desc())
+                tier_by_role = (await db.execute(tier_by_role_stmt)).scalars().first()
+                if tier_by_role and hasattr(tier_by_role, "streak_multiplier") and tier_by_role.streak_multiplier:
+                    return float(tier_by_role.streak_multiplier)
+
+            # 3. Fallback based on role names
+            role_names = [r.name.lower() for r in user_roles]
+            if "admin" in role_names or "ultra" in role_names:
+                return 2.0
+            elif "pro" in role_names:
+                return 1.5
+        except Exception as e:
+            logger.warning(f"Failed to dynamically resolve streak multiplier for user {getattr(user, 'id', None)}: {e}")
+
+        return 1.0

@@ -211,10 +211,23 @@ class _LearningResourcesPanelState extends ConsumerState<LearningResourcesPanel>
   }
 
   void _onSelectTab(int index) {
-    _tabController.animateTo(index);
-    setState(() {
-      _activeTabIndex = index;
-    });
+    if (!mounted) return;
+    if (_tabController.index != index) {
+      if (_tabController.indexIsChanging) {
+        _tabController.index = index;
+      } else {
+        try {
+          _tabController.animateTo(index);
+        } catch (_) {
+          _tabController.index = index;
+        }
+      }
+    }
+    if (_activeTabIndex != index) {
+      setState(() {
+        _activeTabIndex = index;
+      });
+    }
   }
 
   @override
@@ -555,25 +568,20 @@ class _LearningResourcesPanelState extends ConsumerState<LearningResourcesPanel>
                               color: AppColors.purpleLight,
                             ),
                           ),
-                          MouseRegion(
-                            cursor: SystemMouseCursors.click,
-                            child: GestureDetector(
-                              onTap: () => Navigator.of(dialogContext).pop(),
-                              child: Container(
-                                padding: const EdgeInsets.all(6),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.06),
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: AppColors.glassBorder,
-                                  ),
-                                ),
-                                child: Icon(
-                                  Icons.close_rounded,
-                                  size: 18,
-                                  color: AppColors.textMuted,
-                                ),
-                              ),
+                          IconButton(
+                            onPressed: () => Navigator.of(dialogContext).pop(),
+                            icon: const Icon(Icons.close_rounded, size: 18),
+                            color: AppColors.textMuted,
+                            mouseCursor: SystemMouseCursors.click,
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(
+                              minWidth: 30,
+                              minHeight: 30,
+                            ),
+                            style: IconButton.styleFrom(
+                              backgroundColor: Colors.white.withValues(alpha: 0.06),
+                              shape: const CircleBorder(),
+                              side: BorderSide(color: AppColors.glassBorder),
                             ),
                           ),
                         ],
@@ -645,6 +653,7 @@ class _LearningResourcesPanelState extends ConsumerState<LearningResourcesPanel>
                           TextButton(
                             onPressed: () => Navigator.of(dialogContext).pop(),
                             style: TextButton.styleFrom(
+                              enabledMouseCursor: SystemMouseCursors.click,
                               foregroundColor: AppColors.textMuted,
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 16,
@@ -660,50 +669,63 @@ class _LearningResourcesPanelState extends ConsumerState<LearningResourcesPanel>
                             ),
                           ),
                           const SizedBox(width: 10),
-                          MouseRegion(
-                            cursor: SystemMouseCursors.click,
-                            child: GestureDetector(
-                              onTap: () {
-                                Navigator.of(dialogContext).pop();
-                                _onSelectTab(2);
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 18,
-                                  vertical: 9,
-                                ),
-                                decoration: BoxDecoration(
-                                  gradient: AppColors.primaryGradient,
-                                  borderRadius: BorderRadius.circular(9),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: AppColors.primary.withValues(
-                                        alpha: 0.35,
-                                      ),
-                                      blurRadius: 10,
-                                      offset: const Offset(0, 2),
+                          ElevatedButton(
+                            onPressed: () {
+                              _onSelectTab(2);
+                              Navigator.of(dialogContext).pop();
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                if (mounted) {
+                                  _onSelectTab(2);
+                                }
+                              });
+                            },
+                            style: ElevatedButton.styleFrom(
+                              enabledMouseCursor: SystemMouseCursors.click,
+                              padding: EdgeInsets.zero,
+                              backgroundColor: Colors.transparent,
+                              shadowColor: Colors.transparent,
+                              surfaceTintColor: Colors.transparent,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(9),
+                              ),
+                            ),
+                            child: Ink(
+                              decoration: BoxDecoration(
+                                gradient: AppColors.primaryGradient,
+                                borderRadius: BorderRadius.circular(9),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppColors.primary.withValues(
+                                      alpha: 0.35,
                                     ),
-                                  ],
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(
-                                      Icons.play_arrow_rounded,
-                                      size: 16,
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 18,
+                                vertical: 9,
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(
+                                    Icons.play_arrow_rounded,
+                                    size: 16,
+                                    color: Colors.white,
+                                  ),
+                                  const SizedBox(width: 5),
+                                  Text(
+                                    'Take Quiz',
+                                    style: AppTextStyles.badge.copyWith(
                                       color: Colors.white,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 12,
                                     ),
-                                    const SizedBox(width: 5),
-                                    Text(
-                                      'Take Quiz',
-                                      style: AppTextStyles.badge.copyWith(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w700,
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                                  ),
+                                ],
                               ),
                             ),
                           ),
@@ -771,53 +793,45 @@ class _LearningResourcesPanelState extends ConsumerState<LearningResourcesPanel>
       ),
       child: Row(
         children: [
-          // Left indicator and guidance text
+          // Left indicator and guidance text (informative banner)
           Expanded(
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: () {
-                if (!isQuizDone && !isCurrentStepComplete) {
-                  _handleNextStep(context, isQuizDone);
-                }
-              },
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: isLastStep && isCurrentStepComplete
+                        ? Colors.amber.withValues(alpha: 0.2)
+                        : AppColors.accentGreen.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Icon(
+                    isLastStep && isCurrentStepComplete
+                        ? Icons.emoji_events_rounded
+                        : (isQuizDone
+                              ? Icons.check_circle_rounded
+                              : Icons.quiz_rounded),
+                    size: 14,
+                    color: isLastStep && isCurrentStepComplete
+                        ? Colors.amber
+                        : AppColors.accentGreen,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    guidanceText,
+                    style: AppTextStyles.captionBold.copyWith(
                       color: isLastStep && isCurrentStepComplete
-                          ? Colors.amber.withValues(alpha: 0.2)
-                          : AppColors.accentGreen.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Icon(
-                      isLastStep && isCurrentStepComplete
-                          ? Icons.emoji_events_rounded
-                          : (isQuizDone
-                                ? Icons.check_circle_rounded
-                                : Icons.quiz_rounded),
-                      size: 14,
-                      color: isLastStep && isCurrentStepComplete
-                          ? Colors.amber
+                          ? Colors.amber.shade200
                           : AppColors.accentGreen,
+                      fontSize: 12,
                     ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      guidanceText,
-                      style: AppTextStyles.captionBold.copyWith(
-                        color: isLastStep && isCurrentStepComplete
-                            ? Colors.amber.shade200
-                            : AppColors.accentGreen,
-                        fontSize: 12,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
           const SizedBox(width: 12),

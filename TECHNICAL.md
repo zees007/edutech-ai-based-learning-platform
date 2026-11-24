@@ -824,9 +824,9 @@ EduTechAI integrates a comprehensive gamification framework motivating students 
    - **Level 9 (920 XP):** Enlightened Mind
    - **Level 10 (1,000 XP):** Grand Sage
 2. **Real-Time Event Broadcasting:**
-   - Completing a step emits an `XPUpdateEvent` (+50 base XP, multiplied by streak bonuses).
-   - Submitting a quiz emits an `XPUpdateEvent` (+20 XP per correct question + accuracy bonus).
-   - Completing a journey awards a +100 XP completion bonus (subject to role multipliers: 2.0x for Ultra/Admin, 1.5x for Pro).
+   - Completing a step emits an `XPUpdateEvent` (+10 base XP, multiplied by dynamic subscription streak bonus).
+   - Submitting a quiz emits an `XPUpdateEvent` (+20 XP per correct question + 10 XP 100% accuracy bonus, flat 1.0x for all tiers).
+   - Completing a journey awards a +50 XP completion bonus (flat 1.0x across all tiers).
 3. **Animated Command Hub:**
    `UnifiedLearningCommandHub` binds the XP count and level progress bar using `TweenAnimationBuilder`, animating smoothly between values upon every backend event.
 
@@ -846,7 +846,7 @@ To prevent visual conflicts when multiple celebrations or loading states trigger
    - On the final milestone step before completion: The primary button updates from *"Next Step"* to **"Complete Journey 🏆"** with an amber/gold gradient.
    - After journey completion: The button transitions into a celebratory badge: **`[ 🏆 Journey Completed 🎉 ]`**.
 4. **Grand Journey Completion Celebration (`JourneyCompleteCelebration`):**
-   - Displays a 3-metric summary card (Total XP earned, Quiz accuracy percentage, Milestones mastered) alongside the +100 XP completion bonus.
+   - Displays a 3-metric summary card (Total XP earned, Quiz accuracy percentage, Milestones mastered) alongside the +50 XP completion bonus.
    - Offers two distinct actions:
      - **"Review Steps"**: Dismisses the celebration and lets the student review all unlocked milestones, diagrams, quizzes, and chat with the Socratic AI tutor.
      - **"New Journey"**: Resets active session state and redirects to create a new topic.

@@ -5,7 +5,6 @@ import '../../../../core/providers/dashboard_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../core/theme/theme_palette.dart';
-import '../../../../core/utils/trophy_utils.dart';
 import '../../../widgets/gradient_text.dart';
 import '../../../widgets/theme_toggle_button.dart';
 import 'learner_standing_hud.dart';
@@ -24,26 +23,18 @@ class MobileDashboardTopBar extends ConsumerWidget
   const MobileDashboardTopBar({super.key});
 
   @override
-  Size get preferredSize => const Size.fromHeight(104.0);
+  Size get preferredSize => const Size.fromHeight(100.0);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = context.isDarkMode;
-    final standingAsync = ref.watch(learnerStandingProvider);
     final dashboardState = ref.watch(dashboardProvider);
     final activeRange = dashboardState.timeRange;
     final isRefreshing =
         dashboardState.isLoading && dashboardState.data != null;
 
-    final standing = standingAsync.asData?.value;
     final fallbackSummary = dashboardState.data?.summary;
     final fallbackAchievements = dashboardState.data?.achievements;
-
-    final nextTrophyId = standing?.nextTrophyId;
-    final nextTrophyTitle = standing?.nextTrophyTitle;
-    final trophyProgressFraction = standing?.trophyProgressFraction ?? 0.0;
-    final nextStyle = getTrophyStyle(nextTrophyId);
-    final clampedFraction = trophyProgressFraction.clamp(0.0, 1.0);
 
     return Material(
       color: context.appColors.topBarBackground,
@@ -52,12 +43,6 @@ class MobileDashboardTopBar extends ConsumerWidget
         child: Container(
           decoration: BoxDecoration(
             color: context.appColors.topBarBackground,
-            border: Border(
-              bottom: BorderSide(
-                color: context.appColors.border.withValues(alpha: 0.65),
-                width: 1.0,
-              ),
-            ),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -83,32 +68,24 @@ class MobileDashboardTopBar extends ConsumerWidget
                   color: isDark
                       ? const Color(0xFF0C0D1A)
                       : context.appColors.topBarBackground,
-                  border: Border(
-                    bottom: BorderSide(
-                      color: isDark
-                          ? context.appColors.scaffoldBackground
-                          : const Color(0xFFF1F5F9),
-                      width: 1.0,
-                    ),
-                  ),
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // Glowing Squircle Accent Badge (Identical in Dark and Light Theme)
+                    // Glowing Squircle Accent Badge (Same in Light and Dark Mode)
                     Container(
                       width: 28,
                       height: 28,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF1F6CFA).withValues(alpha: 0.22),
+                        color: AppColors.primary.withValues(alpha: 0.22),
                         borderRadius: BorderRadius.circular(7),
                         border: Border.all(
-                          color: const Color(0xFF60A5FA).withValues(alpha: 0.55),
+                          color: AppColors.primary.withValues(alpha: 0.55),
                           width: 1.0,
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF1F6CFA).withValues(alpha: 0.35),
+                            color: AppColors.primary.withValues(alpha: 0.35),
                             blurRadius: 5,
                           ),
                         ],
@@ -116,13 +93,13 @@ class MobileDashboardTopBar extends ConsumerWidget
                       child: const Center(
                         child: Icon(
                           Icons.auto_graph_rounded,
-                          color: Color(0xFF38BDF8),
+                          color: AppColors.primary,
                           size: 14.5,
                         ),
                       ),
                     ),
                     const SizedBox(width: 8),
-                    Flexible(
+                    Expanded(
                       child: Tooltip(
                         message:
                             'Growth & Mastery Analytics\nTrack study velocity, quiz comprehension, and skill mastery',
@@ -141,7 +118,7 @@ class MobileDashboardTopBar extends ConsumerWidget
                     ),
                     const SizedBox(width: 8),
 
-                    // Date Filter Chip
+                    // Right-aligned Actions: Date Filter Chip + Sync All Button
                     _buildDateFilterChip(context, ref, activeRange, isDark),
                     const SizedBox(width: 5),
 
@@ -155,9 +132,6 @@ class MobileDashboardTopBar extends ConsumerWidget
                         onTap: isRefreshing
                             ? null
                             : () {
-                                ref
-                                    .read(learnerStandingProvider.notifier)
-                                    .refresh();
                                 ref.read(dashboardProvider.notifier).refresh();
                               },
                         child: Container(
@@ -179,12 +153,14 @@ class MobileDashboardTopBar extends ConsumerWidget
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               if (isRefreshing)
-                                const SizedBox(
+                                SizedBox(
                                   width: 12,
                                   height: 12,
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2,
-                                    color: Color(0xFF22D3EE),
+                                    color: isDark
+                                        ? const Color(0xFF22D3EE)
+                                        : AppColors.purple,
                                   ),
                                 )
                               else
@@ -201,41 +177,6 @@ class MobileDashboardTopBar extends ConsumerWidget
                       ),
                     ),
                   ],
-                ),
-              ),
-
-              // ─── SEAM: Illuminated Milestone Progression Track (Height: 5px) ───
-              Tooltip(
-                message: nextTrophyTitle != null
-                    ? 'Next Prestige Milestone: $nextTrophyTitle • ${(clampedFraction * 100).toInt()}% towards unlocking'
-                    : 'Maximum Prestige Diamond Trophy Unlocked 💎',
-                child: Container(
-                  height: 4.5,
-                  width: double.infinity,
-                  color: isDark
-                      ? Colors.white.withValues(alpha: 0.05)
-                      : Colors.black.withValues(alpha: 0.04),
-                  alignment: Alignment.centerLeft,
-                  child: FractionallySizedBox(
-                    widthFactor: clampedFraction,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            nextStyle.color,
-                            nextStyle.color.withValues(alpha: 0.85),
-                          ],
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: nextStyle.color.withValues(alpha: 0.40),
-                            blurRadius: 4,
-                            offset: const Offset(0, 1),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
                 ),
               ),
             ],

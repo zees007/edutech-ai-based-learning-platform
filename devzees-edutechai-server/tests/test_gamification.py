@@ -41,59 +41,58 @@ def test_level_thresholds_structure():
         assert actual["title"] == exp["title"]
 
 
-def test_free_user_seven_steps_reaches_grand_sage():
-    """A free user completing 7 steps with 100% quiz scores earns 1,080 XP and unlocks Grand Sage."""
-    step_xp = 7 * XP_STEP_COMPLETE  # 350
-    quiz_xp = 7 * calculate_quiz_xp(3, 3, multiplier=1.0)  # 630
-    session_bonus = XP_SESSION_COMPLETE  # 100
+def test_free_user_seven_steps_reaches_concept_master():
+    """A free user completing 7 steps with 100% quiz scores earns 610 XP (Level 6: Concept Master)."""
+    step_xp = 7 * XP_STEP_COMPLETE  # 70
+    quiz_xp = 7 * calculate_quiz_xp(3, 3, multiplier=1.0)  # 490
+    session_bonus = XP_SESSION_COMPLETE  # 50
     total_xp = step_xp + quiz_xp + session_bonus
 
-    assert total_xp == 1080
+    assert total_xp == 610
     info = calculate_level(total_xp)
-    assert info["level"] == 10
-    assert info["title"] == "Grand Sage"
-    assert info["progress"] == 1.0
+    assert info["level"] == 6
+    assert info["title"] == "Concept Master"
+    assert info["xp_in_level"] == 90
+    assert info["xp_needed_for_next"] == 150
 
 
-def test_pro_and_ultra_reach_grand_sage():
-    """Pro (1.5x) and Ultra (2.0x) users reach Grand Sage with ample margin."""
-    # Pro User (1.5x)
-    pro_step = 7 * int(XP_STEP_COMPLETE * 1.5)
-    pro_quiz = 7 * calculate_quiz_xp(3, 3, multiplier=1.5)
-    pro_bonus = int(XP_SESSION_COMPLETE * 1.5)
-    total_pro = pro_step + pro_quiz + pro_bonus
+def test_pro_and_ultra_streak_multipliers():
+    """Pro (1.5x) and Ultra (2.0x) earn boosted XP on consecutive daily streaks, with equal quiz mastery."""
+    # Quiz and Session Complete are identical for all
+    quiz_xp = 7 * calculate_quiz_xp(3, 3, multiplier=1.0)  # 490
+    session_bonus = XP_SESSION_COMPLETE  # 50
 
-    assert total_pro == 1620
+    # Pro User (1.5x on streak bonus)
+    pro_step = 7 * calculate_step_xp(streak_count=10, multiplier=1.5)  # 7 * (10 + 15) = 175
+    total_pro = pro_step + quiz_xp + session_bonus  # 175 + 490 + 50 = 715
+    assert total_pro == 715
     pro_info = calculate_level(total_pro)
-    assert pro_info["level"] == 10
-    assert pro_info["title"] == "Grand Sage"
+    assert pro_info["level"] == 7
+    assert pro_info["title"] == "Wisdom Weaver"
 
-    # Ultra User (2.0x)
-    ultra_step = 7 * int(XP_STEP_COMPLETE * 2.0)
-    ultra_quiz = 7 * calculate_quiz_xp(3, 3, multiplier=2.0)
-    ultra_bonus = int(XP_SESSION_COMPLETE * 2.0)
-    total_ultra = ultra_step + ultra_quiz + ultra_bonus
-
-    assert total_ultra == 2160
+    # Ultra User (2.0x on streak bonus)
+    ultra_step = 7 * calculate_step_xp(streak_count=10, multiplier=2.0)  # 7 * (10 + 20) = 210
+    total_ultra = ultra_step + quiz_xp + session_bonus  # 210 + 490 + 50 = 750
+    assert total_ultra == 750
     ultra_info = calculate_level(total_ultra)
-    assert ultra_info["level"] == 10
-    assert ultra_info["title"] == "Grand Sage"
+    assert ultra_info["level"] == 7
+    assert ultra_info["title"] == "Wisdom Weaver"
 
 
 def test_alice_scenario_calculations():
-    """Test 6-step journey (940 XP) lands at Level 9 (Enlightened Mind)."""
-    step_xp = 6 * XP_STEP_COMPLETE  # 300
-    quiz_xp = 6 * calculate_quiz_xp(3, 3, multiplier=1.0)  # 540
-    session_bonus = XP_SESSION_COMPLETE  # 100
+    """Test 6-step journey (530 XP) lands at Level 6 (Concept Master)."""
+    step_xp = 6 * XP_STEP_COMPLETE  # 60
+    quiz_xp = 6 * calculate_quiz_xp(3, 3, multiplier=1.0)  # 420
+    session_bonus = XP_SESSION_COMPLETE  # 50
     total_alice = step_xp + quiz_xp + session_bonus
 
-    assert total_alice == 940
+    assert total_alice == 530
     info = calculate_level(total_alice)
-    assert info["level"] == 9
-    assert info["title"] == "Enlightened Mind"
-    assert info["xp_in_level"] == 20
-    assert info["xp_needed_for_next"] == 80
-    assert info["progress"] == 0.25
+    assert info["level"] == 6
+    assert info["title"] == "Concept Master"
+    assert info["xp_in_level"] == 10
+    assert info["xp_needed_for_next"] == 150
+    assert round(info["progress"], 2) == 0.07
 
 def test_feedback_xp_bonus():
     """Verify submitting session feedback awards +30 XP bonus."""
