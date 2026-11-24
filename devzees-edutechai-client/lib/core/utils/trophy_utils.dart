@@ -48,6 +48,12 @@ TrophyStyle getTrophyStyle(String? trophyId) {
         Color(0xFF22D3EE),
         assetPath: 'assets/images/gamification/trophy_diamond.png',
       );
+    case 'trophy':
+      return const TrophyStyle(
+        Icons.emoji_events_rounded,
+        Color(0xFFF59E0B),
+        assetPath: 'assets/images/gamification/trophy_gold.png',
+      );
     // Legacy support
     case 'flag':
       return const TrophyStyle(Icons.flag_rounded, Color(0xFF06B6D4));
