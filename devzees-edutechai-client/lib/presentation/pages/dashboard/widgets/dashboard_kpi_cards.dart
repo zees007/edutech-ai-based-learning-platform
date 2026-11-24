@@ -4,7 +4,6 @@ import '../../../../data/models/dashboard/dashboard_response.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../core/theme/theme_palette.dart';
-import '../../../widgets/glass_card.dart';
 
 /// Ultra-premium Concentric Donut Activity Hub & KPI Dashboard.
 ///
@@ -85,8 +84,13 @@ class _DashboardKpiCardsState extends State<DashboardKpiCards>
         final isTabletSideBySide = totalWidth >= 680 && totalWidth < 920;
         final isCompactTablet = totalWidth >= 520 && totalWidth < 680;
 
-        return GlassCard(
-          borderRadius: 24,
+        return Container(
+          decoration: BoxDecoration(
+            color: isDark
+                ? AppColors.cardBackground.withValues(alpha: 0.35)
+                : Colors.white.withValues(alpha: 0.65),
+            borderRadius: BorderRadius.circular(24),
+          ),
           padding: EdgeInsets.all(isDesktop ? 22 : (totalWidth < 360 ? 12 : 16)),
           child: AnimatedBuilder(
             animation: _curvedAnimation,
@@ -153,7 +157,12 @@ class _DashboardKpiCardsState extends State<DashboardKpiCards>
                 isDark: isDark,
               ),
               const SizedBox(height: 10),
-              _buildDonutFooterBadge(isDark: isDark, isCompact: isTablet),
+              _buildDonutFooterBadge(
+                isDark: isDark,
+                isCompact: isTablet,
+                metrics: metrics,
+                focusedIndex: _focusedIndex,
+              ),
             ],
           ),
         ),
@@ -245,7 +254,12 @@ class _DashboardKpiCardsState extends State<DashboardKpiCards>
           isDark: isDark,
         ),
         const SizedBox(height: 8),
-        _buildDonutFooterBadge(isDark: isDark, isCompact: true),
+        _buildDonutFooterBadge(
+          isDark: isDark,
+          isCompact: true,
+          metrics: metrics,
+          focusedIndex: _focusedIndex,
+        ),
         const SizedBox(height: 18),
         // All 4 Cards in 2x2 Grid
         Row(
@@ -318,7 +332,12 @@ class _DashboardKpiCardsState extends State<DashboardKpiCards>
           isDark: isDark,
         ),
         const SizedBox(height: 6),
-        _buildDonutFooterBadge(isDark: isDark, isCompact: true),
+        _buildDonutFooterBadge(
+          isDark: isDark,
+          isCompact: true,
+          metrics: metrics,
+          focusedIndex: _focusedIndex,
+        ),
         const SizedBox(height: 16),
 
         if (isUltraNarrow) ...[
@@ -480,39 +499,42 @@ class _DashboardKpiCardsState extends State<DashboardKpiCards>
     );
   }
 
+  Color _getProgressColor(int score) {
+    if (score >= 80) return const Color(0xFF10B981); // Emerald (>=80%)
+    if (score >= 60) return const Color(0xFF06B6D4); // Cyan (60-79%)
+    if (score >= 40) return const Color(0xFFF59E0B); // Amber (40-59%)
+    return const Color(0xFFF43F5E); // Rose (<40%)
+  }
+
   Widget _buildDefaultMasteryCenter({
     required int compositeScore,
     required bool isDark,
     required Key key,
   }) {
     final animatedScore = (_curvedAnimation.value * compositeScore).round();
+    final progressColor = _getProgressColor(animatedScore);
 
-    return Column(
-      key: key,
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Icon(
-          Icons.auto_awesome_rounded,
-          size: 15,
-          color: AppColors.primary,
-        ),
-        const SizedBox(height: 2),
-        Text(
-          '$animatedScore%',
-          style: AppTextStyles.h3.copyWith(
-            fontWeight: FontWeight.w900,
-            fontSize: 24,
-            letterSpacing: -0.8,
-            color: isDark ? AppColors.textPrimary : const Color(0xFF0F172A),
+    return Tooltip(
+      triggerMode: TooltipTriggerMode.tap,
+      message:
+          'Combined progress across your quiz scores, completed journeys, study time, and milestone steps.',
+      child: Column(
+        key: key,
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text(
+            '$animatedScore%',
+            style: AppTextStyles.h3.copyWith(
+              fontWeight: FontWeight.w900,
+              fontSize: 24,
+              letterSpacing: -0.8,
+              color: isDark ? AppColors.textPrimary : const Color(0xFF0F172A),
+            ),
           ),
-        ),
-        const SizedBox(height: 2),
-        Tooltip(
-          triggerMode: TooltipTriggerMode.tap,
-          message:
-              'Combined progress across your quiz scores, completed journeys, study time, and milestone steps.',
-          child: Padding(
+          const SizedBox(height: 2),
+          Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4),
             child: FittedBox(
               fit: BoxFit.scaleDown,
@@ -522,16 +544,14 @@ class _DashboardKpiCardsState extends State<DashboardKpiCards>
                   fontWeight: FontWeight.w700,
                   fontSize: 8.5,
                   letterSpacing: 0.4,
-                  color: isDark
-                      ? AppColors.textSecondary
-                      : const Color(0xFF64748B),
+                  color: progressColor,
                 ),
                 maxLines: 1,
               ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -581,41 +601,54 @@ class _DashboardKpiCardsState extends State<DashboardKpiCards>
   Widget _buildDonutFooterBadge({
     required bool isDark,
     required bool isCompact,
+    required List<_KpiMetricData> metrics,
+    required int? focusedIndex,
   }) {
-    return Container(
+    final isFocused = focusedIndex != null;
+    final activeColor =
+        isFocused ? metrics[focusedIndex].startColor : AppColors.accentGreen;
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
       padding: EdgeInsets.symmetric(
         horizontal: isCompact ? 8 : 10,
         vertical: 3,
       ),
       decoration: BoxDecoration(
         color: isDark
-            ? Colors.white.withValues(alpha: 0.05)
-            : const Color(0xFFF1F5F9),
+            ? activeColor.withValues(alpha: isFocused ? 0.16 : 0.05)
+            : activeColor.withValues(alpha: isFocused ? 0.12 : 0.06),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isDark
-              ? Colors.white.withValues(alpha: 0.08)
-              : const Color(0xFFE2E8F0),
+          color: activeColor.withValues(
+            alpha: isFocused ? 0.55 : (isDark ? 0.08 : 0.15),
+          ),
+          width: isFocused ? 1.2 : 1.0,
         ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
             width: 6,
             height: 6,
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: AppColors.accentGreen,
+              color: activeColor,
             ),
           ),
           const SizedBox(width: 5),
           Text(
-            _focusedIndex != null ? 'Metric Focused' : 'Active Rings',
+            isFocused ? 'Metric Focused' : 'Active Rings',
             style: TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.w600,
-              color: isDark ? AppColors.textSecondary : const Color(0xFF64748B),
+              color: isFocused
+                  ? activeColor
+                  : (isDark
+                      ? AppColors.textSecondary
+                      : const Color(0xFF64748B)),
             ),
           ),
         ],
