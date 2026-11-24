@@ -6,11 +6,13 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../core/theme/theme_palette.dart';
 import '../../../widgets/shimmer_loading.dart';
-import 'activity_and_achievements_card.dart';
+import 'daily_activity_heatmap_card.dart';
 import 'dashboard_header.dart';
 import 'dashboard_kpi_cards.dart';
-import 'mode_and_topic_cards.dart';
+import 'learning_mode_distribution_card.dart';
+import 'milestone_achievements_card.dart';
 import 'quiz_trend_card.dart';
+import 'topic_breakdown_card.dart';
 import 'weak_concepts_card.dart';
 
 /// Embeddable dashboard content widget for use inside the learning shell.
@@ -93,12 +95,49 @@ class _LearningDashboardViewState extends ConsumerState<LearningDashboardView> {
                               _buildErrorView(context, state.error!)
                             // Loaded Content
                             else if (state.data != null) ...[
+                              // 1. Concentric Donut Hub & KPI Cards
                               DashboardKpiCards(summary: state.data!.summary),
                               const SizedBox(height: 24),
+
+                              // 2. Right below KPIs: Learning Mode Distribution & Milestone Achievements
+                              if (constraints.maxWidth >= 760)
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Expanded(
+                                      child: LearningModeDistributionCard(
+                                        modeDistribution:
+                                            state.data!.modeDistribution,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: MilestoneAchievementsCard(
+                                        achievements:
+                                            state.data!.achievements,
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              else ...[
+                                LearningModeDistributionCard(
+                                  modeDistribution:
+                                      state.data!.modeDistribution,
+                                ),
+                                const SizedBox(height: 16),
+                                MilestoneAchievementsCard(
+                                  achievements: state.data!.achievements,
+                                ),
+                              ],
+                              const SizedBox(height: 24),
+
+                              // 3. Quiz Trend Card (Accuracy Curve)
                               QuizTrendCard(
                                 quizMetrics: state.data!.quizMetrics,
                               ),
                               const SizedBox(height: 24),
+
+                              // 4. Weak Concepts Card
                               WeakConceptsCard(
                                 weakConcepts: state
                                     .data!
@@ -106,15 +145,37 @@ class _LearningDashboardViewState extends ConsumerState<LearningDashboardView> {
                                     .conceptsNeedingReinforcement,
                               ),
                               const SizedBox(height: 24),
-                              ModeAndTopicCards(
-                                modeDistribution: state.data!.modeDistribution,
-                                topicBreakdown: state.data!.topicBreakdown,
-                              ),
-                              const SizedBox(height: 24),
-                              ActivityAndAchievementsCard(
-                                activityHeatmap: state.data!.activityHeatmap,
-                                achievements: state.data!.achievements,
-                              ),
+
+                              // 5. Topic Breakdown & Daily Activity Heatmap
+                              if (constraints.maxWidth >= 760)
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Expanded(
+                                      child: TopicBreakdownCard(
+                                        topicBreakdown:
+                                            state.data!.topicBreakdown,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: DailyActivityHeatmapCard(
+                                        activityHeatmap:
+                                            state.data!.activityHeatmap,
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              else ...[
+                                TopicBreakdownCard(
+                                  topicBreakdown: state.data!.topicBreakdown,
+                                ),
+                                const SizedBox(height: 16),
+                                DailyActivityHeatmapCard(
+                                  activityHeatmap:
+                                      state.data!.activityHeatmap,
+                                ),
+                              ],
                               const SizedBox(height: 48),
                             ],
                           ],

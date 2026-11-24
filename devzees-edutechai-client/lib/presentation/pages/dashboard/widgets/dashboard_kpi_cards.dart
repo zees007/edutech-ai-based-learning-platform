@@ -96,6 +96,15 @@ class _DashboardKpiCardsState extends State<DashboardKpiCards>
                 ? AppColors.cardBackground.withValues(alpha: 0.35)
                 : Colors.white.withValues(alpha: 0.65),
             borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color: isDark
+                    ? Colors.black.withValues(alpha: 0.20)
+                    : Colors.black.withValues(alpha: 0.04),
+                blurRadius: 16,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           padding: EdgeInsets.all(
               isLargeDesktop || isDesktop ? 22 : (totalWidth < 360 ? 12 : 16)),

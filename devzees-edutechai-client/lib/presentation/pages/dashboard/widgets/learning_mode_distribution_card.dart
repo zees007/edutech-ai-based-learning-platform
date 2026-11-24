@@ -4,54 +4,28 @@ import '../../../../data/models/dashboard/dashboard_response.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../core/theme/theme_palette.dart';
-import '../../../widgets/glass_card.dart';
 
-class ModeAndTopicCards extends StatefulWidget {
+/// Reusable card displaying learning mode usage distribution (Visual, Deep Dive, Bite-Sized)
+/// with a donut pie chart and interactive legend.
+class LearningModeDistributionCard extends StatefulWidget {
   final ModeDistribution modeDistribution;
-  final List<TopicBreakdownItem> topicBreakdown;
 
-  const ModeAndTopicCards({
+  const LearningModeDistributionCard({
     super.key,
     required this.modeDistribution,
-    required this.topicBreakdown,
   });
 
   @override
-  State<ModeAndTopicCards> createState() => _ModeAndTopicCardsState();
+  State<LearningModeDistributionCard> createState() =>
+      _LearningModeDistributionCardState();
 }
 
-class _ModeAndTopicCardsState extends State<ModeAndTopicCards> {
+class _LearningModeDistributionCardState
+    extends State<LearningModeDistributionCard> {
   int _touchedIndex = -1;
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final isDesktop = constraints.maxWidth >= 760;
-
-        if (isDesktop) {
-          return Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(child: _buildModeCard(context)),
-              const SizedBox(width: 16),
-              Expanded(child: _buildTopicCard(context)),
-            ],
-          );
-        } else {
-          return Column(
-            children: [
-              _buildModeCard(context),
-              const SizedBox(height: 16),
-              _buildTopicCard(context),
-            ],
-          );
-        }
-      },
-    );
-  }
-
-  Widget _buildModeCard(BuildContext context) {
     final isDark = context.isDarkMode;
     final modes = widget.modeDistribution;
     final total = modes.total;
@@ -61,8 +35,22 @@ class _ModeAndTopicCardsState extends State<ModeAndTopicCards> {
         final isMobile = cardConstraints.maxWidth < 450;
         final isCompact = cardConstraints.maxWidth < 360;
 
-        return GlassCard(
-          borderRadius: 20,
+        return Container(
+          decoration: BoxDecoration(
+            color: isDark
+                ? AppColors.cardBackground.withValues(alpha: 0.35)
+                : Colors.white.withValues(alpha: 0.65),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: isDark
+                    ? Colors.black.withValues(alpha: 0.20)
+                    : Colors.black.withValues(alpha: 0.04),
+                blurRadius: 16,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
           padding: EdgeInsets.all(isMobile ? 16 : 22),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -113,7 +101,8 @@ class _ModeAndTopicCardsState extends State<ModeAndTopicCards> {
                                   _touchedIndex = -1;
                                   return;
                                 }
-                                _touchedIndex = pieTouchResponse.touchedSection!.touchedSectionIndex;
+                                _touchedIndex = pieTouchResponse
+                                    .touchedSection!.touchedSectionIndex;
                               });
                             },
                           ),
@@ -137,7 +126,8 @@ class _ModeAndTopicCardsState extends State<ModeAndTopicCards> {
                         child: PieChart(
                           PieChartData(
                             pieTouchData: PieTouchData(
-                              touchCallback: (FlTouchEvent event, pieTouchResponse) {
+                              touchCallback:
+                                  (FlTouchEvent event, pieTouchResponse) {
                                 setState(() {
                                   if (!event.isInterestedForInteractions ||
                                       pieTouchResponse == null ||
@@ -145,7 +135,8 @@ class _ModeAndTopicCardsState extends State<ModeAndTopicCards> {
                                     _touchedIndex = -1;
                                     return;
                                   }
-                                  _touchedIndex = pieTouchResponse.touchedSection!.touchedSectionIndex;
+                                  _touchedIndex = pieTouchResponse
+                                      .touchedSection!.touchedSectionIndex;
                                 });
                               },
                             ),
@@ -306,118 +297,6 @@ class _ModeAndTopicCardsState extends State<ModeAndTopicCards> {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildTopicCard(BuildContext context) {
-    final isDark = context.isDarkMode;
-    final topics = widget.topicBreakdown;
-
-    return LayoutBuilder(
-      builder: (context, cardConstraints) {
-        final isMobile = cardConstraints.maxWidth < 450;
-
-        return GlassCard(
-          borderRadius: 20,
-          padding: EdgeInsets.all(isMobile ? 16 : 22),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Topic Mastery Breakdown',
-                style: AppTextStyles.h4.copyWith(
-                  fontWeight: FontWeight.w700,
-                  fontSize: isMobile ? 16 : 18,
-                  color: isDark ? AppColors.textPrimary : const Color(0xFF0F172A),
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Most explored subjects across your learning roadmap',
-                style: AppTextStyles.body2.copyWith(
-                  color: isDark ? AppColors.textSecondary : const Color(0xFF64748B),
-                  fontSize: isMobile ? 12 : 13,
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              if (topics.isEmpty)
-                Container(
-                  height: 180,
-                  alignment: Alignment.center,
-                  child: Text(
-                    'No topics explored yet.',
-                    style: AppTextStyles.caption.copyWith(
-                      color: isDark ? AppColors.textMuted : const Color(0xFF94A3B8),
-                    ),
-                  ),
-                )
-              else
-                ListView.separated(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: topics.length,
-                  separatorBuilder: (_, _) => const SizedBox(height: 12),
-                  itemBuilder: (context, index) {
-                    final t = topics[index];
-                    final colors = [
-                      const Color(0xFF8B5CF6),
-                      const Color(0xFF38BDF8),
-                      const Color(0xFF10B981),
-                      const Color(0xFFF59E0B),
-                      const Color(0xFFEC4899),
-                    ];
-                    final barColor = colors[index % colors.length];
-
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: Text(
-                                t.topic,
-                                style: AppTextStyles.label.copyWith(
-                                  color: isDark ? AppColors.textPrimary : const Color(0xFF1E293B),
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 13,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              '${t.sessionCount} ${t.sessionCount == 1 ? "journey" : "journeys"} (${t.percentage.toStringAsFixed(0)}%)',
-                              style: AppTextStyles.caption.copyWith(
-                                color: isDark ? AppColors.textSecondary : const Color(0xFF64748B),
-                                fontWeight: FontWeight.w600,
-                                fontSize: 11,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 6),
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(4),
-                          child: LinearProgressIndicator(
-                            value: (t.percentage / 100).clamp(0.05, 1.0),
-                            backgroundColor: isDark
-                                ? Colors.white.withValues(alpha: 0.08)
-                                : Colors.black.withValues(alpha: 0.06),
-                            valueColor: AlwaysStoppedAnimation<Color>(barColor),
-                            minHeight: 6,
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                ),
-            ],
-          ),
-        );
-      },
     );
   }
 }

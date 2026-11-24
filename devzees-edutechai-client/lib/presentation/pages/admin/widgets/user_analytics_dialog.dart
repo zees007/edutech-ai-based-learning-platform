@@ -7,11 +7,13 @@ import '../../../../core/theme/text_styles.dart';
 import '../../../../core/theme/theme_palette.dart';
 import '../../../../data/models/admin/user_response.dart';
 import '../../../../data/models/dashboard/dashboard_response.dart';
-import '../../dashboard/widgets/activity_and_achievements_card.dart';
+import '../../dashboard/widgets/daily_activity_heatmap_card.dart';
 import '../../dashboard/widgets/dashboard_kpi_cards.dart';
 import '../../dashboard/widgets/learner_standing_hud.dart';
-import '../../dashboard/widgets/mode_and_topic_cards.dart';
+import '../../dashboard/widgets/learning_mode_distribution_card.dart';
+import '../../dashboard/widgets/milestone_achievements_card.dart';
 import '../../dashboard/widgets/quiz_trend_card.dart';
+import '../../dashboard/widgets/topic_breakdown_card.dart';
 import '../../dashboard/widgets/weak_concepts_card.dart';
 import 'tier_badge.dart';
 
@@ -345,17 +347,79 @@ class _UserAnalyticsDialogState extends ConsumerState<UserAnalyticsDialog> {
           WeakConceptsCard(weakConcepts: data.quizMetrics.conceptsNeedingReinforcement),
           const SizedBox(height: 20),
 
-          // 5. Mode Distribution & Topic Mastery
-          ModeAndTopicCards(
-            modeDistribution: data.modeDistribution,
-            topicBreakdown: data.topicBreakdown,
+          // 5. Learning Mode Distribution & Milestone Trophies
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isWide = constraints.maxWidth >= 700;
+              if (isWide) {
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: LearningModeDistributionCard(
+                        modeDistribution: data.modeDistribution,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: MilestoneAchievementsCard(
+                        achievements: data.achievements,
+                      ),
+                    ),
+                  ],
+                );
+              } else {
+                return Column(
+                  children: [
+                    LearningModeDistributionCard(
+                      modeDistribution: data.modeDistribution,
+                    ),
+                    const SizedBox(height: 16),
+                    MilestoneAchievementsCard(
+                      achievements: data.achievements,
+                    ),
+                  ],
+                );
+              }
+            },
           ),
           const SizedBox(height: 20),
 
-          // 6. Activity Heatmap & 6-Tier Prestige Trophies
-          ActivityAndAchievementsCard(
-            activityHeatmap: data.activityHeatmap,
-            achievements: data.achievements,
+          // 6. Topic Mastery Breakdown & Daily Activity Heatmap
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isWide = constraints.maxWidth >= 700;
+              if (isWide) {
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: TopicBreakdownCard(
+                        topicBreakdown: data.topicBreakdown,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: DailyActivityHeatmapCard(
+                        activityHeatmap: data.activityHeatmap,
+                      ),
+                    ),
+                  ],
+                );
+              } else {
+                return Column(
+                  children: [
+                    TopicBreakdownCard(
+                      topicBreakdown: data.topicBreakdown,
+                    ),
+                    const SizedBox(height: 16),
+                    DailyActivityHeatmapCard(
+                      activityHeatmap: data.activityHeatmap,
+                    ),
+                  ],
+                );
+              }
+            },
           ),
         ],
       ),
