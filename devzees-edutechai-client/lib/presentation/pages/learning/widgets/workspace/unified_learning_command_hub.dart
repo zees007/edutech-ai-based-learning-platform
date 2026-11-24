@@ -46,8 +46,8 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final isDesktop = constraints.maxWidth >= 1050;
         final isMobile = constraints.maxWidth < 650;
+        final isCompactDesktop = constraints.maxWidth < 1320;
 
         return Column(
           mainAxisSize: MainAxisSize.min,
@@ -72,21 +72,14 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
                     ),
                   ),
                 ),
-                child: isDesktop
-                    ? _buildDesktopTier1(
-                        session: session,
-                        levelData: levelData,
-                        lvlPct: lvlPct,
-                        topicPct: topicPct,
-                        totalSteps: totalSteps,
-                      )
-                    : _buildTabletTier1(
-                        session: session,
-                        levelData: levelData,
-                        lvlPct: lvlPct,
-                        topicPct: topicPct,
-                        totalSteps: totalSteps,
-                      ),
+                child: _buildTier1Header(
+                  session: session,
+                  levelData: levelData,
+                  lvlPct: lvlPct,
+                  topicPct: topicPct,
+                  totalSteps: totalSteps,
+                  isCompact: isCompactDesktop,
+                ),
               ),
 
             // ─── TIER 2: Milestone Learning Roadmap Stepper ─────────
@@ -129,80 +122,71 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
     );
   }
 
-  // ─── DESKTOP TIER 1 (Single Line Flow: Goal Left, Metrics Right) ─────────────
-  Widget _buildDesktopTier1({
+  // ─── TIER 1: Unified Two-Row Command Bar ────────────────────────────────────
+  // Row 1: Mode & Education Level Pills (Left) & 5 HUD Metrics + Theme Switcher (Right)
+  // Row 2: "YOUR GOAL" with Target Icon + Full-Width Topic Details Text
+  Widget _buildTier1Header({
     required SessionResponse session,
     required Map<String, dynamic> levelData,
     required double lvlPct,
     required double topicPct,
     required int totalSteps,
-  }) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        // Goal Info & Badges
-        Expanded(
-          flex: 4,
-          child: _buildGoalContextBlock(session),
-        ),
-        const SizedBox(width: 16),
-        // 4 High-Density HUD Metrics + Export + Theme Switcher
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildLevelPill(levelData),
-            const SizedBox(width: 8),
-            _buildXpStreakPill(session.xpEarned),
-            const SizedBox(width: 8),
-            _buildLevelProgressPill(levelData, lvlPct),
-            const SizedBox(width: 8),
-            _buildTopicProgressPill(session.stepsCompleted, totalSteps, topicPct),
-            const SizedBox(width: 8),
-            _buildExportButton(session, totalSteps),
-            const SizedBox(width: 8),
-            const ThemeToggleButton(size: 30),
-          ],
-        ),
-      ],
-    );
-  }
-
-  // ─── TABLET TIER 1 (Stacked: Goal Top, 4 Metrics Row Underneath) ─────────────
-  Widget _buildTabletTier1({
-    required SessionResponse session,
-    required Map<String, dynamic> levelData,
-    required double lvlPct,
-    required double topicPct,
-    required int totalSteps,
+    required bool isCompact,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
-        _buildGoalContextBlock(session),
-        const SizedBox(height: 12),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          clipBehavior: Clip.none,
-          child: Row(
-            children: [
-              _buildLevelPill(levelData),
-              const SizedBox(width: 8),
-              _buildXpStreakPill(session.xpEarned),
-              const SizedBox(width: 8),
-              _buildLevelProgressPill(levelData, lvlPct),
-              const SizedBox(width: 8),
-              _buildTopicProgressPill(session.stepsCompleted, totalSteps, topicPct),
-              const SizedBox(width: 8),
-              _buildExportButton(session, totalSteps),
-              const SizedBox(width: 8),
-              const ThemeToggleButton(size: 30),
-            ],
-          ),
+        // ─── ROW 1: Mode & Education Level (Left) + All 5 HUD Metrics + Theme Toggle (Right) ──
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            // Left: Learning Mode & Education Level (same pill size as other 5 HUD pills)
+            _buildModePill(session.learningMode),
+            const SizedBox(width: 8),
+            _buildEducationLevelPill(session.studentLevel),
+            const SizedBox(width: 12),
+            // Right: All 5 Metric Pills (Horizontally scrollable if tight)
+            Expanded(
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  clipBehavior: Clip.none,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _buildLevelPill(levelData, isCompact: isCompact),
+                      const SizedBox(width: 8),
+                      _buildXpStreakPill(session.xpEarned, isCompact: isCompact),
+                      const SizedBox(width: 8),
+                      _buildLevelProgressPill(levelData, lvlPct),
+                      const SizedBox(width: 8),
+                      _buildTopicProgressPill(session.stepsCompleted, totalSteps, topicPct),
+                      const SizedBox(width: 8),
+                      _buildExportButton(session, totalSteps),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            // Dedicated vertical separator & pinned Theme Toggle
+            Container(
+              height: 20,
+              width: 1,
+              color: context.appColors.border,
+            ),
+            const SizedBox(width: 12),
+            const ThemeToggleButton(size: 30),
+          ],
         ),
+        const SizedBox(height: 10),
+        // ─── ROW 2: "YOUR GOAL" with Icon + Full-Width Topic Details Text ─────
+        _buildGoalTopicRow(session),
       ],
     );
   }
-
 
   BoxDecoration _buildPillDecoration() {
     return BoxDecoration(
@@ -215,98 +199,150 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
     );
   }
 
-  // ─── GOAL & CONTEXT CLUSTER ──────────────────────────────────────────────────
-  Widget _buildGoalContextBlock(SessionResponse session, {bool isMobile = false}) {
+  // ─── MODE PILL (Full-sized HUD pill matching the other 5 pills) ─────────────
+  Widget _buildModePill(String mode) {
+    final Color textColor = AppColors.isDark ? const Color(0xFFC084FC) : const Color(0xFF7C3AED);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: _buildPillDecoration(),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.psychology_rounded,
+            color: textColor,
+            size: 15,
+          ),
+          const SizedBox(width: 5),
+          Text(
+            _formatMode(mode),
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: textColor,
+              letterSpacing: 0.3,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ─── EDUCATION LEVEL PILL (Full-sized HUD pill matching the other 5 pills) ──
+  Widget _buildEducationLevelPill(String level) {
+    final Color textColor = AppColors.isDark ? const Color(0xFF60A5FA) : const Color(0xFF1D4ED8);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: _buildPillDecoration(),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.school_rounded,
+            color: textColor,
+            size: 15,
+          ),
+          const SizedBox(width: 5),
+          Text(
+            _formatLevel(level),
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: textColor,
+              letterSpacing: 0.3,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ─── ROW 2: GOAL ICON + "YOUR GOAL" BADGE + TOPIC DETAILS TEXT ──────────────
+  Widget _buildGoalTopicRow(SessionResponse session) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
+      crossAxisAlignment: _isTopicExpanded ? CrossAxisAlignment.start : CrossAxisAlignment.center,
       children: [
         // Goal Icon Accent Box
         Container(
-          width: isMobile ? 30 : 34,
-          height: isMobile ? 30 : 34,
+          width: 30,
+          height: 30,
           alignment: Alignment.center,
           decoration: _buildPillDecoration(),
           child: Icon(
             Icons.track_changes_rounded,
             color: AppColors.isDark ? const Color(0xFF60A5FA) : const Color(0xFF1D4ED8),
-            size: isMobile ? 16 : 18,
+            size: 16,
+          ),
+        ),
+        const SizedBox(width: 8),
+        // "YOUR GOAL" label badge
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+          decoration: BoxDecoration(
+            color: (AppColors.isDark ? const Color(0xFF60A5FA) : const Color(0xFF1D4ED8)).withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(
+              color: (AppColors.isDark ? const Color(0xFF60A5FA) : const Color(0xFF1D4ED8)).withValues(alpha: 0.25),
+              width: 1.0,
+            ),
+          ),
+          child: Text(
+            'YOUR GOAL',
+            style: TextStyle(
+              color: AppColors.isDark ? const Color(0xFF93C5FD) : const Color(0xFF1E40AF),
+              fontSize: 10,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.6,
+            ),
           ),
         ),
         const SizedBox(width: 10),
-        // Goal Title + Chips
+        // Full Width Goal Topic Details with click to expand
         Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Wrap(
-                crossAxisAlignment: WrapCrossAlignment.center,
-                spacing: 6,
-                runSpacing: 4,
-                children: [
-                  Text(
-                    'YOUR GOAL',
-                    style: TextStyle(
-                      color: AppColors.isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
-                      fontSize: 10,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.6,
-                    ),
-                  ),
-                  _buildMicroChip(
-                    label: _formatMode(session.learningMode),
-                    isViolet: true,
-                    icon: Icons.psychology_rounded,
-                  ),
-                  _buildMicroChip(
-                    label: _formatLevel(session.studentLevel),
-                    isViolet: false,
-                    icon: Icons.school_rounded,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 3),
-              GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _isTopicExpanded = !_isTopicExpanded;
-                  });
-                },
-                child: MouseRegion(
-                  cursor: SystemMouseCursors.click,
-                  child: Tooltip(
-                    message: _isTopicExpanded ? 'Tap to collapse' : 'Tap to expand topic',
-                    waitDuration: const Duration(milliseconds: 400),
-                    child: AnimatedSize(
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeInOutCubic,
-                      alignment: Alignment.topCenter,
-                      child: Text(
-                        session.topic,
-                        maxLines: _isTopicExpanded ? null : (isMobile ? 2 : 1),
-                        overflow: _isTopicExpanded ? null : TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: isMobile ? 12.5 : 13.5,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.isDark ? Colors.white : AppColors.textPrimary,
-                          letterSpacing: -0.2,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
+          child: _buildTopicDetails(session),
         ),
       ],
     );
   }
 
+  // ─── GOAL TOPIC DETAILS (Full Width with Expand on Click) ───────────────────
+  Widget _buildTopicDetails(SessionResponse session) {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _isTopicExpanded = !_isTopicExpanded;
+        });
+      },
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: Tooltip(
+          message: _isTopicExpanded ? 'Tap to collapse' : 'Tap to expand topic',
+          waitDuration: const Duration(milliseconds: 400),
+          child: AnimatedSize(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOutCubic,
+            alignment: Alignment.topLeft,
+            child: Text(
+              session.topic,
+              maxLines: _isTopicExpanded ? null : 1,
+              overflow: _isTopicExpanded ? null : TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 13.5,
+                fontWeight: FontWeight.w600,
+                color: AppColors.isDark ? Colors.white : AppColors.textPrimary,
+                letterSpacing: -0.2,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   // ─── MICRO METRIC PILL 1: CURRENT LEVEL ──────────────────────────────────────
-  Widget _buildLevelPill(Map<String, dynamic> levelData) {
+  Widget _buildLevelPill(Map<String, dynamic> levelData, {bool isCompact = false}) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: EdgeInsets.symmetric(horizontal: isCompact ? 8 : 10, vertical: 6),
       decoration: _buildPillDecoration(),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -325,24 +361,26 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
               color: AppColors.isDark ? Colors.white : AppColors.textPrimary,
             ),
           ),
-          const SizedBox(width: 6),
-          Text(
-            (levelData['title'] as String),
-            style: TextStyle(
-              fontSize: 10.5,
-              fontWeight: FontWeight.w500,
-              color: AppColors.isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+          if (!isCompact) ...[
+            const SizedBox(width: 6),
+            Text(
+              (levelData['title'] as String),
+              style: TextStyle(
+                fontSize: 10.5,
+                fontWeight: FontWeight.w500,
+                color: AppColors.isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+              ),
             ),
-          ),
+          ],
         ],
       ),
     );
   }
 
   // ─── MICRO METRIC PILL 2: TOTAL XP & STREAK ─────────────────────────────────
-  Widget _buildXpStreakPill(int xpEarned) {
+  Widget _buildXpStreakPill(int xpEarned, {bool isCompact = false}) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: EdgeInsets.symmetric(horizontal: isCompact ? 8 : 10, vertical: 6),
       decoration: _buildPillDecoration(),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -361,7 +399,7 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
               color: AppColors.isDark ? const Color(0xFFFDE68A) : const Color(0xFFB45309),
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 6),
           Text(
             '|',
             style: TextStyle(
@@ -369,9 +407,9 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
               color: AppColors.isDark ? const Color(0xFF475569) : const Color(0xFFCBD5E1),
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 6),
           Text(
-            '🔥 Streak: ',
+            isCompact ? '🔥 ' : '🔥 Streak: ',
             style: TextStyle(
               fontSize: 11,
               color: AppColors.isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
@@ -590,40 +628,6 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
           ),
         ),
       ],
-    );
-  }
-
-  // ─── MICRO CHIP HELPER ──────────────────────────────────────────────────────
-  Widget _buildMicroChip({
-    required String label,
-    required bool isViolet,
-    required IconData icon,
-  }) {
-    final textColor = isViolet
-        ? (AppColors.isDark ? const Color(0xFFC084FC) : const Color(0xFF7C3AED))
-        : (AppColors.isDark ? const Color(0xFF60A5FA) : const Color(0xFF1D4ED8));
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-      decoration: _buildPillDecoration().copyWith(
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 11, color: textColor),
-          const SizedBox(width: 4),
-          Text(
-            label,
-            style: TextStyle(
-              fontWeight: FontWeight.w700,
-              fontSize: 9.5,
-              color: textColor,
-              letterSpacing: 0.3,
-            ),
-          ),
-        ],
-      ),
     );
   }
 
