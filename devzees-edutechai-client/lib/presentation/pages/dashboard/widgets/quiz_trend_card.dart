@@ -67,7 +67,8 @@ class _QuizTrendCardState extends State<QuizTrendCard> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final isMobile = Responsive.isMobile(context) ||
+        final isMobile =
+            Responsive.isMobile(context) ||
             constraints.maxWidth < Responsive.mobileBreakpoint;
         final isDesktop =
             Responsive.isDesktop(context) && constraints.maxWidth >= 960;
@@ -133,25 +134,32 @@ class _QuizTrendCardState extends State<QuizTrendCard> {
           ],
         );
 
-        final zoomButton = IconButton(
-          icon: Icon(
-            Icons.fullscreen_rounded,
-            size: 20,
-            color: isDark
-                ? AppColors.textSecondary
-                : const Color(0xFF475569),
-          ),
-          tooltip: 'Expand chart',
-          padding: const EdgeInsets.all(6),
-          constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-          visualDensity: VisualDensity.compact,
-          onPressed: rawTrend.isEmpty
-              ? null
-              : () => _showFullscreenChart(
-                  context,
-                  trend,
-                  weeklyPoints: _showWeeklyTrend ? weeklyPoints : null,
+        final zoomButton = Tooltip(
+          message: 'Expand chart',
+          child: InkWell(
+            onTap: rawTrend.isEmpty
+                ? null
+                : () => _showFullscreenChart(context, rawTrend, weeklyPoints),
+            borderRadius: BorderRadius.circular(8),
+            child: Container(
+              padding: const EdgeInsets.all(5),
+              decoration: BoxDecoration(
+                color: (isDark ? Colors.white : Colors.black).withValues(
+                  alpha: 0.04,
                 ),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                Icons.fullscreen_rounded,
+                size: 19,
+                color: rawTrend.isEmpty
+                    ? (isDark ? AppColors.textMuted : const Color(0xFF94A3B8))
+                    : (isDark
+                          ? AppColors.textSecondary
+                          : const Color(0xFF475569)),
+              ),
+            ),
+          ),
         );
 
         final actionControls = Row(
@@ -322,9 +330,12 @@ class _QuizTrendCardState extends State<QuizTrendCard> {
 
     Widget chartWidget = SizedBox(
       width: chartWidth,
-      height: 260,
-      child: LineChart(
-        _buildLineChartData(context, trend, weeklyPoints: weeklyPoints),
+      height: 270,
+      child: Padding(
+        padding: const EdgeInsets.only(top: 10, right: 10),
+        child: LineChart(
+          _buildLineChartData(context, trend, weeklyPoints: weeklyPoints),
+        ),
       ),
     );
 
@@ -342,8 +353,9 @@ class _QuizTrendCardState extends State<QuizTrendCard> {
             thickness: const WidgetStatePropertyAll(3.5),
             radius: const Radius.circular(8),
             thumbColor: WidgetStatePropertyAll(
-              (isDark ? Colors.white : const Color(0xFF64748B))
-                  .withValues(alpha: 0.28),
+              (isDark ? Colors.white : const Color(0xFF64748B)).withValues(
+                alpha: 0.28,
+              ),
             ),
           ),
           child: Scrollbar(
@@ -422,8 +434,9 @@ class _QuizTrendCardState extends State<QuizTrendCard> {
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: AppColors.primary
-                        .withValues(alpha: isDark ? 0.30 : 0.22),
+                    color: AppColors.primary.withValues(
+                      alpha: isDark ? 0.30 : 0.22,
+                    ),
                     blurRadius: 6,
                     offset: const Offset(0, 2),
                   ),
@@ -497,8 +510,11 @@ class _QuizTrendCardState extends State<QuizTrendCard> {
     BuildContext context,
     List<QuizAccuracyTrendItem> trend, {
     List<WeeklyTrendPoint>? weeklyPoints,
+    bool? isWeeklyOverride,
   }) {
     final isDark = context.isDarkMode;
+    final isMobile = Responsive.isMobile(context);
+    final isWeekly = isWeeklyOverride ?? _showWeeklyTrend;
 
     final spots = <FlSpot>[];
     for (int i = 0; i < trend.length; i++) {
@@ -510,6 +526,7 @@ class _QuizTrendCardState extends State<QuizTrendCard> {
       maxX: max(1.0, (trend.length - 1).toDouble()),
       minY: 0,
       maxY: 100,
+      clipData: const FlClipData.none(),
       gridData: FlGridData(
         show: true,
         drawVerticalLine: false,
@@ -569,7 +586,7 @@ class _QuizTrendCardState extends State<QuizTrendCard> {
                 return const SizedBox.shrink();
               }
 
-              final prefix = _showWeeklyTrend ? 'W' : 'Q';
+              final prefix = isWeekly ? 'W' : 'Q';
               return Padding(
                 padding: const EdgeInsets.only(top: 8.0),
                 child: Text(
@@ -590,17 +607,46 @@ class _QuizTrendCardState extends State<QuizTrendCard> {
       borderData: FlBorderData(show: false),
       lineTouchData: LineTouchData(
         handleBuiltInTouches: true,
+        getTouchedSpotIndicator: (barData, spotIndexes) {
+          return spotIndexes.map((index) {
+            return TouchedSpotIndicatorData(
+              FlLine(
+                color: const Color(0xFF8B5CF6)
+                    .withValues(alpha: isDark ? 0.55 : 0.40),
+                strokeWidth: 1.5,
+                dashArray: [4, 3],
+              ),
+              FlDotData(
+                show: true,
+                getDotPainter: (spot, percent, barData, index) {
+                  return FlDotCirclePainter(
+                    radius: 7.0,
+                    color: Colors.white,
+                    strokeWidth: 3.0,
+                    strokeColor: const Color(0xFF8B5CF6),
+                  );
+                },
+              ),
+            );
+          }).toList();
+        },
         touchTooltipData: LineTouchTooltipData(
-          getTooltipColor: (_) =>
-              isDark ? const Color(0xFF151628) : Colors.white,
-          tooltipBorder: BorderSide.none,
+          getTooltipColor: (_) => isDark
+              ? const Color(0xFF14182B).withValues(alpha: 0.96)
+              : Colors.white,
+          tooltipBorder: BorderSide(
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.14)
+                : const Color(0xFFE2E8F0),
+            width: 1.0,
+          ),
           tooltipRoundedRadius: 14,
           tooltipPadding: const EdgeInsets.symmetric(
             horizontal: 14,
             vertical: 12,
           ),
           tooltipMargin: 12,
-          maxContentWidth: 350,
+          maxContentWidth: isMobile ? 250 : 340,
           fitInsideHorizontally: true,
           fitInsideVertically: true,
           getTooltipItems: (touchedSpots) {
@@ -610,20 +656,26 @@ class _QuizTrendCardState extends State<QuizTrendCard> {
               final scoreStr = spot.y.toStringAsFixed(1);
 
               // ─── WEEKLY VIEW TOOLTIP ────────────────────────────────
-              if (_showWeeklyTrend &&
+              if (isWeekly &&
                   weeklyPoints != null &&
                   idx < weeklyPoints.length) {
                 final point = weeklyPoints[idx];
                 final Color statusColor;
                 final String statusText;
                 if (point.averageScore >= 85.0) {
-                  statusColor = AppColors.accentGreen;
+                  statusColor = isDark
+                      ? const Color(0xFF34D399)
+                      : const Color(0xFF059669);
                   statusText = 'Strong Mastery';
                 } else if (point.averageScore >= 65.0) {
-                  statusColor = AppColors.accentCyan;
+                  statusColor = isDark
+                      ? const Color(0xFF38BDF8)
+                      : const Color(0xFF0284C7);
                   statusText = 'Solid Progress';
                 } else {
-                  statusColor = const Color(0xFFEF4444);
+                  statusColor = isDark
+                      ? const Color(0xFFF87171)
+                      : const Color(0xFFDC2626);
                   statusText = 'Difficulty Dip';
                 }
 
@@ -636,6 +688,7 @@ class _QuizTrendCardState extends State<QuizTrendCard> {
                     fontWeight: FontWeight.w700,
                     fontSize: 12,
                     letterSpacing: 0.15,
+                    height: 1.4,
                   ),
                   textAlign: TextAlign.left,
                   children: [
@@ -647,6 +700,7 @@ class _QuizTrendCardState extends State<QuizTrendCard> {
                             : const Color(0xFF334155),
                         fontWeight: FontWeight.w600,
                         fontSize: 11,
+                        height: 1.4,
                       ),
                     ),
                     TextSpan(
@@ -658,6 +712,7 @@ class _QuizTrendCardState extends State<QuizTrendCard> {
                             : const Color(0xFF64748B),
                         fontWeight: FontWeight.w500,
                         fontSize: 10.5,
+                        height: 1.4,
                       ),
                     ),
                     TextSpan(
@@ -667,6 +722,7 @@ class _QuizTrendCardState extends State<QuizTrendCard> {
                         color: statusColor,
                         fontWeight: FontWeight.w800,
                         fontSize: 11.5,
+                        height: 1.45,
                       ),
                     ),
                   ],
@@ -681,61 +737,67 @@ class _QuizTrendCardState extends State<QuizTrendCard> {
                   : 'Step ${item.stepIndex + 1}: ${item.stepTitle.isNotEmpty ? item.stepTitle : 'Milestone Evaluation'}';
               final truncatedTopic = _truncate(
                 item.topic.isNotEmpty ? item.topic : 'Learning Milestone',
-                50,
+                isMobile ? 42 : 55,
               );
-              final truncatedStep = _truncate(rawStepTitle, 30);
+              final truncatedStep = _truncate(
+                rawStepTitle,
+                isMobile ? 26 : 36,
+              );
               final formattedDate = _formatSingleDate(item.date);
 
               final Color statusColor;
+              final String statusIcon;
               final String statusText;
               if (spot.y >= 99.0) {
-                statusColor = AppColors.accentGreen;
+                statusColor = isDark
+                    ? const Color(0xFF34D399)
+                    : const Color(0xFF059669);
+                statusIcon = '✓';
                 statusText = 'Mastered';
               } else if (spot.y >= 60.0) {
-                statusColor = AppColors.accentCyan;
+                statusColor = isDark
+                    ? const Color(0xFF38BDF8)
+                    : const Color(0xFF0284C7);
+                statusIcon = '●';
                 statusText = 'Passed';
               } else {
-                statusColor = const Color(0xFFEF4444);
+                statusColor = isDark
+                    ? const Color(0xFFF87171)
+                    : const Color(0xFFDC2626);
+                statusIcon = '▲';
                 statusText = 'Needs Review';
               }
 
               return LineTooltipItem(
-                '$truncatedTopic\n',
+                '📘 $truncatedTopic\n',
                 AppTextStyles.label.copyWith(
                   color: isDark ? Colors.white : const Color(0xFF0F172A),
                   fontWeight: FontWeight.w700,
                   fontSize: 12,
                   letterSpacing: 0.15,
+                  height: 1.4,
                 ),
                 textAlign: TextAlign.left,
                 children: [
                   TextSpan(
-                    text: '$truncatedStep\n',
+                    text: '$truncatedStep • $formattedDate\n',
                     style: AppTextStyles.caption.copyWith(
                       color: isDark
                           ? const Color(0xFFCBD5E1)
-                          : const Color(0xFF334155),
+                          : const Color(0xFF475569),
                       fontWeight: FontWeight.w600,
                       fontSize: 11,
-                    ),
-                  ),
-                  TextSpan(
-                    text: '$formattedDate\n',
-                    style: AppTextStyles.caption.copyWith(
-                      color: isDark
-                          ? const Color(0xFF94A3B8)
-                          : const Color(0xFF64748B),
-                      fontWeight: FontWeight.w500,
-                      fontSize: 10.5,
+                      height: 1.45,
                     ),
                   ),
                   TextSpan(
                     text:
-                        'Score: $scoreStr% ($correctCount/3 correct) • $statusText',
+                        '$statusIcon $scoreStr% ($correctCount/3) • $statusText',
                     style: AppTextStyles.caption.copyWith(
                       color: statusColor,
                       fontWeight: FontWeight.w800,
                       fontSize: 11.5,
+                      height: 1.45,
                     ),
                   ),
                 ],
@@ -901,64 +963,164 @@ class _QuizTrendCardState extends State<QuizTrendCard> {
 
   void _showFullscreenChart(
     BuildContext context,
-    List<QuizAccuracyTrendItem> trend, {
-    List<WeeklyTrendPoint>? weeklyPoints,
-  }) {
+    List<QuizAccuracyTrendItem> rawTrend,
+    List<WeeklyTrendPoint> weeklyPoints,
+  ) {
     final isDark = context.isDarkMode;
+    final isMobile = Responsive.isMobile(context);
+    bool modalWeekly = _showWeeklyTrend;
 
     showDialog(
       context: context,
-      builder: (context) {
-        return Dialog(
-          backgroundColor: isDark ? const Color(0xFF0F172A) : Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
-          ),
-          insetPadding: const EdgeInsets.symmetric(
-            horizontal: 24,
-            vertical: 32,
-          ),
-          child: Container(
-            padding: const EdgeInsets.all(24),
-            constraints: const BoxConstraints(maxWidth: 960, maxHeight: 600),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            final activeTrend = modalWeekly
+                ? weeklyPoints.map((p) => p.toTrendItem()).toList()
+                : rawTrend;
+
+            return Dialog(
+              backgroundColor: isDark ? const Color(0xFF0F172A) : Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+              ),
+              insetPadding: EdgeInsets.symmetric(
+                horizontal: isMobile ? 12 : 24,
+                vertical: isMobile ? 20 : 32,
+              ),
+              child: Container(
+                padding: EdgeInsets.all(isMobile ? 16 : 24),
+                constraints: const BoxConstraints(
+                  maxWidth: 960,
+                  maxHeight: 600,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Comprehensive Quiz Accuracy Timeline',
-                      style: AppTextStyles.h4.copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: isDark ? Colors.white : const Color(0xFF0F172A),
-                      ),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            'Quiz Accuracy Timeline',
+                            style: AppTextStyles.h4.copyWith(
+                              fontWeight: FontWeight.w700,
+                              fontSize: isMobile ? 16 : 18,
+                              color: isDark
+                                  ? Colors.white
+                                  : const Color(0xFF0F172A),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        if (rawTrend.length >= 3) ...[
+                          const SizedBox(width: 8),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? Colors.white.withValues(alpha: 0.06)
+                                  : Colors.black.withValues(alpha: 0.05),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                _buildToggleOption(
+                                  label: 'All Dots',
+                                  isSelected: !modalWeekly,
+                                  onTap: () =>
+                                      setModalState(() => modalWeekly = false),
+                                  isDark: isDark,
+                                ),
+                                _buildToggleOption(
+                                  label: 'Weekly',
+                                  isSelected: modalWeekly,
+                                  onTap: () =>
+                                      setModalState(() => modalWeekly = true),
+                                  isDark: isDark,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                        const SizedBox(width: 6),
+                        InkWell(
+                          onTap: () => Navigator.of(dialogContext).pop(),
+                          borderRadius: BorderRadius.circular(8),
+                          child: Container(
+                            padding: const EdgeInsets.all(5),
+                            decoration: BoxDecoration(
+                              color: (isDark ? Colors.white : Colors.black)
+                                  .withValues(alpha: 0.05),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Icon(
+                              Icons.close_rounded,
+                              size: 19,
+                              color: isDark
+                                  ? Colors.white
+                                  : const Color(0xFF0F172A),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.close_rounded),
-                      onPressed: () => Navigator.of(context).pop(),
+                    const SizedBox(height: 16),
+                    Expanded(
+                      child: LayoutBuilder(
+                        builder: (context, modalConstraints) {
+                          final minWidth = max(
+                            modalConstraints.maxWidth,
+                            activeTrend.length * 52.0,
+                          );
+                          return AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 250),
+                            child: ScrollConfiguration(
+                              key: ValueKey(modalWeekly),
+                              behavior: const MaterialScrollBehavior().copyWith(
+                                dragDevices: {
+                                  PointerDeviceKind.touch,
+                                  PointerDeviceKind.mouse,
+                                  PointerDeviceKind.trackpad,
+                                },
+                              ),
+                              child: SingleChildScrollView(
+                                scrollDirection: Axis.horizontal,
+                                physics: const BouncingScrollPhysics(
+                                  parent: AlwaysScrollableScrollPhysics(),
+                                ),
+                                child: SizedBox(
+                                  width: minWidth,
+                                  height: modalConstraints.maxHeight,
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(
+                                      top: 10,
+                                      right: 10,
+                                    ),
+                                    child: LineChart(
+                                      _buildLineChartData(
+                                        context,
+                                        activeTrend,
+                                        weeklyPoints: modalWeekly
+                                            ? weeklyPoints
+                                            : null,
+                                        isWeeklyOverride: modalWeekly,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
-                Expanded(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: SizedBox(
-                      width: max(800.0, trend.length * 52.0),
-                      child: LineChart(
-                        _buildLineChartData(
-                          context,
-                          trend,
-                          weeklyPoints: weeklyPoints,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         );
       },
     );
