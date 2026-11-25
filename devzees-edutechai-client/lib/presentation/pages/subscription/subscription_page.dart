@@ -15,6 +15,7 @@ import '../learning/widgets/subscription/ultra_extension_dialog.dart';
 import '../learning/widgets/subscription/plan_card.dart';
 import '../learning/widgets/subscription/mobile_plan_deck.dart';
 import '../../widgets/promo_announcement_bar.dart';
+import 'package:devzees_edutechai_client/core/theme/theme_palette.dart';
 
 class SubscriptionPage extends ConsumerStatefulWidget {
   final bool autoClaim;
@@ -129,7 +130,7 @@ class _SubscriptionPageState extends ConsumerState<SubscriptionPage>
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.isDark ? const Color(0xFF16182B) : Colors.white,
+        backgroundColor: context.isDarkMode ? const Color(0xFF16182B) : Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text('Cancel Auto-Renewal?', style: AppTextStyles.h4),
         content: Text(
@@ -139,7 +140,7 @@ class _SubscriptionPageState extends ConsumerState<SubscriptionPage>
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text('Keep Plan', style: TextStyle(color: AppColors.textSecondary)),
+            child: Text('Keep Plan', style: TextStyle(color: context.appColors.textSecondary)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -216,7 +217,7 @@ class _SubscriptionPageState extends ConsumerState<SubscriptionPage>
         ? '${end.year}-${end.month.toString().padLeft(2, '0')}-${end.day.toString().padLeft(2, '0')}'
         : 'N/A';
 
-    final bool isDark = AppColors.isDark;
+    final bool isDark = context.isDarkMode;
     final bool isMobile = Responsive.isMobile(context);
 
     return Scaffold(
@@ -339,7 +340,7 @@ class _SubscriptionPageState extends ConsumerState<SubscriptionPage>
             ? const Color(0xFF0F111E).withValues(alpha: 0.85)
             : Colors.white.withValues(alpha: 0.85),
         border: Border(
-          bottom: BorderSide(color: AppColors.glassBorder),
+          bottom: BorderSide(color: context.appColors.border),
         ),
       ),
       child: Row(
@@ -394,7 +395,7 @@ class _SubscriptionPageState extends ConsumerState<SubscriptionPage>
                   style: AppTextStyles.caption.copyWith(
                     letterSpacing: 1.0,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.textMuted,
+                    color: context.appColors.textSecondary,
                   ),
                 ),
                 const SizedBox(width: 6),
@@ -437,7 +438,7 @@ class _SubscriptionPageState extends ConsumerState<SubscriptionPage>
               Text(
                 'FLEXIBLE PLANS',
                 style: TextStyle(
-                  color: AppColors.isDark ? AppColors.blueSoft : AppColors.primary,
+                  color: context.isDarkMode ? AppColors.blueSoft : AppColors.primary,
                   fontSize: 11,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 1.0,
@@ -464,7 +465,7 @@ class _SubscriptionPageState extends ConsumerState<SubscriptionPage>
             'Select the optimal plan to unlock unlimited multi-agent deep dive sessions, full-text academic research, and priority AI execution.',
             textAlign: TextAlign.center,
             style: AppTextStyles.subtitle1.copyWith(
-              color: AppColors.textSecondary,
+              color: context.appColors.textSecondary,
               height: 1.5,
             ),
           ),
@@ -479,7 +480,7 @@ class _SubscriptionPageState extends ConsumerState<SubscriptionPage>
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF141628) : const Color(0xFFF1F5F9),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.glassBorder),
+        border: Border.all(color: context.appColors.border),
       ),
       child: TabBar(
         controller: _tabController,
@@ -499,7 +500,7 @@ class _SubscriptionPageState extends ConsumerState<SubscriptionPage>
           ],
         ),
         labelColor: Colors.white,
-        unselectedLabelColor: AppColors.textSecondary,
+        unselectedLabelColor: context.appColors.textSecondary,
         dividerColor: Colors.transparent,
         labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
         tabs: const [
@@ -621,11 +622,11 @@ class _SubscriptionPageState extends ConsumerState<SubscriptionPage>
         Container(
           padding: const EdgeInsets.all(4),
           decoration: BoxDecoration(
-            color: AppColors.isDark
+            color: context.isDarkMode
                 ? const Color(0xFF16182B)
                 : const Color(0xFFF1F5F9),
             borderRadius: BorderRadius.circular(30),
-            border: Border.all(color: AppColors.glassBorder),
+            border: Border.all(color: context.appColors.border),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -645,7 +646,7 @@ class _SubscriptionPageState extends ConsumerState<SubscriptionPage>
                   child: Text(
                     isMobile ? 'Monthly' : 'Monthly Billing',
                     style: TextStyle(
-                      color: !isAnnual ? Colors.white : AppColors.textSecondary,
+                      color: !isAnnual ? Colors.white : context.appColors.textSecondary,
                       fontWeight: FontWeight.bold,
                       fontSize: 12,
                     ),
@@ -669,7 +670,7 @@ class _SubscriptionPageState extends ConsumerState<SubscriptionPage>
                       Text(
                         isMobile ? 'Annual' : 'Annual Billing',
                         style: TextStyle(
-                          color: isAnnual ? Colors.white : AppColors.textSecondary,
+                          color: isAnnual ? Colors.white : context.appColors.textSecondary,
                           fontWeight: FontWeight.bold,
                           fontSize: 12,
                         ),
@@ -783,7 +784,7 @@ class _SubscriptionPageState extends ConsumerState<SubscriptionPage>
           const SizedBox(height: 8),
           Text(
             'Have questions about EduTech AI subscriptions? We have got you covered.',
-            style: AppTextStyles.body1.copyWith(color: AppColors.textSecondary),
+            style: AppTextStyles.body1.copyWith(color: context.appColors.textSecondary),
           ),
           const SizedBox(height: 28),
           ...faqs.map((faq) => Container(
@@ -817,7 +818,7 @@ class _SubscriptionPageState extends ConsumerState<SubscriptionPage>
                         child: Text(
                           faq['a']!,
                           style: AppTextStyles.body2.copyWith(
-                            color: AppColors.textSecondary,
+                            color: context.appColors.textSecondary,
                             height: 1.5,
                           ),
                         ),
@@ -865,7 +866,7 @@ class _SubscriptionPageState extends ConsumerState<SubscriptionPage>
                 'You are currently on the Free plan. Upgrade to Pro or Ultra in the Plans tab to unlock higher limits and manage recurring billing.',
                 textAlign: TextAlign.center,
                 style: AppTextStyles.body1.copyWith(
-                  color: AppColors.textSecondary,
+                  color: context.appColors.textSecondary,
                   height: 1.45,
                 ),
               ),
@@ -907,7 +908,7 @@ class _SubscriptionPageState extends ConsumerState<SubscriptionPage>
                     Text(
                       'CURRENT SUBSCRIPTION',
                       style: AppTextStyles.caption.copyWith(
-                        color: AppColors.textMuted,
+                        color: context.appColors.textSecondary,
                         letterSpacing: 1.0,
                         fontWeight: FontWeight.bold,
                       ),
@@ -942,7 +943,7 @@ class _SubscriptionPageState extends ConsumerState<SubscriptionPage>
                 const SizedBox(height: 8),
                 Text(
                   'Processed through $gatewayProvider. Renews automatically on $formattedDate.',
-                  style: AppTextStyles.body1.copyWith(color: AppColors.textSecondary),
+                  style: AppTextStyles.body1.copyWith(color: context.appColors.textSecondary),
                 ),
               ],
             ),
@@ -973,7 +974,7 @@ class _SubscriptionPageState extends ConsumerState<SubscriptionPage>
                                 ? 'Your subscription will automatically renew each billing period.'
                                 : 'Auto-renewal is paused. Subscription terminates at the end of the current period.',
                             style: AppTextStyles.caption.copyWith(
-                              color: AppColors.textMuted,
+                              color: context.appColors.textSecondary,
                               height: 1.3,
                             ),
                           ),
@@ -994,7 +995,7 @@ class _SubscriptionPageState extends ConsumerState<SubscriptionPage>
                     ),
                   ],
                 ),
-                Divider(color: AppColors.glassBorder, height: 40),
+                Divider(color: context.appColors.border, height: 40),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -1013,7 +1014,7 @@ class _SubscriptionPageState extends ConsumerState<SubscriptionPage>
                           Text(
                             'Disable auto-renewal and downgrade account when the billing cycle concludes.',
                             style: AppTextStyles.caption.copyWith(
-                              color: AppColors.textMuted,
+                              color: context.appColors.textSecondary,
                               height: 1.3,
                             ),
                           ),
@@ -1109,7 +1110,7 @@ class _SubscriptionPageState extends ConsumerState<SubscriptionPage>
                       'Once you complete subscription upgrades via Razorpay, receipts will appear here.',
                       textAlign: TextAlign.center,
                       style: AppTextStyles.body1.copyWith(
-                        color: AppColors.textSecondary,
+                        color: context.appColors.textSecondary,
                         height: 1.45,
                       ),
                     ),
@@ -1160,7 +1161,7 @@ class _SubscriptionPageState extends ConsumerState<SubscriptionPage>
                           Text(
                             'Txn: ${t.transactionId} • $dateStr',
                             style: AppTextStyles.caption.copyWith(
-                              color: AppColors.textMuted,
+                              color: context.appColors.textSecondary,
                             ),
                           ),
                         ],
@@ -1208,7 +1209,7 @@ class _SubscriptionPageState extends ConsumerState<SubscriptionPage>
       constraints: const BoxConstraints(maxWidth: 900),
       child: Column(
         children: [
-          Divider(color: AppColors.glassBorder),
+          Divider(color: context.appColors.border),
           const SizedBox(height: 20),
           Wrap(
             alignment: WrapAlignment.center,
@@ -1236,7 +1237,7 @@ class _SubscriptionPageState extends ConsumerState<SubscriptionPage>
           text,
           style: AppTextStyles.caption.copyWith(
             fontWeight: FontWeight.w600,
-            color: AppColors.textSecondary,
+            color: context.appColors.textSecondary,
           ),
         ),
       ],

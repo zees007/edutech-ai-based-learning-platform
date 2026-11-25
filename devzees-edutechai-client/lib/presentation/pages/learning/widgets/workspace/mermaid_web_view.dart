@@ -10,6 +10,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 import '../../../../../../core/theme/app_colors.dart';
 import '../../../../../../core/theme/text_styles.dart';
 import 'mermaid_js_interop_stub.dart' if (dart.library.js_interop) 'mermaid_js_interop_web.dart';
+import 'package:devzees_edutechai_client/core/theme/theme_palette.dart';
 
 class MermaidWebView extends StatefulWidget {
   final String code;
@@ -130,7 +131,7 @@ class _MermaidWebViewState extends State<MermaidWebView>
 
   String _buildHtml() {
     final safeCode = jsonEncode(widget.code);
-    final isDark = AppColors.isDark;
+    final isDark = context.isDarkMode;
     final mermaidTheme = isDark ? 'dark' : 'default';
     final primaryColor = isDark ? '#1E293B' : '#EFF6FF';
     final primaryTextColor = isDark ? '#F8FAFC' : '#1E293B';
@@ -370,7 +371,7 @@ class _MermaidWebViewState extends State<MermaidWebView>
             Expanded(
               child: Text(
                 message,
-                style: AppTextStyles.caption.copyWith(color: AppColors.textPrimary),
+                style: AppTextStyles.caption.copyWith(color: context.appColors.textPrimary),
               ),
             ),
           ],
@@ -384,7 +385,7 @@ class _MermaidWebViewState extends State<MermaidWebView>
         ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
-          side: BorderSide(color: AppColors.glassBorder),
+          side: BorderSide(color: context.appColors.border),
         ),
         duration: const Duration(seconds: 3),
         elevation: 0,
@@ -554,7 +555,7 @@ class _MermaidWebViewState extends State<MermaidWebView>
         decoration: BoxDecoration(
           color: AppColors.surfaceDark,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.glassBorderSubtle),
+          border: Border.all(color: (context.isDarkMode ? const Color(0x0DFFFFFF) : const Color(0x0F000000))),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -583,7 +584,7 @@ class _MermaidWebViewState extends State<MermaidWebView>
           color: const Color(0xFF181A20),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: AppColors.isDark
+            color: context.isDarkMode
                 ? const Color(0x22FFFFFF)
                 : const Color(0xFFE2E8F0),
           ),
@@ -603,7 +604,7 @@ class _MermaidWebViewState extends State<MermaidWebView>
                   color: const Color(0xFF20232B),
                   border: Border(
                     bottom: BorderSide(
-                      color: AppColors.isDark
+                      color: context.isDarkMode
                           ? const Color(0x1FFFFFFF)
                           : const Color(0xFF2D3139),
                     ),
@@ -694,7 +695,7 @@ class _HoverIconButtonState extends State<_HoverIconButton> {
             color: _isHovered ? AppColors.glassHover : Colors.transparent,
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: _isHovered ? AppColors.glassBorder : Colors.transparent,
+              color: _isHovered ? context.appColors.border : Colors.transparent,
             ),
           ),
           child: widget.isLoading
@@ -703,12 +704,12 @@ class _HoverIconButtonState extends State<_HoverIconButton> {
                   height: 16,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    color: AppColors.textSecondary,
+                    color: context.appColors.textSecondary,
                   ),
                 )
               : Icon(
                   widget.icon,
-                  color: _isHovered ? AppColors.textPrimary : AppColors.textSecondary,
+                  color: _isHovered ? context.appColors.textPrimary : context.appColors.textSecondary,
                   size: 18,
                 ),
         ),
@@ -759,13 +760,13 @@ class _MermaidFullscreenViewState extends State<_MermaidFullscreenView> {
         backgroundColor: AppColors.surfaceMid,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.close_rounded, color: AppColors.textPrimary),
+          icon: Icon(Icons.close_rounded, color: context.appColors.textPrimary),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
           'Diagram Viewer',
           style: AppTextStyles.subtitle2.copyWith(
-            color: AppColors.textPrimary,
+            color: context.appColors.textPrimary,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -793,7 +794,7 @@ class _MermaidFullscreenViewState extends State<_MermaidFullscreenView> {
                       Expanded(
                         child: Text(
                           'Copied to clipboard!',
-                          style: AppTextStyles.caption.copyWith(color: AppColors.textPrimary),
+                          style: AppTextStyles.caption.copyWith(color: context.appColors.textPrimary),
                         ),
                       ),
                     ],
@@ -807,7 +808,7 @@ class _MermaidFullscreenViewState extends State<_MermaidFullscreenView> {
                   ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
-                    side: BorderSide(color: AppColors.glassBorder),
+                    side: BorderSide(color: context.appColors.border),
                   ),
                   duration: const Duration(seconds: 3),
                   elevation: 0,

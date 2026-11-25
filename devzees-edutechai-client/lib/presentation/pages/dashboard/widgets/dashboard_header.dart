@@ -91,18 +91,14 @@ class DashboardHeader extends ConsumerWidget {
             ),
 
             // ─── TIER 2: Analytics Filter Sub-Bar (Directly below Tier 1) ───
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 250),
-              curve: Curves.easeOutCubic,
+            Container(
               width: double.infinity,
               padding: EdgeInsets.symmetric(
                 horizontal: isDesktop ? 16 : (isMobile ? 10 : 14),
                 vertical: isDesktop ? 8 : (isMobile ? 6 : 7),
               ),
               decoration: BoxDecoration(
-                color: isDark
-                    ? const Color(0xFF0C0D1A)
-                    : context.appColors.topBarBackground,
+                color: context.appColors.topBarBackground,
                 border: Border(
                   bottom: BorderSide(
                     color: isDark
@@ -289,23 +285,26 @@ class DashboardHeader extends ConsumerWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // Glowing Squircle Accent Badge (Same in Light and Dark Mode)
+        // Glowing Gradient Hero Squircle Badge (Same in Light and Dark Mode)
         Container(
           width: isMobile ? 30 : (isCompact ? 32 : 36),
           height: isMobile ? 30 : (isCompact ? 32 : 36),
           decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.22),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: AppColors.primary.withValues(alpha: 0.55),
-              width: 1.0,
-            ),
+            gradient: AppColors.primaryGradient,
+            borderRadius: BorderRadius.circular(10),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withValues(alpha: 0.28),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
           ),
           child: Center(
             child: Icon(
-              Icons.auto_graph_rounded,
-              color: AppColors.primary,
-              size: isMobile ? 15 : (isCompact ? 16 : 18),
+              Icons.leaderboard_rounded,
+              color: Colors.white,
+              size: isMobile ? 16 : (isCompact ? 17 : 19),
             ),
           ),
         ),
@@ -483,10 +482,10 @@ class _DashboardDateDropdownState extends State<_DashboardDateDropdown> {
                   width: 175,
                   padding: const EdgeInsets.symmetric(vertical: 6),
                   decoration: BoxDecoration(
-                    color: AppColors.popoverBackground,
+                    color: context.appColors.popoverBackground,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: AppColors.glassBorder,
+                      color: context.appColors.border,
                       width: 1.0,
                     ),
                     boxShadow: isDark
@@ -561,7 +560,7 @@ class _DashboardDateDropdownState extends State<_DashboardDateDropdown> {
   }) {
     final isSelected = value == widget.activeRange;
     bool isItemHovered = false;
-    final primaryAccent = isDark ? AppColors.primary : AppColors.purple;
+    const primaryAccent = AppColors.primary;
 
     return StatefulBuilder(
       builder: (context, setItemState) {
@@ -578,7 +577,7 @@ class _DashboardDateDropdownState extends State<_DashboardDateDropdown> {
             : (isSelected
                   ? primaryAccent
                   : (isItemHovered
-                        ? (isDark ? AppColors.textPrimary : primaryAccent)
+                        ? (isDark ? context.appColors.textPrimary : primaryAccent)
                         : (isDark
                               ? const Color(0xFFCBD5E1)
                               : const Color(0xFF334155))));
@@ -639,13 +638,12 @@ class _DashboardDateDropdownState extends State<_DashboardDateDropdown> {
   Widget build(BuildContext context) {
     final isDark = context.isDarkMode;
     final primaryBlue = AppColors.primary;
-    final purple = AppColors.purple;
 
-    final Color borderColor = isDark
-        ? (_isHovered ? primaryBlue : primaryBlue.withValues(alpha: 0.60))
-        : (_isHovered ? purple : purple.withValues(alpha: 0.55));
+    final Color borderColor = _isHovered
+        ? primaryBlue
+        : primaryBlue.withValues(alpha: 0.60);
 
-    final Color iconColor = isDark ? primaryBlue : purple;
+    final Color iconColor = primaryBlue;
 
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
@@ -654,27 +652,19 @@ class _DashboardDateDropdownState extends State<_DashboardDateDropdown> {
       child: GestureDetector(
         key: _dropdownKey,
         onTap: () => _showFilterDialog(context, isDark),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeOutCubic,
+        child: Container(
           height: 32,
           padding: const EdgeInsets.symmetric(horizontal: 10),
           decoration: BoxDecoration(
-            color: isDark
-                ? (_isHovered
-                      ? primaryBlue.withValues(alpha: 0.16)
-                      : primaryBlue.withValues(alpha: 0.08))
-                : (_isHovered
-                      ? purple.withValues(alpha: 0.10)
-                      : purple.withValues(alpha: 0.05)),
+            color: _isHovered
+                ? primaryBlue.withValues(alpha: 0.16)
+                : primaryBlue.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(8),
             border: Border.all(color: borderColor, width: 1.0),
             boxShadow: [
               if (_isHovered)
                 BoxShadow(
-                  color: (isDark ? primaryBlue : purple).withValues(
-                    alpha: isDark ? 0.30 : 0.18,
-                  ),
+                  color: primaryBlue.withValues(alpha: 0.30),
                   blurRadius: 8,
                   spreadRadius: 0.5,
                   offset: const Offset(0, 1),
@@ -693,9 +683,7 @@ class _DashboardDateDropdownState extends State<_DashboardDateDropdown> {
                 width: 18,
                 height: 18,
                 decoration: BoxDecoration(
-                  color: (isDark ? primaryBlue : purple).withValues(
-                    alpha: isDark ? 0.22 : 0.14,
-                  ),
+                  color: primaryBlue.withValues(alpha: 0.22),
                   borderRadius: BorderRadius.circular(5),
                 ),
                 child: Center(
@@ -710,7 +698,7 @@ class _DashboardDateDropdownState extends State<_DashboardDateDropdown> {
               Text(
                 widget.displayLabel,
                 style: AppTextStyles.subtitle2.copyWith(
-                  color: isDark ? Colors.white : const Color(0xFF0F172A),
+                  color: context.appColors.textPrimary,
                   fontSize: widget.isMobile ? 11.0 : 12.0,
                   fontWeight: FontWeight.w700,
                   letterSpacing: -0.2,
@@ -787,15 +775,14 @@ class _DashboardRefreshButtonState extends State<_DashboardRefreshButton>
   Widget build(BuildContext context) {
     final isDark = context.isDarkMode;
     final primaryBlue = AppColors.primary;
-    final purple = AppColors.purple;
 
-    final Color borderColor = isDark
-        ? (_isHovered ? primaryBlue : primaryBlue.withValues(alpha: 0.60))
-        : (_isHovered ? purple : purple.withValues(alpha: 0.55));
+    final Color borderColor = _isHovered
+        ? primaryBlue
+        : primaryBlue.withValues(alpha: 0.60);
 
     final Color iconColor = widget.isRefreshing
-        ? (isDark ? const Color(0xFF22D3EE) : purple)
-        : (isDark ? primaryBlue : purple);
+        ? (isDark ? const Color(0xFF22D3EE) : primaryBlue)
+        : primaryBlue;
 
     return Tooltip(
       triggerMode: TooltipTriggerMode.tap,
@@ -810,29 +797,21 @@ class _DashboardRefreshButtonState extends State<_DashboardRefreshButton>
             : SystemMouseCursors.click,
         child: GestureDetector(
           onTap: widget.isRefreshing ? null : widget.onRefresh,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            curve: Curves.easeOutCubic,
+          child: Container(
             height: 32,
             padding: EdgeInsets.symmetric(
               horizontal: widget.isCompact ? 8 : 10,
             ),
             decoration: BoxDecoration(
-              color: isDark
-                  ? (_isHovered
-                        ? primaryBlue.withValues(alpha: 0.16)
-                        : primaryBlue.withValues(alpha: 0.08))
-                  : (_isHovered
-                        ? purple.withValues(alpha: 0.10)
-                        : purple.withValues(alpha: 0.05)),
+              color: _isHovered
+                  ? primaryBlue.withValues(alpha: 0.16)
+                  : primaryBlue.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(8),
               border: Border.all(color: borderColor, width: 1.0),
               boxShadow: [
                 if (_isHovered)
                   BoxShadow(
-                    color: (isDark ? primaryBlue : purple).withValues(
-                      alpha: isDark ? 0.30 : 0.18,
-                    ),
+                    color: primaryBlue.withValues(alpha: 0.30),
                     blurRadius: 8,
                     spreadRadius: 0.5,
                     offset: const Offset(0, 1),
@@ -846,10 +825,8 @@ class _DashboardRefreshButtonState extends State<_DashboardRefreshButton>
                   width: 18,
                   height: 18,
                   decoration: BoxDecoration(
-                    color: (isDark ? primaryBlue : purple).withValues(
-                      alpha: widget.isRefreshing
-                          ? 0.30
-                          : (isDark ? 0.22 : 0.14),
+                    color: primaryBlue.withValues(
+                      alpha: widget.isRefreshing ? 0.30 : 0.22,
                     ),
                     borderRadius: BorderRadius.circular(5),
                   ),
@@ -869,7 +846,7 @@ class _DashboardRefreshButtonState extends State<_DashboardRefreshButton>
                   Text(
                     widget.isRefreshing ? 'Syncing...' : 'Sync All',
                     style: AppTextStyles.subtitle2.copyWith(
-                      color: isDark ? Colors.white : const Color(0xFF0F172A),
+                      color: context.appColors.textPrimary,
                       fontSize: 12.0,
                       fontWeight: FontWeight.w700,
                       letterSpacing: -0.2,

@@ -130,7 +130,7 @@ class _SearchableUserDropdownState extends State<SearchableUserDropdown> {
                         minHeight: 120,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.popoverBackground,
+                        color: context.appColors.popoverBackground,
                         borderRadius: BorderRadius.circular(14),
                         border: Border.all(
                           color: AppColors.purple.withValues(alpha: 0.4),
@@ -155,26 +155,26 @@ class _SearchableUserDropdownState extends State<SearchableUserDropdown> {
                               decoration: BoxDecoration(
                                 color: AppColors.surfaceDeep.withValues(alpha: 0.8),
                                 border: Border(
-                                  bottom: BorderSide(color: AppColors.glassBorder),
+                                  bottom: BorderSide(color: context.appColors.border),
                                 ),
                               ),
                               child: Container(
                                 height: 40,
                                 decoration: BoxDecoration(
-                                  color: AppColors.glassBase,
+                                  color: (context.isDarkMode ? const Color(0x0DFFFFFF) : const Color(0x0A000000)),
                                   borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(color: AppColors.glassBorder),
+                                  border: Border.all(color: context.appColors.border),
                                 ),
                                 child: TextField(
                                   controller: _searchController,
                                   focusNode: _searchFocusNode,
                                   autofocus: true,
-                                  style: AppTextStyles.body2.copyWith(color: AppColors.textPrimary),
+                                  style: AppTextStyles.body2.copyWith(color: context.appColors.textPrimary),
                                   onChanged: (text) => _onSearchQueryChanged(text, setOverlayState),
                                   decoration: InputDecoration(
                                     isDense: true,
                                     hintText: 'Search by name, email, or mobile...',
-                                    hintStyle: AppTextStyles.caption.copyWith(color: AppColors.textMuted),
+                                    hintStyle: AppTextStyles.caption.copyWith(color: context.appColors.textSecondary),
                                     prefixIcon: const Icon(Icons.search, size: 18, color: AppColors.purple),
                                     suffixIcon: _isRemoteSearching
                                         ? const Padding(
@@ -190,7 +190,7 @@ class _SearchableUserDropdownState extends State<SearchableUserDropdown> {
                                           )
                                         : _searchController.text.isNotEmpty
                                             ? IconButton(
-                                                icon: Icon(Icons.clear, size: 16, color: AppColors.textMuted),
+                                                icon: Icon(Icons.clear, size: 16, color: context.appColors.textSecondary),
                                                 onPressed: () {
                                                   _searchController.clear();
                                                   _onSearchQueryChanged('', setOverlayState);
@@ -215,20 +215,20 @@ class _SearchableUserDropdownState extends State<SearchableUserDropdown> {
                                           Icon(
                                             Icons.person_search_outlined,
                                             size: 36,
-                                            color: AppColors.textMuted.withValues(alpha: 0.5),
+                                            color: context.appColors.textSecondary.withValues(alpha: 0.5),
                                           ),
                                           const SizedBox(height: 8),
                                           Text(
                                             _searchController.text.isNotEmpty
                                                 ? 'No users match "${_searchController.text.trim()}"'
                                                 : 'No users found',
-                                            style: AppTextStyles.body2.copyWith(color: AppColors.textSecondary),
+                                            style: AppTextStyles.body2.copyWith(color: context.appColors.textSecondary),
                                             textAlign: TextAlign.center,
                                           ),
                                           const SizedBox(height: 4),
                                           Text(
                                             'Try searching by first name, last name, or email',
-                                            style: AppTextStyles.caption.copyWith(color: AppColors.textMuted),
+                                            style: AppTextStyles.caption.copyWith(color: context.appColors.textSecondary),
                                             textAlign: TextAlign.center,
                                           ),
                                         ],
@@ -241,7 +241,7 @@ class _SearchableUserDropdownState extends State<SearchableUserDropdown> {
                                       separatorBuilder: (context, index) => Divider(
                                         height: 1,
                                         thickness: 1,
-                                        color: AppColors.glassBorder.withValues(alpha: 0.3),
+                                        color: context.appColors.border.withValues(alpha: 0.3),
                                       ),
                                       itemBuilder: (context, index) {
                                         final user = _filteredUsers[index];
@@ -348,10 +348,10 @@ class _SearchableUserDropdownState extends State<SearchableUserDropdown> {
             constraints: const BoxConstraints(minHeight: 50),
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             decoration: BoxDecoration(
-              color: AppColors.glassBase,
+              color: (context.isDarkMode ? const Color(0x0DFFFFFF) : const Color(0x0A000000)),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: _isOpen ? AppColors.purple : AppColors.glassBorder,
+                color: _isOpen ? AppColors.purple : context.appColors.border,
                 width: _isOpen ? 1.5 : 1.0,
               ),
             ),
@@ -360,14 +360,14 @@ class _SearchableUserDropdownState extends State<SearchableUserDropdown> {
                 if (user == null) ...[
                   Icon(
                     Icons.person_search_outlined,
-                    color: AppColors.textMuted,
+                    color: context.appColors.textSecondary,
                     size: 22,
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
                       widget.hintText,
-                      style: AppTextStyles.body2.copyWith(color: AppColors.textMuted),
+                      style: AppTextStyles.body2.copyWith(color: context.appColors.textSecondary),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
@@ -397,7 +397,7 @@ class _SearchableUserDropdownState extends State<SearchableUserDropdown> {
                               child: Text(
                                 '${user.firstName} ${user.lastName}',
                                 style: AppTextStyles.body2.copyWith(
-                                  color: AppColors.textPrimary,
+                                  color: context.appColors.textPrimary,
                                   fontWeight: FontWeight.w600,
                                 ),
                                 overflow: TextOverflow.ellipsis,
@@ -426,7 +426,7 @@ class _SearchableUserDropdownState extends State<SearchableUserDropdown> {
                         ),
                         Text(
                           user.email,
-                          style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+                          style: AppTextStyles.caption.copyWith(color: context.appColors.textSecondary),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ],
@@ -435,7 +435,7 @@ class _SearchableUserDropdownState extends State<SearchableUserDropdown> {
                   // Clear Button
                   IconButton(
                     icon: const Icon(Icons.close, size: 18),
-                    color: AppColors.textMuted,
+                    color: context.appColors.textSecondary,
                     hoverColor: AppColors.rose.withValues(alpha: 0.2),
                     tooltip: 'Deselect user',
                     onPressed: () {
@@ -449,7 +449,7 @@ class _SearchableUserDropdownState extends State<SearchableUserDropdown> {
                   duration: const Duration(milliseconds: 200),
                   child: Icon(
                     Icons.arrow_drop_down,
-                    color: _isOpen ? AppColors.purple : AppColors.textMuted,
+                    color: _isOpen ? AppColors.purple : context.appColors.textSecondary,
                     size: 24,
                   ),
                 ),
@@ -504,7 +504,7 @@ class _UserTileState extends State<_UserTile> {
             color: widget.isSelected
                 ? AppColors.purple.withValues(alpha: 0.18)
                 : _isHovered
-                    ? AppColors.surfaceSubtle.withValues(alpha: 0.2)
+                    ? context.appColors.surfaceSubtle.withValues(alpha: 0.2)
                     : Colors.transparent,
           ),
           child: Row(
@@ -533,7 +533,7 @@ class _UserTileState extends State<_UserTile> {
                           child: Text(
                             '${u.firstName} ${u.lastName}',
                             style: AppTextStyles.body2.copyWith(
-                              color: widget.isSelected ? AppColors.purple : AppColors.textPrimary,
+                              color: widget.isSelected ? AppColors.purple : context.appColors.textPrimary,
                               fontWeight: FontWeight.w600,
                             ),
                             overflow: TextOverflow.ellipsis,
@@ -547,7 +547,7 @@ class _UserTileState extends State<_UserTile> {
                     Text(
                       u.email,
                       style: AppTextStyles.caption.copyWith(
-                        color: AppColors.textSecondary,
+                        color: context.appColors.textSecondary,
                       ),
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -556,7 +556,7 @@ class _UserTileState extends State<_UserTile> {
                       Text(
                         'Roles: $rolesStr',
                         style: AppTextStyles.caption.copyWith(
-                          color: AppColors.textMuted,
+                          color: context.appColors.textSecondary,
                           fontSize: 11,
                         ),
                         overflow: TextOverflow.ellipsis,

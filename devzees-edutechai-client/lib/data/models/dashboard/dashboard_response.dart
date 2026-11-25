@@ -182,11 +182,21 @@ class TopicBreakdownItem {
   final String topic;
   final int sessionCount;
   final double percentage;
+  final String? sessionId;
+  final bool isComplete;
+  final int completedSteps;
+  final int totalSteps;
+  final String? learningMode;
 
   const TopicBreakdownItem({
     required this.topic,
     required this.sessionCount,
     required this.percentage,
+    this.sessionId,
+    this.isComplete = false,
+    this.completedSteps = 0,
+    this.totalSteps = 0,
+    this.learningMode,
   });
 
   factory TopicBreakdownItem.fromJson(Map<String, dynamic> json) {
@@ -194,6 +204,11 @@ class TopicBreakdownItem {
       topic: json['topic'] as String? ?? '',
       sessionCount: (json['session_count'] as num?)?.toInt() ?? 0,
       percentage: (json['percentage'] as num?)?.toDouble() ?? 0.0,
+      sessionId: json['session_id'] as String?,
+      isComplete: json['is_complete'] as bool? ?? false,
+      completedSteps: (json['completed_steps'] as num?)?.toInt() ?? 0,
+      totalSteps: (json['total_steps'] as num?)?.toInt() ?? 0,
+      learningMode: json['learning_mode'] as String?,
     );
   }
 }

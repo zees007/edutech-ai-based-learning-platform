@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
 import 'package:devzees_edutechai_client/core/theme/text_styles.dart';
+import 'package:devzees_edutechai_client/core/theme/theme_palette.dart';
 
 class AuthCanvas extends StatefulWidget {
   final bool isLogin;
@@ -48,7 +49,7 @@ class _AuthCanvasState extends State<AuthCanvas>
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: isDark ? AppColors.canvasBackground : Colors.white,
+        color: isDark ? context.appColors.scaffoldBackground : Colors.white,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
           color: isDark
@@ -399,7 +400,7 @@ class _AuthCanvasState extends State<AuthCanvas>
                     Text(
                       title,
                       style: AppTextStyles.subtitle2.copyWith(
-                        color: AppColors.textPrimary,
+                        color: context.appColors.textPrimary,
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
                       ),
@@ -408,7 +409,7 @@ class _AuthCanvasState extends State<AuthCanvas>
                       subtitle,
                       style: AppTextStyles.caption.copyWith(
                         color: isDark
-                            ? AppColors.textSecondary
+                            ? context.appColors.textSecondary
                             : const Color(0xFF64748B),
                         fontSize: 10.5,
                       ),
@@ -605,8 +606,7 @@ class _AuthCanvasState extends State<AuthCanvas>
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: onTap,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
+          child: Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: isActive
@@ -720,7 +720,7 @@ class _AuthCanvasState extends State<AuthCanvas>
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: AppTextStyles.subtitle2.copyWith(
-                                color: AppColors.textPrimary,
+                                color: context.appColors.textPrimary,
                                 fontSize: 11.5,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -729,7 +729,7 @@ class _AuthCanvasState extends State<AuthCanvas>
                               subtitle,
                               style: AppTextStyles.caption.copyWith(
                                 color: isDark
-                                    ? AppColors.textSecondary
+                                    ? context.appColors.textSecondary
                                     : const Color(0xFF64748B),
                                 fontSize: 9,
                               ),

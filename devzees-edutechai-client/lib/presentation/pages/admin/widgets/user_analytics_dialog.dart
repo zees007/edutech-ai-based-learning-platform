@@ -7,11 +7,13 @@ import '../../../../core/theme/text_styles.dart';
 import '../../../../core/theme/theme_palette.dart';
 import '../../../../data/models/admin/user_response.dart';
 import '../../../../data/models/dashboard/dashboard_response.dart';
-import '../../dashboard/widgets/activity_and_achievements_card.dart';
+import '../../dashboard/widgets/daily_activity_heatmap_card.dart';
 import '../../dashboard/widgets/dashboard_kpi_cards.dart';
 import '../../dashboard/widgets/learner_standing_hud.dart';
-import '../../dashboard/widgets/mode_and_topic_cards.dart';
+import '../../dashboard/widgets/learning_mode_distribution_card.dart';
+import '../../dashboard/widgets/milestone_achievements_card.dart';
 import '../../dashboard/widgets/quiz_trend_card.dart';
+import '../../dashboard/widgets/topic_breakdown_card.dart';
 import '../../dashboard/widgets/weak_concepts_card.dart';
 import 'tier_badge.dart';
 
@@ -72,7 +74,7 @@ class _UserAnalyticsDialogState extends ConsumerState<UserAnalyticsDialog> {
               color: isDark ? AppColors.surfaceDeep : Colors.white,
               borderRadius: BorderRadius.circular(24),
               border: Border.all(
-                color: isDark ? AppColors.glassBorder : const Color(0xFFE2E8F0),
+                color: isDark ? context.appColors.border : const Color(0xFFE2E8F0),
                 width: 1.2,
               ),
               boxShadow: [
@@ -118,7 +120,7 @@ class _UserAnalyticsDialogState extends ConsumerState<UserAnalyticsDialog> {
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       decoration: BoxDecoration(
         color: isDark
-            ? AppColors.cardBackground.withValues(alpha: 0.7)
+            ? context.appColors.cardBackground.withValues(alpha: 0.7)
             : const Color(0xFFF8FAFC),
       ),
       child: Row(
@@ -170,7 +172,7 @@ class _UserAnalyticsDialogState extends ConsumerState<UserAnalyticsDialog> {
                         style: AppTextStyles.h4.copyWith(
                           fontSize: 17,
                           fontWeight: FontWeight.w800,
-                          color: isDark ? AppColors.textPrimary : const Color(0xFF0F172A),
+                          color: isDark ? context.appColors.textPrimary : const Color(0xFF0F172A),
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -212,7 +214,7 @@ class _UserAnalyticsDialogState extends ConsumerState<UserAnalyticsDialog> {
                     Text(
                       user.email,
                       style: AppTextStyles.caption.copyWith(
-                        color: isDark ? AppColors.textMuted : const Color(0xFF64748B),
+                        color: isDark ? context.appColors.textSecondary : const Color(0xFF64748B),
                         fontSize: 12,
                       ),
                     ),
@@ -220,7 +222,7 @@ class _UserAnalyticsDialogState extends ConsumerState<UserAnalyticsDialog> {
                       Text(
                         ' • ${user.country}',
                         style: AppTextStyles.caption.copyWith(
-                          color: isDark ? AppColors.textMuted : const Color(0xFF64748B),
+                          color: isDark ? context.appColors.textSecondary : const Color(0xFF64748B),
                           fontSize: 12,
                         ),
                       ),
@@ -274,7 +276,7 @@ class _UserAnalyticsDialogState extends ConsumerState<UserAnalyticsDialog> {
                         fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                         color: isSelected
                             ? Colors.white
-                            : (isDark ? AppColors.textSecondary : const Color(0xFF475569)),
+                            : (isDark ? context.appColors.textSecondary : const Color(0xFF475569)),
                       ),
                     ),
                   ),
@@ -290,7 +292,7 @@ class _UserAnalyticsDialogState extends ConsumerState<UserAnalyticsDialog> {
             icon: Icon(
               Icons.refresh_rounded,
               size: 20,
-              color: isDark ? AppColors.textSecondary : const Color(0xFF64748B),
+              color: isDark ? context.appColors.textSecondary : const Color(0xFF64748B),
             ),
             onPressed: () {
               final params = UserDashboardParams(userId: user.id, timeRange: _selectedTimeRange);
@@ -306,7 +308,7 @@ class _UserAnalyticsDialogState extends ConsumerState<UserAnalyticsDialog> {
             icon: Icon(
               Icons.close_rounded,
               size: 22,
-              color: isDark ? AppColors.textSecondary : const Color(0xFF64748B),
+              color: isDark ? context.appColors.textSecondary : const Color(0xFF64748B),
             ),
             onPressed: () => Navigator.of(context).pop(),
           ),
@@ -341,21 +343,100 @@ class _UserAnalyticsDialogState extends ConsumerState<UserAnalyticsDialog> {
           QuizTrendCard(quizMetrics: data.quizMetrics),
           const SizedBox(height: 20),
 
-          // 4. Weak Concepts Needing Reinforcement
-          WeakConceptsCard(weakConcepts: data.quizMetrics.conceptsNeedingReinforcement),
-          const SizedBox(height: 20),
-
-          // 5. Mode Distribution & Topic Mastery
-          ModeAndTopicCards(
-            modeDistribution: data.modeDistribution,
+          // 4. Full-Width Topic Mastery Breakdown
+          TopicBreakdownCard(
             topicBreakdown: data.topicBreakdown,
           ),
           const SizedBox(height: 20),
 
-          // 6. Activity Heatmap & 6-Tier Prestige Trophies
-          ActivityAndAchievementsCard(
-            activityHeatmap: data.activityHeatmap,
-            achievements: data.achievements,
+          // 5. Learning Mode Distribution & Milestone Trophies
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isWide = constraints.maxWidth >= 700;
+              if (isWide) {
+                return IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Expanded(
+                        flex: 4,
+                        child: LearningModeDistributionCard(
+                          modeDistribution: data.modeDistribution,
+                          isCompact: constraints.maxWidth < 1100,
+                          stretchHeight: true,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        flex: 8,
+                        child: MilestoneAchievementsCard(
+                          achievements: data.achievements,
+                          crossAxisCount: constraints.maxWidth >= 900 ? 3 : 2,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              } else {
+                return Column(
+                  children: [
+                    LearningModeDistributionCard(
+                      modeDistribution: data.modeDistribution,
+                    ),
+                    const SizedBox(height: 16),
+                    MilestoneAchievementsCard(
+                      achievements: data.achievements,
+                    ),
+                  ],
+                );
+              }
+            },
+          ),
+          const SizedBox(height: 20),
+
+          // 6. Daily Activity Log & Weak Concepts (Exact Same Height on Wide)
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isWide = constraints.maxWidth >= 700;
+              if (isWide) {
+                return IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Expanded(
+                        flex: 5,
+                        child: DailyActivityHeatmapCard(
+                          activityHeatmap: data.activityHeatmap,
+                          stretchHeight: true,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        flex: 7,
+                        child: WeakConceptsCard(
+                          weakConcepts:
+                              data.quizMetrics.conceptsNeedingReinforcement,
+                          stretchHeight: true,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              } else {
+                return Column(
+                  children: [
+                    DailyActivityHeatmapCard(
+                      activityHeatmap: data.activityHeatmap,
+                    ),
+                    const SizedBox(height: 16),
+                    WeakConceptsCard(
+                      weakConcepts:
+                          data.quizMetrics.conceptsNeedingReinforcement,
+                    ),
+                  ],
+                );
+              }
+            },
           ),
         ],
       ),
@@ -375,7 +456,7 @@ class _UserAnalyticsDialogState extends ConsumerState<UserAnalyticsDialog> {
           Text(
             'Loading learner analytics...',
             style: AppTextStyles.body2.copyWith(
-              color: isDark ? AppColors.textSecondary : const Color(0xFF64748B),
+              color: isDark ? context.appColors.textSecondary : const Color(0xFF64748B),
             ),
           ),
         ],
@@ -395,7 +476,7 @@ class _UserAnalyticsDialogState extends ConsumerState<UserAnalyticsDialog> {
             Text(
               'Failed to Load Learner Analytics',
               style: AppTextStyles.h4.copyWith(
-                color: isDark ? AppColors.textPrimary : const Color(0xFF0F172A),
+                color: isDark ? context.appColors.textPrimary : const Color(0xFF0F172A),
               ),
             ),
             const SizedBox(height: 6),
@@ -403,7 +484,7 @@ class _UserAnalyticsDialogState extends ConsumerState<UserAnalyticsDialog> {
               errorMsg,
               textAlign: TextAlign.center,
               style: AppTextStyles.caption.copyWith(
-                color: isDark ? AppColors.textMuted : const Color(0xFF64748B),
+                color: isDark ? context.appColors.textSecondary : const Color(0xFF64748B),
               ),
             ),
             const SizedBox(height: 16),

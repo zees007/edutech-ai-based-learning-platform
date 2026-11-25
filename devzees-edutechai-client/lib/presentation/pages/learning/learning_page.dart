@@ -275,17 +275,19 @@ class _LearningPageState extends ConsumerState<LearningPage> {
               duration: const Duration(milliseconds: 300),
               curve: Curves.easeInOutCubic,
               width: isExpanded ? 280 : 80,
-              decoration: BoxDecoration(
-                color: colors.sidebarBackground,
-                border: Border(
-                  right: BorderSide(color: colors.border, width: 1),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: colors.sidebarBackground,
+                  border: Border(
+                    right: BorderSide(color: colors.border, width: 1),
+                  ),
                 ),
-              ),
-              child: LearningSidebar(
-                expanded: isExpanded,
-                isMobile: false,
-                onToggle: _toggleSidebar,
-                onClose: _closeDrawer,
+                child: LearningSidebar(
+                  expanded: isExpanded,
+                  isMobile: false,
+                  onToggle: _toggleSidebar,
+                  onClose: _closeDrawer,
+                ),
               ),
             ),
 

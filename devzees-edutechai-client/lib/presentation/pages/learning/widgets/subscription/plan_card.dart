@@ -3,6 +3,7 @@ import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/text_styles.dart';
 import '../../../../widgets/glass_card.dart';
 import '../../../../widgets/gradient_button.dart';
+import 'package:devzees_edutechai_client/core/theme/theme_palette.dart';
 
 class PlanCard extends StatelessWidget {
   final String title;
@@ -38,7 +39,7 @@ class PlanCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool isDark = AppColors.isDark;
+    final bool isDark = context.isDarkMode;
 
     final Widget badgeWidget;
     if (isCurrentPlan) {
@@ -78,13 +79,13 @@ class PlanCard extends StatelessWidget {
           border: Border.all(
             color: isFeatured
                 ? AppColors.primary.withValues(alpha: 0.5)
-                : AppColors.glassBorder,
+                : context.appColors.border,
           ),
         ),
         child: Text(
           badgeText!,
           style: TextStyle(
-            color: isFeatured ? (isDark ? AppColors.blueSoft : AppColors.primary) : AppColors.textSecondary,
+            color: isFeatured ? (isDark ? AppColors.blueSoft : AppColors.primary) : context.appColors.textSecondary,
             fontSize: 11,
             fontWeight: FontWeight.bold,
             letterSpacing: 0.8,
@@ -109,7 +110,7 @@ class PlanCard extends StatelessWidget {
               style: AppTextStyles.h3.copyWith(
                 color: isFeatured
                     ? AppColors.accentPink
-                    : (isDark ? AppColors.textPrimary : const Color(0xFF0F172A)),
+                    : (isDark ? context.appColors.textPrimary : const Color(0xFF0F172A)),
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -148,7 +149,7 @@ class PlanCard extends StatelessWidget {
             Text(
               '/$billingCycle',
               style: TextStyle(
-                color: AppColors.textSecondary,
+                color: context.appColors.textSecondary,
                 fontSize: 15,
                 fontWeight: FontWeight.w500,
               ),
@@ -159,12 +160,12 @@ class PlanCard extends StatelessWidget {
         Text(
           description,
           style: AppTextStyles.body2.copyWith(
-            color: AppColors.textSecondary,
+            color: context.appColors.textSecondary,
             height: 1.4,
           ),
         ),
         const SizedBox(height: 20),
-        Divider(color: AppColors.glassBorder),
+        Divider(color: context.appColors.border),
         const SizedBox(height: 20),
         ...features.map((f) => Padding(
               padding: const EdgeInsets.only(bottom: 12),

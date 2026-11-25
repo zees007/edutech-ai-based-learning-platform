@@ -31,17 +31,17 @@ class _AdminPageState extends ConsumerState<AdminPage> {
   Widget _buildContent(bool isDark) {
     switch (_currentSection) {
       case AdminSection.users:
-        return UserDirectoryTab(key: ValueKey('admin_users_tab_$isDark'));
+        return const UserDirectoryTab(key: ValueKey('admin_users_tab'));
       case AdminSection.roles:
-        return RolePrivilegeTab(key: ValueKey('admin_roles_tab_$isDark'));
+        return const RolePrivilegeTab(key: ValueKey('admin_roles_tab'));
       case AdminSection.subscriptions:
-        return SubscriptionManagerTab(key: ValueKey('admin_subscriptions_tab_$isDark'));
+        return const SubscriptionManagerTab(key: ValueKey('admin_subscriptions_tab'));
       case AdminSection.settings:
-        return SettingsTab(key: ValueKey('admin_settings_tab_$isDark'));
+        return const SettingsTab(key: ValueKey('admin_settings_tab'));
       case AdminSection.analytics:
-        return AnalyticsTab(key: ValueKey('admin_analytics_tab_$isDark'));
+        return const AnalyticsTab(key: ValueKey('admin_analytics_tab'));
       case AdminSection.feedbacks:
-        return FeedbackManagementTab(key: ValueKey('admin_feedbacks_tab_$isDark'));
+        return const FeedbackManagementTab(key: ValueKey('admin_feedbacks_tab'));
     }
   }
 
@@ -81,7 +81,7 @@ class _AdminPageState extends ConsumerState<AdminPage> {
           elevation: 0,
           leading: Builder(
             builder: (context) => IconButton(
-              icon: Icon(Icons.menu, color: AppColors.textSecondary),
+              icon: Icon(Icons.menu, color: context.appColors.textSecondary),
               onPressed: () => Scaffold.of(context).openDrawer(),
             ),
           ),
@@ -118,28 +118,30 @@ class _AdminPageState extends ConsumerState<AdminPage> {
               duration: const Duration(milliseconds: 300),
               curve: Curves.easeInOutCubic,
               width: _isSidebarExpanded ? 260 : 80,
-              clipBehavior: Clip.hardEdge,
-              decoration: BoxDecoration(
-                color: colors.sidebarBackground,
-                border: Border(
-                  right: BorderSide(
-                    color: colors.border,
-                    width: 1,
-                  ),
-                ),
-              ),
-              child: Column(
-                children: [
-                  Expanded(
-                    child: AdminSidebar(
-                      selected: _currentSection,
-                      expanded: _isSidebarExpanded,
-                      onSectionChanged: (section) {
-                        setState(() => _currentSection = section);
-                      },
+              child: Container(
+                clipBehavior: Clip.hardEdge,
+                decoration: BoxDecoration(
+                  color: colors.sidebarBackground,
+                  border: Border(
+                    right: BorderSide(
+                      color: colors.border,
+                      width: 1,
                     ),
                   ),
-                ],
+                ),
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: AdminSidebar(
+                        selected: _currentSection,
+                        expanded: _isSidebarExpanded,
+                        onSectionChanged: (section) {
+                          setState(() => _currentSection = section);
+                        },
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
             // Main Content
@@ -167,7 +169,7 @@ class _AdminPageState extends ConsumerState<AdminPage> {
                             _isSidebarExpanded
                                 ? Icons.chevron_left
                                 : Icons.chevron_right,
-                            color: AppColors.textMuted,
+                            color: context.appColors.textSecondary,
                           ),
                           onPressed: () {
                             setState(() {
@@ -192,7 +194,7 @@ class _AdminPageState extends ConsumerState<AdminPage> {
                         Text(
                           _getSectionTitle(),
                           style: AppTextStyles.body2.copyWith(
-                            color: AppColors.textMuted,
+                            color: context.appColors.textSecondary,
                           ),
                         ),
                         const SizedBox(width: 16),

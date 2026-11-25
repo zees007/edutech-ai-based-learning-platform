@@ -4,6 +4,7 @@ import '../../../../../core/theme/app_colors.dart';
 import '../../../../widgets/animated_tutor_icon.dart';
 import '../../../../widgets/gradient_text.dart';
 import '../../../../../core/constants/responsive.dart';
+import 'package:devzees_edutechai_client/core/theme/theme_palette.dart';
 
 class NeuralInferenceLoader extends StatefulWidget {
   final String title;
@@ -74,7 +75,7 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
                 decoration: BoxDecoration(
                   color: isDark
                       ? (isMobile
-                          ? AppColors.canvasBackground
+                          ? context.appColors.scaffoldBackground
                           : const Color(0xFF11121D).withValues(alpha: 0.95))
                       : (isMobile
                           ? Colors.white
@@ -176,7 +177,7 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
             GradientSpinner(
               size: 11,
               backgroundColor: isDark
-                  ? AppColors.canvasBackground
+                  ? context.appColors.scaffoldBackground
                   : Colors.white,
             ),
             const SizedBox(width: 6),
@@ -218,7 +219,7 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
           overflow: TextOverflow.ellipsis,
           style: GoogleFonts.inter(
             fontSize: 11,
-            color: isDark ? const Color(0xFF9CA3AF) : AppColors.textSecondary,
+            color: isDark ? const Color(0xFF9CA3AF) : context.appColors.textSecondary,
           ),
         ),
         const SizedBox(height: 20),
@@ -272,7 +273,7 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
                   GradientSpinner(
                     size: 52,
                     backgroundColor: isDark
-                        ? AppColors.canvasBackground
+                        ? context.appColors.scaffoldBackground
                         : Colors.white,
                   ),
                   // Inner Socratic Tutor Animated Icon
@@ -390,7 +391,7 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
         ? Colors.white.withValues(alpha: 0.08)
         : const Color(0xFFE2E8F0);
     Color bgColor = isDark
-        ? AppColors.cardBackground.withValues(alpha: 0.7)
+        ? context.appColors.cardBackground.withValues(alpha: 0.7)
         : const Color(0xFFF8FAFC);
     List<BoxShadow> shadows = [];
 
@@ -441,7 +442,7 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
               style: GoogleFonts.inter(
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
-                color: isDark ? Colors.white : AppColors.textPrimary,
+                color: isDark ? Colors.white : context.appColors.textPrimary,
               ),
             ),
           ),
@@ -483,7 +484,7 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
                   GradientSpinner(
                     size: 8,
                     backgroundColor: isDark
-                        ? AppColors.cardBackground
+                        ? context.appColors.cardBackground
                         : const Color(0xFFF5F3FF),
                   ),
                   const SizedBox(width: 4),
@@ -559,7 +560,7 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
                     fontSize: 12,
                     color: isDark
                         ? const Color(0xFF9CA3AF)
-                        : AppColors.textSecondary,
+                        : context.appColors.textSecondary,
                   ),
                 ),
               ],
@@ -581,7 +582,7 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
         ),
 
         const SizedBox(height: 24),
-        Divider(color: AppColors.border, height: 1),
+        Divider(color: context.appColors.border, height: 1),
         const SizedBox(height: 24),
 
         // Neural Network Canvas
@@ -596,7 +597,7 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
               padding: const EdgeInsets.fromLTRB(16, 14, 16, 22),
               decoration: BoxDecoration(
                 color: isDark
-                    ? AppColors.cardBackground
+                    ? context.appColors.cardBackground
                     : const Color(0xFFF8FAFC),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
@@ -972,7 +973,7 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
                   style: GoogleFonts.inter(
                     fontSize: isMobile ? 13 : 14,
                     fontWeight: FontWeight.w600,
-                    color: isDark ? Colors.white : AppColors.textPrimary,
+                    color: isDark ? Colors.white : context.appColors.textPrimary,
                   ),
                 ),
               ),
@@ -985,7 +986,7 @@ class _NeuralInferenceLoaderState extends State<NeuralInferenceLoader>
             desc,
             style: GoogleFonts.inter(
               fontSize: isMobile ? 11 : 12,
-              color: isDark ? const Color(0xFF9CA3AF) : AppColors.textSecondary,
+              color: isDark ? const Color(0xFF9CA3AF) : context.appColors.textSecondary,
               height: 1.4,
             ),
           ),

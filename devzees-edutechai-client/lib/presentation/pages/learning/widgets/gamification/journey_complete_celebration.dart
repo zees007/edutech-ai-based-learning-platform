@@ -7,6 +7,7 @@ import 'package:devzees_edutechai_client/core/providers/gamification_provider.da
 import 'package:devzees_edutechai_client/core/services/export_service.dart';
 import 'package:devzees_edutechai_client/core/services/export_helper.dart';
 import '../export/export_session_modal.dart';
+import 'package:devzees_edutechai_client/core/theme/theme_palette.dart';
 
 /// Ultra-premium Glassmorphic Journey Completed Celebration modal.
 /// Features:
@@ -240,10 +241,10 @@ class _JourneyCompleteCelebrationState
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        AppColors.isDark
+                        context.isDarkMode
                             ? AppColors.surfaceDark.withValues(alpha: 0.97)
                             : const Color(0xFFFFFFFF),
-                        AppColors.isDark
+                        context.isDarkMode
                             ? AppColors.surfaceDeep.withValues(alpha: 0.95)
                             : const Color(0xFFF8FAFC),
                       ],
@@ -252,7 +253,7 @@ class _JourneyCompleteCelebrationState
                     ),
                     borderRadius: BorderRadius.circular(24),
                     border: Border.all(
-                      color: AppColors.isDark
+                      color: context.isDarkMode
                           ? Colors.amber.withValues(alpha: 0.45)
                           : const Color(0xFFFCD34D),
                       width: 1.2,
@@ -260,19 +261,19 @@ class _JourneyCompleteCelebrationState
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withValues(
-                            alpha: AppColors.isDark ? 0.65 : 0.12),
+                            alpha: context.isDarkMode ? 0.65 : 0.12),
                         blurRadius: 40,
                         offset: const Offset(0, 16),
                       ),
                       BoxShadow(
                         color: Colors.amber.withValues(
-                            alpha: AppColors.isDark ? 0.18 : 0.10),
+                            alpha: context.isDarkMode ? 0.18 : 0.10),
                         blurRadius: 36,
                         spreadRadius: 2,
                       ),
                       BoxShadow(
                         color: AppColors.primary.withValues(
-                            alpha: AppColors.isDark ? 0.20 : 0.08),
+                            alpha: context.isDarkMode ? 0.20 : 0.08),
                         blurRadius: 32,
                         spreadRadius: 1,
                       ),
@@ -295,12 +296,12 @@ class _JourneyCompleteCelebrationState
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 10, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: AppColors.isDark
+                                  color: context.isDarkMode
                                       ? Colors.amber.withValues(alpha: 0.15)
                                       : const Color(0xFFFEF3C7),
                                   borderRadius: BorderRadius.circular(8),
                                   border: Border.all(
-                                    color: AppColors.isDark
+                                    color: context.isDarkMode
                                         ? Colors.amber.withValues(alpha: 0.35)
                                         : const Color(0xFFFDE68A),
                                   ),
@@ -311,7 +312,7 @@ class _JourneyCompleteCelebrationState
                                     Icon(
                                       Icons.stars_rounded,
                                       size: 13,
-                                      color: AppColors.isDark
+                                      color: context.isDarkMode
                                           ? Colors.amber
                                           : const Color(0xFFD97706),
                                     ),
@@ -319,7 +320,7 @@ class _JourneyCompleteCelebrationState
                                     Text(
                                       'Mastery Verified',
                                       style: AppTextStyles.badge.copyWith(
-                                        color: AppColors.isDark
+                                        color: context.isDarkMode
                                             ? Colors.amber.shade200
                                             : const Color(0xFFB45309),
                                         fontWeight: FontWeight.w700,
@@ -338,21 +339,21 @@ class _JourneyCompleteCelebrationState
                                   child: Container(
                                     padding: const EdgeInsets.all(6),
                                     decoration: BoxDecoration(
-                                      color: AppColors.isDark
+                                      color: context.isDarkMode
                                           ? Colors.white.withValues(alpha: 0.06)
                                           : const Color(0xFFF1F5F9),
                                       shape: BoxShape.circle,
                                       border: Border.all(
-                                        color: AppColors.isDark
-                                            ? AppColors.glassBorderSubtle
+                                        color: context.isDarkMode
+                                            ? (context.isDarkMode ? const Color(0x0DFFFFFF) : const Color(0x0F000000))
                                             : const Color(0xFFE2E8F0),
                                       ),
                                     ),
                                     child: Icon(
                                       Icons.close_rounded,
                                       size: 17,
-                                      color: AppColors.isDark
-                                          ? AppColors.textMuted
+                                      color: context.isDarkMode
+                                          ? context.appColors.textSecondary
                                           : const Color(0xFF64748B),
                                     ),
                                   ),
@@ -399,9 +400,9 @@ class _JourneyCompleteCelebrationState
                             style: AppTextStyles.h2.copyWith(
                               fontSize: 22,
                               fontWeight: FontWeight.w900,
-                              color: AppColors.isDark
+                              color: context.isDarkMode
                                   ? Colors.white
-                                  : AppColors.textPrimary,
+                                  : context.appColors.textPrimary,
                               letterSpacing: 1.4,
                             ),
                           ),
@@ -412,12 +413,12 @@ class _JourneyCompleteCelebrationState
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 16, vertical: 7),
                             decoration: BoxDecoration(
-                              color: AppColors.isDark
+                              color: context.isDarkMode
                                   ? AppColors.primary.withValues(alpha: 0.12)
                                   : const Color(0xFFEFF6FF),
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(
-                                color: AppColors.isDark
+                                color: context.isDarkMode
                                     ? AppColors.primary.withValues(alpha: 0.30)
                                     : const Color(0xFFBFDBFE),
                               ),
@@ -428,7 +429,7 @@ class _JourneyCompleteCelebrationState
                               style: AppTextStyles.subtitle2.copyWith(
                                 fontSize: 13.5,
                                 fontWeight: FontWeight.w600,
-                                color: AppColors.isDark
+                                color: context.isDarkMode
                                     ? const Color(0xFFFDE68A)
                                     : const Color(0xFF1D4ED8),
                               ),
@@ -455,12 +456,12 @@ class _JourneyCompleteCelebrationState
                               Expanded(
                                 child: _buildStatCard(
                                   icon: Icons.bolt_rounded,
-                                  iconColor: AppColors.isDark
+                                  iconColor: context.isDarkMode
                                       ? AppColors.accentAmber
                                       : const Color(0xFFD97706),
                                   label: 'Total XP',
                                   value: '+${widget.totalXp}',
-                                  accentGradient: AppColors.isDark
+                                  accentGradient: context.isDarkMode
                                       ? [
                                           AppColors.accentAmber.withValues(alpha: 0.20),
                                           AppColors.amberDeep.withValues(alpha: 0.08),
@@ -475,14 +476,14 @@ class _JourneyCompleteCelebrationState
                               Expanded(
                                 child: _buildStatCard(
                                   icon: Icons.checklist_rounded,
-                                  iconColor: AppColors.isDark
+                                  iconColor: context.isDarkMode
                                       ? AppColors.accentCyan
                                       : const Color(0xFF0284C7),
                                   label: 'Quiz Mastery',
                                   value: scorePercent != null
                                       ? '$scorePercent%'
                                       : '100%',
-                                  accentGradient: AppColors.isDark
+                                  accentGradient: context.isDarkMode
                                       ? [
                                           AppColors.accentCyan.withValues(alpha: 0.20),
                                           AppColors.blueLight.withValues(alpha: 0.08),
@@ -497,13 +498,13 @@ class _JourneyCompleteCelebrationState
                               Expanded(
                                 child: _buildStatCard(
                                   icon: Icons.military_tech_rounded,
-                                  iconColor: AppColors.isDark
+                                  iconColor: context.isDarkMode
                                       ? AppColors.accentGreen
                                       : const Color(0xFF059669),
                                   label: 'Milestones',
                                   value:
                                       '${widget.totalSteps}/${widget.totalSteps}',
-                                  accentGradient: AppColors.isDark
+                                  accentGradient: context.isDarkMode
                                       ? [
                                           AppColors.accentGreen.withValues(alpha: 0.20),
                                           AppColors.emerald.withValues(alpha: 0.08),
@@ -525,12 +526,12 @@ class _JourneyCompleteCelebrationState
                               padding: const EdgeInsets.symmetric(
                                   vertical: 8, horizontal: 14),
                               decoration: BoxDecoration(
-                                color: AppColors.isDark
+                                color: context.isDarkMode
                                     ? Colors.amber.withValues(alpha: 0.10)
                                     : const Color(0xFFFEF3C7),
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
-                                  color: AppColors.isDark
+                                  color: context.isDarkMode
                                       ? Colors.amber.withValues(alpha: 0.30)
                                       : const Color(0xFFFDE68A),
                                 ),
@@ -540,7 +541,7 @@ class _JourneyCompleteCelebrationState
                                 children: [
                                   Icon(
                                     Icons.emoji_events_rounded,
-                                    color: AppColors.isDark
+                                    color: context.isDarkMode
                                         ? Colors.amber
                                         : const Color(0xFFD97706),
                                     size: 15,
@@ -549,7 +550,7 @@ class _JourneyCompleteCelebrationState
                                   Text(
                                     '+${widget.bonusXp} XP Completion Bonus Claimed! 🎉',
                                     style: AppTextStyles.captionBold.copyWith(
-                                      color: AppColors.isDark
+                                      color: context.isDarkMode
                                           ? Colors.amber.shade200
                                           : const Color(0xFFB45309),
                                       fontSize: 11.5,
@@ -574,14 +575,14 @@ class _JourneyCompleteCelebrationState
                               Expanded(
                                 child: Container(
                                   decoration: BoxDecoration(
-                                    color: AppColors.isDark
+                                    color: context.isDarkMode
                                         ? AppColors.surfaceMid
                                             .withValues(alpha: 0.55)
                                         : const Color(0xFFF1F5F9),
                                     borderRadius: BorderRadius.circular(12),
                                     border: Border.all(
-                                      color: AppColors.isDark
-                                          ? AppColors.glassBorder
+                                      color: context.isDarkMode
+                                          ? context.appColors.border
                                           : const Color(0xFFE2E8F0),
                                     ),
                                   ),
@@ -591,7 +592,7 @@ class _JourneyCompleteCelebrationState
                                       onTap: () => _dismissWith(widget.onReview),
                                       mouseCursor: SystemMouseCursors.click,
                                       borderRadius: BorderRadius.circular(12),
-                                      hoverColor: AppColors.isDark
+                                      hoverColor: context.isDarkMode
                                           ? Colors.white.withValues(alpha: 0.06)
                                           : Colors.black.withValues(alpha: 0.04),
                                       child: Padding(
@@ -604,8 +605,8 @@ class _JourneyCompleteCelebrationState
                                             Icon(
                                               Icons.visibility_rounded,
                                               size: 15,
-                                              color: AppColors.isDark
-                                                  ? AppColors.textSlate
+                                              color: context.isDarkMode
+                                                  ? context.appColors.textSecondary
                                                   : const Color(0xFF64748B),
                                             ),
                                             const SizedBox(width: 7),
@@ -614,7 +615,7 @@ class _JourneyCompleteCelebrationState
                                               style: AppTextStyles.label.copyWith(
                                                 fontSize: 12.5,
                                                 fontWeight: FontWeight.w600,
-                                                color: AppColors.textPrimary,
+                                                color: context.appColors.textPrimary,
                                               ),
                                             ),
                                           ],
@@ -704,13 +705,13 @@ class _JourneyCompleteCelebrationState
     required int xpNeeded,
     required bool isMaxLevel,
   }) {
-    final bool isDark = AppColors.isDark;
+    final bool isDark = context.isDarkMode;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: isDark
-            ? AppColors.surfaceSolidHeader.withValues(alpha: 0.8)
+            ? context.appColors.topBarBackground.withValues(alpha: 0.8)
             : const Color(0xFFFAF5FF),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
@@ -804,7 +805,7 @@ class _JourneyCompleteCelebrationState
                   Text(
                     isMaxLevel ? 'Grand Sage Max Level' : 'Level $level → ${level + 1}',
                     style: AppTextStyles.caption.copyWith(
-                      color: isDark ? AppColors.textSecondary : const Color(0xFF64748B),
+                      color: isDark ? context.appColors.textSecondary : const Color(0xFF64748B),
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
                     ),
@@ -852,7 +853,7 @@ class _JourneyCompleteCelebrationState
     required String value,
     required List<Color> accentGradient,
   }) {
-    final bool isDark = AppColors.isDark;
+    final bool isDark = context.isDarkMode;
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
       decoration: BoxDecoration(
@@ -876,7 +877,7 @@ class _JourneyCompleteCelebrationState
             style: AppTextStyles.h4.copyWith(
               fontSize: 15.5,
               fontWeight: FontWeight.w800,
-              color: isDark ? Colors.white : AppColors.textPrimary,
+              color: isDark ? Colors.white : context.appColors.textPrimary,
             ),
           ),
           const SizedBox(height: 2),
@@ -884,7 +885,7 @@ class _JourneyCompleteCelebrationState
             label,
             style: AppTextStyles.caption.copyWith(
               fontSize: 10.5,
-              color: isDark ? AppColors.textMuted : const Color(0xFF64748B),
+              color: isDark ? context.appColors.textSecondary : const Color(0xFF64748B),
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -897,7 +898,7 @@ class _JourneyCompleteCelebrationState
   Widget _buildExportSection() {
     final bool hasSessionId =
         widget.sessionId != null && widget.sessionId!.isNotEmpty;
-    final bool isDark = AppColors.isDark;
+    final bool isDark = context.isDarkMode;
 
     return Container(
       width: double.infinity,
@@ -908,7 +909,7 @@ class _JourneyCompleteCelebrationState
             : const Color(0xFFF8FAFC),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isDark ? AppColors.glassBorder : const Color(0xFFE2E8F0),
+          color: isDark ? context.appColors.border : const Color(0xFFE2E8F0),
           width: 0.9,
         ),
       ),
@@ -1041,7 +1042,7 @@ class _JourneyCompleteCelebrationState
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(
                             color: isDark
-                                ? AppColors.glassBorder
+                                ? context.appColors.border
                                 : const Color(0xFFE2E8F0),
                           ),
                         ),
@@ -1053,7 +1054,7 @@ class _JourneyCompleteCelebrationState
                                 width: 13,
                                 height: 13,
                                 child: CircularProgressIndicator(
-                                  color: isDark ? Colors.white : AppColors.textPrimary,
+                                  color: isDark ? Colors.white : context.appColors.textPrimary,
                                   strokeWidth: 1.8,
                                 ),
                               ),
@@ -1063,7 +1064,7 @@ class _JourneyCompleteCelebrationState
                                 Icons.description_rounded,
                                 size: 14,
                                 color: isDark
-                                    ? AppColors.textSlate
+                                    ? context.appColors.textSecondary
                                     : const Color(0xFF475569),
                               ),
                               const SizedBox(width: 6),
@@ -1072,7 +1073,7 @@ class _JourneyCompleteCelebrationState
                               child: Text(
                                 _isDownloadingMd ? 'Downloading...' : 'Markdown',
                                 style: AppTextStyles.badge.copyWith(
-                                  color: AppColors.textPrimary,
+                                  color: context.appColors.textPrimary,
                                   fontWeight: FontWeight.w600,
                                   fontSize: 11,
                                 ),
@@ -1108,7 +1109,7 @@ class _JourneyCompleteCelebrationState
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(
                           color: isDark
-                              ? AppColors.glassBorderSubtle
+                              ? (context.isDarkMode ? const Color(0x0DFFFFFF) : const Color(0x0F000000))
                               : const Color(0xFFE2E8F0),
                         ),
                       ),

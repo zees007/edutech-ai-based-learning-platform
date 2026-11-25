@@ -9,6 +9,7 @@ import '../../../widgets/center_toast.dart';
 import '../../../widgets/gradient_button.dart';
 import '../../../widgets/shimmer_loading.dart';
 import 'admin_data_table.dart';
+import 'package:devzees_edutechai_client/core/theme/theme_palette.dart';
 
 /// Admin Tab for moderating student feedback, selecting featured homepage testimonials,
 /// and recording internal administrative moderation notes.
@@ -79,14 +80,14 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
           Text(
             'Feedback & Testimonials Moderation',
             style: (isMobile ? AppTextStyles.subtitle1 : AppTextStyles.h4).copyWith(
-              color: AppColors.textPrimary,
+              color: context.appColors.textPrimary,
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             'Review feedback submitted by learners upon session completion, manage homepage featured testimonials, and maintain internal notes.',
-            style: AppTextStyles.body2.copyWith(color: AppColors.textMuted),
+            style: AppTextStyles.body2.copyWith(color: context.appColors.textSecondary),
           ),
           SizedBox(height: isMobile ? 16 : 24),
 
@@ -97,7 +98,7 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
           Container(
             width: double.infinity,
             height: 1,
-            color: AppColors.glassBorder,
+            color: context.appColors.border,
           ),
           SizedBox(height: isMobile ? 16 : 24),
 
@@ -240,31 +241,31 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
     final searchBox = Container(
       height: 40,
       decoration: BoxDecoration(
-        color: AppColors.glassBase,
+        color: (context.isDarkMode ? const Color(0x0DFFFFFF) : const Color(0x0A000000)),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.glassBorder),
+        border: Border.all(color: context.appColors.border),
       ),
       child: TextField(
         controller: _searchController,
         onSubmitted: _onSearchSubmitted,
         style: AppTextStyles.body2.copyWith(
-          color: AppColors.textPrimary,
+          color: context.appColors.textPrimary,
         ),
         decoration: InputDecoration(
           isDense: true,
           hintText: 'Search quote, student, topic...',
           hintStyle: AppTextStyles.body2.copyWith(
-            color: AppColors.textMuted,
+            color: context.appColors.textSecondary,
           ),
           prefixIcon: Icon(
             Icons.search,
-            color: AppColors.textMuted,
+            color: context.appColors.textSecondary,
             size: 18,
           ),
           suffixIcon: _searchController.text.isNotEmpty
               ? IconButton(
                   icon: const Icon(Icons.clear, size: 16),
-                  color: AppColors.textMuted,
+                  color: context.appColors.textSecondary,
                   onPressed: _clearSearch,
                 )
               : null,
@@ -276,7 +277,7 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
 
     final refreshButton = IconButton(
       tooltip: 'Refresh Feedbacks',
-      icon: Icon(Icons.refresh_rounded, color: AppColors.textSecondary),
+      icon: Icon(Icons.refresh_rounded, color: context.appColors.textSecondary),
       onPressed: () {
         ref.read(adminFeedbackProvider.notifier).loadFeedbacks();
       },
@@ -332,8 +333,7 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
         onTap: () => _onStatusFilterChanged(id),
         mouseCursor: SystemMouseCursors.click,
         borderRadius: BorderRadius.circular(20),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
+        child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
           decoration: BoxDecoration(
             color: isSelected
@@ -341,7 +341,7 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
                 : AppColors.surfaceDark.withValues(alpha: 0.4),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: isSelected ? badgeColor : AppColors.glassBorder,
+              color: isSelected ? badgeColor : context.appColors.border,
               width: isSelected ? 1.4 : 1.0,
             ),
           ),
@@ -351,7 +351,7 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
               Text(
                 label,
                 style: AppTextStyles.captionBold.copyWith(
-                  color: isSelected ? badgeColor : AppColors.textMuted,
+                  color: isSelected ? badgeColor : context.appColors.textSecondary,
                 ),
               ),
               if (count != null) ...[
@@ -387,23 +387,23 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
         decoration: BoxDecoration(
           color: AppColors.surfaceDark.withValues(alpha: 0.4),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.glassBorder),
+          border: Border.all(color: context.appColors.border),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.inbox_outlined, size: 48, color: AppColors.textMuted),
+            Icon(Icons.inbox_outlined, size: 48, color: context.appColors.textSecondary),
             const SizedBox(height: 12),
             Text(
               'No feedback records found',
               style: AppTextStyles.subtitle2.copyWith(
-                color: AppColors.textPrimary,
+                color: context.appColors.textPrimary,
               ),
             ),
             const SizedBox(height: 4),
             Text(
               'Try adjusting your search query or filter criteria',
-              style: AppTextStyles.caption.copyWith(color: AppColors.textMuted),
+              style: AppTextStyles.caption.copyWith(color: context.appColors.textSecondary),
             ),
           ],
         ),
@@ -440,7 +440,7 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
               Text(
                 item.userName,
                 style: AppTextStyles.body2.copyWith(
-                  color: AppColors.textPrimary,
+                  color: context.appColors.textPrimary,
                   fontWeight: FontWeight.w600,
                 ),
                 maxLines: 1,
@@ -449,7 +449,7 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
               Text(
                 item.userEmail,
                 style: AppTextStyles.caption.copyWith(
-                  color: AppColors.textMuted,
+                  color: context.appColors.textSecondary,
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -465,7 +465,7 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
               Text(
                 item.educationLevel,
                 style: AppTextStyles.captionBold.copyWith(
-                  color: AppColors.textSecondary,
+                  color: context.appColors.textSecondary,
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
@@ -474,7 +474,7 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
                     ? item.country!
                     : 'Global / Not Set',
                 style: AppTextStyles.caption.copyWith(
-                  color: AppColors.textMuted,
+                  color: context.appColors.textSecondary,
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
@@ -494,7 +494,7 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
               Text(
                 '${item.rating}.0',
                 style: AppTextStyles.captionBold.copyWith(
-                  color: AppColors.textPrimary,
+                  color: context.appColors.textPrimary,
                 ),
               ),
             ],
@@ -532,7 +532,7 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
             child: Text(
               '"${item.quote}"',
               style: AppTextStyles.caption.copyWith(
-                color: AppColors.textSecondary,
+                color: context.appColors.textSecondary,
                 fontStyle: FontStyle.italic,
               ),
               maxLines: 2,
@@ -572,7 +572,7 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
           else
             Text(
               '—',
-              style: AppTextStyles.caption.copyWith(color: AppColors.textMuted),
+              style: AppTextStyles.caption.copyWith(color: context.appColors.textSecondary),
             ),
 
           // Actions
@@ -624,7 +624,7 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
                   ),
                   icon: Icon(
                     Icons.star_outline_rounded,
-                    color: AppColors.textMuted,
+                    color: context.appColors.textSecondary,
                     size: 18,
                   ),
                   onPressed: () => _updateFeedbackStatus(item, 'featured'),
@@ -662,7 +662,7 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
                 ),
                 icon: Icon(
                   Icons.visibility_outlined,
-                  color: AppColors.textMuted,
+                  color: context.appColors.textSecondary,
                   size: 17,
                 ),
                 onPressed: () => _showModerationDialog(item),
@@ -806,7 +806,7 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
               backgroundColor: AppColors.surfaceMid,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(18),
-                side: BorderSide(color: AppColors.glassBorder),
+                side: BorderSide(color: context.appColors.border),
               ),
               title: Row(
                 children: [
@@ -830,14 +830,14 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
                         Text(
                           'Moderation & Admin Notes',
                           style: AppTextStyles.subtitle1.copyWith(
-                            color: AppColors.textPrimary,
+                            color: context.appColors.textPrimary,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
                         Text(
                           'ID: ${item.feedbackId.substring(0, item.feedbackId.length > 8 ? 8 : item.feedbackId.length)}... • Session: ${item.sessionId.isNotEmpty ? item.sessionId : 'N/A (External / Seed)'}',
                           style: AppTextStyles.caption.copyWith(
-                            color: AppColors.textMuted,
+                            color: context.appColors.textSecondary,
                           ),
                         ),
                       ],
@@ -858,7 +858,7 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
                         decoration: BoxDecoration(
                           color: AppColors.surfaceDark.withValues(alpha: 0.5),
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: AppColors.glassBorder),
+                          border: Border.all(color: context.appColors.border),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -876,7 +876,7 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
                                       child: Text(
                                         item.userName,
                                         style: AppTextStyles.body1.copyWith(
-                                          color: AppColors.textPrimary,
+                                          color: context.appColors.textPrimary,
                                           fontWeight: FontWeight.w700,
                                         ),
                                         overflow: TextOverflow.ellipsis,
@@ -886,7 +886,7 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
                                     Text(
                                       '(${item.educationLevel})',
                                       style: AppTextStyles.caption.copyWith(
-                                        color: AppColors.textMuted,
+                                        color: context.appColors.textSecondary,
                                       ),
                                     ),
                                   ],
@@ -920,7 +920,7 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
                                     Icon(
                                       Icons.location_on_outlined,
                                       size: 14,
-                                      color: AppColors.textMuted,
+                                      color: context.appColors.textSecondary,
                                     ),
                                     const SizedBox(width: 4),
                                     Flexible(
@@ -930,7 +930,7 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
                                             ? item.country!
                                             : 'Country not provided',
                                         style: AppTextStyles.caption.copyWith(
-                                          color: AppColors.textMuted,
+                                          color: context.appColors.textSecondary,
                                         ),
                                         overflow: TextOverflow.ellipsis,
                                       ),
@@ -943,7 +943,7 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
                                     Icon(
                                       Icons.school_outlined,
                                       size: 14,
-                                      color: AppColors.textMuted,
+                                      color: context.appColors.textSecondary,
                                     ),
                                     const SizedBox(width: 4),
                                     Flexible(
@@ -968,7 +968,7 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
                             Container(
                               width: double.infinity,
                               height: 1,
-                              color: AppColors.glassBorder.withValues(
+                              color: context.appColors.border.withValues(
                                 alpha: 0.5,
                               ),
                             ),
@@ -976,7 +976,7 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
                             Text(
                               '"${item.quote}"',
                               style: AppTextStyles.body2.copyWith(
-                                color: AppColors.textSlate,
+                                color: context.appColors.textSecondary,
                                 fontStyle: FontStyle.italic,
                                 height: 1.45,
                               ),
@@ -990,7 +990,7 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
                       Text(
                         'Publication Status',
                         style: AppTextStyles.captionBold.copyWith(
-                          color: AppColors.textPrimary,
+                          color: context.appColors.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -1033,7 +1033,7 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
                             child: Text(
                               'Internal Administrative Notes',
                               style: AppTextStyles.captionBold.copyWith(
-                                color: AppColors.textPrimary,
+                                color: context.appColors.textPrimary,
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -1047,7 +1047,7 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
                                 style: AppTextStyles.caption.copyWith(
                                   color: val.text.length > 255
                                       ? AppColors.rose
-                                      : AppColors.textMuted,
+                                      : context.appColors.textSecondary,
                                 ),
                               );
                             },
@@ -1067,13 +1067,13 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
                               maxLength,
                             }) => null,
                         style: AppTextStyles.body2.copyWith(
-                          color: AppColors.textPrimary,
+                          color: context.appColors.textPrimary,
                         ),
                         decoration: InputDecoration(
                           hintText:
                               'Add internal moderation note (private, never visible to student)...',
                           hintStyle: AppTextStyles.caption.copyWith(
-                            color: AppColors.textMuted,
+                            color: context.appColors.textSecondary,
                           ),
                           filled: true,
                           fillColor: AppColors.surfaceDark.withValues(
@@ -1082,13 +1082,13 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
                             borderSide: BorderSide(
-                              color: AppColors.glassBorder,
+                              color: context.appColors.border,
                             ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
                             borderSide: BorderSide(
-                              color: AppColors.glassBorder,
+                              color: context.appColors.border,
                             ),
                           ),
                           focusedBorder: OutlineInputBorder(
@@ -1109,7 +1109,7 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
                   onPressed: () => Navigator.of(dialogContext).pop(),
                   child: Text(
                     'Cancel',
-                    style: TextStyle(color: AppColors.textMuted),
+                    style: TextStyle(color: context.appColors.textSecondary),
                   ),
                 ),
                 GradientButton(
@@ -1166,14 +1166,14 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
           color: active ? color.withValues(alpha: 0.2) : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: active ? color : AppColors.glassBorder,
+            color: active ? color : context.appColors.border,
             width: active ? 1.5 : 1.0,
           ),
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: active ? color : AppColors.textMuted,
+            color: active ? color : context.appColors.textSecondary,
             fontSize: 12,
             fontWeight: active ? FontWeight.w700 : FontWeight.w500,
           ),
@@ -1209,7 +1209,7 @@ class _MetricCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surfaceDark.withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.glassBorder),
+        border: Border.all(color: context.appColors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1227,14 +1227,14 @@ class _MetricCard extends StatelessWidget {
           Text(
             data.value,
             style: (isMobile ? AppTextStyles.subtitle1 : AppTextStyles.h4).copyWith(
-              color: AppColors.textPrimary,
+              color: context.appColors.textPrimary,
               fontWeight: FontWeight.w800,
             ),
           ),
           const SizedBox(height: 4),
           Text(
             data.label,
-            style: AppTextStyles.caption.copyWith(color: AppColors.textMuted),
+            style: AppTextStyles.caption.copyWith(color: context.appColors.textSecondary),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),

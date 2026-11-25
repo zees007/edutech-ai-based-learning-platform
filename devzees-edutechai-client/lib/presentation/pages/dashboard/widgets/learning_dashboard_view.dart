@@ -6,11 +6,13 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../core/theme/theme_palette.dart';
 import '../../../widgets/shimmer_loading.dart';
-import 'activity_and_achievements_card.dart';
+import 'daily_activity_heatmap_card.dart';
 import 'dashboard_header.dart';
 import 'dashboard_kpi_cards.dart';
-import 'mode_and_topic_cards.dart';
+import 'learning_mode_distribution_card.dart';
+import 'milestone_achievements_card.dart';
 import 'quiz_trend_card.dart';
+import 'topic_breakdown_card.dart';
 import 'weak_concepts_card.dart';
 
 /// Embeddable dashboard content widget for use inside the learning shell.
@@ -26,6 +28,8 @@ class LearningDashboardView extends ConsumerStatefulWidget {
 }
 
 class _LearningDashboardViewState extends ConsumerState<LearningDashboardView> {
+  int _selectedMobileTab = 0;
+
   @override
   void initState() {
     super.initState();
@@ -44,7 +48,7 @@ class _LearningDashboardViewState extends ConsumerState<LearningDashboardView> {
         final isMobile = constraints.maxWidth < 700;
 
         return Container(
-          color: isDark ? AppColors.canvasBackground : const Color(0xFFF8FAFC),
+          color: context.appColors.scaffoldBackground,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -70,12 +74,18 @@ class _LearningDashboardViewState extends ConsumerState<LearningDashboardView> {
                   child: SingleChildScrollView(
                     physics: const AlwaysScrollableScrollPhysics(),
                     padding: EdgeInsets.symmetric(
-                      horizontal: isMobile ? 16 : 32,
+                      horizontal: isMobile
+                          ? 16
+                          : (constraints.maxWidth >= 1500 ? 24 : 32),
                       vertical: isMobile ? 16 : 24,
                     ),
                     child: Center(
                       child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 1180),
+                        constraints: BoxConstraints(
+                          maxWidth: constraints.maxWidth >= 1500
+                              ? 1560
+                              : (constraints.maxWidth >= 1280 ? 1380 : 1180),
+                        ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -87,29 +97,101 @@ class _LearningDashboardViewState extends ConsumerState<LearningDashboardView> {
                               _buildErrorView(context, state.error!)
                             // Loaded Content
                             else if (state.data != null) ...[
-                              DashboardKpiCards(summary: state.data!.summary),
-                              const SizedBox(height: 24),
-                              QuizTrendCard(
-                                quizMetrics: state.data!.quizMetrics,
-                              ),
-                              const SizedBox(height: 24),
-                              WeakConceptsCard(
-                                weakConcepts: state
-                                    .data!
-                                    .quizMetrics
-                                    .conceptsNeedingReinforcement,
-                              ),
-                              const SizedBox(height: 24),
-                              ModeAndTopicCards(
-                                modeDistribution: state.data!.modeDistribution,
-                                topicBreakdown: state.data!.topicBreakdown,
-                              ),
-                              const SizedBox(height: 24),
-                              ActivityAndAchievementsCard(
-                                activityHeatmap: state.data!.activityHeatmap,
-                                achievements: state.data!.achievements,
-                              ),
-                              const SizedBox(height: 48),
+                              if (constraints.maxWidth <
+                                  Responsive.mobileBreakpoint) ...[
+                                _buildMobileTabBar(context, state.data!, isDark),
+                                const SizedBox(height: 16),
+                                AnimatedSwitcher(
+                                  duration: const Duration(milliseconds: 220),
+                                  switchInCurve: Curves.easeOutCubic,
+                                  switchOutCurve: Curves.easeInCubic,
+                                  child: KeyedSubtree(
+                                    key: ValueKey(_selectedMobileTab),
+                                    child: _buildMobileTabContent(state.data!),
+                                  ),
+                                ),
+                                const SizedBox(height: 32),
+                              ] else ...[
+                                // 1. Concentric Donut Hub & KPI Cards
+                                DashboardKpiCards(summary: state.data!.summary),
+                                const SizedBox(height: 24),
+
+                                // 2. Right below KPIs: Learning Mode Distribution & Milestone Achievements
+                                IntrinsicHeight(
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.stretch,
+                                    children: [
+                                      Expanded(
+                                        flex: 4,
+                                        child: LearningModeDistributionCard(
+                                          modeDistribution:
+                                              state.data!.modeDistribution,
+                                          isCompact:
+                                              constraints.maxWidth < 1150,
+                                          stretchHeight: true,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 16),
+                                      Expanded(
+                                        flex: 8,
+                                        child: MilestoneAchievementsCard(
+                                          achievements:
+                                              state.data!.achievements,
+                                          crossAxisCount:
+                                              constraints.maxWidth >=
+                                                      Responsive.tabletBreakpoint
+                                                  ? 3
+                                                  : 2,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+
+                                // 3. Quiz Trend Card (Accuracy Curve)
+                                QuizTrendCard(
+                                  quizMetrics: state.data!.quizMetrics,
+                                ),
+                                const SizedBox(height: 24),
+
+                                // 4. Full-Width Topic Mastery Breakdown (2-col on Tablet/Desktop)
+                                TopicBreakdownCard(
+                                  topicBreakdown: state.data!.topicBreakdown,
+                                ),
+                                const SizedBox(height: 24),
+
+                                // 5. Daily Activity Log & Weak Concepts (Exact Same Height)
+                                IntrinsicHeight(
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.stretch,
+                                    children: [
+                                      Expanded(
+                                        flex: 5,
+                                        child: DailyActivityHeatmapCard(
+                                          activityHeatmap:
+                                              state.data!.activityHeatmap,
+                                          stretchHeight: true,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 16),
+                                      Expanded(
+                                        flex: 7,
+                                        child: WeakConceptsCard(
+                                          weakConcepts: state
+                                              .data!
+                                              .quizMetrics
+                                              .conceptsNeedingReinforcement,
+                                          stretchHeight: true,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 48),
+                              ],
                             ],
                           ],
                         ),
@@ -123,6 +205,199 @@ class _LearningDashboardViewState extends ConsumerState<LearningDashboardView> {
         );
       },
     );
+  }
+
+  Widget _buildMobileTabBar(
+    BuildContext context,
+    dynamic data,
+    bool isDark,
+  ) {
+    final weakCount = data.quizMetrics.conceptsNeedingReinforcement.length as int;
+    final unlockedTrophies =
+        (data.achievements as List).where((a) => a.unlocked == true).length;
+    final totalTrophies = (data.achievements as List).length;
+
+    final tabs = [
+      (
+        index: 0,
+        label: 'Overview',
+        icon: Icons.dashboard_rounded,
+        badge: null as String?,
+      ),
+      (
+        index: 1,
+        label: 'Quizzes',
+        icon: Icons.insights_rounded,
+        badge: weakCount > 0 ? '$weakCount' : null,
+      ),
+      (
+        index: 2,
+        label: 'Journeys',
+        icon: Icons.route_rounded,
+        badge: null as String?,
+      ),
+      (
+        index: 3,
+        label: 'Trophies',
+        icon: Icons.emoji_events_rounded,
+        badge: totalTrophies > 0 ? '$unlockedTrophies/$totalTrophies' : null,
+      ),
+    ];
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: isDark
+            ? Colors.white.withValues(alpha: 0.05)
+            : Colors.black.withValues(alpha: 0.04),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        children: [
+          for (int i = 0; i < tabs.length; i++) ...[
+            if (i > 0) const SizedBox(width: 4),
+            Expanded(
+              child: _buildMobileTabItem(
+                label: tabs[i].label,
+                icon: tabs[i].icon,
+                badge: tabs[i].badge,
+                isSelected: _selectedMobileTab == tabs[i].index,
+                isDark: isDark,
+                onTap: () => setState(() => _selectedMobileTab = tabs[i].index),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMobileTabItem({
+    required String label,
+    required IconData icon,
+    required String? badge,
+    required bool isSelected,
+    required bool isDark,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(10),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOutCubic,
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+        decoration: BoxDecoration(
+          gradient: isSelected ? AppColors.primaryGradient : null,
+          color: isSelected ? null : Colors.transparent,
+          borderRadius: BorderRadius.circular(10),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: AppColors.primary
+                        .withValues(alpha: isDark ? 0.30 : 0.22),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
+        ),
+        child: Center(
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  icon,
+                  size: 14,
+                  color: isSelected
+                      ? Colors.white
+                      : (isDark
+                            ? context.appColors.textSecondary
+                            : const Color(0xFF64748B)),
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  label,
+                  style: AppTextStyles.caption.copyWith(
+                    color: isSelected
+                        ? Colors.white
+                        : (isDark
+                              ? context.appColors.textSecondary
+                              : const Color(0xFF475569)),
+                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                    fontSize: 11.5,
+                  ),
+                ),
+                if (badge != null) ...[
+                  const SizedBox(width: 4),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 1,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? Colors.white.withValues(alpha: 0.22)
+                          : (isDark
+                                ? Colors.white.withValues(alpha: 0.08)
+                                : Colors.black.withValues(alpha: 0.06)),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      badge,
+                      style: TextStyle(
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.w700,
+                        color: isSelected
+                            ? Colors.white
+                            : (isDark
+                                  ? context.appColors.textSecondary
+                                  : const Color(0xFF475569)),
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMobileTabContent(dynamic data) {
+    switch (_selectedMobileTab) {
+      case 1:
+        return Column(
+          children: [
+            QuizTrendCard(quizMetrics: data.quizMetrics),
+            const SizedBox(height: 16),
+            WeakConceptsCard(
+              weakConcepts: data.quizMetrics.conceptsNeedingReinforcement,
+            ),
+          ],
+        );
+      case 2:
+        return TopicBreakdownCard(topicBreakdown: data.topicBreakdown);
+      case 3:
+        return MilestoneAchievementsCard(achievements: data.achievements);
+      case 0:
+      default:
+        return Column(
+          children: [
+            DashboardKpiCards(summary: data.summary),
+            const SizedBox(height: 16),
+            LearningModeDistributionCard(
+              modeDistribution: data.modeDistribution,
+            ),
+            const SizedBox(height: 16),
+            DailyActivityHeatmapCard(activityHeatmap: data.activityHeatmap),
+          ],
+        );
+    }
   }
 
   Widget _buildLoadingSkeleton(BuildContext context, bool isMobile) {
@@ -206,7 +481,7 @@ class _LearningDashboardViewState extends ConsumerState<LearningDashboardView> {
               error,
               style: AppTextStyles.body2.copyWith(
                 color: isDark
-                    ? AppColors.textSecondary
+                    ? context.appColors.textSecondary
                     : const Color(0xFF64748B),
               ),
               textAlign: TextAlign.center,

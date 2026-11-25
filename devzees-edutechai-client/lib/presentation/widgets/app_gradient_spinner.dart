@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/text_styles.dart';
+import '../../core/theme/theme_palette.dart';
 
 /// A sleek, high-fidelity spinner with the EduTech AI app theme gradient
 /// and centered glowing sparkle icon.
@@ -175,7 +176,7 @@ class _AppGradientSpinnerState extends State<AppGradientSpinner>
               style: AppTextStyles.caption.copyWith(
                 fontWeight: FontWeight.w500,
                 letterSpacing: 0.4,
-                color: AppColors.textMuted,
+                color: context.appColors.textSecondary,
               ),
             ),
           ],

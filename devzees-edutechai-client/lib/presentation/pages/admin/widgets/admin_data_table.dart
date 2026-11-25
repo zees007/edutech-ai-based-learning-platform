@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/text_styles.dart';
+import 'package:devzees_edutechai_client/core/theme/theme_palette.dart';
 
 /// Reusable glassmorphic data table with dark theme styling.
 /// Supports column headers, horizontal scrolling with scrollbar, and row builders for flexible content.
@@ -65,7 +66,7 @@ class _AdminDataTableState extends State<AdminDataTable> {
             color: AppColors.surfaceDark.withValues(alpha: 0.6),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: AppColors.glassBorder,
+              color: context.appColors.border,
               width: 1,
             ),
           ),
@@ -157,7 +158,7 @@ class _AdminDataTableState extends State<AdminDataTable> {
                             child: Text(
                               'No data available',
                               style: AppTextStyles.body2.copyWith(
-                                color: AppColors.textMuted,
+                                color: context.appColors.textSecondary,
                               ),
                             ),
                           )
@@ -189,14 +190,14 @@ class _AdminDataTableState extends State<AdminDataTable> {
                               Icon(
                                 Icons.swipe_rounded,
                                 size: 13,
-                                color: AppColors.textMuted.withValues(alpha: 0.8),
+                                color: context.appColors.textSecondary.withValues(alpha: 0.8),
                               ),
                               const SizedBox(width: 5),
                               Flexible(
                                 child: Text(
                                   'Swipe horizontally for all columns',
                                   style: AppTextStyles.caption.copyWith(
-                                    color: AppColors.textMuted.withValues(alpha: 0.8),
+                                    color: context.appColors.textSecondary.withValues(alpha: 0.8),
                                     fontSize: 11,
                                   ),
                                   maxLines: 1,
@@ -236,7 +237,7 @@ class _AdminDataTableState extends State<AdminDataTable> {
                   decoration: BoxDecoration(
                     border: Border(
                       top: BorderSide(
-                        color: AppColors.glassBorder.withValues(alpha: 0.5),
+                        color: context.appColors.border.withValues(alpha: 0.5),
                         width: 1,
                       ),
                     ),
@@ -247,15 +248,15 @@ class _AdminDataTableState extends State<AdminDataTable> {
                       Text(
                         'Page ${widget.currentPage! + 1} of ${widget.totalPages}',
                         style: AppTextStyles.caption.copyWith(
-                          color: AppColors.textSecondary,
+                          color: context.appColors.textSecondary,
                         ),
                       ),
                       const SizedBox(width: 16),
                       IconButton(
                         icon: const Icon(Icons.chevron_left, size: 20),
                         color: widget.currentPage! > 0
-                            ? AppColors.textPrimary
-                            : AppColors.textMuted,
+                            ? context.appColors.textPrimary
+                            : context.appColors.textSecondary,
                         onPressed: widget.currentPage! > 0
                             ? () => widget.onPageChanged!(widget.currentPage! - 1)
                             : null,
@@ -263,8 +264,8 @@ class _AdminDataTableState extends State<AdminDataTable> {
                       IconButton(
                         icon: const Icon(Icons.chevron_right, size: 20),
                         color: widget.currentPage! < widget.totalPages! - 1
-                            ? AppColors.textPrimary
-                            : AppColors.textMuted,
+                            ? context.appColors.textPrimary
+                            : context.appColors.textSecondary,
                         onPressed: widget.currentPage! < widget.totalPages! - 1
                             ? () => widget.onPageChanged!(widget.currentPage! + 1)
                             : null,
@@ -303,8 +304,7 @@ class _DataRowState extends State<_DataRow> {
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
+      child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
           color: _isHovered
@@ -314,7 +314,7 @@ class _DataRowState extends State<_DataRow> {
                   : AppColors.surfaceDark.withValues(alpha: 0.3),
           border: Border(
             bottom: BorderSide(
-              color: AppColors.glassBorder.withValues(alpha: 0.5),
+              color: context.appColors.border.withValues(alpha: 0.5),
               width: 0.5,
             ),
           ),

@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/theme_palette.dart';
 
 /// A circular progress ring that accurately follows the app theme gradient
 /// (AppColors.primaryGradient) across the active progress arc,
@@ -23,10 +24,7 @@ class GradientCircularProgress extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final resolvedTrackColor = trackColor ??
-        (AppColors.isDark
-            ? Colors.white.withValues(alpha: 0.12)
-            : const Color(0xFFCBD5E1));
+    final resolvedTrackColor = trackColor ?? context.appColors.trackNeutral;
 
     return SizedBox(
       width: size,

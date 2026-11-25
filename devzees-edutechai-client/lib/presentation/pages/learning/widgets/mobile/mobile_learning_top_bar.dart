@@ -47,7 +47,7 @@ class MobileLearningTopBar extends ConsumerWidget
             location.startsWith('/dashboard'));
 
     return Material(
-      color: AppColors.topBarBackground,
+      color: context.appColors.topBarBackground,
       child: SafeArea(
         bottom: false,
         child: Column(
@@ -64,7 +64,7 @@ class MobileLearningTopBar extends ConsumerWidget
                       builder: (ctx) => IconButton(
                         icon: Icon(
                           Icons.menu_rounded,
-                          color: AppColors.textSecondary,
+                          color: context.appColors.textSecondary,
                           size: 21,
                         ),
                         onPressed: () => Scaffold.of(ctx).openDrawer(),
@@ -89,23 +89,20 @@ class MobileLearningTopBar extends ConsumerWidget
                       height: 28,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.22),
-                        borderRadius: BorderRadius.circular(7),
-                        border: Border.all(
-                          color: AppColors.primary.withValues(alpha: 0.55),
-                          width: 1.0,
-                        ),
+                        gradient: AppColors.primaryGradient,
+                        borderRadius: BorderRadius.circular(8),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.primary.withValues(alpha: 0.35),
-                            blurRadius: 5,
+                            color: AppColors.primary.withValues(alpha: 0.28),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
                           ),
                         ],
                       ),
                       child: const Icon(
-                        Icons.auto_graph_rounded,
-                        color: AppColors.primary,
-                        size: 14,
+                        Icons.leaderboard_rounded,
+                        color: Colors.white,
+                        size: 15,
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -154,7 +151,7 @@ class MobileLearningTopBar extends ConsumerWidget
                 ],
               ),
             ),
-            Container(color: AppColors.glassBorder, height: 1.0),
+            Container(color: context.appColors.border, height: 1.0),
           ],
         ),
       ),
@@ -207,7 +204,7 @@ class MobileLearningTopBar extends ConsumerWidget
               ),
           ],
         ),
-        color: AppColors.cardBackground,
+        color: context.appColors.cardBackground,
         elevation: 8,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
@@ -296,7 +293,7 @@ class MobileLearningTopBar extends ConsumerWidget
               fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
               color: isSelected
                   ? (isDark ? AppColors.primary : AppColors.purple)
-                  : AppColors.textPrimary,
+                  : (isDark ? const Color(0xFFF3F4F6) : const Color(0xFF0F172A)),
             ),
           ),
         ],
@@ -422,9 +419,9 @@ class MobileLearningTopBar extends ConsumerWidget
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 7.5, vertical: 4.5),
           decoration: BoxDecoration(
-            color: AppColors.sidebarBackground,
+            color: context.appColors.sidebarBackground,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.glassBorder, width: 1.0),
+            border: Border.all(color: context.appColors.border, width: 1.0),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.08),
@@ -440,7 +437,7 @@ class MobileLearningTopBar extends ConsumerWidget
               Icon(
                 Icons.track_changes_rounded,
                 size: 13,
-                color: AppColors.adaptiveBlueLight,
+                color: (context.isDarkMode ? AppColors.blueLight : AppColors.blueRoyal),
               ),
               const SizedBox(width: 4),
 
@@ -455,7 +452,7 @@ class MobileLearningTopBar extends ConsumerWidget
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
+                      color: context.appColors.textPrimary,
                       letterSpacing: -0.2,
                     ),
                   ),
@@ -475,7 +472,7 @@ class MobileLearningTopBar extends ConsumerWidget
               Container(
                 width: 1.0,
                 height: 10,
-                color: AppColors.isDark
+                color: context.isDarkMode
                     ? Colors.white.withValues(alpha: 0.15)
                     : Colors.black.withValues(alpha: 0.12),
               ),
@@ -502,7 +499,7 @@ class MobileLearningTopBar extends ConsumerWidget
               Icon(
                 Icons.keyboard_arrow_down_rounded,
                 size: 13,
-                color: AppColors.textMuted,
+                color: context.appColors.textSecondary,
               ),
             ],
           ),

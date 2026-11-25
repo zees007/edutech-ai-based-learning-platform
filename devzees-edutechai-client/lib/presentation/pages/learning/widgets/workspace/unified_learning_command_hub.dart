@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../data/models/learning/session_response.dart';
 import '../../../../../core/providers/gamification_provider.dart';
-import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/theme_palette.dart';
 import '../../../../../core/theme/text_styles.dart';
 import 'milestone_roadmap_stepper.dart';
@@ -46,8 +45,8 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final isDesktop = constraints.maxWidth >= 1050;
         final isMobile = constraints.maxWidth < 650;
+        final isCompactDesktop = constraints.maxWidth < 1320;
 
         return Column(
           mainAxisSize: MainAxisSize.min,
@@ -55,9 +54,7 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
           children: [
             // ─── TIER 1: Command Hub Header Bar (Desktop & Tablet only) ───
             if (!isMobile)
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOutCubic,
+              Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 24,
@@ -72,28 +69,19 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
                     ),
                   ),
                 ),
-                child: isDesktop
-                    ? _buildDesktopTier1(
-                        session: session,
-                        levelData: levelData,
-                        lvlPct: lvlPct,
-                        topicPct: topicPct,
-                        totalSteps: totalSteps,
-                      )
-                    : _buildTabletTier1(
-                        session: session,
-                        levelData: levelData,
-                        lvlPct: lvlPct,
-                        topicPct: topicPct,
-                        totalSteps: totalSteps,
-                      ),
+                child: _buildTier1Header(
+                  session: session,
+                  levelData: levelData,
+                  lvlPct: lvlPct,
+                  topicPct: topicPct,
+                  totalSteps: totalSteps,
+                  isCompact: isCompactDesktop,
+                ),
               ),
 
             // ─── TIER 2: Milestone Learning Roadmap Stepper ─────────
             if (session.steps.isNotEmpty)
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOutCubic,
+              Container(
                 padding: EdgeInsets.fromLTRB(
                   isMobile ? 12 : 24,
                   10,
@@ -129,182 +117,86 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
     );
   }
 
-  // ─── DESKTOP TIER 1 (Single Line Flow: Goal Left, Metrics Right) ─────────────
-  Widget _buildDesktopTier1({
+  // ─── TIER 1: Unified Two-Row Command Bar ────────────────────────────────────
+  // Row 1: Mode & Education Level Pills (Left) & 5 HUD Metrics + Theme Switcher (Right)
+  // Row 2: "YOUR GOAL" with Target Icon + Full-Width Topic Details Text
+  Widget _buildTier1Header({
     required SessionResponse session,
     required Map<String, dynamic> levelData,
     required double lvlPct,
     required double topicPct,
     required int totalSteps,
-  }) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        // Goal Info & Badges
-        Expanded(
-          flex: 4,
-          child: _buildGoalContextBlock(session),
-        ),
-        const SizedBox(width: 16),
-        // 4 High-Density HUD Metrics + Export + Theme Switcher
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildLevelPill(levelData),
-            const SizedBox(width: 8),
-            _buildXpStreakPill(session.xpEarned),
-            const SizedBox(width: 8),
-            _buildLevelProgressPill(levelData, lvlPct),
-            const SizedBox(width: 8),
-            _buildTopicProgressPill(session.stepsCompleted, totalSteps, topicPct),
-            const SizedBox(width: 8),
-            _buildExportButton(session, totalSteps),
-            const SizedBox(width: 8),
-            const ThemeToggleButton(size: 30),
-          ],
-        ),
-      ],
-    );
-  }
-
-  // ─── TABLET TIER 1 (Stacked: Goal Top, 4 Metrics Row Underneath) ─────────────
-  Widget _buildTabletTier1({
-    required SessionResponse session,
-    required Map<String, dynamic> levelData,
-    required double lvlPct,
-    required double topicPct,
-    required int totalSteps,
+    required bool isCompact,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
-        _buildGoalContextBlock(session),
-        const SizedBox(height: 12),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          clipBehavior: Clip.none,
-          child: Row(
-            children: [
-              _buildLevelPill(levelData),
-              const SizedBox(width: 8),
-              _buildXpStreakPill(session.xpEarned),
-              const SizedBox(width: 8),
-              _buildLevelProgressPill(levelData, lvlPct),
-              const SizedBox(width: 8),
-              _buildTopicProgressPill(session.stepsCompleted, totalSteps, topicPct),
-              const SizedBox(width: 8),
-              _buildExportButton(session, totalSteps),
-              const SizedBox(width: 8),
-              const ThemeToggleButton(size: 30),
-            ],
-          ),
+        // ─── ROW 1: Mode & Education Level (Left) + All 5 HUD Metrics + Theme Toggle (Right) ──
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            // Left: Learning Mode & Education Level (same pill size as other 5 HUD pills)
+            _buildModePill(session.learningMode),
+            const SizedBox(width: 8),
+            _buildEducationLevelPill(session.studentLevel),
+            const SizedBox(width: 12),
+            // Right: All 5 Metric Pills (Horizontally scrollable if tight)
+            Expanded(
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  clipBehavior: Clip.none,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _buildLevelPill(levelData, isCompact: isCompact),
+                      const SizedBox(width: 8),
+                      _buildXpStreakPill(session.xpEarned, isCompact: isCompact),
+                      const SizedBox(width: 8),
+                      _buildLevelProgressPill(levelData, lvlPct),
+                      const SizedBox(width: 8),
+                      _buildTopicProgressPill(session.stepsCompleted, totalSteps, topicPct),
+                      const SizedBox(width: 8),
+                      _buildExportButton(session, totalSteps),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            // Dedicated vertical separator & pinned Theme Toggle
+            Container(
+              height: 20,
+              width: 1,
+              color: context.appColors.border,
+            ),
+            const SizedBox(width: 12),
+            const ThemeToggleButton(size: 30),
+          ],
         ),
+        const SizedBox(height: 10),
+        // ─── ROW 2: "YOUR GOAL" with Icon + Full-Width Topic Details Text ─────
+        _buildGoalTopicRow(session),
       ],
     );
   }
 
-
   BoxDecoration _buildPillDecoration() {
     return BoxDecoration(
-      color: AppColors.isDark ? const Color(0xFF191B2B) : const Color(0xFFF1F5F9),
+      color: context.isDarkMode ? const Color(0xFF191B2B) : const Color(0xFFF1F5F9),
       borderRadius: BorderRadius.circular(8),
       border: Border.all(
-        color: AppColors.isDark ? const Color(0x1FFFFFFF) : const Color(0xFFE2E8F0),
+        color: context.isDarkMode ? const Color(0x1FFFFFFF) : const Color(0xFFE2E8F0),
         width: 1.0,
       ),
     );
   }
 
-  // ─── GOAL & CONTEXT CLUSTER ──────────────────────────────────────────────────
-  Widget _buildGoalContextBlock(SessionResponse session, {bool isMobile = false}) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        // Goal Icon Accent Box
-        Container(
-          width: isMobile ? 30 : 34,
-          height: isMobile ? 30 : 34,
-          alignment: Alignment.center,
-          decoration: _buildPillDecoration(),
-          child: Icon(
-            Icons.track_changes_rounded,
-            color: AppColors.isDark ? const Color(0xFF60A5FA) : const Color(0xFF1D4ED8),
-            size: isMobile ? 16 : 18,
-          ),
-        ),
-        const SizedBox(width: 10),
-        // Goal Title + Chips
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Wrap(
-                crossAxisAlignment: WrapCrossAlignment.center,
-                spacing: 6,
-                runSpacing: 4,
-                children: [
-                  Text(
-                    'YOUR GOAL',
-                    style: TextStyle(
-                      color: AppColors.isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
-                      fontSize: 10,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.6,
-                    ),
-                  ),
-                  _buildMicroChip(
-                    label: _formatMode(session.learningMode),
-                    isViolet: true,
-                    icon: Icons.psychology_rounded,
-                  ),
-                  _buildMicroChip(
-                    label: _formatLevel(session.studentLevel),
-                    isViolet: false,
-                    icon: Icons.school_rounded,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 3),
-              GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _isTopicExpanded = !_isTopicExpanded;
-                  });
-                },
-                child: MouseRegion(
-                  cursor: SystemMouseCursors.click,
-                  child: Tooltip(
-                    message: _isTopicExpanded ? 'Tap to collapse' : 'Tap to expand topic',
-                    waitDuration: const Duration(milliseconds: 400),
-                    child: AnimatedSize(
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeInOutCubic,
-                      alignment: Alignment.topCenter,
-                      child: Text(
-                        session.topic,
-                        maxLines: _isTopicExpanded ? null : (isMobile ? 2 : 1),
-                        overflow: _isTopicExpanded ? null : TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: isMobile ? 12.5 : 13.5,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.isDark ? Colors.white : AppColors.textPrimary,
-                          letterSpacing: -0.2,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  // ─── MICRO METRIC PILL 1: CURRENT LEVEL ──────────────────────────────────────
-  Widget _buildLevelPill(Map<String, dynamic> levelData) {
+  // ─── MODE PILL (Full-sized HUD pill matching the other 5 pills) ─────────────
+  Widget _buildModePill(String mode) {
+    final Color textColor = context.isDarkMode ? const Color(0xFFC084FC) : const Color(0xFF7C3AED);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: _buildPillDecoration(),
@@ -312,8 +204,147 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
+            Icons.psychology_rounded,
+            color: textColor,
+            size: 15,
+          ),
+          const SizedBox(width: 5),
+          Text(
+            _formatMode(mode),
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: textColor,
+              letterSpacing: 0.3,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ─── EDUCATION LEVEL PILL (Full-sized HUD pill matching the other 5 pills) ──
+  Widget _buildEducationLevelPill(String level) {
+    final Color textColor = context.isDarkMode ? const Color(0xFF60A5FA) : const Color(0xFF1D4ED8);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: _buildPillDecoration(),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.school_rounded,
+            color: textColor,
+            size: 15,
+          ),
+          const SizedBox(width: 5),
+          Text(
+            _formatLevel(level),
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: textColor,
+              letterSpacing: 0.3,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ─── ROW 2: GOAL ICON + "YOUR GOAL" BADGE + TOPIC DETAILS TEXT ──────────────
+  Widget _buildGoalTopicRow(SessionResponse session) {
+    return Row(
+      crossAxisAlignment: _isTopicExpanded ? CrossAxisAlignment.start : CrossAxisAlignment.center,
+      children: [
+        // Goal Icon Accent Box
+        Container(
+          width: 30,
+          height: 30,
+          alignment: Alignment.center,
+          decoration: _buildPillDecoration(),
+          child: Icon(
+            Icons.track_changes_rounded,
+            color: context.isDarkMode ? const Color(0xFF60A5FA) : const Color(0xFF1D4ED8),
+            size: 16,
+          ),
+        ),
+        const SizedBox(width: 8),
+        // "YOUR GOAL" label badge
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+          decoration: BoxDecoration(
+            color: (context.isDarkMode ? const Color(0xFF60A5FA) : const Color(0xFF1D4ED8)).withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(
+              color: (context.isDarkMode ? const Color(0xFF60A5FA) : const Color(0xFF1D4ED8)).withValues(alpha: 0.25),
+              width: 1.0,
+            ),
+          ),
+          child: Text(
+            'YOUR GOAL',
+            style: TextStyle(
+              color: context.isDarkMode ? const Color(0xFF93C5FD) : const Color(0xFF1E40AF),
+              fontSize: 10,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.6,
+            ),
+          ),
+        ),
+        const SizedBox(width: 10),
+        // Full Width Goal Topic Details with click to expand
+        Expanded(
+          child: _buildTopicDetails(session),
+        ),
+      ],
+    );
+  }
+
+  // ─── GOAL TOPIC DETAILS (Full Width with Expand on Click) ───────────────────
+  Widget _buildTopicDetails(SessionResponse session) {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _isTopicExpanded = !_isTopicExpanded;
+        });
+      },
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: Tooltip(
+          message: _isTopicExpanded ? 'Tap to collapse' : 'Tap to expand topic',
+          waitDuration: const Duration(milliseconds: 400),
+          child: AnimatedSize(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOutCubic,
+            alignment: Alignment.topLeft,
+            child: Text(
+              session.topic,
+              maxLines: _isTopicExpanded ? null : 1,
+              overflow: _isTopicExpanded ? null : TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 13.5,
+                fontWeight: FontWeight.w600,
+                color: context.isDarkMode ? Colors.white : context.appColors.textPrimary,
+                letterSpacing: -0.2,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ─── MICRO METRIC PILL 1: CURRENT LEVEL ──────────────────────────────────────
+  Widget _buildLevelPill(Map<String, dynamic> levelData, {bool isCompact = false}) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: isCompact ? 8 : 10, vertical: 6),
+      decoration: _buildPillDecoration(),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
             Icons.military_tech_rounded,
-            color: AppColors.isDark ? const Color(0xFFFBBF24) : const Color(0xFFD97706),
+            color: context.isDarkMode ? const Color(0xFFFBBF24) : const Color(0xFFD97706),
             size: 15,
           ),
           const SizedBox(width: 5),
@@ -322,34 +353,36 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: AppColors.isDark ? Colors.white : AppColors.textPrimary,
+              color: context.isDarkMode ? Colors.white : context.appColors.textPrimary,
             ),
           ),
-          const SizedBox(width: 6),
-          Text(
-            (levelData['title'] as String),
-            style: TextStyle(
-              fontSize: 10.5,
-              fontWeight: FontWeight.w500,
-              color: AppColors.isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+          if (!isCompact) ...[
+            const SizedBox(width: 6),
+            Text(
+              (levelData['title'] as String),
+              style: TextStyle(
+                fontSize: 10.5,
+                fontWeight: FontWeight.w500,
+                color: context.isDarkMode ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+              ),
             ),
-          ),
+          ],
         ],
       ),
     );
   }
 
   // ─── MICRO METRIC PILL 2: TOTAL XP & STREAK ─────────────────────────────────
-  Widget _buildXpStreakPill(int xpEarned) {
+  Widget _buildXpStreakPill(int xpEarned, {bool isCompact = false}) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: EdgeInsets.symmetric(horizontal: isCompact ? 8 : 10, vertical: 6),
       decoration: _buildPillDecoration(),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
             Icons.star_rounded,
-            color: AppColors.isDark ? const Color(0xFFFBBF24) : const Color(0xFFD97706),
+            color: context.isDarkMode ? const Color(0xFFFBBF24) : const Color(0xFFD97706),
             size: 15,
           ),
           const SizedBox(width: 4),
@@ -358,23 +391,23 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w700,
-              color: AppColors.isDark ? const Color(0xFFFDE68A) : const Color(0xFFB45309),
+              color: context.isDarkMode ? const Color(0xFFFDE68A) : const Color(0xFFB45309),
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 6),
           Text(
             '|',
             style: TextStyle(
               fontSize: 11,
-              color: AppColors.isDark ? const Color(0xFF475569) : const Color(0xFFCBD5E1),
+              color: context.isDarkMode ? const Color(0xFF475569) : const Color(0xFFCBD5E1),
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 6),
           Text(
-            '🔥 Streak: ',
+            isCompact ? '🔥 ' : '🔥 Streak: ',
             style: TextStyle(
               fontSize: 11,
-              color: AppColors.isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+              color: context.isDarkMode ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
             ),
           ),
           Text(
@@ -382,7 +415,7 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w700,
-              color: AppColors.isDark ? Colors.white : AppColors.textPrimary,
+              color: context.isDarkMode ? Colors.white : context.appColors.textPrimary,
             ),
           ),
         ],
@@ -407,7 +440,7 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
                 'Lvl ${levelData['level']} → ${(levelData['level'] as int) + 1}',
                 style: TextStyle(
                   fontSize: 10.5,
-                  color: AppColors.isDark ? const Color(0xFFCBD5E1) : const Color(0xFF475569),
+                  color: context.isDarkMode ? const Color(0xFFCBD5E1) : const Color(0xFF475569),
                 ),
               ),
               const SizedBox(width: 5),
@@ -425,7 +458,7 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
                 child: Container(
                   width: 56,
                   height: 6,
-                  color: AppColors.isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
+                  color: context.isDarkMode ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
                   child: FractionallySizedBox(
                     alignment: Alignment.centerLeft,
                     widthFactor: animatedLvlPct,
@@ -438,7 +471,7 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
                 '${levelData['xp_in_level']}/${levelData['xp_needed_for_next']}',
                 style: TextStyle(
                   fontSize: 9.5,
-                  color: AppColors.isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                  color: context.isDarkMode ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
                 ),
               ),
             ],
@@ -460,7 +493,7 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
             'Roadmap',
             style: TextStyle(
               fontSize: 10.5,
-              color: AppColors.isDark ? const Color(0xFFCBD5E1) : const Color(0xFF475569),
+              color: context.isDarkMode ? const Color(0xFFCBD5E1) : const Color(0xFF475569),
             ),
           ),
           const SizedBox(width: 5),
@@ -478,7 +511,7 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
             child: Container(
               width: 40,
               height: 6,
-              color: AppColors.isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
+              color: context.isDarkMode ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
               child: FractionallySizedBox(
                 alignment: Alignment.centerLeft,
                 widthFactor: topicPct,
@@ -491,7 +524,7 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
             '$completedSteps/$totalSteps',
             style: TextStyle(
               fontSize: 9.5,
-              color: AppColors.isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+              color: context.isDarkMode ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
             ),
           ),
         ],
@@ -503,11 +536,11 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
   Widget _buildExportButton(SessionResponse session, int totalSteps) {
     final bool isCompleted = totalSteps > 0 && session.stepsCompleted >= totalSteps;
     final Color iconColor = isCompleted
-        ? (AppColors.isDark ? const Color(0xFFC084FC) : const Color(0xFF7C3AED))
-        : (AppColors.isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B));
+        ? (context.isDarkMode ? const Color(0xFFC084FC) : const Color(0xFF7C3AED))
+        : (context.isDarkMode ? const Color(0xFF94A3B8) : const Color(0xFF64748B));
     final Color textColor = isCompleted
-        ? (AppColors.isDark ? const Color(0xFFC084FC) : const Color(0xFF7C3AED))
-        : (AppColors.isDark ? Colors.white : AppColors.textPrimary);
+        ? (context.isDarkMode ? const Color(0xFFC084FC) : const Color(0xFF7C3AED))
+        : (context.isDarkMode ? Colors.white : context.appColors.textPrimary);
 
     return Tooltip(
       message: isCompleted
@@ -532,7 +565,7 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
           decoration: _buildPillDecoration().copyWith(
             border: isCompleted
                 ? Border.all(
-                    color: AppColors.isDark
+                    color: context.isDarkMode
                         ? const Color(0x66C084FC)
                         : const Color(0x407C3AED),
                     width: 1.0,
@@ -576,7 +609,7 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
           ),
           child: Icon(
             Icons.alt_route_rounded,
-            color: AppColors.isDark ? const Color(0xFFC084FC) : const Color(0xFF7C3AED),
+            color: context.isDarkMode ? const Color(0xFFC084FC) : const Color(0xFF7C3AED),
             size: 14,
           ),
         ),
@@ -585,45 +618,11 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
           'Milestone Learning Roadmap',
           style: AppTextStyles.subtitle2.copyWith(
             fontWeight: FontWeight.w800,
-            color: AppColors.textPrimary,
+            color: context.appColors.textPrimary,
             letterSpacing: 0.2,
           ),
         ),
       ],
-    );
-  }
-
-  // ─── MICRO CHIP HELPER ──────────────────────────────────────────────────────
-  Widget _buildMicroChip({
-    required String label,
-    required bool isViolet,
-    required IconData icon,
-  }) {
-    final textColor = isViolet
-        ? (AppColors.isDark ? const Color(0xFFC084FC) : const Color(0xFF7C3AED))
-        : (AppColors.isDark ? const Color(0xFF60A5FA) : const Color(0xFF1D4ED8));
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-      decoration: _buildPillDecoration().copyWith(
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 11, color: textColor),
-          const SizedBox(width: 4),
-          Text(
-            label,
-            style: TextStyle(
-              fontWeight: FontWeight.w700,
-              fontSize: 9.5,
-              color: textColor,
-              letterSpacing: 0.3,
-            ),
-          ),
-        ],
-      ),
     );
   }
 

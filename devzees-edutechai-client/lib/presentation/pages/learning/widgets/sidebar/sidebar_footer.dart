@@ -29,7 +29,7 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
         _settingsIconKey.currentContext!.findRenderObject() as RenderBox;
     final size = renderBox.size;
     final offset = renderBox.localToGlobal(Offset.zero);
-    final bool isDark = AppColors.isDark;
+    final bool isDark = context.isDarkMode;
 
     final perms = ref.read(permissionProvider);
 
@@ -75,10 +75,10 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
                 width: 240,
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 decoration: BoxDecoration(
-                  color: AppColors.popoverBackground,
+                  color: context.appColors.popoverBackground,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: AppColors.glassBorder,
+                    color: context.appColors.border,
                     width: 1.0,
                   ),
                   boxShadow: context.appColors.cardShadow,
@@ -90,7 +90,7 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       child: Divider(
-                        color: AppColors.glassBorder,
+                        color: context.appColors.border,
                         height: 12,
                       ),
                     ),
@@ -115,7 +115,7 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       child: Divider(
-                        color: AppColors.glassBorder,
+                        color: context.appColors.border,
                         height: 12,
                       ),
                     ),
@@ -142,7 +142,7 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       child: Divider(
-                        color: AppColors.glassBorder,
+                        color: context.appColors.border,
                         height: 12,
                       ),
                     ),
@@ -160,7 +160,7 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       child: Divider(
-                        color: AppColors.glassBorder,
+                        color: context.appColors.border,
                         height: 12,
                       ),
                     ),
@@ -190,7 +190,7 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
 
   Widget _buildUserInfo(BuildContext context) {
     final userAsync = ref.watch(userProvider);
-    final bool isDark = AppColors.isDark;
+    final bool isDark = context.isDarkMode;
 
     if (userAsync.isLoading) {
       return const Padding(
@@ -247,10 +247,10 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
                       child: Container(
                         padding: const EdgeInsets.all(4),
                         decoration: BoxDecoration(
-                          color: isDark ? AppColors.surfaceSubtle : AppColors.cardBackground,
+                          color: isDark ? context.appColors.surfaceSubtle : context.appColors.cardBackground,
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: AppColors.glassBorder,
+                            color: context.appColors.border,
                             width: 1.5,
                           ),
                         ),
@@ -273,7 +273,7 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
                 const SizedBox(height: 4),
                 Text(
                   email,
-                  style: AppTextStyles.caption.copyWith(color: AppColors.textMuted),
+                  style: AppTextStyles.caption.copyWith(color: context.appColors.textSecondary),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -325,7 +325,7 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
     Color? textColor,
   }) {
     bool isHovered = false;
-    final bool isDark = AppColors.isDark;
+    final bool isDark = context.isDarkMode;
 
     return StatefulBuilder(
       builder: (context, setItemState) {
@@ -335,7 +335,7 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
 
         // Dark primary blue in light mode for crisp contrast against light blue hover background
         final Color darkPrimary =
-            isDark ? AppColors.textPrimary : AppColors.blueRoyal;
+            isDark ? context.appColors.textPrimary : AppColors.blueRoyal;
 
         final Color activeHoverColor = textColor ?? darkPrimary;
 
@@ -401,7 +401,7 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
 
   Widget _buildSettingsButton(BuildContext context) {
     bool isHovered = false;
-    final bool isDark = AppColors.isDark;
+    final bool isDark = context.isDarkMode;
 
     return StatefulBuilder(
       builder: (context, setBtnState) {
@@ -437,9 +437,9 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
                     child: Icon(
                       Icons.settings_rounded,
                       color: isHovered
-                          ? (isDark ? AppColors.textPrimary : AppColors.blueRoyal)
+                          ? (isDark ? context.appColors.textPrimary : AppColors.blueRoyal)
                           : (isDark
-                              ? AppColors.textSecondary
+                              ? context.appColors.textSecondary
                               : AppColors.slate600),
                       size: 20,
                     ),
@@ -462,7 +462,7 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           border: Border(
-            top: BorderSide(color: AppColors.glassBorder, width: 1),
+            top: BorderSide(color: context.appColors.border, width: 1),
           ),
         ),
         child: Row(
@@ -499,7 +499,7 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        border: Border(top: BorderSide(color: AppColors.glassBorder, width: 1)),
+        border: Border(top: BorderSide(color: context.appColors.border, width: 1)),
       ),
       child: Row(
         mainAxisAlignment: widget.expanded
@@ -534,7 +534,7 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
                   Text(
                     planCapitalized,
                     style: AppTextStyles.caption.copyWith(
-                      color: AppColors.textMuted,
+                      color: context.appColors.textSecondary,
                     ),
                   ),
                 ],

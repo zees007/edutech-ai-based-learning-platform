@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/responsive.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/theme_palette.dart';
 import 'glow_background.dart';
 import 'shimmer_loading.dart';
 
@@ -15,9 +16,10 @@ class ShimmerAppShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool isMobile = Responsive.isMobile(context);
+    final colors = context.appColors;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colors.scaffoldBackground,
       body: GlowBackground(
         child: ShimmerLoading(
           child: SafeArea(
@@ -31,16 +33,20 @@ class ShimmerAppShell extends StatelessWidget {
   // ─── Desktop / Tablet Layout ──────────────────────────────────────────
 
   Widget _buildDesktopSkeleton(BuildContext context) {
+    final colors = context.appColors;
+    final isDark = context.isDarkMode;
+    final glassBase = isDark ? const Color(0x0DFFFFFF) : const Color(0x0A000000);
+    final glassBorderSubtle = isDark ? const Color(0x0DFFFFFF) : const Color(0x0F000000);
     return Row(
       children: [
         // Left Sidebar Skeleton
         Container(
           width: 280,
           decoration: BoxDecoration(
-            color: AppColors.sidebarBackground.withValues(alpha: 0.95),
+            color: colors.sidebarBackground.withValues(alpha: 0.95),
             border: Border(
               right: BorderSide(
-                color: AppColors.glassBorder,
+                color: colors.border,
                 width: 1,
               ),
             ),
@@ -92,9 +98,9 @@ class ShimmerAppShell extends StatelessWidget {
                   itemBuilder: (_, index) => Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: AppColors.glassBase,
+                      color: glassBase,
                       borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: AppColors.glassBorderSubtle),
+                      border: Border.all(color: glassBorderSubtle),
                     ),
                     child: Row(
                       children: [
@@ -129,9 +135,9 @@ class ShimmerAppShell extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 decoration: BoxDecoration(
-                  color: AppColors.glassBase,
+                  color: glassBase,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.glassBorder),
+                  border: Border.all(color: colors.border),
                 ),
                 child: Row(
                   children: [
@@ -172,9 +178,9 @@ class ShimmerAppShell extends StatelessWidget {
                 height: 64,
                 padding: const EdgeInsets.symmetric(horizontal: 32),
                 decoration: BoxDecoration(
-                  color: AppColors.surfaceSolidHeader.withValues(alpha: 0.6),
+                  color: colors.topBarBackground.withValues(alpha: 0.6),
                   border: Border(
-                    bottom: BorderSide(color: AppColors.glassBorder, width: 1),
+                    bottom: BorderSide(color: colors.border, width: 1),
                   ),
                 ),
                 child: Row(
@@ -215,11 +221,11 @@ class ShimmerAppShell extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           // Milestone Stepper Row Skeleton
-                          _buildStepperSkeleton(),
+                          _buildStepperSkeleton(context),
                           const SizedBox(height: 32),
 
                           // Main Active Step Card Skeleton
-                          _buildActiveLessonCardSkeleton(),
+                          _buildActiveLessonCardSkeleton(context),
                         ],
                       ),
                     ),
@@ -236,6 +242,7 @@ class ShimmerAppShell extends StatelessWidget {
   // ─── Mobile Layout ────────────────────────────────────────────────────
 
   Widget _buildMobileSkeleton(BuildContext context) {
+    final colors = context.appColors;
     return Column(
       children: [
         // Mobile App Bar Skeleton
@@ -243,9 +250,9 @@ class ShimmerAppShell extends StatelessWidget {
           height: 56,
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
-            color: AppColors.surfaceSolidHeader,
+            color: colors.topBarBackground,
             border: Border(
-              bottom: BorderSide(color: AppColors.glassBorder, width: 1),
+              bottom: BorderSide(color: colors.border, width: 1),
             ),
           ),
           child: Row(
@@ -289,7 +296,7 @@ class ShimmerAppShell extends StatelessWidget {
 
                 // Card skeleton
                 Expanded(
-                  child: _buildActiveLessonCardSkeleton(),
+                  child: _buildActiveLessonCardSkeleton(context),
                 ),
               ],
             ),
@@ -301,13 +308,16 @@ class ShimmerAppShell extends StatelessWidget {
 
   // ─── Shared Components ────────────────────────────────────────────────
 
-  Widget _buildStepperSkeleton() {
+  Widget _buildStepperSkeleton(BuildContext context) {
+    final colors = context.appColors;
+    final isDark = context.isDarkMode;
+    final glassBase = isDark ? const Color(0x0DFFFFFF) : const Color(0x0A000000);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       decoration: BoxDecoration(
-        color: AppColors.glassBase,
+        color: glassBase,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.glassBorder),
+        border: Border.all(color: colors.border),
       ),
       child: Row(
         children: [
@@ -320,7 +330,7 @@ class ShimmerAppShell extends StatelessWidget {
                   shape: BoxShape.circle,
                   color: i == 0
                       ? AppColors.primary.withValues(alpha: 0.3)
-                      : AppColors.shimmerBox,
+                      : (isDark ? colors.chipBackground : const Color(0xFFEDE9F2)),
                 ),
                 const SizedBox(width: 10),
                 ShimmerBox(width: i == 0 ? 90 : 70, height: 12),
@@ -333,7 +343,7 @@ class ShimmerAppShell extends StatelessWidget {
                   child: ShimmerBox(
                     width: double.infinity,
                     height: 2,
-                    color: AppColors.glassBorder,
+                    color: colors.border,
                   ),
                 ),
               ),
@@ -343,13 +353,17 @@ class ShimmerAppShell extends StatelessWidget {
     );
   }
 
-  Widget _buildActiveLessonCardSkeleton() {
+  Widget _buildActiveLessonCardSkeleton(BuildContext context) {
+    final colors = context.appColors;
+    final isDark = context.isDarkMode;
     return Container(
       padding: const EdgeInsets.all(28),
       decoration: BoxDecoration(
-        color: AppColors.cardGradient.colors.first.withValues(alpha: 0.8),
+        color: colors.cardBackground.withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.cardGlowBorder.withValues(alpha: 0.2)),
+        border: Border.all(
+          color: (isDark ? const Color(0x73A855F7) : colors.border).withValues(alpha: 0.2),
+        ),
         boxShadow: [
           BoxShadow(
             color: AppColors.primary.withValues(alpha: 0.06),
@@ -404,9 +418,9 @@ class ShimmerAppShell extends StatelessWidget {
             height: 140,
             width: double.infinity,
             decoration: BoxDecoration(
-              color: AppColors.canvasBackground.withValues(alpha: 0.8),
+              color: colors.scaffoldBackground.withValues(alpha: 0.8),
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: AppColors.glassBorder),
+              border: Border.all(color: colors.border),
             ),
             padding: const EdgeInsets.all(16),
             child: Column(

@@ -118,7 +118,7 @@ class OnboardingSlide extends StatelessWidget {
                         ),
                         child: Icon(
                           Icons.image_outlined,
-                          color: AppColors.textMuted,
+                          color: context.appColors.textSecondary,
                           size: 48,
                         ),
                       ),

@@ -8,6 +8,7 @@ import '../../../../../core/services/export_service.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/text_styles.dart';
 import 'markdown_preview_dialog.dart';
+import 'package:devzees_edutechai_client/core/theme/theme_palette.dart';
 
 class ExportSessionModal extends ConsumerStatefulWidget {
   final String sessionId;
@@ -253,17 +254,17 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
           children: [
             Text(
               'Exporting $format is an exclusive feature available on upgraded plans.',
-              style: AppTextStyles.body2.copyWith(color: AppColors.textSlate),
+              style: AppTextStyles.body2.copyWith(color: context.appColors.textSecondary),
             ),
             const SizedBox(height: 14),
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.isDark
+                color: context.isDarkMode
                     ? Colors.white.withValues(alpha: 0.05)
-                    : AppColors.surfaceSubtle,
+                    : context.appColors.surfaceSubtle,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.border),
+                border: Border.all(color: context.appColors.border),
               ),
               child: Row(
                 children: [
@@ -273,7 +274,7 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
                     child: Text(
                       'Upgrade your plan to unlock styled PDF & Markdown exports, deep-dive academic research, and unlimited learning sessions.',
                       style: AppTextStyles.caption.copyWith(
-                        color: AppColors.textSecondary,
+                        color: context.appColors.textSecondary,
                       ),
                     ),
                   ),
@@ -285,7 +286,7 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dCtx).pop(),
-            child: Text('Got it', style: TextStyle(color: AppColors.textMuted)),
+            child: Text('Got it', style: TextStyle(color: context.appColors.textSecondary)),
           ),
         ],
       ),
@@ -317,11 +318,11 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
             maxHeight: size.height * (isMobile ? 0.90 : 0.85),
           ),
           decoration: BoxDecoration(
-            gradient: AppColors.commandHubGradient,
+            gradient: (context.isDarkMode ? const LinearGradient(colors: [Color(0xCC11121D), Color(0xE60B0C13)], begin: Alignment.topLeft, end: Alignment.bottomRight) : const LinearGradient(colors: [Color(0xFAFFFFFF), Color(0xF5F3F3F5)], begin: Alignment.topLeft, end: Alignment.bottomRight)),
             borderRadius: BorderRadius.circular(28),
             border: Border.all(
               color: isComplete
-                  ? AppColors.cardGlowBorder
+                  ? (context.isDarkMode ? const Color(0x73A855F7) : context.appColors.border)
                   : AppColors.accentAmber.withValues(alpha: 0.4),
               width: 1.5,
             ),
@@ -354,10 +355,10 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
                     isMobile ? 14 : 16,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.surfaceSolidHeader,
+                    color: context.appColors.topBarBackground,
                     border: Border(
                       bottom: BorderSide(
-                        color: AppColors.glassBorder,
+                        color: context.appColors.border,
                         width: 1,
                       ),
                     ),
@@ -403,7 +404,7 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: AppTextStyles.caption.copyWith(
-                                color: AppColors.textSecondary,
+                                color: context.appColors.textSecondary,
                                 fontSize: isMobile ? 12 : 13,
                               ),
                             ),
@@ -413,7 +414,7 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
                       IconButton(
                         icon: Icon(
                           Icons.close_rounded,
-                          color: AppColors.textMuted,
+                          color: context.appColors.textSecondary,
                         ),
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(
@@ -565,7 +566,7 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
           Text(
             'Export is only available once all milestone steps in your journey are completed. Please finish remaining steps (${widget.stepsCompleted}/${widget.totalSteps}) to generate your study guide.',
             style: AppTextStyles.caption.copyWith(
-              color: AppColors.textSlate,
+              color: context.appColors.textSecondary,
               height: 1.4,
             ),
           ),
@@ -644,7 +645,7 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
                 Text(
                   message,
                   style: AppTextStyles.caption.copyWith(
-                    color: AppColors.textPrimary,
+                    color: context.appColors.textPrimary,
                     fontSize: 12.5,
                     height: 1.4,
                   ),
@@ -657,7 +658,7 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
             icon: Icon(
               Icons.close_rounded,
               size: 18,
-              color: AppColors.textSecondary,
+              color: context.appColors.textSecondary,
             ),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
@@ -706,7 +707,7 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
                 Text(
                   'All ${widget.totalSteps} milestones finished • +${widget.xpEarned} XP • ${_getLevelGradeTitle(widget.xpEarned)}',
                   style: AppTextStyles.caption.copyWith(
-                    color: AppColors.textSecondary,
+                    color: context.appColors.textSecondary,
                   ),
                 ),
               ],
@@ -824,7 +825,7 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
                                     fontSize: 9.5,
                                     color: isUnlocked
                                         ? AppColors.emerald
-                                        : AppColors.textSecondary,
+                                        : context.appColors.textSecondary,
                                     fontWeight: FontWeight.w700,
                                   ),
                                 ),
@@ -837,7 +838,7 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
                       Text(
                         description,
                         style: AppTextStyles.caption.copyWith(
-                          color: AppColors.textSecondary,
+                          color: context.appColors.textSecondary,
                           fontSize: isMobile ? 11 : 11.5,
                           height: 1.35,
                         ),
@@ -859,7 +860,7 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
               ),
             ] else if (isUnlocked && isEnabled) ...[
               const SizedBox(height: 10),
-              Divider(color: AppColors.glassBorder, height: 1),
+              Divider(color: context.appColors.border, height: 1),
               const SizedBox(height: 8),
               Align(
                 alignment: Alignment.centerRight,
@@ -900,7 +901,7 @@ class _ExportSessionModalState extends ConsumerState<ExportSessionModal> {
                         icon: const Icon(Icons.visibility_rounded, size: 14),
                         label: const Text('Preview'),
                         style: OutlinedButton.styleFrom(
-                          foregroundColor: AppColors.textSlate,
+                          foregroundColor: context.appColors.textSecondary,
                           side: BorderSide(
                             color: Colors.white.withValues(alpha: 0.2),
                           ),

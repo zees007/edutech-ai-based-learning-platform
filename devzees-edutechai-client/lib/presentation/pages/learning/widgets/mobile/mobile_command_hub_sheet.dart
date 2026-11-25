@@ -5,6 +5,7 @@ import 'package:devzees_edutechai_client/data/models/learning/milestone_step.dar
 import 'package:devzees_edutechai_client/core/providers/gamification_provider.dart';
 import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
 import 'package:devzees_edutechai_client/presentation/pages/learning/widgets/export/export_session_modal.dart';
+import 'package:devzees_edutechai_client/core/theme/theme_palette.dart';
 
 /// An ultra-premium, glassmorphic Mobile Command Hub Bottom Sheet.
 /// Matches the mobile sidebar theme colors and provides Goal details,
@@ -72,10 +73,10 @@ class _MobileCommandHubSheetState extends State<MobileCommandHubSheet> {
           filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
           child: Container(
             decoration: BoxDecoration(
-              color: AppColors.sidebarBackground,
+              color: context.appColors.sidebarBackground,
               borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
               border: Border.all(
-                color: AppColors.glassBorder,
+                color: context.appColors.border,
                 width: 1.0,
               ),
               boxShadow: [
@@ -96,7 +97,7 @@ class _MobileCommandHubSheetState extends State<MobileCommandHubSheet> {
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: AppColors.textMuted.withValues(alpha: 0.35),
+                      color: context.appColors.textSecondary.withValues(alpha: 0.35),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -130,7 +131,7 @@ class _MobileCommandHubSheetState extends State<MobileCommandHubSheet> {
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w800,
-                                color: AppColors.textPrimary,
+                                color: context.appColors.textPrimary,
                                 letterSpacing: -0.3,
                               ),
                             ),
@@ -138,7 +139,7 @@ class _MobileCommandHubSheetState extends State<MobileCommandHubSheet> {
                               'Progress, Gamification & Milestones',
                               style: TextStyle(
                                 fontSize: 11.5,
-                                color: AppColors.textSecondary,
+                                color: context.appColors.textSecondary,
                               ),
                             ),
                           ],
@@ -148,7 +149,7 @@ class _MobileCommandHubSheetState extends State<MobileCommandHubSheet> {
                         icon: Icon(
                           Icons.close_rounded,
                           size: 20,
-                          color: AppColors.textSecondary,
+                          color: context.appColors.textSecondary,
                         ),
                         onPressed: () => Navigator.of(context).pop(),
                         splashRadius: 18,
@@ -157,7 +158,7 @@ class _MobileCommandHubSheetState extends State<MobileCommandHubSheet> {
                   ),
                 ),
 
-                Divider(height: 1, thickness: 1, color: AppColors.glassBorder),
+                Divider(height: 1, thickness: 1, color: context.appColors.border),
 
                 // Scrollable content
                 Flexible(
@@ -204,10 +205,10 @@ class _MobileCommandHubSheetState extends State<MobileCommandHubSheet> {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.chipBackground,
+        color: context.appColors.chipBackground,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: AppColors.glassBorder,
+          color: context.appColors.border,
           width: 1.0,
         ),
       ),
@@ -219,7 +220,7 @@ class _MobileCommandHubSheetState extends State<MobileCommandHubSheet> {
               Text(
                 'YOUR GOAL',
                 style: TextStyle(
-                  color: AppColors.textSecondary,
+                  color: context.appColors.textSecondary,
                   fontSize: 10,
                   fontWeight: FontWeight.w800,
                   letterSpacing: 0.6,
@@ -245,7 +246,7 @@ class _MobileCommandHubSheetState extends State<MobileCommandHubSheet> {
             style: TextStyle(
               fontSize: 14.5,
               fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
+              color: context.appColors.textPrimary,
               height: 1.35,
               letterSpacing: -0.2,
             ),
@@ -266,10 +267,10 @@ class _MobileCommandHubSheetState extends State<MobileCommandHubSheet> {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.chipBackground,
+        color: context.appColors.chipBackground,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: AppColors.glassBorder,
+          color: context.appColors.border,
           width: 1.0,
         ),
       ),
@@ -301,14 +302,14 @@ class _MobileCommandHubSheetState extends State<MobileCommandHubSheet> {
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
+                        color: context.appColors.textPrimary,
                       ),
                     ),
                     Text(
                       '${levelData['xp_in_level']}/${levelData['xp_needed_for_next']} XP to Level ${(levelData['level'] as int) + 1}',
                       style: TextStyle(
                         fontSize: 10.5,
-                        color: AppColors.textSecondary,
+                        color: context.appColors.textSecondary,
                       ),
                     ),
                   ],
@@ -319,7 +320,7 @@ class _MobileCommandHubSheetState extends State<MobileCommandHubSheet> {
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w800,
-                  color: AppColors.adaptivePurpleLight,
+                  color: (context.isDarkMode ? AppColors.purpleLight : AppColors.purpleDeep),
                 ),
               ),
             ],
@@ -393,10 +394,10 @@ class _MobileCommandHubSheetState extends State<MobileCommandHubSheet> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       decoration: BoxDecoration(
-        color: AppColors.sidebarBackground,
+        color: context.appColors.sidebarBackground,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
-          color: AppColors.glassBorder,
+          color: context.appColors.border,
           width: 1.0,
         ),
       ),
@@ -411,7 +412,7 @@ class _MobileCommandHubSheetState extends State<MobileCommandHubSheet> {
                 label,
                 style: TextStyle(
                   fontSize: 10,
-                  color: AppColors.textSecondary,
+                  color: context.appColors.textSecondary,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -423,7 +424,7 @@ class _MobileCommandHubSheetState extends State<MobileCommandHubSheet> {
             style: TextStyle(
               fontSize: 12.5,
               fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
+              color: context.appColors.textPrimary,
             ),
           ),
         ],
@@ -441,7 +442,7 @@ class _MobileCommandHubSheetState extends State<MobileCommandHubSheet> {
             Icon(
               Icons.alt_route_rounded,
               size: 16,
-              color: AppColors.adaptivePurpleLight,
+              color: (context.isDarkMode ? AppColors.purpleLight : AppColors.purpleDeep),
             ),
             const SizedBox(width: 6),
             Text(
@@ -449,7 +450,7 @@ class _MobileCommandHubSheetState extends State<MobileCommandHubSheet> {
               style: TextStyle(
                 fontSize: 13.5,
                 fontWeight: FontWeight.w800,
-                color: AppColors.textPrimary,
+                color: context.appColors.textPrimary,
               ),
             ),
           ],
@@ -514,8 +515,8 @@ class _MobileCommandHubSheetState extends State<MobileCommandHubSheet> {
       borderColor = AppColors.accentGreen.withValues(alpha: 0.35);
       bgColor = AppColors.accentGreen.withValues(alpha: 0.08);
     } else {
-      borderColor = AppColors.glassBorder;
-      bgColor = AppColors.chipBackground;
+      borderColor = context.appColors.border;
+      bgColor = context.appColors.chipBackground;
     }
 
     return GestureDetector(
@@ -546,12 +547,12 @@ class _MobileCommandHubSheetState extends State<MobileCommandHubSheet> {
                     : (isActive || isCurrentJourneyStep)
                         ? AppColors.primary
                         : (isUnlocked
-                            ? AppColors.textSecondary.withValues(alpha: 0.2)
+                            ? context.appColors.textSecondary.withValues(alpha: 0.2)
                             : Colors.transparent),
                 border: isUnlocked && !isCompleted && !isActive && !isCurrentJourneyStep
-                    ? Border.all(color: AppColors.textMuted, width: 1.2)
+                    ? Border.all(color: context.appColors.textSecondary, width: 1.2)
                     : (!isUnlocked
-                        ? Border.all(color: AppColors.textMuted.withValues(alpha: 0.4), width: 1.0)
+                        ? Border.all(color: context.appColors.textSecondary.withValues(alpha: 0.4), width: 1.0)
                         : null),
               ),
               child: isCompleted
@@ -560,13 +561,13 @@ class _MobileCommandHubSheetState extends State<MobileCommandHubSheet> {
                       ? const Icon(Icons.play_arrow_rounded, size: 16, color: Colors.white)
                       : !isUnlocked
                           ? Icon(Icons.lock_outline_rounded,
-                              size: 13, color: AppColors.textMuted)
+                              size: 13, color: context.appColors.textSecondary)
                           : Text(
                               '${index + 1}',
                               style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,
-                                color: AppColors.textPrimary,
+                                color: context.appColors.textPrimary,
                               ),
                             ),
             ),
@@ -591,7 +592,7 @@ class _MobileCommandHubSheetState extends State<MobileCommandHubSheet> {
                                   ? AppColors.primary
                                   : isCompleted
                                       ? AppColors.accentGreen
-                                      : AppColors.textSecondary,
+                                      : context.appColors.textSecondary,
                         ),
                       ),
                       const SizedBox(width: 6),
@@ -657,8 +658,8 @@ class _MobileCommandHubSheetState extends State<MobileCommandHubSheet> {
                       fontSize: 12.5,
                       fontWeight: isActive ? FontWeight.w700 : FontWeight.w600,
                       color: isUnlocked
-                          ? AppColors.textPrimary
-                          : AppColors.textMuted,
+                          ? context.appColors.textPrimary
+                          : context.appColors.textSecondary,
                     ),
                   ),
                 ],
@@ -685,7 +686,7 @@ class _MobileCommandHubSheetState extends State<MobileCommandHubSheet> {
                     size: 12,
                     color: isCurrentJourneyStep
                         ? AppColors.primary
-                        : AppColors.textMuted,
+                        : context.appColors.textSecondary,
                   ),
                 ],
               ),
@@ -713,10 +714,10 @@ class _MobileCommandHubSheetState extends State<MobileCommandHubSheet> {
         );
       },
       style: OutlinedButton.styleFrom(
-        foregroundColor: AppColors.textPrimary,
+        foregroundColor: context.appColors.textPrimary,
         padding: const EdgeInsets.symmetric(vertical: 12),
         side: BorderSide(
-          color: AppColors.glassBorder,
+          color: context.appColors.border,
         ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
@@ -737,16 +738,16 @@ class _MobileCommandHubSheetState extends State<MobileCommandHubSheet> {
     required IconData icon,
   }) {
     final textColor = isViolet
-        ? AppColors.adaptivePurpleLight
-        : AppColors.adaptiveBlueLight;
+        ? (context.isDarkMode ? AppColors.purpleLight : AppColors.purpleDeep)
+        : (context.isDarkMode ? AppColors.blueLight : AppColors.blueRoyal);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
       decoration: BoxDecoration(
-        color: AppColors.sidebarBackground,
+        color: context.appColors.sidebarBackground,
         borderRadius: BorderRadius.circular(6),
         border: Border.all(
-          color: AppColors.glassBorder,
+          color: context.appColors.border,
           width: 1.0,
         ),
       ),

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/dashboard_provider.dart';
@@ -230,9 +231,7 @@ class LearnerStandingHud extends ConsumerWidget {
             vertical: isDesktop ? 7 : 3,
           ),
           decoration: BoxDecoration(
-            color: isDark
-                ? const Color(0xFF0C0D1A)
-                : context.appColors.topBarBackground,
+            color: context.appColors.topBarBackground,
             border: showBottomBorder
                 ? Border(
                     bottom: BorderSide(
@@ -447,11 +446,9 @@ class LearnerStandingHud extends ConsumerWidget {
           const SizedBox(width: 6),
         ],
 
-        // ── MIDDLE: Horizontally Scrollable Badges (Exact sequence 1-4) ───────
+        // ── MIDDLE: Auto-Scrolling Sleek Badges (Stops on Touch) ──────────────
         Expanded(
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
+          child: _AutoScrollingMobileHudRow(
             child: Row(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -966,7 +963,9 @@ class LearnerStandingHud extends ConsumerWidget {
               style: AppTextStyles.caption.copyWith(
                 fontWeight: FontWeight.w900,
                 fontSize: isCompact ? 9.5 : 10.5,
-                color: isDark ? const Color(0xFFA855F7) : const Color(0xFF7C3AED),
+                color: isDark
+                    ? const Color(0xFFA855F7)
+                    : const Color(0xFF7C3AED),
               ),
             ),
           ],
@@ -1173,13 +1172,15 @@ class _CurrentTrophyBadgeState extends State<_CurrentTrophyBadge> {
 
   @override
   Widget build(BuildContext context) {
-    final isUnranked = widget.highestTrophyId == null ||
+    final isUnranked =
+        widget.highestTrophyId == null ||
         widget.highestTrophyTitle.toLowerCase().contains('unranked');
     final displayTitle = isUnranked
         ? (widget.nextTrophyTitle ?? 'Bronze Trophy')
         : widget.highestTrophyTitle;
-    final effectiveStyle =
-        isUnranked ? getTrophyStyle('bronze') : widget.trophyStyle;
+    final effectiveStyle = isUnranked
+        ? getTrophyStyle('bronze')
+        : widget.trophyStyle;
     final isDiamond =
         !isUnranked && widget.highestTrophyId?.toLowerCase() == 'diamond';
     final glowColor = isDiamond
@@ -1189,11 +1190,11 @@ class _CurrentTrophyBadgeState extends State<_CurrentTrophyBadge> {
     final String trophyTooltipMsg = isUnranked
         ? 'Continue learning to unlock your first Bronze Trophy! 🏆'
         : (widget.nextTrophyTitle != null &&
-                widget.nextTrophyTitle!.isNotEmpty &&
-                widget.nextTrophyTitle!.toLowerCase() !=
-                    widget.highestTrophyTitle.toLowerCase())
-            ? 'Current Trophy: ${widget.highestTrophyTitle}\nNext to Achieve: ${widget.nextTrophyTitle}'
-            : 'Current Trophy: ${widget.highestTrophyTitle}\nMaximum trophy milestone achieved! 💎';
+              widget.nextTrophyTitle!.isNotEmpty &&
+              widget.nextTrophyTitle!.toLowerCase() !=
+                  widget.highestTrophyTitle.toLowerCase())
+        ? 'Current Trophy: ${widget.highestTrophyTitle}\nNext to Achieve: ${widget.nextTrophyTitle}'
+        : 'Current Trophy: ${widget.highestTrophyTitle}\nMaximum trophy milestone achieved! 💎';
 
     final textColumn = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1206,11 +1207,9 @@ class _CurrentTrophyBadgeState extends State<_CurrentTrophyBadge> {
             fontSize: widget.isCompact ? 12.0 : 13.5,
             color: isUnranked
                 ? (widget.isDark
-                    ? const Color(0xFF94A3B8)
-                    : const Color(0xFF64748B))
-                : (widget.isDark
-                    ? Colors.white
-                    : const Color(0xFF0F172A)),
+                      ? const Color(0xFF94A3B8)
+                      : const Color(0xFF64748B))
+                : (widget.isDark ? Colors.white : const Color(0xFF0F172A)),
             letterSpacing: -0.2,
           ),
           maxLines: 1,
@@ -1324,10 +1323,7 @@ class _CurrentTrophyBadgeState extends State<_CurrentTrophyBadge> {
             isHovered: isUnranked ? false : _isHovered,
           ),
           const SizedBox(width: 7),
-          if (widget.isFlexible)
-            Expanded(child: textColumn)
-          else
-            textColumn,
+          if (widget.isFlexible) Expanded(child: textColumn) else textColumn,
         ],
       ),
     );
@@ -1376,10 +1372,26 @@ class _HoverableTrophyCrest extends StatefulWidget {
 
 class _HoverableTrophyCrestState extends State<_HoverableTrophyCrest> {
   static const ColorFilter _grayscaleFilter = ColorFilter.matrix(<double>[
-    0.2126, 0.7152, 0.0722, 0, 0,
-    0.2126, 0.7152, 0.0722, 0, 0,
-    0.2126, 0.7152, 0.0722, 0, 0,
-    0,      0,      0,      1, 0,
+    0.2126,
+    0.7152,
+    0.0722,
+    0,
+    0,
+    0.2126,
+    0.7152,
+    0.0722,
+    0,
+    0,
+    0.2126,
+    0.7152,
+    0.0722,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    0,
   ]);
 
   bool _internalHovered = false;
@@ -1412,9 +1424,7 @@ class _HoverableTrophyCrestState extends State<_HoverableTrophyCrest> {
             ),
           )
         : Icon(
-            widget.isDiamond
-                ? Icons.diamond_rounded
-                : widget.trophyStyle.icon,
+            widget.isDiamond ? Icons.diamond_rounded : widget.trophyStyle.icon,
             color: isLocked
                 ? (isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B))
                 : Colors.white,
@@ -1438,18 +1448,14 @@ class _HoverableTrophyCrestState extends State<_HoverableTrophyCrest> {
         clipBehavior: Clip.none,
         alignment: Alignment.center,
         children: [
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 220),
-            curve: Curves.easeOutCubic,
+          Container(
             clipBehavior: Clip.antiAlias,
             width: crestSize,
             height: crestSize,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: isLocked
-                  ? (isDark
-                      ? const Color(0xFF1A1C2E)
-                      : const Color(0xFFE2E8F0))
+                  ? (isDark ? const Color(0xFF1A1C2E) : const Color(0xFFE2E8F0))
                   : null,
               border: isLocked
                   ? Border.all(
@@ -1462,36 +1468,36 @@ class _HoverableTrophyCrestState extends State<_HoverableTrophyCrest> {
               gradient: isLocked
                   ? null
                   : ((isDark || hasAsset)
-                      ? RadialGradient(
-                          colors: [
-                            glowColor.withValues(
-                              alpha: isDark
-                                  ? (isHovered ? 0.48 : 0.35)
-                                  : (isHovered ? 0.28 : 0.18),
-                            ),
-                            glowColor.withValues(
-                              alpha: isDark
-                                  ? (isHovered ? 0.22 : 0.15)
-                                  : (isHovered ? 0.12 : 0.06),
-                            ),
-                            Colors.transparent,
-                          ],
-                          center: Alignment.center,
-                          radius: 0.85,
-                        )
-                      : LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            glowColor,
-                            Color.lerp(
+                        ? RadialGradient(
+                            colors: [
+                              glowColor.withValues(
+                                alpha: isDark
+                                    ? (isHovered ? 0.48 : 0.35)
+                                    : (isHovered ? 0.28 : 0.18),
+                              ),
+                              glowColor.withValues(
+                                alpha: isDark
+                                    ? (isHovered ? 0.22 : 0.15)
+                                    : (isHovered ? 0.12 : 0.06),
+                              ),
+                              Colors.transparent,
+                            ],
+                            center: Alignment.center,
+                            radius: 0.85,
+                          )
+                        : LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              glowColor,
+                              Color.lerp(
+                                    glowColor,
+                                    const Color(0xFF6B47EB),
+                                    0.6,
+                                  ) ??
                                   glowColor,
-                                  const Color(0xFF6B47EB),
-                                  0.6,
-                                ) ??
-                                glowColor,
-                          ],
-                        )),
+                            ],
+                          )),
               boxShadow: isLocked
                   ? null
                   : [
@@ -1568,6 +1574,169 @@ class _HoverableTrophyCrestState extends State<_HoverableTrophyCrest> {
       onEnter: (_) => setState(() => _internalHovered = true),
       onExit: (_) => setState(() => _internalHovered = false),
       child: crestContent,
+    );
+  }
+}
+
+/// Sleek auto-scrolling horizontal container for the mobile HUD top bar.
+///
+/// Gently ping-pong scrolls the gamification badges horizontally so users can
+/// see all 4 sections automatically, with subtle edge fading. Immediately stops
+/// auto-scrolling on any user touch or manual scroll interaction.
+class _AutoScrollingMobileHudRow extends StatefulWidget {
+  final Widget child;
+
+  const _AutoScrollingMobileHudRow({required this.child});
+
+  @override
+  State<_AutoScrollingMobileHudRow> createState() =>
+      _AutoScrollingMobileHudRowState();
+}
+
+class _AutoScrollingMobileHudRowState
+    extends State<_AutoScrollingMobileHudRow> {
+  final ScrollController _scrollController = ScrollController();
+  Timer? _startDelayTimer;
+  Timer? _pauseTimer;
+  Timer? _resumeTimer;
+  Timer? _tickTimer;
+
+  bool _isUserTouching = false;
+  bool _isUserScrolling = false;
+  bool _scrollingForward = true;
+  bool _isPausedAtEdge = false;
+
+  bool get _isPausedByUser => _isUserTouching || _isUserScrolling;
+
+  @override
+  void initState() {
+    super.initState();
+    _startDelayTimer = Timer(const Duration(milliseconds: 1200), _beginScroll);
+  }
+
+  void _beginScroll() {
+    if (!mounted || _isPausedByUser) return;
+    _tickTimer?.cancel();
+    _tickTimer = Timer.periodic(const Duration(milliseconds: 24), (_) {
+      if (!mounted || _isPausedByUser || _isPausedAtEdge) return;
+      if (!_scrollController.hasClients) return;
+
+      final position = _scrollController.position;
+      final maxExtent = position.maxScrollExtent;
+      if (maxExtent <= 0) return;
+
+      const double step = 0.65; // ~27 px/sec smooth, readable glide
+      final current = _scrollController.offset;
+
+      if (_scrollingForward) {
+        final next = current + step;
+        if (next >= maxExtent) {
+          _scrollController.jumpTo(maxExtent);
+          _pauseAndFlip(forward: false);
+        } else {
+          _scrollController.jumpTo(next);
+        }
+      } else {
+        final next = current - step;
+        if (next <= 0) {
+          _scrollController.jumpTo(0);
+          _pauseAndFlip(forward: true);
+        } else {
+          _scrollController.jumpTo(next);
+        }
+      }
+    });
+  }
+
+  void _pauseAndFlip({required bool forward}) {
+    _isPausedAtEdge = true;
+    _pauseTimer?.cancel();
+    _pauseTimer = Timer(const Duration(milliseconds: 1100), () {
+      if (!mounted || _isPausedByUser) return;
+      _scrollingForward = forward;
+      _isPausedAtEdge = false;
+    });
+  }
+
+  void _pauseAutoScroll() {
+    _startDelayTimer?.cancel();
+    _pauseTimer?.cancel();
+    _resumeTimer?.cancel();
+    _tickTimer?.cancel();
+    _isPausedAtEdge = false;
+  }
+
+  void _scheduleResume() {
+    if (!mounted || _isPausedByUser) return;
+    _resumeTimer?.cancel();
+    _resumeTimer = Timer(const Duration(milliseconds: 1800), () {
+      if (!mounted || _isPausedByUser) return;
+      _beginScroll();
+    });
+  }
+
+  @override
+  void dispose() {
+    _startDelayTimer?.cancel();
+    _pauseTimer?.cancel();
+    _resumeTimer?.cancel();
+    _tickTimer?.cancel();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Listener(
+      onPointerDown: (_) {
+        _isUserTouching = true;
+        _pauseAutoScroll();
+      },
+      onPointerUp: (_) {
+        _isUserTouching = false;
+        _scheduleResume();
+      },
+      onPointerCancel: (_) {
+        _isUserTouching = false;
+        _scheduleResume();
+      },
+      child: NotificationListener<ScrollNotification>(
+        onNotification: (notification) {
+          if (notification is ScrollStartNotification &&
+              notification.dragDetails != null) {
+            _isUserScrolling = true;
+            _pauseAutoScroll();
+          } else if (notification is ScrollEndNotification) {
+            if (_isUserScrolling) {
+              _isUserScrolling = false;
+              _scheduleResume();
+            }
+          }
+          return false;
+        },
+        child: ShaderMask(
+          shaderCallback: (Rect bounds) {
+            return const LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              colors: [
+                Colors.transparent,
+                Colors.white,
+                Colors.white,
+                Colors.transparent,
+              ],
+              stops: [0.0, 0.03, 0.97, 1.0],
+            ).createShader(bounds);
+          },
+          blendMode: BlendMode.dstIn,
+          child: SingleChildScrollView(
+            controller: _scrollController,
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            child: widget.child,
+          ),
+        ),
+      ),
     );
   }
 }

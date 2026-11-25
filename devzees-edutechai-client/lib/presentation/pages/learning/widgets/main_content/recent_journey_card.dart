@@ -3,6 +3,7 @@ import '../../../../../data/models/learning/session_model.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/text_styles.dart';
 import '../../../../widgets/gradient_circular_progress.dart';
+import 'package:devzees_edutechai_client/core/theme/theme_palette.dart';
 
 class RecentJourneyCard extends StatefulWidget {
   final SessionModel session;
@@ -32,7 +33,7 @@ class _RecentJourneyCardState extends State<RecentJourneyCard> {
           )
         : 0.0;
 
-    final isDark = AppColors.isDark;
+    final isDark = context.isDarkMode;
 
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
@@ -40,9 +41,7 @@ class _RecentJourneyCardState extends State<RecentJourneyCard> {
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
         onTap: widget.onContinue,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 250),
-          curve: Curves.easeOutCubic,
+        child: Container(
           transform: Matrix4.translationValues(
             0.0,
             _isHovered ? -2.5 : 0.0,
@@ -50,7 +49,7 @@ class _RecentJourneyCardState extends State<RecentJourneyCard> {
           ),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           decoration: BoxDecoration(
-            color: isDark ? AppColors.canvasBackground : Colors.white,
+            color: isDark ? context.appColors.scaffoldBackground : Colors.white,
             borderRadius: BorderRadius.circular(100), // Pill Shape
             border: Border.all(
               color: AppColors.primary.withValues(
@@ -164,8 +163,7 @@ class _RecentJourneyCardState extends State<RecentJourneyCard> {
               const SizedBox(width: 8),
 
               // Subtle Action Arrow
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
+              Container(
                 transform: Matrix4.translationValues(
                   _isHovered ? 4.0 : 0.0,
                   0.0,
@@ -176,7 +174,7 @@ class _RecentJourneyCardState extends State<RecentJourneyCard> {
                   size: 14,
                   color: _isHovered
                       ? AppColors.primary
-                      : AppColors.textMuted.withValues(alpha: 0.4),
+                      : context.appColors.textSecondary.withValues(alpha: 0.4),
                 ),
               ),
             ],

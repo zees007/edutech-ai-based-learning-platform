@@ -11,6 +11,7 @@ import 'package:devzees_edutechai_client/presentation/widgets/gradient_button.da
 import 'package:devzees_edutechai_client/presentation/widgets/gradient_text.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/searchable_country_dropdown.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/center_toast.dart';
+import 'package:devzees_edutechai_client/core/theme/theme_palette.dart';
 
 class AuthFormCard extends ConsumerStatefulWidget {
   final bool isLogin;
@@ -347,10 +348,10 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
       width: double.infinity,
       decoration: BoxDecoration(
         color: isDark
-            ? (widget.isMobile ? AppColors.canvasBackground : null)
+            ? (widget.isMobile ? context.appColors.scaffoldBackground : null)
             : Colors.white,
         gradient: isDark
-            ? (widget.isMobile ? null : AppColors.cardGradientOpaque)
+            ? (widget.isMobile ? null : (context.isDarkMode ? const LinearGradient(colors: [Color(0xF511121D), Color(0xEE0E0F18)], begin: Alignment.topLeft, end: Alignment.bottomRight) : const LinearGradient(colors: [Color(0xFAFFFFFF), Color(0xF5F9F9FB)], begin: Alignment.topLeft, end: Alignment.bottomRight)))
             : null,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
@@ -463,7 +464,7 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
               style: AppTextStyles.h2.copyWith(
                 fontSize: isMobile ? 23 : 27,
                 fontWeight: FontWeight.w800,
-                color: AppColors.textPrimary,
+                color: context.appColors.textPrimary,
                 letterSpacing: -0.5,
               ),
               textAlign: TextAlign.center,
@@ -488,7 +489,7 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
                 : "Instantiate your personal autonomous AI agent squad in seconds.",
             style: AppTextStyles.bodyPrimary.copyWith(
               fontSize: 13.5,
-              color: isDark ? AppColors.textSecondary : const Color(0xFF64748B),
+              color: isDark ? context.appColors.textSecondary : const Color(0xFF64748B),
               height: 1.45,
             ),
             textAlign: TextAlign.center,
@@ -502,7 +503,7 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.surfaceSubtle : const Color(0xFFF1F5F9),
+        color: isDark ? context.appColors.surfaceSubtle : const Color(0xFFF1F5F9),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isDark
@@ -560,8 +561,7 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
         child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
+        child: Container(
           width: double.infinity,
           padding: const EdgeInsets.symmetric(vertical: 8.5),
           decoration: BoxDecoration(
@@ -595,7 +595,7 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
               color: isSelected
                   ? (isDark ? AppColors.lavender : const Color(0xFF6D28D9))
                   : (isDark
-                        ? AppColors.textSecondary
+                        ? context.appColors.textSecondary
                         : const Color(0xFF64748B)),
             ),
           ),
@@ -667,7 +667,7 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
                   ? Icons.visibility_outlined
                   : Icons.visibility_off_outlined,
               size: 18,
-              color: isDark ? AppColors.textSecondary : const Color(0xFF94A3B8),
+              color: isDark ? context.appColors.textSecondary : const Color(0xFF94A3B8),
             ),
             onPressed: () {
               setState(() {
@@ -782,7 +782,7 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
                     ? Icons.visibility_outlined
                     : Icons.visibility_off_outlined,
                 size: 18,
-                color: isDark ? AppColors.textSecondary : const Color(0xFF94A3B8),
+                color: isDark ? context.appColors.textSecondary : const Color(0xFF94A3B8),
               ),
               onPressed: () {
                 setState(() {
@@ -808,7 +808,7 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
                     ? Icons.visibility_outlined
                     : Icons.visibility_off_outlined,
                 size: 18,
-                color: isDark ? AppColors.textSecondary : const Color(0xFF94A3B8),
+                color: isDark ? context.appColors.textSecondary : const Color(0xFF94A3B8),
               ),
               onPressed: () {
                 setState(() {
@@ -870,7 +870,7 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
             Text(
               label,
               style: TextStyle(
-                color: isDark ? AppColors.textPrimary : const Color(0xFF334155),
+                color: isDark ? context.appColors.textPrimary : const Color(0xFF334155),
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
                 letterSpacing: 0.6,
@@ -881,6 +881,7 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
         ),
         const SizedBox(height: 6),
         TextFormField(
+          key: ValueKey('auth_field_${label}_$isDark'),
           controller: controller,
           obscureText: isObscure,
           textInputAction: textInputAction,
@@ -889,7 +890,7 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
           autofillHints: autofillHints,
           validator: validator,
           style: TextStyle(
-            color: AppColors.textPrimary,
+            color: context.appColors.textPrimary,
             fontSize: 14,
             fontWeight: FontWeight.w500,
           ),
@@ -897,7 +898,7 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
             hintText: hint,
             hintStyle: TextStyle(
               color: isDark
-                  ? AppColors.textSecondary.withValues(alpha: 0.6)
+                  ? context.appColors.textSecondary.withValues(alpha: 0.6)
                   : const Color(0xFF94A3B8),
               fontSize: 13.5,
               fontWeight: FontWeight.w400,
@@ -975,7 +976,7 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
 
   Widget _buildMobileInputField(bool isDark) {
     final textSecondary = isDark
-        ? AppColors.textSecondary
+        ? context.appColors.textSecondary
         : const Color(0xFF64748B);
 
     return Column(
@@ -992,6 +993,7 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
         ),
         const SizedBox(height: 6),
         TextFormField(
+          key: ValueKey('auth_mobile_$isDark'),
           controller: _mobileCtrl,
           keyboardType: TextInputType.phone,
           textInputAction: TextInputAction.done,
@@ -1000,7 +1002,7 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
           onFieldSubmitted: (_) => _handleSignUp(),
           validator: _validateMobile,
           style: TextStyle(
-            color: AppColors.textPrimary,
+            color: context.appColors.textPrimary,
             fontSize: 14,
             fontWeight: FontWeight.w500,
           ),
@@ -1008,7 +1010,7 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
             hintText: "555-0199",
             hintStyle: TextStyle(
               color: isDark
-                  ? AppColors.textSecondary.withValues(alpha: 0.6)
+                  ? context.appColors.textSecondary.withValues(alpha: 0.6)
                   : const Color(0xFF94A3B8),
               fontSize: 13.5,
               fontWeight: FontWeight.w400,
@@ -1049,7 +1051,7 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
                     Text(
                       _selectedCountry.dialCode,
                       style: TextStyle(
-                        color: isDark ? Colors.white : AppColors.textPrimary,
+                        color: isDark ? Colors.white : context.appColors.textPrimary,
                         fontSize: 13.5,
                         fontWeight: FontWeight.w600,
                       ),
@@ -1117,7 +1119,7 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
                 : "Already have an account?",
             style: TextStyle(
               fontSize: 12.5,
-              color: isDark ? AppColors.textSecondary : const Color(0xFF64748B),
+              color: isDark ? context.appColors.textSecondary : const Color(0xFF64748B),
             ),
           ),
           const SizedBox(width: 6),

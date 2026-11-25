@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../widgets/shimmer_loading.dart';
 import '../../../../../core/theme/app_colors.dart';
+import 'package:devzees_edutechai_client/core/theme/theme_palette.dart';
 
 class LearningHistorySkeletonItem extends StatelessWidget {
   final bool expanded;
@@ -14,14 +15,14 @@ class LearningHistorySkeletonItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = AppColors.isDark;
+    final isDark = context.isDarkMode;
 
     // Distinct shimmer tokens matching RecentJourneySkeletonCard for high contrast
     final shimmerBase = isDark ? const Color(0xFF1E2138) : const Color(0xFFE2E8F0);
     final shimmerHighlight = isDark ? const Color(0xFF353A60) : const Color(0xFFF8FAFC);
 
     final cardBg = isDark
-        ? AppColors.canvasBackground
+        ? context.appColors.scaffoldBackground
         : Colors.white;
 
     final cardBorder = AppColors.primary.withValues(

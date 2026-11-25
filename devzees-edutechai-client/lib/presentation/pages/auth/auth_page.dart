@@ -65,7 +65,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
     final isDark = context.isDarkMode;
 
     return Scaffold(
-      backgroundColor: isDark ? AppColors.background : const Color(0xFFF6F8FC),
+      backgroundColor: isDark ? context.appColors.scaffoldBackground : const Color(0xFFF6F8FC),
       body: GlassLoaderOverlay(
         isLoading: authState.isLoading,
         title: authState.loadingMessage ?? 'Authenticating',
@@ -175,14 +175,14 @@ class _AuthPageState extends ConsumerState<AuthPage> {
               _isFlowchartExpanded
                   ? Icons.keyboard_arrow_up
                   : Icons.keyboard_arrow_down,
-              color: AppColors.textSecondary,
+              color: context.appColors.textSecondary,
             ),
             label: Text(
               _isFlowchartExpanded
                   ? "Hide Access Flowchart"
                   : "View Access Flowchart",
               style: AppTextStyles.subtitle2.copyWith(
-                color: AppColors.textPrimary,
+                color: context.appColors.textPrimary,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -227,7 +227,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
       decoration: BoxDecoration(
         border: Border(
           top: BorderSide(
-            color: isDark ? AppColors.border : const Color(0xFFE2E8F0).withValues(alpha: 0.6),
+            color: isDark ? context.appColors.border : const Color(0xFFE2E8F0).withValues(alpha: 0.6),
           ),
         ),
       ),
@@ -236,7 +236,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
           '© 2025 EduTechAI Inc. Autonomous Academic Swarms & Adaptive Pedagogy.',
           style: TextStyle(
             fontSize: isMobile ? 11.5 : 12,
-            color: isDark ? AppColors.textSecondary : const Color(0xFF94A3B8),
+            color: isDark ? context.appColors.textSecondary : const Color(0xFF94A3B8),
           ),
           textAlign: TextAlign.center,
         ),

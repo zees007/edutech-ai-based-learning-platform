@@ -43,7 +43,7 @@ class _GlassCardState extends State<GlassCard> {
         : Border.all(
             color: isGlow
                 ? AppColors.accentBlue.withValues(alpha: 0.50)
-                : AppColors.glassBorder,
+                : context.appColors.border,
             width: 1.0,
           );
 

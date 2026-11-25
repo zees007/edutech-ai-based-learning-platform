@@ -606,8 +606,8 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
                   style: GoogleFonts.inter(
                     fontSize: 11,
                     fontWeight: FontWeight.w400,
-                    color: AppColors.isDark
-                        ? AppColors.textMuted.withValues(alpha: 0.7)
+                    color: context.isDarkMode
+                        ? context.appColors.textSecondary.withValues(alpha: 0.7)
                         : const Color(0xFF94A3B8),
                     letterSpacing: 0.2,
                   ),
@@ -653,14 +653,14 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
                         vertical: 11,
                       ),
                       decoration: BoxDecoration(
-                        gradient: AppColors.isDark
+                        gradient: context.isDarkMode
                             ? null
                             : const LinearGradient(
                                 colors: [Color(0xFF6B47EB), Color(0xFF7C3AED)],
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
                               ),
-                        color: AppColors.isDark
+                        color: context.isDarkMode
                             ? const Color(0xFF172033)
                             : null,
                         borderRadius: const BorderRadius.only(
@@ -671,7 +671,7 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.isDark
+                            color: context.isDarkMode
                                 ? Colors.black.withValues(alpha: 0.25)
                                 : const Color(0x336B47EB),
                             blurRadius: 8,
@@ -682,7 +682,7 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
                       child: SelectionArea(
                         child: _buildPlainText(
                           msg.text,
-                          isUserInLightMode: !AppColors.isDark,
+                          isUserInLightMode: !context.isDarkMode,
                         ),
                       ),
                     ),
@@ -694,8 +694,10 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
                         style: GoogleFonts.inter(
                           fontSize: 11,
                           fontWeight: FontWeight.w400,
-                          color: AppColors.isDark
-                              ? AppColors.textMuted.withValues(alpha: 0.7)
+                          color: context.isDarkMode
+                              ? context.appColors.textSecondary.withValues(
+                                  alpha: 0.7,
+                                )
                               : const Color(0xFF94A3B8),
                           letterSpacing: 0.2,
                         ),
@@ -712,11 +714,11 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
                 margin: const EdgeInsets.only(top: 2),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.isDark
+                  color: context.isDarkMode
                       ? const Color(0xFF1E2640)
                       : const Color(0xFFEEF2FF),
                   border: Border.all(
-                    color: AppColors.isDark
+                    color: context.isDarkMode
                         ? AppColors.accentBlue.withValues(alpha: 0.5)
                         : AppColors.primaryViolet.withValues(alpha: 0.4),
                     width: 1.0,
@@ -726,7 +728,7 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
                   child: Icon(
                     Icons.person_rounded,
                     size: 14,
-                    color: AppColors.isDark
+                    color: context.isDarkMode
                         ? AppColors.blueLight
                         : AppColors.primaryViolet,
                   ),
@@ -759,8 +761,8 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
 
   MarkdownStyleSheet _buildMarkdownStyleSheet() {
     final baseTextStyle = GoogleFonts.inter(
-      color: AppColors.isDark
-          ? AppColors.textPrimary.withValues(alpha: 0.92)
+      color: context.isDarkMode
+          ? context.appColors.textPrimary.withValues(alpha: 0.92)
           : const Color(0xFF1E293B),
       fontSize: 13,
       height: 1.5,
@@ -773,8 +775,8 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
 
       // Headers
       h1: GoogleFonts.inter(
-        color: AppColors.isDark
-            ? AppColors.textPrimary
+        color: context.isDarkMode
+            ? context.appColors.textPrimary
             : const Color(0xFF0F172A),
         fontSize: 17,
         fontWeight: FontWeight.w700,
@@ -782,8 +784,8 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
       ),
       h1Padding: const EdgeInsets.only(bottom: 8, top: 4),
       h2: GoogleFonts.inter(
-        color: AppColors.isDark
-            ? AppColors.textPrimary
+        color: context.isDarkMode
+            ? context.appColors.textPrimary
             : const Color(0xFF0F172A),
         fontSize: 15.5,
         fontWeight: FontWeight.w700,
@@ -791,8 +793,8 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
       ),
       h2Padding: const EdgeInsets.only(bottom: 6, top: 6),
       h3: GoogleFonts.inter(
-        color: AppColors.isDark
-            ? AppColors.textPrimary
+        color: context.isDarkMode
+            ? context.appColors.textPrimary
             : const Color(0xFF0F172A),
         fontSize: 14,
         fontWeight: FontWeight.w600,
@@ -800,8 +802,8 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
       ),
       h3Padding: const EdgeInsets.only(bottom: 6, top: 4),
       h4: GoogleFonts.inter(
-        color: AppColors.isDark
-            ? AppColors.textPrimary
+        color: context.isDarkMode
+            ? context.appColors.textPrimary
             : const Color(0xFF1E293B),
         fontSize: 13,
         fontWeight: FontWeight.w600,
@@ -809,16 +811,16 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
       ),
       h4Padding: const EdgeInsets.only(bottom: 4, top: 2),
       h5: GoogleFonts.inter(
-        color: AppColors.isDark
-            ? AppColors.textPrimary
+        color: context.isDarkMode
+            ? context.appColors.textPrimary
             : const Color(0xFF1E293B),
         fontSize: 12.5,
         fontWeight: FontWeight.w600,
         height: 1.3,
       ),
       h6: GoogleFonts.inter(
-        color: AppColors.isDark
-            ? AppColors.textPrimary
+        color: context.isDarkMode
+            ? context.appColors.textPrimary
             : const Color(0xFF1E293B),
         fontSize: 12,
         fontWeight: FontWeight.w600,
@@ -827,33 +829,33 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
 
       // Bold & emphasis
       strong: GoogleFonts.inter(
-        color: AppColors.isDark
-            ? AppColors.textPrimary
+        color: context.isDarkMode
+            ? context.appColors.textPrimary
             : const Color(0xFF0F172A),
         fontWeight: FontWeight.w700,
       ),
       em: GoogleFonts.inter(
-        color: AppColors.isDark
-            ? AppColors.textPrimary.withValues(alpha: 0.85)
+        color: context.isDarkMode
+            ? context.appColors.textPrimary.withValues(alpha: 0.85)
             : const Color(0xFF334155),
         fontStyle: FontStyle.italic,
       ),
 
       // Links
       a: GoogleFonts.inter(
-        color: AppColors.isDark
+        color: context.isDarkMode
             ? AppColors.accentCyan
             : const Color(0xFF2563EB),
         decoration: TextDecoration.underline,
-        decorationColor: AppColors.isDark
+        decorationColor: context.isDarkMode
             ? AppColors.accentCyan.withValues(alpha: 0.4)
             : const Color(0x662563EB),
       ),
 
       // Lists
       listBullet: baseTextStyle.copyWith(
-        color: AppColors.isDark
-            ? AppColors.textPrimary
+        color: context.isDarkMode
+            ? context.appColors.textPrimary
             : const Color(0xFF475569),
       ),
       listBulletPadding: const EdgeInsets.only(right: 8),
@@ -861,10 +863,12 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
 
       // Inline code
       code: GoogleFonts.firaCode(
-        color: AppColors.isDark ? AppColors.greenMint : const Color(0xFF6B47EB),
+        color: context.isDarkMode
+            ? AppColors.greenMint
+            : const Color(0xFF6B47EB),
         fontSize: 12,
-        backgroundColor: AppColors.isDark
-            ? AppColors.textPrimary.withValues(alpha: 0.08)
+        backgroundColor: context.isDarkMode
+            ? context.appColors.textPrimary.withValues(alpha: 0.08)
             : const Color(0xFFF1F5F9),
       ),
 
@@ -874,17 +878,17 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
 
       // Blockquote
       blockquote: baseTextStyle.copyWith(
-        color: AppColors.isDark
-            ? AppColors.textSlate.withValues(alpha: 0.85)
+        color: context.isDarkMode
+            ? context.appColors.textSecondary.withValues(alpha: 0.85)
             : const Color(0xFF475569),
         fontStyle: FontStyle.italic,
       ),
       blockquoteDecoration: BoxDecoration(
-        color: AppColors.isDark ? null : const Color(0xFFF8FAFC),
-        borderRadius: AppColors.isDark ? null : BorderRadius.circular(6),
+        color: context.isDarkMode ? null : const Color(0xFFF8FAFC),
+        borderRadius: context.isDarkMode ? null : BorderRadius.circular(6),
         border: Border(
           left: BorderSide(
-            color: AppColors.isDark
+            color: context.isDarkMode
                 ? AppColors.accentCyan.withValues(alpha: 0.5)
                 : const Color(0xFF6B47EB),
             width: 3,
@@ -895,20 +899,22 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
 
       // Table
       tableHead: GoogleFonts.inter(
-        color: AppColors.isDark
-            ? AppColors.textPrimary
+        color: context.isDarkMode
+            ? context.appColors.textPrimary
             : const Color(0xFF0F172A),
         fontWeight: FontWeight.w700,
         fontSize: 12.5,
       ),
       tableBody: GoogleFonts.inter(
-        color: AppColors.isDark
-            ? AppColors.textPrimary.withValues(alpha: 0.88)
+        color: context.isDarkMode
+            ? context.appColors.textPrimary.withValues(alpha: 0.88)
             : const Color(0xFF334155),
         fontSize: 12.5,
       ),
       tableBorder: TableBorder.all(
-        color: AppColors.isDark ? AppColors.border : const Color(0xFFE2E8F0),
+        color: context.isDarkMode
+            ? context.appColors.border
+            : const Color(0xFFE2E8F0),
         width: 1,
       ),
       tableHeadAlign: TextAlign.left,
@@ -921,8 +927,8 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
       horizontalRuleDecoration: BoxDecoration(
         border: Border(
           top: BorderSide(
-            color: AppColors.isDark
-                ? AppColors.border
+            color: context.isDarkMode
+                ? context.appColors.border
                 : const Color(0xFFE2E8F0),
             width: 1,
           ),
@@ -935,7 +941,7 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
     return Text(
       text,
       style: GoogleFonts.inter(
-        color: isUserInLightMode ? Colors.white : AppColors.textPrimary,
+        color: isUserInLightMode ? Colors.white : context.appColors.textPrimary,
         fontSize: 13,
         fontWeight: isUserInLightMode ? FontWeight.w500 : FontWeight.w400,
         height: 1.45,
@@ -963,12 +969,14 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             decoration: BoxDecoration(
-              color: AppColors.isDark
+              color: context.isDarkMode
                   ? (Responsive.isMobile(context)
-                        ? AppColors.mobileSocraticTutorSolid
+                        ? (context.isDarkMode
+                              ? const Color(0xFF0E0F18)
+                              : const Color(0xFFFFFFFF))
                         : null)
                   : Colors.white,
-              gradient: (!AppColors.isDark || Responsive.isMobile(context))
+              gradient: (!context.isDarkMode || Responsive.isMobile(context))
                   ? null
                   : LinearGradient(
                       colors: [
@@ -979,16 +987,16 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
                       end: Alignment.bottomRight,
                     ),
               borderRadius: BorderRadius.circular(16),
-              border: AppColors.isDark
+              border: context.isDarkMode
                   ? null
                   : Border.all(color: const Color(0xFFE2E8F0), width: 1.0),
               boxShadow: [
                 if (!Responsive.isMobile(context))
                   BoxShadow(
-                    color: AppColors.isDark
+                    color: context.isDarkMode
                         ? Colors.black.withValues(alpha: 0.3)
                         : const Color(0x0C000000),
-                    blurRadius: AppColors.isDark ? 20 : 10,
+                    blurRadius: context.isDarkMode ? 20 : 10,
                     offset: const Offset(0, 2),
                   ),
               ],
@@ -1023,7 +1031,9 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
               gradient: LinearGradient(
                 colors: [
                   Colors.transparent,
-                  AppColors.isDark ? AppColors.border : const Color(0xFFE2E8F0),
+                  context.isDarkMode
+                      ? context.appColors.border
+                      : const Color(0xFFE2E8F0),
                   Colors.transparent,
                 ],
               ),
@@ -1039,8 +1049,8 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
                 Text(
                   'Suggested follow up questions',
                   style: GoogleFonts.inter(
-                    color: AppColors.isDark
-                        ? AppColors.textSecondary
+                    color: context.isDarkMode
+                        ? context.appColors.textSecondary
                         : const Color(0xFF64748B),
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
@@ -1078,30 +1088,19 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
 
     final colors = context.appColors;
 
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOutCubic,
+    return Container(
       decoration: BoxDecoration(
         color: colors.workspaceBackground,
-        border: Border(
-          top: BorderSide(
-            color: colors.border,
-            width: 1.0,
-          ),
-        ),
+        border: Border(top: BorderSide(color: colors.border, width: 1.0)),
       ),
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOutCubic,
+      child: Container(
         padding: const EdgeInsets.fromLTRB(8, 4, 6, 4),
         decoration: BoxDecoration(
           color: colors.surface,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: _isInputFocused
-                ? AppColors.purple
-                : colors.border,
+            color: _isInputFocused ? AppColors.purple : colors.border,
             width: _isInputFocused ? 1.5 : 1.0,
           ),
           boxShadow: _isInputFocused
@@ -1129,7 +1128,7 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
             Container(
               padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
-                color: AppColors.isDark
+                color: context.isDarkMode
                     ? AppColors.purple.withValues(alpha: 0.15)
                     : const Color(0xFFF3E8FF),
                 borderRadius: BorderRadius.circular(9),
@@ -1154,11 +1153,13 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
                     : null,
                 style: GoogleFonts.inter(
                   color: limitReached
-                      ? (AppColors.isDark
-                            ? AppColors.textSecondary.withValues(alpha: 0.5)
+                      ? (context.isDarkMode
+                            ? context.appColors.textSecondary.withValues(
+                                alpha: 0.5,
+                              )
                             : const Color(0xFF94A3B8))
-                      : (AppColors.isDark
-                            ? AppColors.textPrimary
+                      : (context.isDarkMode
+                            ? context.appColors.textPrimary
                             : const Color(0xFF0F172A)),
                   fontSize: 13.5,
                   fontWeight: FontWeight.w400,
@@ -1171,8 +1172,10 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
                   hintStyle: GoogleFonts.inter(
                     color: limitReached
                         ? AppColors.accentAmber.withValues(alpha: 0.8)
-                        : (AppColors.isDark
-                              ? AppColors.textSecondary.withValues(alpha: 0.6)
+                        : (context.isDarkMode
+                              ? context.appColors.textSecondary.withValues(
+                                  alpha: 0.6,
+                                )
                               : const Color(0xFF94A3B8)),
                     fontSize: 13.5,
                   ),
@@ -1224,14 +1227,13 @@ class _SendActionButtonState extends State<_SendActionButton> {
       onExit: (_) => setState(() => _isHovered = false),
       child: GestureDetector(
         onTap: widget.isTyping ? null : widget.onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
+        child: Container(
           width: 38,
           height: 38,
           decoration: BoxDecoration(
             gradient: widget.isTyping
                 ? LinearGradient(
-                    colors: AppColors.isDark
+                    colors: context.isDarkMode
                         ? [
                             Colors.white.withValues(alpha: 0.08),
                             Colors.white.withValues(alpha: 0.04),
@@ -1260,7 +1262,7 @@ class _SendActionButtonState extends State<_SendActionButton> {
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
                       valueColor: AlwaysStoppedAnimation<Color>(
-                        AppColors.isDark
+                        context.isDarkMode
                             ? Colors.white.withValues(alpha: 0.6)
                             : const Color(0xFF64748B),
                       ),
@@ -1327,7 +1329,7 @@ class _TypingDotsState extends State<_TypingDots>
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color:
-                        (AppColors.isDark
+                        (context.isDarkMode
                                 ? const Color(0xFFC084FC)
                                 : AppColors.primaryViolet)
                             .withValues(alpha: 0.4 + 0.5 * bounce),
@@ -1376,19 +1378,18 @@ class _SuggestedQuestionChipState extends State<_SuggestedQuestionChip> {
       onExit: (_) => setState(() => _isHovered = false),
       child: GestureDetector(
         onTap: widget.disabled ? null : widget.onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
+        child: Container(
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
-            color: AppColors.isDark
+            color: context.isDarkMode
                 ? (_isHovered
                       ? const Color(0xFF1E1F36)
-                      : AppColors.cardBackground)
+                      : context.appColors.cardBackground)
                 : (_isHovered ? const Color(0xFFF5F3FF) : Colors.white),
             border: Border.all(
-              color: AppColors.isDark
+              color: context.isDarkMode
                   ? AppColors.primary.withValues(
                       alpha: _isHovered ? 0.50 : 0.20,
                     )
@@ -1399,7 +1400,7 @@ class _SuggestedQuestionChipState extends State<_SuggestedQuestionChip> {
             ),
             boxShadow: [
               BoxShadow(
-                color: AppColors.isDark
+                color: context.isDarkMode
                     ? Colors.black.withValues(alpha: 0.2)
                     : const Color(0x0A000000),
                 blurRadius: _isHovered ? 8 : 2,
@@ -1417,8 +1418,8 @@ class _SuggestedQuestionChipState extends State<_SuggestedQuestionChip> {
                   child: Text(
                     widget.question,
                     style: GoogleFonts.inter(
-                      color: AppColors.isDark
-                          ? AppColors.textPrimary
+                      color: context.isDarkMode
+                          ? context.appColors.textPrimary
                           : const Color(0xFF1E293B),
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
@@ -1431,7 +1432,7 @@ class _SuggestedQuestionChipState extends State<_SuggestedQuestionChip> {
                 const SizedBox(width: 8),
                 Icon(
                   Icons.arrow_forward_ios_rounded,
-                  color: AppColors.isDark
+                  color: context.isDarkMode
                       ? AppColors.primary.withValues(alpha: 0.5)
                       : AppColors.primaryViolet.withValues(alpha: 0.7),
                   size: 13,
@@ -1457,19 +1458,23 @@ class _CustomCodeBlockBuilder extends MarkdownElementBuilder {
     // 1. Inline Math
     if (textContent.startsWith('math:')) {
       final mathTex = textContent.substring(5).trim();
-      return SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        physics: const BouncingScrollPhysics(),
-        child: Math.tex(
-          _sanitizeMathTex(mathTex),
-          mathStyle: MathStyle.text,
-          textStyle: preferredStyle?.copyWith(
-            color: AppColors.textPrimary,
-            fontSize: 14,
-          ),
-          onErrorFallback: (err) => Text(
-            mathTex,
-            style: preferredStyle?.copyWith(color: AppColors.textPrimary),
+      return Builder(
+        builder: (context) => SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          physics: const BouncingScrollPhysics(),
+          child: Math.tex(
+            _sanitizeMathTex(mathTex),
+            mathStyle: MathStyle.text,
+            textStyle: preferredStyle?.copyWith(
+              color: context.appColors.textPrimary,
+              fontSize: 14,
+            ),
+            onErrorFallback: (err) => Text(
+              mathTex,
+              style: preferredStyle?.copyWith(
+                color: context.appColors.textPrimary,
+              ),
+            ),
           ),
         ),
       );
@@ -1481,7 +1486,9 @@ class _CustomCodeBlockBuilder extends MarkdownElementBuilder {
         element.attributes['class']?.contains('language-math') == true;
 
     if (isLatexBlock) {
-      return _buildMathCard(textContent);
+      return Builder(
+        builder: (context) => _buildMathCard(context, textContent),
+      );
     }
 
     // 3. Mermaid Diagrams (guaranteed untouched and prioritized for any mermaid code block)
@@ -1653,19 +1660,21 @@ String _sanitizeMathTex(String rawTex) {
   return clean.trim();
 }
 
-Widget _buildMathCard(String tex) {
+Widget _buildMathCard(BuildContext context, String tex) {
   final cleanTex = _sanitizeMathTex(tex);
   return Container(
     width: double.infinity,
     margin: const EdgeInsets.symmetric(vertical: 8),
     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
     decoration: BoxDecoration(
-      color: AppColors.isDark
-          ? AppColors.cardBackground
+      color: context.isDarkMode
+          ? context.appColors.cardBackground
           : const Color(0xFFF8FAFC),
       borderRadius: BorderRadius.circular(12),
       border: Border.all(
-        color: AppColors.isDark ? AppColors.border : const Color(0xFFE2E8F0),
+        color: context.isDarkMode
+            ? context.appColors.border
+            : const Color(0xFFE2E8F0),
       ),
     ),
     child: SingleChildScrollView(
@@ -1675,16 +1684,16 @@ Widget _buildMathCard(String tex) {
         cleanTex,
         mathStyle: MathStyle.display,
         textStyle: TextStyle(
-          color: AppColors.isDark
-              ? AppColors.textPrimary
+          color: context.isDarkMode
+              ? context.appColors.textPrimary
               : const Color(0xFF0F172A),
           fontSize: 14,
         ),
         onErrorFallback: (err) => Text(
           cleanTex,
           style: TextStyle(
-            color: AppColors.isDark
-                ? AppColors.textPrimary.withValues(alpha: 0.85)
+            color: context.isDarkMode
+                ? context.appColors.textPrimary.withValues(alpha: 0.85)
                 : const Color(0xFF334155),
             fontFamily: 'monospace',
             fontSize: 12.5,
@@ -1745,7 +1754,7 @@ class _CodeSnippetCardState extends State<_CodeSnippetCard> {
           color: const Color(0xFF181A20),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: AppColors.isDark
+            color: context.isDarkMode
                 ? const Color(0x22FFFFFF)
                 : const Color(0xFFE2E8F0),
           ),

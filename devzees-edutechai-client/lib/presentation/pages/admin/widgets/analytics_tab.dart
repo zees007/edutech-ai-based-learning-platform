@@ -7,6 +7,7 @@ import '../../../../core/providers/admin_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../widgets/shimmer_loading.dart';
+import 'package:devzees_edutechai_client/core/theme/theme_palette.dart';
 
 /// Analytics & Metrics tab with metric cards, mobile-friendly left-side reload,
 /// and subscription distribution chart.
@@ -54,7 +55,7 @@ class AnalyticsTab extends ConsumerWidget {
                           Text(
                             'Platform Metrics & Subscription Distribution',
                             style: AppTextStyles.h4.copyWith(
-                              color: AppColors.textPrimary,
+                              color: context.appColors.textPrimary,
                               fontSize: isMobile ? 18 : 20,
                             ),
                           ),
@@ -102,7 +103,7 @@ class AnalyticsTab extends ConsumerWidget {
                       Text(
                         'Real-time overview of your platform\'s user base and subscription health',
                         style: AppTextStyles.body2.copyWith(
-                          color: AppColors.textMuted,
+                          color: context.appColors.textSecondary,
                           fontSize: isMobile ? 13 : 14,
                         ),
                       ),
@@ -124,18 +125,18 @@ class AnalyticsTab extends ConsumerWidget {
                   Container(
                     width: double.infinity,
                     height: 1,
-                    color: AppColors.glassBorder,
+                    color: context.appColors.border,
                   ),
                   const SizedBox(height: 28),
                   Text(
                     'Subscription Tier Distribution',
                     style: AppTextStyles.h4.copyWith(
-                      color: AppColors.textPrimary,
+                      color: context.appColors.textPrimary,
                       fontSize: isMobile ? 18 : 20,
                     ),
                   ),
                   const SizedBox(height: 20),
-                  _buildDistributionChart(metrics, isMobile),
+                  _buildDistributionChart(context, metrics, isMobile),
                 ],
               ),
               loading: () => const Column(
@@ -214,12 +215,14 @@ class AnalyticsTab extends ConsumerWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: AppColors.glassBase,
+                color: (context.isDarkMode
+                    ? const Color(0x0DFFFFFF)
+                    : const Color(0x0A000000)),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color: isLoading
                       ? AppColors.purple.withValues(alpha: 0.6)
-                      : AppColors.glassBorder,
+                      : context.appColors.border,
                 ),
               ),
               child: Center(
@@ -358,7 +361,11 @@ class AnalyticsTab extends ConsumerWidget {
     );
   }
 
-  Widget _buildDistributionChart(AdminMetrics metrics, bool isMobile) {
+  Widget _buildDistributionChart(
+    BuildContext context,
+    AdminMetrics metrics,
+    bool isMobile,
+  ) {
     final tiers = metrics.tierCounts.isNotEmpty
         ? metrics.tierCounts.keys.toList()
         : ['free', 'pro', 'ultra'];
@@ -374,7 +381,9 @@ class AnalyticsTab extends ConsumerWidget {
         alignment: Alignment.center,
         child: Text(
           'No subscription data available',
-          style: AppTextStyles.body2.copyWith(color: AppColors.textMuted),
+          style: AppTextStyles.body2.copyWith(
+            color: context.appColors.textSecondary,
+          ),
         ),
       );
     }
@@ -401,7 +410,7 @@ class AnalyticsTab extends ConsumerWidget {
       decoration: BoxDecoration(
         color: AppColors.surfaceDark.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.glassBorder),
+        border: Border.all(color: context.appColors.border),
       ),
       child: BarChart(
         BarChartData(
@@ -413,7 +422,7 @@ class AnalyticsTab extends ConsumerWidget {
             enabled: true,
             touchTooltipData: BarTouchTooltipData(
               getTooltipColor: (_) =>
-                  AppColors.popoverBackground.withValues(alpha: 0.9),
+                  context.appColors.popoverBackground.withValues(alpha: 0.9),
               tooltipRoundedRadius: 8,
               getTooltipItem: (group, groupIndex, rod, rodIndex) {
                 if (groupIndex < 0 || groupIndex >= tiers.length) return null;
@@ -422,7 +431,9 @@ class AnalyticsTab extends ConsumerWidget {
                     metrics.tierNames[tierKey] ?? tierKey.toUpperCase();
                 return BarTooltipItem(
                   '$name\n${rod.toY.toInt()} users',
-                  AppTextStyles.caption.copyWith(color: AppColors.textPrimary),
+                  AppTextStyles.caption.copyWith(
+                    color: context.appColors.textPrimary,
+                  ),
                 );
               },
             ),
@@ -443,7 +454,7 @@ class AnalyticsTab extends ConsumerWidget {
                   return Text(
                     value.toInt().toString(),
                     style: AppTextStyles.caption.copyWith(
-                      color: AppColors.textMuted,
+                      color: context.appColors.textSecondary,
                     ),
                   );
                 },
@@ -467,7 +478,7 @@ class AnalyticsTab extends ConsumerWidget {
                       child: Text(
                         shortName,
                         style: AppTextStyles.label.copyWith(
-                          color: AppColors.textSecondary,
+                          color: context.appColors.textSecondary,
                         ),
                       ),
                     );
@@ -485,7 +496,7 @@ class AnalyticsTab extends ConsumerWidget {
               double.infinity,
             ),
             getDrawingHorizontalLine: (value) => FlLine(
-              color: AppColors.glassBorder.withValues(alpha: 0.5),
+              color: context.appColors.border.withValues(alpha: 0.5),
               strokeWidth: 0.5,
             ),
           ),
@@ -494,14 +505,10 @@ class AnalyticsTab extends ConsumerWidget {
             final idx = entry.key;
             final tierKey = entry.value;
             final count = (metrics.tierCounts[tierKey] ?? 0).toDouble();
-            final color = tierColors[tierKey] ??
+            final color =
+                tierColors[tierKey] ??
                 defaultColors[idx % defaultColors.length];
-            return _makeBarGroup(
-              idx,
-              count,
-              color,
-              barWidth,
-            );
+            return _makeBarGroup(context, idx, count, color, barWidth);
           }).toList(),
         ),
       ),
@@ -509,6 +516,7 @@ class AnalyticsTab extends ConsumerWidget {
   }
 
   BarChartGroupData _makeBarGroup(
+    BuildContext context,
     int x,
     double y,
     Color color,
@@ -531,7 +539,7 @@ class AnalyticsTab extends ConsumerWidget {
           ),
           backDrawRodData: BackgroundBarChartRodData(
             show: true,
-            color: AppColors.glassBorder.withValues(alpha: 0.2),
+            color: context.appColors.border.withValues(alpha: 0.2),
           ),
         ),
       ],
@@ -575,8 +583,7 @@ class _MetricCardState extends State<_MetricCard> {
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+      child: Container(
         transform: Matrix4.translationValues(0, _isHovered ? -2 : 0, 0),
         padding: EdgeInsets.all(padding),
         decoration: BoxDecoration(
@@ -585,7 +592,7 @@ class _MetricCardState extends State<_MetricCard> {
           border: Border.all(
             color: _isHovered
                 ? widget.data.iconColor.withValues(alpha: 0.4)
-                : AppColors.glassBorder,
+                : context.appColors.border,
           ),
           boxShadow: _isHovered
               ? [
@@ -618,7 +625,7 @@ class _MetricCardState extends State<_MetricCard> {
             Text(
               '${widget.data.value}',
               style: AppTextStyles.h3.copyWith(
-                color: AppColors.textPrimary,
+                color: context.appColors.textPrimary,
                 fontWeight: FontWeight.w800,
                 fontSize: widget.isMobile ? 20 : 24,
               ),
@@ -626,7 +633,9 @@ class _MetricCardState extends State<_MetricCard> {
             const SizedBox(height: 4),
             Text(
               widget.data.label,
-              style: AppTextStyles.caption.copyWith(color: AppColors.textMuted),
+              style: AppTextStyles.caption.copyWith(
+                color: context.appColors.textSecondary,
+              ),
               overflow: TextOverflow.ellipsis,
             ),
           ],

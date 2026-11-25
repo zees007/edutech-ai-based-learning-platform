@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../../presentation/widgets/gradient_text.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/text_styles.dart';
+import 'package:devzees_edutechai_client/core/theme/theme_palette.dart';
 
 class SidebarHeader extends StatelessWidget {
   final bool expanded;
@@ -24,7 +25,7 @@ class SidebarHeader extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 16),
         child: IconButton(
           onPressed: onToggle,
-          icon: Icon(Icons.menu, color: AppColors.textSecondary, size: 20),
+          icon: Icon(Icons.menu, color: context.appColors.textSecondary, size: 20),
         ),
       );
     }
@@ -74,13 +75,13 @@ class SidebarHeader extends StatelessWidget {
               onPressed: onToggle,
               icon: Icon(
                 expanded ? Icons.menu_open : Icons.menu,
-                color: AppColors.textSecondary,
+                color: context.appColors.textSecondary,
               ),
             )
           else
             IconButton(
               onPressed: onClose,
-              icon: Icon(Icons.menu_open, color: AppColors.textSecondary),
+              icon: Icon(Icons.menu_open, color: context.appColors.textSecondary),
             ),
         ],
       ),

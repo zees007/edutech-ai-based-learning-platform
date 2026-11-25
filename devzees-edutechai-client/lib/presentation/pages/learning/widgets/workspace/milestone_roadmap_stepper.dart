@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../../data/models/learning/milestone_step.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/text_styles.dart';
+import 'package:devzees_edutechai_client/core/theme/theme_palette.dart';
 
 /// An ultra-premium, modern Chevron Pipeline Stepper.
 /// Displays milestone roadmap steps as an interlocking, continuous chevron ribbon
@@ -317,11 +318,11 @@ class _ChevronStepItemState extends State<_ChevronStepItem> {
           : (isCompleted
                 ? Colors.white
                 : (isLocked
-                      ? (AppColors.isDark
+                      ? (context.isDarkMode
                             ? Colors.white.withValues(alpha: 0.35)
-                            : AppColors.textSecondary.withValues(alpha: 0.6))
+                            : context.appColors.textSecondary.withValues(alpha: 0.6))
                       : (isInProgress
-                            ? (AppColors.isDark
+                            ? (context.isDarkMode
                                   ? AppColors.purpleLight
                                   : AppColors.primaryViolet)
                             : AppColors.primaryViolet))),
@@ -333,11 +334,11 @@ class _ChevronStepItemState extends State<_ChevronStepItem> {
         : (isCompleted
               ? AppColors.greenMint
               : (isLocked
-                    ? (AppColors.isDark
+                    ? (context.isDarkMode
                           ? Colors.white.withValues(alpha: 0.4)
-                          : AppColors.textSecondary.withValues(alpha: 0.6))
+                          : context.appColors.textSecondary.withValues(alpha: 0.6))
                     : (isInProgress
-                          ? (AppColors.isDark
+                          ? (context.isDarkMode
                                 ? AppColors.purpleLight
                                 : AppColors.primaryViolet)
                           : AppColors.primaryViolet)));
@@ -347,16 +348,16 @@ class _ChevronStepItemState extends State<_ChevronStepItem> {
         : (isCompleted
               ? Colors.white
               : (isLocked
-                    ? (AppColors.isDark
+                    ? (context.isDarkMode
                           ? Colors.white.withValues(alpha: 0.35)
-                          : AppColors.textSecondary.withValues(alpha: 0.6))
+                          : context.appColors.textSecondary.withValues(alpha: 0.6))
                     : (isInProgress
-                          ? (AppColors.isDark
+                          ? (context.isDarkMode
                                 ? AppColors.slate200
-                                : AppColors.textPrimary)
-                          : (AppColors.isDark
+                                : context.appColors.textPrimary)
+                          : (context.isDarkMode
                                 ? AppColors.slate200
-                                : AppColors.textPrimary))));
+                                : context.appColors.textPrimary))));
 
     // Background decoration
     Decoration backgroundDecoration;
@@ -389,15 +390,15 @@ class _ChevronStepItemState extends State<_ChevronStepItem> {
       // In-process step when reviewing another step (not on primaryGradient)
       backgroundDecoration = BoxDecoration(
         color: _isHovered
-            ? (AppColors.isDark
+            ? (context.isDarkMode
                   ? AppColors.primary.withValues(alpha: 0.22)
                   : const Color(0xFFEDE9FE))
-            : (AppColors.isDark
+            : (context.isDarkMode
                   ? AppColors.primary.withValues(alpha: 0.10)
                   : const Color(0xFFF5F3FF)),
         boxShadow: [
           BoxShadow(
-            color: (AppColors.isDark ? AppColors.primary : AppColors.primaryViolet)
+            color: (context.isDarkMode ? AppColors.primary : AppColors.primaryViolet)
                 .withValues(alpha: _isHovered ? 0.22 : 0.10),
             blurRadius: 8,
             offset: const Offset(0, 1),
@@ -407,20 +408,20 @@ class _ChevronStepItemState extends State<_ChevronStepItem> {
     } else if (!isLocked) {
       backgroundDecoration = BoxDecoration(
         color: _isHovered
-            ? (AppColors.isDark
+            ? (context.isDarkMode
                   ? AppColors.surfaceMid.withValues(alpha: 0.85)
-                  : AppColors.surfaceSubtle)
-            : (AppColors.isDark
+                  : context.appColors.surfaceSubtle)
+            : (context.isDarkMode
                   ? AppColors.surfaceMid.withValues(alpha: 0.50)
-                  : AppColors.surface),
+                  : context.appColors.surface),
       );
     } else {
       backgroundDecoration = BoxDecoration(
         color: _isHovered
-            ? (AppColors.isDark
+            ? (context.isDarkMode
                   ? const Color(0xFF1E2135)
                   : const Color(0xFFF1F5F9))
-            : (AppColors.isDark
+            : (context.isDarkMode
                   ? const Color(0xFF161828)
                   : const Color(0xFFF8FAFC)),
       );
@@ -431,7 +432,7 @@ class _ChevronStepItemState extends State<_ChevronStepItem> {
         ? AppColors.blueSoft.withValues(alpha: 0.8)
         : (isCompleted
               ? AppColors.greenMint.withValues(alpha: 0.75)
-              : AppColors.glassBorder);
+              : context.appColors.border);
 
     // Operational status label & badge styling
     final String statusLabel;
@@ -453,31 +454,31 @@ class _ChevronStepItemState extends State<_ChevronStepItem> {
     } else if (isInProgress) {
       // In-process step when reviewing another step (NOT on primaryGradient)
       statusLabel = 'IN PROCESS';
-      statusBadgeBg = AppColors.isDark
+      statusBadgeBg = context.isDarkMode
           ? AppColors.primary.withValues(alpha: 0.22)
           : const Color(0xFFEDE9FE);
-      statusBadgeBorder = AppColors.isDark
+      statusBadgeBorder = context.isDarkMode
           ? AppColors.primary.withValues(alpha: 0.45)
           : const Color(0xFFC4B5FD);
-      statusBadgeText = AppColors.isDark
+      statusBadgeText = context.isDarkMode
           ? AppColors.purpleLight
           : AppColors.primaryViolet;
     } else if (isLocked) {
       statusLabel = 'LOCKED';
-      statusBadgeBg = AppColors.isDark
+      statusBadgeBg = context.isDarkMode
           ? Colors.white.withValues(alpha: 0.06)
-          : AppColors.surfaceSubtle;
-      statusBadgeBorder = AppColors.isDark
+          : context.appColors.surfaceSubtle;
+      statusBadgeBorder = context.isDarkMode
           ? Colors.white.withValues(alpha: 0.15)
-          : AppColors.border;
-      statusBadgeText = AppColors.isDark
+          : context.appColors.border;
+      statusBadgeText = context.isDarkMode
           ? Colors.white.withValues(alpha: 0.45)
-          : AppColors.textSecondary;
+          : context.appColors.textSecondary;
     } else {
       statusLabel = 'PENDING';
       statusBadgeBg = AppColors.purpleLight.withValues(alpha: 0.15);
       statusBadgeBorder = AppColors.purpleLight.withValues(alpha: 0.35);
-      statusBadgeText = AppColors.isDark
+      statusBadgeText = context.isDarkMode
           ? AppColors.lavender
           : AppColors.primaryViolet;
     }
@@ -514,10 +515,10 @@ class _ChevronStepItemState extends State<_ChevronStepItem> {
                   child: CustomPaint(
                     painter: _ChevronOutlinePainter(
                       borderColor: isInProgress
-                          ? (AppColors.isDark
+                          ? (context.isDarkMode
                               ? AppColors.primary.withValues(alpha: 0.55)
                               : const Color(0xFFC4B5FD))
-                          : (AppColors.isDark
+                          : (context.isDarkMode
                               ? const Color(0x26FFFFFF)
                               : const Color(0xFFE2E8F0)),
                       arrowWidth: arrowWidth,

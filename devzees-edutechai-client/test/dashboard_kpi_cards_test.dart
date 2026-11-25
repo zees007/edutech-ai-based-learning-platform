@@ -65,7 +65,37 @@ void main() {
       expect(find.text('88.5%'), findsOneWidget);
 
       // Check center composite score label
-      expect(find.text('MASTERY INDEX'), findsOneWidget);
+      expect(find.text('OVERALL PROGRESS'), findsOneWidget);
+      expect(find.text('Active Rings'), findsOneWidget);
+
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('renders large desktop view (>= 1300px) in panoramic 1x4 row without overflow', (tester) async {
+      tester.view.physicalSize = const Size(1920, 1080);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      await tester.pumpWidget(createWidget(width: 1560, height: 350));
+      await tester.pumpAndSettle();
+
+      // Check all 4 KPI titles exist
+      expect(find.text('Active Study Time'), findsOneWidget);
+      expect(find.text('Journeys Completed'), findsOneWidget);
+      expect(find.text('Milestones Mastered'), findsOneWidget);
+      expect(find.text('Period Quiz Accuracy'), findsOneWidget);
+
+      // Check values
+      expect(find.text('2h 30m'), findsOneWidget);
+      expect(find.text('8 / 10'), findsOneWidget);
+      expect(find.text('16 Steps'), findsOneWidget);
+      expect(find.text('88.5%'), findsOneWidget);
+
+      // Check center composite score label
+      expect(find.text('OVERALL PROGRESS'), findsOneWidget);
       expect(find.text('Active Rings'), findsOneWidget);
 
       expect(tester.takeException(), isNull);
@@ -86,6 +116,7 @@ void main() {
       expect(find.text('Journeys Completed'), findsOneWidget);
       expect(find.text('Milestones Mastered'), findsOneWidget);
       expect(find.text('Period Quiz Accuracy'), findsOneWidget);
+      expect(find.text('OVERALL PROGRESS'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
 
@@ -104,6 +135,7 @@ void main() {
       expect(find.text('Journeys Completed'), findsOneWidget);
       expect(find.text('Milestones Mastered'), findsOneWidget);
       expect(find.text('Period Quiz Accuracy'), findsOneWidget);
+      expect(find.text('OVERALL\nPROGRESS'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
 
@@ -118,7 +150,7 @@ void main() {
       await tester.pumpWidget(createWidget(width: 1000, height: 400));
       await tester.pumpAndSettle();
 
-      expect(find.text('MASTERY INDEX'), findsOneWidget);
+      expect(find.text('OVERALL PROGRESS'), findsOneWidget);
       expect(find.text('Active Rings'), findsOneWidget);
 
       // Tap on 'Active Study Time' card
@@ -132,7 +164,7 @@ void main() {
       await tester.tap(find.text('Active Study Time'));
       await tester.pumpAndSettle();
 
-      expect(find.text('MASTERY INDEX'), findsOneWidget);
+      expect(find.text('OVERALL PROGRESS'), findsOneWidget);
       expect(find.text('Active Rings'), findsOneWidget);
     });
 
@@ -148,7 +180,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Active Study Time'), findsOneWidget);
-      expect(find.text('MASTERY INDEX'), findsOneWidget);
+      expect(find.text('OVERALL PROGRESS'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   });

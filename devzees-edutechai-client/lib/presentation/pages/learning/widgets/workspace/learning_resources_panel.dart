@@ -34,8 +34,8 @@ class LearningResourcesPanel extends ConsumerStatefulWidget {
 
   // ─── Scrollbar theme matching Socratic Tutor ──────────────────
 
-  static ScrollbarThemeData get workspaceScrollbarTheme {
-    final isDark = AppColors.isDark;
+  static ScrollbarThemeData workspaceScrollbarTheme(BuildContext context) {
+    final isDark = context.isDarkMode;
     return ScrollbarThemeData(
       thumbColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.dragged) ||
@@ -49,7 +49,7 @@ class LearningResourcesPanel extends ConsumerStatefulWidget {
       trackColor: WidgetStateProperty.all(
         isDark
             ? AppColors.surfaceDark.withValues(alpha: 0.40)
-            : AppColors.surfaceSubtle.withValues(alpha: 0.50),
+            : context.appColors.surfaceSubtle.withValues(alpha: 0.50),
       ),
       trackBorderColor: WidgetStateProperty.all(Colors.transparent),
       radius: const Radius.circular(6),
@@ -77,16 +77,20 @@ class LearningResourcesPanel extends ConsumerStatefulWidget {
       }
       return const SizedBox.shrink();
     }
-    return ScrollbarTheme(
-      data: workspaceScrollbarTheme,
-      child: RecommendedVideos(videos: videos),
+    return Builder(
+      builder: (context) => ScrollbarTheme(
+        data: workspaceScrollbarTheme(context),
+        child: RecommendedVideos(videos: videos),
+      ),
     );
   }
 
   static Widget buildPapersContent(List<dynamic>? papers, [String? topic]) {
-    return ScrollbarTheme(
-      data: workspaceScrollbarTheme,
-      child: AcademicPapers(papers: papers),
+    return Builder(
+      builder: (context) => ScrollbarTheme(
+        data: workspaceScrollbarTheme(context),
+        child: AcademicPapers(papers: papers),
+      ),
     );
   }
 
@@ -99,44 +103,50 @@ class LearningResourcesPanel extends ConsumerStatefulWidget {
     String? sessionId,
   }) {
     if (quiz == null || quiz.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppColors.accentGreen.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
+      return Builder(
+        builder: (context) => Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.accentGreen.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.quiz_outlined,
+                  size: 32,
+                  color: AppColors.accentGreen.withValues(alpha: 0.5),
+                ),
               ),
-              child: Icon(
-                Icons.quiz_outlined,
-                size: 32,
-                color: AppColors.accentGreen.withValues(alpha: 0.5),
+              const SizedBox(height: 12),
+              Text(
+                'No quiz available for this step',
+                style: AppTextStyles.caption.copyWith(
+                  color: context.appColors.textSecondary,
+                ),
               ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'No quiz available for this step',
-              style: AppTextStyles.caption.copyWith(color: AppColors.textMuted),
-            ),
-          ],
+            ],
+          ),
         ),
       );
     }
-    return ScrollbarTheme(
-      data: workspaceScrollbarTheme,
-      child: SingleChildScrollView(
-        primary: false,
-        padding: const EdgeInsets.all(20),
-        child: KnowledgeCheckQuiz(
-          key: ValueKey('quiz_${sessionId ?? "session"}_step_$stepIndex'),
-          quiz: quiz,
-          stepIndex: stepIndex,
-          onNextStep: onNextStep,
-          onQuizSubmitted: onQuizSubmitted,
-          step: step,
-          sessionId: sessionId,
+    return Builder(
+      builder: (context) => ScrollbarTheme(
+        data: workspaceScrollbarTheme(context),
+        child: SingleChildScrollView(
+          primary: false,
+          padding: const EdgeInsets.all(20),
+          child: KnowledgeCheckQuiz(
+            key: ValueKey('quiz_${sessionId ?? "session"}_step_$stepIndex'),
+            quiz: quiz,
+            stepIndex: stepIndex,
+            onNextStep: onNextStep,
+            onQuizSubmitted: onQuizSubmitted,
+            step: step,
+            sessionId: sessionId,
+          ),
         ),
       ),
     );
@@ -301,13 +311,11 @@ class _LearningResourcesPanelState extends ConsumerState<LearningResourcesPanel>
     final colors = context.appColors;
 
     return ScrollbarTheme(
-      data: LearningResourcesPanel.workspaceScrollbarTheme,
+      data: LearningResourcesPanel.workspaceScrollbarTheme(context),
       child: Column(
         children: [
           // Premium Segmented Tab Bar Header
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeInOutCubic,
+          Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
               color: colors.topBarBackground,
@@ -315,9 +323,7 @@ class _LearningResourcesPanelState extends ConsumerState<LearningResourcesPanel>
                 bottom: BorderSide(color: colors.border, width: 0.8),
               ),
             ),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOutCubic,
+            child: Container(
               padding: const EdgeInsets.all(3),
               decoration: BoxDecoration(
                 color: colors.surfaceSubtle,
@@ -393,17 +399,17 @@ class _LearningResourcesPanelState extends ConsumerState<LearningResourcesPanel>
               children: [
                 // Videos tab
                 KeepAliveWrapper(
-                  key: ValueKey('tab_videos_${step.index}_${AppColors.isDark}'),
+                  key: ValueKey('tab_videos_${step.index}'),
                   child: _buildVideosTab(step),
                 ),
                 // Papers tab
                 KeepAliveWrapper(
-                  key: ValueKey('tab_papers_${step.index}_${AppColors.isDark}'),
+                  key: ValueKey('tab_papers_${step.index}'),
                   child: _buildPapersTab(step),
                 ),
                 // Quiz tab
                 KeepAliveWrapper(
-                  key: ValueKey('tab_quiz_${step.index}_${AppColors.isDark}'),
+                  key: ValueKey('tab_quiz_${step.index}'),
                   child: _buildQuizTab2(step),
                 ),
               ],
@@ -571,7 +577,7 @@ class _LearningResourcesPanelState extends ConsumerState<LearningResourcesPanel>
                           IconButton(
                             onPressed: () => Navigator.of(dialogContext).pop(),
                             icon: const Icon(Icons.close_rounded, size: 18),
-                            color: AppColors.textMuted,
+                            color: context.appColors.textSecondary,
                             mouseCursor: SystemMouseCursors.click,
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(
@@ -579,9 +585,11 @@ class _LearningResourcesPanelState extends ConsumerState<LearningResourcesPanel>
                               minHeight: 30,
                             ),
                             style: IconButton.styleFrom(
-                              backgroundColor: Colors.white.withValues(alpha: 0.06),
+                              backgroundColor: Colors.white.withValues(
+                                alpha: 0.06,
+                              ),
                               shape: const CircleBorder(),
-                              side: BorderSide(color: AppColors.glassBorder),
+                              side: BorderSide(color: context.appColors.border),
                             ),
                           ),
                         ],
@@ -595,7 +603,7 @@ class _LearningResourcesPanelState extends ConsumerState<LearningResourcesPanel>
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 0.2,
-                          color: AppColors.textPrimary,
+                          color: context.appColors.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -605,7 +613,7 @@ class _LearningResourcesPanelState extends ConsumerState<LearningResourcesPanel>
                         'Please complete the Knowledge Check quiz first to move to the next step of learning. Testing your knowledge ensures you have mastered these concepts.',
                         style: AppTextStyles.body2.copyWith(
                           fontSize: 13,
-                          color: AppColors.textSecondary,
+                          color: context.appColors.textSecondary,
                           height: 1.45,
                         ),
                       ),
@@ -636,7 +644,7 @@ class _LearningResourcesPanelState extends ConsumerState<LearningResourcesPanel>
                               child: Text(
                                 'Interactive questions are waiting in the Quiz tab.',
                                 style: AppTextStyles.caption.copyWith(
-                                  color: AppColors.textPrimary,
+                                  color: context.appColors.textPrimary,
                                   fontSize: 11.5,
                                 ),
                               ),
@@ -654,7 +662,7 @@ class _LearningResourcesPanelState extends ConsumerState<LearningResourcesPanel>
                             onPressed: () => Navigator.of(dialogContext).pop(),
                             style: TextButton.styleFrom(
                               enabledMouseCursor: SystemMouseCursors.click,
-                              foregroundColor: AppColors.textMuted,
+                              foregroundColor: context.appColors.textSecondary,
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 16,
                                 vertical: 10,
@@ -664,7 +672,7 @@ class _LearningResourcesPanelState extends ConsumerState<LearningResourcesPanel>
                               'Cancel',
                               style: AppTextStyles.button.copyWith(
                                 fontSize: 12.5,
-                                color: AppColors.textMuted,
+                                color: context.appColors.textSecondary,
                               ),
                             ),
                           ),
@@ -854,11 +862,12 @@ class _LearningResourcesPanelState extends ConsumerState<LearningResourcesPanel>
                   fontWeight: FontWeight.w700,
                   fontSize: 11,
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 6,
+                ),
                 onPressed: () {
-                  ref
-                      .read(activeSessionProvider.notifier)
-                      .showJourneySummary();
+                  ref.read(activeSessionProvider.notifier).showJourneySummary();
                 },
               ),
             )
@@ -881,16 +890,10 @@ class _LearningResourcesPanelState extends ConsumerState<LearningResourcesPanel>
                 borderRadius: BorderRadius.circular(8),
                 gradient: isLastStep
                     ? LinearGradient(
-                        colors: [
-                          Colors.amber.shade600,
-                          Colors.orange.shade800,
-                        ],
+                        colors: [Colors.amber.shade600, Colors.orange.shade800],
                       )
                     : LinearGradient(
-                        colors: [
-                          AppColors.accentGreen,
-                          AppColors.greenDeep,
-                        ],
+                        colors: [AppColors.accentGreen, AppColors.greenDeep],
                       ),
                 glowColor: isLastStep ? Colors.amber : AppColors.accentGreen,
                 textStyle: AppTextStyles.badge.copyWith(
@@ -898,7 +901,10 @@ class _LearningResourcesPanelState extends ConsumerState<LearningResourcesPanel>
                   fontWeight: FontWeight.w700,
                   fontSize: 11,
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 6,
+                ),
                 onPressed: () => _handleNextStep(context, isQuizDone),
               ),
             ),
@@ -912,8 +918,10 @@ class _LearningResourcesPanelState extends ConsumerState<LearningResourcesPanel>
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
-        color: AppColors.surfaceSolidHeader,
-        border: Border(top: BorderSide(color: AppColors.glassBorder, width: 1)),
+        color: context.appColors.topBarBackground,
+        border: Border(
+          top: BorderSide(color: context.appColors.border, width: 1),
+        ),
       ),
       child: Row(
         children: [
@@ -934,7 +942,7 @@ class _LearningResourcesPanelState extends ConsumerState<LearningResourcesPanel>
             child: Text(
               'Explore resources above, or proceed when ready',
               style: AppTextStyles.caption.copyWith(
-                color: AppColors.textSecondary,
+                color: context.appColors.textSecondary,
                 fontSize: 12,
               ),
             ),
@@ -980,7 +988,9 @@ class _LearningResourcesPanelState extends ConsumerState<LearningResourcesPanel>
           const SizedBox(height: 12),
           Text(
             label,
-            style: AppTextStyles.caption.copyWith(color: AppColors.textMuted),
+            style: AppTextStyles.caption.copyWith(
+              color: context.appColors.textSecondary,
+            ),
           ),
         ],
       ),
@@ -1084,13 +1094,15 @@ class _ResourceTabItemState extends State<_ResourceTabItem> {
 
     final Color textColor = isActive
         ? colors.textPrimary
-        : (isHovered ? AppColors.textSlate : AppColors.textMuted);
+        : (isHovered
+              ? context.appColors.textSecondary
+              : context.appColors.textSecondary);
 
     final Color iconColor = isActive
         ? widget.accentColor
         : (isHovered
               ? widget.accentColor.withValues(alpha: 0.9)
-              : AppColors.textMuted);
+              : context.appColors.textSecondary);
 
     return Expanded(
       child: MouseRegion(

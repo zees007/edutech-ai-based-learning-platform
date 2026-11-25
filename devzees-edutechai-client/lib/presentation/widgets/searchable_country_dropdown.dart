@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:devzees_edutechai_client/core/constants/country_data.dart';
 import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
+import 'package:devzees_edutechai_client/core/theme/theme_palette.dart';
 
 /// Premium, in-place anchored searchable dropdown for country selection.
 /// Directly anchors beneath (or above) the field without opening a full-screen modal.
@@ -115,13 +116,11 @@ class SearchableCountryDropdownState extends State<SearchableCountryDropdown>
                 child: StatefulBuilder(
                   builder: (context, setOverlayState) {
                     final isDark = widget.isDark;
-                    final textPrimary =
-                        isDark ? Colors.white : AppColors.textPrimary;
-                    final textSecondary = isDark
-                        ? AppColors.textSecondary
-                        : const Color(0xFF64748B);
+                    final colors = context.appColors;
+                    final textPrimary = colors.textPrimary;
+                    final textSecondary = colors.textSecondary;
                     final bgColor =
-                        isDark ? AppColors.surfaceDark : Colors.white;
+                        isDark ? AppColors.surfaceDark : colors.surface;
 
                     return Container(
                       width: triggerSize.width,
@@ -415,9 +414,9 @@ class SearchableCountryDropdownState extends State<SearchableCountryDropdown>
   @override
   Widget build(BuildContext context) {
     final isDark = widget.isDark;
-    final textPrimary = isDark ? Colors.white : AppColors.textPrimary;
-    final textSecondary =
-        isDark ? AppColors.textSecondary : const Color(0xFF64748B);
+    final colors = context.appColors;
+    final textPrimary = colors.textPrimary;
+    final textSecondary = colors.textSecondary;
 
     return CompositedTransformTarget(
       link: _layerLink,

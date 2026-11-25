@@ -5,6 +5,7 @@ import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
 import 'package:devzees_edutechai_client/core/theme/text_styles.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/gradient_text.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/theme_toggle_button.dart';
+import 'package:devzees_edutechai_client/core/theme/theme_palette.dart';
 
 class AuthTopNavbar extends StatelessWidget {
   final bool isMobile;
@@ -73,12 +74,12 @@ class AuthTopNavbar extends StatelessWidget {
                   icon: Icon(
                     Icons.arrow_back,
                     size: 16,
-                    color: isDark ? AppColors.textPrimary : const Color(0xFF475569),
+                    color: isDark ? context.appColors.textPrimary : const Color(0xFF475569),
                   ),
                   label: Text(
                     isMobile ? 'Back' : 'Back to Home',
                     style: TextStyle(
-                      color: isDark ? AppColors.textPrimary : const Color(0xFF475569),
+                      color: isDark ? context.appColors.textPrimary : const Color(0xFF475569),
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                     ),
@@ -90,7 +91,7 @@ class AuthTopNavbar extends StatelessWidget {
                       vertical: isMobile ? 8 : 10,
                     ),
                     side: BorderSide(
-                      color: isDark ? AppColors.border : const Color(0xFFE2E8F0),
+                      color: isDark ? context.appColors.border : const Color(0xFFE2E8F0),
                     ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),

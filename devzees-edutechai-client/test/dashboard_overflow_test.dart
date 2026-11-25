@@ -254,6 +254,67 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
+
+  testWidgets(
+    'renders cleanly on widescreen desktop viewport (1920x1080) without overflow',
+    (tester) async {
+      tester.view.physicalSize = const Size(1920, 1080);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      await tester.pumpWidget(createDashboardWidget(width: 1920, height: 1080));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Growth & Mastery Analytics'), findsOneWidget);
+      expect(find.text('Active Study Time'), findsOneWidget);
+      expect(find.text('Journeys Completed'), findsOneWidget);
+      expect(find.text('Milestones Mastered'), findsOneWidget);
+      expect(find.text('Period Quiz Accuracy'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'mobile view switches cleanly across Overview, Quizzes, Journeys, and Trophies tabs',
+    (tester) async {
+      tester.view.physicalSize = const Size(375, 812);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      await tester.pumpWidget(createDashboardWidget(width: 375, height: 812));
+      await tester.pumpAndSettle();
+
+      // Default tab: Overview
+      expect(find.text('Overview'), findsOneWidget);
+      expect(find.text('Learning Mode Distribution'), findsOneWidget);
+      expect(find.text('Daily Activity Log'), findsOneWidget);
+      expect(find.text('Quiz Comprehension & Accuracy Curve'), findsNothing);
+
+      // Tap Quizzes tab
+      await tester.tap(find.text('Quizzes'));
+      await tester.pumpAndSettle();
+      expect(find.text('Quiz Comprehension & Accuracy Curve'), findsOneWidget);
+      expect(find.text('Concepts Needing Reinforcement'), findsOneWidget);
+
+      // Tap Journeys tab
+      await tester.tap(find.text('Journeys'));
+      await tester.pumpAndSettle();
+      expect(find.text('Top 2 Learning Journey Mastery Breakdown'), findsOneWidget);
+
+      // Tap Trophies tab
+      await tester.tap(find.text('Trophies').first);
+      await tester.pumpAndSettle();
+      expect(find.text('Learner Achievements & Trophies'), findsOneWidget);
+
+      expect(tester.takeException(), isNull);
+    },
+  );
 }
 
 class _MockDashboardNotifier extends DashboardNotifier {

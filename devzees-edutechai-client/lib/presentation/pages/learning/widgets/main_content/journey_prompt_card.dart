@@ -10,6 +10,7 @@ import '../../../../../data/models/learning/session_quota.dart';
 import '../../../../widgets/center_toast.dart';
 import '../../../../widgets/gradient_button.dart';
 import '../../../../widgets/gradient_text.dart';
+import 'package:devzees_edutechai_client/core/theme/theme_palette.dart';
 
 class JourneyPromptCard extends ConsumerStatefulWidget {
   final void Function(String topic, String mode, String level) onStartJourney;
@@ -163,22 +164,20 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = AppColors.isDark;
+    final isDark = context.isDarkMode;
 
     return MouseRegion(
       onEnter: (_) => setState(() => _isCardHovered = true),
       onExit: (_) => setState(() => _isCardHovered = false),
       child: Center(
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 250),
-          curve: Curves.easeOutCubic,
+        child: Container(
           transform: Matrix4.translationValues(0, _isCardHovered ? -2.0 : 0, 0),
           constraints: const BoxConstraints(maxWidth: 1020),
           width: double.infinity,
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           padding: const EdgeInsets.fromLTRB(28, 18, 28, 14),
           decoration: BoxDecoration(
-            color: isDark ? AppColors.canvasBackground : Colors.white,
+            color: isDark ? context.appColors.scaffoldBackground : Colors.white,
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
               color: AppColors.primary.withValues(
@@ -339,9 +338,9 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
-            color: AppColors.chipBackground,
+            color: context.appColors.chipBackground,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.border),
+            border: Border.all(color: context.appColors.border),
           ),
           child: Builder(
             builder: (context) {
@@ -357,10 +356,10 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
                     value: value,
                     isExpanded: true,
                     borderRadius: BorderRadius.circular(16),
-                    dropdownColor: AppColors.cardBackground,
+                    dropdownColor: context.appColors.cardBackground,
                     icon: Icon(
                       Icons.keyboard_arrow_down,
-                      color: AppColors.textSecondary,
+                      color: context.appColors.textSecondary,
                     ),
                     style: AppTextStyles.bodyPrimary,
                     items: items.map((String item) {
@@ -375,7 +374,7 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
                                 item,
                                 style: isLocked
                                     ? AppTextStyles.bodyPrimary.copyWith(
-                                        color: AppColors.textMuted,
+                                        color: context.appColors.textSecondary,
                                       )
                                     : null,
                               ),
@@ -459,7 +458,7 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
     required bool isMobile,
     required bool hasMoreThan3Lines,
   }) {
-    final isDark = AppColors.isDark;
+    final isDark = context.isDarkMode;
     final expandedHeight = isMobile ? 280.0 : 340.0;
     final perms = ref.watch(permissionProvider);
     final quotaState = ref.watch(sessionQuotaProvider);
@@ -473,19 +472,19 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
     return MouseRegion(
       onEnter: (_) => setState(() => _isInputHovered = true),
       onExit: (_) => setState(() => _isInputHovered = false),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeOutCubic,
+      child: Container(
         height: _isExpanded ? expandedHeight : null,
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1E1F2E) : AppColors.chipBackground,
+          color: isDark
+              ? const Color(0xFF1E1F2E)
+              : context.appColors.chipBackground,
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
             color: _isInputFocused
                 ? AppColors.primary
                 : (_isInputHovered
                       ? AppColors.primary.withValues(alpha: 0.55)
-                      : AppColors.border),
+                      : context.appColors.border),
             width: _isInputFocused ? 1.5 : 1.0,
           ),
           boxShadow: [
@@ -559,9 +558,8 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
                                 hintText:
                                     'Ask EduTechAI anything... (e.g., I want to learn Python programming from zero)',
                                 hintStyle: AppTextStyles.body2.copyWith(
-                                  color: AppColors.textSecondary.withValues(
-                                    alpha: 0.6,
-                                  ),
+                                  color: context.appColors.textSecondary
+                                      .withValues(alpha: 0.6),
                                   fontSize: 14.5,
                                 ),
                                 border: InputBorder.none,
@@ -604,7 +602,9 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
                         hintText:
                             'Ask EduTechAI anything... (e.g., I want to learn Python programming from zero)',
                         hintStyle: AppTextStyles.body2.copyWith(
-                          color: AppColors.textSecondary.withValues(alpha: 0.6),
+                          color: context.appColors.textSecondary.withValues(
+                            alpha: 0.6,
+                          ),
                           fontSize: 14.5,
                         ),
                         border: InputBorder.none,
@@ -643,7 +643,9 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
                                   value: _selectedMode,
                                   items: _modes,
                                   lockedItems: lockedModes,
-                                  lockedItemBadges: const {_deepDiveMode: 'PRO'},
+                                  lockedItemBadges: const {
+                                    _deepDiveMode: 'PRO',
+                                  },
                                   onLockedTap: _handleLockedModeSelected,
                                   isMobile: isMobile,
                                   onChanged: (val) =>
@@ -700,7 +702,7 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
   /// Browse Suggested Topics button with gradient text and interactive popup menu,
   /// preserving the original design.
   Widget _buildSuggestedTopics() {
-    final isDark = AppColors.isDark;
+    final isDark = context.isDarkMode;
 
     final List<String> suggestions = [
       'I want to learn Python programming from zero step by step 🐍',
@@ -751,7 +753,7 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
                       child: Text(
                         topic,
                         style: AppTextStyles.body2.copyWith(
-                          color: AppColors.textPrimary,
+                          color: context.appColors.textPrimary,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -834,15 +836,13 @@ class _CompactThemeDropdownState extends State<_CompactThemeDropdown> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = AppColors.isDark;
+    final isDark = context.isDarkMode;
 
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
       cursor: SystemMouseCursors.click,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeOutCubic,
+      child: Container(
         height: 38,
         padding: const EdgeInsets.symmetric(horizontal: 12),
         decoration: BoxDecoration(
@@ -892,7 +892,7 @@ class _CompactThemeDropdownState extends State<_CompactThemeDropdown> {
                 ),
               ),
               style: AppTextStyles.body2.copyWith(
-                color: AppColors.textPrimary,
+                color: context.appColors.textPrimary,
                 fontWeight: FontWeight.w600,
                 fontSize: widget.isMobile ? 12 : 13,
               ),
@@ -908,11 +908,11 @@ class _CompactThemeDropdownState extends State<_CompactThemeDropdown> {
                         item,
                         style: isLocked
                             ? AppTextStyles.body2.copyWith(
-                                color: AppColors.textMuted,
+                                color: context.appColors.textSecondary,
                                 fontSize: widget.isMobile ? 12 : 13,
                               )
                             : AppTextStyles.body2.copyWith(
-                                color: AppColors.textPrimary,
+                                color: context.appColors.textPrimary,
                                 fontWeight: FontWeight.w600,
                                 fontSize: widget.isMobile ? 12 : 13,
                               ),
@@ -1001,7 +1001,7 @@ class _ZoomIconButtonState extends State<_ZoomIconButton> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = AppColors.isDark;
+    final isDark = context.isDarkMode;
 
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
@@ -1012,9 +1012,7 @@ class _ZoomIconButtonState extends State<_ZoomIconButton> {
         waitDuration: const Duration(milliseconds: 300),
         child: GestureDetector(
           onTap: widget.onTap,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 150),
-            curve: Curves.easeOutCubic,
+          child: Container(
             width: 32,
             height: 32,
             decoration: BoxDecoration(
@@ -1032,8 +1030,8 @@ class _ZoomIconButtonState extends State<_ZoomIconButton> {
                     : Icons.open_in_full_rounded,
                 size: 16,
                 color: _isHovered
-                    ? (isDark ? Colors.white : AppColors.textPrimary)
-                    : AppColors.textSecondary.withValues(alpha: 0.8),
+                    ? (isDark ? Colors.white : context.appColors.textPrimary)
+                    : context.appColors.textSecondary.withValues(alpha: 0.8),
               ),
             ),
           ),
@@ -1065,7 +1063,7 @@ class _FreeTierQuotaPillState extends State<_FreeTierQuotaPill> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = AppColors.isDark;
+    final isDark = context.isDarkMode;
     final remaining = widget.quota.remaining ?? 0;
     final limit = widget.quota.limit ?? 10;
     final isExhausted = remaining <= 0;
@@ -1102,9 +1100,7 @@ class _FreeTierQuotaPillState extends State<_FreeTierQuotaPill> {
           onTap: () {
             context.push('/subscription');
           },
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            curve: Curves.easeOutCubic,
+          child: Container(
             height: 38,
             padding: EdgeInsets.symmetric(
               horizontal: widget.isCompact ? 10 : 14,
@@ -1152,7 +1148,7 @@ class _FreeTierQuotaPillState extends State<_FreeTierQuotaPill> {
                         ? AppColors.accentRose
                         : (isLow
                               ? AppColors.accentAmber
-                              : AppColors.textPrimary),
+                              : context.appColors.textPrimary),
                     fontWeight: FontWeight.w600,
                     fontSize: widget.isMobile ? 12 : 13,
                   ),

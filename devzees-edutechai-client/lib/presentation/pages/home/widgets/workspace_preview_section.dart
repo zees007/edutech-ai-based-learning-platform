@@ -5,6 +5,7 @@ import 'package:devzees_edutechai_client/presentation/widgets/glass_card.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/gradient_text.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/interactive_3d_card.dart';
 import 'package:devzees_edutechai_client/core/constants/responsive.dart';
+import 'package:devzees_edutechai_client/core/theme/theme_palette.dart';
 
 class WorkspacePreviewSection extends StatefulWidget {
   const WorkspacePreviewSection({super.key});
@@ -200,12 +201,12 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
                 child: Column(
                   children: [
                     _buildMockWorkspaceHeader(isMobile),
-                    Divider(height: 1, color: AppColors.border.withValues(alpha: 0.5)),
+                    Divider(height: 1, color: context.appColors.border.withValues(alpha: 0.5)),
                     if (isMobile)
                       Column(
                         children: [
                           _buildLeftTutorPanel(isMobile),
-                          Divider(height: 1, color: AppColors.border.withValues(alpha: 0.5)),
+                          Divider(height: 1, color: context.appColors.border.withValues(alpha: 0.5)),
                           _buildRightContextPanel(isMobile),
                         ],
                       )
@@ -215,7 +216,7 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             Expanded(flex: 6, child: _buildLeftTutorPanel(isMobile)),
-                            VerticalDivider(width: 1, color: AppColors.border.withValues(alpha: 0.5)),
+                            VerticalDivider(width: 1, color: context.appColors.border.withValues(alpha: 0.5)),
                             Expanded(flex: 5, child: _buildRightContextPanel(isMobile)),
                           ],
                         ),
@@ -443,7 +444,7 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
           border: Border.all(
             color: isSelected
                 ? AppColors.primary
-                : AppColors.border.withValues(alpha: 0.5),
+                : context.appColors.border.withValues(alpha: 0.5),
             width: isSelected ? 1.5 : 1,
           ),
           boxShadow: isSelected
@@ -463,13 +464,13 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
               Icon(
                 icon,
                 size: 16,
-                color: isSelected ? Colors.white : AppColors.textSecondary,
+                color: isSelected ? Colors.white : context.appColors.textSecondary,
               ),
               const SizedBox(width: 8),
               Text(
                 label,
                 style: TextStyle(
-                  color: isSelected ? Colors.white : AppColors.textSecondary,
+                  color: isSelected ? Colors.white : context.appColors.textSecondary,
                   fontSize: 13,
                   fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                 ),
@@ -486,7 +487,7 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
                 child: Text(
                   badge,
                   style: TextStyle(
-                    color: isSelected ? Colors.white : AppColors.textMuted,
+                    color: isSelected ? Colors.white : context.appColors.textSecondary,
                     fontSize: 10,
                     fontWeight: FontWeight.w600,
                   ),
@@ -529,7 +530,7 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
                           Text(
                             'Quantum Computing & Superposition',
                             style: TextStyle(
-                              color: AppColors.textPrimary,
+                              color: context.appColors.textPrimary,
                               fontSize: 12.5,
                               fontWeight: FontWeight.w700,
                             ),
@@ -538,7 +539,7 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
                           Text(
                             'Step 2 of 5: The Superposition Principle',
                             style: TextStyle(
-                              color: AppColors.adaptiveLavender,
+                              color: (context.isDarkMode ? AppColors.lavender : AppColors.primaryViolet),
                               fontSize: 10,
                               fontWeight: FontWeight.w600,
                             ),
@@ -582,7 +583,7 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
                             Text(
                               'Quantum Computing & Superposition',
                               style: TextStyle(
-                                color: AppColors.textPrimary,
+                                color: context.appColors.textPrimary,
                                 fontSize: 15,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -591,7 +592,7 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
                             Text(
                               'Step 2 of 5: The Superposition Principle & Bloch Sphere',
                               style: TextStyle(
-                                color: AppColors.adaptiveLavender,
+                                color: (context.isDarkMode ? AppColors.lavender : AppColors.primaryViolet),
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -694,7 +695,7 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
                       Text(
                         'Socratic Tutor Agent',
                         style: TextStyle(
-                          color: AppColors.textPrimary,
+                          color: context.appColors.textPrimary,
                           fontWeight: FontWeight.w700,
                           fontSize: 13,
                         ),
@@ -703,7 +704,7 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
                       Text(
                         'Pedagogical Scaffolding • Level: Undergraduate',
                         style: TextStyle(
-                          color: AppColors.textSecondary,
+                          color: context.appColors.textSecondary,
                           fontSize: 10,
                         ),
                         overflow: TextOverflow.ellipsis,
@@ -738,7 +739,7 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
               style: AppTextStyles.body1.copyWith(
                 fontSize: 14,
                 height: 1.5,
-                color: AppColors.textPrimary,
+                color: context.appColors.textPrimary,
               ),
             ),
             const SizedBox(height: 14),
@@ -757,7 +758,7 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.account_tree_outlined, size: 14, color: AppColors.adaptiveLavender),
+                      Icon(Icons.account_tree_outlined, size: 14, color: (context.isDarkMode ? AppColors.lavender : AppColors.primaryViolet)),
                       const SizedBox(width: 6),
                       Expanded(
                         child: Text(
@@ -766,7 +767,7 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
                             fontSize: 10,
                             fontWeight: FontWeight.w800,
                             letterSpacing: 1,
-                            color: AppColors.adaptiveLavender,
+                            color: (context.isDarkMode ? AppColors.lavender : AppColors.primaryViolet),
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -823,7 +824,7 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
                   Text(
                     'What physical mechanism causes the probability wave function to collapse upon observation? Can a qubit perform computations while in superposition?',
                     style: TextStyle(
-                      color: AppColors.textSlate,
+                      color: context.appColors.textSecondary,
                       fontSize: 12,
                       height: 1.4,
                     ),
@@ -839,16 +840,16 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
               decoration: BoxDecoration(
                 color: AppColors.surfaceDark,
                 borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: AppColors.border),
+                border: Border.all(color: context.appColors.border),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.chat_bubble_outline, size: 16, color: AppColors.textMuted),
+                  Icon(Icons.chat_bubble_outline, size: 16, color: context.appColors.textSecondary),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
                       'Ask the Socratic Tutor a follow-up question...',
-                      style: TextStyle(color: AppColors.textMuted, fontSize: 12),
+                      style: TextStyle(color: context.appColors.textSecondary, fontSize: 12),
                     ),
                   ),
                   Container(
@@ -880,7 +881,7 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
         children: [
           Text(title, style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.bold)),
           const SizedBox(height: 2),
-          Text(subtitle, style: TextStyle(color: AppColors.textSecondary, fontSize: 9)),
+          Text(subtitle, style: TextStyle(color: context.appColors.textSecondary, fontSize: 9)),
         ],
       ),
     );
@@ -891,12 +892,12 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
       padding: const EdgeInsets.symmetric(horizontal: 8),
       child: Column(
         children: [
-          Text(label, style: TextStyle(color: AppColors.textMuted, fontSize: 8)),
+          Text(label, style: TextStyle(color: context.appColors.textSecondary, fontSize: 8)),
           const SizedBox(height: 2),
           Row(
             children: [
-              Container(width: 24, height: 1.5, color: AppColors.border),
-              Icon(Icons.chevron_right, size: 12, color: AppColors.border),
+              Container(width: 24, height: 1.5, color: context.appColors.border),
+              Icon(Icons.chevron_right, size: 12, color: context.appColors.border),
             ],
           ),
         ],
@@ -943,7 +944,7 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
               child: Text(
                 'Curated YouTube Deep-Link',
                 style: TextStyle(
-                  color: AppColors.textPrimary,
+                  color: context.appColors.textPrimary,
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
                 ),
@@ -975,7 +976,7 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
-            border: Border.all(color: AppColors.border),
+            border: Border.all(color: context.appColors.border),
           ),
           child: Stack(
             alignment: Alignment.center,
@@ -1038,7 +1039,7 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
           decoration: BoxDecoration(
             color: AppColors.surfaceMid.withValues(alpha: 0.5),
             borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: AppColors.border),
+            border: Border.all(color: context.appColors.border),
           ),
           child: const Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1071,7 +1072,7 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
               child: Text(
                 'Curated Academic Literature',
                 style: TextStyle(
-                  color: AppColors.textPrimary,
+                  color: context.appColors.textPrimary,
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
                 ),
@@ -1100,7 +1101,7 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
               Text(
                 'Experimental Demonstration of Multi-Qubit Quantum Superposition in Superconducting Circuits',
                 style: TextStyle(
-                  color: AppColors.textPrimary,
+                  color: context.appColors.textPrimary,
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
                   height: 1.3,
@@ -1109,7 +1110,7 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
               const SizedBox(height: 6),
               Text(
                 'Authors: J. Martinez, E. Chen et al. • Physical Review Letters',
-                style: TextStyle(color: AppColors.textMuted, fontSize: 10),
+                style: TextStyle(color: context.appColors.textSecondary, fontSize: 10),
               ),
               const SizedBox(height: 12),
               Container(
@@ -1132,7 +1133,7 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
                     const SizedBox(height: 4),
                     Text(
                       'Achieves 99.8% fidelity in maintaining coherent superposition states across 12 entangled Josephson junction qubits at 15mK.',
-                      style: TextStyle(color: AppColors.textSlate, fontSize: 11, height: 1.4),
+                      style: TextStyle(color: context.appColors.textSecondary, fontSize: 11, height: 1.4),
                     ),
                   ],
                 ),
@@ -1147,8 +1148,8 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
                     icon: const Icon(Icons.picture_as_pdf, size: 14),
                     label: const Text('Download PDF', style: TextStyle(fontSize: 11)),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.textPrimary,
-                      side: BorderSide(color: AppColors.border),
+                      foregroundColor: context.appColors.textPrimary,
+                      side: BorderSide(color: context.appColors.border),
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     ),
                   ),
@@ -1190,7 +1191,7 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
               child: Text(
                 'Formative Knowledge Check',
                 style: TextStyle(
-                  color: AppColors.textPrimary,
+                  color: context.appColors.textPrimary,
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
                 ),
@@ -1213,7 +1214,7 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
         Text(
           'According to the Copenhagen interpretation, what precipitates the collapse of a superposition wave function into a single state?',
           style: TextStyle(
-            color: AppColors.textPrimary,
+            color: context.appColors.textPrimary,
             fontSize: 12,
             fontWeight: FontWeight.w600,
             height: 1.4,
@@ -1224,7 +1225,7 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
         ...List.generate(options.length, (i) {
           final isSelected = _selectedQuizAnswer == i;
           final isCorrect = i == 0;
-          Color cardBorder = AppColors.border;
+          Color cardBorder = context.appColors.border;
           Color cardBg = AppColors.surfaceDark;
 
           if (_quizSubmitted) {
@@ -1265,7 +1266,7 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 11,
-                        color: isSelected ? AppColors.accentBlue : AppColors.textMuted,
+                        color: isSelected ? AppColors.accentBlue : context.appColors.textSecondary,
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -1274,7 +1275,7 @@ class _WorkspacePreviewSectionState extends State<WorkspacePreviewSection> {
                         options[i],
                         style: TextStyle(
                           fontSize: 11,
-                          color: AppColors.textPrimary,
+                          color: context.appColors.textPrimary,
                         ),
                       ),
                     ),
