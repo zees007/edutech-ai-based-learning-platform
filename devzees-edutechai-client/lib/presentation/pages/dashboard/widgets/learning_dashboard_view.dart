@@ -28,6 +28,8 @@ class LearningDashboardView extends ConsumerStatefulWidget {
 }
 
 class _LearningDashboardViewState extends ConsumerState<LearningDashboardView> {
+  int _selectedMobileTab = 0;
+
   @override
   void initState() {
     super.initState();
@@ -95,13 +97,26 @@ class _LearningDashboardViewState extends ConsumerState<LearningDashboardView> {
                               _buildErrorView(context, state.error!)
                             // Loaded Content
                             else if (state.data != null) ...[
-                              // 1. Concentric Donut Hub & KPI Cards
-                              DashboardKpiCards(summary: state.data!.summary),
-                              const SizedBox(height: 24),
+                              if (constraints.maxWidth <
+                                  Responsive.mobileBreakpoint) ...[
+                                _buildMobileTabBar(context, state.data!, isDark),
+                                const SizedBox(height: 16),
+                                AnimatedSwitcher(
+                                  duration: const Duration(milliseconds: 220),
+                                  switchInCurve: Curves.easeOutCubic,
+                                  switchOutCurve: Curves.easeInCubic,
+                                  child: KeyedSubtree(
+                                    key: ValueKey(_selectedMobileTab),
+                                    child: _buildMobileTabContent(state.data!),
+                                  ),
+                                ),
+                                const SizedBox(height: 32),
+                              ] else ...[
+                                // 1. Concentric Donut Hub & KPI Cards
+                                DashboardKpiCards(summary: state.data!.summary),
+                                const SizedBox(height: 24),
 
-                              // 2. Right below KPIs: Learning Mode Distribution & Milestone Achievements
-                              if (constraints.maxWidth >=
-                                  Responsive.mobileBreakpoint)
+                                // 2. Right below KPIs: Learning Mode Distribution & Milestone Achievements
                                 IntrinsicHeight(
                                   child: Row(
                                     crossAxisAlignment:
@@ -132,34 +147,22 @@ class _LearningDashboardViewState extends ConsumerState<LearningDashboardView> {
                                       ),
                                     ],
                                   ),
-                                )
-                              else ...[
-                                LearningModeDistributionCard(
-                                  modeDistribution:
-                                      state.data!.modeDistribution,
                                 ),
-                                const SizedBox(height: 16),
-                                MilestoneAchievementsCard(
-                                  achievements: state.data!.achievements,
+                                const SizedBox(height: 24),
+
+                                // 3. Quiz Trend Card (Accuracy Curve)
+                                QuizTrendCard(
+                                  quizMetrics: state.data!.quizMetrics,
                                 ),
-                              ],
-                              const SizedBox(height: 24),
+                                const SizedBox(height: 24),
 
-                              // 3. Quiz Trend Card (Accuracy Curve)
-                              QuizTrendCard(
-                                quizMetrics: state.data!.quizMetrics,
-                              ),
-                              const SizedBox(height: 24),
+                                // 4. Full-Width Topic Mastery Breakdown (2-col on Tablet/Desktop)
+                                TopicBreakdownCard(
+                                  topicBreakdown: state.data!.topicBreakdown,
+                                ),
+                                const SizedBox(height: 24),
 
-                              // 4. Full-Width Topic Mastery Breakdown (2-col on Tablet/Desktop, 1-col on Mobile)
-                              TopicBreakdownCard(
-                                topicBreakdown: state.data!.topicBreakdown,
-                              ),
-                              const SizedBox(height: 24),
-
-                              // 5. Daily Activity Log & Weak Concepts (Exact Same Height on Tablet/Desktop)
-                              if (constraints.maxWidth >=
-                                  Responsive.mobileBreakpoint)
+                                // 5. Daily Activity Log & Weak Concepts (Exact Same Height)
                                 IntrinsicHeight(
                                   child: Row(
                                     crossAxisAlignment:
@@ -186,20 +189,9 @@ class _LearningDashboardViewState extends ConsumerState<LearningDashboardView> {
                                       ),
                                     ],
                                   ),
-                                )
-                              else ...[
-                                DailyActivityHeatmapCard(
-                                  activityHeatmap: state.data!.activityHeatmap,
                                 ),
-                                const SizedBox(height: 16),
-                                WeakConceptsCard(
-                                  weakConcepts: state
-                                      .data!
-                                      .quizMetrics
-                                      .conceptsNeedingReinforcement,
-                                ),
+                                const SizedBox(height: 48),
                               ],
-                              const SizedBox(height: 48),
                             ],
                           ],
                         ),
@@ -213,6 +205,199 @@ class _LearningDashboardViewState extends ConsumerState<LearningDashboardView> {
         );
       },
     );
+  }
+
+  Widget _buildMobileTabBar(
+    BuildContext context,
+    dynamic data,
+    bool isDark,
+  ) {
+    final weakCount = data.quizMetrics.conceptsNeedingReinforcement.length as int;
+    final unlockedTrophies =
+        (data.achievements as List).where((a) => a.unlocked == true).length;
+    final totalTrophies = (data.achievements as List).length;
+
+    final tabs = [
+      (
+        index: 0,
+        label: 'Overview',
+        icon: Icons.dashboard_rounded,
+        badge: null as String?,
+      ),
+      (
+        index: 1,
+        label: 'Quizzes',
+        icon: Icons.insights_rounded,
+        badge: weakCount > 0 ? '$weakCount' : null,
+      ),
+      (
+        index: 2,
+        label: 'Journeys',
+        icon: Icons.route_rounded,
+        badge: null as String?,
+      ),
+      (
+        index: 3,
+        label: 'Trophies',
+        icon: Icons.emoji_events_rounded,
+        badge: totalTrophies > 0 ? '$unlockedTrophies/$totalTrophies' : null,
+      ),
+    ];
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: isDark
+            ? Colors.white.withValues(alpha: 0.05)
+            : Colors.black.withValues(alpha: 0.04),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        children: [
+          for (int i = 0; i < tabs.length; i++) ...[
+            if (i > 0) const SizedBox(width: 4),
+            Expanded(
+              child: _buildMobileTabItem(
+                label: tabs[i].label,
+                icon: tabs[i].icon,
+                badge: tabs[i].badge,
+                isSelected: _selectedMobileTab == tabs[i].index,
+                isDark: isDark,
+                onTap: () => setState(() => _selectedMobileTab = tabs[i].index),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMobileTabItem({
+    required String label,
+    required IconData icon,
+    required String? badge,
+    required bool isSelected,
+    required bool isDark,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(10),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOutCubic,
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+        decoration: BoxDecoration(
+          gradient: isSelected ? AppColors.primaryGradient : null,
+          color: isSelected ? null : Colors.transparent,
+          borderRadius: BorderRadius.circular(10),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: AppColors.primary
+                        .withValues(alpha: isDark ? 0.30 : 0.22),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
+        ),
+        child: Center(
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  icon,
+                  size: 14,
+                  color: isSelected
+                      ? Colors.white
+                      : (isDark
+                            ? AppColors.textSecondary
+                            : const Color(0xFF64748B)),
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  label,
+                  style: AppTextStyles.caption.copyWith(
+                    color: isSelected
+                        ? Colors.white
+                        : (isDark
+                              ? AppColors.textSecondary
+                              : const Color(0xFF475569)),
+                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                    fontSize: 11.5,
+                  ),
+                ),
+                if (badge != null) ...[
+                  const SizedBox(width: 4),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 1,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? Colors.white.withValues(alpha: 0.22)
+                          : (isDark
+                                ? Colors.white.withValues(alpha: 0.08)
+                                : Colors.black.withValues(alpha: 0.06)),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      badge,
+                      style: TextStyle(
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.w700,
+                        color: isSelected
+                            ? Colors.white
+                            : (isDark
+                                  ? AppColors.textSecondary
+                                  : const Color(0xFF475569)),
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMobileTabContent(dynamic data) {
+    switch (_selectedMobileTab) {
+      case 1:
+        return Column(
+          children: [
+            QuizTrendCard(quizMetrics: data.quizMetrics),
+            const SizedBox(height: 16),
+            WeakConceptsCard(
+              weakConcepts: data.quizMetrics.conceptsNeedingReinforcement,
+            ),
+          ],
+        );
+      case 2:
+        return TopicBreakdownCard(topicBreakdown: data.topicBreakdown);
+      case 3:
+        return MilestoneAchievementsCard(achievements: data.achievements);
+      case 0:
+      default:
+        return Column(
+          children: [
+            DashboardKpiCards(summary: data.summary),
+            const SizedBox(height: 16),
+            LearningModeDistributionCard(
+              modeDistribution: data.modeDistribution,
+            ),
+            const SizedBox(height: 16),
+            DailyActivityHeatmapCard(activityHeatmap: data.activityHeatmap),
+          ],
+        );
+    }
   }
 
   Widget _buildLoadingSkeleton(BuildContext context, bool isMobile) {

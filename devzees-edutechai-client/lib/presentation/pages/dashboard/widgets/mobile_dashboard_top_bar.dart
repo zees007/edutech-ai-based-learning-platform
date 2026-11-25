@@ -70,23 +70,26 @@ class MobileDashboardTopBar extends ConsumerWidget
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // Glowing Squircle Accent Badge (Same in Light and Dark Mode)
+                    // Glowing Gradient Hero Squircle Badge (Same in Light and Dark Mode)
                     Container(
                       width: 28,
                       height: 28,
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.22),
-                        borderRadius: BorderRadius.circular(7),
-                        border: Border.all(
-                          color: AppColors.primary.withValues(alpha: 0.55),
-                          width: 1.0,
-                        ),
+                        gradient: AppColors.primaryGradient,
+                        borderRadius: BorderRadius.circular(8),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.primary.withValues(alpha: 0.28),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
                       child: const Center(
                         child: Icon(
-                          Icons.auto_graph_rounded,
-                          color: AppColors.primary,
-                          size: 14.5,
+                          Icons.leaderboard_rounded,
+                          color: Colors.white,
+                          size: 15,
                         ),
                       ),
                     ),
