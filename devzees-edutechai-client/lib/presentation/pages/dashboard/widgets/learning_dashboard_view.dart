@@ -151,43 +151,52 @@ class _LearningDashboardViewState extends ConsumerState<LearningDashboardView> {
                               ),
                               const SizedBox(height: 24),
 
-                              // 4. Weak Concepts Card
-                              WeakConceptsCard(
-                                weakConcepts: state
-                                    .data!
-                                    .quizMetrics
-                                    .conceptsNeedingReinforcement,
+                              // 4. Full-Width Topic Mastery Breakdown (2-col on Tablet/Desktop, 1-col on Mobile)
+                              TopicBreakdownCard(
+                                topicBreakdown: state.data!.topicBreakdown,
                               ),
                               const SizedBox(height: 24),
 
-                              // 5. Topic Breakdown & Daily Activity Heatmap
-                              if (constraints.maxWidth >= 760)
-                                Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Expanded(
-                                      child: TopicBreakdownCard(
-                                        topicBreakdown:
-                                            state.data!.topicBreakdown,
+                              // 5. Daily Activity Log & Weak Concepts (Exact Same Height on Tablet/Desktop)
+                              if (constraints.maxWidth >=
+                                  Responsive.mobileBreakpoint)
+                                IntrinsicHeight(
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.stretch,
+                                    children: [
+                                      Expanded(
+                                        flex: 5,
+                                        child: DailyActivityHeatmapCard(
+                                          activityHeatmap:
+                                              state.data!.activityHeatmap,
+                                          stretchHeight: true,
+                                        ),
                                       ),
-                                    ),
-                                    const SizedBox(width: 16),
-                                    Expanded(
-                                      child: DailyActivityHeatmapCard(
-                                        activityHeatmap:
-                                            state.data!.activityHeatmap,
+                                      const SizedBox(width: 16),
+                                      Expanded(
+                                        flex: 7,
+                                        child: WeakConceptsCard(
+                                          weakConcepts: state
+                                              .data!
+                                              .quizMetrics
+                                              .conceptsNeedingReinforcement,
+                                          stretchHeight: true,
+                                        ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 )
                               else ...[
-                                TopicBreakdownCard(
-                                  topicBreakdown: state.data!.topicBreakdown,
+                                DailyActivityHeatmapCard(
+                                  activityHeatmap: state.data!.activityHeatmap,
                                 ),
                                 const SizedBox(height: 16),
-                                DailyActivityHeatmapCard(
-                                  activityHeatmap:
-                                      state.data!.activityHeatmap,
+                                WeakConceptsCard(
+                                  weakConcepts: state
+                                      .data!
+                                      .quizMetrics
+                                      .conceptsNeedingReinforcement,
                                 ),
                               ],
                               const SizedBox(height: 48),

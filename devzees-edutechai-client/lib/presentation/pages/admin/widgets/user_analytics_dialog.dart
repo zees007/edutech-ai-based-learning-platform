@@ -343,8 +343,10 @@ class _UserAnalyticsDialogState extends ConsumerState<UserAnalyticsDialog> {
           QuizTrendCard(quizMetrics: data.quizMetrics),
           const SizedBox(height: 20),
 
-          // 4. Weak Concepts Needing Reinforcement
-          WeakConceptsCard(weakConcepts: data.quizMetrics.conceptsNeedingReinforcement),
+          // 4. Full-Width Topic Mastery Breakdown
+          TopicBreakdownCard(
+            topicBreakdown: data.topicBreakdown,
+          ),
           const SizedBox(height: 20),
 
           // 5. Learning Mode Distribution & Milestone Trophies
@@ -392,36 +394,44 @@ class _UserAnalyticsDialogState extends ConsumerState<UserAnalyticsDialog> {
           ),
           const SizedBox(height: 20),
 
-          // 6. Topic Mastery Breakdown & Daily Activity Heatmap
+          // 6. Daily Activity Log & Weak Concepts (Exact Same Height on Wide)
           LayoutBuilder(
             builder: (context, constraints) {
               final isWide = constraints.maxWidth >= 700;
               if (isWide) {
-                return Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: TopicBreakdownCard(
-                        topicBreakdown: data.topicBreakdown,
+                return IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Expanded(
+                        flex: 5,
+                        child: DailyActivityHeatmapCard(
+                          activityHeatmap: data.activityHeatmap,
+                          stretchHeight: true,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: DailyActivityHeatmapCard(
-                        activityHeatmap: data.activityHeatmap,
+                      const SizedBox(width: 16),
+                      Expanded(
+                        flex: 7,
+                        child: WeakConceptsCard(
+                          weakConcepts:
+                              data.quizMetrics.conceptsNeedingReinforcement,
+                          stretchHeight: true,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 );
               } else {
                 return Column(
                   children: [
-                    TopicBreakdownCard(
-                      topicBreakdown: data.topicBreakdown,
-                    ),
-                    const SizedBox(height: 16),
                     DailyActivityHeatmapCard(
                       activityHeatmap: data.activityHeatmap,
+                    ),
+                    const SizedBox(height: 16),
+                    WeakConceptsCard(
+                      weakConcepts:
+                          data.quizMetrics.conceptsNeedingReinforcement,
                     ),
                   ],
                 );

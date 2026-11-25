@@ -77,25 +77,55 @@ class _MilestoneAchievementsCardState extends State<MilestoneAchievementsCard> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  widget.title,
-                  style: AppTextStyles.h4.copyWith(
-                    fontWeight: FontWeight.w700,
-                    fontSize: isMobile ? 16 : 18,
-                    color: isDark
-                        ? AppColors.textPrimary
-                        : const Color(0xFF0F172A),
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  widget.subtitle,
-                  style: AppTextStyles.body2.copyWith(
-                    color: isDark
-                        ? AppColors.textSecondary
-                        : const Color(0xFF64748B),
-                    fontSize: isMobile ? 12 : 13,
-                  ),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: (isDark
+                                ? const Color(0xFFFBBF24)
+                                : const Color(0xFFD97706))
+                            .withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(
+                        Icons.emoji_events_rounded,
+                        color: isDark
+                            ? const Color(0xFFFBBF24)
+                            : const Color(0xFFD97706),
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            widget.title,
+                            style: AppTextStyles.h4.copyWith(
+                              fontWeight: FontWeight.w700,
+                              fontSize: isMobile ? 16 : 18,
+                              color: isDark
+                                  ? AppColors.textPrimary
+                                  : const Color(0xFF0F172A),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            widget.subtitle,
+                            style: AppTextStyles.body2.copyWith(
+                              color: isDark
+                                  ? AppColors.textSecondary
+                                  : const Color(0xFF64748B),
+                              fontSize: isMobile ? 12 : 13,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 10),
                 _buildUnlockCounterBadge(
@@ -110,6 +140,24 @@ class _MilestoneAchievementsCardState extends State<MilestoneAchievementsCard> {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: (isDark
+                            ? const Color(0xFFFBBF24)
+                            : const Color(0xFFD97706))
+                        .withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    Icons.emoji_events_rounded,
+                    color: isDark
+                        ? const Color(0xFFFBBF24)
+                        : const Color(0xFFD97706),
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

@@ -146,21 +146,55 @@ class _LearningModeDistributionCardState
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: widget.stretchHeight ? MainAxisSize.max : MainAxisSize.min,
         children: [
-          Text(
-            'Learning Mode Distribution',
-            style: AppTextStyles.h4.copyWith(
-              fontWeight: FontWeight.w700,
-              fontSize: isMobile ? 16 : 18,
-              color: isDark ? AppColors.textPrimary : const Color(0xFF0F172A),
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Usage ratio across Visual 🎬, Deep Dive 🔬, and Bite-Sized ⚡ modes',
-            style: AppTextStyles.body2.copyWith(
-              color: isDark ? AppColors.textSecondary : const Color(0xFF64748B),
-              fontSize: isMobile ? 12 : 13,
-            ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: (isDark
+                          ? const Color(0xFFA78BFA)
+                          : const Color(0xFF7C3AED))
+                      .withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  Icons.pie_chart_rounded,
+                  color: isDark
+                      ? const Color(0xFFA78BFA)
+                      : const Color(0xFF7C3AED),
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Learning Mode Distribution',
+                      style: AppTextStyles.h4.copyWith(
+                        fontWeight: FontWeight.w700,
+                        fontSize: isMobile ? 16 : 18,
+                        color: isDark
+                            ? AppColors.textPrimary
+                            : const Color(0xFF0F172A),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Usage ratio across Visual 🎬, Deep Dive 🔬, and Bite-Sized ⚡ modes',
+                      style: AppTextStyles.body2.copyWith(
+                        color: isDark
+                            ? AppColors.textSecondary
+                            : const Color(0xFF64748B),
+                        fontSize: isMobile ? 12 : 13,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 20),
           if (widget.stretchHeight)
