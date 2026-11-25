@@ -100,9 +100,7 @@ class DashboardHeader extends ConsumerWidget {
                 vertical: isDesktop ? 8 : (isMobile ? 6 : 7),
               ),
               decoration: BoxDecoration(
-                color: isDark
-                    ? const Color(0xFF0C0D1A)
-                    : context.appColors.topBarBackground,
+                color: context.appColors.topBarBackground,
                 border: Border(
                   bottom: BorderSide(
                     color: isDark

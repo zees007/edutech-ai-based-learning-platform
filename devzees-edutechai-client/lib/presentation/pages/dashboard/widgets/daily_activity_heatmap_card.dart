@@ -87,19 +87,10 @@ class _DailyActivityHeatmapCardState extends State<DailyActivityHeatmapCard> {
 
     return Container(
       decoration: BoxDecoration(
-        color: isDark
-            ? AppColors.cardBackground.withValues(alpha: 0.35)
-            : Colors.white.withValues(alpha: 0.65),
+        color: context.appColors.surface,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: isDark
-                ? Colors.black.withValues(alpha: 0.20)
-                : Colors.black.withValues(alpha: 0.04),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        border: isDark ? Border.all(color: context.appColors.border) : null,
+        boxShadow: context.appColors.cardShadow,
       ),
       padding: EdgeInsets.all(isMobile ? 16 : 22),
       child: Column(
@@ -114,10 +105,11 @@ class _DailyActivityHeatmapCardState extends State<DailyActivityHeatmapCard> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: (isDark
-                          ? const Color(0xFF34D399)
-                          : const Color(0xFF059669))
-                      .withValues(alpha: 0.15),
+                  color:
+                      (isDark
+                              ? const Color(0xFF34D399)
+                              : const Color(0xFF059669))
+                          .withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(

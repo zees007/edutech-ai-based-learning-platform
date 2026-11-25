@@ -63,9 +63,7 @@ class MobileDashboardTopBar extends ConsumerWidget
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: isDark
-                      ? const Color(0xFF0C0D1A)
-                      : context.appColors.topBarBackground,
+                  color: context.appColors.topBarBackground,
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.center,

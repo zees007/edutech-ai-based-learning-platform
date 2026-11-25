@@ -202,19 +202,10 @@ class _QuizTrendCardState extends State<QuizTrendCard> {
 
         return Container(
           decoration: BoxDecoration(
-            color: isDark
-                ? AppColors.cardBackground.withValues(alpha: 0.35)
-                : Colors.white.withValues(alpha: 0.65),
+            color: context.appColors.surface,
             borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: isDark
-                    ? Colors.black.withValues(alpha: 0.20)
-                    : Colors.black.withValues(alpha: 0.04),
-                blurRadius: 16,
-                offset: const Offset(0, 4),
-              ),
-            ],
+            border: isDark ? Border.all(color: context.appColors.border) : null,
+            boxShadow: context.appColors.cardShadow,
           ),
           padding: EdgeInsets.all(isMobile ? 16 : 22),
           child: Column(

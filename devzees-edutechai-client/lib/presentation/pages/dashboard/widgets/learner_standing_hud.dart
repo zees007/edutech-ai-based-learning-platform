@@ -231,9 +231,7 @@ class LearnerStandingHud extends ConsumerWidget {
             vertical: isDesktop ? 7 : 3,
           ),
           decoration: BoxDecoration(
-            color: isDark
-                ? const Color(0xFF0C0D1A)
-                : context.appColors.topBarBackground,
+            color: context.appColors.topBarBackground,
             border: showBottomBorder
                 ? Border(
                     bottom: BorderSide(
@@ -965,7 +963,9 @@ class LearnerStandingHud extends ConsumerWidget {
               style: AppTextStyles.caption.copyWith(
                 fontWeight: FontWeight.w900,
                 fontSize: isCompact ? 9.5 : 10.5,
-                color: isDark ? const Color(0xFFA855F7) : const Color(0xFF7C3AED),
+                color: isDark
+                    ? const Color(0xFFA855F7)
+                    : const Color(0xFF7C3AED),
               ),
             ),
           ],
@@ -1172,13 +1172,15 @@ class _CurrentTrophyBadgeState extends State<_CurrentTrophyBadge> {
 
   @override
   Widget build(BuildContext context) {
-    final isUnranked = widget.highestTrophyId == null ||
+    final isUnranked =
+        widget.highestTrophyId == null ||
         widget.highestTrophyTitle.toLowerCase().contains('unranked');
     final displayTitle = isUnranked
         ? (widget.nextTrophyTitle ?? 'Bronze Trophy')
         : widget.highestTrophyTitle;
-    final effectiveStyle =
-        isUnranked ? getTrophyStyle('bronze') : widget.trophyStyle;
+    final effectiveStyle = isUnranked
+        ? getTrophyStyle('bronze')
+        : widget.trophyStyle;
     final isDiamond =
         !isUnranked && widget.highestTrophyId?.toLowerCase() == 'diamond';
     final glowColor = isDiamond
@@ -1188,11 +1190,11 @@ class _CurrentTrophyBadgeState extends State<_CurrentTrophyBadge> {
     final String trophyTooltipMsg = isUnranked
         ? 'Continue learning to unlock your first Bronze Trophy! 🏆'
         : (widget.nextTrophyTitle != null &&
-                widget.nextTrophyTitle!.isNotEmpty &&
-                widget.nextTrophyTitle!.toLowerCase() !=
-                    widget.highestTrophyTitle.toLowerCase())
-            ? 'Current Trophy: ${widget.highestTrophyTitle}\nNext to Achieve: ${widget.nextTrophyTitle}'
-            : 'Current Trophy: ${widget.highestTrophyTitle}\nMaximum trophy milestone achieved! 💎';
+              widget.nextTrophyTitle!.isNotEmpty &&
+              widget.nextTrophyTitle!.toLowerCase() !=
+                  widget.highestTrophyTitle.toLowerCase())
+        ? 'Current Trophy: ${widget.highestTrophyTitle}\nNext to Achieve: ${widget.nextTrophyTitle}'
+        : 'Current Trophy: ${widget.highestTrophyTitle}\nMaximum trophy milestone achieved! 💎';
 
     final textColumn = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1205,11 +1207,9 @@ class _CurrentTrophyBadgeState extends State<_CurrentTrophyBadge> {
             fontSize: widget.isCompact ? 12.0 : 13.5,
             color: isUnranked
                 ? (widget.isDark
-                    ? const Color(0xFF94A3B8)
-                    : const Color(0xFF64748B))
-                : (widget.isDark
-                    ? Colors.white
-                    : const Color(0xFF0F172A)),
+                      ? const Color(0xFF94A3B8)
+                      : const Color(0xFF64748B))
+                : (widget.isDark ? Colors.white : const Color(0xFF0F172A)),
             letterSpacing: -0.2,
           ),
           maxLines: 1,
@@ -1323,10 +1323,7 @@ class _CurrentTrophyBadgeState extends State<_CurrentTrophyBadge> {
             isHovered: isUnranked ? false : _isHovered,
           ),
           const SizedBox(width: 7),
-          if (widget.isFlexible)
-            Expanded(child: textColumn)
-          else
-            textColumn,
+          if (widget.isFlexible) Expanded(child: textColumn) else textColumn,
         ],
       ),
     );
@@ -1375,10 +1372,26 @@ class _HoverableTrophyCrest extends StatefulWidget {
 
 class _HoverableTrophyCrestState extends State<_HoverableTrophyCrest> {
   static const ColorFilter _grayscaleFilter = ColorFilter.matrix(<double>[
-    0.2126, 0.7152, 0.0722, 0, 0,
-    0.2126, 0.7152, 0.0722, 0, 0,
-    0.2126, 0.7152, 0.0722, 0, 0,
-    0,      0,      0,      1, 0,
+    0.2126,
+    0.7152,
+    0.0722,
+    0,
+    0,
+    0.2126,
+    0.7152,
+    0.0722,
+    0,
+    0,
+    0.2126,
+    0.7152,
+    0.0722,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    0,
   ]);
 
   bool _internalHovered = false;
@@ -1411,9 +1424,7 @@ class _HoverableTrophyCrestState extends State<_HoverableTrophyCrest> {
             ),
           )
         : Icon(
-            widget.isDiamond
-                ? Icons.diamond_rounded
-                : widget.trophyStyle.icon,
+            widget.isDiamond ? Icons.diamond_rounded : widget.trophyStyle.icon,
             color: isLocked
                 ? (isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B))
                 : Colors.white,
@@ -1446,9 +1457,7 @@ class _HoverableTrophyCrestState extends State<_HoverableTrophyCrest> {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: isLocked
-                  ? (isDark
-                      ? const Color(0xFF1A1C2E)
-                      : const Color(0xFFE2E8F0))
+                  ? (isDark ? const Color(0xFF1A1C2E) : const Color(0xFFE2E8F0))
                   : null,
               border: isLocked
                   ? Border.all(
@@ -1461,36 +1470,36 @@ class _HoverableTrophyCrestState extends State<_HoverableTrophyCrest> {
               gradient: isLocked
                   ? null
                   : ((isDark || hasAsset)
-                      ? RadialGradient(
-                          colors: [
-                            glowColor.withValues(
-                              alpha: isDark
-                                  ? (isHovered ? 0.48 : 0.35)
-                                  : (isHovered ? 0.28 : 0.18),
-                            ),
-                            glowColor.withValues(
-                              alpha: isDark
-                                  ? (isHovered ? 0.22 : 0.15)
-                                  : (isHovered ? 0.12 : 0.06),
-                            ),
-                            Colors.transparent,
-                          ],
-                          center: Alignment.center,
-                          radius: 0.85,
-                        )
-                      : LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            glowColor,
-                            Color.lerp(
+                        ? RadialGradient(
+                            colors: [
+                              glowColor.withValues(
+                                alpha: isDark
+                                    ? (isHovered ? 0.48 : 0.35)
+                                    : (isHovered ? 0.28 : 0.18),
+                              ),
+                              glowColor.withValues(
+                                alpha: isDark
+                                    ? (isHovered ? 0.22 : 0.15)
+                                    : (isHovered ? 0.12 : 0.06),
+                              ),
+                              Colors.transparent,
+                            ],
+                            center: Alignment.center,
+                            radius: 0.85,
+                          )
+                        : LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              glowColor,
+                              Color.lerp(
+                                    glowColor,
+                                    const Color(0xFF6B47EB),
+                                    0.6,
+                                  ) ??
                                   glowColor,
-                                  const Color(0xFF6B47EB),
-                                  0.6,
-                                ) ??
-                                glowColor,
-                          ],
-                        )),
+                            ],
+                          )),
               boxShadow: isLocked
                   ? null
                   : [

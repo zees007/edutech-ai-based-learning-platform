@@ -48,7 +48,7 @@ class _LearningDashboardViewState extends ConsumerState<LearningDashboardView> {
         final isMobile = constraints.maxWidth < 700;
 
         return Container(
-          color: isDark ? AppColors.canvasBackground : const Color(0xFFF8FAFC),
+          color: context.appColors.scaffoldBackground,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
