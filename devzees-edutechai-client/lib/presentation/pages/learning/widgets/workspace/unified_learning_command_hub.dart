@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../data/models/learning/session_response.dart';
 import '../../../../../core/providers/gamification_provider.dart';
+import '../../../../../core/utils/learning_metadata_utils.dart';
 import '../../../../../core/theme/theme_palette.dart';
 import '../../../../../core/theme/text_styles.dart';
 import 'milestone_roadmap_stepper.dart';
@@ -204,13 +205,13 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
-            Icons.psychology_rounded,
+            LearningMetadataUtils.getModeIcon(mode),
             color: textColor,
             size: 15,
           ),
           const SizedBox(width: 5),
           Text(
-            _formatMode(mode),
+            LearningMetadataUtils.formatBadgeLabel(mode),
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w700,
@@ -233,13 +234,13 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
-            Icons.school_rounded,
+            LearningMetadataUtils.getLevelIcon(level),
             color: textColor,
             size: 15,
           ),
           const SizedBox(width: 5),
           Text(
-            _formatLevel(level),
+            LearningMetadataUtils.formatBadgeLabel(level),
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w700,
@@ -295,74 +296,109 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
     );
   }
 
-  // ─── GOAL TOPIC DETAILS (Full Width with Expand on Click) ───────────────────
+  // ─── GOAL TOPIC DETAILS (Expandable only when overflowing 1 line) ────────────
   Widget _buildTopicDetails(SessionResponse session) {
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _isTopicExpanded = !_isTopicExpanded;
-        });
-      },
-      child: MouseRegion(
-        cursor: SystemMouseCursors.click,
-        child: Tooltip(
-          message: _isTopicExpanded ? 'Tap to collapse' : 'Tap to expand topic',
-          waitDuration: const Duration(milliseconds: 400),
-          child: AnimatedSize(
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeInOutCubic,
-            alignment: Alignment.topLeft,
-            child: Text(
-              session.topic,
-              maxLines: _isTopicExpanded ? null : 1,
-              overflow: _isTopicExpanded ? null : TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 13.5,
-                fontWeight: FontWeight.w600,
-                color: context.isDarkMode ? Colors.white : context.appColors.textPrimary,
-                letterSpacing: -0.2,
+    final textStyle = TextStyle(
+      fontSize: 13.5,
+      fontWeight: FontWeight.w600,
+      color: context.isDarkMode ? Colors.white : context.appColors.textPrimary,
+      letterSpacing: -0.2,
+    );
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final textPainter = TextPainter(
+          text: TextSpan(text: session.topic, style: textStyle),
+          maxLines: 1,
+          textDirection: Directionality.of(context),
+        )..layout(maxWidth: constraints.maxWidth);
+        final bool overflowsSingleLine = textPainter.didExceedMaxLines;
+        textPainter.dispose();
+
+        final textWidget = AnimatedSize(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOutCubic,
+          alignment: Alignment.topLeft,
+          child: Text(
+            session.topic,
+            maxLines: _isTopicExpanded ? null : 1,
+            overflow: _isTopicExpanded ? null : TextOverflow.ellipsis,
+            style: textStyle,
+          ),
+        );
+
+        if (!overflowsSingleLine && !_isTopicExpanded) {
+          return textWidget;
+        }
+
+        return SelectionContainer.disabled(
+          child: MouseRegion(
+            cursor: SystemMouseCursors.click,
+            opaque: true,
+            child: Tooltip(
+              message: _isTopicExpanded ? 'Tap to collapse' : 'Tap to expand topic',
+              waitDuration: const Duration(milliseconds: 400),
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () {
+                  setState(() {
+                    _isTopicExpanded = !_isTopicExpanded;
+                  });
+                },
+                child: SizedBox(
+                  width: double.infinity,
+                  child: textWidget,
+                ),
               ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
   // ─── MICRO METRIC PILL 1: CURRENT LEVEL ──────────────────────────────────────
   Widget _buildLevelPill(Map<String, dynamic> levelData, {bool isCompact = false}) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: isCompact ? 8 : 10, vertical: 6),
-      decoration: _buildPillDecoration(),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            Icons.military_tech_rounded,
-            color: context.isDarkMode ? const Color(0xFFFBBF24) : const Color(0xFFD97706),
-            size: 15,
-          ),
-          const SizedBox(width: 5),
-          Text(
-            'Lvl ${levelData['level']}',
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: context.isDarkMode ? Colors.white : context.appColors.textPrimary,
+    final int level = levelData['level'] as int;
+    final String title = levelData['title'] as String;
+    final String description = GamificationUtils.getLevelDescription(level);
+
+    return Tooltip(
+      message: 'Level $level • $title\n$description',
+      waitDuration: const Duration(milliseconds: 350),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: isCompact ? 8 : 10, vertical: 6),
+        decoration: _buildPillDecoration(),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.military_tech_rounded,
+              color: context.isDarkMode ? const Color(0xFFFBBF24) : const Color(0xFFD97706),
+              size: 15,
             ),
-          ),
-          if (!isCompact) ...[
-            const SizedBox(width: 6),
+            const SizedBox(width: 5),
             Text(
-              (levelData['title'] as String),
+              'Lvl $level',
               style: TextStyle(
-                fontSize: 10.5,
-                fontWeight: FontWeight.w500,
-                color: context.isDarkMode ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: context.isDarkMode ? Colors.white : context.appColors.textPrimary,
               ),
             ),
+            if (!isCompact) ...[
+              const SizedBox(width: 6),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.w500,
+                  color: context.isDarkMode ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                ),
+              ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
@@ -420,56 +456,73 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
 
   // ─── MICRO METRIC PILL 3: LEVEL PROGRESS BAR ────────────────────────────────
   Widget _buildLevelProgressPill(Map<String, dynamic> levelData, double lvlPct) {
+    final int currentLevel = levelData['level'] as int;
+    final int xpInLevel = levelData['xp_in_level'] as int;
+    final int xpNeeded = levelData['xp_needed_for_next'] as int;
+    final int totalXp = levelData['total_xp'] as int;
+    final bool isMaxLevel = levelData['is_max_level'] as bool? ?? false;
+    final int xpRemaining = (xpNeeded - xpInLevel).clamp(0, xpNeeded);
+
+    final String tooltipMessage = isMaxLevel
+        ? 'Max Level $currentLevel reached ($totalXp total XP)'
+        : '$xpInLevel / $xpNeeded XP in Level $currentLevel ($xpRemaining XP to Level ${currentLevel + 1})';
+
     return TweenAnimationBuilder<double>(
       tween: Tween<double>(begin: lvlPct, end: lvlPct),
       duration: const Duration(milliseconds: 1000),
       curve: Curves.easeOutCubic,
       builder: (context, animatedLvlPct, child) {
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-          decoration: _buildPillDecoration(),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Lvl ${levelData['level']} → ${(levelData['level'] as int) + 1}',
-                style: TextStyle(
-                  fontSize: 10.5,
-                  color: context.isDarkMode ? const Color(0xFFCBD5E1) : const Color(0xFF475569),
-                ),
-              ),
-              const SizedBox(width: 5),
-              Text(
-                '${(animatedLvlPct * 100).toStringAsFixed(0)}%',
-                style: const TextStyle(
-                  fontSize: 10.5,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFFA78BFA),
-                ),
-              ),
-              const SizedBox(width: 8),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(999),
-                child: Container(
-                  width: 56,
-                  height: 6,
-                  color: context.isDarkMode ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
-                  child: FractionallySizedBox(
-                    alignment: Alignment.centerLeft,
-                    widthFactor: animatedLvlPct,
-                    child: Container(color: const Color(0xFF8B5CF6)),
+        return Tooltip(
+          message: tooltipMessage,
+          waitDuration: const Duration(milliseconds: 350),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: _buildPillDecoration(),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  isMaxLevel
+                      ? 'Lvl $currentLevel • MAX'
+                      : 'Lvl $currentLevel → ${currentLevel + 1}',
+                  style: TextStyle(
+                    fontSize: 10.5,
+                    color: context.isDarkMode ? const Color(0xFFCBD5E1) : const Color(0xFF475569),
                   ),
                 ),
-              ),
-              const SizedBox(width: 6),
-              Text(
-                '${levelData['xp_in_level']}/${levelData['xp_needed_for_next']}',
-                style: TextStyle(
-                  fontSize: 9.5,
-                  color: context.isDarkMode ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                const SizedBox(width: 5),
+                Text(
+                  '${(animatedLvlPct * 100).toStringAsFixed(0)}%',
+                  style: const TextStyle(
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFFA78BFA),
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(width: 8),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(999),
+                  child: Container(
+                    width: 56,
+                    height: 6,
+                    color: context.isDarkMode ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
+                    child: FractionallySizedBox(
+                      alignment: Alignment.centerLeft,
+                      widthFactor: animatedLvlPct,
+                      child: Container(color: const Color(0xFF8B5CF6)),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  isMaxLevel ? 'MAX' : '$xpInLevel/$xpNeeded XP',
+                  style: TextStyle(
+                    fontSize: 9.5,
+                    color: context.isDarkMode ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -619,28 +672,5 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
         ),
       ],
     );
-  }
-
-  String _formatLevel(String raw) {
-    // Strip leading/trailing underscores and whitespace, remove emojis/symbols, and convert inner underscores to spaces
-    final stripped = raw
-        .replaceAll(RegExp(r'^_+|_+$'), '')
-        .replaceAll(RegExp(r'[\u{1F300}-\u{1F9FF}]', unicode: true), '')
-        .replaceAll(RegExp(r'[^\w\s-]'), '')
-        .trim();
-    final spaced = stripped.replaceAll('_', ' ').trim();
-    if (spaced.isEmpty) return raw.toUpperCase();
-    return spaced.toUpperCase();
-  }
-
-  String _formatMode(String raw) {
-    final stripped = raw
-        .replaceAll(RegExp(r'^_+|_+$'), '')
-        .replaceAll(RegExp(r'[\u{1F300}-\u{1F9FF}]', unicode: true), '')
-        .replaceAll(RegExp(r'[^\w\s-]'), '')
-        .trim();
-    final spaced = stripped.replaceAll('_', ' ').trim();
-    if (spaced.isEmpty) return raw.toUpperCase();
-    return spaced.toUpperCase();
   }
 }
