@@ -8,6 +8,7 @@ import '../../core/providers/permission_provider.dart';
 import '../../core/providers/user_provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/text_styles.dart';
+import '../../core/theme/theme_palette.dart';
 import 'gradient_button.dart';
 import 'searchable_country_dropdown.dart';
 
@@ -324,7 +325,8 @@ class _AccountSettingsDialogState extends ConsumerState<AccountSettingsDialog>
 
   @override
   Widget build(BuildContext context) {
-    final isDark = AppColors.isDark;
+    final isDark = context.isDarkMode;
+    final colors = context.appColors;
     final currentUser = ref.watch(authProvider).user;
 
     return Center(
@@ -345,7 +347,7 @@ class _AccountSettingsDialogState extends ConsumerState<AccountSettingsDialog>
                       : const Color(0xF5FFFFFF),
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(
-                    color: AppColors.glassBorder,
+                    color: colors.border,
                     width: 1.2,
                   ),
                   boxShadow: [
@@ -387,7 +389,7 @@ class _AccountSettingsDialogState extends ConsumerState<AccountSettingsDialog>
                                 Text(
                                   'Account Settings',
                                   style: AppTextStyles.h4.copyWith(
-                                    color: AppColors.textPrimary,
+                                    color: colors.textPrimary,
                                     fontSize: 18,
                                     fontWeight: FontWeight.w700,
                                   ),
@@ -395,7 +397,7 @@ class _AccountSettingsDialogState extends ConsumerState<AccountSettingsDialog>
                                 Text(
                                   currentUser?.email ?? 'Manage profile and security',
                                   style: AppTextStyles.caption.copyWith(
-                                    color: AppColors.textMuted,
+                                    color: colors.textSecondary,
                                   ),
                                 ),
                               ],
@@ -405,7 +407,7 @@ class _AccountSettingsDialogState extends ConsumerState<AccountSettingsDialog>
                         IconButton(
                           icon: Icon(
                             Icons.close_rounded,
-                            color: AppColors.textMuted,
+                            color: colors.textSecondary,
                             size: 20,
                           ),
                           onPressed: () => Navigator.of(context).pop(),
@@ -425,7 +427,7 @@ class _AccountSettingsDialogState extends ConsumerState<AccountSettingsDialog>
                             : const Color(0xFFF1F5F9),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: AppColors.glassBorder,
+                          color: colors.border,
                           width: 1,
                         ),
                       ),
@@ -451,7 +453,7 @@ class _AccountSettingsDialogState extends ConsumerState<AccountSettingsDialog>
                           ],
                         ),
                         labelColor: isDark ? Colors.white : AppColors.primary,
-                        unselectedLabelColor: AppColors.textMuted,
+                        unselectedLabelColor: colors.textSecondary,
                         labelStyle: AppTextStyles.subtitle2.copyWith(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
@@ -654,7 +656,7 @@ class _AccountSettingsDialogState extends ConsumerState<AccountSettingsDialog>
                     ? Icons.visibility_outlined
                     : Icons.visibility_off_outlined,
                 size: 18,
-                color: AppColors.textMuted,
+                color: context.appColors.textSecondary,
               ),
               onPressed: () {
                 setState(() {
@@ -679,7 +681,7 @@ class _AccountSettingsDialogState extends ConsumerState<AccountSettingsDialog>
                     ? Icons.visibility_outlined
                     : Icons.visibility_off_outlined,
                 size: 18,
-                color: AppColors.textMuted,
+                color: context.appColors.textSecondary,
               ),
               onPressed: () {
                 setState(() {
@@ -704,7 +706,7 @@ class _AccountSettingsDialogState extends ConsumerState<AccountSettingsDialog>
                     ? Icons.visibility_outlined
                     : Icons.visibility_off_outlined,
                 size: 18,
-                color: AppColors.textMuted,
+                color: context.appColors.textSecondary,
               ),
               onPressed: () {
                 setState(() {
@@ -726,7 +728,7 @@ class _AccountSettingsDialogState extends ConsumerState<AccountSettingsDialog>
         ],
 
         const SizedBox(height: 20),
-        Divider(color: AppColors.glassBorder, height: 1),
+        Divider(color: context.appColors.border, height: 1),
         const SizedBox(height: 16),
 
         // Session Security Callout
@@ -747,7 +749,7 @@ class _AccountSettingsDialogState extends ConsumerState<AccountSettingsDialog>
                   Text(
                     'Log out of all devices and browsers, including this one',
                     style: AppTextStyles.caption.copyWith(
-                      color: AppColors.textMuted,
+                      color: context.appColors.textSecondary,
                     ),
                   ),
                 ],
@@ -837,7 +839,7 @@ class _AccountSettingsDialogState extends ConsumerState<AccountSettingsDialog>
         Text(
           'MOBILE NUMBER',
           style: TextStyle(
-            color: isDark ? AppColors.textPrimary : const Color(0xFF334155),
+            color: isDark ? context.appColors.textPrimary : const Color(0xFF334155),
             fontSize: 11,
             fontWeight: FontWeight.w700,
             letterSpacing: 0.6,
@@ -849,16 +851,14 @@ class _AccountSettingsDialogState extends ConsumerState<AccountSettingsDialog>
           keyboardType: TextInputType.phone,
           onChanged: _onMobileChanged,
           style: TextStyle(
-            color: AppColors.textPrimary,
+            color: context.appColors.textPrimary,
             fontSize: 13.5,
             fontWeight: FontWeight.w500,
           ),
           decoration: InputDecoration(
             hintText: '555-0199',
             hintStyle: TextStyle(
-              color: isDark
-                  ? AppColors.textSecondary.withValues(alpha: 0.6)
-                  : const Color(0xFF94A3B8),
+              color: context.appColors.textSecondary.withValues(alpha: 0.6),
               fontSize: 13,
             ),
             filled: true,
@@ -892,7 +892,7 @@ class _AccountSettingsDialogState extends ConsumerState<AccountSettingsDialog>
                     Text(
                       _selectedCountry.dialCode,
                       style: TextStyle(
-                        color: isDark ? Colors.white : AppColors.textPrimary,
+                        color: context.appColors.textPrimary,
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                       ),
@@ -953,7 +953,7 @@ class _AccountSettingsDialogState extends ConsumerState<AccountSettingsDialog>
         Text(
           label,
           style: TextStyle(
-            color: isDark ? AppColors.textPrimary : const Color(0xFF334155),
+            color: isDark ? context.appColors.textPrimary : const Color(0xFF334155),
             fontSize: 11,
             fontWeight: FontWeight.w700,
             letterSpacing: 0.6,
@@ -964,16 +964,14 @@ class _AccountSettingsDialogState extends ConsumerState<AccountSettingsDialog>
           controller: controller,
           obscureText: isObscure,
           style: TextStyle(
-            color: AppColors.textPrimary,
+            color: context.appColors.textPrimary,
             fontSize: 13.5,
             fontWeight: FontWeight.w500,
           ),
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: TextStyle(
-              color: isDark
-                  ? AppColors.textSecondary.withValues(alpha: 0.6)
-                  : const Color(0xFF94A3B8),
+              color: context.appColors.textSecondary.withValues(alpha: 0.6),
               fontSize: 13,
             ),
             filled: true,
@@ -1032,7 +1030,7 @@ class _AccountSettingsDialogState extends ConsumerState<AccountSettingsDialog>
         Text(
           label,
           style: TextStyle(
-            color: isDark ? AppColors.textPrimary : const Color(0xFF334155),
+            color: isDark ? context.appColors.textPrimary : const Color(0xFF334155),
             fontSize: 11,
             fontWeight: FontWeight.w700,
             letterSpacing: 0.6,
@@ -1047,7 +1045,7 @@ class _AccountSettingsDialogState extends ConsumerState<AccountSettingsDialog>
                 : const Color(0xFFF1F5F9),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: AppColors.glassBorder,
+              color: context.appColors.border,
               width: 1,
             ),
           ),
@@ -1056,14 +1054,14 @@ class _AccountSettingsDialogState extends ConsumerState<AccountSettingsDialog>
               Icon(
                 prefixIcon,
                 size: 17,
-                color: AppColors.textMuted,
+                color: context.appColors.textSecondary,
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
                   value,
                   style: TextStyle(
-                    color: AppColors.textMuted,
+                    color: context.appColors.textSecondary,
                     fontSize: 13.5,
                     fontWeight: FontWeight.w500,
                   ),

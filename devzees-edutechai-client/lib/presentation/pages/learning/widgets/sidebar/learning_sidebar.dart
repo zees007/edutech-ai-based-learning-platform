@@ -221,7 +221,7 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
               Text(
                 'Learning History ($total)',
                 style: TextStyle(
-                  color: AppColors.textPrimary,
+                  color: context.appColors.textPrimary,
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                   letterSpacing: 0.5,
@@ -232,7 +232,7 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
                 _isHistoryExpanded
                     ? Icons.keyboard_arrow_down
                     : Icons.keyboard_arrow_right,
-                color: AppColors.textSecondary,
+                color: context.appColors.textSecondary,
                 size: 20,
               ),
             ],
@@ -244,7 +244,7 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
 
   Widget _buildSearchAndFilter() {
     final statusFilter = ref.watch(sessionsProvider).statusFilter;
-    final bool isDark = AppColors.isDark;
+    final bool isDark = context.isDarkMode;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -254,17 +254,16 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
             child: MouseRegion(
               onEnter: (_) => setState(() => _isSearchHovered = true),
               onExit: (_) => setState(() => _isSearchHovered = false),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 150),
+              child: Container(
                 height: 36,
                 decoration: BoxDecoration(
                   color: (_isSearchFocused || _isSearchHovered)
                       ? (isDark
                             ? Colors.white.withValues(alpha: 0.08)
-                            : AppColors.surface)
+                            : context.appColors.surface)
                       : (isDark
                             ? Colors.white.withValues(alpha: 0.05)
-                            : AppColors.surfaceSubtle),
+                            : context.appColors.surfaceSubtle),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
                     color: (_isSearchFocused || _isSearchHovered)
@@ -273,7 +272,7 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
                               : AppColors.primary)
                         : (isDark
                               ? Colors.white.withValues(alpha: 0.08)
-                              : AppColors.border),
+                              : context.appColors.border),
                     width: 1,
                   ),
                   boxShadow: (_isSearchFocused || _isSearchHovered)
@@ -294,13 +293,13 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
                   onChanged: (value) {
                     ref.read(sessionsProvider.notifier).updateSearch(value);
                   },
-                  style: TextStyle(color: AppColors.textPrimary, fontSize: 13),
+                  style: TextStyle(color: context.appColors.textPrimary, fontSize: 13),
                   cursorColor: AppColors.primary,
                   decoration: InputDecoration(
                     isDense: true,
                     hintText: 'Search topics or levels...',
                     hintStyle: TextStyle(
-                      color: AppColors.textMuted,
+                      color: context.appColors.textSecondary,
                       fontSize: 13,
                     ),
                     prefixIcon: Icon(
@@ -309,7 +308,7 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
                           ? AppColors.primary
                           : (isDark
                                 ? Colors.white.withValues(alpha: 0.5)
-                                : AppColors.textSecondary),
+                                : context.appColors.textSecondary),
                       size: 18,
                     ),
                     prefixIconConstraints: const BoxConstraints(
@@ -337,9 +336,8 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
             cursor: SystemMouseCursors.click,
             child: Tooltip(
               message: 'Filter sessions',
-              child: AnimatedContainer(
+              child: Container(
                 key: _filterIconKey,
-                duration: const Duration(milliseconds: 150),
                 height: 36,
                 width: 36,
                 decoration: BoxDecoration(
@@ -353,7 +351,7 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
                                   : AppColors.primary.withValues(alpha: 0.08)))
                       : (isDark
                             ? Colors.white.withValues(alpha: 0.05)
-                            : AppColors.surfaceSubtle),
+                            : context.appColors.surfaceSubtle),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
                     color: (_isFilterHovered || statusFilter != 'all')
@@ -362,7 +360,7 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
                               : AppColors.primary.withValues(alpha: 0.5))
                         : (isDark
                               ? Colors.white.withValues(alpha: 0.08)
-                              : AppColors.border),
+                              : context.appColors.border),
                     width: 1,
                   ),
                 ),
@@ -382,12 +380,12 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
                         Icons.filter_list_rounded,
                         color: _isFilterHovered
                             ? (isDark
-                                  ? AppColors.textPrimary
+                                  ? context.appColors.textPrimary
                                   : AppColors.primary)
                             : (statusFilter != 'all'
                                   ? AppColors.primary
                                   : (isDark
-                                        ? AppColors.textSecondary
+                                        ? context.appColors.textSecondary
                                         : const Color(0xFF475569))),
                         size: 18,
                       ),
@@ -407,7 +405,7 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
         _filterIconKey.currentContext!.findRenderObject() as RenderBox;
     final size = renderBox.size;
     final offset = renderBox.localToGlobal(Offset.zero);
-    final bool isDark = AppColors.isDark;
+    final bool isDark = context.isDarkMode;
 
     showMenu<String>(
       context: context,
@@ -437,10 +435,10 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
                   width: 150,
                   padding: const EdgeInsets.symmetric(vertical: 6),
                   decoration: BoxDecoration(
-                    color: AppColors.popoverBackground,
+                    color: context.appColors.popoverBackground,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: AppColors.glassBorder,
+                      color: context.appColors.border,
                       width: 1.0,
                     ),
                     boxShadow: isDark
@@ -501,7 +499,7 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
   ) {
     final isSelected = value == currentFilter;
     bool isHovered = false;
-    final bool isDark = AppColors.isDark;
+    final bool isDark = context.isDarkMode;
 
     return StatefulBuilder(
       builder: (context, setItemState) {
@@ -518,7 +516,7 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
         final Color targetTextColor = isSelected
             ? AppColors.primary
             : (isHovered
-                  ? (isDark ? AppColors.textPrimary : AppColors.primary)
+                  ? (isDark ? context.appColors.textPrimary : AppColors.primary)
                   : (isDark
                         ? const Color(0xFFCBD5E1)
                         : const Color(0xFF334155)));
@@ -634,7 +632,7 @@ class _SidebarNavTabState extends State<_SidebarNavTab> {
                           ? AppColors.primary.withValues(alpha: 0.05)
                           : (isDark
                               ? Colors.white.withValues(alpha: 0.05)
-                              : AppColors.surfaceSubtle)),
+                              : context.appColors.surfaceSubtle)),
                   border: Border.all(
                     color: widget.isSelected
                         ? AppColors.primary.withValues(alpha: 0.38)
@@ -642,7 +640,7 @@ class _SidebarNavTabState extends State<_SidebarNavTab> {
                             ? AppColors.primary.withValues(alpha: 0.10)
                             : (isDark
                                 ? Colors.white.withValues(alpha: 0.08)
-                                : AppColors.border)),
+                                : context.appColors.border)),
                     width: 1,
                   ),
                   boxShadow: widget.isSelected
@@ -664,7 +662,7 @@ class _SidebarNavTabState extends State<_SidebarNavTab> {
                           ? AppColors.primary.withValues(alpha: 0.8)
                           : (isDark
                               ? Colors.white.withValues(alpha: 0.7)
-                              : AppColors.textSecondary)),
+                              : context.appColors.textSecondary)),
                 ),
               ),
             ),
@@ -719,7 +717,7 @@ class _SidebarNavTabState extends State<_SidebarNavTab> {
                       ? AppColors.primary
                       : (_isHovered
                           ? AppColors.primary.withValues(alpha: 0.8)
-                          : AppColors.textMuted.withValues(alpha: 0.6)),
+                          : context.appColors.textSecondary.withValues(alpha: 0.6)),
                   size: 18,
                 ),
                 const SizedBox(width: 12),
@@ -728,8 +726,8 @@ class _SidebarNavTabState extends State<_SidebarNavTab> {
                     widget.label,
                     style: AppTextStyles.label.copyWith(
                       color: (widget.isSelected || _isHovered)
-                          ? AppColors.textPrimary
-                          : AppColors.textSecondary,
+                          ? context.appColors.textPrimary
+                          : context.appColors.textSecondary,
                       fontWeight: (widget.isSelected || _isHovered)
                           ? FontWeight.w600
                           : FontWeight.w500,
@@ -798,7 +796,7 @@ class _CollapsedHistoryButtonState extends State<_CollapsedHistoryButton> {
                         ? AppColors.primary.withValues(alpha: 0.05)
                         : (isDark
                             ? Colors.white.withValues(alpha: 0.05)
-                            : AppColors.surfaceSubtle)),
+                            : context.appColors.surfaceSubtle)),
                 border: Border.all(
                   color: widget.isSelected
                       ? AppColors.primary.withValues(alpha: 0.38)
@@ -806,7 +804,7 @@ class _CollapsedHistoryButtonState extends State<_CollapsedHistoryButton> {
                           ? AppColors.primary.withValues(alpha: 0.10)
                           : (isDark
                               ? Colors.white.withValues(alpha: 0.08)
-                              : AppColors.border)),
+                              : context.appColors.border)),
                   width: 1,
                 ),
                 boxShadow: widget.isSelected
@@ -828,7 +826,7 @@ class _CollapsedHistoryButtonState extends State<_CollapsedHistoryButton> {
                         ? AppColors.primary.withValues(alpha: 0.8)
                         : (isDark
                             ? Colors.white.withValues(alpha: 0.7)
-                            : AppColors.textSecondary)),
+                            : context.appColors.textSecondary)),
               ),
             ),
           ),

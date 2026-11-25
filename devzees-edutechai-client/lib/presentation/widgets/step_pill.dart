@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/text_styles.dart';
+import '../../core/theme/theme_palette.dart';
 
 /// Standardized Step Progress Pill used across the entire EduTechAI application.
 ///
@@ -29,7 +30,7 @@ class StepPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool isDark = AppColors.isDark;
+    final bool isDark = context.isDarkMode;
 
     // Background Color
     final Color bgColor = isReviewing

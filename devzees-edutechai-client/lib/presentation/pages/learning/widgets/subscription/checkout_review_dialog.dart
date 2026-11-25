@@ -9,6 +9,7 @@ import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/text_styles.dart';
 import '../../../../../data/models/subscription/payment_models.dart';
 import '../../../../widgets/gradient_button.dart';
+import 'package:devzees_edutechai_client/core/theme/theme_palette.dart';
 
 class CheckoutReviewDialog extends ConsumerStatefulWidget {
   final String targetTier; // 'pro' or 'ultra'
@@ -202,7 +203,7 @@ class _CheckoutReviewDialogState extends ConsumerState<CheckoutReviewDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final bool isDark = AppColors.isDark;
+    final bool isDark = context.isDarkMode;
     final isUltra = widget.targetTier.toLowerCase() == 'ultra';
 
     return BackdropFilter(
@@ -220,7 +221,7 @@ class _CheckoutReviewDialogState extends ConsumerState<CheckoutReviewDialog> {
                 : Colors.white.withValues(alpha: 0.95),
             borderRadius: BorderRadius.circular(28),
             border: Border.all(
-              color: isUltra ? AppColors.accentPink.withValues(alpha: 0.5) : AppColors.glassBorder,
+              color: isUltra ? AppColors.accentPink.withValues(alpha: 0.5) : context.appColors.border,
               width: 1.5,
             ),
             boxShadow: [
@@ -264,7 +265,7 @@ class _CheckoutReviewDialogState extends ConsumerState<CheckoutReviewDialog> {
         Text(
           'You are now on the ${widget.targetTier.toUpperCase()} tier! All advanced capabilities and higher limits are immediately active.',
           textAlign: TextAlign.center,
-          style: AppTextStyles.body1.copyWith(color: AppColors.textSecondary),
+          style: AppTextStyles.body1.copyWith(color: context.appColors.textSecondary),
         ),
         const SizedBox(height: 24),
       ],
@@ -290,12 +291,12 @@ class _CheckoutReviewDialogState extends ConsumerState<CheckoutReviewDialog> {
                 const SizedBox(height: 4),
                 Text(
                   'Review your subscription upgrade details',
-                  style: AppTextStyles.body2.copyWith(color: AppColors.textMuted),
+                  style: AppTextStyles.body2.copyWith(color: context.appColors.textSecondary),
                 ),
               ],
             ),
             IconButton(
-              icon: Icon(Icons.close_rounded, color: AppColors.textSecondary),
+              icon: Icon(Icons.close_rounded, color: context.appColors.textSecondary),
               onPressed: () => Navigator.of(context).pop(),
             ),
           ],
@@ -308,7 +309,7 @@ class _CheckoutReviewDialogState extends ConsumerState<CheckoutReviewDialog> {
           decoration: BoxDecoration(
             color: isDark ? const Color(0xFF1E2138) : const Color(0xFFF1F5F9),
             borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: AppColors.glassBorder),
+            border: Border.all(color: context.appColors.border),
           ),
           child: Row(
             children: [
@@ -337,14 +338,14 @@ class _CheckoutReviewDialogState extends ConsumerState<CheckoutReviewDialog> {
                     ),
                     Text(
                       'Billed ${widget.billingCycle}',
-                      style: AppTextStyles.caption.copyWith(color: AppColors.textMuted),
+                      style: AppTextStyles.caption.copyWith(color: context.appColors.textSecondary),
                     ),
                   ],
                 ),
               ),
               Text(
                 '\$${widget.basePrice.toStringAsFixed(2)}',
-                style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
+                style: AppTextStyles.h4.copyWith(color: context.appColors.textPrimary),
               ),
             ],
           ),
@@ -362,18 +363,18 @@ class _CheckoutReviewDialogState extends ConsumerState<CheckoutReviewDialog> {
                 textCapitalization: TextCapitalization.characters,
                 decoration: InputDecoration(
                   hintText: 'e.g. EDU20',
-                  hintStyle: TextStyle(color: AppColors.textMuted, fontSize: 13),
+                  hintStyle: TextStyle(color: context.appColors.textSecondary, fontSize: 13),
                   prefixIcon: const Icon(Icons.local_offer_outlined, size: 18),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   filled: true,
                   fillColor: isDark ? const Color(0xFF1E2138) : const Color(0xFFF8FAFC),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide(color: AppColors.glassBorder),
+                    borderSide: BorderSide(color: context.appColors.border),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide(color: AppColors.glassBorder),
+                    borderSide: BorderSide(color: context.appColors.border),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
@@ -498,14 +499,14 @@ class _CheckoutReviewDialogState extends ConsumerState<CheckoutReviewDialog> {
         ],
 
         const SizedBox(height: 20),
-        Divider(color: AppColors.glassBorder),
+        Divider(color: context.appColors.border),
         const SizedBox(height: 12),
 
         // Price Breakdown
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Subtotal', style: AppTextStyles.body2.copyWith(color: AppColors.textSecondary)),
+            Text('Subtotal', style: AppTextStyles.body2.copyWith(color: context.appColors.textSecondary)),
             Text('\$${widget.basePrice.toStringAsFixed(2)}', style: AppTextStyles.body2),
           ],
         ),
@@ -581,11 +582,11 @@ class _CheckoutReviewDialogState extends ConsumerState<CheckoutReviewDialog> {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.shield_outlined, size: 14, color: AppColors.textMuted),
+              Icon(Icons.shield_outlined, size: 14, color: context.appColors.textSecondary),
               const SizedBox(width: 6),
               Text(
                 'Secured by Razorpay (UPI, Cards, Netbanking)',
-                style: AppTextStyles.caption.copyWith(color: AppColors.textMuted, fontSize: 11),
+                style: AppTextStyles.caption.copyWith(color: context.appColors.textSecondary, fontSize: 11),
               ),
             ],
           ),

@@ -7,6 +7,7 @@ import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/text_styles.dart';
 import '../../../../../core/providers/permission_provider.dart';
 import '../../../../widgets/center_toast.dart';
+import 'package:devzees_edutechai_client/core/theme/theme_palette.dart';
 
 class AcademicPapers extends ConsumerStatefulWidget {
   final List<dynamic>? papers;
@@ -126,12 +127,12 @@ class _AcademicPapersState extends ConsumerState<AcademicPapers> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
           decoration: BoxDecoration(
-            color: AppColors.chipBackground,
+            color: context.appColors.chipBackground,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: AppColors.glassBorder,
+              color: context.appColors.border,
             ),
-            boxShadow: AppColors.isDark ? null : [
+            boxShadow: context.isDarkMode ? null : [
               const BoxShadow(
                 color: Color(0x0A000000),
                 blurRadius: 8,
@@ -141,7 +142,7 @@ class _AcademicPapersState extends ConsumerState<AcademicPapers> {
           ),
           child: Row(
             children: [
-              Icon(Icons.search_rounded, size: 18, color: AppColors.adaptiveBlueSoft),
+              Icon(Icons.search_rounded, size: 18, color: (context.isDarkMode ? AppColors.blueSoft : const Color(0xFF1D4ED8))),
               const SizedBox(width: 10),
               Expanded(
                 child: TextField(
@@ -150,7 +151,7 @@ class _AcademicPapersState extends ConsumerState<AcademicPapers> {
                   decoration: InputDecoration(
                     hintText: ' Search scholarly papers, arXiv, Semantic Scholar...',
                     hintStyle: AppTextStyles.bodyPrimary.copyWith(
-                      color: AppColors.textMuted,
+                      color: context.appColors.textSecondary,
                     ),
                     border: InputBorder.none,
                     enabledBorder: InputBorder.none,
@@ -166,7 +167,7 @@ class _AcademicPapersState extends ConsumerState<AcademicPapers> {
               ),
               if (_searchController.text.isNotEmpty) ...[
                 IconButton(
-                  icon: Icon(Icons.clear, size: 16, color: AppColors.textMuted),
+                  icon: Icon(Icons.clear, size: 16, color: context.appColors.textSecondary),
                   onPressed: () {
                     _searchController.clear();
                     setState(() {
@@ -185,12 +186,12 @@ class _AcademicPapersState extends ConsumerState<AcademicPapers> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
-                    color: AppColors.isDark
+                    color: context.isDarkMode
                         ? AppColors.accentBlue.withValues(alpha: 0.3)
                         : AppColors.primary.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
-                      color: AppColors.isDark
+                      color: context.isDarkMode
                           ? AppColors.blueLight.withValues(alpha: 0.4)
                           : AppColors.primary.withValues(alpha: 0.35),
                     ),
@@ -198,7 +199,7 @@ class _AcademicPapersState extends ConsumerState<AcademicPapers> {
                   child: Text(
                     'Search',
                     style: AppTextStyles.label.copyWith(
-                      color: AppColors.adaptiveBlueSoft,
+                      color: (context.isDarkMode ? AppColors.blueSoft : const Color(0xFF1D4ED8)),
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -223,7 +224,7 @@ class _AcademicPapersState extends ConsumerState<AcademicPapers> {
                   const SizedBox(height: 14),
                   Text(
                     'Searching Semantic Scholar & OpenAlex...',
-                    style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+                    style: AppTextStyles.caption.copyWith(color: context.appColors.textSecondary),
                   ),
                 ],
               ),
@@ -233,14 +234,14 @@ class _AcademicPapersState extends ConsumerState<AcademicPapers> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.glassSurface.withValues(alpha: 0.03),
+              color: (context.isDarkMode ? const Color(0x08FFFFFF) : const Color(0x08000000)).withValues(alpha: 0.03),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.glassBorder),
+              border: Border.all(color: context.appColors.border),
             ),
             child: Center(
               child: Text(
                 _errorMessage!,
-                style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+                style: AppTextStyles.caption.copyWith(color: context.appColors.textSecondary),
               ),
             ),
           )
@@ -249,9 +250,9 @@ class _AcademicPapersState extends ConsumerState<AcademicPapers> {
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 20),
             decoration: BoxDecoration(
-              color: AppColors.glassSurface.withValues(alpha: 0.03),
+              color: (context.isDarkMode ? const Color(0x08FFFFFF) : const Color(0x08000000)).withValues(alpha: 0.03),
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: AppColors.glassBorder),
+              border: Border.all(color: context.appColors.border),
             ),
             child: Center(
               child: Column(
@@ -273,7 +274,7 @@ class _AcademicPapersState extends ConsumerState<AcademicPapers> {
                   Text(
                     'No academic papers available for this step',
                     style: AppTextStyles.subtitle2.copyWith(
-                      color: AppColors.textPrimary,
+                      color: context.appColors.textPrimary,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -281,7 +282,7 @@ class _AcademicPapersState extends ConsumerState<AcademicPapers> {
                   Text(
                     'Type a keyword or topic above to find relevant papers on arXiv & Semantic Scholar.',
                     style: AppTextStyles.caption.copyWith(
-                      color: AppColors.textMuted,
+                      color: context.appColors.textSecondary,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -444,24 +445,22 @@ class _PaperCardState extends State<_PaperCard> {
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 240),
-        curve: Curves.easeOutCubic,
+      child: Container(
         margin: const EdgeInsets.only(bottom: 16),
         padding: const EdgeInsets.all(18),
         transform: Matrix4.translationValues(0, _isHovered ? -3 : 0, 0),
         decoration: BoxDecoration(
-          color: AppColors.isDark
-              ? (_isHovered ? AppColors.surfaceSubtle : AppColors.surface)
-              : AppColors.surface,
+          color: context.isDarkMode
+              ? (_isHovered ? context.appColors.surfaceSubtle : context.appColors.surface)
+              : context.appColors.surface,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: AppColors.isDark
-                ? (_isHovered ? AppColors.accentBlue.withValues(alpha: 0.70) : AppColors.border)
-                : (_isHovered ? AppColors.accentBlue : AppColors.border),
+            color: context.isDarkMode
+                ? (_isHovered ? AppColors.accentBlue.withValues(alpha: 0.70) : context.appColors.border)
+                : (_isHovered ? AppColors.accentBlue : context.appColors.border),
             width: _isHovered ? 1.4 : 1.0,
           ),
-          boxShadow: AppColors.isDark
+          boxShadow: context.isDarkMode
               ? [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.35),
@@ -541,10 +540,10 @@ class _PaperCardState extends State<_PaperCard> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
                         decoration: BoxDecoration(
-                          color: AppColors.chipBackground,
+                          color: context.appColors.chipBackground,
                           borderRadius: BorderRadius.circular(6),
                           border: Border.all(
-                            color: AppColors.glassBorder,
+                            color: context.appColors.border,
                           ),
                         ),
                         child: Row(
@@ -553,13 +552,13 @@ class _PaperCardState extends State<_PaperCard> {
                             Icon(
                               Icons.calendar_today_outlined,
                               size: 11,
-                              color: AppColors.textMuted,
+                              color: context.appColors.textSecondary,
                             ),
                             const SizedBox(width: 4),
                             Text(
                               year,
                               style: AppTextStyles.badge.copyWith(
-                                color: AppColors.textSecondary,
+                                color: context.appColors.textSecondary,
                                 fontSize: 10.5,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -642,17 +641,17 @@ class _PaperCardState extends State<_PaperCard> {
                   height: 20,
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: AppColors.chipBackground,
+                    color: context.appColors.chipBackground,
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: AppColors.glassBorder,
+                      color: context.appColors.border,
                     ),
                   ),
                   child: Text(
                     '${widget.index + 1}',
                     textAlign: TextAlign.center,
                     style: AppTextStyles.captionBold.copyWith(
-                      color: AppColors.textMuted,
+                      color: context.appColors.textSecondary,
                       fontSize: 10.5,
                       height: 1.0,
                     ),
@@ -669,7 +668,7 @@ class _PaperCardState extends State<_PaperCard> {
                 fontSize: 15.5,
                 fontWeight: FontWeight.w600,
                 height: 1.35,
-                color: AppColors.textPrimary,
+                color: context.appColors.textPrimary,
               ),
             ),
             const SizedBox(height: 6),
@@ -687,7 +686,7 @@ class _PaperCardState extends State<_PaperCard> {
                   child: Text(
                     authors,
                     style: AppTextStyles.caption.copyWith(
-                      color: AppColors.textSecondary,
+                      color: context.appColors.textSecondary,
                       fontStyle: FontStyle.italic,
                       fontSize: 12,
                     ),
@@ -703,10 +702,10 @@ class _PaperCardState extends State<_PaperCard> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.isDark ? AppColors.blueLight.withValues(alpha: 0.06) : AppColors.surfaceSubtle,
+                color: context.isDarkMode ? AppColors.blueLight.withValues(alpha: 0.06) : context.appColors.surfaceSubtle,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: AppColors.isDark ? AppColors.blueLight.withValues(alpha: 0.18) : AppColors.border,
+                  color: context.isDarkMode ? AppColors.blueLight.withValues(alpha: 0.18) : context.appColors.border,
                 ),
               ),
               child: IntrinsicHeight(
@@ -792,7 +791,7 @@ class _PaperCardState extends State<_PaperCard> {
                                 ? TextOverflow.visible
                                 : TextOverflow.ellipsis,
                             style: AppTextStyles.caption.copyWith(
-                              color: AppColors.textPrimary.withValues(alpha: 0.88),
+                              color: context.appColors.textPrimary.withValues(alpha: 0.88),
                               fontSize: 12.5,
                               height: 1.45,
                             ),
@@ -820,14 +819,14 @@ class _PaperCardState extends State<_PaperCard> {
                         Icon(
                           Icons.tag_rounded,
                           size: 12,
-                          color: AppColors.textMuted,
+                          color: context.appColors.textSecondary,
                         ),
                         const SizedBox(width: 4),
                         Flexible(
                           child: Text(
                             'doi: $rawDoi',
                             style: AppTextStyles.badge.copyWith(
-                              color: AppColors.textMuted,
+                              color: context.appColors.textSecondary,
                               fontSize: 10.5,
                             ),
                             maxLines: 1,
@@ -850,7 +849,7 @@ class _PaperCardState extends State<_PaperCard> {
                       Text(
                         'Scholarly Preprint',
                         style: AppTextStyles.badge.copyWith(
-                          color: AppColors.textMuted,
+                          color: context.appColors.textSecondary,
                           fontSize: 10.5,
                         ),
                       ),
@@ -946,7 +945,7 @@ class _PaperCardState extends State<_PaperCard> {
                             Text(
                               hasDirectPdf ? 'Read PDF' : 'Read Paper',
                               style: AppTextStyles.label.copyWith(
-                                color: AppColors.textPrimary,
+                                color: context.appColors.textPrimary,
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
                                 letterSpacing: 0.2,

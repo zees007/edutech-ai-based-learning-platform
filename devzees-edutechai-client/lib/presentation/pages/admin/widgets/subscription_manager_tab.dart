@@ -14,6 +14,7 @@ import '../../../widgets/shimmer_loading.dart';
 import 'admin_data_table.dart';
 import 'searchable_user_dropdown.dart';
 import 'tier_badge.dart';
+import 'package:devzees_edutechai_client/core/theme/theme_palette.dart';
 
 /// Subscription & Tier Manager hub with dual tabs:
 /// Tab 0: User Subscriptions (assign/change user tier dynamically)
@@ -134,16 +135,15 @@ class _SubscriptionManagerTabState
         },
         mouseCursor: SystemMouseCursors.click,
         borderRadius: BorderRadius.circular(12),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
+        child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
           decoration: BoxDecoration(
             color: isSelected
                 ? AppColors.purple.withValues(alpha: 0.18)
-                : AppColors.glassBase,
+                : (context.isDarkMode ? const Color(0x0DFFFFFF) : const Color(0x0A000000)),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: isSelected ? AppColors.purple : AppColors.glassBorder,
+              color: isSelected ? AppColors.purple : context.appColors.border,
               width: isSelected ? 1.5 : 1.0,
             ),
           ),
@@ -153,13 +153,13 @@ class _SubscriptionManagerTabState
               Icon(
                 icon,
                 size: 18,
-                color: isSelected ? AppColors.purpleLight : AppColors.textMuted,
+                color: isSelected ? AppColors.purpleLight : context.appColors.textSecondary,
               ),
               const SizedBox(width: 8),
               Text(
                 label,
                 style: AppTextStyles.subtitle2.copyWith(
-                  color: isSelected ? AppColors.textPrimary : AppColors.textMuted,
+                  color: isSelected ? context.appColors.textPrimary : context.appColors.textSecondary,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
                 ),
               ),
@@ -180,12 +180,12 @@ class _SubscriptionManagerTabState
       children: [
         Text(
           'User Subscription Directory',
-          style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
+          style: AppTextStyles.h4.copyWith(color: context.appColors.textPrimary),
         ),
         const SizedBox(height: 8),
         Text(
           'View and manage user subscription tiers with automatic role synchronization',
-          style: AppTextStyles.body2.copyWith(color: AppColors.textMuted),
+          style: AppTextStyles.body2.copyWith(color: context.appColors.textSecondary),
         ),
         const SizedBox(height: 24),
 
@@ -200,14 +200,14 @@ class _SubscriptionManagerTabState
         Container(
           width: double.infinity,
           height: 1,
-          color: AppColors.glassBorder,
+          color: context.appColors.border,
         ),
         const SizedBox(height: 24),
 
         // Tier Update Section
         Text(
           'Upgrade / Change User Subscription Tier',
-          style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
+          style: AppTextStyles.h4.copyWith(color: context.appColors.textPrimary),
         ),
         const SizedBox(height: 16),
         if (usersState.data != null)
@@ -252,13 +252,13 @@ class _SubscriptionManagerTabState
         return [
           Text(
             '${u.firstName} ${u.lastName}',
-            style: AppTextStyles.body2.copyWith(color: AppColors.textPrimary),
+            style: AppTextStyles.body2.copyWith(color: context.appColors.textPrimary),
             overflow: TextOverflow.ellipsis,
           ),
           Text(
             u.email,
             style: AppTextStyles.caption.copyWith(
-              color: AppColors.textSecondary,
+              color: context.appColors.textSecondary,
             ),
             overflow: TextOverflow.ellipsis,
           ),
@@ -283,7 +283,7 @@ class _SubscriptionManagerTabState
           Text(
             rolesStr.isEmpty ? 'None' : rolesStr,
             style: AppTextStyles.caption.copyWith(
-              color: AppColors.textSecondary,
+              color: context.appColors.textSecondary,
             ),
             overflow: TextOverflow.ellipsis,
           ),
@@ -370,14 +370,14 @@ class _SubscriptionManagerTabState
       decoration: BoxDecoration(
         color: AppColors.surfaceDark.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.glassBorder),
+        border: Border.all(color: context.appColors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             'Select User:',
-            style: AppTextStyles.label.copyWith(color: AppColors.textSecondary),
+            style: AppTextStyles.label.copyWith(color: context.appColors.textSecondary),
           ),
           const SizedBox(height: 8),
 
@@ -402,24 +402,24 @@ class _SubscriptionManagerTabState
                       Text(
                         'New Subscription Tier:',
                         style: AppTextStyles.label.copyWith(
-                          color: AppColors.textSecondary,
+                          color: context.appColors.textSecondary,
                         ),
                       ),
                       const SizedBox(height: 8),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12),
                         decoration: BoxDecoration(
-                          color: AppColors.glassBase,
+                          color: (context.isDarkMode ? const Color(0x0DFFFFFF) : const Color(0x0A000000)),
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: AppColors.glassBorder),
+                          border: Border.all(color: context.appColors.border),
                         ),
                         child: DropdownButton<String>(
                           value: _selectedTier,
                           isExpanded: true,
-                          dropdownColor: AppColors.popoverBackground,
+                          dropdownColor: context.appColors.popoverBackground,
                           underline: const SizedBox.shrink(),
                           style: AppTextStyles.body2.copyWith(
-                            color: AppColors.textPrimary,
+                            color: context.appColors.textPrimary,
                           ),
                           items: tierMenuItems,
                           onChanged: (value) {
@@ -441,24 +441,24 @@ class _SubscriptionManagerTabState
                       Text(
                         'Status:',
                         style: AppTextStyles.label.copyWith(
-                          color: AppColors.textSecondary,
+                          color: context.appColors.textSecondary,
                         ),
                       ),
                       const SizedBox(height: 8),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12),
                         decoration: BoxDecoration(
-                          color: AppColors.glassBase,
+                          color: (context.isDarkMode ? const Color(0x0DFFFFFF) : const Color(0x0A000000)),
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: AppColors.glassBorder),
+                          border: Border.all(color: context.appColors.border),
                         ),
                         child: DropdownButton<String>(
                           value: _selectedStatus,
                           isExpanded: true,
-                          dropdownColor: AppColors.popoverBackground,
+                          dropdownColor: context.appColors.popoverBackground,
                           underline: const SizedBox.shrink(),
                           style: AppTextStyles.body2.copyWith(
-                            color: AppColors.textPrimary,
+                            color: context.appColors.textPrimary,
                           ),
                           items: const [
                             DropdownMenuItem(value: 'active', child: Text('Active')),
@@ -504,7 +504,7 @@ class _SubscriptionManagerTabState
       decoration: BoxDecoration(
         color: AppColors.surfaceDeep.withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.glassBorder.withValues(alpha: 0.6)),
+        border: Border.all(color: context.appColors.border.withValues(alpha: 0.6)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -532,7 +532,7 @@ class _SubscriptionManagerTabState
                       child: Text(
                         '${user.firstName} ${user.lastName}',
                         style: AppTextStyles.subtitle2.copyWith(
-                          color: AppColors.textPrimary,
+                          color: context.appColors.textPrimary,
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -563,7 +563,7 @@ class _SubscriptionManagerTabState
                 Text(
                   user.email,
                   style: AppTextStyles.caption.copyWith(
-                    color: AppColors.textSecondary,
+                    color: context.appColors.textSecondary,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -578,7 +578,7 @@ class _SubscriptionManagerTabState
               Text(
                 'CURRENT TIER',
                 style: AppTextStyles.caption.copyWith(
-                  color: AppColors.textMuted,
+                  color: context.appColors.textSecondary,
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 0.5,
@@ -599,22 +599,22 @@ class _SubscriptionManagerTabState
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.popoverBackground,
+        backgroundColor: context.appColors.popoverBackground,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
           'Confirm Tier Change',
-          style: AppTextStyles.subtitle1.copyWith(color: AppColors.textPrimary),
+          style: AppTextStyles.subtitle1.copyWith(color: context.appColors.textPrimary),
         ),
         content: Text(
           'Change ${user.firstName} ${user.lastName}\'s subscription to ${_selectedTier.toUpperCase()} ($_selectedStatus)?\n\nThis will automatically synchronize their database roles and grant corresponding privileges.',
-          style: AppTextStyles.body2.copyWith(color: AppColors.textSecondary),
+          style: AppTextStyles.body2.copyWith(color: context.appColors.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
             child: Text(
               'Cancel',
-              style: AppTextStyles.button.copyWith(color: AppColors.textMuted),
+              style: AppTextStyles.button.copyWith(color: context.appColors.textSecondary),
             ),
           ),
           GradientButton(
@@ -687,12 +687,12 @@ class _SubscriptionManagerTabState
               children: [
                 Text(
                   'Subscription Plans & Tiers',
-                  style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
+                  style: AppTextStyles.h4.copyWith(color: context.appColors.textPrimary),
                 ),
                 const SizedBox(height: 6),
                 Text(
                   'Create custom commercial plans, configure pricing and limits, and bind to database roles.',
-                  style: AppTextStyles.body2.copyWith(color: AppColors.textMuted),
+                  style: AppTextStyles.body2.copyWith(color: context.appColors.textSecondary),
                 ),
               ],
             ),
@@ -743,7 +743,7 @@ class _SubscriptionManagerTabState
               Text(
                 t.name,
                 style: AppTextStyles.body2.copyWith(
-                  color: AppColors.textPrimary,
+                  color: context.appColors.textPrimary,
                   fontWeight: FontWeight.bold,
                 ),
                 overflow: TextOverflow.ellipsis,
@@ -751,7 +751,7 @@ class _SubscriptionManagerTabState
               if (t.description != null && t.description!.isNotEmpty)
                 Text(
                   t.description!,
-                  style: AppTextStyles.caption.copyWith(color: AppColors.textMuted, fontSize: 10),
+                  style: AppTextStyles.caption.copyWith(color: context.appColors.textSecondary, fontSize: 10),
                   overflow: TextOverflow.ellipsis,
                   maxLines: 1,
                 ),
@@ -800,7 +800,7 @@ class _SubscriptionManagerTabState
           ),
           Text(
             '${t.activeSubscribersCount} users',
-            style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+            style: AppTextStyles.caption.copyWith(color: context.appColors.textSecondary),
           ),
           Row(
             mainAxisSize: MainAxisSize.min,
@@ -843,7 +843,7 @@ class _SubscriptionManagerTabState
     }
     return Text(
       limitText,
-      style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+      style: AppTextStyles.caption.copyWith(color: context.appColors.textSecondary),
     );
   }
 
@@ -852,22 +852,22 @@ class _SubscriptionManagerTabState
       padding: const EdgeInsets.all(40),
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: AppColors.glassBase,
+        color: (context.isDarkMode ? const Color(0x0DFFFFFF) : const Color(0x0A000000)),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.glassBorder),
+        border: Border.all(color: context.appColors.border),
       ),
       child: Column(
         children: [
-          Icon(Icons.loyalty_outlined, size: 48, color: AppColors.textMuted),
+          Icon(Icons.loyalty_outlined, size: 48, color: context.appColors.textSecondary),
           const SizedBox(height: 16),
           Text(
             'No Subscription Tiers Found',
-            style: AppTextStyles.subtitle1.copyWith(color: AppColors.textPrimary),
+            style: AppTextStyles.subtitle1.copyWith(color: context.appColors.textPrimary),
           ),
           const SizedBox(height: 8),
           Text(
             'Click "+ Create New Tier" to define your first subscription plan.',
-            style: AppTextStyles.body2.copyWith(color: AppColors.textMuted),
+            style: AppTextStyles.body2.copyWith(color: context.appColors.textSecondary),
           ),
         ],
       ),
@@ -926,7 +926,7 @@ class _SubscriptionManagerTabState
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) {
           return Dialog(
-            backgroundColor: AppColors.popoverBackground,
+            backgroundColor: context.appColors.popoverBackground,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
             child: Container(
               width: 580,
@@ -942,12 +942,12 @@ class _SubscriptionManagerTabState
                         Text(
                           isEdit ? 'Edit Subscription Tier' : 'Create New Subscription Tier',
                           style: AppTextStyles.subtitle1.copyWith(
-                            color: AppColors.textPrimary,
+                            color: context.appColors.textPrimary,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         IconButton(
-                          icon: Icon(Icons.close, color: AppColors.textMuted),
+                          icon: Icon(Icons.close, color: context.appColors.textSecondary),
                           onPressed: () => Navigator.of(ctx).pop(),
                         ),
                       ],
@@ -978,23 +978,23 @@ class _SubscriptionManagerTabState
                     const SizedBox(height: 14),
 
                     // Bound Role Dropdown
-                    Text('Bound Database Role (Grants Privileges):', style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary)),
+                    Text('Bound Database Role (Grants Privileges):', style: AppTextStyles.caption.copyWith(color: context.appColors.textSecondary)),
                     const SizedBox(height: 6),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       decoration: BoxDecoration(
-                        color: AppColors.glassBase,
+                        color: (context.isDarkMode ? const Color(0x0DFFFFFF) : const Color(0x0A000000)),
                         borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: AppColors.glassBorder),
+                        border: Border.all(color: context.appColors.border),
                       ),
                       child: DropdownButton<String>(
                         value: selectedRoleId.isNotEmpty && activeRoles.any((r) => r.id == selectedRoleId)
                             ? selectedRoleId
                             : (activeRoles.isNotEmpty ? activeRoles.first.id : null),
                         isExpanded: true,
-                        dropdownColor: AppColors.popoverBackground,
+                        dropdownColor: context.appColors.popoverBackground,
                         underline: const SizedBox.shrink(),
-                        style: AppTextStyles.body2.copyWith(color: AppColors.textPrimary),
+                        style: AppTextStyles.body2.copyWith(color: context.appColors.textPrimary),
                         items: activeRoles.map((r) {
                           return DropdownMenuItem(
                             value: r.id,
@@ -1083,7 +1083,7 @@ class _SubscriptionManagerTabState
                         const SizedBox(width: 8),
                         Text(
                           'Show on Public Pricing Page',
-                          style: AppTextStyles.body2.copyWith(color: AppColors.textPrimary),
+                          style: AppTextStyles.body2.copyWith(color: context.appColors.textPrimary),
                         ),
                       ],
                     ),
@@ -1095,7 +1095,7 @@ class _SubscriptionManagerTabState
                       children: [
                         TextButton(
                           onPressed: () => Navigator.of(ctx).pop(),
-                          child: Text('Cancel', style: AppTextStyles.button.copyWith(color: AppColors.textMuted)),
+                          child: Text('Cancel', style: AppTextStyles.button.copyWith(color: context.appColors.textSecondary)),
                         ),
                         const SizedBox(width: 12),
                         GradientButton(
@@ -1162,26 +1162,26 @@ class _SubscriptionManagerTabState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary)),
+        Text(label, style: AppTextStyles.caption.copyWith(color: context.appColors.textSecondary)),
         const SizedBox(height: 6),
         TextField(
           controller: controller,
           enabled: enabled,
           keyboardType: keyboardType,
-          style: AppTextStyles.body2.copyWith(color: enabled ? AppColors.textPrimary : AppColors.textMuted),
+          style: AppTextStyles.body2.copyWith(color: enabled ? context.appColors.textPrimary : context.appColors.textSecondary),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: AppTextStyles.caption.copyWith(color: AppColors.textMuted),
+            hintStyle: AppTextStyles.caption.copyWith(color: context.appColors.textSecondary),
             filled: true,
-            fillColor: AppColors.glassBase,
+            fillColor: (context.isDarkMode ? const Color(0x0DFFFFFF) : const Color(0x0A000000)),
             contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(color: AppColors.glassBorder),
+              borderSide: BorderSide(color: context.appColors.border),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(color: AppColors.glassBorder),
+              borderSide: BorderSide(color: context.appColors.border),
             ),
           ),
         ),
@@ -1199,7 +1199,7 @@ class _SubscriptionManagerTabState
       children: [
         SizedBox(
           width: 160,
-          child: Text(label, style: AppTextStyles.body2.copyWith(color: AppColors.textPrimary)),
+          child: Text(label, style: AppTextStyles.body2.copyWith(color: context.appColors.textPrimary)),
         ),
         Row(
           mainAxisSize: MainAxisSize.min,
@@ -1209,7 +1209,7 @@ class _SubscriptionManagerTabState
               activeColor: AppColors.accentGreen,
               onChanged: (val) => onToggle(val ?? false),
             ),
-            Text('Unlimited', style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary)),
+            Text('Unlimited', style: AppTextStyles.caption.copyWith(color: context.appColors.textSecondary)),
           ],
         ),
         const SizedBox(width: 14),
@@ -1220,11 +1220,11 @@ class _SubscriptionManagerTabState
               controller: controller,
               keyboardType: TextInputType.number,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              style: AppTextStyles.body2.copyWith(color: AppColors.textPrimary),
+              style: AppTextStyles.body2.copyWith(color: context.appColors.textPrimary),
               decoration: InputDecoration(
                 contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                 filled: true,
-                fillColor: AppColors.glassBase,
+                fillColor: (context.isDarkMode ? const Color(0x0DFFFFFF) : const Color(0x0A000000)),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
               ),
             ),
@@ -1248,17 +1248,17 @@ class _SubscriptionManagerTabState
       showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
-          backgroundColor: AppColors.popoverBackground,
+          backgroundColor: context.appColors.popoverBackground,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: Text('Cannot Retire Tier', style: AppTextStyles.subtitle1.copyWith(color: AppColors.rose)),
           content: Text(
             "There are currently ${tier.activeSubscribersCount} active subscribers on '${tier.name}'. Please reassign them to another tier in User Subscriptions before retiring.",
-            style: AppTextStyles.body2.copyWith(color: AppColors.textSecondary),
+            style: AppTextStyles.body2.copyWith(color: context.appColors.textSecondary),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(),
-              child: Text('OK', style: AppTextStyles.button.copyWith(color: AppColors.textPrimary)),
+              child: Text('OK', style: AppTextStyles.button.copyWith(color: context.appColors.textPrimary)),
             ),
           ],
         ),
@@ -1269,17 +1269,17 @@ class _SubscriptionManagerTabState
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.popoverBackground,
+        backgroundColor: context.appColors.popoverBackground,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text('Confirm Retire Tier', style: AppTextStyles.subtitle1.copyWith(color: AppColors.rose)),
         content: Text(
           "Are you sure you want to retire tier '${tier.name}' (${tier.slug})? It will no longer be visible or purchasable.",
-          style: AppTextStyles.body2.copyWith(color: AppColors.textSecondary),
+          style: AppTextStyles.body2.copyWith(color: context.appColors.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text('Cancel', style: AppTextStyles.button.copyWith(color: AppColors.textMuted)),
+            child: Text('Cancel', style: AppTextStyles.button.copyWith(color: context.appColors.textSecondary)),
           ),
           GradientButton(
             height: 38,

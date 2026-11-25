@@ -8,6 +8,7 @@ import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/text_styles.dart';
 import '../export/export_session_modal.dart';
 import 'delete_session_dialog.dart';
+import 'package:devzees_edutechai_client/core/theme/theme_palette.dart';
 
 class LearningHistoryItem extends ConsumerStatefulWidget {
   final SessionModel session;
@@ -40,7 +41,7 @@ class _LearningHistoryItemState extends ConsumerState<LearningHistoryItem> {
     required VoidCallback onTap,
   }) {
     bool isHovered = false;
-    final bool isDark = AppColors.isDark;
+    final bool isDark = context.isDarkMode;
 
     return StatefulBuilder(
       builder: (context, setActionState) {
@@ -50,7 +51,7 @@ class _LearningHistoryItemState extends ConsumerState<LearningHistoryItem> {
 
         // Dark primary blue in light mode for crisp contrast against light blue hover background
         final Color darkPrimary = isDark
-            ? AppColors.textPrimary
+            ? context.appColors.textPrimary
             : const Color(0xFF1D4ED8);
 
         final Color activeHoverColor = textColor ?? darkPrimary;
@@ -118,7 +119,7 @@ class _LearningHistoryItemState extends ConsumerState<LearningHistoryItem> {
         _menuKey.currentContext!.findRenderObject() as RenderBox;
     final size = renderBox.size;
     final offset = renderBox.localToGlobal(Offset.zero);
-    final bool isDark = AppColors.isDark;
+    final bool isDark = context.isDarkMode;
 
     showMenu<String>(
       context: context,
@@ -148,10 +149,10 @@ class _LearningHistoryItemState extends ConsumerState<LearningHistoryItem> {
                   width: 145,
                   padding: const EdgeInsets.symmetric(vertical: 6),
                   decoration: BoxDecoration(
-                    color: AppColors.popoverBackground,
+                    color: context.appColors.popoverBackground,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: AppColors.glassBorder,
+                      color: context.appColors.border,
                       width: 1.0,
                     ),
                     boxShadow: isDark
@@ -212,7 +213,7 @@ class _LearningHistoryItemState extends ConsumerState<LearningHistoryItem> {
                         ),
                         child: Divider(
                           color: isDark
-                              ? AppColors.glassBorder
+                              ? context.appColors.border
                               : const Color(0xFFF1F5F9),
                           height: 1,
                           thickness: 1,
@@ -278,7 +279,7 @@ class _LearningHistoryItemState extends ConsumerState<LearningHistoryItem> {
             decoration: BoxDecoration(
               color: isActive
                   ? AppColors.primary.withValues(alpha: 0.20)
-                  : AppColors.glassSurface.withValues(alpha: 0.05),
+                  : (context.isDarkMode ? const Color(0x08FFFFFF) : const Color(0x08000000)).withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
                 color: isActive
@@ -297,7 +298,7 @@ class _LearningHistoryItemState extends ConsumerState<LearningHistoryItem> {
             ),
             child: Icon(
               Icons.history,
-              color: isActive ? AppColors.primary : AppColors.textSecondary,
+              color: isActive ? AppColors.primary : context.appColors.textSecondary,
               size: 18,
             ),
           ),
@@ -357,7 +358,7 @@ class _LearningHistoryItemState extends ConsumerState<LearningHistoryItem> {
                       ? AppColors.primary
                       : (_isHovered
                             ? AppColors.primary.withValues(alpha: 0.8)
-                            : AppColors.textMuted.withValues(alpha: 0.6)),
+                            : context.appColors.textSecondary.withValues(alpha: 0.6)),
                   size: 16,
                 ),
                 const SizedBox(width: 12),
@@ -369,8 +370,8 @@ class _LearningHistoryItemState extends ConsumerState<LearningHistoryItem> {
                         widget.session.topic,
                         style: AppTextStyles.label.copyWith(
                           color: (isActive || _isHovered)
-                              ? AppColors.textPrimary
-                              : AppColors.textSecondary,
+                              ? context.appColors.textPrimary
+                              : context.appColors.textSecondary,
                           fontWeight: (isActive || _isHovered)
                               ? FontWeight.w600
                               : FontWeight.normal,
@@ -411,7 +412,7 @@ class _LearningHistoryItemState extends ConsumerState<LearningHistoryItem> {
                         padding: const EdgeInsets.all(4.0),
                         decoration: BoxDecoration(
                           color: _isDotsHovered
-                              ? (AppColors.isDark
+                              ? (context.isDarkMode
                                     ? Colors.white.withValues(alpha: 0.1)
                                     : AppColors.primary.withValues(alpha: 0.1))
                               : Colors.transparent,
@@ -420,12 +421,12 @@ class _LearningHistoryItemState extends ConsumerState<LearningHistoryItem> {
                         child: Icon(
                           Icons.more_vert_rounded,
                           color: _isDotsHovered
-                              ? (AppColors.isDark
-                                    ? AppColors.textPrimary
+                              ? (context.isDarkMode
+                                    ? context.appColors.textPrimary
                                     : const Color(0xFF1D4ED8))
                               : ((isActive || _isHovered)
-                                    ? AppColors.textSecondary
-                                    : AppColors.textMuted.withValues(
+                                    ? context.appColors.textSecondary
+                                    : context.appColors.textSecondary.withValues(
                                         alpha: 0.4,
                                       )),
                           size: 16,

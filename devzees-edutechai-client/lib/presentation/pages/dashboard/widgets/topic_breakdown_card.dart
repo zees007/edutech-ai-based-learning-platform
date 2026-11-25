@@ -261,18 +261,14 @@ class TopicBreakdownCard extends StatelessWidget {
                       style: AppTextStyles.h4.copyWith(
                         fontWeight: FontWeight.w700,
                         fontSize: isMobile ? 15 : 18,
-                        color: isDark
-                            ? AppColors.textPrimary
-                            : const Color(0xFF0F172A),
+                        color: context.appColors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       headerSubtitle,
                       style: AppTextStyles.body2.copyWith(
-                        color: isDark
-                            ? AppColors.textSecondary
-                            : const Color(0xFF64748B),
+                        color: context.appColors.textSecondary,
                         fontSize: isMobile ? 12 : 13,
                       ),
                     ),
@@ -302,7 +298,7 @@ class TopicBreakdownCard extends StatelessWidget {
                       Icons.explore_outlined,
                       size: 36,
                       color: isDark
-                          ? AppColors.textMuted
+                          ? context.appColors.textSecondary
                           : const Color(0xFF94A3B8),
                     ),
                   ),
@@ -311,7 +307,7 @@ class TopicBreakdownCard extends StatelessWidget {
                     'No Journeys in This Period',
                     style: AppTextStyles.body1.copyWith(
                       color: isDark
-                          ? AppColors.textPrimary
+                          ? context.appColors.textPrimary
                           : const Color(0xFF1E293B),
                       fontWeight: FontWeight.w700,
                       fontSize: 15,
@@ -323,7 +319,7 @@ class TopicBreakdownCard extends StatelessWidget {
                     textAlign: TextAlign.center,
                     style: AppTextStyles.caption.copyWith(
                       color: isDark
-                          ? AppColors.textSecondary
+                          ? context.appColors.textSecondary
                           : const Color(0xFF64748B),
                       fontSize: 12,
                     ),
@@ -424,7 +420,7 @@ class TopicBreakdownCard extends StatelessWidget {
                       t.topic,
                       style: AppTextStyles.label.copyWith(
                         color: isDark
-                            ? AppColors.textPrimary
+                            ? context.appColors.textPrimary
                             : const Color(0xFF1E293B),
                         fontWeight: FontWeight.w600,
                         fontSize: 13,

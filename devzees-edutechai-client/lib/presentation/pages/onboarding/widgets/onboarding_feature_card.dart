@@ -26,7 +26,7 @@ class OnboardingFeatureCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: colors.cardBackground,
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: AppColors.cardGlowBorder.withValues(alpha: 0.3)),
+        border: Border.all(color: (context.isDarkMode ? const Color(0x73A855F7) : context.appColors.border).withValues(alpha: 0.3)),
         boxShadow: const [
           BoxShadow(
             color: Color(0x66000000),
@@ -46,7 +46,7 @@ class OnboardingFeatureCard extends StatelessWidget {
               color: colors.chipBackground,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: AppColors.cardGlowBorder.withValues(alpha: 0.35),
+                color: (context.isDarkMode ? const Color(0x73A855F7) : context.appColors.border).withValues(alpha: 0.35),
               ),
             ),
             child: Icon(

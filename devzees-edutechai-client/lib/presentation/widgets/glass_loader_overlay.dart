@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/text_styles.dart';
+import '../../core/theme/theme_palette.dart';
 import '../../core/constants/responsive.dart';
 import 'app_gradient_spinner.dart';
 
@@ -51,7 +52,8 @@ class GlassLoaderOverlay extends StatelessWidget {
   }
 
   Widget _buildGlassLoaderBox(BuildContext context) {
-    final isDark = AppColors.isDark;
+    final isDark = context.isDarkMode;
+    final colors = context.appColors;
     return Container(
       width: 320,
       padding: const EdgeInsets.all(32),
@@ -62,11 +64,21 @@ class GlassLoaderOverlay extends StatelessWidget {
           width: 1.5,
         ),
         color: Responsive.isMobile(context)
-            ? (isDark ? AppColors.canvasBackground : Colors.white)
+            ? colors.surface
             : null,
         gradient: Responsive.isMobile(context)
             ? null
-            : AppColors.cardGradientOpaque,
+            : (isDark
+                ? const LinearGradient(
+                    colors: [Color(0xF511121D), Color(0xEE0E0F18)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  )
+                : const LinearGradient(
+                    colors: [Color(0xFAFFFFFF), Color(0xF5F9F9FB)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  )),
         boxShadow: [
           if (!Responsive.isMobile(context)) ...[
             BoxShadow(
@@ -106,7 +118,7 @@ class GlassLoaderOverlay extends StatelessWidget {
           Text(
             subtitle,
             style: AppTextStyles.body2.copyWith(
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
             ),
             textAlign: TextAlign.center,
           ),

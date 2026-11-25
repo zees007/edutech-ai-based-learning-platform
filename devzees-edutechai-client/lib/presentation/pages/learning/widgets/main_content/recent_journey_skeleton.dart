@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../widgets/shimmer_loading.dart';
+import 'package:devzees_edutechai_client/core/theme/theme_palette.dart';
 
 class RecentJourneySkeletonCard extends StatelessWidget {
   final bool isMobile;
@@ -14,7 +15,7 @@ class RecentJourneySkeletonCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = AppColors.isDark;
+    final isDark = context.isDarkMode;
 
     // Distinct shimmer token colors for crisp contrast against card background
     final shimmerBase = isDark ? const Color(0xFF1E2138) : const Color(0xFFE2E8F0);
@@ -23,7 +24,7 @@ class RecentJourneySkeletonCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.canvasBackground : Colors.white,
+        color: isDark ? context.appColors.scaffoldBackground : Colors.white,
         border: Border.all(
           color: AppColors.primary.withValues(
             alpha: isDark ? 0.35 : 0.30,

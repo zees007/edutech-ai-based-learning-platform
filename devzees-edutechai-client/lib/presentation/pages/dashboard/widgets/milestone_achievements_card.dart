@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/responsive.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../core/theme/theme_palette.dart';
 import '../../../../core/utils/trophy_utils.dart';
@@ -46,10 +45,9 @@ class _MilestoneAchievementsCardState extends State<MilestoneAchievementsCard> {
     final screenWidth = MediaQuery.sizeOf(context).width;
     final isMobile = Responsive.isMobile(context);
     final isNarrow = screenWidth < 400;
-    final int cols = widget.crossAxisCount ??
-        (Responsive.isDesktop(context)
-            ? 3
-            : (screenWidth >= 520 ? 2 : 1));
+    final int cols =
+        widget.crossAxisCount ??
+        (Responsive.isDesktop(context) ? 3 : (screenWidth >= 520 ? 2 : 1));
 
     return Container(
       decoration: BoxDecoration(
@@ -74,10 +72,11 @@ class _MilestoneAchievementsCardState extends State<MilestoneAchievementsCard> {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: (isDark
-                                ? const Color(0xFFFBBF24)
-                                : const Color(0xFFD97706))
-                            .withValues(alpha: 0.15),
+                        color:
+                            (isDark
+                                    ? const Color(0xFFFBBF24)
+                                    : const Color(0xFFD97706))
+                                .withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Icon(
@@ -98,18 +97,14 @@ class _MilestoneAchievementsCardState extends State<MilestoneAchievementsCard> {
                             style: AppTextStyles.h4.copyWith(
                               fontWeight: FontWeight.w700,
                               fontSize: isMobile ? 16 : 18,
-                              color: isDark
-                                  ? AppColors.textPrimary
-                                  : const Color(0xFF0F172A),
+                              color: context.appColors.textPrimary,
                             ),
                           ),
                           const SizedBox(height: 4),
                           Text(
                             widget.subtitle,
                             style: AppTextStyles.body2.copyWith(
-                              color: isDark
-                                  ? AppColors.textSecondary
-                                  : const Color(0xFF64748B),
+                              color: context.appColors.textSecondary,
                               fontSize: isMobile ? 12 : 13,
                             ),
                           ),
@@ -134,10 +129,11 @@ class _MilestoneAchievementsCardState extends State<MilestoneAchievementsCard> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: (isDark
-                            ? const Color(0xFFFBBF24)
-                            : const Color(0xFFD97706))
-                        .withValues(alpha: 0.15),
+                    color:
+                        (isDark
+                                ? const Color(0xFFFBBF24)
+                                : const Color(0xFFD97706))
+                            .withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Icon(
@@ -159,7 +155,7 @@ class _MilestoneAchievementsCardState extends State<MilestoneAchievementsCard> {
                           fontWeight: FontWeight.w700,
                           fontSize: isMobile ? 16 : 18,
                           color: isDark
-                              ? AppColors.textPrimary
+                              ? context.appColors.textPrimary
                               : const Color(0xFF0F172A),
                         ),
                       ),
@@ -168,7 +164,7 @@ class _MilestoneAchievementsCardState extends State<MilestoneAchievementsCard> {
                         widget.subtitle,
                         style: AppTextStyles.body2.copyWith(
                           color: isDark
-                              ? AppColors.textSecondary
+                              ? context.appColors.textSecondary
                               : const Color(0xFF64748B),
                           fontSize: isMobile ? 12 : 13,
                         ),
@@ -187,107 +183,107 @@ class _MilestoneAchievementsCardState extends State<MilestoneAchievementsCard> {
             ),
           ],
 
-              if (achievements.isNotEmpty) ...[
-                const SizedBox(height: 14),
-                // Overall Milestone Progress Bar
-                Row(
-                  children: [
-                    Expanded(
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(6),
-                        child: LinearProgressIndicator(
-                          value: achievements.isEmpty
-                              ? 0.0
-                              : (unlockedCount / achievements.length).clamp(
-                                  0.0,
-                                  1.0,
-                                ),
-                          minHeight: 6,
-                          backgroundColor: isDark
-                              ? Colors.white.withValues(alpha: 0.08)
-                              : Colors.black.withValues(alpha: 0.06),
-                          valueColor: const AlwaysStoppedAnimation<Color>(
-                            Color(0xFFF59E0B),
-                          ),
-                        ),
+          if (achievements.isNotEmpty) ...[
+            const SizedBox(height: 14),
+            // Overall Milestone Progress Bar
+            Row(
+              children: [
+                Expanded(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(6),
+                    child: LinearProgressIndicator(
+                      value: achievements.isEmpty
+                          ? 0.0
+                          : (unlockedCount / achievements.length).clamp(
+                              0.0,
+                              1.0,
+                            ),
+                      minHeight: 6,
+                      backgroundColor: isDark
+                          ? Colors.white.withValues(alpha: 0.08)
+                          : Colors.black.withValues(alpha: 0.06),
+                      valueColor: const AlwaysStoppedAnimation<Color>(
+                        Color(0xFFF59E0B),
                       ),
                     ),
-                    const SizedBox(width: 10),
-                    Text(
-                      '${achievements.isEmpty ? 0 : ((unlockedCount / achievements.length) * 100).toInt()}% Complete',
-                      style: TextStyle(
-                        color: isDark
-                            ? const Color(0xFFFBBF24)
-                            : const Color(0xFFD97706),
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  '${achievements.isEmpty ? 0 : ((unlockedCount / achievements.length) * 100).toInt()}% Complete',
+                  style: TextStyle(
+                    color: isDark
+                        ? const Color(0xFFFBBF24)
+                        : const Color(0xFFD97706),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ],
+            ),
+          ],
 
-              const SizedBox(height: 16),
+          const SizedBox(height: 16),
 
-              // Achievements Grid or Empty State
-              if (achievements.isEmpty)
-                Container(
-                  padding: const EdgeInsets.symmetric(vertical: 32),
-                  alignment: Alignment.center,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.military_tech_outlined,
-                        size: 36,
-                        color: isDark
-                            ? AppColors.textMuted
-                            : const Color(0xFF94A3B8),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'No milestone achievements available.',
-                        style: AppTextStyles.caption.copyWith(
-                          color: isDark
-                              ? AppColors.textMuted
-                              : const Color(0xFF94A3B8),
-                          fontSize: 13,
-                        ),
-                      ),
-                    ],
+          // Achievements Grid or Empty State
+          if (achievements.isEmpty)
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 32),
+              alignment: Alignment.center,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.military_tech_outlined,
+                    size: 36,
+                    color: isDark
+                        ? context.appColors.textSecondary
+                        : const Color(0xFF94A3B8),
                   ),
-                )
-              else
-                Column(
-                  children: [
-                    for (int i = 0; i < achievements.length; i += cols) ...[
-                      if (i > 0) const SizedBox(height: 12),
-                      IntrinsicHeight(
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            for (int j = 0; j < cols; j++) ...[
-                              if (j > 0) const SizedBox(width: 12),
-                              if (i + j < achievements.length)
-                                Expanded(
-                                  child: _AchievementTile(
-                                    achievement: achievements[i + j],
-                                    isDark: isDark,
-                                    isMobile: isMobile || cols == 3,
-                                  ),
-                                )
-                              else
-                                const Expanded(child: SizedBox.shrink()),
-                            ],
-                          ],
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-            ],
-          ),
-        );
+                  const SizedBox(height: 8),
+                  Text(
+                    'No milestone achievements available.',
+                    style: AppTextStyles.caption.copyWith(
+                      color: isDark
+                          ? context.appColors.textSecondary
+                          : const Color(0xFF94A3B8),
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else
+            Column(
+              children: [
+                for (int i = 0; i < achievements.length; i += cols) ...[
+                  if (i > 0) const SizedBox(height: 12),
+                  IntrinsicHeight(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        for (int j = 0; j < cols; j++) ...[
+                          if (j > 0) const SizedBox(width: 12),
+                          if (i + j < achievements.length)
+                            Expanded(
+                              child: _AchievementTile(
+                                achievement: achievements[i + j],
+                                isDark: isDark,
+                                isMobile: isMobile || cols == 3,
+                              ),
+                            )
+                          else
+                            const Expanded(child: SizedBox.shrink()),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              ],
+            ),
+        ],
+      ),
+    );
   }
 
   Widget _buildUnlockCounterBadge(
@@ -447,9 +443,7 @@ class _AchievementTileState extends State<_AchievementTile> {
           scale: _isHovered ? 1.03 : 1.0,
           duration: const Duration(milliseconds: 220),
           curve: Curves.easeOutCubic,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 220),
-            curve: Curves.easeOutCubic,
+          child: Container(
             constraints: const BoxConstraints(minHeight: 90),
             padding: EdgeInsets.all(isMobile ? 10 : 13),
             decoration: BoxDecoration(
@@ -819,7 +813,7 @@ class _AchievementTileState extends State<_AchievementTile> {
                           style: AppTextStyles.caption.copyWith(
                             color: isUnlocked
                                 ? (isDark
-                                      ? AppColors.textSecondary
+                                      ? context.appColors.textSecondary
                                       : const Color(0xFF475569))
                                 : (isDark
                                       ? const Color(0xFF64748B)

@@ -11,6 +11,7 @@ import '../../../../core/theme/text_styles.dart';
 import '../../../../data/models/admin/system_setting_model.dart';
 import '../../../../core/services/subscription_service.dart';
 import '../../../widgets/shimmer_loading.dart';
+import 'package:devzees_edutechai_client/core/theme/theme_palette.dart';
 
 enum SettingCategory {
   all('All', Icons.grid_view),
@@ -216,12 +217,12 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
             children: [
               Text(
                 'System Settings & Parameters',
-                style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
+                style: AppTextStyles.h4.copyWith(color: context.appColors.textPrimary),
               ),
               const SizedBox(height: 6),
               Text(
                 'Configure platform runtime parameters, AI LLM models, system limits, and promotional coupons.',
-                style: AppTextStyles.body2.copyWith(color: AppColors.textMuted),
+                style: AppTextStyles.body2.copyWith(color: context.appColors.textSecondary),
               ),
             ],
           ),
@@ -238,12 +239,12 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
                   height: 18,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : Icon(Icons.refresh, color: AppColors.textSecondary),
+              : Icon(Icons.refresh, color: context.appColors.textSecondary),
           style: IconButton.styleFrom(
-            backgroundColor: AppColors.glassBase,
+            backgroundColor: (context.isDarkMode ? const Color(0x0DFFFFFF) : const Color(0x0A000000)),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
-              side: BorderSide(color: AppColors.glassBorder),
+              side: BorderSide(color: context.appColors.border),
             ),
           ),
         ),
@@ -255,7 +256,7 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: AppColors.cardBackground,
+        color: context.appColors.cardBackground,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.accentRose.withValues(alpha: 0.3)),
       ),
@@ -265,7 +266,7 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
           const SizedBox(height: 12),
           Text('Failed to load system settings', style: AppTextStyles.subtitle1),
           const SizedBox(height: 6),
-          Text(error, style: AppTextStyles.body2.copyWith(color: AppColors.textMuted), textAlign: TextAlign.center),
+          Text(error, style: AppTextStyles.body2.copyWith(color: context.appColors.textSecondary), textAlign: TextAlign.center),
           const SizedBox(height: 16),
           GradientButton(
             height: 40,
@@ -326,9 +327,9 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.cardBackground,
+        color: context.appColors.cardBackground,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.glassBorder),
+        border: Border.all(color: context.appColors.border),
       ),
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -341,7 +342,7 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
                 'Configurations',
                 style: AppTextStyles.subtitle1.copyWith(
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+                  color: context.appColors.textPrimary,
                 ),
               ),
               const SizedBox(width: 8),
@@ -368,24 +369,24 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
           Container(
             height: 42,
             decoration: BoxDecoration(
-              color: AppColors.glassBase,
+              color: (context.isDarkMode ? const Color(0x0DFFFFFF) : const Color(0x0A000000)),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.glassBorder),
+              border: Border.all(color: context.appColors.border),
             ),
             child: TextField(
               controller: _searchController,
               onChanged: (val) {
                 ref.read(adminSettingsProvider.notifier).updateSearch(val);
               },
-              style: AppTextStyles.body2.copyWith(color: AppColors.textPrimary),
+              style: AppTextStyles.body2.copyWith(color: context.appColors.textPrimary),
               decoration: InputDecoration(
                 isDense: true,
                 hintText: 'Search setting by code or value...',
-                hintStyle: AppTextStyles.body2.copyWith(color: AppColors.textMuted),
-                prefixIcon: Icon(Icons.search, color: AppColors.textMuted, size: 18),
+                hintStyle: AppTextStyles.body2.copyWith(color: context.appColors.textSecondary),
+                prefixIcon: Icon(Icons.search, color: context.appColors.textSecondary, size: 18),
                 suffixIcon: _searchController.text.isNotEmpty
                     ? IconButton(
-                        icon: Icon(Icons.clear, color: AppColors.textMuted, size: 16),
+                        icon: Icon(Icons.clear, color: context.appColors.textSecondary, size: 16),
                         onPressed: () {
                           _searchController.clear();
                           ref.read(adminSettingsProvider.notifier).updateSearch('');
@@ -418,13 +419,13 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
                     avatar: Icon(
                       cat.icon,
                       size: 14,
-                      color: isSelected ? Colors.white : AppColors.textMuted,
+                      color: isSelected ? Colors.white : context.appColors.textSecondary,
                     ),
                     labelStyle: AppTextStyles.caption.copyWith(
-                      color: isSelected ? Colors.white : AppColors.textSecondary,
+                      color: isSelected ? Colors.white : context.appColors.textSecondary,
                       fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                     ),
-                    backgroundColor: AppColors.glassBase,
+                    backgroundColor: (context.isDarkMode ? const Color(0x0DFFFFFF) : const Color(0x0A000000)),
                     selectedColor: AppColors.accentViolet,
                     checkmarkColor: Colors.white,
                     showCheckmark: false,
@@ -432,7 +433,7 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                       side: BorderSide(
-                        color: isSelected ? AppColors.accentViolet : AppColors.glassBorder,
+                        color: isSelected ? AppColors.accentViolet : context.appColors.border,
                       ),
                     ),
                   ),
@@ -449,11 +450,11 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
               alignment: Alignment.center,
               child: Column(
                 children: [
-                  Icon(Icons.search_off, color: AppColors.textMuted, size: 36),
+                  Icon(Icons.search_off, color: context.appColors.textSecondary, size: 36),
                   const SizedBox(height: 8),
                   Text(
                     'No settings match your filter',
-                    style: AppTextStyles.body2.copyWith(color: AppColors.textMuted),
+                    style: AppTextStyles.body2.copyWith(color: context.appColors.textSecondary),
                   ),
                 ],
               ),
@@ -481,18 +482,17 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
                     }
                   },
                   borderRadius: BorderRadius.circular(12),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 150),
+                  child: Container(
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
                       color: isSelected
                           ? AppColors.accentViolet.withValues(alpha: 0.12)
-                          : AppColors.glassBase,
+                          : (context.isDarkMode ? const Color(0x0DFFFFFF) : const Color(0x0A000000)),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: isSelected
                             ? AppColors.accentViolet
-                            : AppColors.glassBorder,
+                            : context.appColors.border,
                         width: isSelected ? 1.5 : 1.0,
                       ),
                     ),
@@ -514,7 +514,7 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
                                 style: AppTextStyles.caption.copyWith(
                                   fontSize: 10,
                                   fontWeight: FontWeight.w700,
-                                  color: AppColors.textMuted,
+                                  color: context.appColors.textSecondary,
                                 ),
                               ),
                             ),
@@ -529,7 +529,7 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
                                   fontSize: 13,
                                   color: isSelected
                                       ? AppColors.accentViolet
-                                      : AppColors.textPrimary,
+                                      : context.appColors.textPrimary,
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -573,13 +573,13 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
                             color: AppColors.surfaceDeep.withValues(alpha: 0.5),
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
-                                color: AppColors.glassBorder.withValues(alpha: 0.5)),
+                                color: context.appColors.border.withValues(alpha: 0.5)),
                           ),
                           child: Text(
                             item.value,
                             style: AppTextStyles.caption.copyWith(
                               fontFamily: 'monospace',
-                              color: AppColors.textSecondary,
+                              color: context.appColors.textSecondary,
                             ),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
@@ -603,23 +603,23 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
         height: 350,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: AppColors.cardBackground,
+          color: context.appColors.cardBackground,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.glassBorder),
+          border: Border.all(color: context.appColors.border),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.touch_app_outlined, size: 48, color: AppColors.textMuted),
+            Icon(Icons.touch_app_outlined, size: 48, color: context.appColors.textSecondary),
             const SizedBox(height: 12),
             Text(
               'Select a Setting to Edit',
-              style: AppTextStyles.subtitle1.copyWith(color: AppColors.textPrimary),
+              style: AppTextStyles.subtitle1.copyWith(color: context.appColors.textPrimary),
             ),
             const SizedBox(height: 4),
             Text(
               'Choose any configuration item on the left to edit its value directly.',
-              style: AppTextStyles.body2.copyWith(color: AppColors.textMuted),
+              style: AppTextStyles.body2.copyWith(color: context.appColors.textSecondary),
             ),
           ],
         ),
@@ -632,9 +632,9 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
 
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.cardBackground,
+        color: context.appColors.cardBackground,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.glassBorder),
+        border: Border.all(color: context.appColors.border),
       ),
       padding: const EdgeInsets.all(24),
       child: Form(
@@ -691,7 +691,7 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
                               'Order #${setting.orderNumber}',
                               style: AppTextStyles.caption.copyWith(
                                 fontWeight: FontWeight.w700,
-                                color: AppColors.textMuted,
+                                color: context.appColors.textSecondary,
                               ),
                             ),
                           ),
@@ -703,7 +703,7 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
                         style: AppTextStyles.h4.copyWith(
                           fontFamily: 'monospace',
                           fontSize: 18,
-                          color: AppColors.textPrimary,
+                          color: context.appColors.textPrimary,
                         ),
                       ),
                     ],
@@ -712,7 +712,7 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
                 IconButton(
                   tooltip: 'Copy Setting Code',
                   icon: const Icon(Icons.copy, size: 18),
-                  color: AppColors.textSecondary,
+                  color: context.appColors.textSecondary,
                   onPressed: () {
                     Clipboard.setData(ClipboardData(text: setting.code));
                     CenterToast.showInfo(
@@ -731,9 +731,9 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
               width: double.infinity,
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.glassBase,
+                color: (context.isDarkMode ? const Color(0x0DFFFFFF) : const Color(0x0A000000)),
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: AppColors.glassBorder),
+                border: Border.all(color: context.appColors.border),
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -744,7 +744,7 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
                     child: Text(
                       description,
                       style: AppTextStyles.body2.copyWith(
-                        color: AppColors.textSecondary,
+                        color: context.appColors.textSecondary,
                         fontSize: 13,
                         height: 1.4,
                       ),
@@ -759,21 +759,21 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
             Text(
               'Configuration Value (String)',
               style: AppTextStyles.label.copyWith(
-                color: AppColors.textPrimary,
+                color: context.appColors.textPrimary,
                 fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(height: 4),
             Text(
               'Direct string value. For LLMs, enter the exact model name. For limits, enter an integer. For promos, enter text.',
-              style: AppTextStyles.caption.copyWith(color: AppColors.textMuted),
+              style: AppTextStyles.caption.copyWith(color: context.appColors.textSecondary),
             ),
             const SizedBox(height: 8),
             Container(
               decoration: BoxDecoration(
-                color: AppColors.glassBase,
+                color: (context.isDarkMode ? const Color(0x0DFFFFFF) : const Color(0x0A000000)),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.glassBorder),
+                border: Border.all(color: context.appColors.border),
               ),
               child: TextFormField(
                 controller: _valueController,
@@ -781,7 +781,7 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
                 minLines: 1,
                 style: AppTextStyles.body2.copyWith(
                   fontFamily: 'monospace',
-                  color: AppColors.textPrimary,
+                  color: context.appColors.textPrimary,
                 ),
                 validator: (val) {
                   if (val == null || val.trim().isEmpty) {
@@ -795,7 +795,7 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
                   hintText: 'Enter setting value...',
                   hintStyle: AppTextStyles.body2.copyWith(
                     fontFamily: 'monospace',
-                    color: AppColors.textMuted,
+                    color: context.appColors.textSecondary,
                   ),
                 ),
               ),
@@ -806,28 +806,28 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
             Text(
               'Display Order Number',
               style: AppTextStyles.label.copyWith(
-                color: AppColors.textPrimary,
+                color: context.appColors.textPrimary,
                 fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(height: 4),
             Text(
               'Sorting index used when listing settings in UI and queries.',
-              style: AppTextStyles.caption.copyWith(color: AppColors.textMuted),
+              style: AppTextStyles.caption.copyWith(color: context.appColors.textSecondary),
             ),
             const SizedBox(height: 8),
             Container(
               width: 180,
               decoration: BoxDecoration(
-                color: AppColors.glassBase,
+                color: (context.isDarkMode ? const Color(0x0DFFFFFF) : const Color(0x0A000000)),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.glassBorder),
+                border: Border.all(color: context.appColors.border),
               ),
               child: TextFormField(
                 controller: _orderController,
                 keyboardType: TextInputType.number,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                style: AppTextStyles.body2.copyWith(color: AppColors.textPrimary),
+                style: AppTextStyles.body2.copyWith(color: context.appColors.textPrimary),
                 validator: (val) {
                   if (val == null || val.trim().isEmpty) {
                     return 'Required';
@@ -849,12 +849,12 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
             // Timestamps Metadata
             Row(
               children: [
-                Icon(Icons.history, size: 14, color: AppColors.textMuted),
+                Icon(Icons.history, size: 14, color: context.appColors.textSecondary),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
                     'Created: ${_formatDateTime(setting.createdAt)}   •   Last Updated: ${_formatDateTime(setting.updatedAt)}',
-                    style: AppTextStyles.caption.copyWith(color: AppColors.textMuted),
+                    style: AppTextStyles.caption.copyWith(color: context.appColors.textSecondary),
                   ),
                 ),
               ],
@@ -874,8 +874,8 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
                           _orderController.text = setting.orderNumber.toString();
                         },
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.textSecondary,
-                    side: BorderSide(color: AppColors.glassBorder),
+                    foregroundColor: context.appColors.textSecondary,
+                    side: BorderSide(color: context.appColors.border),
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),

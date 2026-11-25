@@ -49,7 +49,7 @@ class _LearningMainContentState extends ConsumerState<LearningMainContent> {
       barrierDismissible: false,
       builder: (ctx) {
         return AlertDialog(
-          backgroundColor: isDark ? AppColors.canvasBackground : Colors.white,
+          backgroundColor: isDark ? context.appColors.scaffoldBackground : Colors.white,
           insetPadding: EdgeInsets.symmetric(
             horizontal: isMobile ? 16 : 24,
             vertical: 24,
@@ -108,7 +108,7 @@ class _LearningMainContentState extends ConsumerState<LearningMainContent> {
                 ? Text(
                     'Are you sure you want to stop? The current milestone synthesis and notes will be discarded.',
                     style: AppTextStyles.body2.copyWith(
-                      color: isDark ? const Color(0xFF9CA3AF) : AppColors.textSecondary,
+                      color: isDark ? const Color(0xFF9CA3AF) : context.appColors.textSecondary,
                       height: 1.45,
                       fontSize: isMobile ? 13 : 14,
                     ),
@@ -129,7 +129,7 @@ class _LearningMainContentState extends ConsumerState<LearningMainContent> {
                       side: BorderSide(
                         color: isDark
                             ? Colors.white.withValues(alpha: 0.2)
-                            : AppColors.border,
+                            : context.appColors.border,
                       ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -144,7 +144,7 @@ class _LearningMainContentState extends ConsumerState<LearningMainContent> {
                       style: AppTextStyles.button.copyWith(
                         fontSize: isMobile ? 12 : 13,
                         fontWeight: FontWeight.w600,
-                        color: isDark ? Colors.white70 : AppColors.textSecondary,
+                        color: isDark ? Colors.white70 : context.appColors.textSecondary,
                       ),
                     ),
                   ),
@@ -280,7 +280,7 @@ class _LearningMainContentState extends ConsumerState<LearningMainContent> {
       if (activeState.isLoading || _isConfirmationModalOpen || _isCancelling) {
         // When switching session from learning history, display the theme gradient spinner in a card
         if (!activeState.isSynthesizing && !_isConfirmationModalOpen) {
-          final isDark = AppColors.isDark;
+          final isDark = context.isDarkMode;
           return Center(
             child: Container(
               width: 320,
@@ -293,9 +293,9 @@ class _LearningMainContentState extends ConsumerState<LearningMainContent> {
                   width: 1.5,
                 ),
                 color: isMobile
-                    ? (isDark ? AppColors.canvasBackground : Colors.white)
+                    ? (isDark ? context.appColors.scaffoldBackground : Colors.white)
                     : null,
-                gradient: isMobile ? null : AppColors.cardGradientOpaque,
+                gradient: isMobile ? null : (context.isDarkMode ? const LinearGradient(colors: [Color(0xF511121D), Color(0xEE0E0F18)], begin: Alignment.topLeft, end: Alignment.bottomRight) : const LinearGradient(colors: [Color(0xFAFFFFFF), Color(0xF5F9F9FB)], begin: Alignment.topLeft, end: Alignment.bottomRight)),
                 boxShadow: [
                   if (!isMobile) ...[
                     BoxShadow(
@@ -335,7 +335,7 @@ class _LearningMainContentState extends ConsumerState<LearningMainContent> {
                   Text(
                     'Restoring your learning journey...',
                     style: AppTextStyles.body2.copyWith(
-                      color: AppColors.textSecondary,
+                      color: context.appColors.textSecondary,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -367,8 +367,8 @@ class _LearningMainContentState extends ConsumerState<LearningMainContent> {
           onCancel: () => _handleCancelJourney(context, isPhase2),
         );
       }
-      return ActiveLearningWorkspace(
-        key: ValueKey('active_workspace_${context.isDarkMode}'),
+      return const ActiveLearningWorkspace(
+        key: ValueKey('active_workspace'),
       );
     }
 
@@ -381,7 +381,7 @@ class _LearningMainContentState extends ConsumerState<LearningMainContent> {
 
     return Container(
       color: isDark
-          ? (isMobile ? AppColors.mobileBackground : AppColors.background)
+          ? (isMobile ? context.appColors.scaffoldBackground : context.appColors.scaffoldBackground)
           : const Color(0xFFF6F8FC),
       child: Stack(
         children: [
@@ -395,7 +395,7 @@ class _LearningMainContentState extends ConsumerState<LearningMainContent> {
                   curve: Curves.easeInOut,
                   child: Container(
                     decoration: BoxDecoration(
-                      gradient: AppColors.workspaceBackgroundRadial,
+                      gradient: (context.isDarkMode ? const RadialGradient(center: Alignment(0.0, -0.3), radius: 1.2, colors: [Color(0xFF151624), Color(0xFF0E0F18), Color(0xFF0B0C13)], stops: [0.0, 0.5, 1.0]) : const RadialGradient(center: Alignment(0.0, -0.3), radius: 1.2, colors: [Color(0xFFFFFFFF), Color(0xFFF8FAFC), Color(0xFFF6F8FC)], stops: [0.0, 0.5, 1.0])),
                     ),
                   ),
                 ),
@@ -808,7 +808,7 @@ class _LearningMainContentState extends ConsumerState<LearningMainContent> {
                                                   ? AppTextStyles.caption
                                                   : AppTextStyles.body2)
                                               .copyWith(
-                                                color: AppColors.textSecondary,
+                                                color: context.appColors.textSecondary,
                                               ),
                                     ),
                                     SizedBox(height: isMobile ? 6 : 10),

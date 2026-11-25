@@ -45,7 +45,7 @@ class _DailyActivityHeatmapCardState extends State<DailyActivityHeatmapCard> {
             child: Text(
               'No activity days recorded yet.',
               style: AppTextStyles.caption.copyWith(
-                color: isDark ? AppColors.textMuted : const Color(0xFF94A3B8),
+                color: isDark ? context.appColors.textSecondary : const Color(0xFF94A3B8),
               ),
             ),
           )
@@ -130,18 +130,14 @@ class _DailyActivityHeatmapCardState extends State<DailyActivityHeatmapCard> {
                       style: AppTextStyles.h4.copyWith(
                         fontWeight: FontWeight.w700,
                         fontSize: isMobile ? 16 : 18,
-                        color: isDark
-                            ? AppColors.textPrimary
-                            : const Color(0xFF0F172A),
+                        color: context.appColors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       'Step milestones completed by day',
                       style: AppTextStyles.body2.copyWith(
-                        color: isDark
-                            ? AppColors.textSecondary
-                            : const Color(0xFF64748B),
+                        color: context.appColors.textSecondary,
                       ),
                     ),
                   ],
@@ -188,7 +184,7 @@ class _DailyActivityHeatmapCardState extends State<DailyActivityHeatmapCard> {
                     day.date,
                     style: AppTextStyles.label.copyWith(
                       color: isDark
-                          ? AppColors.textPrimary
+                          ? context.appColors.textPrimary
                           : const Color(0xFF1E293B),
                       fontWeight: FontWeight.w600,
                       fontSize: 13,

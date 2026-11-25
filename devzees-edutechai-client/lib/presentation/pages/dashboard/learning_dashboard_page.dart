@@ -19,20 +19,18 @@ class LearningDashboardPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isDark = context.isDarkMode;
+    final colors = context.appColors;
 
     return Scaffold(
-      backgroundColor: isDark ? AppColors.canvasBackground : const Color(0xFFF8FAFC),
+      backgroundColor: colors.scaffoldBackground,
       appBar: AppBar(
-        backgroundColor: isDark
-            ? AppColors.canvasBackground.withValues(alpha: 0.85)
-            : Colors.white.withValues(alpha: 0.9),
+        backgroundColor: colors.topBarBackground,
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: IconButton(
           icon: Icon(
             Icons.arrow_back_rounded,
-            color: isDark ? Colors.white : const Color(0xFF0F172A),
+            color: colors.textPrimary,
           ),
           onPressed: () {
             if (context.canPop()) {

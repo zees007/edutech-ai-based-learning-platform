@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/text_styles.dart';
+import 'package:devzees_edutechai_client/core/theme/theme_palette.dart';
 
 /// Interactive deck/stack view for subscription plan cards on mobile devices.
 ///
@@ -77,7 +78,7 @@ class _MobilePlanDeckState extends State<MobilePlanDeck> {
 
   @override
   Widget build(BuildContext context) {
-    final bool isDark = AppColors.isDark;
+    final bool isDark = context.isDarkMode;
     final titles = widget.planTitles;
 
     return Column(
@@ -91,7 +92,7 @@ class _MobilePlanDeckState extends State<MobilePlanDeck> {
             decoration: BoxDecoration(
               color: isDark ? const Color(0xFF16182B) : const Color(0xFFE2E8F0),
               borderRadius: BorderRadius.circular(30),
-              border: Border.all(color: AppColors.glassBorder),
+              border: Border.all(color: context.appColors.border),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -118,7 +119,7 @@ class _MobilePlanDeckState extends State<MobilePlanDeck> {
                     child: Text(
                       titles[i],
                       style: TextStyle(
-                        color: isSelected ? Colors.white : AppColors.textSecondary,
+                        color: isSelected ? Colors.white : context.appColors.textSecondary,
                         fontWeight: FontWeight.bold,
                         fontSize: 12,
                       ),
@@ -209,8 +210,8 @@ class _MobilePlanDeckState extends State<MobilePlanDeck> {
                     Icons.arrow_back_ios_new_rounded,
                     size: 13,
                     color: _currentPage > 0
-                        ? AppColors.textPrimary
-                        : AppColors.textMuted.withValues(alpha: 0.3),
+                        ? context.appColors.textPrimary
+                        : context.appColors.textSecondary.withValues(alpha: 0.3),
                   ),
                 ),
               ),
@@ -230,7 +231,7 @@ class _MobilePlanDeckState extends State<MobilePlanDeck> {
                       height: 8,
                       decoration: BoxDecoration(
                         gradient: isSelected ? AppColors.primaryGradient : null,
-                        color: isSelected ? null : AppColors.glassBorder,
+                        color: isSelected ? null : context.appColors.border,
                         borderRadius: BorderRadius.circular(4),
                         boxShadow: isSelected
                             ? [
@@ -267,8 +268,8 @@ class _MobilePlanDeckState extends State<MobilePlanDeck> {
                     Icons.arrow_forward_ios_rounded,
                     size: 13,
                     color: _currentPage < widget.cards.length - 1
-                        ? AppColors.textPrimary
-                        : AppColors.textMuted.withValues(alpha: 0.3),
+                        ? context.appColors.textPrimary
+                        : context.appColors.textSecondary.withValues(alpha: 0.3),
                   ),
                 ),
               ),
@@ -279,13 +280,13 @@ class _MobilePlanDeckState extends State<MobilePlanDeck> {
             mainAxisAlignment: MainAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.swipe_rounded, size: 14, color: AppColors.textMuted),
+              Icon(Icons.swipe_rounded, size: 14, color: context.appColors.textSecondary),
               const SizedBox(width: 6),
               Flexible(
                 child: Text(
                   'Swipe to compare • ${_currentPage + 1} of ${widget.cards.length}',
                   style: AppTextStyles.caption.copyWith(
-                    color: AppColors.textMuted,
+                    color: context.appColors.textSecondary,
                     fontSize: 11,
                     letterSpacing: 0.2,
                   ),

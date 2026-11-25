@@ -12,6 +12,7 @@ import 'widgets/onboarding_slide.dart';
 import 'widgets/onboarding_feature_card.dart';
 import 'widgets/onboarding_dots_indicator.dart';
 import 'widgets/onboarding_gradient_button.dart';
+import 'package:devzees_edutechai_client/core/theme/theme_palette.dart';
 
 /// Full-screen onboarding page with 3 swipeable carousel slides.
 /// Shown only on mobile, only on first launch.
@@ -205,7 +206,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage>
                 child: Text(
                   'Skip',
                   style: TextStyle(
-                    color: AppColors.textMuted,
+                    color: context.appColors.textSecondary,
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
                   ),
@@ -302,7 +303,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage>
             child: Text(
               'I already have an account',
               style: TextStyle(
-                color: AppColors.textMuted,
+                color: context.appColors.textSecondary,
                 fontSize: 13,
                 fontWeight: FontWeight.w400,
               ),

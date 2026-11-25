@@ -3,6 +3,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 import '../../../../../../core/theme/app_colors.dart';
 import '../../../../../../core/theme/text_styles.dart';
+import 'package:devzees_edutechai_client/core/theme/theme_palette.dart';
 
 class RecommendedVideos extends StatelessWidget {
   final List<dynamic>? videos;
@@ -161,21 +162,20 @@ class _VideoCardState extends State<_VideoCard> {
       onExit: (_) => setState(() => _isHovered = false),
       child: GestureDetector(
         onTap: _isPlaying ? null : _playVideo,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 250),
+        child: Container(
           width: double.infinity,
           margin: EdgeInsets.zero,
           transform: Matrix4.translationValues(0, _isHovered ? -3 : 0, 0),
           decoration: BoxDecoration(
-            color: AppColors.isDark
-                ? (_isHovered ? AppColors.surfaceSubtle : AppColors.surface)
-                : AppColors.surface,
+            color: context.isDarkMode
+                ? (_isHovered ? context.appColors.surfaceSubtle : context.appColors.surface)
+                : context.appColors.surface,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: _isHovered ? AppColors.primary : AppColors.border,
+              color: _isHovered ? AppColors.primary : context.appColors.border,
               width: _isHovered ? 1.4 : 1.0,
             ),
-            boxShadow: AppColors.isDark
+            boxShadow: context.isDarkMode
                 ? [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.35),
@@ -312,13 +312,13 @@ class _VideoCardState extends State<_VideoCard> {
                       const SizedBox(height: 8),
                       Row(
                         children: [
-                          Icon(Icons.person_outline_rounded, size: 14, color: AppColors.textMuted),
+                          Icon(Icons.person_outline_rounded, size: 14, color: context.appColors.textSecondary),
                           const SizedBox(width: 4),
                           Expanded(
                             child: Text(
                               widget.video is Map ? (widget.video['channel'] ?? 'YouTube') : 'YouTube',
                               style: AppTextStyles.caption.copyWith(
-                                color: AppColors.textMuted,
+                                color: context.appColors.textSecondary,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -335,9 +335,9 @@ class _VideoCardState extends State<_VideoCard> {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                           decoration: BoxDecoration(
-                            color: AppColors.isDark ? AppColors.glassBase : AppColors.surfaceSubtle,
+                            color: context.isDarkMode ? (context.isDarkMode ? const Color(0x0DFFFFFF) : const Color(0x0A000000)) : context.appColors.surfaceSubtle,
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: AppColors.border),
+                            border: Border.all(color: context.appColors.border),
                           ),
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -348,7 +348,7 @@ class _VideoCardState extends State<_VideoCard> {
                                 child: Text(
                                   explanationText,
                                   style: AppTextStyles.caption.copyWith(
-                                    color: AppColors.textSecondary,
+                                    color: context.appColors.textSecondary,
                                     fontStyle: FontStyle.italic,
                                   ),
                                   maxLines: 2,
@@ -371,13 +371,13 @@ class _VideoCardState extends State<_VideoCard> {
   }
 
   Widget _buildTag(String time, Color color) {
-    final effectiveColor = AppColors.isDark ? color : const Color(0xFF9333EA);
+    final effectiveColor = context.isDarkMode ? color : const Color(0xFF9333EA);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: effectiveColor.withValues(alpha: AppColors.isDark ? 0.15 : 0.12),
+        color: effectiveColor.withValues(alpha: context.isDarkMode ? 0.15 : 0.12),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: effectiveColor.withValues(alpha: AppColors.isDark ? 0.3 : 0.25)),
+        border: Border.all(color: effectiveColor.withValues(alpha: context.isDarkMode ? 0.3 : 0.25)),
       ),
       child: Text(
         time,
@@ -408,7 +408,7 @@ class _SpeedControlState extends State<_SpeedControl> {
     return PopupMenuButton<double>(
       initialValue: _currentSpeed,
       tooltip: 'Playback Speed',
-      color: AppColors.surface,
+      color: context.appColors.surface,
       elevation: 8,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       onSelected: (speed) {
@@ -428,21 +428,21 @@ class _SpeedControlState extends State<_SpeedControl> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
         decoration: BoxDecoration(
-          color: AppColors.isDark
-              ? AppColors.glassSurface.withValues(alpha: 0.1)
-              : AppColors.surfaceSubtle,
+          color: context.isDarkMode
+              ? (context.isDarkMode ? const Color(0x08FFFFFF) : const Color(0x08000000)).withValues(alpha: 0.1)
+              : context.appColors.surfaceSubtle,
           borderRadius: BorderRadius.circular(6),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: context.appColors.border),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.speed, size: 14, color: AppColors.textSecondary),
+            Icon(Icons.speed, size: 14, color: context.appColors.textSecondary),
             const SizedBox(width: 4),
             Text(
               _currentSpeed == 1.0 ? '1x' : '${_currentSpeed}x',
               style: AppTextStyles.badge.copyWith(
-                color: AppColors.textPrimary,
+                color: context.appColors.textPrimary,
               ),
             ),
           ],
@@ -461,7 +461,7 @@ class _SpeedControlState extends State<_SpeedControl> {
           Text(
             text,
             style: AppTextStyles.label.copyWith(
-              color: AppColors.textPrimary,
+              color: context.appColors.textPrimary,
               fontWeight: _currentSpeed == value ? FontWeight.bold : FontWeight.normal,
             ),
           ),

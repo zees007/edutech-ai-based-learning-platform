@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../data/models/learning/session_response.dart';
 import '../../../../../core/providers/gamification_provider.dart';
-import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/theme_palette.dart';
 import '../../../../../core/theme/text_styles.dart';
 import 'milestone_roadmap_stepper.dart';
@@ -55,9 +54,7 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
           children: [
             // ─── TIER 1: Command Hub Header Bar (Desktop & Tablet only) ───
             if (!isMobile)
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOutCubic,
+              Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 24,
@@ -84,9 +81,7 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
 
             // ─── TIER 2: Milestone Learning Roadmap Stepper ─────────
             if (session.steps.isNotEmpty)
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOutCubic,
+              Container(
                 padding: EdgeInsets.fromLTRB(
                   isMobile ? 12 : 24,
                   10,
@@ -190,10 +185,10 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
 
   BoxDecoration _buildPillDecoration() {
     return BoxDecoration(
-      color: AppColors.isDark ? const Color(0xFF191B2B) : const Color(0xFFF1F5F9),
+      color: context.isDarkMode ? const Color(0xFF191B2B) : const Color(0xFFF1F5F9),
       borderRadius: BorderRadius.circular(8),
       border: Border.all(
-        color: AppColors.isDark ? const Color(0x1FFFFFFF) : const Color(0xFFE2E8F0),
+        color: context.isDarkMode ? const Color(0x1FFFFFFF) : const Color(0xFFE2E8F0),
         width: 1.0,
       ),
     );
@@ -201,7 +196,7 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
 
   // ─── MODE PILL (Full-sized HUD pill matching the other 5 pills) ─────────────
   Widget _buildModePill(String mode) {
-    final Color textColor = AppColors.isDark ? const Color(0xFFC084FC) : const Color(0xFF7C3AED);
+    final Color textColor = context.isDarkMode ? const Color(0xFFC084FC) : const Color(0xFF7C3AED);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: _buildPillDecoration(),
@@ -230,7 +225,7 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
 
   // ─── EDUCATION LEVEL PILL (Full-sized HUD pill matching the other 5 pills) ──
   Widget _buildEducationLevelPill(String level) {
-    final Color textColor = AppColors.isDark ? const Color(0xFF60A5FA) : const Color(0xFF1D4ED8);
+    final Color textColor = context.isDarkMode ? const Color(0xFF60A5FA) : const Color(0xFF1D4ED8);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: _buildPillDecoration(),
@@ -270,7 +265,7 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
           decoration: _buildPillDecoration(),
           child: Icon(
             Icons.track_changes_rounded,
-            color: AppColors.isDark ? const Color(0xFF60A5FA) : const Color(0xFF1D4ED8),
+            color: context.isDarkMode ? const Color(0xFF60A5FA) : const Color(0xFF1D4ED8),
             size: 16,
           ),
         ),
@@ -279,17 +274,17 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
           decoration: BoxDecoration(
-            color: (AppColors.isDark ? const Color(0xFF60A5FA) : const Color(0xFF1D4ED8)).withValues(alpha: 0.12),
+            color: (context.isDarkMode ? const Color(0xFF60A5FA) : const Color(0xFF1D4ED8)).withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(6),
             border: Border.all(
-              color: (AppColors.isDark ? const Color(0xFF60A5FA) : const Color(0xFF1D4ED8)).withValues(alpha: 0.25),
+              color: (context.isDarkMode ? const Color(0xFF60A5FA) : const Color(0xFF1D4ED8)).withValues(alpha: 0.25),
               width: 1.0,
             ),
           ),
           child: Text(
             'YOUR GOAL',
             style: TextStyle(
-              color: AppColors.isDark ? const Color(0xFF93C5FD) : const Color(0xFF1E40AF),
+              color: context.isDarkMode ? const Color(0xFF93C5FD) : const Color(0xFF1E40AF),
               fontSize: 10,
               fontWeight: FontWeight.w800,
               letterSpacing: 0.6,
@@ -329,7 +324,7 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
               style: TextStyle(
                 fontSize: 13.5,
                 fontWeight: FontWeight.w600,
-                color: AppColors.isDark ? Colors.white : AppColors.textPrimary,
+                color: context.isDarkMode ? Colors.white : context.appColors.textPrimary,
                 letterSpacing: -0.2,
               ),
             ),
@@ -349,7 +344,7 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
         children: [
           Icon(
             Icons.military_tech_rounded,
-            color: AppColors.isDark ? const Color(0xFFFBBF24) : const Color(0xFFD97706),
+            color: context.isDarkMode ? const Color(0xFFFBBF24) : const Color(0xFFD97706),
             size: 15,
           ),
           const SizedBox(width: 5),
@@ -358,7 +353,7 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: AppColors.isDark ? Colors.white : AppColors.textPrimary,
+              color: context.isDarkMode ? Colors.white : context.appColors.textPrimary,
             ),
           ),
           if (!isCompact) ...[
@@ -368,7 +363,7 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
               style: TextStyle(
                 fontSize: 10.5,
                 fontWeight: FontWeight.w500,
-                color: AppColors.isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                color: context.isDarkMode ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
               ),
             ),
           ],
@@ -387,7 +382,7 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
         children: [
           Icon(
             Icons.star_rounded,
-            color: AppColors.isDark ? const Color(0xFFFBBF24) : const Color(0xFFD97706),
+            color: context.isDarkMode ? const Color(0xFFFBBF24) : const Color(0xFFD97706),
             size: 15,
           ),
           const SizedBox(width: 4),
@@ -396,7 +391,7 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w700,
-              color: AppColors.isDark ? const Color(0xFFFDE68A) : const Color(0xFFB45309),
+              color: context.isDarkMode ? const Color(0xFFFDE68A) : const Color(0xFFB45309),
             ),
           ),
           const SizedBox(width: 6),
@@ -404,7 +399,7 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
             '|',
             style: TextStyle(
               fontSize: 11,
-              color: AppColors.isDark ? const Color(0xFF475569) : const Color(0xFFCBD5E1),
+              color: context.isDarkMode ? const Color(0xFF475569) : const Color(0xFFCBD5E1),
             ),
           ),
           const SizedBox(width: 6),
@@ -412,7 +407,7 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
             isCompact ? '🔥 ' : '🔥 Streak: ',
             style: TextStyle(
               fontSize: 11,
-              color: AppColors.isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+              color: context.isDarkMode ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
             ),
           ),
           Text(
@@ -420,7 +415,7 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w700,
-              color: AppColors.isDark ? Colors.white : AppColors.textPrimary,
+              color: context.isDarkMode ? Colors.white : context.appColors.textPrimary,
             ),
           ),
         ],
@@ -445,7 +440,7 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
                 'Lvl ${levelData['level']} → ${(levelData['level'] as int) + 1}',
                 style: TextStyle(
                   fontSize: 10.5,
-                  color: AppColors.isDark ? const Color(0xFFCBD5E1) : const Color(0xFF475569),
+                  color: context.isDarkMode ? const Color(0xFFCBD5E1) : const Color(0xFF475569),
                 ),
               ),
               const SizedBox(width: 5),
@@ -463,7 +458,7 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
                 child: Container(
                   width: 56,
                   height: 6,
-                  color: AppColors.isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
+                  color: context.isDarkMode ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
                   child: FractionallySizedBox(
                     alignment: Alignment.centerLeft,
                     widthFactor: animatedLvlPct,
@@ -476,7 +471,7 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
                 '${levelData['xp_in_level']}/${levelData['xp_needed_for_next']}',
                 style: TextStyle(
                   fontSize: 9.5,
-                  color: AppColors.isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                  color: context.isDarkMode ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
                 ),
               ),
             ],
@@ -498,7 +493,7 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
             'Roadmap',
             style: TextStyle(
               fontSize: 10.5,
-              color: AppColors.isDark ? const Color(0xFFCBD5E1) : const Color(0xFF475569),
+              color: context.isDarkMode ? const Color(0xFFCBD5E1) : const Color(0xFF475569),
             ),
           ),
           const SizedBox(width: 5),
@@ -516,7 +511,7 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
             child: Container(
               width: 40,
               height: 6,
-              color: AppColors.isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
+              color: context.isDarkMode ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
               child: FractionallySizedBox(
                 alignment: Alignment.centerLeft,
                 widthFactor: topicPct,
@@ -529,7 +524,7 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
             '$completedSteps/$totalSteps',
             style: TextStyle(
               fontSize: 9.5,
-              color: AppColors.isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+              color: context.isDarkMode ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
             ),
           ),
         ],
@@ -541,11 +536,11 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
   Widget _buildExportButton(SessionResponse session, int totalSteps) {
     final bool isCompleted = totalSteps > 0 && session.stepsCompleted >= totalSteps;
     final Color iconColor = isCompleted
-        ? (AppColors.isDark ? const Color(0xFFC084FC) : const Color(0xFF7C3AED))
-        : (AppColors.isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B));
+        ? (context.isDarkMode ? const Color(0xFFC084FC) : const Color(0xFF7C3AED))
+        : (context.isDarkMode ? const Color(0xFF94A3B8) : const Color(0xFF64748B));
     final Color textColor = isCompleted
-        ? (AppColors.isDark ? const Color(0xFFC084FC) : const Color(0xFF7C3AED))
-        : (AppColors.isDark ? Colors.white : AppColors.textPrimary);
+        ? (context.isDarkMode ? const Color(0xFFC084FC) : const Color(0xFF7C3AED))
+        : (context.isDarkMode ? Colors.white : context.appColors.textPrimary);
 
     return Tooltip(
       message: isCompleted
@@ -570,7 +565,7 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
           decoration: _buildPillDecoration().copyWith(
             border: isCompleted
                 ? Border.all(
-                    color: AppColors.isDark
+                    color: context.isDarkMode
                         ? const Color(0x66C084FC)
                         : const Color(0x407C3AED),
                     width: 1.0,
@@ -614,7 +609,7 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
           ),
           child: Icon(
             Icons.alt_route_rounded,
-            color: AppColors.isDark ? const Color(0xFFC084FC) : const Color(0xFF7C3AED),
+            color: context.isDarkMode ? const Color(0xFFC084FC) : const Color(0xFF7C3AED),
             size: 14,
           ),
         ),
@@ -623,7 +618,7 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
           'Milestone Learning Roadmap',
           style: AppTextStyles.subtitle2.copyWith(
             fontWeight: FontWeight.w800,
-            color: AppColors.textPrimary,
+            color: context.appColors.textPrimary,
             letterSpacing: 0.2,
           ),
         ),

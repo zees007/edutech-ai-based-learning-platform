@@ -7,6 +7,7 @@ import '../../../../../../core/theme/text_styles.dart';
 import '../../../../../../data/models/learning/quiz_result.dart';
 import '../../../../widgets/center_toast.dart';
 import '../../../../widgets/gradient_button.dart';
+import 'package:devzees_edutechai_client/core/theme/theme_palette.dart';
 
 export '../../../../../../core/services/quiz_store.dart';
 
@@ -707,15 +708,15 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.isDark ? AppColors.surfaceDark.withValues(alpha: 0.65) : AppColors.surfaceDark,
+        color: context.isDarkMode ? AppColors.surfaceDark.withValues(alpha: 0.65) : AppColors.surfaceDark,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: _submitted
               ? AppColors.accentGreen.withValues(alpha: 0.3)
-              : AppColors.glassBorder,
+              : context.appColors.border,
           width: 1,
         ),
-        boxShadow: AppColors.isDark
+        boxShadow: context.isDarkMode
             ? [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.25),
@@ -777,7 +778,7 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
                       style: AppTextStyles.subtitle1.copyWith(
                         fontWeight: FontWeight.w700,
                         fontSize: 16,
-                        color: AppColors.textPrimary,
+                        color: context.appColors.textPrimary,
                         letterSpacing: 0.15,
                       ),
                     ),
@@ -787,7 +788,7 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
                           ? 'Step knowledge verified • Review explanations below'
                           : 'Test your grasp of this milestone to proceed',
                       style: AppTextStyles.caption.copyWith(
-                        color: AppColors.textMuted,
+                        color: context.appColors.textSecondary,
                         fontSize: 11.5,
                       ),
                     ),
@@ -890,7 +891,7 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: AppColors.isDark
+        color: context.isDarkMode
             ? AppColors.surfaceDark.withValues(alpha: 0.6)
             : Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -901,10 +902,10 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
                   : AppColors.accentRose.withValues(alpha: 0.35))
               : (isCardAnswered
                   ? AppColors.primary.withValues(alpha: 0.4)
-                  : AppColors.glassBorder),
+                  : context.appColors.border),
           width: 1,
         ),
-        boxShadow: AppColors.isDark
+        boxShadow: context.isDarkMode
             ? [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.25),
@@ -954,16 +955,16 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.glassSurface.withValues(alpha: 0.08),
+                  color: (context.isDarkMode ? const Color(0x08FFFFFF) : const Color(0x08000000)).withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: AppColors.glassBorderSubtle,
+                    color: (context.isDarkMode ? const Color(0x0DFFFFFF) : const Color(0x0F000000)),
                   ),
                 ),
                 child: Text(
                   isFillBlank ? 'Fill in the Blank' : 'Multiple Choice',
                   style: AppTextStyles.caption.copyWith(
-                    color: AppColors.textSubtle,
+                    color: context.appColors.textSecondary,
                     fontSize: 11,
                     fontWeight: FontWeight.w500,
                   ),
@@ -1025,7 +1026,7 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
                     border: Border.all(
                       color: isCardAnswered
                           ? AppColors.accentGreen.withValues(alpha: 0.3)
-                          : AppColors.glassBorderSubtle,
+                          : (context.isDarkMode ? const Color(0x0DFFFFFF) : const Color(0x0F000000)),
                     ),
                   ),
                   child: Row(
@@ -1038,7 +1039,7 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
                         size: 11,
                         color: isCardAnswered
                             ? AppColors.accentGreen
-                            : AppColors.textMuted,
+                            : context.appColors.textSecondary,
                       ),
                       const SizedBox(width: 4),
                       Text(
@@ -1046,7 +1047,7 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
                         style: AppTextStyles.caption.copyWith(
                           color: isCardAnswered
                               ? AppColors.accentGreen
-                              : AppColors.textMuted,
+                              : context.appColors.textSecondary,
                           fontSize: 10.5,
                           fontWeight: FontWeight.w600,
                         ),
@@ -1063,7 +1064,7 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
           Text(
             question,
             style: AppTextStyles.subtitle2.copyWith(
-              color: AppColors.textPrimary,
+              color: context.appColors.textPrimary,
               fontSize: 14.5,
               fontWeight: FontWeight.w600,
               height: 1.5,
@@ -1116,7 +1117,7 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
               ? (isCorrect ? AppColors.accentGreen : AppColors.accentRose)
               : (_textAnswers[index]?.trim().isNotEmpty ?? false
                   ? AppColors.primary.withValues(alpha: 0.6)
-                  : AppColors.glassBorder),
+                  : context.appColors.border),
           width: _submitted ? 1.5 : 1.0,
         ),
       ),
@@ -1130,7 +1131,7 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
           border: InputBorder.none,
           hintText: 'Type your answer here...',
           hintStyle: AppTextStyles.bodyPrimary.copyWith(
-            color: AppColors.textMuted,
+            color: context.appColors.textSecondary,
             fontSize: 13.5,
           ),
           icon: Icon(
@@ -1210,14 +1211,14 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
               text: TextSpan(
                 text: 'Correct answer: ',
                 style: AppTextStyles.caption.copyWith(
-                  color: AppColors.textMuted,
+                  color: context.appColors.textSecondary,
                   fontSize: 12,
                 ),
                 children: [
                   TextSpan(
                     text: correctAnswerRaw,
                     style: AppTextStyles.captionBold.copyWith(
-                      color: AppColors.textPrimary,
+                      color: context.appColors.textPrimary,
                       fontSize: 12,
                     ),
                   ),
@@ -1230,7 +1231,7 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
             Text(
               explanation,
               style: AppTextStyles.caption.copyWith(
-                color: AppColors.textSecondary,
+                color: context.appColors.textSecondary,
                 height: 1.45,
                 fontSize: 12,
               ),
@@ -1262,13 +1263,13 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
         (isLastStep && isSessionComplete);
 
     final bool isPassed = scorePct >= 70;
-    final bool isDark = AppColors.isDark;
+    final bool isDark = context.isDarkMode;
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.canvasBackground : Colors.white,
+        color: isDark ? context.appColors.scaffoldBackground : Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isPassed
@@ -1338,14 +1339,14 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
                       style: AppTextStyles.h4.copyWith(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
+                        color: context.appColors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 3),
                     Text(
                       '$correctCount of ${quizList.length} questions correct.',
                       style: AppTextStyles.caption.copyWith(
-                        color: AppColors.textSecondary,
+                        color: context.appColors.textSecondary,
                         fontSize: 12,
                       ),
                     ),
@@ -1523,10 +1524,10 @@ class _OptionTileState extends State<_OptionTile> {
       }
     }
 
-    Color bgColor = AppColors.isDark ? AppColors.glassSurface.withValues(alpha: 0.04) : AppColors.surfaceSubtle;
-    Color borderColor = AppColors.border;
-    Color letterBg = AppColors.isDark ? AppColors.surfaceMid.withValues(alpha: 0.6) : AppColors.trackNeutral;
-    Color letterTextColor = AppColors.isDark ? AppColors.textSecondary : AppColors.textPrimary;
+    Color bgColor = context.isDarkMode ? (context.isDarkMode ? const Color(0x08FFFFFF) : const Color(0x08000000)).withValues(alpha: 0.04) : context.appColors.surfaceSubtle;
+    Color borderColor = context.appColors.border;
+    Color letterBg = context.isDarkMode ? AppColors.surfaceMid.withValues(alpha: 0.6) : AppColors.trackNeutral;
+    Color letterTextColor = context.isDarkMode ? context.appColors.textSecondary : context.appColors.textPrimary;
     IconData? trailingIcon;
     Color? trailingIconColor;
 
@@ -1556,7 +1557,7 @@ class _OptionTileState extends State<_OptionTile> {
         trailingIconColor = AppColors.accentRose;
       }
     } else if (_isHovered && !widget.isSelected) {
-      bgColor = AppColors.isDark ? AppColors.primary.withValues(alpha: 0.07) : AppColors.surface;
+      bgColor = context.isDarkMode ? AppColors.primary.withValues(alpha: 0.07) : context.appColors.surface;
       borderColor = AppColors.primary.withValues(alpha: 0.45);
     }
 
@@ -1568,8 +1569,7 @@ class _OptionTileState extends State<_OptionTile> {
       onExit: (_) => setState(() => _isHovered = false),
       child: GestureDetector(
         onTap: widget.onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
+        child: Container(
           margin: const EdgeInsets.only(bottom: 10),
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           decoration: BoxDecoration(
@@ -1591,7 +1591,7 @@ class _OptionTileState extends State<_OptionTile> {
                       offset: const Offset(0, 2),
                     ),
                   ]
-                : (!AppColors.isDark && _isHovered && !widget.isSubmitted
+                : (!context.isDarkMode && _isHovered && !widget.isSubmitted
                     ? [
                         const BoxShadow(
                           color: Color(0x0F000000),
@@ -1615,7 +1615,7 @@ class _OptionTileState extends State<_OptionTile> {
                             (widget.isSubmitted &&
                                 (isThisOptionCorrect || widget.isSelected))
                         ? Colors.transparent
-                        : AppColors.glassBorderSubtle,
+                        : (context.isDarkMode ? const Color(0x0DFFFFFF) : const Color(0x0F000000)),
                   ),
                 ),
                 child: Center(
@@ -1637,8 +1637,8 @@ class _OptionTileState extends State<_OptionTile> {
                   style: AppTextStyles.body2.copyWith(
                     color: widget.isSelected ||
                             (widget.isSubmitted && isThisOptionCorrect)
-                        ? AppColors.textPrimary
-                        : AppColors.textSecondary,
+                        ? context.appColors.textPrimary
+                        : context.appColors.textSecondary,
                     fontWeight: widget.isSelected ||
                             (widget.isSubmitted && isThisOptionCorrect)
                         ? FontWeight.w600

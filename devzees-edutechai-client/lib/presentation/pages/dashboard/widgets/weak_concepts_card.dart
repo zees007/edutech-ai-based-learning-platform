@@ -81,7 +81,7 @@ class _WeakConceptsCardState extends ConsumerState<WeakConceptsCard> {
                         'All attempted milestone quizzes have passed with 67% (2/3) or 100% (3/3) accuracy. Keep up the high retention!',
                         style: AppTextStyles.caption.copyWith(
                           color: isDark
-                              ? AppColors.textSecondary
+                              ? context.appColors.textSecondary
                               : const Color(0xFF475569),
                         ),
                       ),
@@ -175,18 +175,14 @@ class _WeakConceptsCardState extends ConsumerState<WeakConceptsCard> {
                       style: AppTextStyles.h4.copyWith(
                         fontWeight: FontWeight.w700,
                         fontSize: isMobile ? 16 : 18,
-                        color: isDark
-                            ? AppColors.textPrimary
-                            : const Color(0xFF0F172A),
+                        color: context.appColors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       'Milestone steps with quiz scores below 60% (0/3 or 1/3 correct)',
                       style: AppTextStyles.body2.copyWith(
-                        color: isDark
-                            ? AppColors.textSecondary
-                            : const Color(0xFF64748B),
+                        color: context.appColors.textSecondary,
                         fontSize: isMobile ? 12 : 13,
                       ),
                     ),
@@ -321,7 +317,7 @@ class _WeakConceptsCardState extends ConsumerState<WeakConceptsCard> {
                       : 'Step ${item.stepIndex + 1}: ${item.stepTitle}',
                   style: AppTextStyles.body1.copyWith(
                     color: isDark
-                        ? AppColors.textPrimary
+                        ? context.appColors.textPrimary
                         : const Color(0xFF0F172A),
                     fontWeight: FontWeight.w700,
                     fontSize: 13,

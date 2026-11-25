@@ -622,7 +622,7 @@ class _DashboardKpiCardsState extends State<DashboardKpiCards>
               fontWeight: FontWeight.w900,
               fontSize: isMobile ? 20 : 24,
               letterSpacing: -0.8,
-              color: isDark ? AppColors.textPrimary : const Color(0xFF0F172A),
+              color: isDark ? context.appColors.textPrimary : const Color(0xFF0F172A),
             ),
           ),
           SizedBox(height: isMobile ? 1 : 2),
@@ -672,7 +672,7 @@ class _DashboardKpiCardsState extends State<DashboardKpiCards>
             fontWeight: FontWeight.w900,
             fontSize: isMobile ? 15 : 18,
             letterSpacing: -0.5,
-            color: isDark ? AppColors.textPrimary : const Color(0xFF0F172A),
+            color: isDark ? context.appColors.textPrimary : const Color(0xFF0F172A),
           ),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
@@ -748,7 +748,7 @@ class _DashboardKpiCardsState extends State<DashboardKpiCards>
               color: isFocused
                   ? activeColor
                   : (isDark
-                      ? AppColors.textSecondary
+                      ? context.appColors.textSecondary
                       : const Color(0xFF64748B)),
             ),
           ),
@@ -779,8 +779,7 @@ class _DashboardKpiCardsState extends State<DashboardKpiCards>
             _focusedIndex = isSelected ? null : index;
           });
         },
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 220),
+        child: Container(
           padding: EdgeInsets.symmetric(
             horizontal: isMobileCompact ? 12 : 14,
             vertical: isMobileCompact ? 10 : 12,
@@ -835,7 +834,7 @@ class _DashboardKpiCardsState extends State<DashboardKpiCards>
                         metric.title,
                         style: AppTextStyles.label.copyWith(
                           color: isDark
-                              ? AppColors.textSecondary
+                              ? context.appColors.textSecondary
                               : const Color(0xFF64748B),
                           fontWeight: FontWeight.w600,
                           fontSize: isMobileCompact ? 11.5 : 12.5,
@@ -873,7 +872,7 @@ class _DashboardKpiCardsState extends State<DashboardKpiCards>
                     letterSpacing: -0.5,
                     fontSize: isMobileCompact ? 17 : 20,
                     color: isDark
-                        ? AppColors.textPrimary
+                        ? context.appColors.textPrimary
                         : const Color(0xFF0F172A),
                   ),
                   maxLines: 1,
@@ -885,7 +884,7 @@ class _DashboardKpiCardsState extends State<DashboardKpiCards>
                 Text(
                   metric.subtitle,
                   style: AppTextStyles.caption.copyWith(
-                    color: isDark ? AppColors.textMuted : const Color(0xFF94A3B8),
+                    color: isDark ? context.appColors.textSecondary : const Color(0xFF94A3B8),
                     fontSize: isMobileCompact ? 10.5 : 11.5,
                   ),
                   maxLines: 1,

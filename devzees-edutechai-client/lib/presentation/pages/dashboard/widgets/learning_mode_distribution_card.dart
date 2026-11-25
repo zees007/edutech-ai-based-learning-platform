@@ -2,7 +2,6 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/responsive.dart';
 import '../../../../data/models/dashboard/dashboard_response.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../core/theme/theme_palette.dart';
 
@@ -45,16 +44,55 @@ class _LearningModeDistributionCardState
             child: Text(
               'No sessions recorded yet.',
               style: AppTextStyles.caption.copyWith(
-                color: isDark ? AppColors.textMuted : const Color(0xFF94A3B8),
+                color: isDark
+                    ? context.appColors.textSecondary
+                    : const Color(0xFF94A3B8),
               ),
             ),
           )
         : (isCompact
-            ? Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Center(
-                    child: SizedBox(
+              ? Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Center(
+                      child: SizedBox(
+                        width: 130,
+                        height: 130,
+                        child: PieChart(
+                          PieChartData(
+                            pieTouchData: PieTouchData(
+                              touchCallback:
+                                  (FlTouchEvent event, pieTouchResponse) {
+                                    setState(() {
+                                      if (!event.isInterestedForInteractions ||
+                                          pieTouchResponse == null ||
+                                          pieTouchResponse.touchedSection ==
+                                              null) {
+                                        _touchedIndex = -1;
+                                        return;
+                                      }
+                                      _touchedIndex = pieTouchResponse
+                                          .touchedSection!
+                                          .touchedSectionIndex;
+                                    });
+                                  },
+                            ),
+                            borderData: FlBorderData(show: false),
+                            sectionsSpace: 3,
+                            centerSpaceRadius: 36,
+                            sections: _buildPieSections(modes),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildLegendColumn(context, modes),
+                  ],
+                )
+              : Row(
+                  children: [
+                    // Donut Pie Chart
+                    SizedBox(
                       width: 130,
                       height: 130,
                       child: PieChart(
@@ -62,17 +100,19 @@ class _LearningModeDistributionCardState
                           pieTouchData: PieTouchData(
                             touchCallback:
                                 (FlTouchEvent event, pieTouchResponse) {
-                              setState(() {
-                                if (!event.isInterestedForInteractions ||
-                                    pieTouchResponse == null ||
-                                    pieTouchResponse.touchedSection == null) {
-                                  _touchedIndex = -1;
-                                  return;
-                                }
-                                _touchedIndex = pieTouchResponse
-                                    .touchedSection!.touchedSectionIndex;
-                              });
-                            },
+                                  setState(() {
+                                    if (!event.isInterestedForInteractions ||
+                                        pieTouchResponse == null ||
+                                        pieTouchResponse.touchedSection ==
+                                            null) {
+                                      _touchedIndex = -1;
+                                      return;
+                                    }
+                                    _touchedIndex = pieTouchResponse
+                                        .touchedSection!
+                                        .touchedSectionIndex;
+                                  });
+                                },
                           ),
                           borderData: FlBorderData(show: false),
                           sectionsSpace: 3,
@@ -81,49 +121,12 @@ class _LearningModeDistributionCardState
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  _buildLegendColumn(context, modes),
-                ],
-              )
-            : Row(
-                children: [
-                  // Donut Pie Chart
-                  SizedBox(
-                    width: 130,
-                    height: 130,
-                    child: PieChart(
-                      PieChartData(
-                        pieTouchData: PieTouchData(
-                          touchCallback:
-                              (FlTouchEvent event, pieTouchResponse) {
-                            setState(() {
-                              if (!event.isInterestedForInteractions ||
-                                  pieTouchResponse == null ||
-                                  pieTouchResponse.touchedSection == null) {
-                                _touchedIndex = -1;
-                                return;
-                              }
-                              _touchedIndex = pieTouchResponse
-                                  .touchedSection!.touchedSectionIndex;
-                            });
-                          },
-                        ),
-                        borderData: FlBorderData(show: false),
-                        sectionsSpace: 3,
-                        centerSpaceRadius: 36,
-                        sections: _buildPieSections(modes),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 20),
+                    const SizedBox(width: 20),
 
-                  // Legend
-                  Expanded(
-                    child: _buildLegendColumn(context, modes),
-                  ),
-                ],
-              ));
+                    // Legend
+                    Expanded(child: _buildLegendColumn(context, modes)),
+                  ],
+                ));
 
     return Container(
       decoration: BoxDecoration(
@@ -135,7 +138,9 @@ class _LearningModeDistributionCardState
       padding: EdgeInsets.all(isMobile ? 16 : 22),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: widget.stretchHeight ? MainAxisSize.max : MainAxisSize.min,
+        mainAxisSize: widget.stretchHeight
+            ? MainAxisSize.max
+            : MainAxisSize.min,
         children: [
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -143,10 +148,11 @@ class _LearningModeDistributionCardState
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: (isDark
-                          ? const Color(0xFFA78BFA)
-                          : const Color(0xFF7C3AED))
-                      .withValues(alpha: 0.15),
+                  color:
+                      (isDark
+                              ? const Color(0xFFA78BFA)
+                              : const Color(0xFF7C3AED))
+                          .withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(
@@ -167,18 +173,14 @@ class _LearningModeDistributionCardState
                       style: AppTextStyles.h4.copyWith(
                         fontWeight: FontWeight.w700,
                         fontSize: isMobile ? 16 : 18,
-                        color: isDark
-                            ? AppColors.textPrimary
-                            : const Color(0xFF0F172A),
+                        color: context.appColors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       'Usage ratio across Visual 🎬, Deep Dive 🔬, and Bite-Sized ⚡ modes',
                       style: AppTextStyles.body2.copyWith(
-                        color: isDark
-                            ? AppColors.textSecondary
-                            : const Color(0xFF64748B),
+                        color: context.appColors.textSecondary,
                         fontSize: isMobile ? 12 : 13,
                       ),
                     ),
@@ -303,17 +305,16 @@ class _LearningModeDistributionCardState
         Container(
           width: 10,
           height: 10,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: color,
-          ),
+          decoration: BoxDecoration(shape: BoxShape.circle, color: color),
         ),
         const SizedBox(width: 8),
         Expanded(
           child: Text(
             title,
             style: AppTextStyles.label.copyWith(
-              color: isDark ? AppColors.textPrimary : const Color(0xFF1E293B),
+              color: isDark
+                  ? context.appColors.textPrimary
+                  : const Color(0xFF1E293B),
               fontSize: 12,
               fontWeight: FontWeight.w600,
             ),
@@ -325,7 +326,9 @@ class _LearningModeDistributionCardState
         Text(
           '$count (${percentage.toStringAsFixed(0)}%)',
           style: AppTextStyles.caption.copyWith(
-            color: isDark ? AppColors.textSecondary : const Color(0xFF64748B),
+            color: isDark
+                ? context.appColors.textSecondary
+                : const Color(0xFF64748B),
             fontWeight: FontWeight.w700,
             fontSize: 12,
           ),

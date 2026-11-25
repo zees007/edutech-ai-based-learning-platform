@@ -11,6 +11,7 @@ import '../../../../data/models/admin/role_create_request.dart';
 import '../../../../data/models/admin/role_edit_request.dart';
 import '../../../widgets/shimmer_loading.dart';
 import 'admin_data_table.dart';
+import 'package:devzees_edutechai_client/core/theme/theme_palette.dart';
 
 /// Role & Privilege Matrix tab.
 class RolePrivilegeTab extends ConsumerStatefulWidget {
@@ -53,12 +54,16 @@ class _RolePrivilegeTabState extends ConsumerState<RolePrivilegeTab> {
         children: [
           Text(
             'Role & Privilege Management',
-            style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
+            style: AppTextStyles.h4.copyWith(
+              color: context.appColors.textPrimary,
+            ),
           ),
           const SizedBox(height: 8),
           Text(
             'Create roles, assign privileges, and view the system privilege matrix',
-            style: AppTextStyles.body2.copyWith(color: AppColors.textMuted),
+            style: AppTextStyles.body2.copyWith(
+              color: context.appColors.textSecondary,
+            ),
           ),
           const SizedBox(height: 24),
 
@@ -74,12 +79,14 @@ class _RolePrivilegeTabState extends ConsumerState<RolePrivilegeTab> {
           Container(
             width: double.infinity,
             height: 1,
-            color: AppColors.glassBorder,
+            color: context.appColors.border,
           ),
           const SizedBox(height: 24),
           Text(
             'All Available Privilege Codes',
-            style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
+            style: AppTextStyles.h4.copyWith(
+              color: context.appColors.textPrimary,
+            ),
           ),
           const SizedBox(height: 16),
           _buildPrivilegesTable(privilegesAsync),
@@ -105,7 +112,9 @@ class _RolePrivilegeTabState extends ConsumerState<RolePrivilegeTab> {
       children: [
         Text(
           'System Roles Overview',
-          style: AppTextStyles.subtitle1.copyWith(color: AppColors.textPrimary),
+          style: AppTextStyles.subtitle1.copyWith(
+            color: context.appColors.textPrimary,
+          ),
         ),
         const SizedBox(height: 12),
         AdminDataTable(
@@ -138,7 +147,7 @@ class _RolePrivilegeTabState extends ConsumerState<RolePrivilegeTab> {
               Text(
                 r.name,
                 style: AppTextStyles.body2.copyWith(
-                  color: AppColors.textPrimary,
+                  color: context.appColors.textPrimary,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -146,7 +155,7 @@ class _RolePrivilegeTabState extends ConsumerState<RolePrivilegeTab> {
               Text(
                 privNames,
                 style: AppTextStyles.caption.copyWith(
-                  color: AppColors.textSecondary,
+                  color: context.appColors.textSecondary,
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
@@ -154,7 +163,7 @@ class _RolePrivilegeTabState extends ConsumerState<RolePrivilegeTab> {
               Text(
                 _formatDate(r.createdAt),
                 style: AppTextStyles.caption.copyWith(
-                  color: AppColors.textMuted,
+                  color: context.appColors.textSecondary,
                 ),
               ),
               Row(
@@ -192,7 +201,7 @@ class _RolePrivilegeTabState extends ConsumerState<RolePrivilegeTab> {
       decoration: BoxDecoration(
         color: AppColors.surfaceDark.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.glassBorder),
+        border: Border.all(color: context.appColors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -203,7 +212,7 @@ class _RolePrivilegeTabState extends ConsumerState<RolePrivilegeTab> {
               Text(
                 _editingRoleId == null ? 'Create New Role' : 'Edit Role',
                 style: AppTextStyles.subtitle1.copyWith(
-                  color: AppColors.textPrimary,
+                  color: context.appColors.textPrimary,
                 ),
               ),
               Row(
@@ -221,12 +230,12 @@ class _RolePrivilegeTabState extends ConsumerState<RolePrivilegeTab> {
                       icon: Icon(
                         Icons.close,
                         size: 16,
-                        color: AppColors.textSecondary,
+                        color: context.appColors.textSecondary,
                       ),
                       label: Text(
                         'Cancel Edit',
                         style: AppTextStyles.caption.copyWith(
-                          color: AppColors.textSecondary,
+                          color: context.appColors.textSecondary,
                         ),
                       ),
                     ),
@@ -244,18 +253,20 @@ class _RolePrivilegeTabState extends ConsumerState<RolePrivilegeTab> {
                       size: 18,
                       color: _isPrivilegesExpanded
                           ? AppColors.accentViolet
-                          : AppColors.textSecondary,
+                          : context.appColors.textSecondary,
                     ),
                     style: IconButton.styleFrom(
                       backgroundColor: _isPrivilegesExpanded
                           ? AppColors.accentViolet.withValues(alpha: 0.15)
-                          : AppColors.glassBase,
+                          : (context.isDarkMode
+                                ? const Color(0x0DFFFFFF)
+                                : const Color(0x0A000000)),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                         side: BorderSide(
                           color: _isPrivilegesExpanded
                               ? AppColors.accentViolet.withValues(alpha: 0.4)
-                              : AppColors.glassBorder,
+                              : context.appColors.border,
                         ),
                       ),
                     ),
@@ -270,12 +281,14 @@ class _RolePrivilegeTabState extends ConsumerState<RolePrivilegeTab> {
                   IconButton(
                     tooltip: 'Open in Full Dialog Window',
                     icon: const Icon(Icons.fullscreen, size: 20),
-                    color: AppColors.textSecondary,
+                    color: context.appColors.textSecondary,
                     style: IconButton.styleFrom(
-                      backgroundColor: AppColors.glassBase,
+                      backgroundColor: (context.isDarkMode
+                          ? const Color(0x0DFFFFFF)
+                          : const Color(0x0A000000)),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
-                        side: BorderSide(color: AppColors.glassBorder),
+                        side: BorderSide(color: context.appColors.border),
                       ),
                     ),
                     onPressed: () => _openPrivilegeDialog(privilegesAsync),
@@ -288,26 +301,32 @@ class _RolePrivilegeTabState extends ConsumerState<RolePrivilegeTab> {
           // Role Name
           Text(
             'Role Name *',
-            style: AppTextStyles.label.copyWith(color: AppColors.textSecondary),
+            style: AppTextStyles.label.copyWith(
+              color: context.appColors.textSecondary,
+            ),
           ),
           const SizedBox(height: 8),
           TextField(
             controller: _roleNameController,
-            style: AppTextStyles.body2.copyWith(color: AppColors.textPrimary),
+            style: AppTextStyles.body2.copyWith(
+              color: context.appColors.textPrimary,
+            ),
             decoration: InputDecoration(
               hintText: 'e.g. Content Editor',
               hintStyle: AppTextStyles.body2.copyWith(
-                color: AppColors.textMuted,
+                color: context.appColors.textSecondary,
               ),
               filled: true,
-              fillColor: AppColors.glassBase,
+              fillColor: (context.isDarkMode
+                  ? const Color(0x0DFFFFFF)
+                  : const Color(0x0A000000)),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: AppColors.glassBorder),
+                borderSide: BorderSide(color: context.appColors.border),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: AppColors.glassBorder),
+                borderSide: BorderSide(color: context.appColors.border),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -326,7 +345,7 @@ class _RolePrivilegeTabState extends ConsumerState<RolePrivilegeTab> {
               Text(
                 'Assign Privileges (${_selectedPrivilegeIds.length} selected):',
                 style: AppTextStyles.label.copyWith(
-                  color: AppColors.textSecondary,
+                  color: context.appColors.textSecondary,
                 ),
               ),
               if (privilegesAsync.hasValue)
@@ -374,7 +393,7 @@ class _RolePrivilegeTabState extends ConsumerState<RolePrivilegeTab> {
                       child: Text(
                         'Clear',
                         style: AppTextStyles.caption.copyWith(
-                          color: AppColors.textMuted,
+                          color: context.appColors.textSecondary,
                         ),
                       ),
                     ),
@@ -390,25 +409,29 @@ class _RolePrivilegeTabState extends ConsumerState<RolePrivilegeTab> {
                 constraints: BoxConstraints(
                   maxHeight: _isPrivilegesExpanded ? 650 : 300,
                 ),
-                decoration: BoxDecoration(
-                  color: AppColors.glassBase,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: _isPrivilegesExpanded
-                        ? AppColors.accentViolet.withValues(alpha: 0.5)
-                        : AppColors.glassBorder,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: (context.isDarkMode
+                        ? const Color(0x0DFFFFFF)
+                        : const Color(0x0A000000)),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: _isPrivilegesExpanded
+                          ? AppColors.accentViolet.withValues(alpha: 0.5)
+                          : context.appColors.border,
+                    ),
                   ),
-                ),
-                padding: const EdgeInsets.all(12),
-                child: SingleChildScrollView(
-                  child: _PrivilegeTreeView(
-                    allPrivileges: privileges,
-                    selectedIds: _selectedPrivilegeIds,
-                    onChanged: (newSelections) {
-                      setState(() {
-                        _selectedPrivilegeIds = newSelections;
-                      });
-                    },
+                  padding: const EdgeInsets.all(12),
+                  child: SingleChildScrollView(
+                    child: _PrivilegeTreeView(
+                      allPrivileges: privileges,
+                      selectedIds: _selectedPrivilegeIds,
+                      onChanged: (newSelections) {
+                        setState(() {
+                          _selectedPrivilegeIds = newSelections;
+                        });
+                      },
+                    ),
                   ),
                 ),
               );
@@ -443,7 +466,9 @@ class _RolePrivilegeTabState extends ConsumerState<RolePrivilegeTab> {
           return [
             Text(
               '${p.id}',
-              style: AppTextStyles.caption.copyWith(color: AppColors.textMuted),
+              style: AppTextStyles.caption.copyWith(
+                color: context.appColors.textSecondary,
+              ),
             ),
             Text(
               p.code,
@@ -455,12 +480,14 @@ class _RolePrivilegeTabState extends ConsumerState<RolePrivilegeTab> {
             Text(
               p.name,
               style: AppTextStyles.body2.copyWith(
-                color: AppColors.textSecondary,
+                color: context.appColors.textSecondary,
               ),
             ),
             Text(
               '${p.orderNumber}',
-              style: AppTextStyles.caption.copyWith(color: AppColors.textMuted),
+              style: AppTextStyles.caption.copyWith(
+                color: context.appColors.textSecondary,
+              ),
             ),
           ];
         }).toList(),
@@ -570,10 +597,10 @@ class _RolePrivilegeTabState extends ConsumerState<RolePrivilegeTab> {
         return StatefulBuilder(
           builder: (dialogCtx, setDialogState) {
             return AlertDialog(
-              backgroundColor: AppColors.cardBackground,
+              backgroundColor: context.appColors.cardBackground,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
-                side: BorderSide(color: AppColors.glassBorder),
+                side: BorderSide(color: context.appColors.border),
               ),
               title: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -590,7 +617,7 @@ class _RolePrivilegeTabState extends ConsumerState<RolePrivilegeTab> {
                         'Assign Privileges (${_selectedPrivilegeIds.length} / ${allPrivs.length})',
                         style: AppTextStyles.subtitle1.copyWith(
                           fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
+                          color: context.appColors.textPrimary,
                         ),
                       ),
                     ],
@@ -598,7 +625,7 @@ class _RolePrivilegeTabState extends ConsumerState<RolePrivilegeTab> {
                   IconButton(
                     icon: Icon(
                       Icons.close,
-                      color: AppColors.textSecondary,
+                      color: context.appColors.textSecondary,
                       size: 20,
                     ),
                     onPressed: () => Navigator.of(dialogCtx).pop(),
@@ -642,7 +669,7 @@ class _RolePrivilegeTabState extends ConsumerState<RolePrivilegeTab> {
                           icon: const Icon(Icons.clear_all, size: 16),
                           label: const Text('Clear All'),
                           style: TextButton.styleFrom(
-                            foregroundColor: AppColors.textMuted,
+                            foregroundColor: context.appColors.textSecondary,
                           ),
                         ),
                       ],
@@ -652,9 +679,11 @@ class _RolePrivilegeTabState extends ConsumerState<RolePrivilegeTab> {
                       child: Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: AppColors.glassBase,
+                          color: (context.isDarkMode
+                              ? const Color(0x0DFFFFFF)
+                              : const Color(0x0A000000)),
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: AppColors.glassBorder),
+                          border: Border.all(color: context.appColors.border),
                         ),
                         child: SingleChildScrollView(
                           child: _PrivilegeTreeView(
@@ -739,7 +768,7 @@ class _PrivilegeExpandableCellState extends State<_PrivilegeExpandableCell> {
                       ? Icons.keyboard_arrow_up
                       : Icons.keyboard_arrow_down,
                   size: 18,
-                  color: AppColors.textSecondary,
+                  color: context.appColors.textSecondary,
                 ),
               ],
             ],
@@ -765,7 +794,7 @@ class _PrivilegeExpandableCellState extends State<_PrivilegeExpandableCell> {
                       color: AppColors.surfaceDark.withValues(alpha: 0.6),
                       borderRadius: BorderRadius.circular(6),
                       border: Border.all(
-                        color: AppColors.glassBorder.withValues(alpha: 0.5),
+                        color: context.appColors.border.withValues(alpha: 0.5),
                       ),
                     ),
                     child: Column(
@@ -788,7 +817,7 @@ class _PrivilegeExpandableCellState extends State<_PrivilegeExpandableCell> {
                           Text(
                             p.name,
                             style: AppTextStyles.caption.copyWith(
-                              color: AppColors.textSecondary,
+                              color: context.appColors.textSecondary,
                               fontSize: 10,
                             ),
                             maxLines: 2,
@@ -902,16 +931,16 @@ class _PrivilegeTreeViewState extends State<_PrivilegeTreeView> {
                         if (states.contains(WidgetState.selected)) {
                           return AppColors.purple;
                         }
-                        return AppColors.isDark
+                        return context.isDarkMode
                             ? AppColors.surfaceDeep
                             : Colors.white;
                       }),
                       side: BorderSide(
                         color: isSelected
                             ? AppColors.purple
-                            : (AppColors.isDark
-                                  ? AppColors.textMuted
-                                  : AppColors.textSecondary),
+                            : (context.isDarkMode
+                                  ? context.appColors.textSecondary
+                                  : context.appColors.textSecondary),
                         width: 1.5,
                       ),
                       shape: RoundedRectangleBorder(
@@ -929,8 +958,8 @@ class _PrivilegeTreeViewState extends State<_PrivilegeTreeView> {
                           node.code,
                           style: AppTextStyles.body2.copyWith(
                             color: isSelected
-                                ? AppColors.textPrimary
-                                : AppColors.textSecondary,
+                                ? context.appColors.textPrimary
+                                : context.appColors.textSecondary,
                             fontWeight: children.isNotEmpty
                                 ? FontWeight.w700
                                 : FontWeight.w600,
@@ -945,7 +974,7 @@ class _PrivilegeTreeViewState extends State<_PrivilegeTreeView> {
                           Text(
                             node.name,
                             style: AppTextStyles.caption.copyWith(
-                              color: AppColors.textMuted,
+                              color: context.appColors.textSecondary,
                               fontSize: 11,
                             ),
                             maxLines: 1,

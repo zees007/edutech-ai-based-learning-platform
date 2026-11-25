@@ -8,6 +8,7 @@ import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/text_styles.dart';
 import '../../../../../data/models/learning/session_model.dart';
 import '../../../../widgets/center_toast.dart';
+import 'package:devzees_edutechai_client/core/theme/theme_palette.dart';
 
 /// Confirmation dialog shown before permanently deleting a learning session.
 /// Informs the student of permanent data loss (lessons, notes, milestones, exports, scores).
@@ -95,7 +96,7 @@ class _DeleteSessionConfirmationDialogState
 
   @override
   Widget build(BuildContext context) {
-    final bool isDark = AppColors.isDark;
+    final bool isDark = context.isDarkMode;
     final size = MediaQuery.of(context).size;
     final isMobile = size.width < 550;
 
@@ -158,7 +159,7 @@ class _DeleteSessionConfirmationDialogState
                     border: Border(
                       bottom: BorderSide(
                         color: isDark
-                            ? AppColors.glassBorder
+                            ? context.appColors.border
                             : const Color(0xFFF1F5F9),
                         width: 1,
                       ),
@@ -192,14 +193,14 @@ class _DeleteSessionConfirmationDialogState
                               style: AppTextStyles.subtitle1.copyWith(
                                 fontWeight: FontWeight.w700,
                                 fontSize: 17,
-                                color: AppColors.textPrimary,
+                                color: context.appColors.textPrimary,
                               ),
                             ),
                             const SizedBox(height: 2),
                             Text(
                               'This action is permanent and cannot be undone.',
                               style: AppTextStyles.caption.copyWith(
-                                color: AppColors.textMuted,
+                                color: context.appColors.textSecondary,
                                 fontSize: 12,
                               ),
                             ),
@@ -208,7 +209,7 @@ class _DeleteSessionConfirmationDialogState
                       ),
                       IconButton(
                         icon: const Icon(Icons.close_rounded, size: 20),
-                        color: AppColors.textMuted,
+                        color: context.appColors.textSecondary,
                         onPressed: _isDeleting
                             ? null
                             : () => Navigator.of(context).pop(false),
@@ -235,7 +236,7 @@ class _DeleteSessionConfirmationDialogState
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
                               color: isDark
-                                  ? AppColors.glassBorder
+                                  ? context.appColors.border
                                   : const Color(0xFFE2E8F0),
                               width: 1,
                             ),
@@ -261,7 +262,7 @@ class _DeleteSessionConfirmationDialogState
                                     child: Text(
                                       widget.session.topic,
                                       style: AppTextStyles.label.copyWith(
-                                        color: AppColors.textPrimary,
+                                        color: context.appColors.textPrimary,
                                         fontWeight: FontWeight.w700,
                                         fontSize: 14,
                                         height: 1.35,
@@ -307,7 +308,7 @@ class _DeleteSessionConfirmationDialogState
                           style: AppTextStyles.label.copyWith(
                             fontWeight: FontWeight.w600,
                             fontSize: 13,
-                            color: AppColors.textPrimary,
+                            color: context.appColors.textPrimary,
                           ),
                         ),
                         const SizedBox(height: 10),
@@ -357,7 +358,7 @@ class _DeleteSessionConfirmationDialogState
                     border: Border(
                       top: BorderSide(
                         color: isDark
-                            ? AppColors.glassBorder
+                            ? context.appColors.border
                             : const Color(0xFFF1F5F9),
                         width: 1,
                       ),
@@ -372,10 +373,10 @@ class _DeleteSessionConfirmationDialogState
                             ? null
                             : () => Navigator.of(context).pop(false),
                         style: OutlinedButton.styleFrom(
-                          foregroundColor: AppColors.textSecondary,
+                          foregroundColor: context.appColors.textSecondary,
                           side: BorderSide(
                             color: isDark
-                                ? AppColors.glassBorder
+                                ? context.appColors.border
                                 : const Color(0xFFCBD5E1),
                             width: 1,
                           ),
@@ -392,7 +393,7 @@ class _DeleteSessionConfirmationDialogState
                           style: AppTextStyles.button.copyWith(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
-                            color: AppColors.textSecondary,
+                            color: context.appColors.textSecondary,
                           ),
                         ),
                       ),
@@ -491,7 +492,7 @@ class _DeleteSessionConfirmationDialogState
     required String title,
     required String subtitle,
   }) {
-    final bool isDark = AppColors.isDark;
+    final bool isDark = context.isDarkMode;
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -517,7 +518,7 @@ class _DeleteSessionConfirmationDialogState
                 style: AppTextStyles.caption.copyWith(
                   fontWeight: FontWeight.w600,
                   fontSize: 12.5,
-                  color: AppColors.textPrimary,
+                  color: context.appColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 1),

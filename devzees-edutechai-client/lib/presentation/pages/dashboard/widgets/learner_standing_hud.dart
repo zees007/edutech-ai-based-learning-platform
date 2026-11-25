@@ -1448,9 +1448,7 @@ class _HoverableTrophyCrestState extends State<_HoverableTrophyCrest> {
         clipBehavior: Clip.none,
         alignment: Alignment.center,
         children: [
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 220),
-            curve: Curves.easeOutCubic,
+          Container(
             clipBehavior: Clip.antiAlias,
             width: crestSize,
             height: crestSize,

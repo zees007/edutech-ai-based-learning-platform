@@ -4,6 +4,7 @@ import '../../../../../core/providers/learning_provider.dart';
 import '../../../../../core/theme/app_colors.dart';
 import 'learning_history_item.dart';
 import 'learning_history_skeleton.dart';
+import 'package:devzees_edutechai_client/core/theme/theme_palette.dart';
 
 class LearningHistoryList extends ConsumerStatefulWidget {
   final bool expanded;
@@ -92,7 +93,7 @@ class _LearningHistoryListState extends ConsumerState<LearningHistoryList> {
           padding: const EdgeInsets.all(16.0),
           child: Text(
             'No sessions match. Start a new topic!',
-            style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+            style: TextStyle(color: context.appColors.textSecondary, fontSize: 12),
             textAlign: TextAlign.center,
           ),
         ),

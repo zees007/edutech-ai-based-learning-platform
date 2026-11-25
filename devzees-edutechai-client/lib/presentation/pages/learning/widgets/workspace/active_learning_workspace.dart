@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../core/providers/active_session_provider.dart';
 import '../../../../../core/services/quiz_store.dart';
-import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/theme_palette.dart';
 import '../../../../../core/theme/text_styles.dart';
 import 'unified_learning_command_hub.dart';
@@ -96,7 +95,7 @@ class _StepContentContainerState extends ConsumerState<_StepContentContainer> {
           )
         : widget.session.steps.isNotEmpty
           ? SplitLearningWorkspace(
-              key: ValueKey('split_${widget.session.sessionId}_step_${currentIndex}_${context.isDarkMode}'),
+              key: ValueKey('split_${widget.session.sessionId}_step_$currentIndex'),
               session: widget.session,
               activeState: widget.activeState,
               currentStepIndex: currentIndex,
@@ -110,7 +109,7 @@ class _StepContentContainerState extends ConsumerState<_StepContentContainer> {
           : Center(
               child: Text(
                 'No steps available.',
-                style: AppTextStyles.bodyPrimary.copyWith(color: AppColors.textMuted),
+                style: AppTextStyles.bodyPrimary.copyWith(color: context.appColors.textSecondary),
               ),
             ),
     );

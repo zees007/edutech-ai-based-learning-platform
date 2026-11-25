@@ -84,10 +84,9 @@ class _QuizTrendCardState extends State<QuizTrendCard> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: (isDark
-                        ? const Color(0xFF38BDF8)
-                        : const Color(0xFF0284C7))
-                    .withValues(alpha: 0.15),
+                color:
+                    (isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7))
+                        .withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(
@@ -108,18 +107,14 @@ class _QuizTrendCardState extends State<QuizTrendCard> {
                     style: AppTextStyles.h4.copyWith(
                       fontWeight: FontWeight.w700,
                       fontSize: isMobile ? 16 : 18,
-                      color: isDark
-                          ? AppColors.textPrimary
-                          : const Color(0xFF0F172A),
+                      color: context.appColors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     'Performance progression across 3-question milestone quizzes',
                     style: AppTextStyles.body2.copyWith(
-                      color: isDark
-                          ? AppColors.textSecondary
-                          : const Color(0xFF64748B),
+                      color: context.appColors.textSecondary,
                       fontSize: isMobile ? 12 : 13,
                     ),
                   ),
@@ -180,9 +175,9 @@ class _QuizTrendCardState extends State<QuizTrendCard> {
                 Icons.fullscreen_rounded,
                 size: 19,
                 color: rawTrend.isEmpty
-                    ? (isDark ? AppColors.textMuted : const Color(0xFF94A3B8))
+                    ? (isDark ? context.appColors.textSecondary : const Color(0xFF94A3B8))
                     : (isDark
-                          ? AppColors.textSecondary
+                          ? context.appColors.textSecondary
                           : const Color(0xFF475569)),
               ),
             ),
@@ -288,7 +283,7 @@ class _QuizTrendCardState extends State<QuizTrendCard> {
                         Icons.quiz_outlined,
                         size: 40,
                         color: isDark
-                            ? AppColors.textMuted
+                            ? context.appColors.textSecondary
                             : const Color(0xFF94A3B8),
                       ),
                       const SizedBox(height: 12),
@@ -296,7 +291,7 @@ class _QuizTrendCardState extends State<QuizTrendCard> {
                         'No quiz data recorded in this period.',
                         style: AppTextStyles.body2.copyWith(
                           color: isDark
-                              ? AppColors.textSecondary
+                              ? context.appColors.textSecondary
                               : const Color(0xFF64748B),
                         ),
                       ),
@@ -305,7 +300,7 @@ class _QuizTrendCardState extends State<QuizTrendCard> {
                         'Complete milestone steps to generate your accuracy trendline.',
                         style: AppTextStyles.caption.copyWith(
                           color: isDark
-                              ? AppColors.textMuted
+                              ? context.appColors.textSecondary
                               : const Color(0xFF94A3B8),
                         ),
                       ),
@@ -466,7 +461,7 @@ class _QuizTrendCardState extends State<QuizTrendCard> {
           style: AppTextStyles.caption.copyWith(
             color: isSelected
                 ? Colors.white
-                : (isDark ? AppColors.textSecondary : const Color(0xFF64748B)),
+                : (isDark ? context.appColors.textSecondary : const Color(0xFF64748B)),
             fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
             fontSize: 10.5,
           ),
@@ -583,7 +578,7 @@ class _QuizTrendCardState extends State<QuizTrendCard> {
               return Text(
                 text,
                 style: AppTextStyles.caption.copyWith(
-                  color: isDark ? AppColors.textMuted : const Color(0xFF94A3B8),
+                  color: isDark ? context.appColors.textSecondary : const Color(0xFF94A3B8),
                   fontSize: 10,
                 ),
               );
@@ -611,7 +606,7 @@ class _QuizTrendCardState extends State<QuizTrendCard> {
                   '$prefix${index + 1}',
                   style: AppTextStyles.caption.copyWith(
                     color: isDark
-                        ? AppColors.textSecondary
+                        ? context.appColors.textSecondary
                         : const Color(0xFF64748B),
                     fontWeight: FontWeight.w600,
                     fontSize: 11,
@@ -629,8 +624,9 @@ class _QuizTrendCardState extends State<QuizTrendCard> {
           return spotIndexes.map((index) {
             return TouchedSpotIndicatorData(
               FlLine(
-                color: const Color(0xFF8B5CF6)
-                    .withValues(alpha: isDark ? 0.55 : 0.40),
+                color: const Color(
+                  0xFF8B5CF6,
+                ).withValues(alpha: isDark ? 0.55 : 0.40),
                 strokeWidth: 1.5,
                 dashArray: [4, 3],
               ),
@@ -757,10 +753,7 @@ class _QuizTrendCardState extends State<QuizTrendCard> {
                 item.topic.isNotEmpty ? item.topic : 'Learning Milestone',
                 isMobile ? 42 : 55,
               );
-              final truncatedStep = _truncate(
-                rawStepTitle,
-                isMobile ? 26 : 36,
-              );
+              final truncatedStep = _truncate(rawStepTitle, isMobile ? 26 : 36);
               final formattedDate = _formatSingleDate(item.date);
 
               final Color statusColor;

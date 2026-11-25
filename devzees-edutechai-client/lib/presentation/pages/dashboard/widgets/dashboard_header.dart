@@ -91,9 +91,7 @@ class DashboardHeader extends ConsumerWidget {
             ),
 
             // ─── TIER 2: Analytics Filter Sub-Bar (Directly below Tier 1) ───
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 250),
-              curve: Curves.easeOutCubic,
+            Container(
               width: double.infinity,
               padding: EdgeInsets.symmetric(
                 horizontal: isDesktop ? 16 : (isMobile ? 10 : 14),
@@ -484,10 +482,10 @@ class _DashboardDateDropdownState extends State<_DashboardDateDropdown> {
                   width: 175,
                   padding: const EdgeInsets.symmetric(vertical: 6),
                   decoration: BoxDecoration(
-                    color: AppColors.popoverBackground,
+                    color: context.appColors.popoverBackground,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: AppColors.glassBorder,
+                      color: context.appColors.border,
                       width: 1.0,
                     ),
                     boxShadow: isDark
@@ -579,7 +577,7 @@ class _DashboardDateDropdownState extends State<_DashboardDateDropdown> {
             : (isSelected
                   ? primaryAccent
                   : (isItemHovered
-                        ? (isDark ? AppColors.textPrimary : primaryAccent)
+                        ? (isDark ? context.appColors.textPrimary : primaryAccent)
                         : (isDark
                               ? const Color(0xFFCBD5E1)
                               : const Color(0xFF334155))));
@@ -711,7 +709,7 @@ class _DashboardDateDropdownState extends State<_DashboardDateDropdown> {
               Text(
                 widget.displayLabel,
                 style: AppTextStyles.subtitle2.copyWith(
-                  color: isDark ? Colors.white : const Color(0xFF0F172A),
+                  color: context.appColors.textPrimary,
                   fontSize: widget.isMobile ? 11.0 : 12.0,
                   fontWeight: FontWeight.w700,
                   letterSpacing: -0.2,
@@ -870,7 +868,7 @@ class _DashboardRefreshButtonState extends State<_DashboardRefreshButton>
                   Text(
                     widget.isRefreshing ? 'Syncing...' : 'Sync All',
                     style: AppTextStyles.subtitle2.copyWith(
-                      color: isDark ? Colors.white : const Color(0xFF0F172A),
+                      color: context.appColors.textPrimary,
                       fontSize: 12.0,
                       fontWeight: FontWeight.w700,
                       letterSpacing: -0.2,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../../../core/theme/app_colors.dart';
 import '../../../../../../core/theme/text_styles.dart';
+import 'package:devzees_edutechai_client/core/theme/theme_palette.dart';
 
 /// Ultra-sleek neon shimmer skeleton rendered while the YouTubeCuratorAgent
 /// fetches and indexes video transcripts in the background.
@@ -251,7 +252,7 @@ class _VideoCuratorShimmerState extends State<VideoCuratorShimmer>
                   Text(
                     'Extracting educational video chapters & pinpointing exact milestone timestamps...',
                     style: AppTextStyles.caption.copyWith(
-                      color: AppColors.textSlate.withValues(alpha: 0.85),
+                      color: context.appColors.textSecondary.withValues(alpha: 0.85),
                       letterSpacing: 0.1,
                     ),
                   ),
@@ -272,7 +273,7 @@ class _VideoCuratorShimmerState extends State<VideoCuratorShimmer>
         color: AppColors.surfaceMid.withValues(alpha: 0.55),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: AppColors.glassBorderSubtle,
+          color: (context.isDarkMode ? const Color(0x0DFFFFFF) : const Color(0x0F000000)),
           width: 1.0,
         ),
         boxShadow: [
@@ -334,13 +335,13 @@ class _VideoCuratorShimmerState extends State<VideoCuratorShimmer>
                         shape: BoxShape.circle,
                         color: Colors.black.withValues(alpha: 0.45),
                         border: Border.all(
-                          color: AppColors.glassBorder,
+                          color: context.appColors.border,
                           width: 1.0,
                         ),
                       ),
                       child: Icon(
                         Icons.play_arrow_rounded,
-                        color: AppColors.textMuted.withValues(alpha: 0.4),
+                        color: context.appColors.textSecondary.withValues(alpha: 0.4),
                         size: 26,
                       ),
                     ),
@@ -358,13 +359,13 @@ class _VideoCuratorShimmerState extends State<VideoCuratorShimmer>
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.schedule, size: 11, color: AppColors.textMuted),
+                          Icon(Icons.schedule, size: 11, color: context.appColors.textSecondary),
                           const SizedBox(width: 4),
                           Container(
                             width: 32,
                             height: 8,
                             decoration: BoxDecoration(
-                              color: AppColors.textMuted.withValues(alpha: 0.3),
+                              color: context.appColors.textSecondary.withValues(alpha: 0.3),
                               borderRadius: BorderRadius.circular(4),
                             ),
                           ),

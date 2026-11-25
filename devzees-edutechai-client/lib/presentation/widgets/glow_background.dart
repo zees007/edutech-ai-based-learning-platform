@@ -1,6 +1,5 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import '../../core/theme/app_colors.dart';
 import '../../core/theme/theme_palette.dart';
 import '../../core/constants/responsive.dart';
 
@@ -94,7 +93,7 @@ class _GlowBackgroundState extends State<GlowBackground>
     final bool isMobile = Responsive.isMobile(context);
 
     // Deep modern SaaS hero base (#04050C)
-    final Color heroBase = isDark ? const Color(0xFF04050C) : AppColors.background;
+    final Color heroBase = isDark ? const Color(0xFF04050C) : context.appColors.scaffoldBackground;
 
     return MouseRegion(
       onHover: _onPointerHover,

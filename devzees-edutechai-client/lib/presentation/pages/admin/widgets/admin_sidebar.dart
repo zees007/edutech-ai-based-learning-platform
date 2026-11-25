@@ -70,7 +70,7 @@ class AdminSidebar extends StatelessWidget {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: AppTextStyles.caption.copyWith(
-                                color: AppColors.textMuted,
+                                color: context.appColors.textSecondary,
                               ),
                             ),
                           ],
@@ -203,8 +203,7 @@ class _NavItemTileState extends State<_NavItemTile> {
           hoverColor: Colors.transparent,
           splashColor: AppColors.purple.withValues(alpha: 0.15),
           highlightColor: Colors.transparent,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
+          child: Container(
             width: double.infinity,
             constraints: const BoxConstraints(minHeight: 46),
             padding: EdgeInsets.symmetric(
@@ -225,7 +224,7 @@ class _NavItemTileState extends State<_NavItemTile> {
                     )
                   : _isHovered
                   ? Border.all(
-                      color: AppColors.glassBorder,
+                      color: context.appColors.border,
                       width: 1.0,
                     )
                   : null,
@@ -247,8 +246,8 @@ class _NavItemTileState extends State<_NavItemTile> {
                       color: widget.isSelected
                           ? AppColors.purple
                           : _isHovered
-                          ? AppColors.textPrimary
-                          : AppColors.textMuted,
+                          ? context.appColors.textPrimary
+                          : context.appColors.textSecondary,
                       size: 20,
                     ),
                     const SizedBox(width: 12),
@@ -259,10 +258,10 @@ class _NavItemTileState extends State<_NavItemTile> {
                         overflow: TextOverflow.ellipsis,
                         style: AppTextStyles.label.copyWith(
                           color: widget.isSelected
-                              ? AppColors.textPrimary
+                              ? context.appColors.textPrimary
                               : _isHovered
-                              ? AppColors.textPrimary
-                              : AppColors.textSecondary,
+                              ? context.appColors.textPrimary
+                              : context.appColors.textSecondary,
                           fontWeight: widget.isSelected
                               ? FontWeight.w700
                               : FontWeight.w500,
@@ -308,8 +307,8 @@ class _NavItemTileState extends State<_NavItemTile> {
                           color: widget.isSelected
                               ? AppColors.purple
                               : _isHovered
-                              ? AppColors.textPrimary
-                              : AppColors.textMuted,
+                              ? context.appColors.textPrimary
+                              : context.appColors.textSecondary,
                           size: 22,
                         ),
                       ),
@@ -371,8 +370,7 @@ class _BackToLearningButtonState extends State<_BackToLearningButton> {
           hoverColor: Colors.transparent,
           splashColor: AppColors.accentGreen.withValues(alpha: 0.15),
           highlightColor: Colors.transparent,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
+          child: Container(
             width: double.infinity,
             constraints: const BoxConstraints(minHeight: 46),
             padding: EdgeInsets.symmetric(
@@ -387,7 +385,7 @@ class _BackToLearningButtonState extends State<_BackToLearningButton> {
               border: Border.all(
                 color: _isHovered
                     ? AppColors.accentGreen.withValues(alpha: 0.3)
-                    : AppColors.glassBorder,
+                    : context.appColors.border,
                 width: 1,
               ),
             ),
@@ -398,7 +396,7 @@ class _BackToLearningButtonState extends State<_BackToLearningButton> {
                         Icons.school_outlined,
                         color: _isHovered
                             ? AppColors.accentGreen
-                            : AppColors.textMuted,
+                            : context.appColors.textSecondary,
                         size: 20,
                       ),
                       const SizedBox(width: 12),
@@ -410,7 +408,7 @@ class _BackToLearningButtonState extends State<_BackToLearningButton> {
                           style: AppTextStyles.label.copyWith(
                             color: _isHovered
                                 ? AppColors.accentGreen
-                                : AppColors.textSecondary,
+                                : context.appColors.textSecondary,
                           ),
                         ),
                       ),
@@ -422,7 +420,7 @@ class _BackToLearningButtonState extends State<_BackToLearningButton> {
                       Icons.school_outlined,
                       color: _isHovered
                           ? AppColors.accentGreen
-                          : AppColors.textMuted,
+                          : context.appColors.textSecondary,
                       size: 22,
                     ),
                   ),

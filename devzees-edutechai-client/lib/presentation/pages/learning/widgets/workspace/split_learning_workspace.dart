@@ -241,9 +241,7 @@ class _SplitLearningWorkspaceState
 
   Widget _buildChatPanel(dynamic currentStep) {
     final colors = context.appColors;
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOutCubic,
+    return Container(
       decoration: BoxDecoration(color: colors.workspaceBackground),
       child:
           (currentStep.tutorExplanation != null ||
@@ -278,8 +276,8 @@ class _SplitLearningWorkspaceState
                         vertical: 16,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.isDark ? null : Colors.white,
-                        gradient: AppColors.isDark
+                        color: context.isDarkMode ? null : Colors.white,
+                        gradient: context.isDarkMode
                             ? LinearGradient(
                                 colors: [
                                   AppColors.surfaceMid.withValues(alpha: 0.75),
@@ -290,17 +288,17 @@ class _SplitLearningWorkspaceState
                               )
                             : null,
                         borderRadius: BorderRadius.circular(16),
-                        border: AppColors.isDark
+                        border: context.isDarkMode
                             ? null
                             : Border.all(color: const Color(0xFFE2E8F0)),
                         boxShadow: Responsive.isMobile(context)
                             ? null
                             : [
                                 BoxShadow(
-                                  color: AppColors.isDark
+                                  color: context.isDarkMode
                                       ? Colors.black.withValues(alpha: 0.3)
                                       : const Color(0x0C000000),
-                                  blurRadius: AppColors.isDark ? 20 : 10,
+                                  blurRadius: context.isDarkMode ? 20 : 10,
                                   offset: const Offset(0, 2),
                                 ),
                               ],
@@ -314,7 +312,7 @@ class _SplitLearningWorkspaceState
                           Text(
                             'Socratic tutor is preparing and regenerating the step...',
                             style: AppTextStyles.bodyPrimary.copyWith(
-                              color: AppColors.isDark
+                              color: context.isDarkMode
                                   ? Colors.white.withValues(alpha: 0.9)
                                   : const Color(0xFF1E293B),
                               height: 1.5,
@@ -332,9 +330,7 @@ class _SplitLearningWorkspaceState
 
   Widget _buildResourcesPanel(dynamic currentStep) {
     final colors = context.appColors;
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOutCubic,
+    return Container(
       decoration: BoxDecoration(color: colors.workspaceBackground),
       child: LearningResourcesPanel(
         key: ValueKey(
@@ -363,9 +359,7 @@ class _SplitLearningWorkspaceState
           width: 9,
           color: Colors.transparent,
           child: Center(
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOutCubic,
+            child: Container(
               width: 1,
               height: double.infinity,
               color: context.appColors.border,
@@ -418,11 +412,11 @@ class _FullscreenPanelOverlay extends ConsumerWidget {
       child: Container(
         decoration: BoxDecoration(
           color: Responsive.isMobile(context)
-              ? AppColors.mobileCommandHubSolid
+              ? (context.isDarkMode ? const Color(0xFF11121D) : const Color(0xFFFFFFFF))
               : null,
           gradient: Responsive.isMobile(context)
               ? null
-              : AppColors.commandHubGradient,
+              : (context.isDarkMode ? const LinearGradient(colors: [Color(0xCC11121D), Color(0xE60B0C13)], begin: Alignment.topLeft, end: Alignment.bottomRight) : const LinearGradient(colors: [Color(0xFAFFFFFF), Color(0xF5F3F3F5)], begin: Alignment.topLeft, end: Alignment.bottomRight)),
         ),
         child: Column(
           children: [
@@ -460,9 +454,7 @@ class _FullscreenPanelOverlay extends ConsumerWidget {
 
   Widget _buildFullscreenChat(BuildContext context) {
     final colors = context.appColors;
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOutCubic,
+    return Container(
       decoration: BoxDecoration(color: colors.workspaceBackground),
       child:
           (currentStep.tutorExplanation != null ||
@@ -489,7 +481,7 @@ class _FullscreenPanelOverlay extends ConsumerWidget {
                   Text(
                     'Socratic Tutor is preparing...',
                     style: AppTextStyles.bodyPrimary.copyWith(
-                      color: AppColors.textMuted,
+                      color: context.appColors.textSecondary,
                     ),
                   ),
                 ],
@@ -500,9 +492,7 @@ class _FullscreenPanelOverlay extends ConsumerWidget {
 
   Widget _buildFullscreenResources(BuildContext context, WidgetRef ref) {
     final colors = context.appColors;
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOutCubic,
+    return Container(
       decoration: BoxDecoration(color: colors.workspaceBackground),
       child: LearningResourcesPanel(
         key: ValueKey(
@@ -566,9 +556,7 @@ class _TutorPanelHeaderState extends State<_TutorPanelHeader> {
 
     final colors = context.appColors;
 
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOutCubic,
+    return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
       decoration: BoxDecoration(
@@ -717,17 +705,16 @@ class _TutorPanelHeaderState extends State<_TutorPanelHeader> {
                           message: widget.isFullscreen
                               ? 'Exit Fullscreen'
                               : 'Fullscreen',
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 200),
+                          child: Container(
                             padding: const EdgeInsets.all(5),
                             decoration: BoxDecoration(
                               color: _isMaxHovered
-                                  ? (AppColors.isDark
+                                  ? (context.isDarkMode
                                         ? AppColors.primary.withValues(
                                             alpha: 0.16,
                                           )
                                         : const Color(0xFFF3E8FF))
-                                  : (AppColors.isDark
+                                  : (context.isDarkMode
                                         ? AppColors.primary.withValues(
                                             alpha: 0.08,
                                           )
@@ -735,19 +722,19 @@ class _TutorPanelHeaderState extends State<_TutorPanelHeader> {
                               borderRadius: BorderRadius.circular(6),
                               border: Border.all(
                                 color: _isMaxHovered
-                                    ? (AppColors.isDark
+                                    ? (context.isDarkMode
                                           ? AppColors.primary.withValues(
                                               alpha: 0.50,
                                             )
                                           : const Color(0xFFDDD6FE))
-                                    : (AppColors.isDark
+                                    : (context.isDarkMode
                                           ? AppColors.primary.withValues(
                                               alpha: 0.25,
                                             )
                                           : const Color(0xFFE2E8F0)),
                                 width: 1,
                               ),
-                              boxShadow: _isMaxHovered && AppColors.isDark
+                              boxShadow: _isMaxHovered && context.isDarkMode
                                   ? [
                                       BoxShadow(
                                         color: AppColors.primary.withValues(
@@ -764,10 +751,10 @@ class _TutorPanelHeaderState extends State<_TutorPanelHeader> {
                                   : Icons.open_in_full_rounded,
                               size: 13,
                               color: _isMaxHovered
-                                  ? (AppColors.isDark
+                                  ? (context.isDarkMode
                                         ? AppColors.purpleLight
                                         : AppColors.primaryViolet)
-                                  : (AppColors.isDark
+                                  : (context.isDarkMode
                                         ? AppColors.primary
                                         : const Color(0xFF64748B)),
                             ),
@@ -810,9 +797,7 @@ class _ResourcesPanelHeaderState extends State<_ResourcesPanelHeader> {
   Widget build(BuildContext context) {
     final colors = context.appColors;
 
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOutCubic,
+    return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
       decoration: BoxDecoration(
         color: colors.topBarBackground,
@@ -847,29 +832,28 @@ class _ResourcesPanelHeaderState extends State<_ResourcesPanelHeader> {
               onTap: widget.onToggleFullscreen,
               child: Tooltip(
                 message: widget.isFullscreen ? 'Exit Fullscreen' : 'Fullscreen',
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
+                child: Container(
                   padding: const EdgeInsets.all(5),
                   decoration: BoxDecoration(
                     color: _isMaxHovered
-                        ? (AppColors.isDark
+                        ? (context.isDarkMode
                               ? AppColors.primary.withValues(alpha: 0.16)
                               : const Color(0xFFF3E8FF))
-                        : (AppColors.isDark
+                        : (context.isDarkMode
                               ? AppColors.primary.withValues(alpha: 0.08)
                               : Colors.transparent),
                     borderRadius: BorderRadius.circular(6),
                     border: Border.all(
                       color: _isMaxHovered
-                          ? (AppColors.isDark
+                          ? (context.isDarkMode
                                 ? AppColors.primary.withValues(alpha: 0.50)
                                 : const Color(0xFFDDD6FE))
-                          : (AppColors.isDark
+                          : (context.isDarkMode
                                 ? AppColors.primary.withValues(alpha: 0.25)
                                 : const Color(0xFFE2E8F0)),
                       width: 1,
                     ),
-                    boxShadow: _isMaxHovered && AppColors.isDark
+                    boxShadow: _isMaxHovered && context.isDarkMode
                         ? [
                             BoxShadow(
                               color: AppColors.primary.withValues(alpha: 0.30),
@@ -884,10 +868,10 @@ class _ResourcesPanelHeaderState extends State<_ResourcesPanelHeader> {
                         : Icons.open_in_full_rounded,
                     size: 13,
                     color: _isMaxHovered
-                        ? (AppColors.isDark
+                        ? (context.isDarkMode
                               ? AppColors.purpleLight
                               : AppColors.primaryViolet)
-                        : (AppColors.isDark
+                        : (context.isDarkMode
                               ? AppColors.primary
                               : const Color(0xFF64748B)),
                   ),
@@ -935,12 +919,12 @@ class _StepNavButton extends StatelessWidget {
             gradient: useGradient ? AppColors.royalBlueIndigoGradient : null,
             color: useGradient
                 ? null
-                : AppColors.glassSurface.withValues(alpha: 0.07),
+                : (context.isDarkMode ? const Color(0x08FFFFFF) : const Color(0x08000000)).withValues(alpha: 0.07),
             borderRadius: BorderRadius.circular(6),
             border: Border.all(
               color: useGradient
                   ? AppColors.purpleLight.withValues(alpha: 0.4)
-                  : AppColors.glassBorder,
+                  : context.appColors.border,
             ),
           ),
           child: Row(
@@ -1235,7 +1219,7 @@ class _MobileTabbedWorkspaceState extends ConsumerState<_MobileTabbedWorkspace>
                           IconButton(
                             onPressed: () => Navigator.of(dialogContext).pop(),
                             icon: const Icon(Icons.close_rounded, size: 18),
-                            color: AppColors.textMuted,
+                            color: context.appColors.textSecondary,
                             mouseCursor: SystemMouseCursors.click,
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(
@@ -1245,7 +1229,7 @@ class _MobileTabbedWorkspaceState extends ConsumerState<_MobileTabbedWorkspace>
                             style: IconButton.styleFrom(
                               backgroundColor: Colors.white.withValues(alpha: 0.06),
                               shape: const CircleBorder(),
-                              side: BorderSide(color: AppColors.glassBorder),
+                              side: BorderSide(color: context.appColors.border),
                             ),
                           ),
                         ],
@@ -1259,7 +1243,7 @@ class _MobileTabbedWorkspaceState extends ConsumerState<_MobileTabbedWorkspace>
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 0.2,
-                          color: AppColors.textPrimary,
+                          color: context.appColors.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -1269,7 +1253,7 @@ class _MobileTabbedWorkspaceState extends ConsumerState<_MobileTabbedWorkspace>
                         'Please complete the Knowledge Check quiz first to move to the next step of learning. Testing your knowledge ensures you have mastered these concepts.',
                         style: AppTextStyles.body2.copyWith(
                           fontSize: 13,
-                          color: AppColors.textSecondary,
+                          color: context.appColors.textSecondary,
                           height: 1.45,
                         ),
                       ),
@@ -1300,7 +1284,7 @@ class _MobileTabbedWorkspaceState extends ConsumerState<_MobileTabbedWorkspace>
                               child: Text(
                                 'Interactive questions are waiting in the Quiz tab.',
                                 style: AppTextStyles.caption.copyWith(
-                                  color: AppColors.textPrimary,
+                                  color: context.appColors.textPrimary,
                                   fontSize: 11.5,
                                 ),
                               ),
@@ -1318,7 +1302,7 @@ class _MobileTabbedWorkspaceState extends ConsumerState<_MobileTabbedWorkspace>
                             onPressed: () => Navigator.of(dialogContext).pop(),
                             style: TextButton.styleFrom(
                               enabledMouseCursor: SystemMouseCursors.click,
-                              foregroundColor: AppColors.textMuted,
+                              foregroundColor: context.appColors.textSecondary,
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 16,
                                 vertical: 10,
@@ -1328,7 +1312,7 @@ class _MobileTabbedWorkspaceState extends ConsumerState<_MobileTabbedWorkspace>
                               'Cancel',
                               style: AppTextStyles.button.copyWith(
                                 fontSize: 12.5,
-                                color: AppColors.textMuted,
+                                color: context.appColors.textSecondary,
                               ),
                             ),
                           ),
@@ -1431,9 +1415,9 @@ class _MobileTabbedWorkspaceState extends ConsumerState<_MobileTabbedWorkspace>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
-        color: AppColors.topBarBackground,
+        color: context.appColors.topBarBackground,
         border: Border(
-          bottom: BorderSide(color: AppColors.glassBorder, width: 0.8),
+          bottom: BorderSide(color: context.appColors.border, width: 0.8),
         ),
       ),
       child: Row(
@@ -1447,14 +1431,14 @@ class _MobileTabbedWorkspaceState extends ConsumerState<_MobileTabbedWorkspace>
                 child: Container(
                   padding: const EdgeInsets.all(4),
                   decoration: BoxDecoration(
-                    color: AppColors.glassBase,
+                    color: (context.isDarkMode ? const Color(0x0DFFFFFF) : const Color(0x0A000000)),
                     borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: AppColors.glassBorder),
+                    border: Border.all(color: context.appColors.border),
                   ),
                   child: Icon(
                     Icons.arrow_back_ios_new_rounded,
                     size: 12,
-                    color: AppColors.textSecondary,
+                    color: context.appColors.textSecondary,
                   ),
                 ),
               ),
@@ -1533,14 +1517,14 @@ class _MobileTabbedWorkspaceState extends ConsumerState<_MobileTabbedWorkspace>
                 child: Container(
                   padding: const EdgeInsets.all(4),
                   decoration: BoxDecoration(
-                    color: AppColors.glassBase,
+                    color: (context.isDarkMode ? const Color(0x0DFFFFFF) : const Color(0x0A000000)),
                     borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: AppColors.glassBorder),
+                    border: Border.all(color: context.appColors.border),
                   ),
                   child: Icon(
                     Icons.arrow_forward_ios_rounded,
                     size: 12,
-                    color: AppColors.textSecondary,
+                    color: context.appColors.textSecondary,
                   ),
                 ),
               ),
@@ -1759,8 +1743,8 @@ class _MobileTabbedWorkspaceState extends ConsumerState<_MobileTabbedWorkspace>
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
-        color: AppColors.surfaceSolidHeader,
-        border: Border(top: BorderSide(color: AppColors.glassBorder, width: 1)),
+        color: context.appColors.topBarBackground,
+        border: Border(top: BorderSide(color: context.appColors.border, width: 1)),
       ),
       child: Row(
         children: [
@@ -1793,7 +1777,7 @@ class _MobileTabbedWorkspaceState extends ConsumerState<_MobileTabbedWorkspace>
               style: AppTextStyles.caption.copyWith(
                 color: isLastStep && isCurrentStepComplete
                     ? Colors.amber.shade200
-                    : AppColors.textSecondary,
+                    : context.appColors.textSecondary,
                 fontSize: 11.5,
               ),
               maxLines: 1,
@@ -1924,9 +1908,7 @@ class _MobileTabbedWorkspaceState extends ConsumerState<_MobileTabbedWorkspace>
         _buildMobileStepHeader(),
 
         // Premium Segmented Tab Bar Header (Mobile)
-        AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOutCubic,
+        Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
           decoration: BoxDecoration(
             color: context.appColors.topBarBackground,
@@ -1934,9 +1916,7 @@ class _MobileTabbedWorkspaceState extends ConsumerState<_MobileTabbedWorkspace>
               bottom: BorderSide(color: context.appColors.border, width: 0.8),
             ),
           ),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeInOutCubic,
+          child: Container(
             padding: const EdgeInsets.all(3),
             decoration: BoxDecoration(
               color: context.appColors.surfaceSubtle,
@@ -2112,8 +2092,8 @@ class _MobileTabbedWorkspaceState extends ConsumerState<_MobileTabbedWorkspace>
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
               decoration: BoxDecoration(
-                color: AppColors.isDark ? null : Colors.white,
-                gradient: AppColors.isDark
+                color: context.isDarkMode ? null : Colors.white,
+                gradient: context.isDarkMode
                     ? LinearGradient(
                         colors: [
                           AppColors.surfaceMid.withValues(alpha: 0.75),
@@ -2124,17 +2104,17 @@ class _MobileTabbedWorkspaceState extends ConsumerState<_MobileTabbedWorkspace>
                       )
                     : null,
                 borderRadius: BorderRadius.circular(16),
-                border: AppColors.isDark
+                border: context.isDarkMode
                     ? null
                     : Border.all(color: const Color(0xFFE2E8F0)),
                 boxShadow: Responsive.isMobile(context)
                     ? null
                     : [
                         BoxShadow(
-                          color: AppColors.isDark
+                          color: context.isDarkMode
                               ? Colors.black.withValues(alpha: 0.3)
                               : const Color(0x0C000000),
-                          blurRadius: AppColors.isDark ? 20 : 10,
+                          blurRadius: context.isDarkMode ? 20 : 10,
                           offset: const Offset(0, 2),
                         ),
                       ],
@@ -2148,7 +2128,7 @@ class _MobileTabbedWorkspaceState extends ConsumerState<_MobileTabbedWorkspace>
                   Text(
                     'Socratic tutor is preparing and regenerating the step...',
                     style: AppTextStyles.bodyPrimary.copyWith(
-                      color: AppColors.isDark
+                      color: context.isDarkMode
                           ? Colors.white.withValues(alpha: 0.9)
                           : const Color(0xFF1E293B),
                       height: 1.5,
@@ -2245,7 +2225,7 @@ class _MobileTabbedWorkspaceState extends ConsumerState<_MobileTabbedWorkspace>
           const SizedBox(height: 12),
           Text(
             label,
-            style: AppTextStyles.caption.copyWith(color: AppColors.textMuted),
+            style: AppTextStyles.caption.copyWith(color: context.appColors.textSecondary),
           ),
         ],
       ),
@@ -2293,13 +2273,13 @@ class _MobileWorkspaceTabItemState extends State<_MobileWorkspaceTabItem> {
 
     final Color textColor = isActive
         ? colors.textPrimary
-        : (isHovered ? AppColors.textSlate : AppColors.textMuted);
+        : (isHovered ? context.appColors.textSecondary : context.appColors.textSecondary);
 
     final Color iconColor = isActive
         ? widget.accentColor
         : (isHovered
               ? widget.accentColor.withValues(alpha: 0.85)
-              : AppColors.textMuted);
+              : context.appColors.textSecondary);
 
     return Expanded(
       child: MouseRegion(
@@ -2461,7 +2441,7 @@ class _RegeneratingDotsState extends State<_RegeneratingDots>
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color:
-                        (AppColors.isDark
+                        (context.isDarkMode
                                 ? const Color(0xFFC084FC)
                                 : AppColors.primaryViolet)
                             .withValues(alpha: 0.4 + 0.5 * bounce),

@@ -1,11 +1,11 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/text_styles.dart';
 import '../../../../../data/models/subscription/payment_models.dart';
 import '../../../../../data/models/auth/user_current_profile_response.dart';
 import '../../../../widgets/gradient_button.dart';
 import '../../../../widgets/promo_countdown_clock.dart';
+import 'package:devzees_edutechai_client/core/theme/theme_palette.dart';
 
 /// Dialog shown to users on the Ultra tier when claiming a festive promotional offer.
 /// Allows extending / stacking an additional 1-year Ultra subscription at the discounted promotional rate.
@@ -25,10 +25,12 @@ class UltraExtensionDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = AppColors.isDark;
+    final isDark = context.isDarkMode;
     final ultraPricing = catalog.getTier('ultra');
     final regularAnnual = ultraPricing.annual > 0 ? ultraPricing.annual : 470.0;
-    final discount = promoBanner.discountPercent > 0 ? promoBanner.discountPercent : 50.0;
+    final discount = promoBanner.discountPercent > 0
+        ? promoBanner.discountPercent
+        : 50.0;
     final discountedAnnual = regularAnnual * (1.0 - (discount / 100.0));
 
     final currentEnd = user?.subscription?.currentPeriodEnd;
@@ -36,7 +38,8 @@ class UltraExtensionDialog extends StatelessWidget {
         ? '${currentEnd.year}-${currentEnd.month.toString().padLeft(2, '0')}-${currentEnd.day.toString().padLeft(2, '0')}'
         : 'Active';
 
-    final DateTime newEnd = (currentEnd != null && currentEnd.isAfter(DateTime.now()))
+    final DateTime newEnd =
+        (currentEnd != null && currentEnd.isAfter(DateTime.now()))
         ? currentEnd.add(const Duration(days: 365))
         : DateTime.now().add(const Duration(days: 365));
     final String newEndFormatted =
@@ -57,7 +60,9 @@ class UltraExtensionDialog extends StatelessWidget {
               color: isDark ? const Color(0xFF131525) : Colors.white,
               borderRadius: BorderRadius.circular(24),
               border: Border.all(
-                color: const Color(0xFFF59E0B).withValues(alpha: isDark ? 0.45 : 0.35),
+                color: const Color(
+                  0xFFF59E0B,
+                ).withValues(alpha: isDark ? 0.45 : 0.35),
                 width: 1.5,
               ),
               boxShadow: [
@@ -86,7 +91,9 @@ class UltraExtensionDialog extends StatelessWidget {
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFFF59E0B).withValues(alpha: 0.35),
+                            color: const Color(
+                              0xFFF59E0B,
+                            ).withValues(alpha: 0.35),
                             blurRadius: 14,
                           ),
                         ],
@@ -95,7 +102,7 @@ class UltraExtensionDialog extends StatelessWidget {
                     ),
                     IconButton(
                       icon: const Icon(Icons.close_rounded, size: 22),
-                      color: AppColors.textSecondary,
+                      color: context.appColors.textSecondary,
                       splashRadius: 18,
                       onPressed: () => Navigator.of(context).pop(),
                     ),
@@ -104,11 +111,17 @@ class UltraExtensionDialog extends StatelessWidget {
                 const SizedBox(height: 16),
 
                 // Dynamic Campaign Badge (displays whatever text is active, e.g. Diwali / New Year)
-                if (promoBanner.text.isNotEmpty || promoBanner.remainingTimeLabel != null) ...[
+                if (promoBanner.text.isNotEmpty ||
+                    promoBanner.remainingTimeLabel != null) ...[
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF59E0B).withValues(alpha: isDark ? 0.2 : 0.12),
+                      color: const Color(
+                        0xFFF59E0B,
+                      ).withValues(alpha: isDark ? 0.2 : 0.12),
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
                         color: const Color(0xFFF59E0B).withValues(alpha: 0.4),
@@ -119,11 +132,15 @@ class UltraExtensionDialog extends StatelessWidget {
                       children: [
                         Flexible(
                           child: Text(
-                            promoBanner.text.isNotEmpty ? promoBanner.text : 'Special Offer',
+                            promoBanner.text.isNotEmpty
+                                ? promoBanner.text
+                                : 'Special Offer',
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
-                              color: isDark ? const Color(0xFFFDE68A) : const Color(0xFFB45309),
+                              color: isDark
+                                  ? const Color(0xFFFDE68A)
+                                  : const Color(0xFFB45309),
                             ),
                           ),
                         ),
@@ -136,7 +153,10 @@ class UltraExtensionDialog extends StatelessWidget {
                         ] else if (promoBanner.remainingTimeLabel != null) ...[
                           const SizedBox(width: 8),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.black.withValues(alpha: 0.25),
                               borderRadius: BorderRadius.circular(4),
@@ -144,7 +164,11 @@ class UltraExtensionDialog extends StatelessWidget {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(Icons.timer_outlined, size: 11, color: Color(0xFFFBBF24)),
+                                const Icon(
+                                  Icons.timer_outlined,
+                                  size: 11,
+                                  color: Color(0xFFFBBF24),
+                                ),
                                 const SizedBox(width: 3),
                                 Text(
                                   'Ends in ${promoBanner.remainingTimeLabel}',
@@ -178,7 +202,7 @@ class UltraExtensionDialog extends StatelessWidget {
                 Text(
                   'You are already enjoying our top-tier Ultra features! During this limited-time promotion, you can stack an additional 1 year onto your current subscription at ${discount.toInt()}% OFF using coupon code ${promoBanner.couponCode}.',
                   style: AppTextStyles.body2.copyWith(
-                    color: AppColors.textSecondary,
+                    color: context.appColors.textSecondary,
                     height: 1.5,
                   ),
                 ),
@@ -188,9 +212,11 @@ class UltraExtensionDialog extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF1E2138) : const Color(0xFFF8FAFC),
+                    color: isDark
+                        ? const Color(0xFF1E2138)
+                        : const Color(0xFFF8FAFC),
                     borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: AppColors.glassBorder),
+                    border: Border.all(color: context.appColors.border),
                   ),
                   child: Row(
                     children: [
@@ -203,7 +229,7 @@ class UltraExtensionDialog extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.bold,
-                                color: AppColors.textMuted,
+                                color: context.appColors.textSecondary,
                                 letterSpacing: 0.5,
                               ),
                             ),
@@ -217,7 +243,11 @@ class UltraExtensionDialog extends StatelessWidget {
                           ],
                         ),
                       ),
-                      const Icon(Icons.arrow_forward_rounded, size: 20, color: Color(0xFFF59E0B)),
+                      const Icon(
+                        Icons.arrow_forward_rounded,
+                        size: 20,
+                        color: Color(0xFFF59E0B),
+                      ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
@@ -259,7 +289,7 @@ class UltraExtensionDialog extends StatelessWidget {
                           'Regular Price: \$${regularAnnual.toStringAsFixed(0)}/yr',
                           style: TextStyle(
                             fontSize: 12,
-                            color: AppColors.textMuted,
+                            color: context.appColors.textSecondary,
                             decoration: TextDecoration.lineThrough,
                           ),
                         ),
@@ -272,7 +302,10 @@ class UltraExtensionDialog extends StatelessWidget {
                                 fontWeight: FontWeight.w900,
                               ),
                             ),
-                            const Text(' / year', style: TextStyle(color: Colors.grey)),
+                            const Text(
+                              ' / year',
+                              style: TextStyle(color: Colors.grey),
+                            ),
                           ],
                         ),
                       ],
@@ -296,7 +329,7 @@ class UltraExtensionDialog extends StatelessWidget {
                         child: Text(
                           'Keep Current Plan',
                           style: TextStyle(
-                            color: AppColors.textSecondary,
+                            color: context.appColors.textSecondary,
                             fontWeight: FontWeight.w600,
                           ),
                         ),

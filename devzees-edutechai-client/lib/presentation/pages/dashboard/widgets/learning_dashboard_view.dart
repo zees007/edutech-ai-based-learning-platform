@@ -315,7 +315,7 @@ class _LearningDashboardViewState extends ConsumerState<LearningDashboardView> {
                   color: isSelected
                       ? Colors.white
                       : (isDark
-                            ? AppColors.textSecondary
+                            ? context.appColors.textSecondary
                             : const Color(0xFF64748B)),
                 ),
                 const SizedBox(width: 4),
@@ -325,7 +325,7 @@ class _LearningDashboardViewState extends ConsumerState<LearningDashboardView> {
                     color: isSelected
                         ? Colors.white
                         : (isDark
-                              ? AppColors.textSecondary
+                              ? context.appColors.textSecondary
                               : const Color(0xFF475569)),
                     fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
                     fontSize: 11.5,
@@ -354,7 +354,7 @@ class _LearningDashboardViewState extends ConsumerState<LearningDashboardView> {
                         color: isSelected
                             ? Colors.white
                             : (isDark
-                                  ? AppColors.textSecondary
+                                  ? context.appColors.textSecondary
                                   : const Color(0xFF475569)),
                       ),
                     ),
@@ -481,7 +481,7 @@ class _LearningDashboardViewState extends ConsumerState<LearningDashboardView> {
               error,
               style: AppTextStyles.body2.copyWith(
                 color: isDark
-                    ? AppColors.textSecondary
+                    ? context.appColors.textSecondary
                     : const Color(0xFF64748B),
               ),
               textAlign: TextAlign.center,
