@@ -9,12 +9,14 @@ class RecentJourneyCard extends StatefulWidget {
   final SessionModel session;
   final VoidCallback onContinue;
   final bool isMobile;
+  final bool isCompact;
 
   const RecentJourneyCard({
     super.key,
     required this.session,
     required this.onContinue,
     this.isMobile = false,
+    this.isCompact = false,
   });
 
   @override
@@ -34,6 +36,7 @@ class _RecentJourneyCardState extends State<RecentJourneyCard> {
         : 0.0;
 
     final isDark = context.isDarkMode;
+    final bool compact = widget.isCompact;
 
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
@@ -47,7 +50,10 @@ class _RecentJourneyCardState extends State<RecentJourneyCard> {
             _isHovered ? -2.5 : 0.0,
             0.0,
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          padding: EdgeInsets.symmetric(
+            horizontal: compact ? 11 : 14,
+            vertical: compact ? 8 : 9,
+          ),
           decoration: BoxDecoration(
             color: isDark ? context.appColors.scaffoldBackground : Colors.white,
             borderRadius: BorderRadius.circular(100), // Pill Shape
@@ -86,10 +92,10 @@ class _RecentJourneyCardState extends State<RecentJourneyCard> {
               // Uniform Theme Gradient Progress Ring
               GradientCircularProgress(
                 progress: progress,
-                size: 28,
-                strokeWidth: 3.0,
+                size: compact ? 22 : 26,
+                strokeWidth: compact ? 2.5 : 3.0,
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: compact ? 8 : 10),
 
               // Topic Text & XP
               Expanded(
@@ -102,65 +108,71 @@ class _RecentJourneyCardState extends State<RecentJourneyCard> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: AppTextStyles.label.copyWith(
+                        fontSize: compact ? 12 : null,
                         fontWeight: _isHovered
                             ? FontWeight.w600
                             : FontWeight.w500,
                       ),
                     ),
                     const SizedBox(height: 2),
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.star,
-                          color: AppColors.accentAmber,
-                          size: 10,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${widget.session.xpEarned} XP',
-                          style: AppTextStyles.badge.copyWith(
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.star,
                             color: AppColors.accentAmber,
+                            size: 10,
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: isDark
-                                ? AppColors.accentGreen.withValues(alpha: 0.15)
-                                : const Color(
-                                    0xFFD1FAE5,
-                                  ).withValues(alpha: 0.7),
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(
-                              color: AppColors.accentGreen.withValues(
-                                alpha: isDark ? 0.35 : 0.40,
-                              ),
-                              width: 1,
-                            ),
-                          ),
-                          child: Text(
-                            '${widget.session.stepsCompleted}/${widget.session.totalSteps ?? widget.session.stepsCompleted} Steps',
+                          const SizedBox(width: 4),
+                          Text(
+                            '${widget.session.xpEarned} XP',
                             style: AppTextStyles.badge.copyWith(
-                              fontSize: 9,
-                              color: isDark
-                                  ? AppColors.accentGreen
-                                  : const Color(0xFF047857),
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 0.2,
+                              color: AppColors.accentAmber,
                             ),
                           ),
-                        ),
-                      ],
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? AppColors.accentGreen.withValues(alpha: 0.15)
+                                  : const Color(
+                                      0xFFD1FAE5,
+                                    ).withValues(alpha: 0.7),
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(
+                                color: AppColors.accentGreen.withValues(
+                                  alpha: isDark ? 0.35 : 0.40,
+                                ),
+                                width: 1,
+                              ),
+                            ),
+                            child: Text(
+                              '${widget.session.stepsCompleted}/${widget.session.totalSteps ?? widget.session.stepsCompleted} Steps',
+                              style: AppTextStyles.badge.copyWith(
+                                fontSize: 9,
+                                color: isDark
+                                    ? AppColors.accentGreen
+                                    : const Color(0xFF047857),
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.2,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
               ),
 
-              const SizedBox(width: 8),
+              SizedBox(width: compact ? 4 : 8),
 
               // Subtle Action Arrow
               Container(
@@ -171,7 +183,7 @@ class _RecentJourneyCardState extends State<RecentJourneyCard> {
                 ),
                 child: Icon(
                   Icons.arrow_forward_ios_rounded,
-                  size: 14,
+                  size: compact ? 12 : 14,
                   color: _isHovered
                       ? AppColors.primary
                       : context.appColors.textSecondary.withValues(alpha: 0.4),

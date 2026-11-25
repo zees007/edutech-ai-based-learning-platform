@@ -5,11 +5,13 @@ import 'package:devzees_edutechai_client/core/theme/theme_palette.dart';
 
 class RecentJourneySkeletonCard extends StatelessWidget {
   final bool isMobile;
+  final bool isCompact;
   final double titleWidth;
 
   const RecentJourneySkeletonCard({
     super.key,
     this.isMobile = false,
+    this.isCompact = false,
     this.titleWidth = 130.0,
   });
 
@@ -22,7 +24,10 @@ class RecentJourneySkeletonCard extends StatelessWidget {
     final shimmerHighlight = isDark ? const Color(0xFF353A60) : const Color(0xFFF8FAFC);
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      padding: EdgeInsets.symmetric(
+        horizontal: isCompact ? 11 : 14,
+        vertical: isCompact ? 8 : 9,
+      ),
       decoration: BoxDecoration(
         color: isDark ? context.appColors.scaffoldBackground : Colors.white,
         border: Border.all(
@@ -57,25 +62,25 @@ class RecentJourneySkeletonCard extends StatelessWidget {
           children: [
             // Circular Progress Gauge Skeleton
             Container(
-              width: 28,
-              height: 28,
+              width: isCompact ? 22 : 26,
+              height: isCompact ? 22 : 26,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
                   color: shimmerBase,
-                  width: 3.0,
+                  width: isCompact ? 2.5 : 3.0,
                 ),
               ),
               child: Center(
                 child: ShimmerBox(
-                  width: 12,
-                  height: 12,
+                  width: isCompact ? 10 : 12,
+                  height: isCompact ? 10 : 12,
                   shape: BoxShape.circle,
                   color: shimmerBase,
                 ),
               ),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: isCompact ? 8 : 10),
 
             // Topic Text & Badges Skeleton
             Expanded(
@@ -84,51 +89,61 @@ class RecentJourneySkeletonCard extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   // Prominent Topic Header / Title Bar Loader
-                  ShimmerBox(
-                    width: titleWidth,
-                    height: 13,
-                    borderRadius: BorderRadius.circular(4),
-                    color: shimmerBase,
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      final safeWidth = titleWidth.clamp(40.0, constraints.maxWidth);
+                      return ShimmerBox(
+                        width: safeWidth,
+                        height: isCompact ? 12 : 13,
+                        borderRadius: BorderRadius.circular(4),
+                        color: shimmerBase,
+                      );
+                    },
                   ),
                   const SizedBox(height: 6),
                   // Badges line (XP Star & Steps Pill Loader)
-                  Row(
-                    children: [
-                      // Mini star icon placeholder
-                      ShimmerBox(
-                        width: 10,
-                        height: 10,
-                        borderRadius: BorderRadius.circular(2),
-                        color: shimmerBase,
-                      ),
-                      const SizedBox(width: 4),
-                      // XP text bar
-                      ShimmerBox(
-                        width: 36,
-                        height: 10,
-                        borderRadius: BorderRadius.circular(3),
-                        color: shimmerBase,
-                      ),
-                      const SizedBox(width: 8),
-                      // Steps count pill
-                      ShimmerBox(
-                        width: 60,
-                        height: 15,
-                        borderRadius: BorderRadius.circular(6),
-                        color: shimmerBase,
-                      ),
-                    ],
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Mini star icon placeholder
+                        ShimmerBox(
+                          width: 10,
+                          height: 10,
+                          borderRadius: BorderRadius.circular(2),
+                          color: shimmerBase,
+                        ),
+                        const SizedBox(width: 4),
+                        // XP text bar
+                        ShimmerBox(
+                          width: 36,
+                          height: 10,
+                          borderRadius: BorderRadius.circular(3),
+                          color: shimmerBase,
+                        ),
+                        const SizedBox(width: 6),
+                        // Steps count pill
+                        ShimmerBox(
+                          width: 56,
+                          height: 15,
+                          borderRadius: BorderRadius.circular(6),
+                          color: shimmerBase,
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
             ),
 
-            const SizedBox(width: 8),
+            SizedBox(width: isCompact ? 4 : 8),
 
             // Action Chevron Skeleton
             ShimmerBox(
-              width: 14,
-              height: 14,
+              width: isCompact ? 12 : 14,
+              height: isCompact ? 12 : 14,
               shape: BoxShape.circle,
               color: shimmerBase,
             ),

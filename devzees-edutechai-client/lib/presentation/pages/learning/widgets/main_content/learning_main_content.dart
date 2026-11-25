@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../../core/constants/responsive.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/theme_palette.dart';
 import '../../../../../core/theme/text_styles.dart';
@@ -39,7 +40,7 @@ class _LearningMainContentState extends ConsumerState<LearningMainContent> {
     required bool isPremium,
   }) {
     final isDark = context.isDarkMode;
-    final isMobile = MediaQuery.of(context).size.width < 600;
+    final isMobile = Responsive.isMobile(context);
     final accentColor = isPremium
         ? (isDark ? AppColors.primary : AppColors.purple)
         : const Color(0xFFF59E0B);
@@ -282,9 +283,13 @@ class _LearningMainContentState extends ConsumerState<LearningMainContent> {
         if (!activeState.isSynthesizing && !_isConfirmationModalOpen) {
           final isDark = context.isDarkMode;
           return Center(
-            child: Container(
-              width: 320,
-              padding: const EdgeInsets.all(32),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 320),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(32),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(24),
                 border: Border.all(
@@ -340,6 +345,8 @@ class _LearningMainContentState extends ConsumerState<LearningMainContent> {
                     textAlign: TextAlign.center,
                   ),
                 ],
+              ),
+                ),
               ),
             ),
           );
@@ -417,6 +424,11 @@ class _LearningMainContentState extends ConsumerState<LearningMainContent> {
           LayoutBuilder(
             builder: (context, constraints) {
               final availableHeight = constraints.maxHeight;
+              final availableWidth = constraints.maxWidth;
+              final isTablet = Responsive.isTablet(context);
+              final double horizontalPadding = isMobile
+                  ? 16.0
+                  : (isTablet ? 20.0 : 32.0);
 
               // Auto-adjust top & bottom paddings based on promo banner presence and viewport height:
               // - With promo banner: use compact top padding (16px desktop / 12px mobile) so banner fits cleanly.
@@ -427,11 +439,11 @@ class _LearningMainContentState extends ConsumerState<LearningMainContent> {
                 heroTopPadding = isMobile ? 12.0 : 16.0;
               } else {
                 if (availableHeight >= 850) {
-                  heroTopPadding = isMobile ? 28.0 : 48.0;
+                  heroTopPadding = isMobile ? 28.0 : (isTablet ? 36.0 : 48.0);
                 } else if (availableHeight >= 720) {
-                  heroTopPadding = isMobile ? 22.0 : 38.0;
+                  heroTopPadding = isMobile ? 22.0 : (isTablet ? 28.0 : 38.0);
                 } else {
-                  heroTopPadding = isMobile ? 16.0 : 26.0;
+                  heroTopPadding = isMobile ? 16.0 : 24.0;
                 }
               }
 
@@ -465,9 +477,9 @@ class _LearningMainContentState extends ConsumerState<LearningMainContent> {
                             children: [
                               Padding(
                                 padding: EdgeInsets.fromLTRB(
-                                  isMobile ? 16.0 : 32.0,
+                                  horizontalPadding,
                                   heroTopPadding,
-                                  isMobile ? 16.0 : 32.0,
+                                  horizontalPadding,
                                   heroBottomPadding,
                                 ),
                                 child: Center(
@@ -494,7 +506,7 @@ class _LearningMainContentState extends ConsumerState<LearningMainContent> {
                                             Text(
                                               'EduTechAI ',
                                               style:
-                                                  (isMobile
+                                                  (isMobile || isTablet
                                                           ? AppTextStyles.h3
                                                           : AppTextStyles.h2)
                                                       .copyWith(
@@ -504,7 +516,7 @@ class _LearningMainContentState extends ConsumerState<LearningMainContent> {
                                             GradientText(
                                               'Learning Workspace',
                                               style:
-                                                  (isMobile
+                                                  (isMobile || isTablet
                                                           ? AppTextStyles.h3
                                                           : AppTextStyles.h2)
                                                       .copyWith(
@@ -528,7 +540,8 @@ class _LearningMainContentState extends ConsumerState<LearningMainContent> {
                                                         ? AppTextStyles.body2
                                                         : AppTextStyles.body1)
                                                     .copyWith(
-                                                      color: AppColors
+                                                      color: context
+                                                          .appColors
                                                           .textSecondary,
                                                       height: isPromoVisible
                                                           ? 1.45
@@ -544,217 +557,22 @@ class _LearningMainContentState extends ConsumerState<LearningMainContent> {
 
                               AnimatedSwitcher(
                                 duration: const Duration(milliseconds: 300),
-                                child: sessionsState.isLoading
-                                    ? Padding(
-                                        key: const ValueKey(
-                                          'recent_journeys_loading',
-                                        ),
-                                        padding: EdgeInsets.symmetric(
-                                          horizontal: isMobile ? 16.0 : 32.0,
-                                          vertical:
-                                              recentJourneysVerticalPadding,
-                                        ),
-                                        child: Center(
-                                          child: ConstrainedBox(
-                                            constraints: const BoxConstraints(
-                                              maxWidth: 1020,
-                                            ),
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.center,
-                                              children: [
-                                                Row(
-                                                  mainAxisSize:
-                                                      MainAxisSize.min,
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.center,
-                                                  children: [
-                                                    const Text(
-                                                      '⚡ ',
-                                                      style: TextStyle(
-                                                        fontSize: 20,
-                                                      ),
-                                                    ),
-                                                    Text(
-                                                      'Continue Your Recent Active Journeys',
-                                                      style:
-                                                          (isMobile
-                                                                  ? AppTextStyles
-                                                                        .subtitle2
-                                                                  : AppTextStyles
-                                                                        .subtitle1)
-                                                              .copyWith(
-                                                                color: AppColors
-                                                                    .textPrimary,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w600,
-                                                              ),
-                                                    ),
-                                                  ],
-                                                ),
-                                                const SizedBox(height: 12),
-                                                SizedBox(
-                                                  height: 74,
-                                                  child: Center(
-                                                    child: ListView.separated(
-                                                      scrollDirection:
-                                                          Axis.horizontal,
-                                                      shrinkWrap: true,
-                                                      clipBehavior: Clip.none,
-                                                      physics:
-                                                          const NeverScrollableScrollPhysics(),
-                                                      itemCount: 3,
-                                                      separatorBuilder:
-                                                          (context, index) =>
-                                                              const SizedBox(
-                                                                width: 14,
-                                                              ),
-                                                      itemBuilder: (context, index) {
-                                                        final widths = [
-                                                          160.0,
-                                                          130.0,
-                                                          175.0,
-                                                        ];
-                                                        return SizedBox(
-                                                          width: isMobile
-                                                              ? 250
-                                                              : 315,
-                                                          child: RecentJourneySkeletonCard(
-                                                            isMobile: isMobile,
-                                                            titleWidth:
-                                                                widths[index %
-                                                                    widths
-                                                                        .length],
-                                                          ),
-                                                        );
-                                                      },
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
+                                child: (sessionsState.isLoading ||
+                                        displaySessions.isNotEmpty)
+                                    ? _buildRecentJourneysSection(
+                                        context: context,
+                                        isLoading: sessionsState.isLoading,
+                                        displaySessions: displaySessions,
+                                        isMobile: isMobile,
+                                        isTablet: isTablet,
+                                        availableWidth: availableWidth,
+                                        horizontalPadding: horizontalPadding,
+                                        verticalPadding:
+                                            recentJourneysVerticalPadding,
                                       )
-                                    : (displaySessions.isNotEmpty
-                                          ? Padding(
-                                              key: const ValueKey(
-                                                'recent_journeys_loaded',
-                                              ),
-                                              padding: EdgeInsets.symmetric(
-                                                horizontal: isMobile
-                                                    ? 16.0
-                                                    : 32.0,
-                                                vertical:
-                                                    recentJourneysVerticalPadding,
-                                              ),
-                                              child: Center(
-                                                child: ConstrainedBox(
-                                                  constraints:
-                                                      const BoxConstraints(
-                                                        maxWidth: 1020,
-                                                      ),
-                                                  child: Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .center,
-                                                    children: [
-                                                      Row(
-                                                        mainAxisSize:
-                                                            MainAxisSize.min,
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .center,
-                                                        children: [
-                                                          const Text(
-                                                            '⚡ ',
-                                                            style: TextStyle(
-                                                              fontSize: 20,
-                                                            ),
-                                                          ),
-                                                          Text(
-                                                            'Continue Your Recent Active Journeys',
-                                                            style:
-                                                                (isMobile
-                                                                        ? AppTextStyles
-                                                                              .subtitle2
-                                                                        : AppTextStyles
-                                                                              .subtitle1)
-                                                                    .copyWith(
-                                                                      color: AppColors
-                                                                          .textPrimary,
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .w600,
-                                                                    ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                      const SizedBox(
-                                                        height: 12,
-                                                      ),
-                                                      SizedBox(
-                                                        height: 74,
-                                                        child: Center(
-                                                          child: ListView.separated(
-                                                            scrollDirection:
-                                                                Axis.horizontal,
-                                                            shrinkWrap: true,
-                                                            clipBehavior:
-                                                                Clip.none,
-                                                            physics:
-                                                                const BouncingScrollPhysics(),
-                                                            itemCount:
-                                                                displaySessions
-                                                                    .length,
-                                                            separatorBuilder:
-                                                                (
-                                                                  context,
-                                                                  index,
-                                                                ) =>
-                                                                    const SizedBox(
-                                                                      width: 14,
-                                                                    ),
-                                                            itemBuilder: (context, index) {
-                                                              final session =
-                                                                  displaySessions[index];
-                                                              return SizedBox(
-                                                                width: isMobile
-                                                                    ? 250
-                                                                    : 315,
-                                                                child: RecentJourneyCard(
-                                                                  session:
-                                                                      session,
-                                                                  isMobile:
-                                                                      isMobile,
-                                                                  onContinue: () {
-                                                                    ref
-                                                                        .read(
-                                                                          activeSessionProvider
-                                                                              .notifier,
-                                                                        )
-                                                                        .loadSession(
-                                                                          session
-                                                                              .sessionId,
-                                                                        );
-                                                                  },
-                                                                ),
-                                                              );
-                                                            },
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ),
-                                            )
-                                          : const SizedBox.shrink(
-                                              key: ValueKey(
-                                                'recent_journeys_empty',
-                                              ),
-                                            )),
+                                    : const SizedBox.shrink(
+                                        key: ValueKey('recent_journeys_empty'),
+                                      ),
                               ),
                             ],
                           ),
@@ -762,7 +580,7 @@ class _LearningMainContentState extends ConsumerState<LearningMainContent> {
                           // Bottom Section
                           Padding(
                             padding: EdgeInsets.symmetric(
-                              horizontal: isMobile ? 16.0 : 32.0,
+                              horizontal: horizontalPadding,
                               vertical: isMobile ? 6.0 : 8.0,
                             ),
                             child: Center(
@@ -858,6 +676,121 @@ class _LearningMainContentState extends ConsumerState<LearningMainContent> {
               child: ThemeToggleButton(size: 32),
             ),
         ],
+      ),
+    );
+  }
+
+  /// Responsive Recent Journeys section:
+  /// - Mobile (`isMobile`) or ultra-narrow panes (< 430px inner width): clipped horizontal carousel.
+  /// - Tablet & Desktop: compact single-row layout fitting up to 3 journey pills cleanly without overflow.
+  Widget _buildRecentJourneysSection({
+    required BuildContext context,
+    required bool isLoading,
+    required List<dynamic> displaySessions,
+    required bool isMobile,
+    required bool isTablet,
+    required double availableWidth,
+    required double horizontalPadding,
+    required double verticalPadding,
+  }) {
+    final double innerWidth =
+        (availableWidth - horizontalPadding * 2).clamp(0.0, 1020.0);
+    final int itemCount = isLoading ? 3 : displaySessions.length;
+    final bool useCarousel = isMobile || innerWidth < 430;
+    final double gap = isMobile ? 10.0 : (isTablet || innerWidth < 760 ? 8.0 : 12.0);
+    final double carouselCardWidth =
+        (innerWidth * 0.72).clamp(210.0, 248.0);
+    final double rowCardWidth = itemCount > 0
+        ? ((innerWidth - gap * (itemCount - 1)) / itemCount).clamp(136.0, 285.0)
+        : 285.0;
+    final bool useCompactCard = !useCarousel && (isTablet || rowCardWidth < 235.0);
+
+    List<Widget> buildItems(double cardWidth) {
+      final skeletonTitleWidths = [140.0, 115.0, 155.0];
+      return List.generate(itemCount, (index) {
+        final Widget card = isLoading
+            ? RecentJourneySkeletonCard(
+                isMobile: isMobile,
+                isCompact: useCompactCard,
+                titleWidth:
+                    skeletonTitleWidths[index % skeletonTitleWidths.length],
+              )
+            : RecentJourneyCard(
+                session: displaySessions[index],
+                isMobile: isMobile,
+                isCompact: useCompactCard,
+                onContinue: () {
+                  ref
+                      .read(activeSessionProvider.notifier)
+                      .loadSession(displaySessions[index].sessionId);
+                },
+              );
+
+        return Padding(
+          padding: EdgeInsets.only(right: index < itemCount - 1 ? gap : 0),
+          child: SizedBox(width: cardWidth, child: card),
+        );
+      });
+    }
+
+    return Padding(
+      key: ValueKey(isLoading ? 'recent_journeys_loading' : 'recent_journeys_loaded'),
+      padding: EdgeInsets.symmetric(
+        horizontal: horizontalPadding,
+        vertical: verticalPadding,
+      ),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 1020),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('⚡ ', style: TextStyle(fontSize: 20)),
+                  Flexible(
+                    child: Text(
+                      'Continue Your Recent Active Journeys',
+                      textAlign: TextAlign.center,
+                      style: (isMobile
+                              ? AppTextStyles.subtitle2
+                              : AppTextStyles.subtitle1)
+                          .copyWith(
+                            color: context.appColors.textPrimary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              if (useCarousel)
+                ClipRect(
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    clipBehavior: Clip.hardEdge,
+                    physics: const BouncingScrollPhysics(),
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: buildItems(carouselCardWidth),
+                    ),
+                  ),
+                )
+              else
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: buildItems(rowCardWidth),
+                  ),
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }
