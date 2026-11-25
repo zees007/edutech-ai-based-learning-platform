@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/constants/responsive.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../core/theme/theme_palette.dart';
@@ -15,11 +16,12 @@ import '../../../../data/models/dashboard/dashboard_response.dart';
 ///     lock badge on the crest, LOCKED pill, and frosted slate backdrop.
 /// - Full fidelity 3D trophy images rendered from asset bundle with graceful vector fallback.
 /// - Milestone progress bar with percentage indicator.
-/// - Interactive All / Unlocked / Locked filter tabs.
+/// - Responsive grid: 3 columns on desktop, 2 columns on tablet/wide mobile, 1 on narrow mobile.
 class MilestoneAchievementsCard extends StatefulWidget {
   final List<AchievementItem> achievements;
   final String title;
   final String subtitle;
+  final int? crossAxisCount;
 
   const MilestoneAchievementsCard({
     super.key,
@@ -27,6 +29,7 @@ class MilestoneAchievementsCard extends StatefulWidget {
     this.title = 'Learner Achievements & Trophies',
     this.subtitle =
         'Earn honorary trophies by staying consistent in your studies and achieving quiz excellence',
+    this.crossAxisCount,
   });
 
   @override
@@ -40,112 +43,110 @@ class _MilestoneAchievementsCardState extends State<MilestoneAchievementsCard> {
     final isDark = context.isDarkMode;
     final achievements = widget.achievements;
     final unlockedCount = achievements.where((a) => a.unlocked).length;
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final isMobile = Responsive.isMobile(context);
+    final isNarrow = screenWidth < 400;
+    final int cols = widget.crossAxisCount ??
+        (Responsive.isDesktop(context)
+            ? 3
+            : (screenWidth >= 520 ? 2 : 1));
 
-    return LayoutBuilder(
-      builder: (context, sectionConstraints) {
-        final isMobile = sectionConstraints.maxWidth < 500;
-
-        return Container(
-          decoration: BoxDecoration(
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark
+            ? AppColors.cardBackground.withValues(alpha: 0.35)
+            : Colors.white.withValues(alpha: 0.65),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
             color: isDark
-                ? AppColors.cardBackground.withValues(alpha: 0.35)
-                : Colors.white.withValues(alpha: 0.65),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: isDark
-                  ? Colors.white.withValues(alpha: 0.06)
-                  : Colors.black.withValues(alpha: 0.05),
-              width: 1.0,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: isDark
-                    ? Colors.black.withValues(alpha: 0.20)
-                    : Colors.black.withValues(alpha: 0.04),
-                blurRadius: 16,
-                offset: const Offset(0, 4),
-              ),
-            ],
+                ? Colors.black.withValues(alpha: 0.20)
+                : Colors.black.withValues(alpha: 0.04),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
           ),
-          padding: EdgeInsets.all(isMobile ? 16 : 22),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header Section
-              if (sectionConstraints.maxWidth < 380) ...[
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      widget.title,
-                      style: AppTextStyles.h4.copyWith(
-                        fontWeight: FontWeight.w700,
-                        fontSize: isMobile ? 16 : 18,
-                        color: isDark
-                            ? AppColors.textPrimary
-                            : const Color(0xFF0F172A),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      widget.subtitle,
-                      style: AppTextStyles.body2.copyWith(
-                        color: isDark
-                            ? AppColors.textSecondary
-                            : const Color(0xFF64748B),
-                        fontSize: isMobile ? 12 : 13,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    _buildUnlockCounterBadge(
-                      isDark,
-                      isMobile,
-                      unlockedCount,
-                      achievements.length,
-                    ),
-                  ],
+        ],
+      ),
+      padding: EdgeInsets.all(isMobile ? 16 : 22),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Header Section
+          if (isNarrow) ...[
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  widget.title,
+                  style: AppTextStyles.h4.copyWith(
+                    fontWeight: FontWeight.w700,
+                    fontSize: isMobile ? 16 : 18,
+                    color: isDark
+                        ? AppColors.textPrimary
+                        : const Color(0xFF0F172A),
+                  ),
                 ),
-              ] else ...[
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            widget.title,
-                            style: AppTextStyles.h4.copyWith(
-                              fontWeight: FontWeight.w700,
-                              fontSize: isMobile ? 16 : 18,
-                              color: isDark
-                                  ? AppColors.textPrimary
-                                  : const Color(0xFF0F172A),
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            widget.subtitle,
-                            style: AppTextStyles.body2.copyWith(
-                              color: isDark
-                                  ? AppColors.textSecondary
-                                  : const Color(0xFF64748B),
-                              fontSize: isMobile ? 12 : 13,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    _buildUnlockCounterBadge(
-                      isDark,
-                      isMobile,
-                      unlockedCount,
-                      achievements.length,
-                    ),
-                  ],
+                const SizedBox(height: 4),
+                Text(
+                  widget.subtitle,
+                  style: AppTextStyles.body2.copyWith(
+                    color: isDark
+                        ? AppColors.textSecondary
+                        : const Color(0xFF64748B),
+                    fontSize: isMobile ? 12 : 13,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                _buildUnlockCounterBadge(
+                  isDark,
+                  isMobile,
+                  unlockedCount,
+                  achievements.length,
                 ),
               ],
+            ),
+          ] else ...[
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.title,
+                        style: AppTextStyles.h4.copyWith(
+                          fontWeight: FontWeight.w700,
+                          fontSize: isMobile ? 16 : 18,
+                          color: isDark
+                              ? AppColors.textPrimary
+                              : const Color(0xFF0F172A),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        widget.subtitle,
+                        style: AppTextStyles.body2.copyWith(
+                          color: isDark
+                              ? AppColors.textSecondary
+                              : const Color(0xFF64748B),
+                          fontSize: isMobile ? 12 : 13,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                _buildUnlockCounterBadge(
+                  isDark,
+                  isMobile,
+                  unlockedCount,
+                  achievements.length,
+                ),
+              ],
+            ),
+          ],
 
               if (achievements.isNotEmpty) ...[
                 const SizedBox(height: 14),
@@ -218,37 +219,36 @@ class _MilestoneAchievementsCardState extends State<MilestoneAchievementsCard> {
                   ),
                 )
               else
-                LayoutBuilder(
-                  builder: (context, gridConstraints) {
-                    final availableWidth = gridConstraints.maxWidth;
-                    if (availableWidth <= 0) return const SizedBox.shrink();
-
-                    final int cols = availableWidth >= 520 ? 2 : 1;
-                    final double tileWidth = cols == 2
-                        ? (availableWidth - 12) / 2
-                        : availableWidth;
-
-                    return Wrap(
-                      spacing: 12,
-                      runSpacing: 12,
-                      children: achievements.map((ach) {
-                        return SizedBox(
-                          width: tileWidth,
-                          child: _AchievementTile(
-                            achievement: ach,
-                            isDark: isDark,
-                            isMobile: isMobile,
-                          ),
-                        );
-                      }).toList(),
-                    );
-                  },
+                Column(
+                  children: [
+                    for (int i = 0; i < achievements.length; i += cols) ...[
+                      if (i > 0) const SizedBox(height: 12),
+                      IntrinsicHeight(
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            for (int j = 0; j < cols; j++) ...[
+                              if (j > 0) const SizedBox(width: 12),
+                              if (i + j < achievements.length)
+                                Expanded(
+                                  child: _AchievementTile(
+                                    achievement: achievements[i + j],
+                                    isDark: isDark,
+                                    isMobile: isMobile || cols == 3,
+                                  ),
+                                )
+                              else
+                                const Expanded(child: SizedBox.shrink()),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
             ],
           ),
         );
-      },
-    );
   }
 
   Widget _buildUnlockCounterBadge(

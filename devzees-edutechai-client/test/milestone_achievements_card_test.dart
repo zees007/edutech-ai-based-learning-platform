@@ -2,6 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:devzees_edutechai_client/data/models/dashboard/dashboard_response.dart';
+import 'package:devzees_edutechai_client/presentation/pages/dashboard/widgets/learning_mode_distribution_card.dart';
 import 'package:devzees_edutechai_client/presentation/pages/dashboard/widgets/milestone_achievements_card.dart';
 
 void main() {
@@ -246,6 +247,107 @@ void main() {
       expect(find.text('Learner Achievements & Trophies'), findsOneWidget);
       expect(find.text('Bronze Trophy'), findsOneWidget);
       expect(tester.takeException(), isNull);
+    });
+
+    testWidgets(
+        'renders 3 trophy cards per row on desktop (1280px) and matches LearningModeDistributionCard height exactly',
+        (tester) async {
+      tester.view.physicalSize = const Size(1280, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      const modeDist = ModeDistribution(
+        visual: 12,
+        deepDive: 8,
+        biteSized: 5,
+      );
+
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: SingleChildScrollView(
+              padding: EdgeInsets.all(24),
+              child: IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Expanded(
+                      flex: 4,
+                      child: LearningModeDistributionCard(
+                        modeDistribution: modeDist,
+                        isCompact: false,
+                        stretchHeight: true,
+                      ),
+                    ),
+                    SizedBox(width: 16),
+                    Expanded(
+                      flex: 8,
+                      child: MilestoneAchievementsCard(
+                        achievements: sampleAchievements,
+                        crossAxisCount: 3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+
+      // Verify exact same height between both cards
+      final modeBox = tester.getRect(find.byType(LearningModeDistributionCard));
+      final trophyBox = tester.getRect(find.byType(MilestoneAchievementsCard));
+      expect(modeBox.height, closeTo(trophyBox.height, 0.01));
+
+      // Verify 3 cards in first row (Bronze, Silver, Gold share the same top Y)
+      final bronzeTop = tester.getTopLeft(find.text('Bronze Trophy')).dy;
+      final silverTop = tester.getTopLeft(find.text('Silver Trophy')).dy;
+      final goldTop = tester.getTopLeft(find.text('Gold Trophy')).dy;
+      final platinumTop = tester.getTopLeft(find.text('Platinum Trophy')).dy;
+
+      expect(bronzeTop, closeTo(silverTop, 2.0));
+      expect(silverTop, closeTo(goldTop, 2.0));
+      expect(platinumTop, greaterThan(bronzeTop + 40));
+    });
+
+    testWidgets(
+        'renders 2 trophy cards per row on tablet (800px) without overflow',
+        (tester) async {
+      tester.view.physicalSize = const Size(800, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: MilestoneAchievementsCard(
+                achievements: sampleAchievements,
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+
+      final bronzeTop = tester.getTopLeft(find.text('Bronze Trophy')).dy;
+      final silverTop = tester.getTopLeft(find.text('Silver Trophy')).dy;
+      final goldTop = tester.getTopLeft(find.text('Gold Trophy')).dy;
+
+      expect(bronzeTop, closeTo(silverTop, 2.0));
+      expect(goldTop, greaterThan(bronzeTop + 40));
     });
   });
 }

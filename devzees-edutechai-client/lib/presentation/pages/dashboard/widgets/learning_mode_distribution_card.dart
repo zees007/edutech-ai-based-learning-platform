@@ -1,5 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import '../../../../core/constants/responsive.dart';
 import '../../../../data/models/dashboard/dashboard_response.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/text_styles.dart';
@@ -9,10 +10,14 @@ import '../../../../core/theme/theme_palette.dart';
 /// with a donut pie chart and interactive legend.
 class LearningModeDistributionCard extends StatefulWidget {
   final ModeDistribution modeDistribution;
+  final bool? isCompact;
+  final bool stretchHeight;
 
   const LearningModeDistributionCard({
     super.key,
     required this.modeDistribution,
+    this.isCompact,
+    this.stretchHeight = false,
   });
 
   @override
@@ -29,63 +34,25 @@ class _LearningModeDistributionCardState
     final isDark = context.isDarkMode;
     final modes = widget.modeDistribution;
     final total = modes.total;
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final isMobile = Responsive.isMobile(context);
+    final isCompact = widget.isCompact ?? (screenWidth < 450);
 
-    return LayoutBuilder(
-      builder: (context, cardConstraints) {
-        final isMobile = cardConstraints.maxWidth < 450;
-        final isCompact = cardConstraints.maxWidth < 360;
-
-        return Container(
-          decoration: BoxDecoration(
-            color: isDark
-                ? AppColors.cardBackground.withValues(alpha: 0.35)
-                : Colors.white.withValues(alpha: 0.65),
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: isDark
-                    ? Colors.black.withValues(alpha: 0.20)
-                    : Colors.black.withValues(alpha: 0.04),
-                blurRadius: 16,
-                offset: const Offset(0, 4),
+    final Widget chartSection = total == 0
+        ? Container(
+            height: 180,
+            alignment: Alignment.center,
+            child: Text(
+              'No sessions recorded yet.',
+              style: AppTextStyles.caption.copyWith(
+                color: isDark ? AppColors.textMuted : const Color(0xFF94A3B8),
               ),
-            ],
-          ),
-          padding: EdgeInsets.all(isMobile ? 16 : 22),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Learning Mode Distribution',
-                style: AppTextStyles.h4.copyWith(
-                  fontWeight: FontWeight.w700,
-                  fontSize: isMobile ? 16 : 18,
-                  color: isDark ? AppColors.textPrimary : const Color(0xFF0F172A),
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Usage ratio across Visual 🎬, Deep Dive 🔬, and Bite-Sized ⚡ modes',
-                style: AppTextStyles.body2.copyWith(
-                  color: isDark ? AppColors.textSecondary : const Color(0xFF64748B),
-                  fontSize: isMobile ? 12 : 13,
-                ),
-              ),
-              const SizedBox(height: 20),
-
-              if (total == 0)
-                Container(
-                  height: 180,
-                  alignment: Alignment.center,
-                  child: Text(
-                    'No sessions recorded yet.',
-                    style: AppTextStyles.caption.copyWith(
-                      color: isDark ? AppColors.textMuted : const Color(0xFF94A3B8),
-                    ),
-                  ),
-                )
-              else ...[
-                if (isCompact) ...[
+            ),
+          )
+        : (isCompact
+            ? Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
                   Center(
                     child: SizedBox(
                       width: 130,
@@ -93,7 +60,8 @@ class _LearningModeDistributionCardState
                       child: PieChart(
                         PieChartData(
                           pieTouchData: PieTouchData(
-                            touchCallback: (FlTouchEvent event, pieTouchResponse) {
+                            touchCallback:
+                                (FlTouchEvent event, pieTouchResponse) {
                               setState(() {
                                 if (!event.isInterestedForInteractions ||
                                     pieTouchResponse == null ||
@@ -116,50 +84,91 @@ class _LearningModeDistributionCardState
                   ),
                   const SizedBox(height: 16),
                   _buildLegendColumn(context, modes),
-                ] else
-                  Row(
-                    children: [
-                      // Donut Pie Chart
-                      SizedBox(
-                        width: 130,
-                        height: 130,
-                        child: PieChart(
-                          PieChartData(
-                            pieTouchData: PieTouchData(
-                              touchCallback:
-                                  (FlTouchEvent event, pieTouchResponse) {
-                                setState(() {
-                                  if (!event.isInterestedForInteractions ||
-                                      pieTouchResponse == null ||
-                                      pieTouchResponse.touchedSection == null) {
-                                    _touchedIndex = -1;
-                                    return;
-                                  }
-                                  _touchedIndex = pieTouchResponse
-                                      .touchedSection!.touchedSectionIndex;
-                                });
-                              },
-                            ),
-                            borderData: FlBorderData(show: false),
-                            sectionsSpace: 3,
-                            centerSpaceRadius: 36,
-                            sections: _buildPieSections(modes),
-                          ),
+                ],
+              )
+            : Row(
+                children: [
+                  // Donut Pie Chart
+                  SizedBox(
+                    width: 130,
+                    height: 130,
+                    child: PieChart(
+                      PieChartData(
+                        pieTouchData: PieTouchData(
+                          touchCallback:
+                              (FlTouchEvent event, pieTouchResponse) {
+                            setState(() {
+                              if (!event.isInterestedForInteractions ||
+                                  pieTouchResponse == null ||
+                                  pieTouchResponse.touchedSection == null) {
+                                _touchedIndex = -1;
+                                return;
+                              }
+                              _touchedIndex = pieTouchResponse
+                                  .touchedSection!.touchedSectionIndex;
+                            });
+                          },
                         ),
+                        borderData: FlBorderData(show: false),
+                        sectionsSpace: 3,
+                        centerSpaceRadius: 36,
+                        sections: _buildPieSections(modes),
                       ),
-                      const SizedBox(width: 20),
-
-                      // Legend
-                      Expanded(
-                        child: _buildLegendColumn(context, modes),
-                      ),
-                    ],
+                    ),
                   ),
-              ],
-            ],
+                  const SizedBox(width: 20),
+
+                  // Legend
+                  Expanded(
+                    child: _buildLegendColumn(context, modes),
+                  ),
+                ],
+              ));
+
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark
+            ? AppColors.cardBackground.withValues(alpha: 0.35)
+            : Colors.white.withValues(alpha: 0.65),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: isDark
+                ? Colors.black.withValues(alpha: 0.20)
+                : Colors.black.withValues(alpha: 0.04),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
           ),
-        );
-      },
+        ],
+      ),
+      padding: EdgeInsets.all(isMobile ? 16 : 22),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: widget.stretchHeight ? MainAxisSize.max : MainAxisSize.min,
+        children: [
+          Text(
+            'Learning Mode Distribution',
+            style: AppTextStyles.h4.copyWith(
+              fontWeight: FontWeight.w700,
+              fontSize: isMobile ? 16 : 18,
+              color: isDark ? AppColors.textPrimary : const Color(0xFF0F172A),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Usage ratio across Visual 🎬, Deep Dive 🔬, and Bite-Sized ⚡ modes',
+            style: AppTextStyles.body2.copyWith(
+              color: isDark ? AppColors.textSecondary : const Color(0xFF64748B),
+              fontSize: isMobile ? 12 : 13,
+            ),
+          ),
+          const SizedBox(height: 20),
+          if (widget.stretchHeight)
+            Expanded(child: Center(child: chartSection))
+          else
+            chartSection,
+        ],
+      ),
     );
   }
 

@@ -352,21 +352,28 @@ class _UserAnalyticsDialogState extends ConsumerState<UserAnalyticsDialog> {
             builder: (context, constraints) {
               final isWide = constraints.maxWidth >= 700;
               if (isWide) {
-                return Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: LearningModeDistributionCard(
-                        modeDistribution: data.modeDistribution,
+                return IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Expanded(
+                        flex: 4,
+                        child: LearningModeDistributionCard(
+                          modeDistribution: data.modeDistribution,
+                          isCompact: constraints.maxWidth < 1100,
+                          stretchHeight: true,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: MilestoneAchievementsCard(
-                        achievements: data.achievements,
+                      const SizedBox(width: 16),
+                      Expanded(
+                        flex: 8,
+                        child: MilestoneAchievementsCard(
+                          achievements: data.achievements,
+                          crossAxisCount: constraints.maxWidth >= 900 ? 3 : 2,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 );
               } else {
                 return Column(

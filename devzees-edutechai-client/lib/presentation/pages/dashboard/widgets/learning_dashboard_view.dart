@@ -100,24 +100,38 @@ class _LearningDashboardViewState extends ConsumerState<LearningDashboardView> {
                               const SizedBox(height: 24),
 
                               // 2. Right below KPIs: Learning Mode Distribution & Milestone Achievements
-                              if (constraints.maxWidth >= 760)
-                                Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Expanded(
-                                      child: LearningModeDistributionCard(
-                                        modeDistribution:
-                                            state.data!.modeDistribution,
+                              if (constraints.maxWidth >=
+                                  Responsive.mobileBreakpoint)
+                                IntrinsicHeight(
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.stretch,
+                                    children: [
+                                      Expanded(
+                                        flex: 4,
+                                        child: LearningModeDistributionCard(
+                                          modeDistribution:
+                                              state.data!.modeDistribution,
+                                          isCompact:
+                                              constraints.maxWidth < 1150,
+                                          stretchHeight: true,
+                                        ),
                                       ),
-                                    ),
-                                    const SizedBox(width: 16),
-                                    Expanded(
-                                      child: MilestoneAchievementsCard(
-                                        achievements:
-                                            state.data!.achievements,
+                                      const SizedBox(width: 16),
+                                      Expanded(
+                                        flex: 8,
+                                        child: MilestoneAchievementsCard(
+                                          achievements:
+                                              state.data!.achievements,
+                                          crossAxisCount:
+                                              constraints.maxWidth >=
+                                                      Responsive.tabletBreakpoint
+                                                  ? 3
+                                                  : 2,
+                                        ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 )
                               else ...[
                                 LearningModeDistributionCard(
