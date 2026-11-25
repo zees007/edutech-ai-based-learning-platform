@@ -1,11 +1,12 @@
 import 'dart:math';
+import 'dart:ui';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import '../../../../core/constants/responsive.dart';
 import '../../../../data/models/dashboard/dashboard_response.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../core/theme/theme_palette.dart';
-import '../../../widgets/glass_card.dart';
 
 class QuizTrendCard extends StatefulWidget {
   final QuizMetrics quizMetrics;
@@ -66,7 +67,15 @@ class _QuizTrendCardState extends State<QuizTrendCard> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final isMobile = constraints.maxWidth < 620;
+        final isMobile = Responsive.isMobile(context) ||
+            constraints.maxWidth < Responsive.mobileBreakpoint;
+        final isDesktop =
+            Responsive.isDesktop(context) && constraints.maxWidth >= 960;
+        final horizontalPadding = isMobile ? 32.0 : 44.0;
+        final chartAvailableWidth = max(
+          0.0,
+          constraints.maxWidth - horizontalPadding,
+        );
 
         final titleColumn = Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -92,7 +101,7 @@ class _QuizTrendCardState extends State<QuizTrendCard> {
           ],
         );
 
-        final badgesWrap = Wrap(
+        final statPills = Wrap(
           spacing: 8,
           runSpacing: 6,
           crossAxisAlignment: WrapCrossAlignment.center,
@@ -101,61 +110,144 @@ class _QuizTrendCardState extends State<QuizTrendCard> {
               context,
               label: 'Quizzes',
               value: '${widget.quizMetrics.totalQuizzesTaken}',
-              color: AppColors.accentPurple,
+              icon: Icons.quiz_rounded,
+              lightColor: const Color(0xFF6366F1),
+              darkColor: const Color(0xFFA78BFA),
             ),
             _buildStatBadge(
               context,
               label: 'Questions',
               value: '${widget.quizMetrics.totalQuestionsEvaluated}',
-              color: AppColors.accentCyan,
+              icon: Icons.fact_check_rounded,
+              lightColor: const Color(0xFF0284C7),
+              darkColor: const Color(0xFF38BDF8),
             ),
             _buildStatBadge(
               context,
               label: 'Perfect (3/3)',
               value: '${widget.quizMetrics.perfectQuizzesCount}',
-              color: AppColors.accentGreen,
-            ),
-            if (rawTrend.length >= 3) _buildViewModeToggle(context, isDark),
-            IconButton(
-              icon: Icon(
-                Icons.fullscreen_rounded,
-                size: 20,
-                color: isDark
-                    ? AppColors.textSecondary
-                    : const Color(0xFF64748B),
-              ),
-              tooltip: 'Expand chart',
-              onPressed: rawTrend.isEmpty
-                  ? null
-                  : () => _showFullscreenChart(
-                      context,
-                      trend,
-                      weeklyPoints: _showWeeklyTrend ? weeklyPoints : null,
-                    ),
+              icon: Icons.check_circle_rounded,
+              lightColor: const Color(0xFF059669),
+              darkColor: const Color(0xFF34D399),
             ),
           ],
         );
 
-        return GlassCard(
-          borderRadius: 20,
+        final zoomButton = IconButton(
+          icon: Icon(
+            Icons.fullscreen_rounded,
+            size: 20,
+            color: isDark
+                ? AppColors.textSecondary
+                : const Color(0xFF475569),
+          ),
+          tooltip: 'Expand chart',
+          padding: const EdgeInsets.all(6),
+          constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+          visualDensity: VisualDensity.compact,
+          onPressed: rawTrend.isEmpty
+              ? null
+              : () => _showFullscreenChart(
+                  context,
+                  trend,
+                  weeklyPoints: _showWeeklyTrend ? weeklyPoints : null,
+                ),
+        );
+
+        final actionControls = Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (rawTrend.length >= 3) ...[
+              _buildViewModeToggle(context, isDark),
+              const SizedBox(width: 6),
+            ],
+            zoomButton,
+          ],
+        );
+
+        return Container(
+          decoration: BoxDecoration(
+            color: isDark
+                ? AppColors.cardBackground.withValues(alpha: 0.35)
+                : Colors.white.withValues(alpha: 0.65),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: isDark
+                    ? Colors.black.withValues(alpha: 0.20)
+                    : Colors.black.withValues(alpha: 0.04),
+                blurRadius: 16,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
           padding: EdgeInsets.all(isMobile ? 16 : 22),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Header & Quick Metric Capsules
-              if (isMobile) ...[
-                titleColumn,
-                const SizedBox(height: 12),
-                badgesWrap,
-              ] else
+              if (isDesktop)
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(child: titleColumn),
                     const SizedBox(width: 16),
-                    Flexible(child: badgesWrap),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        statPills,
+                        const SizedBox(width: 10),
+                        actionControls,
+                      ],
+                    ),
+                  ],
+                )
+              else if (!isMobile) ...[
+                // Tablet / Intermediate: Title + Action Controls on top, Stat Pills cleanly below
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(child: titleColumn),
+                    const SizedBox(width: 12),
+                    actionControls,
                   ],
                 ),
+                const SizedBox(height: 12),
+                statPills,
+              ] else ...[
+                // Mobile: Title + Zoom pinned top-right, Stat Pills & Toggle below
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(child: titleColumn),
+                    const SizedBox(width: 8),
+                    zoomButton,
+                  ],
+                ),
+                const SizedBox(height: 12),
+                if (constraints.maxWidth >= 460)
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(child: statPills),
+                      if (rawTrend.length >= 3) ...[
+                        const SizedBox(width: 8),
+                        _buildViewModeToggle(context, isDark),
+                      ],
+                    ],
+                  )
+                else ...[
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    physics: const BouncingScrollPhysics(),
+                    child: statPills,
+                  ),
+                  if (rawTrend.length >= 3) ...[
+                    const SizedBox(height: 8),
+                    _buildViewModeToggle(context, isDark),
+                  ],
+                ],
+              ],
               const SizedBox(height: 24),
 
               // Chart Section
@@ -195,11 +287,19 @@ class _QuizTrendCardState extends State<QuizTrendCard> {
                   ),
                 )
               else
-                _buildScrollableChart(
-                  context,
-                  trend,
-                  constraints.maxWidth,
-                  weeklyPoints: _showWeeklyTrend ? weeklyPoints : null,
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 280),
+                  switchInCurve: Curves.easeOutCubic,
+                  switchOutCurve: Curves.easeInCubic,
+                  child: KeyedSubtree(
+                    key: ValueKey(_showWeeklyTrend),
+                    child: _buildScrollableChart(
+                      context,
+                      trend,
+                      chartAvailableWidth,
+                      weeklyPoints: _showWeeklyTrend ? weeklyPoints : null,
+                    ),
+                  ),
                 ),
             ],
           ),
@@ -214,10 +314,11 @@ class _QuizTrendCardState extends State<QuizTrendCard> {
     double availableWidth, {
     List<WeeklyTrendPoint>? weeklyPoints,
   }) {
-    final needsScroll = trend.length > 10;
-    final chartWidth = needsScroll
-        ? max(availableWidth, trend.length * 48.0)
-        : availableWidth;
+    final isDark = context.isDarkMode;
+    const double pointSpacing = 48.0;
+    final double minChartWidth = trend.length * pointSpacing;
+    final needsScroll = minChartWidth > availableWidth && trend.length > 5;
+    final chartWidth = needsScroll ? minChartWidth : availableWidth;
 
     Widget chartWidget = SizedBox(
       width: chartWidth,
@@ -228,19 +329,49 @@ class _QuizTrendCardState extends State<QuizTrendCard> {
     );
 
     if (needsScroll) {
-      return Scrollbar(
-        controller: _scrollController,
-        thumbVisibility: true,
-        child: SingleChildScrollView(
-          controller: _scrollController,
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.only(bottom: 12),
-          child: chartWidget,
+      return ScrollConfiguration(
+        behavior: const MaterialScrollBehavior().copyWith(
+          dragDevices: {
+            PointerDeviceKind.touch,
+            PointerDeviceKind.mouse,
+            PointerDeviceKind.trackpad,
+          },
+        ),
+        child: ScrollbarTheme(
+          data: ScrollbarThemeData(
+            thickness: const WidgetStatePropertyAll(3.5),
+            radius: const Radius.circular(8),
+            thumbColor: WidgetStatePropertyAll(
+              (isDark ? Colors.white : const Color(0xFF64748B))
+                  .withValues(alpha: 0.28),
+            ),
+          ),
+          child: Scrollbar(
+            controller: _scrollController,
+            thumbVisibility: false,
+            child: SingleChildScrollView(
+              controller: _scrollController,
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(
+                parent: AlwaysScrollableScrollPhysics(),
+              ),
+              padding: const EdgeInsets.only(bottom: 10),
+              child: chartWidget,
+            ),
+          ),
         ),
       );
     }
 
     return chartWidget;
+  }
+
+  void _setWeeklyTrend(bool showWeekly) {
+    if (_showWeeklyTrend == showWeekly) return;
+    setState(() => _showWeeklyTrend = showWeekly);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToLatest();
+    });
   }
 
   Widget _buildViewModeToggle(BuildContext context, bool isDark) {
@@ -257,13 +388,13 @@ class _QuizTrendCardState extends State<QuizTrendCard> {
           _buildToggleOption(
             label: 'All Dots',
             isSelected: !_showWeeklyTrend,
-            onTap: () => setState(() => _showWeeklyTrend = false),
+            onTap: () => _setWeeklyTrend(false),
             isDark: isDark,
           ),
           _buildToggleOption(
             label: 'Weekly',
             isSelected: _showWeeklyTrend,
-            onTap: () => setState(() => _showWeeklyTrend = true),
+            onTap: () => _setWeeklyTrend(true),
             isDark: isDark,
           ),
         ],
@@ -280,13 +411,24 @@ class _QuizTrendCardState extends State<QuizTrendCard> {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(10),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOutCubic,
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         decoration: BoxDecoration(
-          color: isSelected
-              ? (isDark ? AppColors.primary : AppColors.purple)
-              : Colors.transparent,
+          gradient: isSelected ? AppColors.primaryGradient : null,
+          color: isSelected ? null : Colors.transparent,
           borderRadius: BorderRadius.circular(10),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: AppColors.primary
+                        .withValues(alpha: isDark ? 0.30 : 0.22),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
         ),
         child: Text(
           label,
@@ -295,7 +437,7 @@ class _QuizTrendCardState extends State<QuizTrendCard> {
                 ? Colors.white
                 : (isDark ? AppColors.textSecondary : const Color(0xFF64748B)),
             fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-            fontSize: 10,
+            fontSize: 10.5,
           ),
         ),
       ),
@@ -306,32 +448,44 @@ class _QuizTrendCardState extends State<QuizTrendCard> {
     BuildContext context, {
     required String label,
     required String value,
-    required Color color,
+    required IconData icon,
+    required Color lightColor,
+    required Color darkColor,
   }) {
+    final isDark = context.isDarkMode;
+    final badgeColor = isDark ? darkColor : lightColor;
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
+        color: badgeColor.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: badgeColor.withValues(alpha: 0.25),
+          width: 0.8,
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
+          Icon(icon, size: 12, color: badgeColor),
+          const SizedBox(width: 5),
           Text(
             '$label: ',
             style: AppTextStyles.caption.copyWith(
-              color: color,
-              fontWeight: FontWeight.w500,
+              color: badgeColor,
+              fontWeight: FontWeight.w600,
               fontSize: 11,
+              height: 1.1,
             ),
           ),
           Text(
             value,
             style: AppTextStyles.caption.copyWith(
-              color: color,
+              color: badgeColor,
               fontWeight: FontWeight.w800,
-              fontSize: 12,
+              fontSize: 11.5,
+              height: 1.1,
             ),
           ),
         ],
