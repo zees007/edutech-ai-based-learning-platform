@@ -31,11 +31,11 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 200));
 
-    // Verify Growth & Mastery Analytics icon is present with consistent brand primary color
-    final autoGraphIconFinder = find.byIcon(Icons.auto_graph_rounded);
-    expect(autoGraphIconFinder, findsOneWidget);
-    final autoGraphIcon = tester.widget<Icon>(autoGraphIconFinder);
-    expect(autoGraphIcon.color, AppColors.primary);
+    // Verify Growth & Mastery Analytics icon is present with consistent white color on gradient badge
+    final analyticsIconFinder = find.byIcon(Icons.leaderboard_rounded);
+    expect(analyticsIconFinder, findsOneWidget);
+    final analyticsIcon = tester.widget<Icon>(analyticsIconFinder);
+    expect(analyticsIcon.color, Colors.white);
 
     // Verify Sync All refresh icon is purple in light theme when refreshing
     final syncIconFinder = find.byIcon(Icons.sync_rounded);
@@ -68,11 +68,11 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 200));
 
-    // Verify Growth & Mastery Analytics icon in dark theme is also brand primary color
-    final autoGraphIconFinder = find.byIcon(Icons.auto_graph_rounded);
-    expect(autoGraphIconFinder, findsOneWidget);
-    final autoGraphIcon = tester.widget<Icon>(autoGraphIconFinder);
-    expect(autoGraphIcon.color, AppColors.primary);
+    // Verify Growth & Mastery Analytics icon in dark theme is also white on gradient badge
+    final analyticsIconFinder = find.byIcon(Icons.leaderboard_rounded);
+    expect(analyticsIconFinder, findsOneWidget);
+    final analyticsIcon = tester.widget<Icon>(analyticsIconFinder);
+    expect(analyticsIcon.color, Colors.white);
 
     // Verify Sync All refresh icon in dark theme is cyan
     final syncIconFinder = find.byIcon(Icons.sync_rounded);

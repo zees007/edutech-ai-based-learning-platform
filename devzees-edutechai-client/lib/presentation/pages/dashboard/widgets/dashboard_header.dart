@@ -289,23 +289,26 @@ class DashboardHeader extends ConsumerWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // Glowing Squircle Accent Badge (Same in Light and Dark Mode)
+        // Glowing Gradient Hero Squircle Badge (Same in Light and Dark Mode)
         Container(
           width: isMobile ? 30 : (isCompact ? 32 : 36),
           height: isMobile ? 30 : (isCompact ? 32 : 36),
           decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.22),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: AppColors.primary.withValues(alpha: 0.55),
-              width: 1.0,
-            ),
+            gradient: AppColors.primaryGradient,
+            borderRadius: BorderRadius.circular(10),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withValues(alpha: 0.28),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
           ),
           child: Center(
             child: Icon(
-              Icons.auto_graph_rounded,
-              color: AppColors.primary,
-              size: isMobile ? 15 : (isCompact ? 16 : 18),
+              Icons.leaderboard_rounded,
+              color: Colors.white,
+              size: isMobile ? 16 : (isCompact ? 17 : 19),
             ),
           ),
         ),
