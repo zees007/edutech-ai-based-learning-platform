@@ -48,9 +48,8 @@ class _ShimmerLoadingState extends State<ShimmerLoading>
     }
 
     final isDark = context.isDarkMode;
-    final colors = context.appColors;
-    final base = widget.baseColor ?? (isDark ? colors.surface : const Color(0xFFE5E7EB));
-    final highlight = widget.highlightColor ?? (isDark ? colors.chipBackground : const Color(0xFFF3F3F5));
+    final base = widget.baseColor ?? (isDark ? const Color(0xFF1E2138) : const Color(0xFFE2E8F0));
+    final highlight = widget.highlightColor ?? (isDark ? const Color(0xFF353A60) : const Color(0xFFF8FAFC));
 
     return AnimatedBuilder(
       animation: _controller,
@@ -119,7 +118,7 @@ class ShimmerBox extends StatelessWidget {
       width: width,
       height: height,
       decoration: BoxDecoration(
-        color: color ?? (isDark ? context.appColors.chipBackground : const Color(0xFFEDE9F2)),
+        color: color ?? (isDark ? const Color(0xFF1E2138) : const Color(0xFFE2E8F0)),
         shape: shape,
         borderRadius: shape == BoxShape.circle
             ? null
