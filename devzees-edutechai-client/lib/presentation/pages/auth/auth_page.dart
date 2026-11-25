@@ -22,7 +22,7 @@ class AuthPage extends ConsumerStatefulWidget {
 
 class _AuthPageState extends ConsumerState<AuthPage> {
   bool _isLogin = true;
-  bool _isFlowchartExpanded = false;
+  bool _isPreviewExpanded = false;
 
   @override
   void initState() {
@@ -100,11 +100,8 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              AuthIntroHeader(
-                                isMobile: isMobile,
-                                showInstructions: !isMobile,
-                              ),
-                              const SizedBox(height: 32),
+                              AuthIntroHeader(isMobile: isMobile),
+                              SizedBox(height: isMobile ? 24 : 28),
                               isMobile
                                   ? _buildMobileLayout()
                                   : _buildDesktopLayout(),
@@ -163,24 +160,24 @@ class _AuthPageState extends ConsumerState<AuthPage> {
           onToggleMode: _toggleAuthMode,
         ),
         const SizedBox(height: 24),
-        // Expandable Flowchart Toggle
+        // Expandable Workspace Preview Toggle
         Center(
           child: OutlinedButton.icon(
             onPressed: () {
               setState(() {
-                _isFlowchartExpanded = !_isFlowchartExpanded;
+                _isPreviewExpanded = !_isPreviewExpanded;
               });
             },
             icon: Icon(
-              _isFlowchartExpanded
+              _isPreviewExpanded
                   ? Icons.keyboard_arrow_up
                   : Icons.keyboard_arrow_down,
               color: context.appColors.textSecondary,
             ),
             label: Text(
-              _isFlowchartExpanded
-                  ? "Hide Access Flowchart"
-                  : "View Access Flowchart",
+              _isPreviewExpanded
+                  ? "Hide Workspace Preview"
+                  : "See What You Unlock",
               style: AppTextStyles.subtitle2.copyWith(
                 color: context.appColors.textPrimary,
                 fontWeight: FontWeight.w600,
@@ -204,16 +201,10 @@ class _AuthPageState extends ConsumerState<AuthPage> {
           duration: const Duration(milliseconds: 350),
           curve: Curves.easeInOut,
           alignment: Alignment.topCenter,
-          child: _isFlowchartExpanded
-              ? Column(
-                  children: [
-                    AuthInstructionsCard(isMobile: true),
-                    const SizedBox(height: 20),
-                    AuthCanvas(
-                      isLogin: _isLogin,
-                      onAuthModeChanged: _setAuthMode,
-                    ),
-                  ],
+          child: _isPreviewExpanded
+              ? AuthCanvas(
+                  isLogin: _isLogin,
+                  onAuthModeChanged: _setAuthMode,
                 )
               : const SizedBox(width: double.infinity),
         ),

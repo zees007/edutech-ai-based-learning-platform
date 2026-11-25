@@ -669,7 +669,7 @@ class _AccountSettingsDialogState extends ConsumerState<AccountSettingsDialog>
 
           // New Password
           _buildInputField(
-            label: 'NEW PASSWORD * (min 8 characters)',
+            label: 'NEW PASSWORD *',
             hint: '••••••••',
             controller: _newPasswordController,
             prefixIcon: Icons.lock_outline_rounded,

@@ -252,43 +252,38 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
     );
   }
 
-  // ─── ROW 2: GOAL ICON + "YOUR GOAL" BADGE + TOPIC DETAILS TEXT ──────────────
+  // ─── ROW 2: UNIFIED GOAL PILL + TOPIC DETAILS TEXT ──────────────────────────
   Widget _buildGoalTopicRow(SessionResponse session) {
+    final Color accentColor =
+        context.isDarkMode ? const Color(0xFF60A5FA) : const Color(0xFF1D4ED8);
+
     return Row(
-      crossAxisAlignment: _isTopicExpanded ? CrossAxisAlignment.start : CrossAxisAlignment.center,
+      crossAxisAlignment:
+          _isTopicExpanded ? CrossAxisAlignment.start : CrossAxisAlignment.center,
       children: [
-        // Goal Icon Accent Box
+        // Unified "YOUR GOAL" Pill (matches Row 1 pill geometry)
         Container(
-          width: 30,
-          height: 30,
-          alignment: Alignment.center,
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           decoration: _buildPillDecoration(),
-          child: Icon(
-            Icons.track_changes_rounded,
-            color: context.isDarkMode ? const Color(0xFF60A5FA) : const Color(0xFF1D4ED8),
-            size: 16,
-          ),
-        ),
-        const SizedBox(width: 8),
-        // "YOUR GOAL" label badge
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
-          decoration: BoxDecoration(
-            color: (context.isDarkMode ? const Color(0xFF60A5FA) : const Color(0xFF1D4ED8)).withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(6),
-            border: Border.all(
-              color: (context.isDarkMode ? const Color(0xFF60A5FA) : const Color(0xFF1D4ED8)).withValues(alpha: 0.25),
-              width: 1.0,
-            ),
-          ),
-          child: Text(
-            'YOUR GOAL',
-            style: TextStyle(
-              color: context.isDarkMode ? const Color(0xFF93C5FD) : const Color(0xFF1E40AF),
-              fontSize: 10,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 0.6,
-            ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.track_changes_rounded,
+                color: accentColor,
+                size: 15,
+              ),
+              const SizedBox(width: 5),
+              Text(
+                'YOUR GOAL',
+                style: TextStyle(
+                  color: accentColor,
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.4,
+                ),
+              ),
+            ],
           ),
         ),
         const SizedBox(width: 10),
