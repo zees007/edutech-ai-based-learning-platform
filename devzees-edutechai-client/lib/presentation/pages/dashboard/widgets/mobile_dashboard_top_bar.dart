@@ -131,14 +131,10 @@ class MobileDashboardTopBar extends ConsumerWidget
                           height: 28,
                           padding: const EdgeInsets.symmetric(horizontal: 7),
                           decoration: BoxDecoration(
-                            color: isDark
-                                ? AppColors.primary.withValues(alpha: 0.12)
-                                : AppColors.purple.withValues(alpha: 0.08),
+                            color: AppColors.primary.withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(7),
                             border: Border.all(
-                              color: isDark
-                                  ? AppColors.primary.withValues(alpha: 0.60)
-                                  : AppColors.purple.withValues(alpha: 0.55),
+                              color: AppColors.primary.withValues(alpha: 0.60),
                               width: 1.0,
                             ),
                           ),
@@ -153,16 +149,14 @@ class MobileDashboardTopBar extends ConsumerWidget
                                     strokeWidth: 2,
                                     color: isDark
                                         ? const Color(0xFF22D3EE)
-                                        : AppColors.purple,
+                                        : AppColors.primary,
                                   ),
                                 )
                               else
-                                Icon(
+                                const Icon(
                                   Icons.sync_rounded,
                                   size: 13,
-                                  color: isDark
-                                      ? AppColors.primary
-                                      : AppColors.purple,
+                                  color: AppColors.primary,
                                 ),
                             ],
                           ),
@@ -322,24 +316,20 @@ class MobileDashboardTopBar extends ConsumerWidget
         height: 28,
         padding: const EdgeInsets.symmetric(horizontal: 7),
         decoration: BoxDecoration(
-          color: isDark
-              ? AppColors.primary.withValues(alpha: 0.12)
-              : AppColors.purple.withValues(alpha: 0.08),
+          color: AppColors.primary.withValues(alpha: 0.12),
           borderRadius: BorderRadius.circular(7),
           border: Border.all(
-            color: isDark
-                ? AppColors.primary.withValues(alpha: 0.60)
-                : AppColors.purple.withValues(alpha: 0.55),
+            color: AppColors.primary.withValues(alpha: 0.60),
             width: 1.0,
           ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
+            const Icon(
               Icons.calendar_today_rounded,
               size: 10.5,
-              color: isDark ? AppColors.primary : AppColors.purple,
+              color: AppColors.primary,
             ),
             const SizedBox(width: 4.0),
             Text(
@@ -371,7 +361,7 @@ class MobileDashboardTopBar extends ConsumerWidget
     bool isDark,
   ) {
     final isSelected = activeRange == value;
-    final primaryAccent = isDark ? AppColors.primary : AppColors.purple;
+    const primaryAccent = AppColors.primary;
 
     return InkWell(
       onTap: () {

@@ -8,7 +8,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   testWidgets(
-      'DashboardHeader: Light theme uses vibrant purple for Growth Analytics icon and Sync All refreshing icon',
+      'DashboardHeader: Light theme uses consistent blue/cyan dark-theme accent for Growth Analytics icon and Sync All refreshing icon',
       (tester) async {
     tester.view.physicalSize = const Size(1200, 800);
     tester.view.devicePixelRatio = 1.0;
@@ -37,11 +37,11 @@ void main() {
     final analyticsIcon = tester.widget<Icon>(analyticsIconFinder);
     expect(analyticsIcon.color, Colors.white);
 
-    // Verify Sync All refresh icon is purple in light theme when refreshing
+    // Verify Sync All refresh icon uses crisp royal blue in light theme when refreshing
     final syncIconFinder = find.byIcon(Icons.sync_rounded);
     expect(syncIconFinder, findsOneWidget);
     final syncIcon = tester.widget<Icon>(syncIconFinder);
-    expect(syncIcon.color, AppColors.purple);
+    expect(syncIcon.color, AppColors.primary);
   });
 
   testWidgets(
