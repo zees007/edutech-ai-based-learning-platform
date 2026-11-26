@@ -7,6 +7,7 @@ import 'package:devzees_edutechai_client/core/theme/text_styles.dart';
 import '../../../core/providers/auth_provider.dart';
 import '../../widgets/glass_loader_overlay.dart';
 import '../../widgets/center_toast.dart';
+import '../../widgets/shimmer_loading.dart';
 
 import 'widgets/auth_canvas.dart';
 import 'widgets/auth_top_navbar.dart';
@@ -22,7 +23,7 @@ class AuthPage extends ConsumerStatefulWidget {
 
 class _AuthPageState extends ConsumerState<AuthPage> {
   bool _isLogin = true;
-  bool _isFlowchartExpanded = false;
+  bool _isPreviewExpanded = false;
 
   @override
   void initState() {
@@ -53,7 +54,8 @@ class _AuthPageState extends ConsumerState<AuthPage> {
       if (next.error != null &&
           next.error != previous?.error &&
           !next.isLoading &&
-          (previous?.status == AuthStatus.authenticated && next.status == AuthStatus.unauthenticated)) {
+          (previous?.status == AuthStatus.authenticated &&
+              next.status == AuthStatus.unauthenticated)) {
         CenterToast.showError(
           context,
           next.error!,
@@ -65,7 +67,9 @@ class _AuthPageState extends ConsumerState<AuthPage> {
     final isDark = context.isDarkMode;
 
     return Scaffold(
-      backgroundColor: isDark ? context.appColors.scaffoldBackground : const Color(0xFFF6F8FC),
+      backgroundColor: isDark
+          ? context.appColors.scaffoldBackground
+          : const Color(0xFFF6F8FC),
       body: GlassLoaderOverlay(
         isLoading: authState.isLoading,
         title: authState.loadingMessage ?? 'Authenticating',
@@ -100,14 +104,24 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              AuthIntroHeader(
-                                isMobile: isMobile,
-                                showInstructions: !isMobile,
+                              AuthIntroHeader(isMobile: isMobile),
+                              SizedBox(height: isMobile ? 24 : 28),
+                              AnimatedSwitcher(
+                                duration: const Duration(milliseconds: 280),
+                                switchInCurve: Curves.easeOut,
+                                switchOutCurve: Curves.easeIn,
+                                child: authState.isInitial
+                                    ? _buildRefreshSkeleton(
+                                        isMobile: isMobile,
+                                        isDark: isDark,
+                                      )
+                                    : KeyedSubtree(
+                                        key: const ValueKey('auth_form_body'),
+                                        child: isMobile
+                                            ? _buildMobileLayout()
+                                            : _buildDesktopLayout(),
+                                      ),
                               ),
-                              const SizedBox(height: 32),
-                              isMobile
-                                  ? _buildMobileLayout()
-                                  : _buildDesktopLayout(),
                               const SizedBox(height: 48),
                               _buildSiteFooter(isMobile, isDark),
                             ],
@@ -125,6 +139,60 @@ class _AuthPageState extends ConsumerState<AuthPage> {
     );
   }
 
+  Widget _buildRefreshSkeleton({required bool isMobile, required bool isDark}) {
+    final colors = context.appColors;
+    Widget buildCard({required double height}) {
+      return Container(
+        height: height,
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: colors.surface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: colors.border),
+          boxShadow: isDark ? null : colors.cardShadow,
+        ),
+        child: ShimmerLoading(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: const [
+              ShimmerBox(width: 140, height: 20),
+              SizedBox(height: 16),
+              ShimmerBox(width: double.infinity, height: 42),
+              SizedBox(height: 14),
+              ShimmerBox(width: double.infinity, height: 42),
+              SizedBox(height: 14),
+              ShimmerBox(width: 180, height: 14),
+              Spacer(),
+              ShimmerBox(
+                width: double.infinity,
+                height: 46,
+                borderRadius: BorderRadius.all(Radius.circular(12)),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (isMobile) {
+      return KeyedSubtree(
+        key: const ValueKey('auth_refresh_skeleton_mobile'),
+        child: buildCard(height: 360),
+      );
+    }
+
+    return KeyedSubtree(
+      key: const ValueKey('auth_refresh_skeleton_desktop'),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(flex: 11, child: buildCard(height: 420)),
+          const SizedBox(width: 32),
+          Expanded(flex: 11, child: buildCard(height: 420)),
+        ],
+      ),
+    );
+  }
 
   Widget _buildDesktopLayout() {
     return Row(
@@ -133,10 +201,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
         // Left Column: Auth Canvas Flowchart
         Expanded(
           flex: 11,
-          child: AuthCanvas(
-            isLogin: _isLogin,
-            onAuthModeChanged: _setAuthMode,
-          ),
+          child: AuthCanvas(isLogin: _isLogin, onAuthModeChanged: _setAuthMode),
         ),
         const SizedBox(width: 32),
         // Right Column: Auth Form Card
@@ -163,24 +228,24 @@ class _AuthPageState extends ConsumerState<AuthPage> {
           onToggleMode: _toggleAuthMode,
         ),
         const SizedBox(height: 24),
-        // Expandable Flowchart Toggle
+        // Expandable Workspace Preview Toggle
         Center(
           child: OutlinedButton.icon(
             onPressed: () {
               setState(() {
-                _isFlowchartExpanded = !_isFlowchartExpanded;
+                _isPreviewExpanded = !_isPreviewExpanded;
               });
             },
             icon: Icon(
-              _isFlowchartExpanded
+              _isPreviewExpanded
                   ? Icons.keyboard_arrow_up
                   : Icons.keyboard_arrow_down,
               color: context.appColors.textSecondary,
             ),
             label: Text(
-              _isFlowchartExpanded
-                  ? "Hide Access Flowchart"
-                  : "View Access Flowchart",
+              _isPreviewExpanded
+                  ? "Hide Workspace Preview"
+                  : "See What You Unlock",
               style: AppTextStyles.subtitle2.copyWith(
                 color: context.appColors.textPrimary,
                 fontWeight: FontWeight.w600,
@@ -188,9 +253,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
             ),
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-              side: BorderSide(
-                color: AppColors.primary.withValues(alpha: 0.4),
-              ),
+              side: BorderSide(color: AppColors.primary.withValues(alpha: 0.4)),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(30),
               ),
@@ -204,17 +267,8 @@ class _AuthPageState extends ConsumerState<AuthPage> {
           duration: const Duration(milliseconds: 350),
           curve: Curves.easeInOut,
           alignment: Alignment.topCenter,
-          child: _isFlowchartExpanded
-              ? Column(
-                  children: [
-                    AuthInstructionsCard(isMobile: true),
-                    const SizedBox(height: 20),
-                    AuthCanvas(
-                      isLogin: _isLogin,
-                      onAuthModeChanged: _setAuthMode,
-                    ),
-                  ],
-                )
+          child: _isPreviewExpanded
+              ? AuthCanvas(isLogin: _isLogin, onAuthModeChanged: _setAuthMode)
               : const SizedBox(width: double.infinity),
         ),
       ],
@@ -227,7 +281,9 @@ class _AuthPageState extends ConsumerState<AuthPage> {
       decoration: BoxDecoration(
         border: Border(
           top: BorderSide(
-            color: isDark ? context.appColors.border : const Color(0xFFE2E8F0).withValues(alpha: 0.6),
+            color: isDark
+                ? context.appColors.border
+                : const Color(0xFFE2E8F0).withValues(alpha: 0.6),
           ),
         ),
       ),
@@ -236,7 +292,9 @@ class _AuthPageState extends ConsumerState<AuthPage> {
           '© 2025 EduTechAI Inc. Autonomous Academic Swarms & Adaptive Pedagogy.',
           style: TextStyle(
             fontSize: isMobile ? 11.5 : 12,
-            color: isDark ? context.appColors.textSecondary : const Color(0xFF94A3B8),
+            color: isDark
+                ? context.appColors.textSecondary
+                : const Color(0xFF94A3B8),
           ),
           textAlign: TextAlign.center,
         ),
@@ -256,47 +314,50 @@ class _AmbientBackgroundPainter extends CustomPainter {
 
     // Soft violet ambient aura at top left
     final paint1 = Paint()
-      ..shader = RadialGradient(
-        colors: [
-          const Color(0xFF8B5CF6).withValues(alpha: 0.07),
-          Colors.transparent,
-        ],
-      ).createShader(
-        Rect.fromCircle(
-          center: Offset(size.width * 0.18, size.height * 0.12),
-          radius: size.width * 0.4,
-        ),
-      );
+      ..shader =
+          RadialGradient(
+            colors: [
+              const Color(0xFF8B5CF6).withValues(alpha: 0.07),
+              Colors.transparent,
+            ],
+          ).createShader(
+            Rect.fromCircle(
+              center: Offset(size.width * 0.18, size.height * 0.12),
+              radius: size.width * 0.4,
+            ),
+          );
     canvas.drawRect(Offset.zero & size, paint1);
 
     // Soft blue ambient aura at mid right
     final paint2 = Paint()
-      ..shader = RadialGradient(
-        colors: [
-          const Color(0xFF3B82F6).withValues(alpha: 0.06),
-          Colors.transparent,
-        ],
-      ).createShader(
-        Rect.fromCircle(
-          center: Offset(size.width * 0.82, size.height * 0.40),
-          radius: size.width * 0.45,
-        ),
-      );
+      ..shader =
+          RadialGradient(
+            colors: [
+              const Color(0xFF3B82F6).withValues(alpha: 0.06),
+              Colors.transparent,
+            ],
+          ).createShader(
+            Rect.fromCircle(
+              center: Offset(size.width * 0.82, size.height * 0.40),
+              radius: size.width * 0.45,
+            ),
+          );
     canvas.drawRect(Offset.zero & size, paint2);
 
     // Soft purple ambient aura at bottom
     final paint3 = Paint()
-      ..shader = RadialGradient(
-        colors: [
-          const Color(0xFFA855F7).withValues(alpha: 0.05),
-          Colors.transparent,
-        ],
-      ).createShader(
-        Rect.fromCircle(
-          center: Offset(size.width * 0.50, size.height * 0.90),
-          radius: size.width * 0.5,
-        ),
-      );
+      ..shader =
+          RadialGradient(
+            colors: [
+              const Color(0xFFA855F7).withValues(alpha: 0.05),
+              Colors.transparent,
+            ],
+          ).createShader(
+            Rect.fromCircle(
+              center: Offset(size.width * 0.50, size.height * 0.90),
+              radius: size.width * 0.5,
+            ),
+          );
     canvas.drawRect(Offset.zero & size, paint3);
   }
 

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/responsive.dart';
+import '../../../core/providers/auth_provider.dart';
 import '../../../core/providers/user_provider.dart';
 import '../../../core/services/subscription_service.dart';
 import '../../../core/theme/app_colors.dart';
@@ -10,6 +11,7 @@ import '../../../core/theme/text_styles.dart';
 import '../../../data/models/subscription/payment_models.dart';
 import '../../../data/models/auth/user_current_profile_response.dart';
 import '../../widgets/glass_card.dart';
+import '../../widgets/shimmer_app_shell.dart';
 import '../learning/widgets/subscription/checkout_review_dialog.dart';
 import '../learning/widgets/subscription/ultra_extension_dialog.dart';
 import '../learning/widgets/subscription/plan_card.dart';
@@ -203,7 +205,33 @@ class _SubscriptionPageState extends ConsumerState<SubscriptionPage>
       }
     }
 
+    final authState = ref.watch(authProvider);
     final userAsync = ref.watch(userProvider);
+    final bool isRefreshingSession =
+        authState.isInitial ||
+        (authState.isAuthenticated &&
+            (authState.user == null || (userAsync.isLoading && !userAsync.hasValue)));
+
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 300),
+      switchInCurve: Curves.easeOut,
+      switchOutCurve: Curves.easeIn,
+      child: isRefreshingSession
+          ? const ShimmerAppShell(
+              key: ValueKey('subscription_shimmer_skeleton'),
+              variant: ShimmerShellVariant.subscription,
+            )
+          : KeyedSubtree(
+              key: const ValueKey('subscription_content'),
+              child: _buildSubscriptionScaffold(context, userAsync),
+            ),
+    );
+  }
+
+  Widget _buildSubscriptionScaffold(
+    BuildContext context,
+    AsyncValue<UserCurrentProfileResponse?> userAsync,
+  ) {
     final user = userAsync.value;
 
     final currentTier = user?.subscription?.tier.toLowerCase() ?? 'free';
@@ -462,7 +490,7 @@ class _SubscriptionPageState extends ConsumerState<SubscriptionPage>
         ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 680),
           child: Text(
-            'Select the optimal plan to unlock unlimited multi-agent deep dive sessions, full-text academic research, and priority AI execution.',
+            'Select the optimal plan to unlock unlimited multi-agent deep dive sessions, academic paper search & PDFs, and priority AI execution.',
             textAlign: TextAlign.center,
             style: AppTextStyles.subtitle1.copyWith(
               color: context.appColors.textSecondary,
@@ -552,7 +580,7 @@ class _SubscriptionPageState extends ConsumerState<SubscriptionPage>
         '1 YouTube Video / step',
         'Bite-Sized & Visual Modes',
         'Milestone Quizzes & XP',
-        'Academic Paper Search',
+        'Curated Paper Summaries',
         'Session History & Recovery',
       ],
       buttonText: currentTier == 'free' ? 'Current Plan' : 'Downgrade to Free',
@@ -573,6 +601,7 @@ class _SubscriptionPageState extends ConsumerState<SubscriptionPage>
         '5 Follow-Up Questions / step',
         '3 YouTube Videos / step',
         'Unlock Deep Dive Mode',
+        'Read Academic Papers & PDFs',
         'Step Content Regeneration',
         'Markdown & HTML Export',
         '1.5x Daily Streak XP Multiplier',
@@ -594,12 +623,12 @@ class _SubscriptionPageState extends ConsumerState<SubscriptionPage>
       title: 'Ultra',
       price: ultraPrice,
       billingCycle: isAnnual ? 'yr' : 'mo',
-      description: 'Unrestricted multi-agent squad, research, PDF export & 2x Streak XP.',
+      description: 'Unrestricted multi-agent squad, live research search, PDF export & 2x Streak XP.',
       features: const [
         'Everything in Pro +',
         'Unlimited Follow-Up Chat',
         '5 YouTube Videos / step',
-        'Full-Text Academic Research',
+        'Live Academic Paper Search',
         'PDF (.pdf) Export',
         'Priority Multi-Agent Exec',
         '2x Daily Streak XP Multiplier',

@@ -225,7 +225,10 @@ class _SubscriptionModalState extends ConsumerState<SubscriptionModal>
                       IconButton(
                         tooltip: 'Close',
                         onPressed: () => Navigator.of(context).pop(),
-                        icon: Icon(Icons.close, color: context.appColors.textSecondary),
+                        icon: Icon(
+                          Icons.close,
+                          color: context.appColors.textSecondary,
+                        ),
                       ),
                     ],
                   ),
@@ -358,7 +361,7 @@ class _SubscriptionModalState extends ConsumerState<SubscriptionModal>
           '1 YouTube Video / step',
           'Bite-Sized & Visual Modes',
           'Milestone Quizzes & XP',
-          'Academic Paper Search',
+          'Curated Paper Summaries',
           'Session History & Recovery',
         ],
         buttonText: currentTier == 'free'
@@ -379,6 +382,7 @@ class _SubscriptionModalState extends ConsumerState<SubscriptionModal>
           '5 Follow-Up Questions / step',
           '3 YouTube Videos / step',
           'Unlock Deep Dive Mode',
+          'Read Academic Papers & PDFs',
           'Step Content Regeneration',
           'Markdown & HTML Export',
           '1.5x Daily Streak XP Multiplier',
@@ -400,12 +404,12 @@ class _SubscriptionModalState extends ConsumerState<SubscriptionModal>
         price: ultraPrice,
         billingCycle: isAnnual ? 'yr' : 'mo',
         description:
-            'Unrestricted multi-agent squad, research, PDF export & 2x Streak XP.',
+            'Unrestricted multi-agent squad, live research search, PDF export & 2x Streak XP.',
         features: const [
           'Everything in Pro +',
           'Unlimited Follow-Up Chat',
           '5 YouTube Videos / step',
-          'Full-Text Academic Research',
+          'Live Academic Paper Search',
           'PDF (.pdf) Export',
           'Priority Multi-Agent Exec',
           '2x Daily Streak XP Multiplier',
@@ -444,7 +448,9 @@ class _SubscriptionModalState extends ConsumerState<SubscriptionModal>
                 child: Text(
                   'Monthly Billing',
                   style: TextStyle(
-                    color: !isAnnual ? Colors.white : context.appColors.textSecondary,
+                    color: !isAnnual
+                        ? Colors.white
+                        : context.appColors.textSecondary,
                     fontWeight: FontWeight.bold,
                     fontSize: 13,
                   ),

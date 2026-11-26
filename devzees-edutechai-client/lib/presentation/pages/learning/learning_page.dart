@@ -8,6 +8,7 @@ import 'package:devzees_edutechai_client/core/providers/learning_provider.dart';
 import 'package:devzees_edutechai_client/core/providers/gamification_provider.dart';
 import 'package:devzees_edutechai_client/core/providers/auth_provider.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/shimmer_app_shell.dart';
+import 'package:devzees_edutechai_client/presentation/widgets/smooth_collapsible_sidebar.dart';
 
 import 'widgets/sidebar/learning_sidebar.dart';
 import 'widgets/gamification/level_up_celebration.dart';
@@ -188,12 +189,24 @@ class _LearningPageState extends ConsumerState<LearningPage> {
       }
     });
 
+    String location = '';
+    try {
+      location = GoRouterState.of(context).matchedLocation;
+    } catch (_) {}
+    final ShimmerShellVariant refreshVariant =
+        location.startsWith('/learning/dashboard')
+        ? ShimmerShellVariant.dashboard
+        : ShimmerShellVariant.learning;
+
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 350),
       switchInCurve: Curves.easeOut,
       switchOutCurve: Curves.easeIn,
       child: isAuthInitial
-          ? const ShimmerAppShell(key: ValueKey('shimmer_skeleton'))
+          ? ShimmerAppShell(
+              key: ValueKey('shimmer_skeleton_${refreshVariant.name}'),
+              variant: refreshVariant,
+            )
           : KeyedSubtree(
               key: const ValueKey('learning_content'),
               child: _buildScaffold(context),
@@ -271,28 +284,28 @@ class _LearningPageState extends ConsumerState<LearningPage> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Sidebar
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOutCubic,
-              width: isExpanded ? 280 : 80,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: colors.sidebarBackground,
-                  border: Border(
-                    right: BorderSide(color: colors.border, width: 1),
-                  ),
-                ),
-                child: LearningSidebar(
-                  expanded: isExpanded,
-                  isMobile: false,
-                  onToggle: _toggleSidebar,
-                  onClose: _closeDrawer,
-                ),
+            SmoothCollapsibleSidebar(
+              expanded: isExpanded,
+              expandedWidth: 280,
+              collapsedWidth: 80,
+              backgroundColor: colors.sidebarBackground,
+              borderColor: colors.border,
+              expandedBuilder: (_) => LearningSidebar(
+                expanded: true,
+                isMobile: false,
+                onToggle: _toggleSidebar,
+                onClose: _closeDrawer,
+              ),
+              collapsedBuilder: (_) => LearningSidebar(
+                expanded: false,
+                isMobile: false,
+                onToggle: _toggleSidebar,
+                onClose: _closeDrawer,
               ),
             ),
 
             // Main Content
-            Expanded(child: widget.child),
+            Expanded(child: RepaintBoundary(child: widget.child)),
           ],
         ),
       ),

@@ -7,6 +7,7 @@ import 'package:devzees_edutechai_client/core/theme/text_styles.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/glow_background.dart';
 import 'package:devzees_edutechai_client/core/providers/auth_provider.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/shimmer_app_shell.dart';
+import 'package:devzees_edutechai_client/presentation/widgets/smooth_collapsible_sidebar.dart';
 import 'widgets/admin_sidebar.dart';
 import 'widgets/user_directory_tab.dart';
 import 'widgets/role_privilege_tab.dart';
@@ -68,7 +69,10 @@ class _AdminPageState extends ConsumerState<AdminPage> {
 
     final authState = ref.watch(authProvider);
     if (authState.isInitial || (authState.isAuthenticated && authState.user == null)) {
-      return const ShimmerAppShell(key: ValueKey('admin_shimmer_skeleton'));
+      return const ShimmerAppShell(
+        key: ValueKey('admin_shimmer_skeleton'),
+        variant: ShimmerShellVariant.admin,
+      );
     }
 
     final bool isMobile = Responsive.isMobile(context);
@@ -114,34 +118,25 @@ class _AdminPageState extends ConsumerState<AdminPage> {
         child: Row(
           children: [
             // Sidebar
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOutCubic,
-              width: _isSidebarExpanded ? 260 : 80,
-              child: Container(
-                clipBehavior: Clip.hardEdge,
-                decoration: BoxDecoration(
-                  color: colors.sidebarBackground,
-                  border: Border(
-                    right: BorderSide(
-                      color: colors.border,
-                      width: 1,
-                    ),
-                  ),
-                ),
-                child: Column(
-                  children: [
-                    Expanded(
-                      child: AdminSidebar(
-                        selected: _currentSection,
-                        expanded: _isSidebarExpanded,
-                        onSectionChanged: (section) {
-                          setState(() => _currentSection = section);
-                        },
-                      ),
-                    ),
-                  ],
-                ),
+            SmoothCollapsibleSidebar(
+              expanded: _isSidebarExpanded,
+              expandedWidth: 260,
+              collapsedWidth: 80,
+              backgroundColor: colors.sidebarBackground,
+              borderColor: colors.border,
+              expandedBuilder: (_) => AdminSidebar(
+                selected: _currentSection,
+                expanded: true,
+                onSectionChanged: (section) {
+                  setState(() => _currentSection = section);
+                },
+              ),
+              collapsedBuilder: (_) => AdminSidebar(
+                selected: _currentSection,
+                expanded: false,
+                onSectionChanged: (section) {
+                  setState(() => _currentSection = section);
+                },
               ),
             ),
             // Main Content

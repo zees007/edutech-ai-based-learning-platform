@@ -8,6 +8,7 @@ import 'package:devzees_edutechai_client/core/services/export_service.dart';
 import 'package:devzees_edutechai_client/core/services/export_helper.dart';
 import '../export/export_session_modal.dart';
 import 'package:devzees_edutechai_client/core/theme/theme_palette.dart';
+import 'package:devzees_edutechai_client/presentation/widgets/gradient_button.dart';
 
 /// Ultra-premium Glassmorphic Journey Completed Celebration modal.
 /// Features:
@@ -629,56 +630,23 @@ class _JourneyCompleteCelebrationState
 
                               // Start New Journey
                               Expanded(
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    gradient: AppColors.primaryGradient,
-                                    borderRadius: BorderRadius.circular(12),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: AppColors.primary
-                                            .withValues(alpha: 0.35),
-                                        blurRadius: 10,
-                                        offset: const Offset(0, 2),
-                                      ),
-                                    ],
+                                child: GradientButton(
+                                  text: 'Start New Journey',
+                                  icon: Icons.add_circle_outline_rounded,
+                                  iconSize: 15,
+                                  iconFirst: true,
+                                  height: null,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 11,
+                                    horizontal: 12,
                                   ),
-                                  child: Material(
-                                    color: Colors.transparent,
-                                    child: InkWell(
-                                      onTap: () => _dismissWith(widget.onNewTopic),
-                                      mouseCursor: SystemMouseCursors.click,
-                                      borderRadius: BorderRadius.circular(12),
-                                      hoverColor: Colors.white.withValues(alpha: 0.12),
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 11),
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            const Icon(
-                                              Icons.add_circle_outline_rounded,
-                                              size: 15,
-                                              color: Colors.white,
-                                            ),
-                                            const SizedBox(width: 7),
-                                            Flexible(
-                                              child: Text(
-                                                'Start New Journey',
-                                                style: AppTextStyles.label.copyWith(
-                                                  fontSize: 12.5,
-                                                  fontWeight: FontWeight.w700,
-                                                  color: Colors.white,
-                                                ),
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
+                                  borderRadius: BorderRadius.circular(12),
+                                  textStyle: AppTextStyles.label.copyWith(
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.white,
                                   ),
+                                  onPressed: () => _dismissWith(widget.onNewTopic),
                                 ),
                               ),
                             ],

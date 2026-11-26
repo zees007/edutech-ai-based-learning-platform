@@ -11,6 +11,7 @@ from __future__ import annotations
 import asyncio
 import logging
 from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import AsyncGenerator
 
 from sqlalchemy import text
@@ -22,7 +23,6 @@ from sqlalchemy.ext.asyncio import (
 )
 
 from config import Settings, get_settings
-from models.db_models import Base
 
 logger = logging.getLogger(__name__)
 
@@ -99,21 +99,40 @@ async def run_auto_migrations() -> None:
     This applies any pending schema updates (e.g. new columns, new tables).
     """
     try:
-        import asyncio
         from alembic import command
         from alembic.config import Config
 
-        alembic_cfg = Config("alembic.ini")
+        alembic_ini = Path(__file__).resolve().parent.parent / "alembic.ini"
+        alembic_cfg = Config(str(alembic_ini))
         await asyncio.to_thread(command.upgrade, alembic_cfg, "head")
         logger.info("Automatic database migrations (Alembic) executed successfully.")
     except Exception as e:
         logger.warning(f"Auto-migration check notice: {e}")
 
 
+async def _verify_schema_exists(engine: AsyncEngine, settings: Settings) -> None:
+    """Verify database connectivity and ensure the target PostgreSQL schema exists."""
+    async with engine.connect() as conn:
+        if "postgresql" in settings.database_url and settings.database_schema:
+            result = await conn.execute(
+                text(
+                    "SELECT 1 FROM information_schema.schemata WHERE schema_name = :schema"
+                ),
+                {"schema": settings.database_schema},
+            )
+            if result.scalar_one_or_none() is None:
+                raise RuntimeError(
+                    f"Database schema '{settings.database_schema}' does not exist "
+                    "and AUTO_CREATE_TABLES=false."
+                )
+        else:
+            await conn.execute(text("SELECT 1"))
+
+
 async def init_db(settings: Settings | None = None) -> None:
     """
-    Initialize the database — create schema, tables, and run pending migrations.
-    Called once during application startup.
+    Initialize the database — create schema/tables when enabled, verify connectivity,
+    and warm the dynamic settings cache. Called once during application startup.
 
     A module-level flag (_db_initialized) ensures this is a true no-op on any
     subsequent call within the same process lifetime, making screen switches fast.
@@ -124,19 +143,22 @@ async def init_db(settings: Settings | None = None) -> None:
         return
 
     settings = settings or get_settings()
-    if not settings.auto_create_tables:
-        logger.info("Automatic DDL table creation is disabled (AUTO_CREATE_TABLES=false).")
-        _db_initialized = True
-        return
-
     engine = _get_engine(settings)
-    async with engine.begin() as conn:
-        if "postgresql" in settings.database_url and settings.database_schema:
-            schema = settings.database_schema
-            await conn.execute(text(f'CREATE SCHEMA IF NOT EXISTS "{schema}";'))
 
-    # Automatically run pending Alembic migrations on server startup
-    await run_auto_migrations()
+    if settings.auto_create_tables:
+        async with engine.begin() as conn:
+            if "postgresql" in settings.database_url and settings.database_schema:
+                schema = settings.database_schema
+                await conn.execute(text(f'CREATE SCHEMA IF NOT EXISTS "{schema}";'))
+
+        # Automatically run pending Alembic migrations on server startup
+        await run_auto_migrations()
+    else:
+        logger.info(
+            "Automatic DDL table creation is disabled (AUTO_CREATE_TABLES=false). "
+            "Skipping schema creation and migrations."
+        )
+        await _verify_schema_exists(engine, settings)
 
     # Pre-warm dynamic system settings in-memory cache
     try:

@@ -132,7 +132,7 @@ void main() {
 
       // Verify Security fields are visible
       expect(find.text('CURRENT PASSWORD *'), findsOneWidget);
-      expect(find.text('NEW PASSWORD * (min 8 characters)'), findsOneWidget);
+      expect(find.text('NEW PASSWORD *'), findsOneWidget);
       expect(find.text('CONFIRM NEW PASSWORD *'), findsOneWidget);
       expect(find.text('Update Password'), findsOneWidget);
       expect(find.text('Active Sessions'), findsOneWidget);

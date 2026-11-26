@@ -5,10 +5,10 @@ import '../../../../core/providers/dashboard_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../core/theme/theme_palette.dart';
-import '../../../widgets/shimmer_loading.dart';
 import 'daily_activity_heatmap_card.dart';
 import 'dashboard_header.dart';
 import 'dashboard_kpi_cards.dart';
+import 'dashboard_loading_skeleton.dart';
 import 'learning_mode_distribution_card.dart';
 import 'milestone_achievements_card.dart';
 import 'quiz_trend_card.dart';
@@ -91,7 +91,7 @@ class _LearningDashboardViewState extends ConsumerState<LearningDashboardView> {
                           children: [
                             // Loading State
                             if (state.isLoading && state.data == null)
-                              _buildLoadingSkeleton(context, isMobile)
+                              const DashboardLoadingSkeleton()
                             // Error State
                             else if (state.error != null && state.data == null)
                               _buildErrorView(context, state.error!)
@@ -398,64 +398,6 @@ class _LearningDashboardViewState extends ConsumerState<LearningDashboardView> {
           ],
         );
     }
-  }
-
-  Widget _buildLoadingSkeleton(BuildContext context, bool isMobile) {
-    return ShimmerLoading(
-      child: Column(
-        children: [
-          if (isMobile) ...[
-            const ShimmerBox(
-              width: double.infinity,
-              height: 110,
-              borderRadius: BorderRadius.all(Radius.circular(18)),
-            ),
-            const SizedBox(height: 16),
-            const ShimmerBox(
-              width: double.infinity,
-              height: 110,
-              borderRadius: BorderRadius.all(Radius.circular(18)),
-            ),
-          ] else
-            Row(
-              children: const [
-                Expanded(
-                  child: ShimmerBox(
-                    height: 120,
-                    borderRadius: BorderRadius.all(Radius.circular(18)),
-                  ),
-                ),
-                SizedBox(width: 16),
-                Expanded(
-                  child: ShimmerBox(
-                    height: 120,
-                    borderRadius: BorderRadius.all(Radius.circular(18)),
-                  ),
-                ),
-                SizedBox(width: 16),
-                Expanded(
-                  child: ShimmerBox(
-                    height: 120,
-                    borderRadius: BorderRadius.all(Radius.circular(18)),
-                  ),
-                ),
-              ],
-            ),
-          const SizedBox(height: 24),
-          const ShimmerBox(
-            width: double.infinity,
-            height: 260,
-            borderRadius: BorderRadius.all(Radius.circular(20)),
-          ),
-          const SizedBox(height: 24),
-          const ShimmerBox(
-            width: double.infinity,
-            height: 200,
-            borderRadius: BorderRadius.all(Radius.circular(20)),
-          ),
-        ],
-      ),
-    );
   }
 
   Widget _buildErrorView(BuildContext context, String error) {

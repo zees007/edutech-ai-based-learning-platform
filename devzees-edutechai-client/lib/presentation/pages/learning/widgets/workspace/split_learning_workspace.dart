@@ -12,6 +12,7 @@ import 'learning_resources_panel.dart';
 import 'socratic_tutor_chat.dart';
 import 'keep_alive_wrapper.dart';
 import '../../../../widgets/animated_tutor_icon.dart';
+import '../../../../widgets/gradient_button.dart';
 import '../../../../widgets/step_pill.dart';
 import '../../../../../core/constants/responsive.dart';
 
@@ -910,42 +911,48 @@ class _StepNavButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Tooltip(
       message: tooltip,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(6),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
-          decoration: BoxDecoration(
-            gradient: useGradient ? AppColors.royalBlueIndigoGradient : null,
-            color: useGradient
-                ? null
-                : (context.isDarkMode ? const Color(0x08FFFFFF) : const Color(0x08000000)).withValues(alpha: 0.07),
-            borderRadius: BorderRadius.circular(6),
-            border: Border.all(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(6),
+          child: Ink(
+            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+            decoration: BoxDecoration(
+              gradient: useGradient ? AppColors.royalBlueIndigoGradient : null,
               color: useGradient
-                  ? AppColors.purpleLight.withValues(alpha: 0.4)
-                  : context.appColors.border,
-            ),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (!iconAfterLabel) ...[
-                Icon(icon, size: 10, color: Colors.white),
-                const SizedBox(width: 3),
-              ],
-              Text(
-                label,
-                style: AppTextStyles.badge.copyWith(
-                  fontSize: 10,
-                  color: Colors.white,
-                ),
+                  ? null
+                  : (context.isDarkMode
+                            ? const Color(0x08FFFFFF)
+                            : const Color(0x08000000))
+                        .withValues(alpha: 0.07),
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(
+                color: useGradient
+                    ? AppColors.purpleLight.withValues(alpha: 0.4)
+                    : context.appColors.border,
               ),
-              if (iconAfterLabel) ...[
-                const SizedBox(width: 3),
-                Icon(icon, size: 10, color: Colors.white),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (!iconAfterLabel) ...[
+                  Icon(icon, size: 10, color: Colors.white),
+                  const SizedBox(width: 3),
+                ],
+                Text(
+                  label,
+                  style: AppTextStyles.badge.copyWith(
+                    fontSize: 10,
+                    color: Colors.white,
+                  ),
+                ),
+                if (iconAfterLabel) ...[
+                  const SizedBox(width: 3),
+                  Icon(icon, size: 10, color: Colors.white),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),
@@ -1469,43 +1476,20 @@ class _MobileTabbedWorkspaceState extends ConsumerState<_MobileTabbedWorkspace>
             const SizedBox(width: 8),
             Tooltip(
               message: 'Regenerate Step ${widget.stepIndex + 1}',
-              child: GestureDetector(
-                onTap: _isRegenerating ? null : _handleRegenerate,
-                child: Container(
-                  padding: const EdgeInsets.all(5),
-                  decoration: BoxDecoration(
-                    gradient: AppColors.royalBlueIndigoGradient,
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(
-                      color: AppColors.purpleLight.withValues(alpha: 0.5),
-                    ),
-                    boxShadow: Responsive.isMobile(context)
-                        ? null
-                        : [
-                            BoxShadow(
-                              color: AppColors.accentBlue.withValues(
-                                alpha: 0.35,
-                              ),
-                              blurRadius: 8,
-                              offset: const Offset(0, 1),
-                            ),
-                          ],
-                  ),
-                  child: _isRegenerating
-                      ? const SizedBox(
-                          width: 12,
-                          height: 12,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 1.5,
-                            color: Colors.white,
-                          ),
-                        )
-                      : const Icon(
-                          Icons.refresh_rounded,
-                          size: 13,
-                          color: Colors.white,
-                        ),
+              child: GradientButton.icon(
+                icon: Icons.refresh_rounded,
+                iconSize: 13,
+                width: null,
+                height: null,
+                padding: const EdgeInsets.all(5),
+                isLoading: _isRegenerating,
+                loadingIndicatorSize: 12,
+                gradient: AppColors.royalBlueIndigoGradient,
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(
+                  color: AppColors.purpleLight.withValues(alpha: 0.5),
                 ),
+                onPressed: _isRegenerating ? null : _handleRegenerate,
               ),
             ),
           ] else if (canGoForward) ...[
@@ -1658,68 +1642,39 @@ class _MobileTabbedWorkspaceState extends ConsumerState<_MobileTabbedWorkspace>
               ),
             )
           else
-            MouseRegion(
-              cursor: SystemMouseCursors.click,
-              hitTestBehavior: HitTestBehavior.opaque,
-              child: GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: () => _handleNextStep(context, isQuizDone),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 13,
-                    vertical: 7,
-                  ),
-                  decoration: BoxDecoration(
-                    gradient: isLastStep
-                        ? LinearGradient(
-                            colors: [
-                              Colors.amber.shade600,
-                              Colors.orange.shade800,
-                            ],
-                          )
-                        : LinearGradient(
-                            colors: [
-                              AppColors.accentGreen,
-                              AppColors.greenDeep,
-                            ],
-                          ),
-                    borderRadius: BorderRadius.circular(8),
-                    boxShadow: Responsive.isMobile(context)
-                        ? null
-                        : [
-                            BoxShadow(
-                              color:
-                                  (isLastStep
-                                          ? Colors.amber
-                                          : AppColors.accentGreen)
-                                      .withValues(alpha: 0.35),
-                              blurRadius: 8,
-                            ),
-                          ],
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        isLastStep ? 'Complete Journey' : 'Next Step',
-                        style: AppTextStyles.badge.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 11,
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      Icon(
-                        isLastStep
-                            ? Icons.emoji_events_rounded
-                            : Icons.arrow_forward_rounded,
-                        size: 12,
-                        color: Colors.white,
-                      ),
-                    ],
-                  ),
-                ),
+            GradientButton(
+              text: isLastStep ? 'Complete Journey' : 'Next Step',
+              icon: isLastStep
+                  ? Icons.emoji_events_rounded
+                  : Icons.arrow_forward_rounded,
+              iconSize: 12,
+              height: null,
+              padding: const EdgeInsets.symmetric(
+                horizontal: 13,
+                vertical: 7,
               ),
+              borderRadius: BorderRadius.circular(8),
+              showShadow: !Responsive.isMobile(context),
+              enableHoverEffects: false,
+              gradient: isLastStep
+                  ? LinearGradient(
+                      colors: [
+                        Colors.amber.shade600,
+                        Colors.orange.shade800,
+                      ],
+                    )
+                  : LinearGradient(
+                      colors: [
+                        AppColors.accentGreen,
+                        AppColors.greenDeep,
+                      ],
+                    ),
+              textStyle: AppTextStyles.badge.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+                fontSize: 11,
+              ),
+              onPressed: () => _handleNextStep(context, isQuizDone),
             ),
         ],
       ),
@@ -1819,63 +1774,34 @@ class _MobileTabbedWorkspaceState extends ConsumerState<_MobileTabbedWorkspace>
               ),
             )
           else
-            MouseRegion(
-              cursor: SystemMouseCursors.click,
-              hitTestBehavior: HitTestBehavior.opaque,
-              child: GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: () => _handleNextStep(context, true),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 13,
-                    vertical: 7,
-                  ),
-                  decoration: BoxDecoration(
-                    gradient: isLastStep
-                        ? LinearGradient(
-                            colors: [
-                              Colors.amber.shade600,
-                              Colors.orange.shade800,
-                            ],
-                          )
-                        : AppColors.primaryGradient,
-                    borderRadius: BorderRadius.circular(8),
-                    boxShadow: Responsive.isMobile(context)
-                        ? null
-                        : [
-                            BoxShadow(
-                              color:
-                                  (isLastStep
-                                          ? Colors.amber
-                                          : AppColors.primary)
-                                      .withValues(alpha: 0.3),
-                              blurRadius: 8,
-                            ),
-                          ],
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        isLastStep ? 'Complete Journey' : 'Next Step',
-                        style: AppTextStyles.badge.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 11,
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      Icon(
-                        isLastStep
-                            ? Icons.emoji_events_rounded
-                            : Icons.arrow_forward_rounded,
-                        size: 12,
-                        color: Colors.white,
-                      ),
-                    ],
-                  ),
-                ),
+            GradientButton(
+              text: isLastStep ? 'Complete Journey' : 'Next Step',
+              icon: isLastStep
+                  ? Icons.emoji_events_rounded
+                  : Icons.arrow_forward_rounded,
+              iconSize: 12,
+              height: null,
+              padding: const EdgeInsets.symmetric(
+                horizontal: 13,
+                vertical: 7,
               ),
+              borderRadius: BorderRadius.circular(8),
+              showShadow: !Responsive.isMobile(context),
+              enableHoverEffects: false,
+              gradient: isLastStep
+                  ? LinearGradient(
+                      colors: [
+                        Colors.amber.shade600,
+                        Colors.orange.shade800,
+                      ],
+                    )
+                  : AppColors.primaryGradient,
+              textStyle: AppTextStyles.badge.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+                fontSize: 11,
+              ),
+              onPressed: () => _handleNextStep(context, true),
             ),
         ],
       ),
@@ -2176,7 +2102,11 @@ class _MobileTabbedWorkspaceState extends ConsumerState<_MobileTabbedWorkspace>
   Widget _buildPapersTab(dynamic step) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
-      child: LearningResourcesPanel.buildPapersContent(step.papers),
+      child: LearningResourcesPanel.buildPapersContent(
+        step.papers,
+        studentLevel: widget.session.studentLevel?.toString(),
+        learningMode: widget.session.learningMode?.toString(),
+      ),
     );
   }
 

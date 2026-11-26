@@ -15,6 +15,7 @@ import '../../../../../../core/providers/permission_provider.dart';
 import 'mermaid_web_view.dart';
 import '../../../../../../core/constants/responsive.dart';
 import '../../../../widgets/animated_tutor_icon.dart';
+import '../../../../widgets/gradient_button.dart';
 
 // ═══════════════════════════════════════════════════════════════════
 // Socratic Tutor Chat — Premium Chat Bubble UI
@@ -1204,78 +1205,33 @@ class _SocraticTutorChatState extends ConsumerState<SocraticTutorChat>
   }
 }
 
-class _SendActionButton extends StatefulWidget {
+class _SendActionButton extends StatelessWidget {
   final bool isTyping;
   final VoidCallback onTap;
 
   const _SendActionButton({required this.isTyping, required this.onTap});
 
   @override
-  State<_SendActionButton> createState() => _SendActionButtonState();
-}
-
-class _SendActionButtonState extends State<_SendActionButton> {
-  bool _isHovered = false;
-
-  @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      cursor: widget.isTyping
-          ? SystemMouseCursors.basic
-          : SystemMouseCursors.click,
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      child: GestureDetector(
-        onTap: widget.isTyping ? null : widget.onTap,
-        child: Container(
-          width: 38,
-          height: 38,
-          decoration: BoxDecoration(
-            gradient: widget.isTyping
-                ? LinearGradient(
-                    colors: context.isDarkMode
-                        ? [
-                            Colors.white.withValues(alpha: 0.08),
-                            Colors.white.withValues(alpha: 0.04),
-                          ]
-                        : [const Color(0xFFE2E8F0), const Color(0xFFCBD5E1)],
-                  )
-                : AppColors.primaryGradient,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: widget.isTyping
-                ? []
-                : [
-                    BoxShadow(
-                      color: AppColors.primary.withValues(
-                        alpha: _isHovered ? 0.6 : 0.35,
-                      ),
-                      blurRadius: _isHovered ? 14 : 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-          ),
-          child: Center(
-            child: widget.isTyping
-                ? SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        context.isDarkMode
-                            ? Colors.white.withValues(alpha: 0.6)
-                            : const Color(0xFF64748B),
-                      ),
-                    ),
-                  )
-                : const Icon(
-                    Icons.arrow_upward_rounded,
-                    color: Colors.white,
-                    size: 19,
-                  ),
-          ),
-        ),
-      ),
+    return GradientButton.icon(
+      icon: Icons.arrow_upward_rounded,
+      iconSize: 19,
+      width: 38,
+      height: 38,
+      isLoading: isTyping,
+      loadingIndicatorSize: 16,
+      borderRadius: BorderRadius.circular(12),
+      gradient: isTyping
+          ? LinearGradient(
+              colors: context.isDarkMode
+                  ? [
+                      Colors.white.withValues(alpha: 0.08),
+                      Colors.white.withValues(alpha: 0.04),
+                    ]
+                  : const [Color(0xFF94A3B8), Color(0xFF64748B)],
+            )
+          : AppColors.primaryGradient,
+      onPressed: isTyping ? null : onTap,
     );
   }
 }

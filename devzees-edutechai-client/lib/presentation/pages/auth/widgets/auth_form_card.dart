@@ -308,17 +308,6 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Step Indicator Badge
-          Center(
-            child: _buildStepBadge(
-              widget.isLogin
-                  ? '🚀  Step 04A • Login'
-                  : '✨  Step 04B • Register',
-              isDark,
-            ),
-          ),
-          const SizedBox(height: 16),
-
           // Header & Title
           _buildHeader(widget.isMobile, isDark),
           const SizedBox(height: 20),
@@ -351,7 +340,13 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
             ? (widget.isMobile ? context.appColors.scaffoldBackground : null)
             : Colors.white,
         gradient: isDark
-            ? (widget.isMobile ? null : (context.isDarkMode ? const LinearGradient(colors: [Color(0xF511121D), Color(0xEE0E0F18)], begin: Alignment.topLeft, end: Alignment.bottomRight) : const LinearGradient(colors: [Color(0xFAFFFFFF), Color(0xF5F9F9FB)], begin: Alignment.topLeft, end: Alignment.bottomRight)))
+            ? (widget.isMobile
+                  ? null
+                  : const LinearGradient(
+                      colors: [Color(0xF511121D), Color(0xEE0E0F18)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ))
             : null,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
@@ -402,54 +397,6 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
         vertical: widget.isMobile ? 24 : 32,
       ),
       child: child,
-    );
-  }
-
-  Widget _buildStepBadge(String text, bool isDark) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
-      decoration: BoxDecoration(
-        color: isDark
-            ? AppColors.primary.withValues(alpha: 0.15)
-            : const Color(0xFFEFF6FF),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: isDark
-              ? AppColors.primary.withValues(alpha: 0.4)
-              : const Color(0xFFBFDBFE),
-        ),
-        boxShadow: isDark
-            ? (widget.isMobile
-                  ? const [
-                      BoxShadow(
-                        color: Color(0x1A000000),
-                        blurRadius: 6,
-                        offset: Offset(0, 1),
-                      ),
-                    ]
-                  : [
-                      BoxShadow(
-                        color: AppColors.primary.withValues(alpha: 0.25),
-                        blurRadius: 16,
-                      ),
-                    ])
-            : const [
-                BoxShadow(
-                  color: Color(0x060F172A),
-                  blurRadius: 6,
-                  offset: Offset(0, 1),
-                ),
-              ],
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-          color: isDark ? AppColors.blueSoft : const Color(0xFF1D4ED8),
-          fontSize: 11,
-          fontWeight: FontWeight.w700,
-          letterSpacing: 0.8,
-        ),
-      ),
     );
   }
 
@@ -615,7 +562,7 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
         children: [
           _buildInputField(
             label: "EMAIL ADDRESS",
-            hint: "student@example.com",
+            hint: "you@example.com",
             controller: _emailCtrl,
             prefixIcon: Icons.alternate_email_rounded,
             keyboardType: TextInputType.emailAddress,
@@ -767,7 +714,7 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
           ),
           const SizedBox(height: 14),
           _buildInputField(
-            label: "PASSWORD * (MIN 8 CHARACTERS)",
+            label: "PASSWORD *",
             hint: "••••••••••••",
             controller: _passwordCtrl,
             isObscure: _obscurePassword,

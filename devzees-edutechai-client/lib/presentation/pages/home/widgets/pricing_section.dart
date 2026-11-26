@@ -146,13 +146,13 @@ class _PricingSectionState extends ConsumerState<PricingSection>
             _isAnnual ? '/mo (\$$proAnnual billed annually)' : '/month',
         originalPrice: _isAnnual ? '\$$proMonthly/mo' : null,
         description:
-            'Full agent squad, visual DAGs, research preprints & Markdown export.',
+            'Full agent squad, visual DAGs, academic paper & PDF access, & Markdown export.',
         features: const [
           'Unlimited AI Sessions',
           '5 Follow-Up Questions / step',
           '3 YouTube Clips / step (Vector)',
           'Visual & Deep-Dive Modes',
-          'Academic Preprints & AI TL;DR',
+          'Read Academic Papers & Direct PDFs',
           'Step Content Regeneration',
           'Markdown (.md) Export (Mermaid)',
           '1.5x Daily Streak XP Multiplier',
@@ -169,12 +169,12 @@ class _PricingSectionState extends ConsumerState<PricingSection>
             _isAnnual ? '/mo (\$$ultraAnnual billed annually)' : '/month',
         originalPrice: _isAnnual ? '\$$ultraMonthly/mo' : null,
         description:
-            'Unrestricted multi-agent power, full-text research, styled PDF & 2x Streak XP.',
+            'Unrestricted multi-agent power, live academic search, styled PDF & 2x Streak XP.',
         features: const [
           'Everything in Pro +',
           'Unlimited Follow-Up Chat Turns',
           '5 YouTube Video Clips / step',
-          'Full-Text Academic Research (PDF)',
+          'Live Academic Paper Search',
           'Executive Styled PDF (.pdf) Export',
           'Priority Model Routing & Low Latency',
           '2x Daily Streak XP Multiplier',

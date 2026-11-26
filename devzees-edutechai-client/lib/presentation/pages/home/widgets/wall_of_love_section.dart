@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:devzees_edutechai_client/core/providers/feedback_provider.dart';
 import 'package:devzees_edutechai_client/core/theme/text_styles.dart';
+import 'package:devzees_edutechai_client/core/theme/theme_palette.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/gradient_text.dart';
 import 'package:devzees_edutechai_client/core/constants/responsive.dart';
 import 'package:devzees_edutechai_client/data/models/feedback/feedback_model.dart';
@@ -574,7 +575,9 @@ class _TestimonialCardState extends State<_TestimonialCard> {
         : 'Global Learner';
 
     // Cycle cleanly through palette so every card has its own distinct accent color
-    final Color cardAccentColor = (widget.data.avatarColor != const Color(0xFF10B981) || widget.index % _kCardPalette.length == 1)
+    final Color cardAccentColor =
+        (widget.data.avatarColor != const Color(0xFF10B981) ||
+            widget.index % _kCardPalette.length == 1)
         ? widget.data.avatarColor
         : _kCardPalette[widget.index % _kCardPalette.length];
 
@@ -855,14 +858,19 @@ class _TestimonialShimmerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = context.isDarkMode;
+    final colors = context.appColors;
     return Container(
       width: 370,
       height: 290,
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
-        color: const Color(0xCC0B0D1B),
+        color: isDark ? const Color(0xCC0B0D1B) : colors.surface,
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+        border: Border.all(
+          color: isDark ? Colors.white.withValues(alpha: 0.08) : colors.border,
+        ),
+        boxShadow: isDark ? null : colors.cardShadow,
       ),
       child: const ShimmerLoading(
         child: Column(

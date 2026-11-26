@@ -7,6 +7,7 @@ import '../../../../core/theme/theme_palette.dart';
 import '../../../../core/utils/trophy_utils.dart';
 import '../../../../data/models/dashboard/dashboard_response.dart';
 import '../../../widgets/glass_card.dart';
+import '../../../widgets/shimmer_loading.dart';
 import '../../../widgets/theme_toggle_button.dart';
 
 /// Ultra-premium, gamified Learner Standing HUD.
@@ -64,12 +65,16 @@ class LearnerStandingHud extends ConsumerWidget {
         achievements: standing.achievements,
         isDark: isDark,
       ),
-      loading: () => _buildFallback(context, isDark),
+      loading: () => _buildFallback(context, isDark, isLoading: true),
       error: (_, _) => _buildFallback(context, isDark),
     );
   }
 
-  Widget _buildFallback(BuildContext context, bool isDark) {
+  Widget _buildFallback(
+    BuildContext context,
+    bool isDark, {
+    bool isLoading = false,
+  }) {
     if (fallbackSummary != null) {
       final achievements = fallbackAchievements ?? const [];
       final unlockedList = achievements.where((a) => a.unlocked).toList();
@@ -125,7 +130,72 @@ class LearnerStandingHud extends ConsumerWidget {
         isDark: isDark,
       );
     }
+    if (isLoading && isTopBar) {
+      return _buildTopBarLoadingSkeleton(context, isDark);
+    }
     return const SizedBox.shrink();
+  }
+
+  Widget _buildTopBarLoadingSkeleton(BuildContext context, bool isDark) {
+    final effectiveTrailing = trailing ?? const ThemeToggleButton(size: 28);
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: context.appColors.topBarBackground,
+        border: showBottomBorder
+            ? Border(
+                bottom: BorderSide(
+                  color: isDark
+                      ? const Color(0xFF6B47EB).withValues(alpha: 0.28)
+                      : context.appColors.border.withValues(alpha: 0.65),
+                  width: 1.0,
+                ),
+              )
+            : null,
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: ShimmerLoading(
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                physics: const NeverScrollableScrollPhysics(),
+                child: Row(
+                  children: [
+                    ShimmerBox(
+                      width: 120,
+                      height: 30,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    const SizedBox(width: 10),
+                    ShimmerBox(
+                      width: 170,
+                      height: 30,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    const SizedBox(width: 10),
+                    ShimmerBox(
+                      width: 90,
+                      height: 30,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    const SizedBox(width: 10),
+                    ShimmerBox(
+                      width: 90,
+                      height: 30,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          effectiveTrailing,
+        ],
+      ),
+    );
   }
 
   Widget _buildHudContent(

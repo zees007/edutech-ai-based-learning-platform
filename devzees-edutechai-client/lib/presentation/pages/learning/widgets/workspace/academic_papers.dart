@@ -12,11 +12,15 @@ import 'package:devzees_edutechai_client/core/theme/theme_palette.dart';
 class AcademicPapers extends ConsumerStatefulWidget {
   final List<dynamic>? papers;
   final String? initialTopic;
+  final String? studentLevel;
+  final String? learningMode;
 
   const AcademicPapers({
     super.key,
     this.papers,
     this.initialTopic,
+    this.studentLevel,
+    this.learningMode,
   });
 
   @override
@@ -70,13 +74,16 @@ class _AcademicPapersState extends ConsumerState<AcademicPapers> {
     });
 
     try {
-      final results = await ref.read(academicServiceProvider).searchAll(cleanQuery, maxResults: 5);
+      final results = await ref
+          .read(academicServiceProvider)
+          .searchAll(cleanQuery, maxResults: 5);
       if (mounted) {
         setState(() {
           _displayedPapers = results;
           _isLoading = false;
           if (results.isEmpty) {
-            _errorMessage = 'No open-access research papers found for "$cleanQuery".';
+            _errorMessage =
+                'No open-access research papers found for "$cleanQuery".';
           }
         });
       }
@@ -84,14 +91,52 @@ class _AcademicPapersState extends ConsumerState<AcademicPapers> {
       if (mounted) {
         setState(() {
           _isLoading = false;
-          _errorMessage = 'Could not retrieve research papers. Please check your connection.';
+          _errorMessage =
+              'Could not retrieve research papers. Please check your connection.';
         });
       }
     }
   }
 
+  ({IconData icon, String title, String subtitle}) _emptyStateCopy(
+    bool canSearch,
+  ) {
+    final level = (widget.studentLevel ?? '').toLowerCase();
+    final mode = (widget.learningMode ?? '').toLowerCase();
+
+    if (level == 'middle_school' || level == 'high_school') {
+      return (
+        icon: Icons.school_outlined,
+        title: 'Academic papers not curated for this level',
+        subtitle: canSearch
+            ? 'Automatic paper curation is skipped for Middle & High School levels to keep lessons approachable. Use the search bar above anytime to look up papers manually.'
+            : 'Automatic paper curation is tailored for Undergraduate, Graduate, and General levels to keep Middle & High School lessons focused and approachable.',
+      );
+    }
+
+    if (mode == 'bite_sized') {
+      return (
+        icon: Icons.bolt_rounded,
+        title: 'Academic papers skipped in Bite-Sized mode',
+        subtitle: canSearch
+            ? 'Bite-Sized mode focuses on rapid summaries. Switch to Visual or Deep Dive mode for automatic curation, or use the search bar above anytime.'
+            : 'Bite-Sized mode focuses on quick, scannable summaries. Switch to Visual or Deep Dive mode to include curated research papers.',
+      );
+    }
+
+    return (
+      icon: Icons.menu_book_rounded,
+      title: 'No academic papers found for this step',
+      subtitle: canSearch
+          ? 'No open-access papers matched this topic automatically. Type a keyword above to search OpenAlex, Semantic Scholar & arXiv.'
+          : 'No open-access papers matched this topic automatically.',
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final perms = ref.watch(permissionProvider);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -114,101 +159,117 @@ class _AcademicPapersState extends ConsumerState<AcademicPapers> {
             Expanded(
               child: Text(
                 'Academic Research & Landmark Preprints',
-                style: AppTextStyles.subtitle2.copyWith(
-                  letterSpacing: 0.2,
-                ),
+                style: AppTextStyles.subtitle2.copyWith(letterSpacing: 0.2),
               ),
             ),
           ],
         ),
         const SizedBox(height: 14),
 
-        // Live Search Bar
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-          decoration: BoxDecoration(
-            color: context.appColors.chipBackground,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: context.appColors.border,
+        // Live Search Bar (Ultra & Admin only via ET_ACCESS_ACADEMIC_SEARCH)
+        if (perms.canAccessAcademicSearch) ...[
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+            decoration: BoxDecoration(
+              color: context.appColors.chipBackground,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: context.appColors.border),
+              boxShadow: context.isDarkMode
+                  ? null
+                  : [
+                      const BoxShadow(
+                        color: Color(0x0A000000),
+                        blurRadius: 8,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
             ),
-            boxShadow: context.isDarkMode ? null : [
-              const BoxShadow(
-                color: Color(0x0A000000),
-                blurRadius: 8,
-                offset: Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              Icon(Icons.search_rounded, size: 18, color: (context.isDarkMode ? AppColors.blueSoft : const Color(0xFF1D4ED8))),
-              const SizedBox(width: 10),
-              Expanded(
-                child: TextField(
-                  controller: _searchController,
-                  style: AppTextStyles.bodyPrimary,
-                  decoration: InputDecoration(
-                    hintText: ' Search scholarly papers, arXiv, Semantic Scholar...',
-                    hintStyle: AppTextStyles.bodyPrimary.copyWith(
+            child: Row(
+              children: [
+                Icon(
+                  Icons.search_rounded,
+                  size: 18,
+                  color: (context.isDarkMode
+                      ? AppColors.blueSoft
+                      : const Color(0xFF1D4ED8)),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: TextField(
+                    controller: _searchController,
+                    style: AppTextStyles.bodyPrimary,
+                    decoration: InputDecoration(
+                      hintText:
+                          ' Search scholarly papers, arXiv, Semantic Scholar...',
+                      hintStyle: AppTextStyles.bodyPrimary.copyWith(
+                        color: context.appColors.textSecondary,
+                      ),
+                      border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      disabledBorder: InputBorder.none,
+                      filled: false,
+                      fillColor: Colors.transparent,
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                    ),
+                    onSubmitted: (val) => _searchLive(val),
+                  ),
+                ),
+                if (_searchController.text.isNotEmpty) ...[
+                  IconButton(
+                    icon: Icon(
+                      Icons.clear,
+                      size: 16,
                       color: context.appColors.textSecondary,
                     ),
-                    border: InputBorder.none,
-                    enabledBorder: InputBorder.none,
-                    focusedBorder: InputBorder.none,
-                    disabledBorder: InputBorder.none,
-                    filled: false,
-                    fillColor: Colors.transparent,
-                    isDense: true,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                    onPressed: () {
+                      _searchController.clear();
+                      setState(() {
+                        _displayedPapers = widget.papers ?? [];
+                        _errorMessage = null;
+                      });
+                    },
+                    tooltip: 'Clear',
                   ),
-                  onSubmitted: (val) => _searchLive(val),
-                ),
-              ),
-              if (_searchController.text.isNotEmpty) ...[
-                IconButton(
-                  icon: Icon(Icons.clear, size: 16, color: context.appColors.textSecondary),
-                  onPressed: () {
-                    _searchController.clear();
-                    setState(() {
-                      _displayedPapers = widget.papers ?? [];
-                      _errorMessage = null;
-                    });
-                  },
-                  tooltip: 'Clear',
-                ),
-                const SizedBox(width: 4),
-              ],
-              const SizedBox(width: 10),
-              InkWell(
-                onTap: () => _searchLive(_searchController.text),
-                borderRadius: BorderRadius.circular(8),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: context.isDarkMode
-                        ? AppColors.accentBlue.withValues(alpha: 0.3)
-                        : AppColors.primary.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
+                  const SizedBox(width: 4),
+                ],
+                const SizedBox(width: 10),
+                InkWell(
+                  onTap: () => _searchLive(_searchController.text),
+                  borderRadius: BorderRadius.circular(8),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
                       color: context.isDarkMode
-                          ? AppColors.blueLight.withValues(alpha: 0.4)
-                          : AppColors.primary.withValues(alpha: 0.35),
+                          ? AppColors.accentBlue.withValues(alpha: 0.3)
+                          : AppColors.primary.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: context.isDarkMode
+                            ? AppColors.blueLight.withValues(alpha: 0.4)
+                            : AppColors.primary.withValues(alpha: 0.35),
+                      ),
                     ),
-                  ),
-                  child: Text(
-                    'Search',
-                    style: AppTextStyles.label.copyWith(
-                      color: (context.isDarkMode ? AppColors.blueSoft : const Color(0xFF1D4ED8)),
-                      fontWeight: FontWeight.w700,
+                    child: Text(
+                      'Search',
+                      style: AppTextStyles.label.copyWith(
+                        color: (context.isDarkMode
+                            ? AppColors.blueSoft
+                            : const Color(0xFF1D4ED8)),
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-        const SizedBox(height: 16),
+          const SizedBox(height: 16),
+        ],
 
         // Body Content
         if (_isLoading)
@@ -223,8 +284,10 @@ class _AcademicPapersState extends ConsumerState<AcademicPapers> {
                   ),
                   const SizedBox(height: 14),
                   Text(
-                    'Searching Semantic Scholar & OpenAlex...',
-                    style: AppTextStyles.caption.copyWith(color: context.appColors.textSecondary),
+                    'Searching OpenAlex, Semantic Scholar & arXiv...',
+                    style: AppTextStyles.caption.copyWith(
+                      color: context.appColors.textSecondary,
+                    ),
                   ),
                 ],
               ),
@@ -234,61 +297,80 @@ class _AcademicPapersState extends ConsumerState<AcademicPapers> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: (context.isDarkMode ? const Color(0x08FFFFFF) : const Color(0x08000000)).withValues(alpha: 0.03),
+              color:
+                  (context.isDarkMode
+                          ? const Color(0x08FFFFFF)
+                          : const Color(0x08000000))
+                      .withValues(alpha: 0.03),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: context.appColors.border),
             ),
             child: Center(
               child: Text(
                 _errorMessage!,
-                style: AppTextStyles.caption.copyWith(color: context.appColors.textSecondary),
+                style: AppTextStyles.caption.copyWith(
+                  color: context.appColors.textSecondary,
+                ),
               ),
             ),
           )
         else if (_displayedPapers.isEmpty)
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 20),
-            decoration: BoxDecoration(
-              color: (context.isDarkMode ? const Color(0x08FFFFFF) : const Color(0x08000000)).withValues(alpha: 0.03),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: context.appColors.border),
-            ),
-            child: Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: AppColors.blueLight.withValues(alpha: 0.08),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.menu_book_rounded,
-                      size: 28,
-                      color: AppColors.blueLight.withValues(alpha: 0.7),
-                    ),
+          Builder(
+            builder: (context) {
+              final emptyCopy = _emptyStateCopy(perms.canAccessAcademicSearch);
+              return Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  vertical: 32,
+                  horizontal: 20,
+                ),
+                decoration: BoxDecoration(
+                  color:
+                      (context.isDarkMode
+                              ? const Color(0x08FFFFFF)
+                              : const Color(0x08000000))
+                          .withValues(alpha: 0.03),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: context.appColors.border),
+                ),
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: AppColors.blueLight.withValues(alpha: 0.08),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          emptyCopy.icon,
+                          size: 28,
+                          color: AppColors.blueLight.withValues(alpha: 0.7),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        emptyCopy.title,
+                        textAlign: TextAlign.center,
+                        style: AppTextStyles.subtitle2.copyWith(
+                          color: context.appColors.textPrimary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        emptyCopy.subtitle,
+                        style: AppTextStyles.caption.copyWith(
+                          color: context.appColors.textSecondary,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'No academic papers available for this step',
-                    style: AppTextStyles.subtitle2.copyWith(
-                      color: context.appColors.textPrimary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'Type a keyword or topic above to find relevant papers on arXiv & Semantic Scholar.',
-                    style: AppTextStyles.caption.copyWith(
-                      color: context.appColors.textSecondary,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-            ),
+                ),
+              );
+            },
           )
         else
           ListView.builder(
@@ -297,11 +379,10 @@ class _AcademicPapersState extends ConsumerState<AcademicPapers> {
             itemCount: _displayedPapers.length,
             itemBuilder: (context, index) {
               final paper = _displayedPapers[index];
-              final perms = ref.watch(permissionProvider);
               return _PaperCard(
                 paper: paper,
                 index: index,
-                canAccessFullText: perms.canAccessFullTextResearch,
+                canReadPaper: perms.canReadAcademicPaper,
                 userTier: perms.effectiveTier,
               );
             },
@@ -314,13 +395,13 @@ class _AcademicPapersState extends ConsumerState<AcademicPapers> {
 class _PaperCard extends StatefulWidget {
   final dynamic paper;
   final int index;
-  final bool canAccessFullText;
+  final bool canReadPaper;
   final String userTier;
 
   const _PaperCard({
     required this.paper,
     required this.index,
-    required this.canAccessFullText,
+    required this.canReadPaper,
     required this.userTier,
   });
 
@@ -353,7 +434,10 @@ class _PaperCardState extends State<_PaperCard> {
     if (paper is Map && paper['authors'] != null) {
       final rawAuthors = paper['authors'];
       if (rawAuthors is List) {
-        authors = rawAuthors.map((a) => a.toString()).where((a) => a.isNotEmpty).join(', ');
+        authors = rawAuthors
+            .map((a) => a.toString())
+            .where((a) => a.isNotEmpty)
+            .join(', ');
         if (authors.isEmpty) authors = 'Unknown Authors';
       } else if (rawAuthors is String && rawAuthors.isNotEmpty) {
         authors = rawAuthors;
@@ -369,13 +453,19 @@ class _PaperCardState extends State<_PaperCard> {
         : 'SCHOLAR';
 
     // Resolve URL with smart 100% login-free open-access sources:
-    final String rawPdf = (paper is Map ? paper['pdf_url'] : null)?.toString().trim() ?? '';
-    final String rawDoi = (paper is Map ? paper['doi'] : null)?.toString().trim() ?? '';
-    final String rawUrl = (paper is Map ? paper['url'] : null)?.toString().trim() ?? '';
+    final String rawPdf =
+        (paper is Map ? paper['pdf_url'] : null)?.toString().trim() ?? '';
+    final String rawDoi =
+        (paper is Map ? paper['doi'] : null)?.toString().trim() ?? '';
+    final String rawUrl =
+        (paper is Map ? paper['url'] : null)?.toString().trim() ?? '';
     final String cleanSource = source.toLowerCase();
 
-    final bool hasDirectPdf = rawPdf.isNotEmpty && (rawPdf.toLowerCase().endsWith('.pdf') || rawPdf.contains('arxiv.org/pdf'));
-    
+    final bool hasDirectPdf =
+        rawPdf.isNotEmpty &&
+        (rawPdf.toLowerCase().endsWith('.pdf') ||
+            rawPdf.contains('arxiv.org/pdf'));
+
     String actionUrl = '';
     String actionTooltip = 'Read Paper on Semantic Scholar';
     IconData actionIcon = Icons.open_in_new_rounded;
@@ -383,9 +473,13 @@ class _PaperCardState extends State<_PaperCard> {
     if (rawPdf.isNotEmpty) {
       actionUrl = rawPdf;
       actionTooltip = hasDirectPdf ? 'Download / Read PDF' : 'Open Full Paper';
-      actionIcon = hasDirectPdf ? Icons.picture_as_pdf_rounded : Icons.open_in_new_rounded;
+      actionIcon = hasDirectPdf
+          ? Icons.picture_as_pdf_rounded
+          : Icons.open_in_new_rounded;
     } else if (rawDoi.isNotEmpty) {
-      actionUrl = rawDoi.startsWith('http') ? rawDoi : 'https://doi.org/$rawDoi';
+      actionUrl = rawDoi.startsWith('http')
+          ? rawDoi
+          : 'https://doi.org/$rawDoi';
       actionTooltip = 'Read Paper via DOI';
       actionIcon = Icons.open_in_new_rounded;
     } else if (rawUrl.isNotEmpty) {
@@ -401,21 +495,25 @@ class _PaperCardState extends State<_PaperCard> {
           .trim();
 
       if (cleanSource.contains('arxiv')) {
-        actionUrl = 'https://arxiv.org/search/?query=${Uri.encodeComponent(sanitizedTitle)}&searchtype=all';
+        actionUrl =
+            'https://arxiv.org/search/?query=${Uri.encodeComponent(sanitizedTitle)}&searchtype=all';
         actionTooltip = 'Search on arXiv (Open Access)';
       } else if (cleanSource.contains('openalex')) {
-        actionUrl = 'https://openalex.org/works?search=${Uri.encodeComponent(sanitizedTitle)}';
+        actionUrl =
+            'https://openalex.org/works?search=${Uri.encodeComponent(sanitizedTitle)}';
         actionTooltip = 'Search on OpenAlex (Open Access)';
       } else {
-        actionUrl = 'https://www.semanticscholar.org/search?q=${Uri.encodeComponent(sanitizedTitle)}';
+        actionUrl =
+            'https://www.semanticscholar.org/search?q=${Uri.encodeComponent(sanitizedTitle)}';
         actionTooltip = 'Search on Semantic Scholar (Open Access)';
       }
       actionIcon = Icons.open_in_new_rounded;
     }
 
-    if (!widget.canAccessFullText) {
+    if (!widget.canReadPaper) {
       actionIcon = Icons.lock_rounded;
-      actionTooltip = 'Upgrade your plan to unlock Full Text Research';
+      actionTooltip =
+          'Upgrade to Pro or Ultra to read full academic papers & PDFs';
     }
 
     // Extract summary with comprehensive fallback keys
@@ -439,7 +537,8 @@ class _PaperCardState extends State<_PaperCard> {
     }
 
     if (summary.isEmpty) {
-      summary = 'Seminal scholarly paper exploring key concepts of $title. Published in $year via $source.';
+      summary =
+          'Seminal scholarly paper exploring key concepts of $title. Published in $year via $source.';
     }
 
     return MouseRegion(
@@ -451,13 +550,19 @@ class _PaperCardState extends State<_PaperCard> {
         transform: Matrix4.translationValues(0, _isHovered ? -3 : 0, 0),
         decoration: BoxDecoration(
           color: context.isDarkMode
-              ? (_isHovered ? context.appColors.surfaceSubtle : context.appColors.surface)
+              ? (_isHovered
+                    ? context.appColors.surfaceSubtle
+                    : context.appColors.surface)
               : context.appColors.surface,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: context.isDarkMode
-                ? (_isHovered ? AppColors.accentBlue.withValues(alpha: 0.70) : context.appColors.border)
-                : (_isHovered ? AppColors.accentBlue : context.appColors.border),
+                ? (_isHovered
+                      ? AppColors.accentBlue.withValues(alpha: 0.70)
+                      : context.appColors.border)
+                : (_isHovered
+                      ? AppColors.accentBlue
+                      : context.appColors.border),
             width: _isHovered ? 1.4 : 1.0,
           ),
           boxShadow: context.isDarkMode
@@ -506,7 +611,10 @@ class _PaperCardState extends State<_PaperCard> {
                     children: [
                       // Source Badge
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3.5,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.blueLight.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(6),
@@ -538,13 +646,14 @@ class _PaperCardState extends State<_PaperCard> {
 
                       // Publication Year
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3.5,
+                        ),
                         decoration: BoxDecoration(
                           color: context.appColors.chipBackground,
                           borderRadius: BorderRadius.circular(6),
-                          border: Border.all(
-                            color: context.appColors.border,
-                          ),
+                          border: Border.all(color: context.appColors.border),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -570,7 +679,10 @@ class _PaperCardState extends State<_PaperCard> {
                       // Direct PDF or Open Access Badge
                       if (hasDirectPdf)
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3.5,
+                          ),
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               colors: [
@@ -580,7 +692,9 @@ class _PaperCardState extends State<_PaperCard> {
                             ),
                             borderRadius: BorderRadius.circular(6),
                             border: Border.all(
-                              color: AppColors.accentCyan.withValues(alpha: 0.35),
+                              color: AppColors.accentCyan.withValues(
+                                alpha: 0.35,
+                              ),
                             ),
                           ),
                           child: Row(
@@ -605,12 +719,19 @@ class _PaperCardState extends State<_PaperCard> {
                         )
                       else
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3.5,
+                          ),
                           decoration: BoxDecoration(
-                            color: AppColors.accentGreen.withValues(alpha: 0.08),
+                            color: AppColors.accentGreen.withValues(
+                              alpha: 0.08,
+                            ),
                             borderRadius: BorderRadius.circular(6),
                             border: Border.all(
-                              color: AppColors.accentGreen.withValues(alpha: 0.25),
+                              color: AppColors.accentGreen.withValues(
+                                alpha: 0.25,
+                              ),
                             ),
                           ),
                           child: Row(
@@ -643,9 +764,7 @@ class _PaperCardState extends State<_PaperCard> {
                   decoration: BoxDecoration(
                     color: context.appColors.chipBackground,
                     shape: BoxShape.circle,
-                    border: Border.all(
-                      color: context.appColors.border,
-                    ),
+                    border: Border.all(color: context.appColors.border),
                   ),
                   child: Text(
                     '${widget.index + 1}',
@@ -702,10 +821,14 @@ class _PaperCardState extends State<_PaperCard> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: context.isDarkMode ? AppColors.blueLight.withValues(alpha: 0.06) : context.appColors.surfaceSubtle,
+                color: context.isDarkMode
+                    ? AppColors.blueLight.withValues(alpha: 0.06)
+                    : context.appColors.surfaceSubtle,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: context.isDarkMode ? AppColors.blueLight.withValues(alpha: 0.18) : context.appColors.border,
+                  color: context.isDarkMode
+                      ? AppColors.blueLight.withValues(alpha: 0.18)
+                      : context.appColors.border,
                 ),
               ),
               child: IntrinsicHeight(
@@ -757,12 +880,16 @@ class _PaperCardState extends State<_PaperCard> {
                                   cursor: SystemMouseCursors.click,
                                   child: GestureDetector(
                                     onTap: () => setState(
-                                        () => _isInsightExpanded = !_isInsightExpanded),
+                                      () => _isInsightExpanded =
+                                          !_isInsightExpanded,
+                                    ),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         Text(
-                                          _isInsightExpanded ? 'Show less' : 'Read more',
+                                          _isInsightExpanded
+                                              ? 'Show less'
+                                              : 'Read more',
                                           style: AppTextStyles.badge.copyWith(
                                             color: AppColors.blueLight,
                                             fontSize: 11,
@@ -773,7 +900,8 @@ class _PaperCardState extends State<_PaperCard> {
                                         Icon(
                                           _isInsightExpanded
                                               ? Icons.keyboard_arrow_up_rounded
-                                              : Icons.keyboard_arrow_down_rounded,
+                                              : Icons
+                                                    .keyboard_arrow_down_rounded,
                                           size: 14,
                                           color: AppColors.blueLight,
                                         ),
@@ -791,7 +919,9 @@ class _PaperCardState extends State<_PaperCard> {
                                 ? TextOverflow.visible
                                 : TextOverflow.ellipsis,
                             style: AppTextStyles.caption.copyWith(
-                              color: context.appColors.textPrimary.withValues(alpha: 0.88),
+                              color: context.appColors.textPrimary.withValues(
+                                alpha: 0.88,
+                              ),
                               fontSize: 12.5,
                               height: 1.45,
                             ),
@@ -864,10 +994,10 @@ class _PaperCardState extends State<_PaperCard> {
                     color: Colors.transparent,
                     child: InkWell(
                       onTap: () {
-                        if (!widget.canAccessFullText) {
+                        if (!widget.canReadPaper) {
                           CenterToast.showWarning(
                             context,
-                            'Full Text Research is an upgraded plan feature. Upgrade your plan to unlock complete papers and direct PDFs.',
+                            'Reading academic papers and PDFs requires a Pro or Ultra plan. Upgrade your plan to unlock complete papers and direct PDFs.',
                             title: 'Premium Feature',
                             icon: Icons.lock_outline_rounded,
                           );
@@ -900,7 +1030,9 @@ class _PaperCardState extends State<_PaperCard> {
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: AppColors.blueLight.withValues(alpha: 0.12),
+                              color: AppColors.blueLight.withValues(
+                                alpha: 0.12,
+                              ),
                               blurRadius: 8,
                               offset: const Offset(0, 2),
                             ),
@@ -909,33 +1041,6 @@ class _PaperCardState extends State<_PaperCard> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            if (!widget.canAccessFullText) ...[
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 5,
-                                  vertical: 2,
-                                ),
-                                margin: const EdgeInsets.only(right: 6),
-                                decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    colors: [
-                                      AppColors.accentViolet,
-                                      AppColors.accentPink,
-                                    ],
-                                  ),
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Text(
-                                  'PREMIUM',
-                                  style: AppTextStyles.badge.copyWith(
-                                    fontSize: 8.5,
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w800,
-                                    letterSpacing: 0.5,
-                                  ),
-                                ),
-                              ),
-                            ],
                             Icon(
                               actionIcon,
                               size: 15,

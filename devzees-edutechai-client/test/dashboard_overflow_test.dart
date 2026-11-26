@@ -8,6 +8,7 @@ import 'package:devzees_edutechai_client/data/models/auth/user_current_profile_r
 import 'package:devzees_edutechai_client/data/models/dashboard/dashboard_response.dart';
 import 'package:devzees_edutechai_client/core/constants/responsive.dart';
 import 'package:devzees_edutechai_client/presentation/pages/dashboard/widgets/learning_dashboard_view.dart';
+import 'package:devzees_edutechai_client/presentation/pages/dashboard/widgets/dashboard_loading_skeleton.dart';
 import 'package:devzees_edutechai_client/presentation/pages/dashboard/widgets/mobile_dashboard_top_bar.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/theme_toggle_button.dart';
 
@@ -130,11 +131,14 @@ void main() {
   Widget createDashboardWidget({
     required double width,
     required double height,
+    bool isLoading = false,
   }) {
     return ProviderScope(
       overrides: [
         dashboardProvider.overrideWith(
-          () => _MockDashboardNotifier(dummyDashboardData),
+          () => isLoading
+              ? _LoadingDashboardNotifier()
+              : _MockDashboardNotifier(dummyDashboardData),
         ),
         learnerStandingProvider.overrideWith(
           () => _MockLearnerStandingNotifier(dummyDashboardData.achievements),
@@ -315,6 +319,35 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
+
+  testWidgets(
+    'loading skeleton renders cleanly without overflow on desktop, tablet, and iPhone 16 Pro Max (440x956)',
+    (tester) async {
+      for (final size in [
+        const Size(1440, 900),
+        const Size(900, 700),
+        const Size(440, 956),
+      ]) {
+        tester.view.physicalSize = size;
+        tester.view.devicePixelRatio = 1.0;
+
+        await tester.pumpWidget(
+          createDashboardWidget(
+            width: size.width >= 768 ? size.width - 280 : size.width,
+            height: size.height,
+            isLoading: true,
+          ),
+        );
+        await tester.pump();
+
+        expect(find.byType(DashboardLoadingSkeleton), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      }
+
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    },
+  );
 }
 
 class _MockDashboardNotifier extends DashboardNotifier {
@@ -325,6 +358,27 @@ class _MockDashboardNotifier extends DashboardNotifier {
   DashboardState build() {
     return DashboardState(isLoading: false, data: _mockData, timeRange: '30d');
   }
+
+  @override
+  Future<void> loadDashboard({
+    String? timeRange,
+    DateTime? startDate,
+    DateTime? endDate,
+  }) async {}
+
+  @override
+  Future<void> setCustomDateRange(DateTime start, DateTime end) async {}
+
+  @override
+  Future<void> setTimeRange(String newRange) async {}
+
+  @override
+  Future<void> refresh() async {}
+}
+
+class _LoadingDashboardNotifier extends DashboardNotifier {
+  @override
+  DashboardState build() => const DashboardState(isLoading: true, data: null);
 
   @override
   Future<void> loadDashboard({

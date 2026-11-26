@@ -1,16 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
 import 'package:devzees_edutechai_client/core/theme/text_styles.dart';
-import 'package:devzees_edutechai_client/presentation/widgets/gradient_text.dart';
 
 class AuthIntroHeader extends StatelessWidget {
   final bool isMobile;
-  final bool showInstructions;
 
   const AuthIntroHeader({
     super.key,
     required this.isMobile,
-    this.showInstructions = true,
   });
 
   @override
@@ -23,7 +19,7 @@ class AuthIntroHeader extends StatelessWidget {
         ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 680),
           child: Text(
-            "EduTech AI is an autonomous, multi-agent academic ecosystem. Log in or create a new student account to instantiate your personal supervisor-worker agent swarm.",
+            "EduTech AI is an autonomous, multi-agent learning ecosystem. Sign in or create a free account to launch your personal AI tutor squad.",
             style: AppTextStyles.bodyPrimary.copyWith(
               fontSize: isMobile ? 14 : 15,
               color: isDark ? const Color(0xFFF1F5F9) : const Color(0xFF334155),
@@ -33,86 +29,7 @@ class AuthIntroHeader extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
         ),
-        if (showInstructions) ...[
-          const SizedBox(height: 20),
-          AuthInstructionsCard(isMobile: isMobile),
-        ],
       ],
-    );
-  }
-}
-
-class AuthInstructionsCard extends StatelessWidget {
-  final bool isMobile;
-
-  const AuthInstructionsCard({super.key, required this.isMobile});
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return Container(
-      constraints: const BoxConstraints(maxWidth: 860),
-      padding: EdgeInsets.symmetric(
-        horizontal: isMobile ? 16 : 24,
-        vertical: isMobile ? 14 : 16,
-      ),
-      decoration: BoxDecoration(
-        color: isDark
-            ? AppColors.accentBlue.withValues(alpha: 0.1)
-            : const Color(0xFFEEF2FF),
-        border: Border.all(
-          color: isDark
-              ? AppColors.accentBlue.withValues(alpha: 0.3)
-              : const Color(0xFFC7D2FE),
-        ),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: isDark
-            ? null
-            : const [
-                BoxShadow(
-                  color: Color(0x0A0F172A),
-                  blurRadius: 10,
-                  offset: Offset(0, 3),
-                ),
-              ],
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text("💡", style: TextStyle(fontSize: 20, height: 1.2)),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                GradientText(
-                  "Access Instructions",
-                  gradient: AppColors.primaryGradient,
-                  style: AppTextStyles.subtitle2.copyWith(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: -0.2,
-                    color: isDark ? Colors.white : const Color(0xFF4338CA),
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  "Trace the Providing Access Flowchart below. If you already have an account, complete the Sign In form on the right. Otherwise, proceed to the Create Account tab. Upon verification, the system dispatches the AI Agent Squad to instantly grant workspace access.",
-                  style: AppTextStyles.caption.copyWith(
-                    fontSize: isMobile ? 12 : 13,
-                    color: isDark
-                        ? const Color(0xFFE2E8F0)
-                        : const Color(0xFF312E81), // Dark indigo: crystal-clear readability in light theme
-                    height: 1.55,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

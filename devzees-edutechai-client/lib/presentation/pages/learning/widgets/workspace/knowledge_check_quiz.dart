@@ -78,7 +78,9 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
     final sessionId = _getSessionId();
     final int stepIdx = (widget.step != null && widget.step.index is int)
         ? widget.step.index as int
-        : (widget.step != null ? (int.tryParse(widget.step.index.toString()) ?? widget.stepIndex) : widget.stepIndex);
+        : (widget.step != null
+              ? (int.tryParse(widget.step.index.toString()) ?? widget.stepIndex)
+              : widget.stepIndex);
 
     // 1. First priority: Restore from in-memory QuizSubmissionStore if already submitted
     final bool hasStoreSubmission =
@@ -88,8 +90,8 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
     if (hasStoreSubmission) {
       final int activeIdx =
           QuizSubmissionStore.hasSubmission(sessionId, widget.stepIndex)
-              ? widget.stepIndex
-              : stepIdx;
+          ? widget.stepIndex
+          : stepIdx;
       _submitted = true;
       _quizResult = QuizSubmissionStore.getResult(sessionId, activeIdx);
       final savedSelected =
@@ -130,10 +132,12 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
     if (step == null) return;
 
     final bool hasScore = step.quizScore != null;
-    final bool hasUserAnswers = step.userAnswers != null &&
+    final bool hasUserAnswers =
+        step.userAnswers != null &&
         step.userAnswers is Map &&
         (step.userAnswers as Map).isNotEmpty;
-    final bool hasUserFullAnswers = step.userFullAnswers != null &&
+    final bool hasUserFullAnswers =
+        step.userFullAnswers != null &&
         step.userFullAnswers is Map &&
         (step.userFullAnswers as Map).isNotEmpty;
 
@@ -192,8 +196,15 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
             _textAnswers[i] = ansStr;
             _getController(i).text = ansStr;
           } else {
-            final options = (qData['options'] as List?)
-                    ?.map((e) => (e is Map ? (e['text'] ?? e['option'] ?? e.toString()) : e).toString())
+            final options =
+                (qData['options'] as List?)
+                    ?.map(
+                      (e) =>
+                          (e is Map
+                                  ? (e['text'] ?? e['option'] ?? e.toString())
+                                  : e)
+                              .toString(),
+                    )
                     .toList() ??
                 [];
             int matchIndex = options.indexWhere((opt) => opt.trim() == ansStr);
@@ -214,7 +225,9 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
             }
             if (matchIndex == -1) {
               final parsedIndex = int.tryParse(ansStr);
-              if (parsedIndex != null && parsedIndex >= 0 && parsedIndex < options.length) {
+              if (parsedIndex != null &&
+                  parsedIndex >= 0 &&
+                  parsedIndex < options.length) {
                 matchIndex = parsedIndex;
               }
             }
@@ -232,7 +245,8 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
       final int correct = step.quizScore != null
           ? (step.quizScore! * quizLen).round()
           : 0;
-      final double score = step.quizScore ?? (quizLen > 0 ? (correct / quizLen) : 0.0);
+      final double score =
+          step.quizScore ?? (quizLen > 0 ? (correct / quizLen) : 0.0);
       final int xp = (score * quizLen * 20).round();
       _quizResult = QuizResult(
         stepIndex: widget.stepIndex,
@@ -301,12 +315,18 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
   void _restoreDraft() {
     if (_submitted) return;
     final sessionId = _getSessionId();
-    final savedSelected = QuizDraftStore.getSelectedAnswers(sessionId, widget.stepIndex);
+    final savedSelected = QuizDraftStore.getSelectedAnswers(
+      sessionId,
+      widget.stepIndex,
+    );
     if (savedSelected != null && savedSelected.isNotEmpty) {
       _selectedAnswers.clear();
       _selectedAnswers.addAll(savedSelected);
     }
-    final savedText = QuizDraftStore.getTextAnswers(sessionId, widget.stepIndex);
+    final savedText = QuizDraftStore.getTextAnswers(
+      sessionId,
+      widget.stepIndex,
+    );
     if (savedText != null && savedText.isNotEmpty) {
       _textAnswers.clear();
       _textAnswers.addAll(savedText);
@@ -371,11 +391,10 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
       }
     }
 
-    final correctRaw = (qData['correct_option'] ??
-            qData['correct_answer'] ??
-            '')
-        .toString()
-        .trim();
+    final correctRaw =
+        (qData['correct_option'] ?? qData['correct_answer'] ?? '')
+            .toString()
+            .trim();
     final correctUpper = correctRaw.toUpperCase();
 
     if (_isFillInTheBlank(qData)) {
@@ -401,8 +420,13 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
       if (selectedOptionIndex == null) {
         return false;
       }
-      final options = (qData['options'] as List?)
-              ?.map((e) => (e is Map ? (e['text'] ?? e['option'] ?? e.toString()) : e).toString())
+      final options =
+          (qData['options'] as List?)
+              ?.map(
+                (e) =>
+                    (e is Map ? (e['text'] ?? e['option'] ?? e.toString()) : e)
+                        .toString(),
+              )
               .toList() ??
           [];
       if (selectedOptionIndex < 0 || selectedOptionIndex >= options.length) {
@@ -481,7 +505,9 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
     final sessionId = _getSessionId();
     final int stepIdx = (widget.step != null && widget.step.index is int)
         ? widget.step.index as int
-        : (widget.step != null ? (int.tryParse(widget.step.index.toString()) ?? widget.stepIndex) : widget.stepIndex);
+        : (widget.step != null
+              ? (int.tryParse(widget.step.index.toString()) ?? widget.stepIndex)
+              : widget.stepIndex);
 
     // Pre-save to QuizDraftStore under both indices so drafts are never lost
     QuizDraftStore.saveDraft(
@@ -511,8 +537,15 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
       if (_isFillInTheBlank(qData)) {
         formattedAnswers[i] = snapshotText[i] ?? '';
       } else {
-        final options = (qData['options'] as List?)
-                ?.map((e) => (e is Map ? (e['text'] ?? e['option'] ?? e.toString()) : e).toString())
+        final options =
+            (qData['options'] as List?)
+                ?.map(
+                  (e) =>
+                      (e is Map
+                              ? (e['text'] ?? e['option'] ?? e.toString())
+                              : e)
+                          .toString(),
+                )
                 .toList() ??
             [];
         final selectedIndex = snapshotSelected[i];
@@ -542,7 +575,9 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
           localCorrect++;
         }
       }
-      final double score = quizList.isNotEmpty ? (localCorrect / quizList.length) : 0.0;
+      final double score = quizList.isNotEmpty
+          ? (localCorrect / quizList.length)
+          : 0.0;
       finalResult = QuizResult(
         stepIndex: widget.stepIndex,
         totalQuestions: quizList.length,
@@ -627,11 +662,14 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
     final String currentSessionId = _getSessionId();
     final int stepIdx = (step != null && step.index is int)
         ? step.index as int
-        : (step != null ? (int.tryParse(step.index.toString()) ?? widget.stepIndex) : widget.stepIndex);
+        : (step != null
+              ? (int.tryParse(step.index.toString()) ?? widget.stepIndex)
+              : widget.stepIndex);
     final bool hasSubmission =
         QuizSubmissionStore.hasSubmission(currentSessionId, widget.stepIndex) ||
         QuizSubmissionStore.hasSubmission(currentSessionId, stepIdx);
-    final bool stepHasQuiz = hasSubmission ||
+    final bool stepHasQuiz =
+        hasSubmission ||
         (step != null &&
             (step.quizScore != null ||
                 (step.userAnswers != null &&
@@ -664,7 +702,10 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
     }
 
     // Safety fallback: if submitted and server has a quizScore, but client-side matching yielded 0
-    if (_submitted && correctCount == 0 && step?.quizScore != null && step!.quizScore! > 0) {
+    if (_submitted &&
+        correctCount == 0 &&
+        step?.quizScore != null &&
+        step!.quizScore! > 0) {
       correctCount = (step.quizScore! * totalQuestions).round();
     }
 
@@ -701,14 +742,21 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
   }
 
   Widget _buildHeader(
-      int totalQuestions, int answeredCount, bool isAllAnswered, int scorePct) {
-    final double progressFraction =
-        totalQuestions > 0 ? (answeredCount / totalQuestions).clamp(0.0, 1.0) : 0.0;
+    int totalQuestions,
+    int answeredCount,
+    bool isAllAnswered,
+    int scorePct,
+  ) {
+    final double progressFraction = totalQuestions > 0
+        ? (answeredCount / totalQuestions).clamp(0.0, 1.0)
+        : 0.0;
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: context.isDarkMode ? AppColors.surfaceDark.withValues(alpha: 0.65) : AppColors.surfaceDark,
+        color: context.isDarkMode
+            ? AppColors.surfaceDark.withValues(alpha: 0.65)
+            : AppColors.surfaceDark,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: _submitted
@@ -764,7 +812,9 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
                 ),
                 child: Icon(
                   _submitted ? Icons.verified_rounded : Icons.quiz_rounded,
-                  color: _submitted ? AppColors.accentGreen : AppColors.purpleLight,
+                  color: _submitted
+                      ? AppColors.accentGreen
+                      : AppColors.purpleLight,
                   size: 20,
                 ),
               ),
@@ -797,20 +847,23 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
               ),
               // Status / Count Chip
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
                 decoration: BoxDecoration(
                   color: _submitted
                       ? AppColors.accentGreen.withValues(alpha: 0.12)
                       : (isAllAnswered
-                          ? AppColors.primary.withValues(alpha: 0.15)
-                          : AppColors.accentAmber.withValues(alpha: 0.12)),
+                            ? AppColors.primary.withValues(alpha: 0.15)
+                            : AppColors.accentAmber.withValues(alpha: 0.12)),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
                     color: _submitted
                         ? AppColors.accentGreen.withValues(alpha: 0.35)
                         : (isAllAnswered
-                            ? AppColors.primary.withValues(alpha: 0.4)
-                            : AppColors.accentAmber.withValues(alpha: 0.35)),
+                              ? AppColors.primary.withValues(alpha: 0.4)
+                              : AppColors.accentAmber.withValues(alpha: 0.35)),
                   ),
                 ),
                 child: Row(
@@ -820,14 +873,14 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
                       _submitted
                           ? Icons.check_circle_rounded
                           : (isAllAnswered
-                              ? Icons.task_alt_rounded
-                              : Icons.schedule_rounded),
+                                ? Icons.task_alt_rounded
+                                : Icons.schedule_rounded),
                       size: 13,
                       color: _submitted
                           ? AppColors.accentGreen
                           : (isAllAnswered
-                              ? AppColors.purpleLight
-                              : AppColors.accentAmber),
+                                ? AppColors.purpleLight
+                                : AppColors.accentAmber),
                     ),
                     const SizedBox(width: 5),
                     Text(
@@ -838,8 +891,8 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
                         color: _submitted
                             ? AppColors.accentGreen
                             : (isAllAnswered
-                                ? AppColors.purpleLight
-                                : AppColors.accentAmber),
+                                  ? AppColors.purpleLight
+                                  : AppColors.accentAmber),
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
                       ),
@@ -869,7 +922,10 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
   }
 
   Widget _buildQuestionCard(
-      int index, Map<String, dynamic> quizData, int totalQuestions) {
+    int index,
+    Map<String, dynamic> quizData,
+    int totalQuestions,
+  ) {
     final question =
         quizData['question']?.toString() ?? 'Question ${index + 1}';
     final isFillBlank = _isFillInTheBlank(quizData);
@@ -877,12 +933,14 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
         ? (quizData['options'] as List).map((e) => e.toString()).toList()
         : [];
     final explanation = quizData['explanation']?.toString() ?? '';
-    final correctAnswerRaw = quizData['correct_option']?.toString() ??
+    final correctAnswerRaw =
+        quizData['correct_option']?.toString() ??
         quizData['correct_answer']?.toString() ??
         '';
 
-    final bool isCorrect =
-        _submitted ? _isQuestionCorrect(index, quizData) : false;
+    final bool isCorrect = _submitted
+        ? _isQuestionCorrect(index, quizData)
+        : false;
 
     final bool isCardAnswered = isFillBlank
         ? (_textAnswers[index]?.trim().isNotEmpty ?? false)
@@ -898,11 +956,11 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
         border: Border.all(
           color: _submitted
               ? (isCorrect
-                  ? AppColors.accentGreen.withValues(alpha: 0.4)
-                  : AppColors.accentRose.withValues(alpha: 0.35))
+                    ? AppColors.accentGreen.withValues(alpha: 0.4)
+                    : AppColors.accentRose.withValues(alpha: 0.35))
               : (isCardAnswered
-                  ? AppColors.primary.withValues(alpha: 0.4)
-                  : context.appColors.border),
+                    ? AppColors.primary.withValues(alpha: 0.4)
+                    : context.appColors.border),
           width: 1,
         ),
         boxShadow: context.isDarkMode
@@ -930,8 +988,7 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
             children: [
               // Question Number Pill
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
                 decoration: BoxDecoration(
                   color: AppColors.primary.withValues(alpha: 0.18),
                   borderRadius: BorderRadius.circular(8),
@@ -952,13 +1009,18 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
 
               // Question Type Pill
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: (context.isDarkMode ? const Color(0x08FFFFFF) : const Color(0x08000000)).withValues(alpha: 0.08),
+                  color:
+                      (context.isDarkMode
+                              ? const Color(0x08FFFFFF)
+                              : const Color(0x08000000))
+                          .withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: (context.isDarkMode ? const Color(0x0DFFFFFF) : const Color(0x0F000000)),
+                    color: (context.isDarkMode
+                        ? const Color(0x0DFFFFFF)
+                        : const Color(0x0F000000)),
                   ),
                 ),
                 child: Text(
@@ -976,8 +1038,10 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
               // Status Pill
               if (_submitted)
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: isCorrect
                         ? AppColors.accentGreen.withValues(alpha: 0.12)
@@ -1016,8 +1080,10 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
                 )
               else
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: isCardAnswered
                         ? AppColors.accentGreen.withValues(alpha: 0.1)
@@ -1026,7 +1092,9 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
                     border: Border.all(
                       color: isCardAnswered
                           ? AppColors.accentGreen.withValues(alpha: 0.3)
-                          : (context.isDarkMode ? const Color(0x0DFFFFFF) : const Color(0x0F000000)),
+                          : (context.isDarkMode
+                                ? const Color(0x0DFFFFFF)
+                                : const Color(0x0F000000)),
                     ),
                   ),
                   child: Row(
@@ -1075,7 +1143,7 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
 
           // ─── Options or Fill in Blank ───
           if (isFillBlank) ...[
-            _buildFillInTheBlankInput(index, isCorrect)
+            _buildFillInTheBlankInput(index, isCorrect),
           ] else ...[
             ...List.generate(options.length, (optIndex) {
               return _OptionTile(
@@ -1116,8 +1184,8 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
           color: _submitted
               ? (isCorrect ? AppColors.accentGreen : AppColors.accentRose)
               : (_textAnswers[index]?.trim().isNotEmpty ?? false
-                  ? AppColors.primary.withValues(alpha: 0.6)
-                  : context.appColors.border),
+                    ? AppColors.primary.withValues(alpha: 0.6)
+                    : context.appColors.border),
           width: _submitted ? 1.5 : 1.0,
         ),
       ),
@@ -1143,21 +1211,19 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
           ),
           suffixIcon: _submitted
               ? Icon(
-                  isCorrect
-                      ? Icons.check_circle_rounded
-                      : Icons.cancel_rounded,
+                  isCorrect ? Icons.check_circle_rounded : Icons.cancel_rounded,
                   color: isCorrect
                       ? AppColors.accentGreen
                       : AppColors.accentRose,
                   size: 20,
                 )
               : (_textAnswers[index]?.trim().isNotEmpty ?? false
-                  ? const Icon(
-                      Icons.check_circle_outline_rounded,
-                      color: AppColors.accentGreen,
-                      size: 18,
-                    )
-                  : null),
+                    ? const Icon(
+                        Icons.check_circle_outline_rounded,
+                        color: AppColors.accentGreen,
+                        size: 18,
+                      )
+                    : null),
         ),
         onChanged: (val) {
           setState(() {
@@ -1170,7 +1236,10 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
   }
 
   Widget _buildExplanationCard(
-      bool isCorrect, String correctAnswerRaw, String explanation) {
+    bool isCorrect,
+    String correctAnswerRaw,
+    String explanation,
+  ) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(14),
@@ -1192,14 +1261,18 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
                 isCorrect
                     ? Icons.check_circle_outline_rounded
                     : Icons.lightbulb_outline_rounded,
-                color: isCorrect ? AppColors.accentGreen : AppColors.accentAmber,
+                color: isCorrect
+                    ? AppColors.accentGreen
+                    : AppColors.accentAmber,
                 size: 17,
               ),
               const SizedBox(width: 8),
               Text(
                 isCorrect ? 'Correct Insight' : 'Key Explanation',
                 style: AppTextStyles.captionBold.copyWith(
-                  color: isCorrect ? AppColors.accentGreen : AppColors.accentAmber,
+                  color: isCorrect
+                      ? AppColors.accentGreen
+                      : AppColors.accentAmber,
                   fontSize: 12,
                 ),
               ),
@@ -1243,23 +1316,31 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
   }
 
   Widget _buildResultsSummaryCard(
-      List<dynamic> quizList, int correctCount, int scorePct) {
+    List<dynamic> quizList,
+    int correctCount,
+    int scorePct,
+  ) {
     // According to Gamification specification:
     // - 20 XP per correct question
     // - +10 XP bonus strictly for 100% accuracy
     final int baseQuizXp = correctCount * 20;
-    final int bonusXp = (correctCount == quizList.length && quizList.isNotEmpty) ? 10 : 0;
+    final int bonusXp = (correctCount == quizList.length && quizList.isNotEmpty)
+        ? 10
+        : 0;
     final int fallbackXp = baseQuizXp + bonusXp;
     final int xpEarned = _quizResult?.xpEarned ?? fallbackXp;
     final activeState = ref.watch(activeSessionProvider);
     final session = activeState.session;
     final totalSteps = session?.steps.length ?? 0;
-    final bool isLastStep = totalSteps > 0 && widget.stepIndex >= totalSteps - 1;
-    final bool isSessionComplete = session != null &&
+    final bool isLastStep =
+        totalSteps > 0 && widget.stepIndex >= totalSteps - 1;
+    final bool isSessionComplete =
+        session != null &&
         session.steps.isNotEmpty &&
         session.stepsCompleted >= totalSteps &&
         totalSteps > 0;
-    final bool isCurrentStepComplete = (widget.step != null && widget.step.status == 'complete') ||
+    final bool isCurrentStepComplete =
+        (widget.step != null && widget.step.status == 'complete') ||
         (isLastStep && isSessionComplete);
 
     final bool isPassed = scorePct >= 70;
@@ -1356,8 +1437,10 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
               // XP Reward Badge
               if (xpEarned > 0)
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
@@ -1406,12 +1489,8 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
                         height: 42,
                         borderRadius: BorderRadius.circular(12),
                         gradient: const LinearGradient(
-                          colors: [
-                            Color(0xFFD97706),
-                            Color(0xFFB45309),
-                          ],
+                          colors: [Color(0xFFD97706), Color(0xFFB45309)],
                         ),
-                        glowColor: const Color(0xFFF59E0B),
                         onPressed: () {
                           ref
                               .read(activeSessionProvider.notifier)
@@ -1430,13 +1509,9 @@ class _KnowledgeCheckQuizState extends ConsumerState<KnowledgeCheckQuiz> {
                       isLoading: _isAdvancing,
                       gradient: isLastStep
                           ? const LinearGradient(
-                              colors: [
-                                Color(0xFFD97706),
-                                Color(0xFFB45309),
-                              ],
+                              colors: [Color(0xFFD97706), Color(0xFFB45309)],
                             )
                           : AppColors.primaryGradient,
-                      glowColor: isLastStep ? const Color(0xFFF59E0B) : null,
                       onPressed: () async {
                         setState(() {
                           _isAdvancing = true;
@@ -1524,10 +1599,19 @@ class _OptionTileState extends State<_OptionTile> {
       }
     }
 
-    Color bgColor = context.isDarkMode ? (context.isDarkMode ? const Color(0x08FFFFFF) : const Color(0x08000000)).withValues(alpha: 0.04) : context.appColors.surfaceSubtle;
+    Color bgColor = context.isDarkMode
+        ? (context.isDarkMode
+                  ? const Color(0x08FFFFFF)
+                  : const Color(0x08000000))
+              .withValues(alpha: 0.04)
+        : context.appColors.surfaceSubtle;
     Color borderColor = context.appColors.border;
-    Color letterBg = context.isDarkMode ? AppColors.surfaceMid.withValues(alpha: 0.6) : AppColors.trackNeutral;
-    Color letterTextColor = context.isDarkMode ? context.appColors.textSecondary : context.appColors.textPrimary;
+    Color letterBg = context.isDarkMode
+        ? AppColors.surfaceMid.withValues(alpha: 0.6)
+        : AppColors.trackNeutral;
+    Color letterTextColor = context.isDarkMode
+        ? context.appColors.textSecondary
+        : context.appColors.textPrimary;
     IconData? trailingIcon;
     Color? trailingIconColor;
 
@@ -1557,7 +1641,9 @@ class _OptionTileState extends State<_OptionTile> {
         trailingIconColor = AppColors.accentRose;
       }
     } else if (_isHovered && !widget.isSelected) {
-      bgColor = context.isDarkMode ? AppColors.primary.withValues(alpha: 0.07) : context.appColors.surface;
+      bgColor = context.isDarkMode
+          ? AppColors.primary.withValues(alpha: 0.07)
+          : context.appColors.surface;
       borderColor = AppColors.primary.withValues(alpha: 0.45);
     }
 
@@ -1577,7 +1663,8 @@ class _OptionTileState extends State<_OptionTile> {
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: borderColor,
-              width: (widget.isSelected ||
+              width:
+                  (widget.isSelected ||
                       (widget.isSubmitted &&
                           (isThisOptionCorrect || widget.isSelected)))
                   ? 1.5
@@ -1592,14 +1679,14 @@ class _OptionTileState extends State<_OptionTile> {
                     ),
                   ]
                 : (!context.isDarkMode && _isHovered && !widget.isSubmitted
-                    ? [
-                        const BoxShadow(
-                          color: Color(0x0F000000),
-                          blurRadius: 6,
-                          offset: Offset(0, 2),
-                        ),
-                      ]
-                    : null),
+                      ? [
+                          const BoxShadow(
+                            color: Color(0x0F000000),
+                            blurRadius: 6,
+                            offset: Offset(0, 2),
+                          ),
+                        ]
+                      : null),
           ),
           child: Row(
             children: [
@@ -1611,11 +1698,14 @@ class _OptionTileState extends State<_OptionTile> {
                   color: letterBg,
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: widget.isSelected ||
+                    color:
+                        widget.isSelected ||
                             (widget.isSubmitted &&
                                 (isThisOptionCorrect || widget.isSelected))
                         ? Colors.transparent
-                        : (context.isDarkMode ? const Color(0x0DFFFFFF) : const Color(0x0F000000)),
+                        : (context.isDarkMode
+                              ? const Color(0x0DFFFFFF)
+                              : const Color(0x0F000000)),
                   ),
                 ),
                 child: Center(
@@ -1635,11 +1725,13 @@ class _OptionTileState extends State<_OptionTile> {
                 child: Text(
                   text,
                   style: AppTextStyles.body2.copyWith(
-                    color: widget.isSelected ||
+                    color:
+                        widget.isSelected ||
                             (widget.isSubmitted && isThisOptionCorrect)
                         ? context.appColors.textPrimary
                         : context.appColors.textSecondary,
-                    fontWeight: widget.isSelected ||
+                    fontWeight:
+                        widget.isSelected ||
                             (widget.isSubmitted && isThisOptionCorrect)
                         ? FontWeight.w600
                         : FontWeight.w400,
@@ -1650,11 +1742,7 @@ class _OptionTileState extends State<_OptionTile> {
               // Trailing Indicator
               if (trailingIcon != null) ...[
                 const SizedBox(width: 8),
-                Icon(
-                  trailingIcon,
-                  size: 18,
-                  color: trailingIconColor,
-                ),
+                Icon(trailingIcon, size: 18, color: trailingIconColor),
               ],
             ],
           ),

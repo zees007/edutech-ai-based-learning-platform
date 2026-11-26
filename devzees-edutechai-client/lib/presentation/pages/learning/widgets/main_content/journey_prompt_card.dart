@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../../core/constants/responsive.dart';
 import '../../../../../core/providers/permission_provider.dart';
 import '../../../../../core/providers/session_quota_provider.dart';
 import '../../../../../core/theme/app_colors.dart';
@@ -165,6 +166,7 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
   @override
   Widget build(BuildContext context) {
     final isDark = context.isDarkMode;
+    final isMobileViewport = Responsive.isMobile(context);
 
     return MouseRegion(
       onEnter: (_) => setState(() => _isCardHovered = true),
@@ -174,8 +176,16 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
           transform: Matrix4.translationValues(0, _isCardHovered ? -2.0 : 0, 0),
           constraints: const BoxConstraints(maxWidth: 1020),
           width: double.infinity,
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          padding: const EdgeInsets.fromLTRB(28, 18, 28, 14),
+          margin: EdgeInsets.symmetric(
+            horizontal: isMobileViewport ? 4 : 16,
+            vertical: 8,
+          ),
+          padding: EdgeInsets.fromLTRB(
+            isMobileViewport ? 16 : 28,
+            isMobileViewport ? 16 : 18,
+            isMobileViewport ? 16 : 28,
+            14,
+          ),
           decoration: BoxDecoration(
             color: isDark ? context.appColors.scaffoldBackground : Colors.white,
             borderRadius: BorderRadius.circular(24),
@@ -786,9 +796,13 @@ class _JourneyPromptCardState extends ConsumerState<JourneyPromptCard> {
                     size: 16,
                   ),
                   const SizedBox(width: 8),
-                  GradientText(
-                    'Browse Suggested Topics',
-                    style: AppTextStyles.captionBold.copyWith(fontSize: 13),
+                  Flexible(
+                    child: GradientText(
+                      'Browse Suggested Topics',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.captionBold.copyWith(fontSize: 13),
+                    ),
                   ),
                   const SizedBox(width: 4),
                   Icon(

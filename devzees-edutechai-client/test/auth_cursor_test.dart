@@ -184,12 +184,13 @@ void main() {
       await tester.pump(const Duration(seconds: 1));
     });
 
-    testWidgets('5. Step 04A and Step 04B blocks in canvas have click cursor and opaque behavior', (tester) async {
+    testWidgets('5. Entry mode blocks in canvas have click cursor, opaque behavior, and trigger mode toggle', (tester) async {
       tester.view.physicalSize = const Size(1400, 1000);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
+      bool? selectedMode;
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -200,7 +201,7 @@ void main() {
                   height: 900,
                   child: AuthCanvas(
                     isLogin: true,
-                    onAuthModeChanged: (_) {},
+                    onAuthModeChanged: (isLogin) => selectedMode = isLogin,
                   ),
                 ),
               ),
@@ -209,23 +210,27 @@ void main() {
         ),
       );
 
-      final step04AText = find.text('STEP 04A • LOGIN');
-      expect(step04AText, findsOneWidget);
+      final returningLearnerText = find.text('RETURNING LEARNER');
+      expect(returningLearnerText, findsOneWidget);
 
-      final step04BText = find.text('STEP 04B • REGISTER');
-      expect(step04BText, findsOneWidget);
+      final newLearnerText = find.text('NEW LEARNER');
+      expect(newLearnerText, findsOneWidget);
 
-      final region04A = tester.widget<MouseRegion>(
-        find.ancestor(of: step04AText, matching: find.byType(MouseRegion)).first,
+      final returningRegion = tester.widget<MouseRegion>(
+        find.ancestor(of: returningLearnerText, matching: find.byType(MouseRegion)).first,
       );
-      expect(region04A.cursor, SystemMouseCursors.click);
-      expect(region04A.opaque, isTrue);
+      expect(returningRegion.cursor, SystemMouseCursors.click);
+      expect(returningRegion.opaque, isTrue);
 
-      final region04B = tester.widget<MouseRegion>(
-        find.ancestor(of: step04BText, matching: find.byType(MouseRegion)).first,
+      final newLearnerRegion = tester.widget<MouseRegion>(
+        find.ancestor(of: newLearnerText, matching: find.byType(MouseRegion)).first,
       );
-      expect(region04B.cursor, SystemMouseCursors.click);
-      expect(region04B.opaque, isTrue);
+      expect(newLearnerRegion.cursor, SystemMouseCursors.click);
+      expect(newLearnerRegion.opaque, isTrue);
+
+      await tester.tap(newLearnerText);
+      await tester.pump();
+      expect(selectedMode, isFalse);
     });
   });
 }

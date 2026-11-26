@@ -6,7 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/admin_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/text_styles.dart';
-import '../../../widgets/shimmer_loading.dart';
+import 'admin_loading_skeleton.dart';
 import 'package:devzees_edutechai_client/core/theme/theme_palette.dart';
 
 /// Analytics & Metrics tab with metric cards, mobile-friendly left-side reload,
@@ -139,12 +139,9 @@ class AnalyticsTab extends ConsumerWidget {
                   _buildDistributionChart(context, metrics, isMobile),
                 ],
               ),
-              loading: () => const Column(
-                children: [
-                  ShimmerLoading(child: ShimmerBox(height: 120)),
-                  SizedBox(height: 32),
-                  ShimmerLoading(child: ShimmerBox(height: 300)),
-                ],
+              loading: () => const AdminTableSkeleton(
+                showMetricsRow: true,
+                rowCount: 4,
               ),
               error: (err, _) => Container(
                 padding: const EdgeInsets.all(20),

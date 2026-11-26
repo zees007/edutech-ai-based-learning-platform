@@ -7,8 +7,8 @@ import '../../../../core/theme/text_styles.dart';
 import '../../../../data/models/feedback/feedback_model.dart';
 import '../../../widgets/center_toast.dart';
 import '../../../widgets/gradient_button.dart';
-import '../../../widgets/shimmer_loading.dart';
 import 'admin_data_table.dart';
+import 'admin_loading_skeleton.dart';
 import 'package:devzees_edutechai_client/core/theme/theme_palette.dart';
 
 /// Admin Tab for moderating student feedback, selecting featured homepage testimonials,
@@ -124,7 +124,7 @@ class _FeedbackManagementTabState extends ConsumerState<FeedbackManagementTab> {
 
           // Data Table / Loading / Error
           if (state.isLoading && state.items.isEmpty)
-            const ShimmerLoading(child: ShimmerBox(height: 320))
+            const AdminTableSkeleton(rowCount: 5)
           else if (state.errorMessage != null && state.items.isEmpty)
             _buildErrorCard(state.errorMessage!)
           else

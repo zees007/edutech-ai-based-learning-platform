@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:devzees_edutechai_client/data/models/learning/session_response.dart';
 import 'package:devzees_edutechai_client/data/models/learning/milestone_step.dart';
 import 'package:devzees_edutechai_client/core/providers/gamification_provider.dart';
+import 'package:devzees_edutechai_client/core/utils/learning_metadata_utils.dart';
 import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
 import 'package:devzees_edutechai_client/presentation/pages/learning/widgets/export/export_session_modal.dart';
 import 'package:devzees_edutechai_client/core/theme/theme_palette.dart';
@@ -228,15 +229,15 @@ class _MobileCommandHubSheetState extends State<MobileCommandHubSheet> {
               ),
               const Spacer(),
               _buildMicroChip(
-                label: _formatMode(session.learningMode),
+                label: LearningMetadataUtils.formatBadgeLabel(session.learningMode),
                 isViolet: true,
-                icon: Icons.psychology_rounded,
+                icon: LearningMetadataUtils.getModeIcon(session.learningMode),
               ),
               const SizedBox(width: 6),
               _buildMicroChip(
-                label: _formatLevel(session.studentLevel),
+                label: LearningMetadataUtils.formatBadgeLabel(session.studentLevel),
                 isViolet: false,
-                icon: Icons.school_rounded,
+                icon: LearningMetadataUtils.getLevelIcon(session.studentLevel),
               ),
             ],
           ),
@@ -306,7 +307,9 @@ class _MobileCommandHubSheetState extends State<MobileCommandHubSheet> {
                       ),
                     ),
                     Text(
-                      '${levelData['xp_in_level']}/${levelData['xp_needed_for_next']} XP to Level ${(levelData['level'] as int) + 1}',
+                      (levelData['is_max_level'] as bool? ?? false)
+                          ? 'Max Level Reached (${levelData['total_xp']} XP)'
+                          : '${levelData['xp_in_level']}/${levelData['xp_needed_for_next']} XP to Level ${(levelData['level'] as int) + 1}',
                       style: TextStyle(
                         fontSize: 10.5,
                         color: context.appColors.textSecondary,
@@ -768,27 +771,5 @@ class _MobileCommandHubSheetState extends State<MobileCommandHubSheet> {
         ],
       ),
     );
-  }
-
-  String _formatLevel(String raw) {
-    final stripped = raw
-        .replaceAll(RegExp(r'^_+|_+$'), '')
-        .replaceAll(RegExp(r'[\u{1F300}-\u{1F9FF}]', unicode: true), '')
-        .replaceAll(RegExp(r'[^\w\s-]'), '')
-        .trim();
-    final spaced = stripped.replaceAll('_', ' ').trim();
-    if (spaced.isEmpty) return raw.toUpperCase();
-    return spaced.toUpperCase();
-  }
-
-  String _formatMode(String raw) {
-    final stripped = raw
-        .replaceAll(RegExp(r'^_+|_+$'), '')
-        .replaceAll(RegExp(r'[\u{1F300}-\u{1F9FF}]', unicode: true), '')
-        .replaceAll(RegExp(r'[^\w\s-]'), '')
-        .trim();
-    final spaced = stripped.replaceAll('_', ' ').trim();
-    if (spaced.isEmpty) return raw.toUpperCase();
-    return spaced.toUpperCase();
   }
 }
