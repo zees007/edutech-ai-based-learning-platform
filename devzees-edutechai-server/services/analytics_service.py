@@ -11,7 +11,7 @@ from datetime import date, datetime, timedelta, timezone
 import logging
 from typing import Any
 
-from sqlalchemy import case, func, select
+from sqlalchemy import and_, bindparam, case, func, or_, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.exceptions import BadRequestException, UnprocessableEntityException
@@ -378,28 +378,105 @@ class AnalyticsService:
             window_start = datetime.combine(start_date, datetime.min.time()) - tz_delta
             window_end = datetime.combine(end_date, datetime.max.time()) - tz_delta
 
-        # 1. Fetch All User Sessions
-        sessions_query = (
-            select(SessionRecord)
-            .where(SessionRecord.user_id == user_id)
-            .order_by(SessionRecord.created_at.desc())
-        )
-        sessions_res = await db.execute(sessions_query)
-        all_user_sessions = list(sessions_res.scalars().all())
-        session_lookup: dict[str, SessionRecord] = {s.session_id: s for s in all_user_sessions}
+        # 1. Fetch StepProgress (projected scalar columns, SQL-filtered by window when set)
+        sp_filters = [SessionRecord.user_id == user_id]
+        if window_start is not None:
+            # Include a 30-min lookback before window_start so active-window step clamping
+            # sees the immediate predecessor timestamp without loading all historical steps.
+            lookback_start = window_start - timedelta(minutes=MAX_STEP_ACTIVE_WINDOW_MINUTES)
+            sp_filters.append(
+                or_(
+                    and_(
+                        StepProgress.completed_at >= lookback_start,
+                        StepProgress.completed_at <= window_end,
+                    ),
+                    and_(
+                        StepProgress.quiz_score.isnot(None),
+                        StepProgress.completed_at.is_(None),
+                    ),
+                )
+            )
 
-        # 2. Fetch All StepProgress Records
         sp_query = (
-            select(StepProgress)
+            select(
+                StepProgress.session_id,
+                StepProgress.step_index,
+                StepProgress.status,
+                StepProgress.quiz_score,
+                StepProgress.completed_at,
+                StepProgress.xp_earned,
+            )
             .join(SessionRecord, StepProgress.session_id == SessionRecord.session_id)
-            .where(SessionRecord.user_id == user_id)
+            .where(*sp_filters)
             .order_by(StepProgress.completed_at.asc().nulls_last())
         )
         sp_res = await db.execute(sp_query)
-        all_step_records = list(sp_res.scalars().all())
+        all_step_records = sp_res.all()
+
+        step_session_ids = list({sp.session_id for sp in all_step_records})
+
+        # 2. Fetch User Sessions (projected scalar columns only — NEVER loads state_json)
+        sess_filters = [SessionRecord.user_id == user_id]
+        if window_start is not None:
+            window_sess_or = [
+                and_(
+                    SessionRecord.created_at >= window_start,
+                    SessionRecord.created_at <= window_end,
+                ),
+                and_(
+                    SessionRecord.is_complete == True,
+                    SessionRecord.updated_at >= window_start,
+                    SessionRecord.updated_at <= window_end,
+                ),
+            ]
+            if step_session_ids:
+                window_sess_or.append(SessionRecord.session_id.in_(step_session_ids))
+            sess_filters.append(or_(*window_sess_or))
+
+        sessions_query = (
+            select(
+                SessionRecord.session_id,
+                SessionRecord.topic,
+                SessionRecord.learning_mode,
+                SessionRecord.total_steps,
+                SessionRecord.is_complete,
+                SessionRecord.created_at,
+                SessionRecord.updated_at,
+            )
+            .where(*sess_filters)
+            .order_by(SessionRecord.created_at.desc())
+        )
+        sessions_res = await db.execute(sessions_query)
+        all_user_sessions = sessions_res.all()
+        session_lookup = {s.session_id: s for s in all_user_sessions}
+
+        # 2b. When window-filtered, fetch SQL-aggregated step totals & last_completed_at
+        #     only for candidate sessions so topic_breakdown % and completion timestamps
+        #     remain exact even for sessions spanning across window boundaries.
+        session_step_agg: dict[str, tuple[int, int, datetime | None]] = {}
+        if window_start is not None and session_lookup:
+            agg_query = (
+                select(
+                    StepProgress.session_id,
+                    func.count(StepProgress.id).label("total_rows"),
+                    func.count(case((StepProgress.status == "complete", 1))).label("completed_rows"),
+                    func.max(
+                        case((StepProgress.status == "complete", StepProgress.completed_at))
+                    ).label("last_completed_at"),
+                )
+                .where(StepProgress.session_id.in_(list(session_lookup.keys())))
+                .group_by(StepProgress.session_id)
+            )
+            agg_res = await db.execute(agg_query)
+            for row in agg_res.all():
+                session_step_agg[row.session_id] = (
+                    int(row.total_rows or 0),
+                    int(row.completed_rows or 0),
+                    row.last_completed_at,
+                )
 
         # 3. Process Steps, Duration Clamping & Heatmap
-        steps_by_session: dict[str, list[StepProgress]] = {}
+        steps_by_session: dict[str, list[Any]] = {}
         for sp in all_step_records:
             steps_by_session.setdefault(sp.session_id, []).append(sp)
 
@@ -410,11 +487,8 @@ class AnalyticsService:
         active_session_ids: set[str] = set()
         completed_session_ids: set[str] = set()
 
-        for session_id, steps in steps_by_session.items():
-            session = session_lookup.get(session_id)
-            if not session:
-                continue
-
+        for session_id, session in session_lookup.items():
+            steps = steps_by_session.get(session_id, [])
             mode = (session.learning_mode or "visual").lower()
             mode_median = MODE_MEDIAN_MINUTES.get(mode, DEFAULT_STEP_MINUTES)
             completed_steps = [sp for sp in steps if sp.status == "complete" and sp.completed_at]
@@ -443,7 +517,7 @@ class AnalyticsService:
                     mastered_steps_count += 1
                     active_session_ids.add(session_id)
 
-                    if hasattr(sp, "xp_earned") and sp.xp_earned is not None and sp.xp_earned > 0:
+                    if sp.xp_earned is not None and sp.xp_earned > 0:
                         step_xp = sp.xp_earned
                     else:
                         step_xp = 10 + (round(sp.quiz_score * 70) if sp.quiz_score is not None else 0)
@@ -457,10 +531,12 @@ class AnalyticsService:
                     heatmap_data[day_key]["xp_earned"] += step_xp
 
             # Completion consistency: evaluate if session finished in window
-            if session.is_complete:
+            if session.is_complete and (steps or session_id in session_step_agg):
                 completion_ts = None
                 if completed_steps:
                     completion_ts = _to_naive_utc(completed_steps[-1].completed_at)
+                elif session_id in session_step_agg and session_step_agg[session_id][2]:
+                    completion_ts = _to_naive_utc(session_step_agg[session_id][2])
                 if not completion_ts and session.updated_at:
                     completion_ts = _to_naive_utc(session.updated_at)
 
@@ -489,16 +565,26 @@ class AnalyticsService:
 
         sorted_steps_with_quiz = [sp for sp in all_step_records if sp.quiz_score is not None]
         sorted_steps_with_quiz.sort(key=lambda x: _to_naive_utc(x.completed_at) or datetime.min)
-        session_scores_accumulator: dict[str, list[float]] = {}
 
+        quiz_steps_in_window = []
         for sp in sorted_steps_with_quiz:
-            session = session_lookup.get(sp.session_id)
-            if not session:
+            if sp.session_id not in session_lookup:
                 continue
-
             sp_completed = _to_naive_utc(sp.completed_at)
             if window_start and sp_completed and (sp_completed < window_start or sp_completed > window_end):
                 continue
+            quiz_steps_in_window.append(sp)
+
+        # Fetch ONLY step titles for sessions that have quizzes in the window
+        step_titles_map = await AnalyticsService._fetch_step_titles(
+            db, list({sp.session_id for sp in quiz_steps_in_window})
+        )
+
+        session_scores_accumulator: dict[str, list[float]] = {}
+
+        for sp in quiz_steps_in_window:
+            session = session_lookup[sp.session_id]
+            sp_completed = _to_naive_utc(sp.completed_at)
 
             score = float(sp.quiz_score)
             total_quiz_count += 1
@@ -506,7 +592,7 @@ class AnalyticsService:
             if score >= 1.0:
                 perfect_count += 1
 
-            step_title = AnalyticsService._extract_step_title(session, sp.step_index)
+            step_title = step_titles_map.get((sp.session_id, sp.step_index), f"Step {sp.step_index + 1}")
             session_scores_accumulator.setdefault(sp.session_id, []).append(score)
             running_avg = sum(session_scores_accumulator[sp.session_id]) / len(session_scores_accumulator[sp.session_id])
 
@@ -560,10 +646,14 @@ class AnalyticsService:
             else:
                 mode_counts["visual"] += 1
 
-            steps = steps_by_session.get(sid, [])
-            completed_steps_in_sess = [sp for sp in steps if sp.status == "complete"]
-            completed_count = len(completed_steps_in_sess)
-            total = s.total_steps if s.total_steps and s.total_steps > 0 else len(steps)
+            if sid in session_step_agg:
+                total_step_rows, completed_count, _ = session_step_agg[sid]
+            else:
+                steps = steps_by_session.get(sid, [])
+                completed_count = sum(1 for sp in steps if sp.status == "complete")
+                total_step_rows = len(steps)
+
+            total = s.total_steps if s.total_steps and s.total_steps > 0 else total_step_rows
 
             if s.is_complete:
                 pct = 100.0
@@ -695,6 +785,58 @@ class AnalyticsService:
             mode_distribution=performance.mode_distribution,
             achievements=standing.achievements,
         )
+
+    @staticmethod
+    async def _fetch_step_titles(
+        db: AsyncSession,
+        session_ids: list[str],
+    ) -> dict[tuple[str, int], str]:
+        """
+        Extract only (session_id, step_index) -> step title without loading full state_json blobs.
+        Uses PostgreSQL JSONB array extraction when running on Postgres, with a generic fallback.
+        """
+        if not session_ids:
+            return {}
+
+        titles: dict[tuple[str, int], str] = {}
+        dialect_name = db.bind.dialect.name if db.bind is not None else ""
+
+        if dialect_name == "postgresql":
+            stmt = text(
+                """
+                SELECT s.session_id,
+                       (arr.ord - 1)::int AS step_index,
+                       arr.elem->>'title' AS title
+                FROM sessions s
+                CROSS JOIN LATERAL jsonb_array_elements(
+                    CASE
+                        WHEN s.state_json IS NOT NULL
+                             AND jsonb_typeof((s.state_json::jsonb) -> 'steps') = 'array'
+                        THEN (s.state_json::jsonb) -> 'steps'
+                        ELSE '[]'::jsonb
+                    END
+                ) WITH ORDINALITY AS arr(elem, ord)
+                WHERE s.session_id IN :session_ids
+                """
+            ).bindparams(bindparam("session_ids", expanding=True))
+            res = await db.execute(stmt, {"session_ids": session_ids})
+            for row in res.all():
+                if row.title is not None:
+                    titles[(row.session_id, int(row.step_index))] = str(row.title)
+            return titles
+
+        # Generic fallback for non-PostgreSQL dialects (e.g., SQLite in isolated tests)
+        stmt = select(SessionRecord.session_id, SessionRecord.state_json).where(
+            SessionRecord.session_id.in_(session_ids)
+        )
+        res = await db.execute(stmt)
+        for sid, state_json in res.all():
+            if state_json and isinstance(state_json, dict):
+                steps = state_json.get("steps", [])
+                for idx, step_obj in enumerate(steps):
+                    if isinstance(step_obj, dict) and "title" in step_obj and step_obj["title"] is not None:
+                        titles[(sid, idx)] = str(step_obj["title"])
+        return titles
 
     @staticmethod
     def _extract_step_title(session: SessionRecord, step_index: int) -> str:

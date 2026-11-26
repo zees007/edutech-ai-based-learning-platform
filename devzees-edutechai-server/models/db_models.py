@@ -86,19 +86,22 @@ class User(LoggedEntity, Base):
         "SessionRecord",
         back_populates="user",
         cascade="all, delete-orphan",
-        lazy="selectin",
+        passive_deletes=True,
+        lazy="noload",
     )
     feedbacks: Mapped[list[FeedbackRecord]] = relationship(
         "FeedbackRecord",
         back_populates="user",
         cascade="all, delete-orphan",
-        lazy="selectin",
+        passive_deletes=True,
+        lazy="noload",
     )
     refresh_tokens: Mapped[list[RefreshToken]] = relationship(
         "RefreshToken",
         back_populates="user",
         cascade="all, delete-orphan",
-        lazy="selectin",
+        passive_deletes=True,
+        lazy="noload",
     )
 
     def __repr__(self) -> str:
@@ -318,7 +321,8 @@ class SessionRecord(Base):
         back_populates="session",
         uselist=False,
         cascade="all, delete-orphan",
-        lazy="selectin",
+        passive_deletes=True,
+        lazy="noload",
     )
 
     def __repr__(self) -> str:
