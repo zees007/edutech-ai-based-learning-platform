@@ -533,6 +533,8 @@ class _SidebarFooterState extends ConsumerState<SidebarFooter> {
                   ),
                   Text(
                     planCapitalized,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: AppTextStyles.caption.copyWith(
                       color: context.appColors.textSecondary,
                     ),

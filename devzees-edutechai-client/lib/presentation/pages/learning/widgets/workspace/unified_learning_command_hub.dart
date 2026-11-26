@@ -148,7 +148,7 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
                 alignment: Alignment.centerRight,
                 child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
-                  clipBehavior: Clip.none,
+                  clipBehavior: Clip.hardEdge,
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -662,12 +662,16 @@ class _UnifiedLearningCommandHubState extends ConsumerState<UnifiedLearningComma
           ),
         ),
         const SizedBox(width: 8),
-        Text(
-          'Milestone Learning Roadmap',
-          style: AppTextStyles.subtitle2.copyWith(
-            fontWeight: FontWeight.w800,
-            color: context.appColors.textPrimary,
-            letterSpacing: 0.2,
+        Flexible(
+          child: Text(
+            'Milestone Learning Roadmap',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppTextStyles.subtitle2.copyWith(
+              fontWeight: FontWeight.w800,
+              color: context.appColors.textPrimary,
+              letterSpacing: 0.2,
+            ),
           ),
         ),
       ],

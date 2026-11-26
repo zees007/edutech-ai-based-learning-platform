@@ -25,7 +25,11 @@ class SidebarHeader extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 16),
         child: IconButton(
           onPressed: onToggle,
-          icon: Icon(Icons.menu, color: context.appColors.textSecondary, size: 20),
+          icon: Icon(
+            Icons.menu,
+            color: context.appColors.textSecondary,
+            size: 20,
+          ),
         ),
       );
     }
@@ -35,40 +39,41 @@ class SidebarHeader extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            children: [
-              Text(
-                '⚡ ',
-                style: AppTextStyles.h4.copyWith(
-                  fontWeight: FontWeight.w900,
+          Expanded(
+            child: Row(
+              children: [
+                Text(
+                  '⚡ ',
+                  style: AppTextStyles.h4.copyWith(fontWeight: FontWeight.w900),
                 ),
-              ),
-              GradientText(
-                'EduTech',
-                style: AppTextStyles.h3.copyWith(
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: -0.5,
-                ),
-              ),
-              const SizedBox(width: 4),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 6,
-                  vertical: 2,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.2),
-                  border: Border.all(
-                    color: AppColors.primary.withValues(alpha: 0.4),
+                Flexible(
+                  child: GradientText(
+                    'EduTech',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.h3.copyWith(
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -0.5,
+                    ),
                   ),
-                  borderRadius: BorderRadius.circular(8),
                 ),
-                child: Text(
-                  'AI',
-                  style: AppTextStyles.labelSmall,
+                const SizedBox(width: 4),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.2),
+                    border: Border.all(
+                      color: AppColors.primary.withValues(alpha: 0.4),
+                    ),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text('AI', style: AppTextStyles.labelSmall),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
           if (!isMobile)
             IconButton(
@@ -81,7 +86,10 @@ class SidebarHeader extends StatelessWidget {
           else
             IconButton(
               onPressed: onClose,
-              icon: Icon(Icons.menu_open, color: context.appColors.textSecondary),
+              icon: Icon(
+                Icons.menu_open,
+                color: context.appColors.textSecondary,
+              ),
             ),
         ],
       ),

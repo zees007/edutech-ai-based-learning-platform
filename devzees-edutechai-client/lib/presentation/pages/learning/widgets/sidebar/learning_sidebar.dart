@@ -218,16 +218,19 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
           padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 8.0),
           child: Row(
             children: [
-              Text(
-                'Learning History ($total)',
-                style: TextStyle(
-                  color: context.appColors.textPrimary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0.5,
+              Expanded(
+                child: Text(
+                  'Learning History ($total)',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: context.appColors.textPrimary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.5,
+                  ),
                 ),
               ),
-              const Spacer(),
               Icon(
                 _isHistoryExpanded
                     ? Icons.keyboard_arrow_down
@@ -293,7 +296,10 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
                   onChanged: (value) {
                     ref.read(sessionsProvider.notifier).updateSearch(value);
                   },
-                  style: TextStyle(color: context.appColors.textPrimary, fontSize: 13),
+                  style: TextStyle(
+                    color: context.appColors.textPrimary,
+                    fontSize: 13,
+                  ),
                   cursorColor: AppColors.primary,
                   decoration: InputDecoration(
                     isDense: true,
@@ -629,18 +635,18 @@ class _SidebarNavTabState extends State<_SidebarNavTab> {
                   color: widget.isSelected
                       ? AppColors.primary.withValues(alpha: 0.14)
                       : (_isHovered
-                          ? AppColors.primary.withValues(alpha: 0.05)
-                          : (isDark
-                              ? Colors.white.withValues(alpha: 0.05)
-                              : context.appColors.surfaceSubtle)),
+                            ? AppColors.primary.withValues(alpha: 0.05)
+                            : (isDark
+                                  ? Colors.white.withValues(alpha: 0.05)
+                                  : context.appColors.surfaceSubtle)),
                   border: Border.all(
                     color: widget.isSelected
                         ? AppColors.primary.withValues(alpha: 0.38)
                         : (_isHovered
-                            ? AppColors.primary.withValues(alpha: 0.10)
-                            : (isDark
-                                ? Colors.white.withValues(alpha: 0.08)
-                                : context.appColors.border)),
+                              ? AppColors.primary.withValues(alpha: 0.10)
+                              : (isDark
+                                    ? Colors.white.withValues(alpha: 0.08)
+                                    : context.appColors.border)),
                     width: 1,
                   ),
                   boxShadow: widget.isSelected
@@ -659,10 +665,10 @@ class _SidebarNavTabState extends State<_SidebarNavTab> {
                   color: widget.isSelected
                       ? AppColors.primary
                       : (_isHovered
-                          ? AppColors.primary.withValues(alpha: 0.8)
-                          : (isDark
-                              ? Colors.white.withValues(alpha: 0.7)
-                              : context.appColors.textSecondary)),
+                            ? AppColors.primary.withValues(alpha: 0.8)
+                            : (isDark
+                                  ? Colors.white.withValues(alpha: 0.7)
+                                  : context.appColors.textSecondary)),
                 ),
               ),
             ),
@@ -689,14 +695,14 @@ class _SidebarNavTabState extends State<_SidebarNavTab> {
               color: widget.isSelected
                   ? AppColors.primary.withValues(alpha: 0.14)
                   : (_isHovered
-                      ? AppColors.primary.withValues(alpha: 0.05)
-                      : Colors.transparent),
+                        ? AppColors.primary.withValues(alpha: 0.05)
+                        : Colors.transparent),
               border: Border.all(
                 color: widget.isSelected
                     ? AppColors.primary.withValues(alpha: 0.38)
                     : (_isHovered
-                        ? AppColors.primary.withValues(alpha: 0.10)
-                        : Colors.transparent),
+                          ? AppColors.primary.withValues(alpha: 0.10)
+                          : Colors.transparent),
               ),
               boxShadow: widget.isSelected
                   ? [
@@ -716,8 +722,10 @@ class _SidebarNavTabState extends State<_SidebarNavTab> {
                   color: widget.isSelected
                       ? AppColors.primary
                       : (_isHovered
-                          ? AppColors.primary.withValues(alpha: 0.8)
-                          : context.appColors.textSecondary.withValues(alpha: 0.6)),
+                            ? AppColors.primary.withValues(alpha: 0.8)
+                            : context.appColors.textSecondary.withValues(
+                                alpha: 0.6,
+                              )),
                   size: 18,
                 ),
                 const SizedBox(width: 12),
@@ -751,13 +759,11 @@ class _CollapsedHistoryButton extends StatefulWidget {
   final VoidCallback onTap;
   final bool isSelected;
 
-  const _CollapsedHistoryButton({
-    required this.onTap,
-    this.isSelected = false,
-  });
+  const _CollapsedHistoryButton({required this.onTap, this.isSelected = false});
 
   @override
-  State<_CollapsedHistoryButton> createState() => _CollapsedHistoryButtonState();
+  State<_CollapsedHistoryButton> createState() =>
+      _CollapsedHistoryButtonState();
 }
 
 class _CollapsedHistoryButtonState extends State<_CollapsedHistoryButton> {
@@ -793,18 +799,18 @@ class _CollapsedHistoryButtonState extends State<_CollapsedHistoryButton> {
                 color: widget.isSelected
                     ? AppColors.primary.withValues(alpha: 0.14)
                     : (_isHovered
-                        ? AppColors.primary.withValues(alpha: 0.05)
-                        : (isDark
-                            ? Colors.white.withValues(alpha: 0.05)
-                            : context.appColors.surfaceSubtle)),
+                          ? AppColors.primary.withValues(alpha: 0.05)
+                          : (isDark
+                                ? Colors.white.withValues(alpha: 0.05)
+                                : context.appColors.surfaceSubtle)),
                 border: Border.all(
                   color: widget.isSelected
                       ? AppColors.primary.withValues(alpha: 0.38)
                       : (_isHovered
-                          ? AppColors.primary.withValues(alpha: 0.10)
-                          : (isDark
-                              ? Colors.white.withValues(alpha: 0.08)
-                              : context.appColors.border)),
+                            ? AppColors.primary.withValues(alpha: 0.10)
+                            : (isDark
+                                  ? Colors.white.withValues(alpha: 0.08)
+                                  : context.appColors.border)),
                   width: 1,
                 ),
                 boxShadow: widget.isSelected
@@ -823,10 +829,10 @@ class _CollapsedHistoryButtonState extends State<_CollapsedHistoryButton> {
                 color: widget.isSelected
                     ? AppColors.primary
                     : (_isHovered
-                        ? AppColors.primary.withValues(alpha: 0.8)
-                        : (isDark
-                            ? Colors.white.withValues(alpha: 0.7)
-                            : context.appColors.textSecondary)),
+                          ? AppColors.primary.withValues(alpha: 0.8)
+                          : (isDark
+                                ? Colors.white.withValues(alpha: 0.7)
+                                : context.appColors.textSecondary)),
               ),
             ),
           ),

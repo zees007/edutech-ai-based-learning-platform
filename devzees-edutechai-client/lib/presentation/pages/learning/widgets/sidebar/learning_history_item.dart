@@ -380,14 +380,15 @@ class _LearningHistoryItemState extends ConsumerState<LearningHistoryItem> {
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 6),
-                      Row(
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 4,
                         children: [
                           _buildBadge(
                             Icons.check_circle_outline,
                             '${widget.session.stepsCompleted}/${widget.session.totalSteps ?? widget.session.stepsCompleted} Steps',
                             AppColors.accentGreen,
                           ),
-                          const SizedBox(width: 8),
                           _buildBadge(
                             Icons.star_outline,
                             '${widget.session.xpEarned} XP',
