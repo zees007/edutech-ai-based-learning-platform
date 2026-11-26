@@ -4,6 +4,7 @@ import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
 import 'package:devzees_edutechai_client/core/constants/responsive.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/word_by_word_reveal.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/gradient_text.dart';
+import 'package:devzees_edutechai_client/presentation/widgets/gradient_button.dart';
 import 'package:go_router/go_router.dart';
 
 /// Ultra-premium SaaS hero section designed for a high-converting, agency-grade presentation.
@@ -330,10 +331,22 @@ class _HeroSectionState extends State<HeroSection> {
                                   : WrapAlignment.start,
                               crossAxisAlignment: WrapCrossAlignment.center,
                               children: [
-                                _HeroPrimaryButton(
+                                GradientButton(
                                   text: 'Start Learning for Free',
-                                  onTap: () => context.go('/auth'),
-                                  isMobile: isMobile,
+                                  icon: Icons.arrow_forward_rounded,
+                                  iconSize: 18,
+                                  height: isMobile ? 48 : 52,
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: isMobile ? 22 : 28,
+                                  ),
+                                  borderRadius: BorderRadius.circular(9999),
+                                  textStyle: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: isMobile ? 14 : 15,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: -0.2,
+                                  ),
+                                  onPressed: () => context.go('/auth'),
                                 ),
                                 _HeroSecondaryDemoButton(
                                   text: 'Watch a Demo',
@@ -411,145 +424,6 @@ class _HeroSectionState extends State<HeroSection> {
 // -----------------------------------------------------------------------------
 // SHARED MICRO-COMPONENTS
 // -----------------------------------------------------------------------------
-
-/// Premium gradient action button with subtle hover lift and specular sweep
-class _HeroPrimaryButton extends StatefulWidget {
-  final String text;
-  final VoidCallback onTap;
-  final bool isMobile;
-
-  const _HeroPrimaryButton({
-    required this.text,
-    required this.onTap,
-    required this.isMobile,
-  });
-
-  @override
-  State<_HeroPrimaryButton> createState() => _HeroPrimaryButtonState();
-}
-
-class _HeroPrimaryButtonState extends State<_HeroPrimaryButton>
-    with SingleTickerProviderStateMixin {
-  bool _isHovered = false;
-  late final AnimationController _shimmerController;
-
-  @override
-  void initState() {
-    super.initState();
-    _shimmerController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1600),
-    );
-  }
-
-  @override
-  void dispose() {
-    _shimmerController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SelectionContainer.disabled(
-      child: MouseRegion(
-        onEnter: (_) {
-          setState(() => _isHovered = true);
-          _shimmerController.repeat();
-        },
-        onExit: (_) {
-          setState(() => _isHovered = false);
-          _shimmerController.stop();
-          _shimmerController.reset();
-        },
-        cursor: SystemMouseCursors.click,
-        opaque: true,
-        child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: widget.onTap,
-        child: AnimatedScale(
-          scale: _isHovered ? 1.03 : 1.0,
-          duration: const Duration(milliseconds: 180),
-          curve: Curves.easeOutCubic,
-          child: Container(
-            height: widget.isMobile ? 48 : 52,
-            padding: EdgeInsets.symmetric(
-              horizontal: widget.isMobile ? 22 : 28,
-            ),
-            decoration: BoxDecoration(
-              gradient: AppColors.primaryGradient,
-              borderRadius: BorderRadius.circular(9999),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primary.withValues(
-                    alpha: _isHovered ? 0.55 : 0.35,
-                  ),
-                  blurRadius: _isHovered ? 24 : 16,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            clipBehavior: Clip.antiAlias,
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        widget.text,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: widget.isMobile ? 14 : 15,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: -0.2,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      const Icon(
-                        Icons.arrow_forward_rounded,
-                        color: Colors.white,
-                        size: 18,
-                      ),
-                    ],
-                  ),
-                ),
-                if (_isHovered)
-                  AnimatedBuilder(
-                    animation: _shimmerController,
-                    builder: (context, _) {
-                      return Positioned.fill(
-                        child: FractionallySizedBox(
-                          widthFactor: 0.45,
-                          alignment: Alignment(
-                            -1.5 + _shimmerController.value * 3.0,
-                            0,
-                          ),
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  Colors.white.withValues(alpha: 0.0),
-                                  Colors.white.withValues(alpha: 0.35),
-                                  Colors.white.withValues(alpha: 0.0),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    ),
-  );
-}
-}
 
 /// Frosted glass secondary action button for demo trigger
 class _HeroSecondaryDemoButton extends StatefulWidget {

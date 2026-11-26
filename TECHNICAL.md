@@ -29,7 +29,10 @@ This document provides comprehensive technical documentation for the EduTechAI a
    - [Follow-up Socratic Chat Sequence](#follow-up-socratic-chat-sequence)
    - [Gamification, Journey Completion & Review Flow](#gamification-journey-completion--review-flow)
 6. [Data Persistence & Session Recovery](#6-data-persistence--session-recovery)
-7. [Configuration & Model Routing](#7-configuration--model-routing)
+7. [Configuration, Database Setup & Model Routing](#7-configuration-database-setup--model-routing)
+   - [7.1 LLM & External Service Configuration](#71-llm--external-service-configuration)
+   - [7.2 Database Configuration & Startup Initialization](#72-database-configuration--startup-initialization)
+   - [7.3 Dynamic System Settings & In-Memory Cache (`SettingService`)](#73-dynamic-system-settings--in-memory-cache-settingservice)
 8. [Role-Based Access Control (RBAC) & Subscription Tiers](#8-role-based-access-control-rbac--subscription-tiers)
    - [Privilege Catalog & Domain Grouping](#privilege-catalog--domain-grouping)
    - [Role-to-Privilege Matrix](#role-to-privilege-matrix)
@@ -53,21 +56,25 @@ This document provides comprehensive technical documentation for the EduTechAI a
     - [Optimistic State & Silent Background Synchronization](#optimistic-state--silent-background-synchronization)
     - [Formative Knowledge Check Quiz Engine](#formative-knowledge-check-quiz-engine)
     - [UI Performance & 60FPS Rendering Optimizations](#ui-performance--60fps-rendering-optimizations)
+    - [Smart Step Regeneration Engine](#smart-step-regeneration-engine)
 12. [Authentication & Token Management Architecture](#12-authentication--token-management-architecture)
-    - [Dual-Token Strategy](#121-dual-token-strategy)
-    - [Transparent Token Refresh & Queued Interceptor](#122-transparent-token-refresh--queued-interceptor-client)
-    - [Token Rotation & Replay Detection](#123-token-rotation--replay-detection)
-    - [Global Invalidation](#124-global-invalidation-logout-all)
+    - [12.1 Dual-Token Strategy](#121-dual-token-strategy)
+    - [12.2 Transparent Token Refresh & Queued Interceptor (Client)](#122-transparent-token-refresh--queued-interceptor-client)
+    - [12.3 Token Rotation & Replay Detection](#123-token-rotation--replay-detection)
+    - [12.4 Global Invalidation (Logout All)](#124-global-invalidation-logout-all)
+    - [12.5 Step-by-Step Flow Example](#125-step-by-step-flow-example)
 13. [Database Migrations (Alembic) Workflow](#13-database-migrations-alembic-workflow)
-    - [Migration Auto-Generation](#131-migration-auto-generation)
-    - [Automatic Startup Migrations](#132-automatic-startup-migrations)
+    - [13.1 Migration Auto-Generation](#131-migration-auto-generation)
+    - [13.2 Automatic Startup Migrations](#132-automatic-startup-migrations)
 14. [Unified Learner Performance & Analytics Dashboard Engine](#14-unified-learner-performance--analytics-dashboard-engine)
-    - [Architecture & Design Rationale](#141-architecture--design-rationale)
-    - [AnalyticsService Calculation Pipeline & Active Duration Clamping](#142-analyticsservice-calculation-pipeline--active-duration-clamping)
-    - [Formative 3-Question Quiz Metrics & Weak Concept Identification](#143-formative-3-question-quiz-metrics--weak-concept-identification)
-    - [Tri-Mode Learning Distribution & Milestone Achievements](#144-tri-mode-learning-distribution--milestone-achievements)
-    - [Privilege Enforcement & Database Seeder Integration](#145-privilege-enforcement--database-seeder-integration)
-    - [Flutter Client Architecture, Data Visualization & Glassmorphism](#146-flutter-client-architecture-data-visualization--glassmorphism)
+    - [14.1 Architecture & Two-Tier Decoupling](#141-architecture--two-tier-decoupling)
+    - [14.2 Timezone Alignment & Boundary Consistency](#142-timezone-alignment--boundary-consistency)
+    - [14.3 AnalyticsService Calculation Pipeline & Active Duration Clamping](#143-analyticsservice-calculation-pipeline--active-duration-clamping)
+    - [14.4 Formative 3-Question Quiz Metrics & Weak Concept Identification](#144-formative-3-question-quiz-metrics--weak-concept-identification)
+    - [14.5 Privilege Enforcement & Database Seeder Integration](#145-privilege-enforcement--database-seeder-integration)
+    - [14.6 Flutter Client Architecture & UI Components](#146-flutter-client-architecture--ui-components)
+    - [14.7 The 6-Tier Prestige Trophy Ladder & Unlock Logic Matrix](#147-the-6-tier-prestige-trophy-ladder--unlock-logic-matrix)
+    - [14.8 Admin Learner Dashboard Inspection Architecture](#148-admin-learner-dashboard-inspection-architecture)
 
 ---
 
@@ -418,9 +425,11 @@ Session persistence is handled by `services/session_manager.py`:
 
 ---
 
-## 7. Configuration & Model Routing
+## 7. Configuration, Database Setup & Model Routing
 
-Model assignments are centrally managed in `config.py` and configurable via `.env`:
+### 7.1 LLM & External Service Configuration
+
+Model assignments are centrally managed in `config.py` (`Settings`) and configurable via `.env`:
 
 ```env
 # Default Provider & Model Routing
@@ -434,6 +443,54 @@ YOUTUBE_DAILY_SEARCH_LIMIT=100
 SEMANTIC_SCHOLAR_API_KEY=
 OPENALEX_EMAIL=your-email@domain.com
 ```
+
+### 7.2 Database Configuration & Startup Initialization
+
+PostgreSQL connectivity and DDL lifecycle are configured in `config.py` / `.env` and executed by `services/database.py` during FastAPI's `lifespan` startup (`app/main.py`):
+
+```env
+# ─── Database & Runtime Mode ─────────────────────────────────
+DATABASE_URL=postgresql+asyncpg://user:password@host:5432/postgres
+DATABASE_SCHEMA=edutechAI
+AUTO_CREATE_TABLES=false   # true for local dev auto-DDL; false for production
+DEBUG=false                # true enables SQLAlchemy SQL echo & uvicorn reload
+```
+
+#### Connection & Schema Routing (`_get_engine`)
+- `Settings.normalize_database_url` automatically normalizes `postgres://` and `postgresql://` URLs to `postgresql+asyncpg://`.
+- For PostgreSQL connections, `_get_engine()` sets `statement_cache_size=0` and `prepared_statement_cache_size=0` for PgBouncer / Supabase transaction-pooler compatibility, enables `pool_pre_ping=True` and `pool_recycle=300`, and scopes every connection's `search_path` to `"<DATABASE_SCHEMA>"` (default: `"edutechAI"`).
+
+#### Startup Behavior Matrix (`init_db`)
+`init_db()` is guarded by a module-level `_db_initialized` flag so it executes once per process lifetime:
+
+| Mode | `AUTO_CREATE_TABLES=true` (Local Dev) | `AUTO_CREATE_TABLES=false` (Production) |
+| :--- | :--- | :--- |
+| **Schema Creation** | Runs `CREATE SCHEMA IF NOT EXISTS "<schema>";` | Skipped; calls `_verify_schema_exists()` (`information_schema.schemata`) and fails fast with `RuntimeError` if missing |
+| **Alembic Migrations** | Calls `run_auto_migrations()` (`alembic upgrade head`) | Skipped (migrations/DDL changes are applied manually) |
+| **Settings Cache Sync** | Calls `SettingService.sync_cache_from_db(session)` | Calls `SettingService.sync_cache_from_db(session)` |
+
+#### Production Setup & Manual DDL Checklist
+1. **Create the Schema Manually First:** Ensure the target PostgreSQL schema (`DATABASE_SCHEMA`, e.g. `edutechAI`) exists before booting the server or running `alembic upgrade head` (note: `alembic/env.py` targets `version_table_schema=schema_name` and `search_path` without running `CREATE SCHEMA IF NOT EXISTS`).
+2. **Apply Tables & Future Schema Changes Manually:** Run `alembic upgrade head` (or your controlled DDL scripts) outside the app process. Keeping `AUTO_CREATE_TABLES=false` prevents multi-worker startup races and removes DDL privilege requirements from the runtime database user.
+3. **Seed Baseline Data Manually:** Startup creates/verifies schema structure only—it does **not** seed baseline rows. On a brand-new schema, run the seeder scripts in `devzees-edutechai-server/scripts/seeder/` (`02_seed_privileges_and_roles.py` through `05_seed_feedbacks.py`, and `06_seed_trophies.py` if needed) so default roles (e.g. `"Free"` for user registration), privileges, subscription tiers, and system settings exist.
+4. **Disable Debug Mode:** Set `DEBUG=false` in production so `uvicorn` reload and SQLAlchemy `echo` query logging remain off.
+
+### 7.3 Dynamic System Settings & In-Memory Cache (`SettingService`)
+
+`services/setting_service.py` provides zero-latency synchronous lookups backed by PostgreSQL persistence (`settings` table / `SystemSetting` ORM model):
+
+- **Fallback Resolution Order:**
+  1. `SettingService._cache` (class-level in-memory `dict[str, str]`, pre-populated from `DEFAULT_SYSTEM_SETTINGS` and `os.environ` at import time).
+  2. `os.environ` (`.env` environment variables).
+  3. Caller-provided `default` argument or `DEFAULT_SYSTEM_SETTINGS`.
+- **Startup Cache Pre-Warming:**
+  - During `init_db()`, `SettingService.sync_cache_from_db(session)` queries all rows from the `settings` table ordered by `order_number` and merges them into `SettingService._cache`, setting `_is_synced = True`.
+  - This runs in **both** `AUTO_CREATE_TABLES=true` and `AUTO_CREATE_TABLES=false` modes so production instances immediately use database-persisted settings (agent models, pricing, coupons, promo banner, YouTube/follow-up/session limits) on startup.
+  - If the `settings` table is unreachable or not yet populated, `sync_cache_from_db` logs a warning and preserves fallback defaults without crashing startup.
+- **Runtime Cache Synchronization:**
+  - `SettingService.get_all_settings(db)` and `SettingService.get_setting_by_code(db, code)` refresh `_cache` on read.
+  - `SettingService.update_setting(db, code, value, order_number)` commits the row to PostgreSQL and immediately updates `SettingService._cache[code]` in memory (no restart required).
+  - **Multi-Worker Note:** `_cache` lives in process memory per worker. Each worker loads the latest values on startup via `init_db()`; if settings are updated at runtime in a multi-worker deployment, workers that did not handle the update request will retain their startup cache until restarted or until `get_all_settings` / `sync_cache_from_db` runs in that worker.
 
 ---
 
@@ -955,9 +1012,9 @@ alembic revision --autogenerate -m "Add refresh tokens"
 *Note on Renaming:* Alembic generates a random hash ID (e.g., `c2debcfa4613`) for the revision. You can safely rename the physical Python script (e.g., to `0005_add_refresh_tokens.py`), but you **must** preserve the internal `revision: str = '...'` variable exactly as generated unless you are also manually updating the `alembic_version` tracking table to match.
 
 ### 13.2 Automatic Startup Migrations
-- Upon starting the FastAPI backend, `database.py` evaluates the `AUTO_CREATE_TABLES` environment variable.
-- If true, `asyncio.to_thread(command.upgrade, alembic_cfg, "head")` is invoked, programmatically executing all pending migrations before the application accepts traffic.
-- This ensures the database schema is perfectly synchronized with the codebase upon deployment.
+- Upon starting the FastAPI backend, `services/database.py` (`init_db`) evaluates `settings.auto_create_tables` (`AUTO_CREATE_TABLES` in `.env`):
+  - When `true` (local dev): ensures `"<DATABASE_SCHEMA>"` exists (`CREATE SCHEMA IF NOT EXISTS`), resolves `alembic.ini` relative to the server root, and executes `asyncio.to_thread(command.upgrade, alembic_cfg, "head")` to apply pending migrations before warming `SettingService` cache.
+  - When `false` (production): skips schema creation and Alembic migrations, verifies DB connectivity and schema existence via `_verify_schema_exists()` (raising `RuntimeError` if the PostgreSQL schema is missing), and still warms `SettingService` cache via `SettingService.sync_cache_from_db()`.
 
 ---
 

@@ -5,6 +5,7 @@ import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/theme_palette.dart';
 import '../../../../../core/theme/text_styles.dart';
 import '../../../../../presentation/widgets/gradient_text.dart';
+import '../../../../../presentation/widgets/gradient_button.dart';
 import '../../../../../presentation/widgets/app_gradient_spinner.dart';
 import 'journey_prompt_card.dart';
 import '../../../../../core/providers/learning_provider.dart';
@@ -152,37 +153,20 @@ class _LearningMainContentState extends ConsumerState<LearningMainContent> {
                 ),
                 const SizedBox(width: 10),
                 Expanded(
-                  child: MouseRegion(
-                    cursor: SystemMouseCursors.click,
-                    child: GestureDetector(
-                      onTap: () => Navigator.of(ctx).pop(true),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          gradient: AppColors.primaryGradient,
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.primary.withValues(alpha: 0.35),
-                              blurRadius: 12,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Text(
-                          isPremium ? 'Discard Journey' : 'Cancel Anyway',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.inter(
-                            fontSize: isMobile ? 12 : 13,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
+                  child: GradientButton(
+                    text: isPremium ? 'Discard Journey' : 'Cancel Anyway',
+                    height: null,
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 12,
+                      horizontal: 12,
                     ),
+                    borderRadius: BorderRadius.circular(12),
+                    textStyle: GoogleFonts.inter(
+                      fontSize: isMobile ? 12 : 13,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                    onPressed: () => Navigator.of(ctx).pop(true),
                   ),
                 ),
               ],

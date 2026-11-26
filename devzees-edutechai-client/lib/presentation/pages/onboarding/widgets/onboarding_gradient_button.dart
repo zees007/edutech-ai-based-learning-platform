@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../widgets/gradient_button.dart';
 
 /// Circular "next" arrow button with brand gradient, used on slides 1 & 2.
 class OnboardingNextButton extends StatelessWidget {
@@ -9,21 +9,13 @@ class OnboardingNextButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onPressed,
-      child: Container(
-        width: 52,
-        height: 52,
-        decoration: const BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: AppColors.primaryGradient,
-        ),
-        child: const Icon(
-          Icons.arrow_forward_rounded,
-          color: Colors.white,
-          size: 22,
-        ),
-      ),
+    return GradientButton.icon(
+      icon: Icons.arrow_forward_rounded,
+      iconSize: 22,
+      width: 52,
+      height: 52,
+      shape: BoxShape.circle,
+      onPressed: onPressed,
     );
   }
 }
@@ -36,36 +28,23 @@ class OnboardingGetStartedButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onPressed,
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(100),
-          gradient: AppColors.primaryGradient,
-        ),
-        child: const Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'Get Started',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 15,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 0.2,
-              ),
-            ),
-            SizedBox(width: 8),
-            Icon(
-              Icons.arrow_forward_rounded,
-              color: Colors.white,
-              size: 18,
-            ),
-          ],
-        ),
+    return GradientButton(
+      text: 'Get Started',
+      icon: Icons.arrow_forward_rounded,
+      iconSize: 18,
+      width: double.infinity,
+      height: null,
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      borderRadius: BorderRadius.circular(100),
+      showShadow: false,
+      enableHoverEffects: false,
+      textStyle: const TextStyle(
+        color: Colors.white,
+        fontSize: 15,
+        fontWeight: FontWeight.w700,
+        letterSpacing: 0.2,
       ),
+      onPressed: onPressed,
     );
   }
 }

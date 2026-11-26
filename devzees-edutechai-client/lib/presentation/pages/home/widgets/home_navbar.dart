@@ -7,6 +7,7 @@ import 'package:devzees_edutechai_client/core/constants/responsive.dart';
 import 'package:devzees_edutechai_client/core/providers/auth_provider.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/word_by_word_reveal.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/gradient_text.dart';
+import 'package:devzees_edutechai_client/presentation/widgets/gradient_button.dart';
 import 'package:go_router/go_router.dart';
 
 /// Ultra-premium floating glass navigation bar for EduTech AI.
@@ -147,10 +148,21 @@ class HomeNavbar extends ConsumerWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       if (isAuthenticated) ...[
-                        _NavbarGradientActionPill(
+                        GradientButton(
                           text: 'Open Workspace →',
-                          onTap: () => context.go('/learning'),
-                          isMobile: isMobile,
+                          height: null,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: isMobile ? 14 : 20,
+                            vertical: isMobile ? 8 : 9.5,
+                          ),
+                          borderRadius: BorderRadius.circular(9999),
+                          textStyle: TextStyle(
+                            color: Colors.white,
+                            fontSize: isMobile ? 12.5 : 14.5,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.2,
+                          ),
+                          onPressed: () => context.go('/learning'),
                         ),
                       ] else ...[
                         if (isDesktop) ...[
@@ -159,10 +171,21 @@ class HomeNavbar extends ConsumerWidget {
                           ),
                           const SizedBox(width: 8),
                         ],
-                        _NavbarGradientActionPill(
+                        GradientButton(
                           text: 'Get Started',
-                          onTap: () => context.go('/auth'),
-                          isMobile: isMobile,
+                          height: null,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: isMobile ? 14 : 20,
+                            vertical: isMobile ? 8 : 9.5,
+                          ),
+                          borderRadius: BorderRadius.circular(9999),
+                          textStyle: TextStyle(
+                            color: Colors.white,
+                            fontSize: isMobile ? 12.5 : 14.5,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.2,
+                          ),
+                          onPressed: () => context.go('/auth'),
                         ),
                       ],
                       if (!isDesktop) ...[
@@ -398,136 +421,6 @@ class _NavbarSignInButtonState extends State<_NavbarSignInButton> {
                   fontWeight: _isHovered ? FontWeight.w700 : FontWeight.w600,
                   letterSpacing: -0.1,
                 ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// The signature modern SaaS gradient action pill button matching app theme.
-class _NavbarGradientActionPill extends StatefulWidget {
-  final String text;
-  final VoidCallback onTap;
-  final bool isMobile;
-
-  const _NavbarGradientActionPill({
-    required this.text,
-    required this.onTap,
-    this.isMobile = false,
-  });
-
-  @override
-  State<_NavbarGradientActionPill> createState() =>
-      _NavbarGradientActionPillState();
-}
-
-class _NavbarGradientActionPillState extends State<_NavbarGradientActionPill>
-    with SingleTickerProviderStateMixin {
-  bool _isHovered = false;
-  late final AnimationController _shimmerController;
-
-  @override
-  void initState() {
-    super.initState();
-    _shimmerController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1600),
-    );
-  }
-
-  @override
-  void dispose() {
-    _shimmerController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SelectionContainer.disabled(
-      child: MouseRegion(
-        cursor: SystemMouseCursors.click,
-        opaque: true,
-        onEnter: (_) {
-          setState(() => _isHovered = true);
-          _shimmerController.repeat();
-        },
-        onExit: (_) {
-          setState(() => _isHovered = false);
-          _shimmerController.stop();
-          _shimmerController.reset();
-        },
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: widget.onTap,
-          child: AnimatedScale(
-            scale: _isHovered ? 1.03 : 1.0,
-            duration: const Duration(milliseconds: 180),
-            curve: Curves.easeOutCubic,
-            child: Container(
-              clipBehavior: Clip.antiAlias,
-              decoration: BoxDecoration(
-                gradient: AppColors.primaryGradient,
-                borderRadius: BorderRadius.circular(9999),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primary.withValues(
-                      alpha: _isHovered ? 0.55 : 0.35,
-                    ),
-                    blurRadius: _isHovered ? 24 : 16,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: widget.isMobile ? 14 : 20,
-                      vertical: widget.isMobile ? 8 : 9.5,
-                    ),
-                    child: Text(
-                      widget.text,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: widget.isMobile ? 12.5 : 14.5,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 0.2,
-                      ),
-                    ),
-                  ),
-                  if (_isHovered)
-                    Positioned.fill(
-                      child: IgnorePointer(
-                        child: AnimatedBuilder(
-                          animation: _shimmerController,
-                          builder: (context, _) {
-                            return FractionallySizedBox(
-                              widthFactor: 0.45,
-                              alignment: Alignment(
-                                -1.5 + _shimmerController.value * 3.0,
-                                0,
-                              ),
-                              child: DecoratedBox(
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      Colors.white.withValues(alpha: 0.0),
-                                      Colors.white.withValues(alpha: 0.35),
-                                      Colors.white.withValues(alpha: 0.0),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                ],
               ),
             ),
           ),

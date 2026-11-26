@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../core/theme/text_styles.dart';
 import '../../../../../core/services/feedback_service.dart';
+import '../../../../widgets/gradient_button.dart';
 
 /// Modal dialog shown upon completing all milestones.
 /// Prompts the student to submit a 1-5 star rating and short review (max 250 chars)
@@ -327,60 +328,24 @@ class _SessionFeedbackDialogState extends ConsumerState<SessionFeedbackDialog> {
                     const SizedBox(height: 18),
 
                     // Primary Action: Submit & Claim +30 XP
-                    Container(
+                    GradientButton(
+                      text: 'Submit & Claim +30 XP',
+                      icon: Icons.celebration_rounded,
+                      iconSize: 18,
+                      iconFirst: true,
+                      width: double.infinity,
                       height: 46,
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color:
-                                const Color(0xFFF59E0B).withValues(alpha: 0.35),
-                            blurRadius: 16,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
+                      isLoading: _isSubmitting,
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
                       ),
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.transparent,
-                          shadowColor: Colors.transparent,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        onPressed: _isSubmitting ? null : _handleSubmit,
-                        child: _isSubmitting
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
-                              )
-                            : Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Icon(
-                                    Icons.celebration_rounded,
-                                    size: 18,
-                                    color: Colors.white,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    'Submit & Claim +30 XP',
-                                    style: AppTextStyles.button.copyWith(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                ],
-                              ),
+                      borderRadius: BorderRadius.circular(12),
+                      textStyle: AppTextStyles.button.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14,
                       ),
+                      onPressed: _isSubmitting ? null : _handleSubmit,
                     ),
                     const SizedBox(height: 10),
 

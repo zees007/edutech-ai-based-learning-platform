@@ -141,27 +141,13 @@ class _LearningSidebarState extends ConsumerState<LearningSidebar> {
           : Tooltip(
               message: 'Start New Journey',
               waitDuration: const Duration(milliseconds: 300),
-              child: InkWell(
-                onTap: _handleStartNewJourney,
+              child: GradientButton.icon(
+                icon: Icons.edit_square,
+                iconSize: 20,
+                width: 48,
+                height: 48,
                 borderRadius: BorderRadius.circular(12),
-                hoverColor: Colors.transparent,
-                splashColor: Colors.transparent,
-                highlightColor: Colors.transparent,
-                mouseCursor: SystemMouseCursors.click,
-                child: Container(
-                  width: 48,
-                  height: 48,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    gradient: AppColors.primaryGradient,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(
-                    Icons.edit_square,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                ),
+                onPressed: _handleStartNewJourney,
               ),
             ),
     );

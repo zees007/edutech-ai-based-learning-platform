@@ -856,7 +856,6 @@ class _LearningResourcesPanelState extends ConsumerState<LearningResourcesPanel>
                 gradient: LinearGradient(
                   colors: [Colors.amber.shade600, Colors.orange.shade800],
                 ),
-                glowColor: Colors.amber,
                 textStyle: AppTextStyles.badge.copyWith(
                   color: Colors.white,
                   fontWeight: FontWeight.w700,
@@ -895,7 +894,6 @@ class _LearningResourcesPanelState extends ConsumerState<LearningResourcesPanel>
                     : LinearGradient(
                         colors: [AppColors.accentGreen, AppColors.greenDeep],
                       ),
-                glowColor: isLastStep ? Colors.amber : AppColors.accentGreen,
                 textStyle: AppTextStyles.badge.copyWith(
                   color: Colors.white,
                   fontWeight: FontWeight.w700,
