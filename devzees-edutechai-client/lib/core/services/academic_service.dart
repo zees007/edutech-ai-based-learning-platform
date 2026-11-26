@@ -41,8 +41,8 @@ class AcademicService {
         }
       }
       return papers;
-    } catch (_) {
-      return [];
+    } on DioException {
+      rethrow;
     }
   }
 }

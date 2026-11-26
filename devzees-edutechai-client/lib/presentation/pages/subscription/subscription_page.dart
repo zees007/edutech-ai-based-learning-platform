@@ -490,7 +490,7 @@ class _SubscriptionPageState extends ConsumerState<SubscriptionPage>
         ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 680),
           child: Text(
-            'Select the optimal plan to unlock unlimited multi-agent deep dive sessions, full-text academic research, and priority AI execution.',
+            'Select the optimal plan to unlock unlimited multi-agent deep dive sessions, academic paper search & PDFs, and priority AI execution.',
             textAlign: TextAlign.center,
             style: AppTextStyles.subtitle1.copyWith(
               color: context.appColors.textSecondary,
@@ -580,7 +580,7 @@ class _SubscriptionPageState extends ConsumerState<SubscriptionPage>
         '1 YouTube Video / step',
         'Bite-Sized & Visual Modes',
         'Milestone Quizzes & XP',
-        'Academic Paper Search',
+        'Curated Paper Summaries',
         'Session History & Recovery',
       ],
       buttonText: currentTier == 'free' ? 'Current Plan' : 'Downgrade to Free',
@@ -601,6 +601,7 @@ class _SubscriptionPageState extends ConsumerState<SubscriptionPage>
         '5 Follow-Up Questions / step',
         '3 YouTube Videos / step',
         'Unlock Deep Dive Mode',
+        'Read Academic Papers & PDFs',
         'Step Content Regeneration',
         'Markdown & HTML Export',
         '1.5x Daily Streak XP Multiplier',
@@ -622,12 +623,12 @@ class _SubscriptionPageState extends ConsumerState<SubscriptionPage>
       title: 'Ultra',
       price: ultraPrice,
       billingCycle: isAnnual ? 'yr' : 'mo',
-      description: 'Unrestricted multi-agent squad, research, PDF export & 2x Streak XP.',
+      description: 'Unrestricted multi-agent squad, live research search, PDF export & 2x Streak XP.',
       features: const [
         'Everything in Pro +',
         'Unlimited Follow-Up Chat',
         '5 YouTube Videos / step',
-        'Full-Text Academic Research',
+        'Live Academic Paper Search',
         'PDF (.pdf) Export',
         'Priority Multi-Agent Exec',
         '2x Daily Streak XP Multiplier',

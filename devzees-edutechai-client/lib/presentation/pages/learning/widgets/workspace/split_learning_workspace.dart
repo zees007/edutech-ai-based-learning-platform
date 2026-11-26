@@ -2102,7 +2102,11 @@ class _MobileTabbedWorkspaceState extends ConsumerState<_MobileTabbedWorkspace>
   Widget _buildPapersTab(dynamic step) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
-      child: LearningResourcesPanel.buildPapersContent(step.papers),
+      child: LearningResourcesPanel.buildPapersContent(
+        step.papers,
+        studentLevel: widget.session.studentLevel?.toString(),
+        learningMode: widget.session.learningMode?.toString(),
+      ),
     );
   }
 

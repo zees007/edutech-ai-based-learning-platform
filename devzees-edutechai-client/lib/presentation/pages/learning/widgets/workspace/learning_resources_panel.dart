@@ -85,11 +85,21 @@ class LearningResourcesPanel extends ConsumerStatefulWidget {
     );
   }
 
-  static Widget buildPapersContent(List<dynamic>? papers, [String? topic]) {
+  static Widget buildPapersContent(
+    List<dynamic>? papers, {
+    String? topic,
+    String? studentLevel,
+    String? learningMode,
+  }) {
     return Builder(
       builder: (context) => ScrollbarTheme(
         data: workspaceScrollbarTheme(context),
-        child: AcademicPapers(papers: papers),
+        child: AcademicPapers(
+          papers: papers,
+          initialTopic: topic,
+          studentLevel: studentLevel,
+          learningMode: learningMode,
+        ),
       ),
     );
   }
@@ -458,7 +468,11 @@ class _LearningResourcesPanelState extends ConsumerState<LearningResourcesPanel>
     return SingleChildScrollView(
       controller: _papersScrollController,
       padding: const EdgeInsets.all(20),
-      child: AcademicPapers(papers: step.papers),
+      child: AcademicPapers(
+        papers: step.papers,
+        studentLevel: widget.session.studentLevel?.toString(),
+        learningMode: widget.session.learningMode?.toString(),
+      ),
     );
   }
 

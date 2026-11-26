@@ -63,7 +63,7 @@ TREE = {
                     "ET_ACCESS_DEEP_DIVE_MODE": "Access Deep Dive Mode",
                     "ET_REGENERATE_STEP": "Regenerate Step",
                     "ET_ACCESS_ACADEMIC_SEARCH": "Access Academic Search",
-                    "ET_ACCESS_FULL_TEXT_RESEARCH": "Access Full Text Research"
+                    "ET_READ_ACADEMIC_PAPER": "Read Academic Paper & PDF"
                 }
             },
             "ET_FULL_ACCESS_EXPORT": {
@@ -99,7 +99,7 @@ ROLE_PRIVILEGES = {
         "ET_START_LEARNING_SESSION", "ET_INTERACT_LEARNING_SESSION",
         "ET_VIEW_LEARNING_HISTORY", "ET_VIEW_QUOTA", "ET_DASHBOARD",
         "ET_GENERATE_QUIZ", "ET_SUBMIT_QUIZ",
-        "ET_ACCESS_VISUAL_MODE", "ET_ACCESS_ACADEMIC_SEARCH", "ET_SUBMIT_FEEDBACK",
+        "ET_ACCESS_VISUAL_MODE", "ET_SUBMIT_FEEDBACK",
         "ET_CHANGE_PASSWORD"
     ],
     "Pro": [
@@ -109,7 +109,7 @@ ROLE_PRIVILEGES = {
         "ET_GENERATE_QUIZ", "ET_SUBMIT_QUIZ",
         "ET_ACCESS_VISUAL_MODE", "ET_ACCESS_DEEP_DIVE_MODE",
         "ET_REGENERATE_STEP",
-        "ET_ACCESS_ACADEMIC_SEARCH", "ET_EXPORT_MARKDOWN", "ET_EXPORT_HTML", "ET_SUBMIT_FEEDBACK",
+        "ET_READ_ACADEMIC_PAPER", "ET_EXPORT_MARKDOWN", "ET_EXPORT_HTML", "ET_SUBMIT_FEEDBACK",
         "ET_CHANGE_PASSWORD"
     ],
     "Ultra": [
@@ -120,7 +120,7 @@ ROLE_PRIVILEGES = {
         "ET_ACCESS_VISUAL_MODE", "ET_ACCESS_DEEP_DIVE_MODE",
         "ET_REGENERATE_STEP",
         "ET_ACCESS_ACADEMIC_SEARCH", "ET_EXPORT_MARKDOWN", "ET_EXPORT_HTML",
-        "ET_ACCESS_FULL_TEXT_RESEARCH", "ET_EXPORT_PDF", "ET_SUBMIT_FEEDBACK",
+        "ET_READ_ACADEMIC_PAPER", "ET_EXPORT_PDF", "ET_SUBMIT_FEEDBACK",
         "ET_CHANGE_PASSWORD"
     ]
 }
@@ -210,7 +210,7 @@ async def seed_privileges_and_roles():
             {
                 "slug": "pro",
                 "name": "Pro Tier",
-                "description": "Deep-dive learning mode, advanced YouTube curation, and step regeneration.",
+                "description": "Deep-dive learning mode, academic paper reading, advanced YouTube curation, and step regeneration.",
                 "role_name": "Pro",
                 "price_monthly": 19.0,
                 "price_annual": 180.0,
@@ -224,7 +224,7 @@ async def seed_privileges_and_roles():
             {
                 "slug": "ultra",
                 "name": "Ultra Tier",
-                "description": "Unlimited follow-ups, full-text research papers, PDF exports, and top AI models.",
+                "description": "Unlimited follow-ups, live academic search, PDF exports, and top AI models.",
                 "role_name": "Ultra",
                 "price_monthly": 49.0,
                 "price_annual": 470.0,

@@ -60,7 +60,7 @@ abstract class PrivilegeCodes {
   static const etAccessDeepDiveMode = 'ET_ACCESS_DEEP_DIVE_MODE';
   static const etRegenerateStep = 'ET_REGENERATE_STEP';
   static const etAccessAcademicSearch = 'ET_ACCESS_ACADEMIC_SEARCH';
-  static const etAccessFullTextResearch = 'ET_ACCESS_FULL_TEXT_RESEARCH';
+  static const etReadAcademicPaper = 'ET_READ_ACADEMIC_PAPER';
 
   // Export
   static const etFullAccessExport = 'ET_FULL_ACCESS_EXPORT';
@@ -149,7 +149,7 @@ class PermissionChecker {
   bool get canAccessDashboard => has(PrivilegeCodes.etDashboard);
   bool get canRegenerateStep => has(PrivilegeCodes.etRegenerateStep);
   bool get canAccessAcademicSearch => has(PrivilegeCodes.etAccessAcademicSearch);
-  bool get canAccessFullTextResearch => has(PrivilegeCodes.etAccessFullTextResearch);
+  bool get canReadAcademicPaper => has(PrivilegeCodes.etReadAcademicPaper);
 
   // ─── Export ────────────────────────────────────────────────────
   bool get canExportMarkdown => has(PrivilegeCodes.etExportMarkdown);

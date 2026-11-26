@@ -511,8 +511,8 @@ EduTechAI employs a fine-grained RBAC architecture defining **34 privilege const
    - `ET_DASHBOARD`: Access comprehensive learning performance, metrics, and stats dashboard
    - `ET_ACCESS_ADVANCED_MODES`: Unlocks **Visual** & **Deep Dive** modes
    - `ET_ACCESS_YOUTUBE_BASIC` & `ET_ACCESS_YOUTUBE_ADVANCED`: Tier-based YouTube video curation limits
-   - `ET_ACCESS_ACADEMIC_SEARCH`: Access open-access research papers & TL;DRs
-   - `ET_ACCESS_FULL_TEXT_RESEARCH`: Deep scholarly text analysis
+   - `ET_ACCESS_ACADEMIC_SEARCH`: Live academic paper search (`GET /api/v1/academic/search`)
+   - `ET_READ_ACADEMIC_PAPER`: Open academic paper & direct PDF links (`Read PDF` / `Read Paper`)
    - `ET_REGENERATE_STEP`: Trigger alternative analogy generation
    - `ET_UNLIMITED_FOLLOW_UPS`: Bypass follow-up chat caps
    - `ET_EXPORT_MARKDOWN`: Export learning sessions to `.md`
@@ -537,10 +537,10 @@ EduTechAI employs a fine-grained RBAC architecture defining **34 privilege const
 │ ET_DOWNGRADE_SUBSCRIPTION     │ -    │ Yes │ Yes   │ All   │
 │ ET_ACCESS_ADVANCED_MODES      │ -    │ Yes │ Yes   │ All   │
 │ ET_ACCESS_YOUTUBE_ADVANCED    │ -    │ Yes │ Yes   │ All   │
-│ ET_ACCESS_ACADEMIC_SEARCH     │ -    │ Yes │ Yes   │ All   │
+│ ET_ACCESS_ACADEMIC_SEARCH     │ -    │ -   │ Yes   │ All   │
 │ ET_REGENERATE_STEP            │ -    │ Yes │ Yes   │ All   │
 │ ET_EXPORT_MARKDOWN            │ -    │ Yes │ Yes   │ All   │
-│ ET_ACCESS_FULL_TEXT_RESEARCH  │ -    │ -   │ Yes   │ All   │
+│ ET_READ_ACADEMIC_PAPER        │ -    │ Yes │ Yes   │ All   │
 │ ET_UNLIMITED_FOLLOW_UPS       │ -    │ -   │ Yes   │ All   │
 │ ET_EXPORT_PDF                 │ -    │ -   │ Yes   │ All   │
 │ ET_ALL (SuperAdmin Bypass)    │ -    │ -   │ -     │ Yes   │
