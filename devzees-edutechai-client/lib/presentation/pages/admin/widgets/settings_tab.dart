@@ -10,7 +10,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../data/models/admin/system_setting_model.dart';
 import '../../../../core/services/subscription_service.dart';
-import '../../../widgets/shimmer_loading.dart';
+import 'admin_loading_skeleton.dart';
 import 'package:devzees_edutechai_client/core/theme/theme_palette.dart';
 
 enum SettingCategory {
@@ -195,7 +195,7 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
 
           // Content body
           if (state.isLoading && state.items.isEmpty)
-            const ShimmerLoading(child: ShimmerBox(height: 400))
+            const AdminTableSkeleton(rowCount: 6)
           else if (state.error != null && state.items.isEmpty)
             _buildErrorState(state.error!)
           else if (isMobile)

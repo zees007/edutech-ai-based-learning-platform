@@ -7,8 +7,8 @@ import '../../../../core/providers/admin_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../data/models/admin/user_response.dart';
-import '../../../widgets/shimmer_loading.dart';
 import 'admin_data_table.dart';
+import 'admin_loading_skeleton.dart';
 import 'searchable_user_dropdown.dart';
 import 'tier_badge.dart';
 import 'user_analytics_dialog.dart';
@@ -187,7 +187,7 @@ class _UserDirectoryTabState extends ConsumerState<UserDirectoryTab> {
 
           // Users Table
           if (usersState.isLoading && usersState.data == null)
-            const ShimmerLoading(child: ShimmerBox(height: 300))
+            const AdminTableSkeleton(rowCount: 6)
           else if (usersState.error != null)
             _buildErrorCard(usersState.error!)
           else if (usersState.data != null)
@@ -334,7 +334,7 @@ class _UserDirectoryTabState extends ConsumerState<UserDirectoryTab> {
 
             // Role Chips
             if (rolesState.isLoading && rolesState.data == null)
-              const ShimmerLoading(child: ShimmerBox(height: 48))
+              const AdminCompactSectionSkeleton(height: 56)
             else if (rolesState.data != null)
               _buildRoleChips(rolesState.data!.items),
 

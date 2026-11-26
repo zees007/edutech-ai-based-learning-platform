@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/responsive.dart';
+import '../../../core/providers/auth_provider.dart';
 import '../../../core/providers/user_provider.dart';
 import '../../../core/services/subscription_service.dart';
 import '../../../core/theme/app_colors.dart';
@@ -10,6 +11,7 @@ import '../../../core/theme/text_styles.dart';
 import '../../../data/models/subscription/payment_models.dart';
 import '../../../data/models/auth/user_current_profile_response.dart';
 import '../../widgets/glass_card.dart';
+import '../../widgets/shimmer_app_shell.dart';
 import '../learning/widgets/subscription/checkout_review_dialog.dart';
 import '../learning/widgets/subscription/ultra_extension_dialog.dart';
 import '../learning/widgets/subscription/plan_card.dart';
@@ -203,7 +205,33 @@ class _SubscriptionPageState extends ConsumerState<SubscriptionPage>
       }
     }
 
+    final authState = ref.watch(authProvider);
     final userAsync = ref.watch(userProvider);
+    final bool isRefreshingSession =
+        authState.isInitial ||
+        (authState.isAuthenticated &&
+            (authState.user == null || (userAsync.isLoading && !userAsync.hasValue)));
+
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 300),
+      switchInCurve: Curves.easeOut,
+      switchOutCurve: Curves.easeIn,
+      child: isRefreshingSession
+          ? const ShimmerAppShell(
+              key: ValueKey('subscription_shimmer_skeleton'),
+              variant: ShimmerShellVariant.subscription,
+            )
+          : KeyedSubtree(
+              key: const ValueKey('subscription_content'),
+              child: _buildSubscriptionScaffold(context, userAsync),
+            ),
+    );
+  }
+
+  Widget _buildSubscriptionScaffold(
+    BuildContext context,
+    AsyncValue<UserCurrentProfileResponse?> userAsync,
+  ) {
     final user = userAsync.value;
 
     final currentTier = user?.subscription?.tier.toLowerCase() ?? 'free';

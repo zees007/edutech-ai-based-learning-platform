@@ -69,7 +69,10 @@ class _AdminPageState extends ConsumerState<AdminPage> {
 
     final authState = ref.watch(authProvider);
     if (authState.isInitial || (authState.isAuthenticated && authState.user == null)) {
-      return const ShimmerAppShell(key: ValueKey('admin_shimmer_skeleton'));
+      return const ShimmerAppShell(
+        key: ValueKey('admin_shimmer_skeleton'),
+        variant: ShimmerShellVariant.admin,
+      );
     }
 
     final bool isMobile = Responsive.isMobile(context);

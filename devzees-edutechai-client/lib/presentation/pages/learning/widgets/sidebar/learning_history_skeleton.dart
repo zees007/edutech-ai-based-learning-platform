@@ -17,10 +17,6 @@ class LearningHistorySkeletonItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = context.isDarkMode;
 
-    // Distinct shimmer tokens matching RecentJourneySkeletonCard for high contrast
-    final shimmerBase = isDark ? const Color(0xFF1E2138) : const Color(0xFFE2E8F0);
-    final shimmerHighlight = isDark ? const Color(0xFF353A60) : const Color(0xFFF8FAFC);
-
     final cardBg = isDark
         ? context.appColors.scaffoldBackground
         : Colors.white;
@@ -60,13 +56,10 @@ class LearningHistorySkeletonItem extends StatelessWidget {
             ],
           ),
           child: ShimmerLoading(
-            baseColor: shimmerBase,
-            highlightColor: shimmerHighlight,
             child: ShimmerBox(
               width: 18,
               height: 18,
               borderRadius: BorderRadius.circular(4),
-              color: shimmerBase,
             ),
           ),
         ),
@@ -101,8 +94,6 @@ class LearningHistorySkeletonItem extends StatelessWidget {
           ],
         ),
         child: ShimmerLoading(
-          baseColor: shimmerBase,
-          highlightColor: shimmerHighlight,
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -111,7 +102,6 @@ class LearningHistorySkeletonItem extends StatelessWidget {
                 width: 16,
                 height: 16,
                 borderRadius: BorderRadius.circular(4),
-                color: shimmerBase,
               ),
               const SizedBox(width: 12),
 
@@ -126,7 +116,6 @@ class LearningHistorySkeletonItem extends StatelessWidget {
                       width: titleWidth,
                       height: 13,
                       borderRadius: BorderRadius.circular(4),
-                      color: shimmerBase,
                     ),
                     const SizedBox(height: 6),
                     // Badges line (Steps pill + XP pill)
@@ -137,7 +126,6 @@ class LearningHistorySkeletonItem extends StatelessWidget {
                           width: 58,
                           height: 14,
                           borderRadius: BorderRadius.circular(6),
-                          color: shimmerBase,
                         ),
                         const SizedBox(width: 8),
                         // XP badge pill loader
@@ -145,7 +133,6 @@ class LearningHistorySkeletonItem extends StatelessWidget {
                           width: 44,
                           height: 14,
                           borderRadius: BorderRadius.circular(6),
-                          color: shimmerBase,
                         ),
                       ],
                     ),
@@ -156,11 +143,10 @@ class LearningHistorySkeletonItem extends StatelessWidget {
               const SizedBox(width: 8),
 
               // Trailing action menu dots placeholder
-              ShimmerBox(
+              const ShimmerBox(
                 width: 14,
                 height: 14,
                 shape: BoxShape.circle,
-                color: shimmerBase,
               ),
             ],
           ),

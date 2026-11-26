@@ -10,8 +10,8 @@ import '../../../../data/models/admin/subscription_update_request.dart';
 import '../../../../data/models/admin/user_response.dart';
 import '../../../widgets/center_toast.dart';
 import '../../../widgets/gradient_button.dart';
-import '../../../widgets/shimmer_loading.dart';
 import 'admin_data_table.dart';
+import 'admin_loading_skeleton.dart';
 import 'searchable_user_dropdown.dart';
 import 'tier_badge.dart';
 import 'package:devzees_edutechai_client/core/theme/theme_palette.dart';
@@ -190,7 +190,7 @@ class _SubscriptionManagerTabState
         const SizedBox(height: 24),
 
         if (usersState.isLoading && usersState.data == null)
-          const ShimmerLoading(child: ShimmerBox(height: 300))
+          const AdminTableSkeleton(rowCount: 5)
         else if (usersState.error != null)
           _buildErrorCard(usersState.error!)
         else if (usersState.data != null)
@@ -708,7 +708,7 @@ class _SubscriptionManagerTabState
         const SizedBox(height: 24),
 
         if (tiersState.isLoading && tiersState.tiers.isEmpty)
-          const ShimmerLoading(child: ShimmerBox(height: 300))
+          const AdminTableSkeleton(rowCount: 4)
         else if (tiersState.error != null)
           _buildErrorCard(tiersState.error!)
         else if (tiersState.tiers.isEmpty)

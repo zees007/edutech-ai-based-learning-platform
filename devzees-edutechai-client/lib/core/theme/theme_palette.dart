@@ -22,6 +22,10 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
   final Color chipBackground;
   final Color popoverBackground;
 
+  // ─── Shimmer & Skeleton Tokens ───
+  final Color shimmerBase;
+  final Color shimmerHighlight;
+
   // ─── Elevation & Shadows ───
   final List<BoxShadow> cardShadow;
   final Color shadowColor;
@@ -49,6 +53,8 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
     required this.cardBackground,
     required this.chipBackground,
     required this.popoverBackground,
+    required this.shimmerBase,
+    required this.shimmerHighlight,
     required this.cardShadow,
     required this.shadowColor,
     required this.primaryGradient,
@@ -85,6 +91,8 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
     cardBackground: Color(0xFFF8FAFC),
     chipBackground: Color(0xFFF1F5F9),
     popoverBackground: Color(0xFFFFFFFF),
+    shimmerBase: Color(0xFFE2E8F0),
+    shimmerHighlight: Color(0xFFF8FAFC),
     shadowColor: Color(0x14000000), // rgba(0, 0, 0, 0.08)
     cardShadow: [
       BoxShadow(
@@ -124,6 +132,8 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
     cardBackground: Color(0xFF11121D),    // Unified Elevated Card Surface #11121D
     chipBackground: Color(0xFF151726),    // Step-up Interactive Chip Surface #151726
     popoverBackground: Color(0xFF151726), // Elevated Popover/Dropdown Menu Surface #151726
+    shimmerBase: Color(0xFF1E2138),
+    shimmerHighlight: Color(0xFF353A60),
     shadowColor: Color(0x73000000),        // rgba(0, 0, 0, 0.45)
     cardShadow: [
       BoxShadow(
@@ -163,6 +173,8 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
     Color? cardBackground,
     Color? chipBackground,
     Color? popoverBackground,
+    Color? shimmerBase,
+    Color? shimmerHighlight,
     List<BoxShadow>? cardShadow,
     Color? shadowColor,
     LinearGradient? primaryGradient,
@@ -187,6 +199,8 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
       cardBackground: cardBackground ?? this.cardBackground,
       chipBackground: chipBackground ?? this.chipBackground,
       popoverBackground: popoverBackground ?? this.popoverBackground,
+      shimmerBase: shimmerBase ?? this.shimmerBase,
+      shimmerHighlight: shimmerHighlight ?? this.shimmerHighlight,
       cardShadow: cardShadow ?? this.cardShadow,
       shadowColor: shadowColor ?? this.shadowColor,
       primaryGradient: primaryGradient ?? this.primaryGradient,
@@ -235,6 +249,11 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
       popoverBackground:
           Color.lerp(popoverBackground, other.popoverBackground, t) ??
           popoverBackground,
+      shimmerBase:
+          Color.lerp(shimmerBase, other.shimmerBase, t) ?? shimmerBase,
+      shimmerHighlight:
+          Color.lerp(shimmerHighlight, other.shimmerHighlight, t) ??
+          shimmerHighlight,
       cardShadow: t < 0.5 ? cardShadow : other.cardShadow,
       shadowColor: Color.lerp(shadowColor, other.shadowColor, t) ?? shadowColor,
       primaryGradient: LinearGradient.lerp(

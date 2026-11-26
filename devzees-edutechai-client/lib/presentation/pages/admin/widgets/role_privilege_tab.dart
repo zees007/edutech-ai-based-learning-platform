@@ -9,8 +9,8 @@ import '../../../../core/theme/text_styles.dart';
 import '../../../../data/models/admin/privilege_response.dart';
 import '../../../../data/models/admin/role_create_request.dart';
 import '../../../../data/models/admin/role_edit_request.dart';
-import '../../../widgets/shimmer_loading.dart';
 import 'admin_data_table.dart';
+import 'admin_loading_skeleton.dart';
 import 'package:devzees_edutechai_client/core/theme/theme_palette.dart';
 
 /// Role & Privilege Matrix tab.
@@ -97,7 +97,7 @@ class _RolePrivilegeTabState extends ConsumerState<RolePrivilegeTab> {
 
   Widget _buildRolesTable(AdminRolesState rolesState) {
     if (rolesState.isLoading && rolesState.data == null) {
-      return const ShimmerLoading(child: ShimmerBox(height: 200));
+      return const AdminTableSkeleton(rowCount: 4);
     }
     if (rolesState.error != null) {
       return _buildErrorCard(rolesState.error!, () {
@@ -436,7 +436,7 @@ class _RolePrivilegeTabState extends ConsumerState<RolePrivilegeTab> {
                 ),
               );
             },
-            loading: () => const ShimmerLoading(child: ShimmerBox(height: 80)),
+            loading: () => const AdminCompactSectionSkeleton(height: 80),
             error: (err, _) => Text(
               'Failed to load privileges',
               style: AppTextStyles.caption.copyWith(color: AppColors.rose),
@@ -492,7 +492,7 @@ class _RolePrivilegeTabState extends ConsumerState<RolePrivilegeTab> {
           ];
         }).toList(),
       ),
-      loading: () => const ShimmerLoading(child: ShimmerBox(height: 200)),
+      loading: () => const AdminTableSkeleton(rowCount: 4),
       error: (err, _) => _buildErrorCard('Failed to load privileges', () {
         ref.invalidate(adminPrivilegesProvider);
       }),

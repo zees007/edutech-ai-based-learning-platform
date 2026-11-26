@@ -2,38 +2,36 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/app_colors.dart';
+import 'onboarding_provider.dart';
 
 const String _themePrefKey = 'edutech_theme_mode';
 
-/// Riverpod notifier managing active [ThemeMode] with local storage persistence.
+/// Riverpod notifier managing active [ThemeMode] with synchronous initial load
+/// from [sharedPreferencesProvider] so cold boots / refreshes never flash.
 class ThemeModeNotifier extends Notifier<ThemeMode> {
   @override
   ThemeMode build() {
-    // Default to dark theme as base
-    _loadPersistedTheme();
-    return ThemeMode.dark;
+    final initialMode = _readPersistedThemeSync();
+    _syncAppColors(initialMode);
+    return initialMode;
   }
 
-  Future<void> _loadPersistedTheme() async {
+  ThemeMode _readPersistedThemeSync() {
     try {
-      final prefs = await SharedPreferences.getInstance();
+      final prefs = ref.read(sharedPreferencesProvider);
       final savedTheme = prefs.getString(_themePrefKey);
-      if (savedTheme != null) {
-        switch (savedTheme) {
-          case 'light':
-            setThemeMode(ThemeMode.light);
-            break;
-          case 'dark':
-            setThemeMode(ThemeMode.dark);
-            break;
-          case 'system':
-            setThemeMode(ThemeMode.system);
-            break;
-        }
+      switch (savedTheme) {
+        case 'light':
+          return ThemeMode.light;
+        case 'dark':
+          return ThemeMode.dark;
+        case 'system':
+          return ThemeMode.system;
       }
     } catch (_) {
-      // Graceful fallback to memory state
+      // Fallback when sharedPreferencesProvider is not overridden (e.g. isolated widget tests)
     }
+    return ThemeMode.dark;
   }
 
   void setThemeMode(ThemeMode mode) {
@@ -61,7 +59,12 @@ class ThemeModeNotifier extends Notifier<ThemeMode> {
 
   Future<void> _persistTheme(ThemeMode mode) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
+      SharedPreferences prefs;
+      try {
+        prefs = ref.read(sharedPreferencesProvider);
+      } catch (_) {
+        prefs = await SharedPreferences.getInstance();
+      }
       final modeStr = mode == ThemeMode.light
           ? 'light'
           : mode == ThemeMode.dark

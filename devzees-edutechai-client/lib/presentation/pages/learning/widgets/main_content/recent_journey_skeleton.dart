@@ -18,10 +18,7 @@ class RecentJourneySkeletonCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = context.isDarkMode;
-
-    // Distinct shimmer token colors for crisp contrast against card background
-    final shimmerBase = isDark ? const Color(0xFF1E2138) : const Color(0xFFE2E8F0);
-    final shimmerHighlight = isDark ? const Color(0xFF353A60) : const Color(0xFFF8FAFC);
+    final shimmerBase = context.appColors.shimmerBase;
 
     return Container(
       padding: EdgeInsets.symmetric(
@@ -55,8 +52,6 @@ class RecentJourneySkeletonCard extends StatelessWidget {
         ],
       ),
       child: ShimmerLoading(
-        baseColor: shimmerBase,
-        highlightColor: shimmerHighlight,
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [

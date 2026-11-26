@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:devzees_edutechai_client/core/theme/theme_palette.dart';
 import 'package:devzees_edutechai_client/core/theme/app_colors.dart';
 import 'package:devzees_edutechai_client/core/theme/app_theme.dart';
+import 'package:devzees_edutechai_client/core/providers/onboarding_provider.dart';
 import 'package:devzees_edutechai_client/core/providers/theme_provider.dart';
 import 'package:devzees_edutechai_client/presentation/widgets/theme_toggle_button.dart';
 
@@ -24,6 +26,8 @@ void main() {
       expect(light.textPrimary, const Color(0xFF2B2D42));
       expect(light.textSecondary, const Color(0xFF8E92A4));
       expect(light.trackNeutral, const Color(0xFFD9DBE9));
+      expect(light.shimmerBase, const Color(0xFFE2E8F0));
+      expect(light.shimmerHighlight, const Color(0xFFF8FAFC));
     });
 
     test('Dark theme matches user specifications', () {
@@ -35,6 +39,22 @@ void main() {
       expect(dark.textPrimary, const Color(0xFFFFFFFF));
       expect(dark.textSecondary, const Color(0xFF94A3B8));
       expect(dark.trackNeutral, const Color(0xFF1A1B2D));
+      expect(dark.shimmerBase, const Color(0xFF1E2138));
+      expect(dark.shimmerHighlight, const Color(0xFF353A60));
+    });
+
+    test('ThemeModeNotifier reads persisted light mode synchronously on cold start/F5', () async {
+      SharedPreferences.setMockInitialValues({'edutech_theme_mode': 'light'});
+      final prefs = await SharedPreferences.getInstance();
+      final container = ProviderContainer(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      expect(container.read(themeModeProvider), ThemeMode.light);
+      expect(AppColors.isDark, isFalse);
     });
 
     test('Shared brand accents and gradients match specification', () {

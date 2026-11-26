@@ -32,10 +32,7 @@ class _VideoCuratorShimmerState extends State<VideoCuratorShimmer>
     )..repeat(reverse: true);
 
     _scaleAnimation = Tween<double>(begin: 0.985, end: 1.018).animate(
-      CurvedAnimation(
-        parent: _scaleController,
-        curve: Curves.easeInOutSine,
-      ),
+      CurvedAnimation(parent: _scaleController, curve: Curves.easeInOutSine),
     );
   }
 
@@ -84,7 +81,8 @@ class _VideoCuratorShimmerState extends State<VideoCuratorShimmer>
                   }
 
                   const spacing = 16.0;
-                  final cardWidth = ((width - (spacing * (count - 1))) / count).floorToDouble();
+                  final cardWidth = ((width - (spacing * (count - 1))) / count)
+                      .floorToDouble();
 
                   return Wrap(
                     spacing: spacing,
@@ -109,6 +107,11 @@ class _VideoCuratorShimmerState extends State<VideoCuratorShimmer>
   Widget _buildCuratorStatusBanner() {
     final pulseProgress = _scaleController.value;
     final scale = _scaleAnimation.value;
+    final isDark = context.isDarkMode;
+    final colors = context.appColors;
+    final accentRose = isDark
+        ? AppColors.roseLight
+        : AppColors.adaptiveRoseLight;
 
     return Transform.scale(
       scale: scale,
@@ -117,19 +120,25 @@ class _VideoCuratorShimmerState extends State<VideoCuratorShimmer>
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [
-              const Color(0xFF2A1528).withValues(alpha: 0.88),
-              const Color(0xFF1B1124).withValues(alpha: 0.92),
-              const Color(0xFF2E172B).withValues(alpha: 0.88),
-            ],
+            colors: isDark
+                ? [
+                    const Color(0xFF2A1528).withValues(alpha: 0.88),
+                    const Color(0xFF1B1124).withValues(alpha: 0.92),
+                    const Color(0xFF2E172B).withValues(alpha: 0.88),
+                  ]
+                : [
+                    const Color(0xFFFFF1F2),
+                    const Color(0xFFFDF2F8),
+                    const Color(0xFFFCE7F3),
+                  ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: Color.lerp(
-              AppColors.accentRose.withValues(alpha: 0.35),
-              AppColors.accentRose.withValues(alpha: 0.85),
+              AppColors.accentRose.withValues(alpha: isDark ? 0.35 : 0.28),
+              AppColors.accentRose.withValues(alpha: isDark ? 0.85 : 0.65),
               pulseProgress,
             )!,
             width: 1.4,
@@ -137,21 +146,32 @@ class _VideoCuratorShimmerState extends State<VideoCuratorShimmer>
           boxShadow: [
             // Breathing Neon Halo (scales out and in dynamically)
             BoxShadow(
-              color: AppColors.accentRose.withValues(alpha: 0.10 + 0.18 * pulseProgress),
+              color: AppColors.accentRose.withValues(
+                alpha:
+                    (isDark ? 0.10 : 0.06) +
+                    (isDark ? 0.18 : 0.10) * pulseProgress,
+              ),
               blurRadius: 18 + 14 * pulseProgress,
               spreadRadius: 1 + 3 * pulseProgress,
             ),
             // Ambient Violet Backdrop
             BoxShadow(
-              color: AppColors.purple.withValues(alpha: 0.08 + 0.08 * pulseProgress),
+              color: AppColors.purple.withValues(
+                alpha:
+                    (isDark ? 0.08 : 0.04) +
+                    (isDark ? 0.08 : 0.04) * pulseProgress,
+              ),
               blurRadius: 28 + 10 * pulseProgress,
               spreadRadius: 2,
             ),
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.45),
-              blurRadius: 18,
-              offset: const Offset(0, 8),
-            ),
+            if (isDark)
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.45),
+                blurRadius: 18,
+                offset: const Offset(0, 8),
+              )
+            else
+              ...colors.cardShadow,
           ],
         ),
         child: Row(
@@ -167,7 +187,9 @@ class _VideoCuratorShimmerState extends State<VideoCuratorShimmer>
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: AppColors.accentRose.withValues(alpha: 0.4 * (1 - pulseProgress)),
+                      color: AppColors.accentRose.withValues(
+                        alpha: 0.4 * (1 - pulseProgress),
+                      ),
                       width: 1.5,
                     ),
                   ),
@@ -181,7 +203,9 @@ class _VideoCuratorShimmerState extends State<VideoCuratorShimmer>
                     color: AppColors.accentRose,
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.accentRose.withValues(alpha: 0.6 + 0.4 * pulseProgress),
+                        color: AppColors.accentRose.withValues(
+                          alpha: 0.6 + 0.4 * pulseProgress,
+                        ),
                         blurRadius: 10 + 6 * pulseProgress,
                         spreadRadius: 2 + 2 * pulseProgress,
                       ),
@@ -200,27 +224,40 @@ class _VideoCuratorShimmerState extends State<VideoCuratorShimmer>
                     children: [
                       const Text('🎬', style: TextStyle(fontSize: 15)),
                       const SizedBox(width: 7),
-                      Text(
-                        'YouTube Curator Agent',
-                        style: AppTextStyles.body2.copyWith(
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.roseLight,
-                          letterSpacing: 0.3,
+                      Flexible(
+                        child: Text(
+                          'YouTube Curator Agent',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTextStyles.body2.copyWith(
+                            fontWeight: FontWeight.w800,
+                            color: accentRose,
+                            letterSpacing: 0.3,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 10),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2.5,
+                        ),
                         decoration: BoxDecoration(
-                          color: AppColors.accentRose.withValues(alpha: 0.18),
+                          color: AppColors.accentRose.withValues(
+                            alpha: isDark ? 0.18 : 0.10,
+                          ),
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
-                            color: AppColors.accentRose.withValues(alpha: 0.45 + 0.35 * pulseProgress),
+                            color: AppColors.accentRose.withValues(
+                              alpha: 0.45 + 0.35 * pulseProgress,
+                            ),
                             width: 0.9,
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: AppColors.accentRose.withValues(alpha: 0.15 * pulseProgress),
+                              color: AppColors.accentRose.withValues(
+                                alpha: 0.15 * pulseProgress,
+                              ),
                               blurRadius: 8,
                             ),
                           ],
@@ -231,7 +268,7 @@ class _VideoCuratorShimmerState extends State<VideoCuratorShimmer>
                             Icon(
                               Icons.radar_rounded,
                               size: 11,
-                              color: AppColors.roseLight,
+                              color: accentRose,
                             ),
                             const SizedBox(width: 4),
                             Text(
@@ -239,7 +276,7 @@ class _VideoCuratorShimmerState extends State<VideoCuratorShimmer>
                               style: TextStyle(
                                 fontSize: 9.5,
                                 fontWeight: FontWeight.w900,
-                                color: AppColors.roseLight,
+                                color: accentRose,
                                 letterSpacing: 0.7,
                               ),
                             ),
@@ -252,7 +289,9 @@ class _VideoCuratorShimmerState extends State<VideoCuratorShimmer>
                   Text(
                     'Extracting educational video chapters & pinpointing exact milestone timestamps...',
                     style: AppTextStyles.caption.copyWith(
-                      color: context.appColors.textSecondary.withValues(alpha: 0.85),
+                      color: colors.textSecondary.withValues(
+                        alpha: isDark ? 0.85 : 1.0,
+                      ),
                       letterSpacing: 0.1,
                     ),
                   ),
@@ -267,22 +306,25 @@ class _VideoCuratorShimmerState extends State<VideoCuratorShimmer>
 
   Widget _buildSkeletonCard(double width) {
     final shimmerProgress = _shimmerController.value;
+    final isDark = context.isDarkMode;
+    final colors = context.appColors;
 
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surfaceMid.withValues(alpha: 0.55),
+        color: isDark
+            ? AppColors.surfaceMid.withValues(alpha: 0.55)
+            : colors.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: (context.isDarkMode ? const Color(0x0DFFFFFF) : const Color(0x0F000000)),
-          width: 1.0,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.35),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
-          ),
-        ],
+        border: Border.all(color: colors.border, width: 1.0),
+        boxShadow: isDark
+            ? [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.35),
+                  blurRadius: 16,
+                  offset: const Offset(0, 8),
+                ),
+              ]
+            : colors.cardShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -300,9 +342,9 @@ class _VideoCuratorShimmerState extends State<VideoCuratorShimmer>
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                         colors: [
-                          const Color(0xFF1E1A2E),
-                          const Color(0xFF261F38),
-                          const Color(0xFF1E1A2E),
+                          colors.shimmerBase,
+                          colors.shimmerHighlight,
+                          colors.shimmerBase,
                         ],
                       ),
                     ),
@@ -317,8 +359,12 @@ class _VideoCuratorShimmerState extends State<VideoCuratorShimmer>
                           gradient: LinearGradient(
                             colors: [
                               Colors.transparent,
-                              AppColors.accentRose.withValues(alpha: 0.15),
-                              AppColors.purpleLight.withValues(alpha: 0.20),
+                              AppColors.accentRose.withValues(
+                                alpha: isDark ? 0.15 : 0.08,
+                              ),
+                              AppColors.purpleLight.withValues(
+                                alpha: isDark ? 0.20 : 0.12,
+                              ),
                               Colors.transparent,
                             ],
                           ),
@@ -333,15 +379,16 @@ class _VideoCuratorShimmerState extends State<VideoCuratorShimmer>
                       height: 44,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: Colors.black.withValues(alpha: 0.45),
-                        border: Border.all(
-                          color: context.appColors.border,
-                          width: 1.0,
-                        ),
+                        color: isDark
+                            ? Colors.black.withValues(alpha: 0.45)
+                            : colors.surface.withValues(alpha: 0.88),
+                        border: Border.all(color: colors.border, width: 1.0),
                       ),
                       child: Icon(
                         Icons.play_arrow_rounded,
-                        color: context.appColors.textSecondary.withValues(alpha: 0.4),
+                        color: colors.textSecondary.withValues(
+                          alpha: isDark ? 0.4 : 0.65,
+                        ),
                         size: 26,
                       ),
                     ),
@@ -351,21 +398,35 @@ class _VideoCuratorShimmerState extends State<VideoCuratorShimmer>
                     bottom: 10,
                     right: 10,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.65),
+                        color: isDark
+                            ? Colors.black.withValues(alpha: 0.65)
+                            : colors.surface.withValues(alpha: 0.90),
                         borderRadius: BorderRadius.circular(6),
+                        border: isDark
+                            ? null
+                            : Border.all(color: colors.border),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.schedule, size: 11, color: context.appColors.textSecondary),
+                          Icon(
+                            Icons.schedule,
+                            size: 11,
+                            color: colors.textSecondary,
+                          ),
                           const SizedBox(width: 4),
                           Container(
                             width: 32,
                             height: 8,
                             decoration: BoxDecoration(
-                              color: context.appColors.textSecondary.withValues(alpha: 0.3),
+                              color: colors.textSecondary.withValues(
+                                alpha: 0.3,
+                              ),
                               borderRadius: BorderRadius.circular(4),
                             ),
                           ),
@@ -388,17 +449,33 @@ class _VideoCuratorShimmerState extends State<VideoCuratorShimmer>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Title line 1
-                    _buildShimmerLine(width: contentWidth * 0.85, height: 14),
+                    _buildShimmerLine(
+                      width: contentWidth * 0.85,
+                      height: 14,
+                      color: colors.shimmerBase,
+                    ),
                     const SizedBox(height: 8),
                     // Title line 2
-                    _buildShimmerLine(width: contentWidth * 0.55, height: 12),
+                    _buildShimmerLine(
+                      width: contentWidth * 0.55,
+                      height: 12,
+                      color: colors.shimmerBase,
+                    ),
                     const SizedBox(height: 12),
                     // Channel & Timestamp chips
                     Row(
                       children: [
-                        _buildShimmerLine(width: contentWidth * 0.30, height: 10),
+                        _buildShimmerLine(
+                          width: contentWidth * 0.30,
+                          height: 10,
+                          color: colors.shimmerBase,
+                        ),
                         const Spacer(),
-                        _buildShimmerLine(width: contentWidth * 0.25, height: 10),
+                        _buildShimmerLine(
+                          width: contentWidth * 0.25,
+                          height: 10,
+                          color: colors.shimmerBase,
+                        ),
                       ],
                     ),
                   ],
@@ -411,12 +488,16 @@ class _VideoCuratorShimmerState extends State<VideoCuratorShimmer>
     );
   }
 
-  Widget _buildShimmerLine({required double width, required double height}) {
+  Widget _buildShimmerLine({
+    required double width,
+    required double height,
+    required Color color,
+  }) {
     return Container(
       width: width,
       height: height,
       decoration: BoxDecoration(
-        color: AppColors.slate400.withValues(alpha: 0.12),
+        color: color,
         borderRadius: BorderRadius.circular(height / 2),
       ),
     );

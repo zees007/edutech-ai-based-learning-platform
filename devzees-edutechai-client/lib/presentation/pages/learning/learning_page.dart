@@ -189,12 +189,24 @@ class _LearningPageState extends ConsumerState<LearningPage> {
       }
     });
 
+    String location = '';
+    try {
+      location = GoRouterState.of(context).matchedLocation;
+    } catch (_) {}
+    final ShimmerShellVariant refreshVariant =
+        location.startsWith('/learning/dashboard')
+        ? ShimmerShellVariant.dashboard
+        : ShimmerShellVariant.learning;
+
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 350),
       switchInCurve: Curves.easeOut,
       switchOutCurve: Curves.easeIn,
       child: isAuthInitial
-          ? const ShimmerAppShell(key: ValueKey('shimmer_skeleton'))
+          ? ShimmerAppShell(
+              key: ValueKey('shimmer_skeleton_${refreshVariant.name}'),
+              variant: refreshVariant,
+            )
           : KeyedSubtree(
               key: const ValueKey('learning_content'),
               child: _buildScaffold(context),
