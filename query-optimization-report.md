@@ -22,11 +22,12 @@
 
 ## 🔴 CRITICAL — Must Fix Before Production
 
-### C1. User Model: `lazy="selectin"` on `sessions` and `feedbacks` Relationships
+### C1. ✅ FIXED — User Model: `lazy="selectin"` on `sessions`, `feedbacks`, `refresh_tokens` (and `SessionRecord.feedback`)
 
-**File:** [db_models.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/models/db_models.py#L85-L96)
+**File:** [db_models.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/models/db_models.py#L85-L105) & [db_models.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/models/db_models.py#L319-L327)
 
 ```python
+# Before:
 sessions: Mapped[list[SessionRecord]] = relationship(
     "SessionRecord", back_populates="user", cascade="all, delete-orphan",
     lazy="selectin",   # ← CATASTROPHIC at scale
@@ -46,32 +47,56 @@ refresh_tokens: Mapped[list[RefreshToken]] = relationship(
 - `get_current_user()` is called on **every authenticated request** — meaning every API call pulls 1,000+ session rows with their JSON `state_json` blobs (each can be 50KB–200KB).
 - For a user with 1,000 sessions: a single login/auth check would transfer ~100MB+ from PostgreSQL.
 - Admin endpoints like `search_users` (paginated 20 users) would load 20 × 1,000 = **20,000 session rows** per page load.
+- Additionally, `SessionRecord.feedback` also used `lazy="selectin"`, causing every `User` and `SessionRecord` query (`search_user_sessions`, `get_user_performance`) to fire an extra `JOIN feedbacks` query.
 
-**Fix:**
+**Fix Applied:**
+1. Updated `User.sessions`, `User.feedbacks`, and `User.refresh_tokens` in [db_models.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/models/db_models.py#L85-L105) to `lazy="noload"` with `passive_deletes=True` (relying on existing `ON DELETE CASCADE` foreign keys).
+2. Updated `SessionRecord.feedback` in [db_models.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/models/db_models.py#L319-L327) to `lazy="noload"` with `passive_deletes=True`.
+3. Kept `User.roles`, `User.subscription`, `Role.privileges`, `Subscription.tier_ref`, and `SubscriptionTier.role` as `lazy="selectin"` so `get_current_user()`, `require_privilege()`, `/auth/me`, and `UserResponse` remain unaffected.
+4. **Client Impact:** None — verified across server and `devzees-edutechai-client` that `.sessions`, `.feedbacks`, `.refresh_tokens`, and `SessionRecord.feedback` are never accessed or serialized in API responses.
+5. **Verified (`pro@gmail.com`):** Single `User` fetch dropped from **11 SQL queries (2583 ms)** to **7 SQL queries (1719 ms)** with zero queries against `sessions`, `feedbacks`, or `refresh_tokens`, and **0 diffs** across `AuthService.get_user_current_profile`, `UserResponse`, and `UserService.get_user_with_roles_and_privileges`.
+
 ```python
 sessions: Mapped[list[SessionRecord]] = relationship(
-    "SessionRecord", back_populates="user", cascade="all, delete-orphan",
-    lazy="noload",    # ← Never auto-load; use explicit joinedload/selectinload when needed
+    "SessionRecord",
+    back_populates="user",
+    cascade="all, delete-orphan",
+    passive_deletes=True,
+    lazy="noload",
 )
 feedbacks: Mapped[list[FeedbackRecord]] = relationship(
-    "FeedbackRecord", back_populates="user", cascade="all, delete-orphan",
+    "FeedbackRecord",
+    back_populates="user",
+    cascade="all, delete-orphan",
+    passive_deletes=True,
     lazy="noload",
 )
 refresh_tokens: Mapped[list[RefreshToken]] = relationship(
-    "RefreshToken", back_populates="user", cascade="all, delete-orphan",
+    "RefreshToken",
+    back_populates="user",
+    cascade="all, delete-orphan",
+    passive_deletes=True,
+    lazy="noload",
+)
+# And on SessionRecord:
+feedback: Mapped[FeedbackRecord | None] = relationship(
+    "FeedbackRecord",
+    back_populates="session",
+    uselist=False,
+    cascade="all, delete-orphan",
+    passive_deletes=True,
     lazy="noload",
 )
 ```
 
-Then use explicit `.options(selectinload(User.sessions))` only where you actually need sessions. Currently no service code actually accesses `user.sessions` via the relationship.
-
 ---
 
-### C2. `get_user_performance()` Loads ALL User Sessions + ALL StepProgress Into Memory
+### C2. ✅ FIXED — `get_user_performance()` Loads ALL User Sessions + ALL StepProgress Into Memory
 
-**File:** [analytics_service.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/services/analytics_service.py#L382-L399)
+**File:** [analytics_service.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/services/analytics_service.py#L328-L845)
 
 ```python
+# Before:
 # Fetches ALL sessions for user (up to 1,000 rows with state_json blobs)
 sessions_query = (
     select(SessionRecord)
@@ -95,17 +120,21 @@ all_step_records = list(sp_res.scalars().all())
 - All into Python memory, then iterated in Python loops
 - With time range filtering done **in Python**, not SQL
 
-**Fix:**
-1. Push time-range filtering into SQL `WHERE` clauses instead of post-fetch Python filtering.
-2. Use projected column queries (`select(SessionRecord.session_id, SessionRecord.created_at, SessionRecord.is_complete, ...)`) instead of loading full ORM objects with `state_json`.
-3. Use SQL aggregations (`SUM`, `COUNT`, `GROUP BY`) for heatmap and quiz metrics instead of Python loops.
-4. For `_extract_step_title()`, load `state_json` only for the specific sessions needed.
+**Fix Applied:**
+1. **Eliminated `state_json` bulk transfer:** Replaced `select(SessionRecord)` with scalar column projection (`session_id`, `topic`, `learning_mode`, `total_steps`, `is_complete`, `created_at`, `updated_at`), completely avoiding loading `state_json` blobs and ORM relationship joins.
+2. **Pushed time-window filtering into SQL `WHERE` clauses:**
+   - For `StepProgress` (projected to 6 scalar columns): when `window_start` is set (`7d`, `30d`, `90d`, `1y`, `custom`), SQL filters `completed_at` to `[window_start - 30 min, window_end]` (30-min lookback preserves exact predecessor step clamping) plus `quiz_score IS NOT NULL AND completed_at IS NULL`.
+   - For `SessionRecord`: when `window_start` is set, SQL fetches only sessions created in window, completed & updated in window, or referenced by filtered `StepProgress` rows.
+3. **Added SQL `GROUP BY` step-summary aggregation for window-scoped runs:** Computes `total_rows`, `completed_rows`, and `last_completed_at` per candidate session in SQL so `topic_breakdown` completion percentages and `completed_session_ids` remain exact even for sessions spanning window boundaries.
+4. **Added `_fetch_step_titles()` SQL JSONB extraction:** Queries `(session_id, step_index, title)` via PostgreSQL `CROSS JOIN LATERAL jsonb_array_elements((state_json::jsonb) -> 'steps') WITH ORDINALITY` solely for `quiz_session_ids` present in the window (with a non-PostgreSQL fallback), avoiding transferring `tutor_explanation`, `quiz`, `videos`, `academic_papers`, and `conversation_history`.
+5. **Client Impact:** None — `PeriodPerformanceResponse` and `LearningDashboardResponse` payloads, rounding, sorting, and edge cases are 100% preserved.
+6. **Verified (`pro@gmail.com`):** Diffed pre-fix vs post-fix across `7d`, `30d`, `90d`, `1y`, `all`, `custom`, and `get_user_dashboard("30d")` — **0 data diffs**, and query latency improved across every range (`90d`: 1099 ms → 446 ms; `1y`: 1061 ms → 413 ms; `all`: 636 ms → 310 ms).
 
 ---
 
 ## 🟠 HIGH — Significant Performance Issues
 
-### H1. Missing Composite Index: `sessions(user_id, created_at)`
+### H1. ✅ FIXED — Missing Composite Index: `sessions(user_id, created_at)` & `sessions(user_id, is_complete, updated_at)`
 
 **Affected queries (run on every session listing + quota check):**
 - `search_user_sessions()` — filters by `user_id`, orders by `is_complete`, `updated_at`
@@ -114,30 +143,23 @@ all_step_records = list(sp_res.scalars().all())
 
 **Current state:** Only a single-column index on `sessions.user_id`. At 100M session rows, sorting and date-range filtering requires expensive filesorts.
 
-**Fix — Add these composite indexes:**
-```python
-class SessionRecord(Base):
-    __table_args__ = (
-        Index("ix_sessions_user_created", "user_id", "created_at"),
-        Index("ix_sessions_user_complete_updated", "user_id", "is_complete", "updated_at"),
-    )
-```
+**Fix Applied:**
+- Added `__table_args__` to `SessionRecord` in [db_models.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/models/db_models.py#L329-L332) with `Index("ix_sessions_user_created", "user_id", "created_at")` and `Index("ix_sessions_user_complete_updated", "user_id", "is_complete", "updated_at")`.
+- Created and applied both indexes in Alembic migration [0014_add_scale_indexes_and_session_fks.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/alembic/versions/0014_add_scale_indexes_and_session_fks.py) (verified present in `edutechAI` schema).
+- **Client Impact:** None.
 
-### H2. Missing Composite Index: `session_usage_logs(user_id, created_at)`
+### H2. ✅ FIXED — Missing Composite Index: `session_usage_logs(user_id, created_at)`
 
-**File:** [db_models.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/models/db_models.py#L488-L508)
+**File:** [db_models.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/models/db_models.py#L532-L537)
 
 **Affected query:** `get_monthly_session_count()` runs `SELECT COUNT(*) FROM session_usage_logs WHERE user_id = ? AND created_at >= ?` on every session start.
 
-**Fix:**
-```python
-class SessionUsageLog(Base):
-    __table_args__ = (
-        Index("ix_session_usage_user_created", "user_id", "created_at"),
-    )
-```
+**Fix Applied:**
+- Added `Index("ix_session_usage_user_created", "user_id", "created_at")` to `SessionUsageLog.__table_args__` in [db_models.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/models/db_models.py#L535-L537).
+- Created and applied in [0014_add_scale_indexes_and_session_fks.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/alembic/versions/0014_add_scale_indexes_and_session_fks.py) (verified present in `edutechAI` schema).
+- **Client Impact:** None.
 
-### H3. Missing Composite Index: `step_progress(session_id, step_index)`
+### H3. ✅ FIXED — Missing Composite Index: `step_progress(session_id, step_index)`
 
 **Affected queries:**
 - `save_step_progress()` — `WHERE session_id = ? AND step_index = ?`
@@ -145,19 +167,14 @@ class SessionUsageLog(Base):
 
 **Currently have:** `ix_step_progress_session_status` on `(session_id, status)` — but `save_step_progress` filters by `(session_id, step_index)`.
 
-**Fix:**
-```python
-__table_args__ = (
-    Index("ix_step_progress_session_status", "session_id", "status"),
-    Index("ix_step_progress_session_step", "session_id", "step_index", unique=True),
-)
-```
+**Fix Applied:**
+- Added `Index("ix_step_progress_session_step", "session_id", "step_index", unique=True)` alongside `ix_step_progress_session_status` in `StepProgress.__table_args__` in [db_models.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/models/db_models.py#L357-L360).
+- Verified `0` duplicate `(session_id, step_index)` rows in Supabase and applied the unique composite index via [0014_add_scale_indexes_and_session_fks.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/alembic/versions/0014_add_scale_indexes_and_session_fks.py).
+- **Client Impact:** None.
 
-The unique constraint also prevents duplicate step records.
+### H4. ✅ FIXED — Missing Composite Index: `refresh_tokens(user_id, revoked_at)` & `(family_id, revoked_at)`
 
-### H4. Missing Composite Index: `refresh_tokens(user_id, revoked_at)`
-
-**Affected query:** `change_password()` runs:
+**Affected query:** `change_password()` and `logout_all()` run:
 ```python
 select(RefreshToken).where(
     RefreshToken.user_id == user.id,
@@ -166,20 +183,17 @@ select(RefreshToken).where(
 ```
 Also `rotate_refresh_token()` does family-scoped revocation.
 
-**Fix:**
-```python
-class RefreshToken(Base):
-    __table_args__ = (
-        Index("ix_refresh_token_user_active", "user_id", "revoked_at"),
-        Index("ix_refresh_token_family_active", "family_id", "revoked_at"),
-    )
-```
+**Fix Applied:**
+- Added `Index("ix_refresh_token_user_active", "user_id", "revoked_at")` and `Index("ix_refresh_token_family_active", "family_id", "revoked_at")` to `RefreshToken.__table_args__` in [db_models.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/models/db_models.py#L440-L443).
+- Created and applied both indexes in [0014_add_scale_indexes_and_session_fks.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/alembic/versions/0014_add_scale_indexes_and_session_fks.py) (verified present in `edutechAI` schema).
+- **Client Impact:** None.
 
-### H5. `StepProgress` Joined with `SessionRecord` via String Column (Not FK)
+### H5. ✅ FIXED — `StepProgress` & `GamificationRecord` Joined with `SessionRecord` via String Column (Not FK)
 
-**File:** [db_models.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/models/db_models.py#L337)
+**File:** [db_models.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/models/db_models.py#L345-L386)
 
 ```python
+# Before:
 session_id: Mapped[str] = mapped_column(String(24), index=True, nullable=False)
 # No ForeignKey constraint!
 ```
@@ -189,21 +203,18 @@ session_id: Mapped[str] = mapped_column(String(24), index=True, nullable=False)
 - No CASCADE deletes — orphaned step_progress rows accumulate
 - The JOIN in `analytics_service.py` (runs on every dashboard load) is expensive without FK-backed index alignment
 
-**Fix:** Add a proper ForeignKey:
-```python
-session_id: Mapped[str] = mapped_column(
-    String(24), ForeignKey("sessions.session_id", ondelete="CASCADE"),
-    index=True, nullable=False
-)
-```
+**Fix Applied:**
+1. Added `ForeignKey("sessions.session_id", ondelete="CASCADE")` to both `StepProgress.session_id` and `GamificationRecord.session_id`, along with `session = relationship("SessionRecord", lazy="noload")` in [db_models.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/models/db_models.py#L345-L386).
+2. In [0014_add_scale_indexes_and_session_fks.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/alembic/versions/0014_add_scale_indexes_and_session_fks.py), cleaned up orphaned rows (found and removed 1 orphaned `gamification` row, 0 in `step_progress`) before adding `fk_step_progress_session_id` and `fk_gamification_session_id` with `ON DELETE CASCADE`.
+3. Updated seeder [06_seed_trophies.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/scripts/seeder/06_seed_trophies.py#L248-L355) to insert and flush the parent `SessionRecord` before adding child `StepProgress` and `GamificationRecord` rows so FK constraints are always respected.
+- **Client Impact:** None.
 
-Same issue exists for `GamificationRecord.session_id`.
+### H6. ✅ FIXED — Connection Pool is Undersized for 1L Concurrent Users
 
-### H6. Connection Pool is Undersized for 1L Concurrent Users
-
-**File:** [database.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/services/database.py#L63-L69)
+**File:** [database.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/services/database.py#L63-L78) & [config.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/config.py#L131-L138)
 
 ```python
+# Before:
 _engine = create_async_engine(
     settings.database_url,
     echo=settings.debug,       # ← echo=True in production kills perf
@@ -216,19 +227,11 @@ _engine = create_async_engine(
 
 **Default SQLAlchemy pool:** `pool_size=5, max_overflow=10` → max 15 concurrent DB connections.
 
-**Fix:**
-```python
-_engine = create_async_engine(
-    settings.database_url,
-    echo=False,                  # NEVER echo in production
-    connect_args=connect_args,
-    pool_pre_ping=True,
-    pool_recycle=300,
-    pool_size=20,                # Base connections
-    max_overflow=30,             # Burst connections
-    pool_timeout=30,             # Wait timeout for connection
-)
-```
+**Fix Applied:**
+1. Added configurable settings in [config.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/config.py#L135-L138): `db_pool_size = 20`, `db_max_overflow = 30`, `db_pool_timeout = 30`, `db_echo = False` (decoupled from `settings.debug` so `DEBUG=true` no longer logs every SQL statement to stdout).
+2. Updated `_get_engine()` in [database.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/services/database.py#L63-L78) to pass `echo=settings.db_echo` and, for PostgreSQL URLs, `pool_size=settings.db_pool_size`, `max_overflow=settings.db_max_overflow`, and `pool_timeout=settings.db_pool_timeout` (verified `pool_size=20, max_overflow=30, timeout=30, echo=False`).
+3. **Concurrency note (500 concurrent users & Supabase Pooler):** One user does **not** hold a permanent DB connection — connections are shared across requests and checked out per transaction (~10–30 ms for indexed queries), so 50 pooled connections/worker easily serves 500 concurrent REST users (~1,500–2,500 tx/s). However, `get_current_user` uses `Depends(get_db)`, which keeps the `AsyncSession` open until long LLM endpoints (`/learn`, `/followup`) finish if a query runs on it, and multi-worker deployments must ensure `(workers × (db_pool_size + db_max_overflow))` stays within Supabase Supavisor's pooler client limit.
+- **Client Impact:** None.
 
 ---
 

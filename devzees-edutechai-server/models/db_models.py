@@ -325,6 +325,11 @@ class SessionRecord(Base):
         lazy="noload",
     )
 
+    __table_args__ = (
+        Index("ix_sessions_user_created", "user_id", "created_at"),
+        Index("ix_sessions_user_complete_updated", "user_id", "is_complete", "updated_at"),
+    )
+
     def __repr__(self) -> str:
         return f"<Session {self.session_id}: '{self.topic[:40]}'>"
 
@@ -338,15 +343,23 @@ class StepProgress(Base):
     __tablename__ = "step_progress"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    session_id: Mapped[str] = mapped_column(String(24), index=True, nullable=False)
+    session_id: Mapped[str] = mapped_column(
+        String(24),
+        ForeignKey("sessions.session_id", ondelete="CASCADE"),
+        index=True,
+        nullable=False,
+    )
     step_index: Mapped[int] = mapped_column(Integer, nullable=False)
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="pending")
     quiz_score: Mapped[float | None] = mapped_column(Float, nullable=True)
     completed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     xp_earned: Mapped[int] = mapped_column(Integer, default=0, server_default="0", nullable=False)
 
+    session: Mapped[SessionRecord] = relationship("SessionRecord", lazy="noload")
+
     __table_args__ = (
         Index("ix_step_progress_session_status", "session_id", "status"),
+        Index("ix_step_progress_session_step", "session_id", "step_index", unique=True),
     )
 
     def __repr__(self) -> str:
@@ -362,7 +375,13 @@ class GamificationRecord(Base):
     __tablename__ = "gamification"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    session_id: Mapped[str] = mapped_column(String(24), unique=True, index=True, nullable=False)
+    session_id: Mapped[str] = mapped_column(
+        String(24),
+        ForeignKey("sessions.session_id", ondelete="CASCADE"),
+        unique=True,
+        index=True,
+        nullable=False,
+    )
     xp_earned: Mapped[int] = mapped_column(Integer, default=0)
     streak_count: Mapped[int] = mapped_column(Integer, default=0)
     level: Mapped[int] = mapped_column(Integer, default=1)
@@ -370,6 +389,8 @@ class GamificationRecord(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, server_default=func.now(), onupdate=func.now()
     )
+
+    session: Mapped[SessionRecord] = relationship("SessionRecord", lazy="noload")
 
     def __repr__(self) -> str:
         return f"<Gamification session={self.session_id} xp={self.xp_earned} level={self.level}>"
@@ -415,6 +436,11 @@ class RefreshToken(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, server_default=func.now(), onupdate=func.now())
 
     user: Mapped[User] = relationship("User", back_populates="refresh_tokens")
+
+    __table_args__ = (
+        Index("ix_refresh_token_user_active", "user_id", "revoked_at"),
+        Index("ix_refresh_token_family_active", "family_id", "revoked_at"),
+    )
 
     def __repr__(self) -> str:
         return f"<RefreshToken {self.id} for user={self.user_id}>"
@@ -505,6 +531,10 @@ class SessionUsageLog(Base):
     action: Mapped[str] = mapped_column(String(50), nullable=False, default="cancelled_in_synthesis")
     created_at: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, server_default=func.now()
+    )
+
+    __table_args__ = (
+        Index("ix_session_usage_user_created", "user_id", "created_at"),
     )
 
     def __repr__(self) -> str:
