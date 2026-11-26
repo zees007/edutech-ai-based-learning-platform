@@ -537,8 +537,7 @@ class _AuthCanvasState extends State<AuthCanvas>
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: onTap,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
+          child: Container(
             padding: const EdgeInsets.all(11),
             decoration: BoxDecoration(
               color: isActive
