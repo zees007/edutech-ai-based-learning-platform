@@ -144,15 +144,15 @@ class RoleService:
         Search active roles (retired=False) with 0-indexed pagination, sorting, and lookupText filtering.
         Returns tuple of (roles_list, total_count).
         """
-        query = select(Role).where(Role.retired == False)
+        filters = [Role.retired == False]
 
         lookup = dto.lookupText
         if lookup and lookup.strip():
             term = f"%{lookup.strip()}%"
-            query = query.where(Role.name.ilike(term))
+            filters.append(Role.name.ilike(term))
 
-        # Count total matching active records
-        count_query = select(func.count()).select_from(query.subquery())
+        # Count total matching active records directly without subquery wrapper
+        count_query = select(func.count(Role.id)).where(*filters)
         total_res = await db.execute(count_query)
         total = total_res.scalar_one() or 0
 
@@ -165,13 +165,10 @@ class RoleService:
         }
         sort_column = sort_map.get(raw_sort, Role.created_at)
 
-        if dto.isDesc:
-            query = query.order_by(sort_column.desc())
-        else:
-            query = query.order_by(sort_column.asc())
+        order_expr = sort_column.desc() if dto.isDesc else sort_column.asc()
 
         offset = dto.page * dto.size
-        query = query.offset(offset).limit(dto.size)
+        query = select(Role).where(*filters).order_by(order_expr).offset(offset).limit(dto.size)
 
         res = await db.execute(query)
         roles = list(res.scalars().all())

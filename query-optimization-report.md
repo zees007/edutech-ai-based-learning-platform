@@ -237,27 +237,24 @@ _engine = create_async_engine(
 
 ## 🟡 MEDIUM — Optimization Opportunities
 
-### M1. `search_user_sessions()` — Count Query Uses Subquery
+### M1. ✅ FIXED — `search_user_sessions()` — Count Query Uses Subquery
 
-**File:** [session_manager.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/services/session_manager.py#L314-L316)
+**File:** [session_manager.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/services/session_manager.py#L292-L330) (also applied to [user_service.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/services/user_service.py#L205-L243) and [role_service.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/services/role_service.py#L147-L176))
 
 ```python
+# Before:
 count_query = select(func.count()).select_from(query.subquery())
 ```
 
 This wraps the entire filtered query as a subquery to count. At 100M rows, the planner may not push predicates efficiently.
 
-**Fix:** Use a parallel count query with the same WHERE conditions:
-```python
-count_query = select(func.count(SessionRecord.id)).where(
-    SessionRecord.user_id == user_id,
-    # ... same filters ...
-)
-```
+**Fix Applied:**
+- Refactored `SessionManager.search_user_sessions()`, `UserService.search_users()`, and `RoleService.search_roles()` to collect shared `filters = [...]` and issue a direct `select(func.count(<Model>.id)).where(*filters)` without wrapping in a subquery.
+- **Client Impact:** None.
 
-### M2. `search_users()` and `search_roles()` — ILIKE on Multiple Unindexed Columns
+### M2. ✅ FIXED — `search_users()` and `search_roles()` — ILIKE on Multiple Unindexed Columns
 
-**File:** [user_service.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/services/user_service.py#L211-L219)
+**File:** [user_service.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/services/user_service.py#L209-L219), [db_models.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/models/db_models.py#L106-L111), & [0015_add_medium_scale_indexes.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/alembic/versions/0015_add_medium_scale_indexes.py)
 
 ```python
 query = query.where(
@@ -272,30 +269,24 @@ query = query.where(
 
 **Impact:** `ILIKE '%term%'` with leading wildcard cannot use B-tree indexes → full sequential scan of 1L user rows.
 
-**Fix options (pick one):**
-1. **PostgreSQL `pg_trgm` trigram index** — best for ILIKE with leading wildcards:
-   ```sql
-   CREATE EXTENSION IF NOT EXISTS pg_trgm;
-   CREATE INDEX ix_users_name_trgm ON users USING gin (first_name gin_trgm_ops, last_name gin_trgm_ops);
-   CREATE INDEX ix_users_email_trgm ON users USING gin (email gin_trgm_ops);
-   ```
-2. **PostgreSQL full-text search** with `tsvector` column + GIN index (best for natural language search)
-3. **If only prefix matching needed:** use `LIKE 'term%'` (no leading wildcard) which B-tree can serve
+**Fix Applied:**
+- Enabled `pg_trgm` extension (`CREATE EXTENSION IF NOT EXISTS pg_trgm`) and added GIN trigram indexes on all 4 searched columns (`ix_users_fname_trgm`, `ix_users_lname_trgm`, `ix_users_email_trgm`, `ix_users_mobile_trgm`) in [db_models.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/models/db_models.py#L106-L111) and applied via Alembic migration [0015_add_medium_scale_indexes.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/alembic/versions/0015_add_medium_scale_indexes.py).
+- *(Note: `roles` is a tiny lookup table of ~4 rows, so `search_roles` only needed the M1 direct count fix.)*
+- **Client Impact:** None.
 
-### M3. `ilike` Search on `sessions.topic` (Text Column)
+### M3. ✅ FIXED — `ilike` Search on `sessions.topic` (Text Column)
 
-**File:** [session_manager.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/services/session_manager.py#L306-L311)
+**File:** [session_manager.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/services/session_manager.py#L306-L311), [db_models.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/models/db_models.py#L343-L347), & [0015_add_medium_scale_indexes.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/alembic/versions/0015_add_medium_scale_indexes.py)
 
 Same issue as M2 but on the `sessions` table with 100M rows — `topic.ilike('%term%')` is a full scan.
 
-**Fix:** Add a GIN trigram index on `sessions.topic`:
-```sql
-CREATE INDEX ix_sessions_topic_trgm ON sessions USING gin (topic gin_trgm_ops);
-```
+**Fix Applied:**
+- Added GIN trigram index `ix_sessions_topic_trgm` on `sessions(topic gin_trgm_ops)` in [db_models.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/models/db_models.py#L346) and applied via [0015_add_medium_scale_indexes.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/alembic/versions/0015_add_medium_scale_indexes.py) (verified present in `edutechAI` schema).
+- **Client Impact:** None.
 
-### M4. `get_user_standing()` — Multiple Separate Queries Per Dashboard Load
+### M4. ✅ FIXED — `get_user_standing()` — Multiple Separate Queries Per Dashboard Load
 
-**File:** [analytics_service.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/services/analytics_service.py#L94-L234)
+**File:** [analytics_service.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/services/analytics_service.py#L109-L176)
 
 Runs **5 separate queries** sequentially:
 1. XP sum query (JOIN gamification → sessions)
@@ -304,21 +295,25 @@ Runs **5 separate queries** sequentially:
 4. Step dates query (for streak calculation)
 5. User trophies query
 
-**Fix:** Merge queries 2 and 3 into a single CTE-based query. Merge 1 into query 2. This reduces 5 round trips to 2-3.
+**Fix Applied:**
+1. Merged queries 1, 2, and 3 (`xp_cte`, `session_cte`, `step_cte`) into a **single CTE query** joined with `true()` (no Cartesian-product `SAWarning`, zero `state_json` columns touched).
+2. Optimized query 4 to `SELECT DISTINCT DATE(completed_at)` instead of fetching all historical `StepProgress.completed_at` timestamps into Python.
+3. Reduced `get_user_standing()` from **5 sequential DB round trips → 3**, with **0 data diffs** verified on `pro@gmail.com`.
+- **Client Impact:** None.
 
-### M5. Missing Index: `feedbacks(status)` for Public Featured Query
+### M5. ✅ FIXED — Missing Index: `feedbacks(status)` for Public Featured Query
+
+**File:** [db_models.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/models/db_models.py#L499-L506) & [0015_add_medium_scale_indexes.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/alembic/versions/0015_add_medium_scale_indexes.py)
 
 **Current state:** `FeedbackRecord.status` already has `index=True` ✅. But the public query filters on `status = 'featured' AND is_public_consent = True AND User.retired = False` with a JOIN.
 
-**Fix:** Composite partial index:
-```sql
-CREATE INDEX ix_feedbacks_featured ON feedbacks (updated_at DESC)
-    WHERE status = 'featured' AND is_public_consent = true;
-```
+**Fix Applied:**
+- Added partial covering index `ix_feedbacks_featured` on `feedbacks (updated_at DESC) WHERE status = 'featured' AND is_public_consent = true` in [db_models.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/models/db_models.py#L501-L505) and applied via [0015_add_medium_scale_indexes.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/alembic/versions/0015_add_medium_scale_indexes.py).
+- **Client Impact:** None (`/feedback/public` verified returning 200 OK).
 
-### M6. `payment_transactions` Missing Index on `(user_id, created_at)`
+### M6. ✅ FIXED — `payment_transactions` Missing Index on `(user_id, created_at)` (and `subscriptions(tier, status)`)
 
-**File:** [subscription_service.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/services/subscription_service.py#L399-L405)
+**File:** [subscription_service.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/services/subscription_service.py#L399-L405), [db_models.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/models/db_models.py#L261-L296), & [0015_add_medium_scale_indexes.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/alembic/versions/0015_add_medium_scale_indexes.py)
 
 ```python
 select(PaymentTransaction)
@@ -328,14 +323,13 @@ select(PaymentTransaction)
 
 Has `user_id` index but not `(user_id, created_at DESC)` covering index for the ORDER BY.
 
-**Fix:**
-```sql
-CREATE INDEX ix_payment_txn_user_created ON payment_transactions (user_id, created_at DESC);
-```
+**Fix Applied:**
+- Added `ix_payment_txn_user_created` on `payment_transactions (user_id, created_at DESC)` and covering index `ix_subscriptions_tier_status` on `subscriptions (tier, status)` in [db_models.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/models/db_models.py#L261-L296) and applied via [0015_add_medium_scale_indexes.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/alembic/versions/0015_add_medium_scale_indexes.py).
+- **Client Impact:** None.
 
-### M7. `subscription_service._sync_user_role()` — Runs 4-5 Queries Per Role Sync
+### M7. ✅ FIXED — `subscription_service._sync_user_role()` — Runs 4-5 Queries Per Role Sync
 
-**File:** [subscription_service.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/services/subscription_service.py#L408-L442)
+**File:** [subscription_service.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/services/subscription_service.py#L44-L97), [subscription_service.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/services/subscription_service.py#L462-L540), & [admin_service.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/services/admin_service.py#L191-L316)
 
 Each subscription upgrade calls `_sync_user_role()` which runs:
 1. `SELECT subscription_tiers WHERE slug = ?`
@@ -343,136 +337,143 @@ Each subscription upgrade calls `_sync_user_role()` which runs:
 3. Fallback: `SELECT roles WHERE name = ?`
 4. `SELECT subscription_tiers.role_id WHERE retired = false` (all tiers)
 
-**Fix:** Cache the tier-role mapping in memory (with TTL). Tiers rarely change.
+**Fix Applied:**
+1. Added an in-memory 5-minute TTL cache (`SubscriptionService._get_tier_cache()` / `invalidate_tier_cache()`) storing `{slug -> role_id}`, `all_tier_role_ids`, `{slug -> streak_multiplier}`, and `{role_id -> streak_multiplier}` in plain Python types (1 query on cold cache, 0 tier queries on warm cache).
+2. Refactored `_sync_user_role()` to resolve `role_id` and `all_tier_role_ids` from the cache and execute only the single `Role` fetch needed for ORM assignment.
+3. Also updated `get_user_streak_multiplier()` to reuse preloaded `user.subscription` and the cached tier multipliers (verified on `pro@gmail.com`: `1.5`, cold queries `1` → warm queries `0`).
+4. Wired `SubscriptionService.invalidate_tier_cache()` into `AdminService.create_tier()`, `update_tier()`, and `retire_tier()`.
+- **Client Impact:** None.
 
 ---
 
 ## 🔵 LOWER PRIORITY — Good Practices
 
-### L1. `delete_session()` Manually Deletes Related Records Despite CASCADE
+### L1. ✅ FIXED — `delete_session()` Manually Deletes Related Records Despite CASCADE
 
-**File:** [session_manager.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/services/session_manager.py#L372-L377)
+**File:** [session_manager.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/services/session_manager.py#L364-L386)
 
 ```python
+# Before:
 await db.execute(delete(StepProgress).where(StepProgress.session_id == session_id))
 await db.execute(delete(GamificationRecord).where(GamificationRecord.session_id == session_id))
 ```
 
 This is redundant if proper ForeignKey CASCADE is added (see H5). After adding FKs, just deleting the `SessionRecord` will cascade-delete the children.
 
-### L2. `echo=settings.debug` in Production
+**Fix Applied:**
+- Removed the redundant manual `delete(StepProgress)` and `delete(GamificationRecord)` queries from `SessionManager.delete_session()`, relying on the H5 `ON DELETE CASCADE` foreign keys (`fk_step_progress_session_id`, `fk_gamification_session_id`, and `feedbacks.session_id`).
+- Also fixed the authorization order: ownership (`record.user_id != user_id`) is now verified **before** any deletion occurs (previously child rows were purged even when unauthorized).
+- **Client Impact:** None.
 
-**File:** [database.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/services/database.py#L65)
+### L2. ✅ FIXED (via H6) — `echo=settings.debug` in Production
+
+**File:** [database.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/services/database.py#L63-L78) & [config.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/config.py#L138)
 
 If `DEBUG=true` is accidentally set in production, every SQL query gets printed to stdout — massive I/O overhead at 1L users.
 
-### L3. `_sessions` In-Memory Dict Grows Unbounded
+**Fix Applied:**
+- Decoupled SQLAlchemy SQL logging from `settings.debug` by introducing `db_echo: bool = False` in `Settings` and passing `echo=settings.db_echo` in `_get_engine()` (completed in H6).
+- **Client Impact:** None.
 
-**File:** [learning.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/app/routers/learning.py#L74)
+### L3. ✅ FIXED — `_sessions` In-Memory Dict Grows Unbounded (No Redis)
+
+**File:** [learning.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/app/routers/learning.py#L74-L82), [cache.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/services/cache.py), & [session_manager.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/services/session_manager.py#L42)
 
 ```python
+# Before:
 _sessions: dict[str, SharedMemory] = {}
 ```
 
 With 1L users × active sessions, this dict grows unbounded in the Python process. Each `SharedMemory` object contains serialized steps, conversation history, etc. — potentially hundreds of MB.
 
-**Fix:** Use an LRU cache with TTL (e.g., `cachetools.TTLCache`) or Redis for session caching. Evict sessions after 30 minutes of inactivity.
+**Fix Applied:**
+- Added a zero-dependency `OrderedDict`-based `BoundedTTLCache` and `BoundedTTLSet` in [cache.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/services/cache.py) (no Redis or extra package required).
+- Replaced `_sessions` in [learning.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/app/routers/learning.py#L75-L78) with `BoundedTTLCache[SharedMemory](maxsize=5000, ttl_seconds=1800.0, sliding=True)` (30-minute inactivity eviction, LRU cap of 5,000 sessions; evicted sessions transparently reload from PostgreSQL via `session_manager.get_session()`).
+- Bounded `_cancelled_session_ids` in both [learning.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/app/routers/learning.py#L78) and [session_manager.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/services/session_manager.py#L42) using `BoundedTTLSet(maxsize=5000, ttl_seconds=3600.0)`.
+- **Client Impact:** None.
 
-### L4. `standing_cache` Is Process-Local
+### L4. ✅ FIXED (Process-Bounded, No Redis) — `standing_cache` Is Process-Local & Unbounded
 
-**File:** [analytics_service.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/services/analytics_service.py#L39)
+**File:** [analytics_service.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/services/analytics_service.py#L38-L45) & [cache.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/services/cache.py)
 
 ```python
+# Before:
 _standing_cache: dict[str, tuple[datetime, LearnerStandingResponse]] = {}
 ```
 
 If you scale to multiple server instances (which you must for 1L users), each process has its own cache → stale data, inconsistent UX. Also unbounded growth (1L entries × ~2KB each = ~200MB).
 
-**Fix:** Use Redis or a shared cache with TTL and max size.
+**Fix Applied (without Redis):**
+- Replaced the unbounded `_standing_cache` dict with `BoundedTTLCache[LearnerStandingResponse](maxsize=10000, ttl_seconds=300.0, sliding=False)` in [analytics_service.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/services/analytics_service.py#L39-L45).
+- Bounds memory to at most 10,000 entries (~20 MB) with automatic 5-minute TTL expiration and LRU eviction while preserving `AnalyticsService.invalidate_standing_cache()`.
+- *(Architectural note: Because Redis is intentionally not used, `_standing_cache` remains process-local; if deploying multiple workers/instances later, entries in other workers will refresh within the 5-minute TTL or can be reduced via `CACHE_TTL_SECONDS`.)*
+- **Client Impact:** None.
 
 ---
 
-## 📊 Recommended Index Summary (Alembic Migration)
+## 📊 Applied Index & FK Migrations Summary
 
-```python
-"""Add composite indexes for 1L user scale"""
+> [!NOTE]
+> All indexes and foreign keys below have been created and verified in the `edutechAI` schema via two Alembic migrations.
 
-from alembic import op
+**Migration 1 — [0014_add_scale_indexes_and_session_fks.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/alembic/versions/0014_add_scale_indexes_and_session_fks.py)** (Critical + High):
+| Index / Constraint | Table | Columns | Type |
+|---|---|---|---|
+| `ix_sessions_user_created` | sessions | `(user_id, created_at)` | B-tree |
+| `ix_sessions_user_complete_updated` | sessions | `(user_id, is_complete, updated_at)` | B-tree |
+| `ix_session_usage_user_created` | session_usage_logs | `(user_id, created_at)` | B-tree |
+| `ix_step_progress_session_step` | step_progress | `(session_id, step_index)` | B-tree UNIQUE |
+| `ix_refresh_token_user_active` | refresh_tokens | `(user_id, revoked_at)` | B-tree |
+| `ix_refresh_token_family_active` | refresh_tokens | `(family_id, revoked_at)` | B-tree |
+| `fk_step_progress_session_id` | step_progress → sessions | `session_id` | FK CASCADE |
+| `fk_gamification_session_id` | gamification → sessions | `session_id` | FK CASCADE |
 
-def upgrade():
-    # Sessions
-    op.create_index("ix_sessions_user_created", "sessions", ["user_id", "created_at"])
-    op.create_index("ix_sessions_user_complete_updated", "sessions", ["user_id", "is_complete", "updated_at"])
-
-    # Session Usage Logs
-    op.create_index("ix_session_usage_user_created", "session_usage_logs", ["user_id", "created_at"])
-
-    # Step Progress (composite unique)
-    op.create_index("ix_step_progress_session_step", "step_progress", ["session_id", "step_index"], unique=True)
-
-    # Refresh Tokens
-    op.create_index("ix_refresh_token_user_active", "refresh_tokens", ["user_id", "revoked_at"])
-    op.create_index("ix_refresh_token_family_active", "refresh_tokens", ["family_id", "revoked_at"])
-
-    # Payment Transactions
-    op.create_index("ix_payment_txn_user_created", "payment_transactions", ["user_id", "created_at"])
-
-    # Subscriptions — covering index for tier counts
-    op.create_index("ix_subscriptions_tier_status", "subscriptions", ["tier", "status"])
-
-    # Trigram indexes for ILIKE search (requires pg_trgm extension)
-    op.execute("CREATE EXTENSION IF NOT EXISTS pg_trgm")
-    op.execute("CREATE INDEX ix_users_fname_trgm ON users USING gin (first_name gin_trgm_ops)")
-    op.execute("CREATE INDEX ix_users_lname_trgm ON users USING gin (last_name gin_trgm_ops)")
-    op.execute("CREATE INDEX ix_users_email_trgm ON users USING gin (email gin_trgm_ops)")
-    op.execute("CREATE INDEX ix_sessions_topic_trgm ON sessions USING gin (topic gin_trgm_ops)")
-
-def downgrade():
-    op.drop_index("ix_sessions_user_created")
-    op.drop_index("ix_sessions_user_complete_updated")
-    op.drop_index("ix_session_usage_user_created")
-    op.drop_index("ix_step_progress_session_step")
-    op.drop_index("ix_refresh_token_user_active")
-    op.drop_index("ix_refresh_token_family_active")
-    op.drop_index("ix_payment_txn_user_created")
-    op.drop_index("ix_subscriptions_tier_status")
-    op.execute("DROP INDEX IF EXISTS ix_users_fname_trgm")
-    op.execute("DROP INDEX IF EXISTS ix_users_lname_trgm")
-    op.execute("DROP INDEX IF EXISTS ix_users_email_trgm")
-    op.execute("DROP INDEX IF EXISTS ix_sessions_topic_trgm")
-```
+**Migration 2 — [0015_add_medium_scale_indexes.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/alembic/versions/0015_add_medium_scale_indexes.py)** (Medium):
+| Index | Table | Columns | Type |
+|---|---|---|---|
+| `ix_users_fname_trgm` | users | `first_name` | GIN pg_trgm |
+| `ix_users_lname_trgm` | users | `last_name` | GIN pg_trgm |
+| `ix_users_email_trgm` | users | `email` | GIN pg_trgm |
+| `ix_users_mobile_trgm` | users | `mobile` | GIN pg_trgm |
+| `ix_sessions_topic_trgm` | sessions | `topic` | GIN pg_trgm |
+| `ix_feedbacks_featured` | feedbacks | `updated_at DESC` | Partial (`status='featured' AND is_public_consent=true`) |
+| `ix_payment_txn_user_created` | payment_transactions | `(user_id, created_at DESC)` | B-tree |
+| `ix_subscriptions_tier_status` | subscriptions | `(tier, status)` | B-tree |
 
 ---
 
 ## 🏗️ Architecture Recommendations for 1L Scale
 
-### 1. Add `pool_size` and `max_overflow` to Engine Config
-```python
-create_async_engine(
-    url,
-    pool_size=20,
-    max_overflow=30,
-    pool_timeout=30,
-    pool_pre_ping=True,
-    pool_recycle=300,
-    echo=False,          # Never True in production
-)
-```
+### 1. ✅ DONE — Add `pool_size` and `max_overflow` to Engine Config
+Implemented in H6 — [config.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/config.py#L135-L138) and [database.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/services/database.py#L63-L77): `pool_size=20`, `max_overflow=30`, `pool_timeout=30`, `echo=False`.
 
-### 2. Replace In-Memory Session Cache with Redis/LRU
-Replace the unbounded `_sessions` dict with `cachetools.TTLCache(maxsize=5000, ttl=1800)` or Redis.
+### 2. ✅ DONE — Replace In-Memory Session Cache with Bounded LRU+TTL
+Implemented in L3 — [cache.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/services/cache.py): `BoundedTTLCache(maxsize=5000, ttl=1800, sliding=True)` replaces the unbounded dict.
 
-### 3. Push Analytics Aggregations to SQL
-Rewrite `get_user_performance()` to use SQL `GROUP BY`, `SUM`, `COUNT` with CTEs instead of loading all rows into Python.
+### 3. ✅ DONE — Push Analytics Aggregations to SQL
+Implemented in C2 + M4 — [analytics_service.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/services/analytics_service.py): scalar column projection, SQL `GROUP BY` aggregation, CTE-merged queries, JSONB title extraction, and SQL-scoped window filtering.
 
 ### 4. Add Read Replicas for Analytics
 Dashboard/analytics queries are heavy reads. Route them to read replicas via a separate engine.
 
-### 5. Paginate StepProgress in Analytics
-Instead of loading ALL step records for a user, filter by time window in SQL and paginate.
+### 5. ✅ DONE — Filter StepProgress by Time Window in SQL
+Implemented in C2 — [analytics_service.py L402-435](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/services/analytics_service.py#L402-L435): SQL `WHERE` filters `completed_at` within window (with 30-min lookback for clamping accuracy) instead of fetching all historical rows.
 
 ### 6. Consider Partitioning `sessions` and `step_progress` Tables
 At 100M+ rows, consider range partitioning by `created_at` (monthly/quarterly). PostgreSQL declarative partitioning would keep query performance consistent as data grows.
+
+### 7. Connection Pool & Session Hold-Time Caveats (500+ Concurrent Users & Multi-Worker)
+Two architectural caveats apply when scaling beyond ~500 concurrent users or multiple Uvicorn/Gunicorn workers:
+
+1. **Long-running LLM endpoints holding `get_current_user`'s DB session open:**
+   - **Where:** [dependencies.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/app/dependencies.py#L50-L53), [learning.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/app/routers/learning.py#L162-L166) (`/learn`, `/step/{step_index}/followup`), and any authenticated route calling slow external/LLM APIs.
+   - **Issue:** `get_current_user` injects `db: AsyncSession = Depends(get_db)`. Because FastAPI keeps generator dependencies open until the route handler returns, the checked-out DB connection remains held (idle) for the entire 5–15 second LLM call. If 500 users invoke `/learn` simultaneously, they will exhaust a 50-connection pool and hit `pool_timeout=30` even though no SQL is running during LLM inference.
+   - **Recommended Future Fix:** Refactor `get_current_user` to use a short-lived `async with get_db_session() as db:` block (or `expunge` / detach the `User` object after loading roles & subscription) so the DB connection is released in ~10–20 ms before the route body executes. *(Note: audit callers like `logout_all` in [auth.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/app/routers/auth.py#L140-L161) that currently mutate `current_user` via a separate `Depends(get_db)` session — switch those to explicit `UPDATE` statements or `db.merge(current_user)`.)*
+
+2. **Supabase Supavisor Pooler (`port 6543`) client-connection budget across multiple workers:**
+   - **Where:** `.env` (`aws-0-ap-south-1.pooler.supabase.com:6543`), [config.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/config.py#L135-L138), and [database.py](file:///c:/Users/mhmdz/IdeaProjects/Python%20Projects/edutech-ai-based-learning-platform/devzees-edutechai-server/services/database.py#L63-L78).
+   - **Issue:** `db_pool_size=20` and `db_max_overflow=30` (50 max connections) is **per backend worker process**. Running `N` workers/containers multiplies total client connections to Supabase's pooler (`N × 50` — e.g., 4 workers = 200 connections, 10 workers = 500 connections), which can exceed Supabase's `max_client_conn` limit on smaller compute tiers.
+   - **Recommended Future Fix:** Tune `DB_POOL_SIZE` and `DB_MAX_OVERFLOW` in `.env` per deployment topology so `workers × (DB_POOL_SIZE + DB_MAX_OVERFLOW)` stays safely below your Supabase pooler client limit (e.g., for 4 workers with a 200-client cap, set `DB_POOL_SIZE=15` and `DB_MAX_OVERFLOW=25`, or use `NullPool` only when delegating pooling 100% to PgBouncer/Supavisor after benchmarking latency).
 
 ---
 

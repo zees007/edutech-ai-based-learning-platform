@@ -25,6 +25,7 @@ from models.db_models import (
 )
 from models.shared_memory import SharedMemory
 from models.user_schemas import SearchDTO
+from services.cache import BoundedTTLSet
 from services.database import get_db_session
 
 logger = logging.getLogger(__name__)
@@ -38,7 +39,7 @@ class SessionManager:
     `state_json` column, enabling complete session recovery on reconnect.
     """
 
-    _cancelled_session_ids: set[str] = set()
+    _cancelled_session_ids: BoundedTTLSet = BoundedTTLSet(maxsize=5000, ttl_seconds=3600.0)
 
     @classmethod
     def mark_cancelled(cls, session_id: str) -> None:
@@ -290,19 +291,19 @@ class SessionManager:
           0-indexed page (offset = dto.page * dto.size, limit = dto.size).
         """
         async with get_db_session() as db:
-            query = select(SessionRecord).where(SessionRecord.user_id == user_id)
+            filters = [SessionRecord.user_id == user_id]
 
             # Apply Status Filter
             if status_filter == "in_progress":
-                query = query.where(SessionRecord.is_complete == False)
+                filters.append(SessionRecord.is_complete == False)
             elif status_filter == "completed":
-                query = query.where(SessionRecord.is_complete == True)
+                filters.append(SessionRecord.is_complete == True)
 
             # Apply Multi-Field Lookup Search
             lookup = dto.lookupText
             if lookup and lookup.strip():
                 term = f"%{lookup.strip()}%"
-                query = query.where(
+                filters.append(
                     or_(
                         SessionRecord.topic.ilike(term),
                         SessionRecord.learning_mode.ilike(term),
@@ -310,20 +311,23 @@ class SessionManager:
                     )
                 )
 
-            # Count total matching records before pagination
-            count_query = select(func.count()).select_from(query.subquery())
+            # Count total matching records directly without wrapping in a subquery
+            count_query = select(func.count(SessionRecord.id)).where(*filters)
             total_res = await db.execute(count_query)
             total = total_res.scalar_one() or 0
 
             # Strict Sorting: Incomplete first (is_complete=False -> 0, True -> 1), then updated_at DESC
-            query = query.order_by(
-                SessionRecord.is_complete.asc(),
-                SessionRecord.updated_at.desc(),
-            )
-
-            # 0-indexed pagination
             offset = dto.page * dto.size
-            query = query.offset(offset).limit(dto.size)
+            query = (
+                select(SessionRecord)
+                .where(*filters)
+                .order_by(
+                    SessionRecord.is_complete.asc(),
+                    SessionRecord.updated_at.desc(),
+                )
+                .offset(offset)
+                .limit(dto.size)
+            )
 
             res = await db.execute(query)
             records = list(res.scalars().all())
@@ -359,22 +363,15 @@ class SessionManager:
 
     async def delete_session(self, session_id: str, user_id: str | None = None) -> bool:
         """
-        Delete a session and all its associated progress and gamification records.
-        If user_id is provided, guarantees ownership before deletion.
+        Delete a session and rely on DB ON DELETE CASCADE foreign keys to purge
+        associated StepProgress, GamificationRecord, and FeedbackRecord rows.
+        If user_id is provided, guarantees ownership before any deletion occurs.
         """
         self.mark_cancelled(session_id)
         async with get_db_session() as db:
             query = select(SessionRecord).where(SessionRecord.session_id == session_id)
             res = await db.execute(query)
             record = res.scalar_one_or_none()
-
-            # Always purge related step progress and gamification records regardless
-            await db.execute(
-                delete(StepProgress).where(StepProgress.session_id == session_id)
-            )
-            await db.execute(
-                delete(GamificationRecord).where(GamificationRecord.session_id == session_id)
-            )
 
             if not record:
                 logger.info(f"Session {session_id} not found in DB to delete (already deleted or never persisted).")

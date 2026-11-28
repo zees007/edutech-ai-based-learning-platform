@@ -188,6 +188,8 @@ class AdminService:
         db.add(tier)
         await db.commit()
         await db.refresh(tier)
+        from services.subscription_service import SubscriptionService
+        SubscriptionService.invalidate_tier_cache()
 
         return SubscriptionTierResponse(
             id=tier.id,
@@ -250,6 +252,8 @@ class AdminService:
 
         await db.commit()
         await db.refresh(tier)
+        from services.subscription_service import SubscriptionService
+        SubscriptionService.invalidate_tier_cache()
 
         # Count active subscribers
         counts_stmt = select(func.count(Subscription.id)).where(
@@ -306,3 +310,5 @@ class AdminService:
         tier.retired_at = datetime.now(timezone.utc).replace(tzinfo=None)
         tier.retired_by = current_user_id
         await db.commit()
+        from services.subscription_service import SubscriptionService
+        SubscriptionService.invalidate_tier_cache()

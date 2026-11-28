@@ -11,7 +11,7 @@ from datetime import date, datetime, timedelta, timezone
 import logging
 from typing import Any
 
-from sqlalchemy import and_, bindparam, case, func, or_, select, text
+from sqlalchemy import and_, bindparam, case, func, or_, select, text, true
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.exceptions import BadRequestException, UnprocessableEntityException
@@ -31,13 +31,19 @@ from models.dashboard_schemas import (
     WeakConceptDTO,
 )
 from models.db_models import GamificationRecord, SessionRecord, StepProgress, UserTrophy
+from services.cache import BoundedTTLCache
 from services.gamification import calculate_level
 
 logger = logging.getLogger(__name__)
 
-# In-memory TTL cache for all-time LearnerStandingResponse
-_standing_cache: dict[str, tuple[datetime, LearnerStandingResponse]] = {}
+# Bounded in-memory LRU+TTL cache for all-time LearnerStandingResponse (no Redis)
 CACHE_TTL_SECONDS = 300  # 5 minutes
+STANDING_CACHE_MAXSIZE = 10000
+_standing_cache: BoundedTTLCache[LearnerStandingResponse] = BoundedTTLCache(
+    maxsize=STANDING_CACHE_MAXSIZE,
+    ttl_seconds=float(CACHE_TTL_SECONDS),
+    sliding=False,
+)
 
 # Mode median durations in minutes (for idle break clamping)
 MODE_MEDIAN_MINUTES: dict[str, int] = {
@@ -101,37 +107,38 @@ class AnalyticsService:
         """
         now = datetime.now(timezone.utc).replace(tzinfo=None)
         cached = _standing_cache.get(user_id)
-        if cached:
-            cached_at, standing = cached
-            if (now - cached_at).total_seconds() < CACHE_TTL_SECONDS:
-                return standing
+        if cached is not None:
+            return cached
 
-        # 1. Total All-Time XP
-        xp_query = (
-            select(func.coalesce(func.sum(GamificationRecord.xp_earned), 0))
+        # 1. Consolidated CTE query for XP, Session aggregates, and Step aggregates (3 queries -> 1 round trip)
+        xp_cte = (
+            select(
+                func.coalesce(func.sum(GamificationRecord.xp_earned), 0).label("total_all_time_xp")
+            )
             .join(SessionRecord, GamificationRecord.session_id == SessionRecord.session_id)
             .where(SessionRecord.user_id == user_id)
+            .cte("xp_stats")
         )
-        xp_res = await db.execute(xp_query)
-        total_all_time_xp = int(xp_res.scalar_one() or 0)
-
-        # 2. Session aggregates (SQL-level, skips loading state_json ORM objects)
-        session_stats_query = (
+        session_cte = (
             select(
                 func.count(case((SessionRecord.is_complete == True, 1))).label("completed_sessions"),
-                func.count(case(((func.lower(SessionRecord.learning_mode) == "deep_dive") & (SessionRecord.is_complete == True), 1))).label("deep_dive_count"),
-                func.count(func.distinct(func.lower(func.trim(SessionRecord.topic)))).label("distinct_topics"),
+                func.count(
+                    case(
+                        (
+                            (func.lower(SessionRecord.learning_mode) == "deep_dive")
+                            & (SessionRecord.is_complete == True),
+                            1,
+                        )
+                    )
+                ).label("deep_dive_count"),
+                func.count(func.distinct(func.lower(func.trim(SessionRecord.topic)))).label(
+                    "distinct_topics"
+                ),
             )
             .where(SessionRecord.user_id == user_id)
+            .cte("session_stats")
         )
-        session_stats_res = await db.execute(session_stats_query)
-        session_stats = session_stats_res.one()
-        completed_sessions = int(session_stats.completed_sessions or 0)
-        deep_dive_count = int(session_stats.deep_dive_count or 0)
-        distinct_topics = int(session_stats.distinct_topics or 0)
-
-        # 3. Step aggregates & active dates (Projected columns only)
-        step_stats_query = (
+        step_cte = (
             select(
                 func.count(StepProgress.id).label("total_steps"),
                 func.count(case((StepProgress.quiz_score >= 1.0, 1))).label("perfect_quizzes"),
@@ -141,15 +148,29 @@ class AnalyticsService:
                 SessionRecord.user_id == user_id,
                 StepProgress.status == "complete",
             )
+            .cte("step_stats")
         )
-        step_stats_res = await db.execute(step_stats_query)
-        step_stats = step_stats_res.one()
-        total_steps = int(step_stats.total_steps or 0)
-        perfect_quizzes = int(step_stats.perfect_quizzes or 0)
+        combined_stats_query = select(
+            xp_cte.c.total_all_time_xp,
+            session_cte.c.completed_sessions,
+            session_cte.c.deep_dive_count,
+            session_cte.c.distinct_topics,
+            step_cte.c.total_steps,
+            step_cte.c.perfect_quizzes,
+        ).select_from(
+            xp_cte.join(session_cte, true()).join(step_cte, true())
+        )
+        stats_row = (await db.execute(combined_stats_query)).one()
+        total_all_time_xp = int(stats_row.total_all_time_xp or 0)
+        completed_sessions = int(stats_row.completed_sessions or 0)
+        deep_dive_count = int(stats_row.deep_dive_count or 0)
+        distinct_topics = int(stats_row.distinct_topics or 0)
+        total_steps = int(stats_row.total_steps or 0)
+        perfect_quizzes = int(stats_row.perfect_quizzes or 0)
 
-        # Query only completed_at dates for streak calculation
+        # 2. Query only distinct active calendar dates for streak calculation
         sp_dates_query = (
-            select(StepProgress.completed_at)
+            select(func.distinct(func.date(StepProgress.completed_at)))
             .join(SessionRecord, StepProgress.session_id == SessionRecord.session_id)
             .where(
                 SessionRecord.user_id == user_id,
@@ -159,9 +180,9 @@ class AnalyticsService:
         )
         sp_dates_res = await db.execute(sp_dates_query)
         active_dates_set = {
-            dt.strftime("%Y-%m-%d")
-            for (dt,) in sp_dates_res.all()
-            if dt
+            d.strftime("%Y-%m-%d") if hasattr(d, "strftime") else str(d)
+            for (d,) in sp_dates_res.all()
+            if d
         }
         current_streak, longest_streak = AnalyticsService._calculate_streaks(active_dates_set, now)
 
@@ -230,7 +251,7 @@ class AnalyticsService:
             achievements=final_achievements,
         )
 
-        _standing_cache[user_id] = (now, response)
+        _standing_cache[user_id] = response
         return response
 
     @staticmethod
