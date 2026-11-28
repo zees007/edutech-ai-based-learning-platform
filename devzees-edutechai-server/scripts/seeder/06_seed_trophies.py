@@ -247,6 +247,7 @@ async def seed_user_trophies(target_level: int, email: str = "ultra@gmail.com") 
 
             # Build steps, step progress, and quiz results
             steps_obj: list[MilestoneStep] = []
+            step_progress_records: list[StepProgress] = []
             session_quiz_scores: dict[int, float] = {}
             step_base_xp = session_xp // steps_per_sess
             step_rem_xp = session_xp % steps_per_sess
@@ -268,16 +269,17 @@ async def seed_user_trophies(target_level: int, email: str = "ultra@gmail.com") 
 
                 session_quiz_scores[st] = q_score
 
-                # Create StepProgress DB record
-                step_prog = StepProgress(
-                    session_id=session_id,
-                    step_index=st,
-                    status="complete",
-                    quiz_score=q_score,
-                    completed_at=step_time,
-                    xp_earned=this_step_xp,
+                # Stage StepProgress DB record (added after parent SessionRecord)
+                step_progress_records.append(
+                    StepProgress(
+                        session_id=session_id,
+                        step_index=st,
+                        status="complete",
+                        quiz_score=q_score,
+                        completed_at=step_time,
+                        xp_earned=this_step_xp,
+                    )
                 )
-                db.add(step_prog)
 
                 # Create MilestoneStep domain object for SharedMemory
                 steps_obj.append(
@@ -316,7 +318,7 @@ async def seed_user_trophies(target_level: int, email: str = "ultra@gmail.com") 
                 quiz_scores=session_quiz_scores,
             )
 
-            # Create SessionRecord with full state_json
+            # Create parent SessionRecord first (respecting FK on step_progress & gamification)
             session_record = SessionRecord(
                 session_id=session_id,
                 user_id=user_id,
@@ -331,6 +333,9 @@ async def seed_user_trophies(target_level: int, email: str = "ultra@gmail.com") 
                 state_json=memory.model_dump(mode="json"),
             )
             db.add(session_record)
+            await db.flush()
+
+            db.add_all(step_progress_records)
 
             # Create GamificationRecord
             gamification_record = GamificationRecord(

@@ -203,13 +203,13 @@ class UserService:
         Returns tuple of (users_list, total_count).
         """
         # Always exclude retired users — only active users returned
-        query = select(User).where(User.retired == False)
+        filters = [User.retired == False]
 
         # Lookup text search across first_name, last_name, email, mobile
         lookup = dto.lookupText
         if lookup and lookup.strip():
             term = f"%{lookup.strip()}%"
-            query = query.where(
+            filters.append(
                 or_(
                     User.first_name.ilike(term),
                     User.last_name.ilike(term),
@@ -218,8 +218,8 @@ class UserService:
                 )
             )
 
-        # Count total matching active records before pagination
-        count_query = select(func.count()).select_from(query.subquery())
+        # Count total matching active records directly without subquery wrapper
+        count_query = select(func.count(User.id)).where(*filters)
         total_res = await db.execute(count_query)
         total = total_res.scalar_one() or 0
 
@@ -236,14 +236,11 @@ class UserService:
         }
         sort_column = sort_map.get(raw_sort, User.created_at)
 
-        if dto.isDesc:
-            query = query.order_by(sort_column.desc())
-        else:
-            query = query.order_by(sort_column.asc())
+        order_expr = sort_column.desc() if dto.isDesc else sort_column.asc()
 
         # 0-indexed pagination offset
         offset = dto.page * dto.size
-        query = query.offset(offset).limit(dto.size)
+        query = select(User).where(*filters).order_by(order_expr).offset(offset).limit(dto.size)
 
         res = await db.execute(query)
         users = list(res.scalars().all())

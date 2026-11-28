@@ -132,6 +132,10 @@ class Settings(BaseSettings):
     database_url: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/edutechai"
     database_schema: str = "edutechAI"
     auto_create_tables: bool = True
+    db_pool_size: int = 20
+    db_max_overflow: int = 30
+    db_pool_timeout: int = 30
+    db_echo: bool = False
 
     # ─── Vector Store ────────────────────────────────────────────
     chroma_persist_dir: str = "./data/chroma_db"

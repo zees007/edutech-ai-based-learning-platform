@@ -30,6 +30,7 @@ from sqlalchemy import (
     Text,
     UniqueConstraint,
     func,
+    text,
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
@@ -86,19 +87,29 @@ class User(LoggedEntity, Base):
         "SessionRecord",
         back_populates="user",
         cascade="all, delete-orphan",
-        lazy="selectin",
+        passive_deletes=True,
+        lazy="noload",
     )
     feedbacks: Mapped[list[FeedbackRecord]] = relationship(
         "FeedbackRecord",
         back_populates="user",
         cascade="all, delete-orphan",
-        lazy="selectin",
+        passive_deletes=True,
+        lazy="noload",
     )
     refresh_tokens: Mapped[list[RefreshToken]] = relationship(
         "RefreshToken",
         back_populates="user",
         cascade="all, delete-orphan",
-        lazy="selectin",
+        passive_deletes=True,
+        lazy="noload",
+    )
+
+    __table_args__ = (
+        Index("ix_users_fname_trgm", "first_name", postgresql_using="gin", postgresql_ops={"first_name": "gin_trgm_ops"}),
+        Index("ix_users_lname_trgm", "last_name", postgresql_using="gin", postgresql_ops={"last_name": "gin_trgm_ops"}),
+        Index("ix_users_email_trgm", "email", postgresql_using="gin", postgresql_ops={"email": "gin_trgm_ops"}),
+        Index("ix_users_mobile_trgm", "mobile", postgresql_using="gin", postgresql_ops={"mobile": "gin_trgm_ops"}),
     )
 
     def __repr__(self) -> str:
@@ -249,6 +260,10 @@ class Subscription(Base):
     )
     transactions: Mapped[list[PaymentTransaction]] = relationship("PaymentTransaction", back_populates="subscription", cascade="all, delete-orphan")
 
+    __table_args__ = (
+        Index("ix_subscriptions_tier_status", "tier", "status"),
+    )
+
     def __repr__(self) -> str:
         return f"<Subscription user={self.user_id} tier={self.tier} provider={self.gateway_provider} status={self.status}>"
 
@@ -275,6 +290,10 @@ class PaymentTransaction(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, server_default=func.now())
 
     subscription: Mapped[Subscription | None] = relationship("Subscription", back_populates="transactions")
+
+    __table_args__ = (
+        Index("ix_payment_txn_user_created", "user_id", text("created_at DESC")),
+    )
 
     def __repr__(self) -> str:
         return f"<PaymentTransaction id={self.transaction_id} provider={self.gateway_provider} amount={self.amount} status={self.status}>"
@@ -318,7 +337,14 @@ class SessionRecord(Base):
         back_populates="session",
         uselist=False,
         cascade="all, delete-orphan",
-        lazy="selectin",
+        passive_deletes=True,
+        lazy="noload",
+    )
+
+    __table_args__ = (
+        Index("ix_sessions_user_created", "user_id", "created_at"),
+        Index("ix_sessions_user_complete_updated", "user_id", "is_complete", "updated_at"),
+        Index("ix_sessions_topic_trgm", "topic", postgresql_using="gin", postgresql_ops={"topic": "gin_trgm_ops"}),
     )
 
     def __repr__(self) -> str:
@@ -334,15 +360,23 @@ class StepProgress(Base):
     __tablename__ = "step_progress"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    session_id: Mapped[str] = mapped_column(String(24), index=True, nullable=False)
+    session_id: Mapped[str] = mapped_column(
+        String(24),
+        ForeignKey("sessions.session_id", ondelete="CASCADE"),
+        index=True,
+        nullable=False,
+    )
     step_index: Mapped[int] = mapped_column(Integer, nullable=False)
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="pending")
     quiz_score: Mapped[float | None] = mapped_column(Float, nullable=True)
     completed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     xp_earned: Mapped[int] = mapped_column(Integer, default=0, server_default="0", nullable=False)
 
+    session: Mapped[SessionRecord] = relationship("SessionRecord", lazy="noload")
+
     __table_args__ = (
         Index("ix_step_progress_session_status", "session_id", "status"),
+        Index("ix_step_progress_session_step", "session_id", "step_index", unique=True),
     )
 
     def __repr__(self) -> str:
@@ -358,7 +392,13 @@ class GamificationRecord(Base):
     __tablename__ = "gamification"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    session_id: Mapped[str] = mapped_column(String(24), unique=True, index=True, nullable=False)
+    session_id: Mapped[str] = mapped_column(
+        String(24),
+        ForeignKey("sessions.session_id", ondelete="CASCADE"),
+        unique=True,
+        index=True,
+        nullable=False,
+    )
     xp_earned: Mapped[int] = mapped_column(Integer, default=0)
     streak_count: Mapped[int] = mapped_column(Integer, default=0)
     level: Mapped[int] = mapped_column(Integer, default=1)
@@ -366,6 +406,8 @@ class GamificationRecord(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, server_default=func.now(), onupdate=func.now()
     )
+
+    session: Mapped[SessionRecord] = relationship("SessionRecord", lazy="noload")
 
     def __repr__(self) -> str:
         return f"<Gamification session={self.session_id} xp={self.xp_earned} level={self.level}>"
@@ -412,6 +454,11 @@ class RefreshToken(Base):
 
     user: Mapped[User] = relationship("User", back_populates="refresh_tokens")
 
+    __table_args__ = (
+        Index("ix_refresh_token_user_active", "user_id", "revoked_at"),
+        Index("ix_refresh_token_family_active", "family_id", "revoked_at"),
+    )
+
     def __repr__(self) -> str:
         return f"<RefreshToken {self.id} for user={self.user_id}>"
 
@@ -453,6 +500,11 @@ class FeedbackRecord(Base):
 
     __table_args__ = (
         UniqueConstraint("session_id", "user_id", name="uq_session_user_feedback"),
+        Index(
+            "ix_feedbacks_featured",
+            text("updated_at DESC"),
+            postgresql_where=text("status = 'featured' AND is_public_consent = true"),
+        ),
     )
 
     user: Mapped[User] = relationship("User", back_populates="feedbacks")
@@ -501,6 +553,10 @@ class SessionUsageLog(Base):
     action: Mapped[str] = mapped_column(String(50), nullable=False, default="cancelled_in_synthesis")
     created_at: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, server_default=func.now()
+    )
+
+    __table_args__ = (
+        Index("ix_session_usage_user_created", "user_id", "created_at"),
     )
 
     def __repr__(self) -> str:

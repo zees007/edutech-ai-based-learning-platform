@@ -60,12 +60,20 @@ def _get_engine(settings: Settings | None = None) -> AsyncEngine:
                 connect_args["server_settings"] = {
                     "search_path": f'"{schema}"'
                 }
+        engine_kwargs: dict = {
+            "echo": settings.db_echo,
+            "connect_args": connect_args,
+            "pool_pre_ping": True,
+            "pool_recycle": 300,
+        }
+        if "postgresql" in settings.database_url:
+            engine_kwargs["pool_size"] = settings.db_pool_size
+            engine_kwargs["max_overflow"] = settings.db_max_overflow
+            engine_kwargs["pool_timeout"] = settings.db_pool_timeout
+
         _engine = create_async_engine(
             settings.database_url,
-            echo=settings.debug,
-            connect_args=connect_args,
-            pool_pre_ping=True,
-            pool_recycle=300,
+            **engine_kwargs,
         )
         _engine_loop = current_loop
         logger.info(

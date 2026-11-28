@@ -8,8 +8,9 @@ Razorpay payment integration, ledger logging, and automatic tier-role synchroniz
 from __future__ import annotations
 
 import logging
+import time
 from datetime import datetime, timedelta, timezone
-from typing import List, Optional
+from typing import Any, List, Optional
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -39,6 +40,60 @@ TIER_ROLE_NAME_MAP = {
 
 class SubscriptionService:
     """Service layer for subscription operations."""
+
+    _tier_cache: dict[str, Any] | None = None
+    _TIER_CACHE_TTL_SECONDS: float = 300.0
+
+    @classmethod
+    def invalidate_tier_cache(cls) -> None:
+        """Invalidate the in-memory tier-to-role and multiplier cache."""
+        cls._tier_cache = None
+
+    @classmethod
+    async def _get_tier_cache(cls, db: AsyncSession) -> dict[str, Any]:
+        """
+        Fetch and cache active SubscriptionTier metadata (slug -> role_id,
+        all tier role_ids, and streak multipliers) for 5 minutes.
+        """
+        now_mono = time.monotonic()
+        if cls._tier_cache is not None and now_mono < cls._tier_cache["expires_at"]:
+            return cls._tier_cache
+
+        stmt = select(
+            SubscriptionTier.slug,
+            SubscriptionTier.role_id,
+            SubscriptionTier.streak_multiplier,
+        ).where(SubscriptionTier.retired == False)
+        rows = (await db.execute(stmt)).all()
+
+        slug_to_role_id: dict[str, str] = {}
+        all_tier_role_ids: set[str] = set()
+        slug_to_multiplier: dict[str, float] = {}
+        role_id_to_multiplier: dict[str, float] = {}
+
+        for slug, role_id, streak_mult in rows:
+            slug_norm = (slug or "").lower().strip()
+            if slug_norm and role_id:
+                slug_to_role_id[slug_norm] = role_id
+            if role_id:
+                all_tier_role_ids.add(role_id)
+            if streak_mult:
+                mult_val = float(streak_mult)
+                if slug_norm:
+                    slug_to_multiplier[slug_norm] = mult_val
+                if role_id:
+                    existing = role_id_to_multiplier.get(role_id, 0.0)
+                    if mult_val > existing:
+                        role_id_to_multiplier[role_id] = mult_val
+
+        cls._tier_cache = {
+            "expires_at": now_mono + cls._TIER_CACHE_TTL_SECONDS,
+            "slug_to_role_id": slug_to_role_id,
+            "all_tier_role_ids": all_tier_role_ids,
+            "slug_to_multiplier": slug_to_multiplier,
+            "role_id_to_multiplier": role_id_to_multiplier,
+        }
+        return cls._tier_cache
 
     @staticmethod
     async def create_checkout_order(
@@ -406,27 +461,23 @@ class SubscriptionService:
 
     @staticmethod
     async def _sync_user_role(db: AsyncSession, user: User, target_tier: str) -> None:
-        """Helper to sync DB roles dynamically for a User entity based on bound SubscriptionTier."""
-        tier_stmt = select(SubscriptionTier).where(
-            SubscriptionTier.slug == target_tier.lower(),
-            SubscriptionTier.retired == False
-        )
-        tier_obj = (await db.execute(tier_stmt)).scalar_one_or_none()
+        """Helper to sync DB roles dynamically for a User entity based on cached SubscriptionTier mapping."""
+        tier_cache = await SubscriptionService._get_tier_cache(db)
+        target_slug = target_tier.lower().strip()
+        target_role_id = tier_cache["slug_to_role_id"].get(target_slug)
 
         target_role = None
-        if tier_obj and tier_obj.role_id:
-            r_stmt = select(Role).where(Role.id == tier_obj.role_id, Role.retired == False)
+        if target_role_id:
+            r_stmt = select(Role).where(Role.id == target_role_id, Role.retired == False)
             target_role = (await db.execute(r_stmt)).scalar_one_or_none()
 
         # Fallback to legacy role name matching if tier not in subscription_tiers yet
         if not target_role:
-            target_role_name = TIER_ROLE_NAME_MAP.get(target_tier.lower(), target_tier.capitalize())
+            target_role_name = TIER_ROLE_NAME_MAP.get(target_slug, target_tier.capitalize())
             r_stmt = select(Role).where(Role.name == target_role_name, Role.retired == False)
             target_role = (await db.execute(r_stmt)).scalar_one_or_none()
 
-        # Collect all role IDs associated with any active subscription tier
-        all_tier_roles_stmt = select(SubscriptionTier.role_id).where(SubscriptionTier.retired == False)
-        tier_role_ids = set((await db.execute(all_tier_roles_stmt)).scalars().all())
+        tier_role_ids = tier_cache["all_tier_role_ids"]
 
         # Also exclude known default tier role names
         tier_role_names = set(TIER_ROLE_NAME_MAP.values())
@@ -445,42 +496,39 @@ class SubscriptionService:
     async def get_user_streak_multiplier(db: AsyncSession, user: User | None) -> float:
         """
         Dynamically resolve the daily streak XP multiplier for a user:
-        1. Check active Subscription -> SubscriptionTier.streak_multiplier.
-        2. Check user's assigned Roles bound to SubscriptionTier.
+        1. Check active Subscription -> cached SubscriptionTier.streak_multiplier.
+        2. Check user's assigned Roles bound to cached SubscriptionTiers.
         3. Fallback to standard role names (Admin/Ultra: 2.0x, Pro: 1.5x, Free: 1.0x).
         """
         if not user:
             return 1.0
 
         try:
-            # 1. Check active subscription tier
-            sub_stmt = select(Subscription).where(
-                Subscription.user_id == user.id,
-                Subscription.status == "active"
-            )
-            sub_res = await db.execute(sub_stmt)
-            sub = sub_res.scalar_one_or_none()
+            tier_cache = await SubscriptionService._get_tier_cache(db)
 
-            if sub and sub.tier:
-                tier_stmt = select(SubscriptionTier).where(
-                    SubscriptionTier.slug == sub.tier.lower().strip(),
-                    SubscriptionTier.retired == False
+            # 1. Check active subscription tier (reuse preloaded user.subscription when available)
+            sub = getattr(user, "subscription", None)
+            if sub is None:
+                sub_stmt = select(Subscription).where(
+                    Subscription.user_id == user.id,
+                    Subscription.status == "active",
                 )
-                tier_obj = (await db.execute(tier_stmt)).scalar_one_or_none()
-                if tier_obj and hasattr(tier_obj, "streak_multiplier") and tier_obj.streak_multiplier:
-                    return float(tier_obj.streak_multiplier)
+                sub = (await db.execute(sub_stmt)).scalar_one_or_none()
+
+            if sub and sub.status == "active" and sub.tier:
+                mult = tier_cache["slug_to_multiplier"].get(sub.tier.lower().strip())
+                if mult:
+                    return mult
 
             # 2. Check roles bound to dynamic SubscriptionTiers
             user_roles = [r for r in user.roles if not r.retired] if hasattr(user, "roles") and user.roles else []
-            role_ids = [r.id for r in user_roles]
-            if role_ids:
-                tier_by_role_stmt = select(SubscriptionTier).where(
-                    SubscriptionTier.role_id.in_(role_ids),
-                    SubscriptionTier.retired == False
-                ).order_by(SubscriptionTier.streak_multiplier.desc())
-                tier_by_role = (await db.execute(tier_by_role_stmt)).scalars().first()
-                if tier_by_role and hasattr(tier_by_role, "streak_multiplier") and tier_by_role.streak_multiplier:
-                    return float(tier_by_role.streak_multiplier)
+            role_mults = [
+                tier_cache["role_id_to_multiplier"][r.id]
+                for r in user_roles
+                if r.id in tier_cache["role_id_to_multiplier"]
+            ]
+            if role_mults:
+                return max(role_mults)
 
             # 3. Fallback based on role names
             role_names = [r.name.lower() for r in user_roles]

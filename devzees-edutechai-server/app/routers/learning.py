@@ -59,6 +59,7 @@ from models.schemas import (
 )
 from models.shared_memory import SharedMemory
 from models.user_schemas import SearchDTO
+from services.cache import BoundedTTLCache, BoundedTTLSet
 from services.session_manager import SessionManager
 from config import get_settings
 
@@ -70,15 +71,18 @@ router = APIRouter()
 session_manager = SessionManager()
 settings = get_settings()
 
-# ─── In-memory session store ─────────────────────────────────────
-_sessions: dict[str, SharedMemory] = {}
-_cancelled_session_ids: set[str] = set()
+# ─── Bounded In-memory session store (30-min sliding TTL, max 5000 active sessions) ───
+_sessions: BoundedTTLCache[SharedMemory] = BoundedTTLCache(
+    maxsize=5000, ttl_seconds=1800.0, sliding=True
+)
+_cancelled_session_ids: BoundedTTLSet = BoundedTTLSet(maxsize=5000, ttl_seconds=3600.0)
 
 
 async def get_session_or_404(session_id: str) -> SharedMemory:
     """Retrieve a session from memory or DB, or raise 404."""
-    if session_id in _sessions:
-        return _sessions[session_id]
+    memory = _sessions.get(session_id)
+    if memory is not None:
+        return memory
 
     memory = await session_manager.get_session(session_id)
     if memory:
